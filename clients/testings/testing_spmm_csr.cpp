@@ -426,7 +426,8 @@ void testing_spmm_csr(const Arguments& arg)
                             hC_gold,
                             ldc,
                             order,
-                            base);
+                            base,
+                            false);
 
         hC_gold.near_check(hC_1);
         hC_gold.near_check(hC_2);

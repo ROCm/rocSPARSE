@@ -285,6 +285,7 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
     int64_t batch_stride                = safe_size;
     int64_t offsets_batch_stride        = safe_size;
     int64_t columns_values_batch_stride = safe_size;
+    int64_t rows_values_batch_stride    = safe_size;
 
     // rocsparse_spmat_get_strided_batch
     EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_strided_batch(nullptr, &batch_count),
@@ -342,6 +343,29 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_strided_batch(csr, -1, offsets_batch_stride, -1),
                             rocsparse_status_invalid_value);
     EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_strided_batch(csr, -1, -1, -1),
+                            rocsparse_status_invalid_value);
+
+    // rocsparse_csc_set_strided_batch
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csc_set_strided_batch(
+            nullptr, batch_count, offsets_batch_stride, rows_values_batch_stride),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csc_set_strided_batch(csc, -1, offsets_batch_stride, rows_values_batch_stride),
+        rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csc_set_strided_batch(csc, batch_count, -1, rows_values_batch_stride),
+        rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csc_set_strided_batch(csc, batch_count, offsets_batch_stride, -1),
+        rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_strided_batch(csc, -1, -1, rows_values_batch_stride),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_strided_batch(csc, batch_count, -1, -1),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_strided_batch(csc, -1, offsets_batch_stride, -1),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_strided_batch(csc, -1, -1, -1),
                             rocsparse_status_invalid_value);
 
     // Destroy valid descriptors

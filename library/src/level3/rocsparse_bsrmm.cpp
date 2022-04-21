@@ -172,7 +172,8 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                  ldc,
                                                  1,
                                                  0,
-                                                 nullptr);
+                                                 nullptr,
+                                                 false);
     }
 
     if(block_dim == 2)

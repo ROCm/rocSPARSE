@@ -39,18 +39,18 @@ Definitions:
     - { alpha:  -1.0, beta: -0.5,  alphai:  0.0, betai:  0.0 }
 
 Tests:
-- name: spmm_batched_csr_bad_arg
+- name: spmm_batched_csc_bad_arg
   category: pre_checkin
-  function: spmm_batched_csr_bad_arg
+  function: spmm_batched_csc_bad_arg
   indextype: *i32i32_i64i32_i64i64
   precision: *single_double_precisions_complex_real
 
 # ##############################
 # # Quick
 # ##############################
-- name: spmm_batched_csr
+- name: spmm_batched_csc
   category: quick
-  function: spmm_batched_csr
+  function: spmm_batched_csc
   indextype: *i32i32_i64i32_i64i64
   precision: *double_only_precisions
   M: [15, 32]
@@ -67,9 +67,9 @@ Tests:
   spmm_alg: [rocsparse_spmm_alg_csr]
   order: [rocsparse_order_column, rocsparse_order_row]
 
-- name: spmm_batched_csr
+- name: spmm_batched_csc
   category: quick
-  function: spmm_batched_csr
+  function: spmm_batched_csc
   indextype: *i32i32_i64i32_i64i64
   precision: *double_only_precisions
   M: [155, 326]
@@ -86,9 +86,9 @@ Tests:
   spmm_alg: [rocsparse_spmm_alg_csr]
   order: [rocsparse_order_row]
 
-- name: spmm_batched_csr
+- name: spmm_batched_csc
   category: quick
-  function: spmm_batched_csr
+  function: spmm_batched_csc
   indextype: *i32i32_i64i32_i64i64
   precision: *double_only_precisions
   M: [1552, 3263]
@@ -108,9 +108,9 @@ Tests:
 ##############################
 # Precheckin
 ##############################
-- name: spmm_batched_csr_file
+- name: spmm_batched_csc_file
   category: pre_checkin
-  function: spmm_batched_csr
+  function: spmm_batched_csc
   indextype: *i64i32
   precision: *double_only_precisions
   M: 1
@@ -120,7 +120,7 @@ Tests:
   batch_count_B: [1]
   batch_count_C: [13]
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -128,9 +128,9 @@ Tests:
   order: [rocsparse_order_column]
   filename: [bmwcra_1]
 
-- name: spmm_batched_csr_file
+- name: spmm_batched_csc_file
   category: pre_checkin
-  function: spmm_batched_csr
+  function: spmm_batched_csc
   indextype: *i64i32
   precision: *single_double_precisions
   M: 1
@@ -148,9 +148,9 @@ Tests:
   order: [rocsparse_order_row]
   filename: [amazon0312]
 
-- name: spmm_batched_csr_file
+- name: spmm_batched_csc_file
   category: pre_checkin
-  function: spmm_batched_csr
+  function: spmm_batched_csc
   indextype: *i64i32
   precision: *double_only_precisions
   M: 1
@@ -168,9 +168,9 @@ Tests:
   order: [rocsparse_order_row]
   filename: [scircuit]
 
-- name: spmm_batched_csr_file
+- name: spmm_batched_csc_file
   category: pre_checkin
-  function: spmm_batched_csr
+  function: spmm_batched_csc
   indextype: *i64i32
   precision: *double_only_precisions_complex
   M: 1
@@ -192,9 +192,9 @@ Tests:
 # Nightly
 ##############################
 
-- name: spmm_batched_csr
+- name: spmm_batched_csc
   category: nightly
-  function: spmm_batched_csr
+  function: spmm_batched_csc
   indextype: *i32i32_i64i32_i64i64
   precision: *single_double_precisions_complex_real
   M: [431]
@@ -211,9 +211,9 @@ Tests:
   spmm_alg: [rocsparse_spmm_alg_csr]
   order: [rocsparse_order_column]
 
-- name: spmm_batched_csr_file
+- name: spmm_batched_csc_file
   category: nightly
-  function: spmm_batched_csr
+  function: spmm_batched_csc
   indextype: *i64i32
   precision: *double_only_precisions
   M: 1
@@ -223,7 +223,7 @@ Tests:
   batch_count_B: [1]
   batch_count_C: [4]
   alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -231,9 +231,9 @@ Tests:
   order: [rocsparse_order_column, rocsparse_order_row]
   filename: [sme3Dc]
 
-- name: spmm_batched_csr_file
+- name: spmm_batched_csc_file
   category: nightly
-  function: spmm_batched_csr
+  function: spmm_batched_csc
   indextype: *i32_i64
   precision: *double_only_precisions
   M: 1
@@ -243,7 +243,7 @@ Tests:
   batch_count_B: [2]
   batch_count_C: [2]
   alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -251,9 +251,9 @@ Tests:
   order: [rocsparse_order_row]
   filename: [shipsec1]
 
-- name: spmm_batched_csr_file
+- name: spmm_batched_csc_file
   category: nightly
-  function: spmm_batched_csr
+  function: spmm_batched_csc
   indextype: *i32_i64
   precision: *single_double_precisions_complex
   M: 1

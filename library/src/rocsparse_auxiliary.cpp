@@ -2791,6 +2791,19 @@ rocsparse_status rocsparse_csr_set_strided_batch(rocsparse_spmat_descr descr,
 }
 
 /********************************************************************************
+ * \brief rocsparse_csc_set_strided_batch sets the CSC sparse matrix batch count
+ * and batch stride.
+ *******************************************************************************/
+rocsparse_status rocsparse_csc_set_strided_batch(rocsparse_spmat_descr descr,
+                                                 int                   batch_count,
+                                                 int64_t               offsets_batch_stride,
+                                                 int64_t               rows_values_batch_stride)
+{
+    return rocsparse_csr_set_strided_batch(
+        descr, batch_count, offsets_batch_stride, rows_values_batch_stride);
+}
+
+/********************************************************************************
  * \brief rocsparse_spmat_get_attribute gets the sparse matrix attribute.
  *******************************************************************************/
 rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,

@@ -78,8 +78,8 @@ target_compile_options(rocsparse PRIVATE -Wno-unused-command-line-argument -Wall
 target_include_directories(rocsparse
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/include>
                                    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
-                           PUBLIC  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-			   	   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/rocsparse>
+                           PUBLIC  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/rocsparse>
+                                   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
                                    $<INSTALL_INTERFACE:include>
 )
 

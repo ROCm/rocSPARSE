@@ -27,7 +27,7 @@
 #include <tuple>
 
 template <typename I, typename J, typename T>
-void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
+void testing_spmm_batched_csc_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
@@ -39,9 +39,9 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
     J                    n           = safe_size;
     J                    k           = safe_size;
     I                    nnz         = safe_size;
-    void*                csr_val     = (void*)0x4;
-    void*                csr_row_ptr = (void*)0x4;
-    void*                csr_col_ind = (void*)0x4;
+    void*                csc_val     = (void*)0x4;
+    void*                csc_col_ptr = (void*)0x4;
+    void*                csc_row_ind = (void*)0x4;
     void*                B           = (void*)0x4;
     void*                C           = (void*)0x4;
     size_t*              buffer_size = (size_t*)0x4;
@@ -64,14 +64,14 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
     rocsparse_local_spmat local_mat_A(m,
                                       k,
                                       nnz,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      csr_val,
+                                      csc_col_ptr,
+                                      csc_row_ind,
+                                      csc_val,
                                       itype,
                                       jtype,
                                       base,
                                       ttype,
-                                      rocsparse_format_csr);
+                                      rocsparse_format_csc);
     rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order);
     rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order);
 
@@ -87,21 +87,21 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
     int     batch_count_B;
     int     batch_count_C;
     int64_t offsets_batch_stride_A;
-    int64_t columns_values_batch_stride_A;
+    int64_t rows_values_batch_stride_A;
     int64_t batch_stride_B;
     int64_t batch_stride_C;
 
     // C_i = A * B_i
-    batch_count_A                 = 1;
-    batch_count_B                 = 10;
-    batch_count_C                 = 5;
-    offsets_batch_stride_A        = 0;
-    columns_values_batch_stride_A = 0;
-    batch_stride_B                = k * n;
-    batch_stride_C                = m * n;
+    batch_count_A              = 1;
+    batch_count_B              = 10;
+    batch_count_C              = 5;
+    offsets_batch_stride_A     = 0;
+    rows_values_batch_stride_A = 0;
+    batch_stride_B             = k * n;
+    batch_stride_C             = m * n;
     EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr_set_strided_batch(
-            mat_A, batch_count_A, offsets_batch_stride_A, columns_values_batch_stride_A),
+        rocsparse_csc_set_strided_batch(
+            mat_A, batch_count_A, offsets_batch_stride_A, rows_values_batch_stride_A),
         rocsparse_status_success);
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_B, batch_count_B, batch_stride_B),
                             rocsparse_status_success);
@@ -111,16 +111,16 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(PARAMS), rocsparse_status_invalid_value);
 
     // C_i = A_i * B
-    batch_count_A                 = 10;
-    batch_count_B                 = 1;
-    batch_count_C                 = 5;
-    offsets_batch_stride_A        = (m + 1);
-    columns_values_batch_stride_A = nnz;
-    batch_stride_B                = 0;
-    batch_stride_C                = m * n;
+    batch_count_A              = 10;
+    batch_count_B              = 1;
+    batch_count_C              = 5;
+    offsets_batch_stride_A     = (k + 1);
+    rows_values_batch_stride_A = nnz;
+    batch_stride_B             = 0;
+    batch_stride_C             = m * n;
     EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr_set_strided_batch(
-            mat_A, batch_count_A, offsets_batch_stride_A, columns_values_batch_stride_A),
+        rocsparse_csc_set_strided_batch(
+            mat_A, batch_count_A, offsets_batch_stride_A, rows_values_batch_stride_A),
         rocsparse_status_success);
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_B, batch_count_B, batch_stride_B),
                             rocsparse_status_success);
@@ -130,16 +130,16 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(PARAMS), rocsparse_status_invalid_value);
 
     // C_i = A_i * B_i
-    batch_count_A                 = 10;
-    batch_count_B                 = 10;
-    batch_count_C                 = 5;
-    offsets_batch_stride_A        = (m + 1);
-    columns_values_batch_stride_A = nnz;
-    batch_stride_B                = k * n;
-    batch_stride_C                = m * n;
+    batch_count_A              = 10;
+    batch_count_B              = 10;
+    batch_count_C              = 5;
+    offsets_batch_stride_A     = (k + 1);
+    rows_values_batch_stride_A = nnz;
+    batch_stride_B             = k * n;
+    batch_stride_C             = m * n;
     EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr_set_strided_batch(
-            mat_A, batch_count_A, offsets_batch_stride_A, columns_values_batch_stride_A),
+        rocsparse_csc_set_strided_batch(
+            mat_A, batch_count_A, offsets_batch_stride_A, rows_values_batch_stride_A),
         rocsparse_status_success);
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_B, batch_count_B, batch_stride_B),
                             rocsparse_status_success);
@@ -151,7 +151,7 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
 }
 
 template <typename I, typename J, typename T>
-void testing_spmm_batched_csr(const Arguments& arg)
+void testing_spmm_batched_csc(const Arguments& arg)
 {
     J                    M       = arg.M;
     J                    N       = arg.N;
@@ -195,14 +195,14 @@ void testing_spmm_batched_csr(const Arguments& arg)
     rocsparse_matrix_factory<T, I, J> matrix_factory(arg);
 
     // Generate single batch of A matrix
-    host_vector<I> hcsr_row_ptr_temp;
-    host_vector<J> hcsr_col_ind_temp;
-    host_vector<T> hcsr_val_temp;
+    host_vector<I> hcsc_col_ptr_temp;
+    host_vector<J> hcsc_row_ind_temp;
+    host_vector<T> hcsc_val_temp;
 
     I nnz_A;
-    matrix_factory.init_csr(hcsr_row_ptr_temp,
-                            hcsr_col_ind_temp,
-                            hcsr_val_temp,
+    matrix_factory.init_csc(hcsc_col_ptr_temp,
+                            hcsc_row_ind_temp,
+                            hcsc_val_temp,
                             (trans_A == rocsparse_operation_none) ? M : K,
                             (trans_A == rocsparse_operation_none) ? K : M,
                             nnz_A,
@@ -229,27 +229,27 @@ void testing_spmm_batched_csr(const Arguments& arg)
     I nnz_B = nrowB * ncolB;
     I nnz_C = nrowC * ncolC;
 
-    I offsets_batch_stride_A        = (batch_count_A > 1) ? (A_m + 1) : 0;
-    I columns_values_batch_stride_A = (batch_count_A > 1) ? nnz_A : 0;
-    I batch_stride_B                = (batch_count_B > 1) ? nnz_B : 0;
-    I batch_stride_C                = (batch_count_C > 1) ? nnz_C : 0;
+    I offsets_batch_stride_A     = (batch_count_A > 1) ? (A_n + 1) : 0;
+    I rows_values_batch_stride_A = (batch_count_A > 1) ? nnz_A : 0;
+    I batch_stride_B             = (batch_count_B > 1) ? nnz_B : 0;
+    I batch_stride_C             = (batch_count_C > 1) ? nnz_C : 0;
 
     // Allocate host memory for all batches of A matrix
-    host_vector<I> hcsr_row_ptr(batch_count_A * (A_m + 1));
-    host_vector<J> hcsr_col_ind(batch_count_A * nnz_A);
-    host_vector<T> hcsr_val(batch_count_A * nnz_A);
+    host_vector<I> hcsc_col_ptr(batch_count_A * (A_n + 1));
+    host_vector<J> hcsc_row_ind(batch_count_A * nnz_A);
+    host_vector<T> hcsc_val(batch_count_A * nnz_A);
 
     for(J i = 0; i < batch_count_A; i++)
     {
-        for(size_t j = 0; j < (A_m + 1); j++)
+        for(size_t j = 0; j < (A_n + 1); j++)
         {
-            hcsr_row_ptr[(A_m + 1) * i + j] = hcsr_row_ptr_temp[j];
+            hcsc_col_ptr[(A_n + 1) * i + j] = hcsc_col_ptr_temp[j];
         }
 
         for(size_t j = 0; j < nnz_A; j++)
         {
-            hcsr_col_ind[nnz_A * i + j] = hcsr_col_ind_temp[j];
-            hcsr_val[nnz_A * i + j]     = hcsr_val_temp[j];
+            hcsc_row_ind[nnz_A * i + j] = hcsc_row_ind_temp[j];
+            hcsc_val[nnz_A * i + j]     = hcsc_val_temp[j];
         }
     }
 
@@ -267,9 +267,9 @@ void testing_spmm_batched_csr(const Arguments& arg)
     hC_gold = hC_1;
 
     // Allocate device memory
-    device_vector<I> dcsr_row_ptr(hcsr_row_ptr);
-    device_vector<J> dcsr_col_ind(hcsr_col_ind);
-    device_vector<T> dcsr_val(hcsr_val);
+    device_vector<I> dcsc_col_ptr(hcsc_col_ptr);
+    device_vector<J> dcsc_row_ind(hcsc_row_ind);
+    device_vector<T> dcsc_val(hcsc_val);
     device_vector<T> dB(hB);
     device_vector<T> dC_1(hC_1);
     device_vector<T> dC_2(hC_2);
@@ -283,20 +283,20 @@ void testing_spmm_batched_csr(const Arguments& arg)
     rocsparse_local_spmat A(A_m,
                             A_n,
                             nnz_A,
-                            dcsr_row_ptr,
-                            dcsr_col_ind,
-                            dcsr_val,
+                            dcsc_col_ptr,
+                            dcsc_row_ind,
+                            dcsc_val,
                             itype,
                             jtype,
                             base,
                             ttype,
-                            rocsparse_format_csr);
+                            rocsparse_format_csc);
     rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order);
     rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order);
     rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order);
 
-    CHECK_ROCSPARSE_ERROR(rocsparse_csr_set_strided_batch(
-        A, batch_count_A, offsets_batch_stride_A, columns_values_batch_stride_A));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csc_set_strided_batch(
+        A, batch_count_A, offsets_batch_stride_A, rows_values_batch_stride_A));
     CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(B, batch_count_B, batch_stride_B));
     CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(C1, batch_count_C, batch_stride_C));
     CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(C2, batch_count_C, batch_stride_C));
@@ -373,19 +373,19 @@ void testing_spmm_batched_csr(const Arguments& arg)
         hC_1.transfer_from(dC_1);
         hC_2.transfer_from(dC_2);
 
-        // CPU csrmm_batched
-        host_csrmm_batched<T, I, J>(A_m,
+        // CPU cscmm_batched
+        host_cscmm_batched<T, I, J>(A_m,
                                     N,
                                     A_n,
                                     batch_count_A,
                                     offsets_batch_stride_A,
-                                    columns_values_batch_stride_A,
+                                    rows_values_batch_stride_A,
                                     trans_A,
                                     trans_B,
                                     halpha,
-                                    hcsr_row_ptr,
-                                    hcsr_col_ind,
-                                    hcsr_val,
+                                    hcsc_col_ptr,
+                                    hcsc_row_ind,
+                                    hcsc_val,
                                     hB,
                                     ldb,
                                     batch_count_B,
@@ -396,8 +396,7 @@ void testing_spmm_batched_csr(const Arguments& arg)
                                     batch_count_C,
                                     batch_stride_C,
                                     order,
-                                    base,
-                                    false);
+                                    base);
 
         hC_gold.near_check(hC_1);
         hC_gold.near_check(hC_2);
@@ -455,7 +454,7 @@ void testing_spmm_batched_csr(const Arguments& arg)
               * spmm_gflop_count(N, nnz_A, (I)C_m * (I)C_n, hbeta != static_cast<T>(0));
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
 
-        double gbyte_count = csrmm_batched_gbyte_count<T>(A_m,
+        double gbyte_count = cscmm_batched_gbyte_count<T>(A_n,
                                                           nnz_A,
                                                           (I)B_m * (I)B_n,
                                                           (I)C_m * (I)C_n,
@@ -497,8 +496,8 @@ void testing_spmm_batched_csr(const Arguments& arg)
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                       \
-    template void testing_spmm_batched_csr_bad_arg<ITYPE, JTYPE, TTYPE>(const Arguments& arg); \
-    template void testing_spmm_batched_csr<ITYPE, JTYPE, TTYPE>(const Arguments& arg)
+    template void testing_spmm_batched_csc_bad_arg<ITYPE, JTYPE, TTYPE>(const Arguments& arg); \
+    template void testing_spmm_batched_csc<ITYPE, JTYPE, TTYPE>(const Arguments& arg)
 
 INSTANTIATE(int32_t, int32_t, float);
 INSTANTIATE(int32_t, int32_t, double);

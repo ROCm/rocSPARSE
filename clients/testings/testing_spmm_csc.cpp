@@ -27,7 +27,7 @@
 #include <tuple>
 
 template <typename I, typename J, typename T>
-void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
+void testing_spmm_csc_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
@@ -39,13 +39,13 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
     J                    n           = safe_size;
     J                    k           = safe_size;
     I                    nnz         = safe_size;
-    void*                csr_val     = (void*)0x4;
-    void*                csr_row_ptr = (void*)0x4;
-    void*                csr_col_ind = (void*)0x4;
+    const T*             alpha       = (const T*)0x4;
+    const T*             beta        = (const T*)0x4;
+    void*                csc_val     = (void*)0x4;
+    void*                csc_col_ptr = (void*)0x4;
+    void*                csc_row_ind = (void*)0x4;
     void*                B           = (void*)0x4;
     void*                C           = (void*)0x4;
-    size_t*              buffer_size = (size_t*)0x4;
-    void*                temp_buffer = (void*)0x4;
     rocsparse_operation  trans_A     = rocsparse_operation_none;
     rocsparse_operation  trans_B     = rocsparse_operation_none;
     rocsparse_index_base base        = rocsparse_index_base_zero;
@@ -57,21 +57,18 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
     rocsparse_indextype jtype = get_indextype<J>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
-    T alpha = static_cast<T>(1.0);
-    T beta  = static_cast<T>(0.0);
-
     // SpMM structures
     rocsparse_local_spmat local_mat_A(m,
                                       k,
                                       nnz,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      csr_val,
+                                      csc_col_ptr,
+                                      csc_row_ind,
+                                      csc_val,
                                       itype,
                                       jtype,
                                       base,
                                       ttype,
-                                      rocsparse_format_csr);
+                                      rocsparse_format_csc);
     rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order);
     rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order);
 
@@ -79,79 +76,55 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
     rocsparse_dnmat_descr mat_B = local_mat_B;
     rocsparse_dnmat_descr mat_C = local_mat_C;
 
-#define PARAMS                                                                                    \
-    handle, trans_A, trans_B, &alpha, mat_A, mat_B, &beta, mat_C, ttype, alg, stage, buffer_size, \
+    int       nargs_to_exclude   = 2;
+    const int args_to_exclude[2] = {11, 12};
+
+#define PARAMS                                                                                  \
+    handle, trans_A, trans_B, alpha, mat_A, mat_B, beta, mat_C, ttype, alg, stage, buffer_size, \
         temp_buffer
+    {
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
-    int     batch_count_A;
-    int     batch_count_B;
-    int     batch_count_C;
-    int64_t offsets_batch_stride_A;
-    int64_t columns_values_batch_stride_A;
-    int64_t batch_stride_B;
-    int64_t batch_stride_C;
+    {
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
-    // C_i = A * B_i
-    batch_count_A                 = 1;
-    batch_count_B                 = 10;
-    batch_count_C                 = 5;
-    offsets_batch_stride_A        = 0;
-    columns_values_batch_stride_A = 0;
-    batch_stride_B                = k * n;
-    batch_stride_C                = m * n;
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr_set_strided_batch(
-            mat_A, batch_count_A, offsets_batch_stride_A, columns_values_batch_stride_A),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_B, batch_count_B, batch_stride_B),
-                            rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_C, batch_count_C, batch_stride_C),
-                            rocsparse_status_success);
+    {
+        size_t* buffer_size = nullptr;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(PARAMS), rocsparse_status_invalid_value);
-
-    // C_i = A_i * B
-    batch_count_A                 = 10;
-    batch_count_B                 = 1;
-    batch_count_C                 = 5;
-    offsets_batch_stride_A        = (m + 1);
-    columns_values_batch_stride_A = nnz;
-    batch_stride_B                = 0;
-    batch_stride_C                = m * n;
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr_set_strided_batch(
-            mat_A, batch_count_A, offsets_batch_stride_A, columns_values_batch_stride_A),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_B, batch_count_B, batch_stride_B),
-                            rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_C, batch_count_C, batch_stride_C),
-                            rocsparse_status_success);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(PARAMS), rocsparse_status_invalid_value);
-
-    // C_i = A_i * B_i
-    batch_count_A                 = 10;
-    batch_count_B                 = 10;
-    batch_count_C                 = 5;
-    offsets_batch_stride_A        = (m + 1);
-    columns_values_batch_stride_A = nnz;
-    batch_stride_B                = k * n;
-    batch_stride_C                = m * n;
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr_set_strided_batch(
-            mat_A, batch_count_A, offsets_batch_stride_A, columns_values_batch_stride_A),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_B, batch_count_B, batch_stride_B),
-                            rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_C, batch_count_C, batch_stride_C),
-                            rocsparse_status_success);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(PARAMS), rocsparse_status_invalid_value);
+    {
+        size_t* buffer_size = nullptr;
+        void*   temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 #undef PARAMS
+
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
+                                           trans_A,
+                                           trans_B,
+                                           alpha,
+                                           mat_A,
+                                           mat_B,
+                                           beta,
+                                           mat_C,
+                                           ttype,
+                                           alg,
+                                           stage,
+                                           nullptr,
+                                           nullptr),
+                            rocsparse_status_invalid_pointer);
 }
 
 template <typename I, typename J, typename T>
-void testing_spmm_batched_csr(const Arguments& arg)
+void testing_spmm_csc(const Arguments& arg)
 {
     J                    M       = arg.M;
     J                    N       = arg.N;
@@ -161,10 +134,6 @@ void testing_spmm_batched_csr(const Arguments& arg)
     rocsparse_index_base base    = arg.baseA;
     rocsparse_spmm_alg   alg     = arg.spmm_alg;
     rocsparse_order      order   = arg.order;
-
-    J batch_count_A = arg.batch_count_A;
-    J batch_count_B = arg.batch_count_B;
-    J batch_count_C = arg.batch_count_C;
 
     T halpha = arg.get_alpha<T>();
     T hbeta  = arg.get_beta<T>();
@@ -177,32 +146,119 @@ void testing_spmm_batched_csr(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle;
 
+    // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0 || K <= 0)
     {
-        return;
-    }
+        // M == N == 0 means nnz can only be 0, too
+        static const I safe_size = 100;
 
-    bool Ci_A_Bi  = (batch_count_A == 1 && batch_count_B == batch_count_C);
-    bool Ci_Ai_B  = (batch_count_B == 1 && batch_count_A == batch_count_C);
-    bool Ci_Ai_Bi = (batch_count_A == batch_count_C && batch_count_A == batch_count_B);
+        // Allocate memory on device
+        device_vector<I> dcsc_col_ptr(safe_size);
+        device_vector<J> dcsc_row_ind(safe_size);
+        device_vector<T> dcsc_val(safe_size);
+        device_vector<T> dB(safe_size);
+        device_vector<T> dC(safe_size);
 
-    if(!Ci_A_Bi && !Ci_Ai_B && !Ci_Ai_Bi)
-    {
+        // Check SpMM when structures can be created
+        if(M == 0 && N == 0 && K == 0)
+        {
+            // Pointer mode
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
+            J A_m = 0;
+            J A_n = 0;
+            J B_m = 0;
+            J B_n = 0;
+            J C_m = 0;
+            J C_n = 0;
+
+            J ldb = 0;
+            J ldc = 0;
+
+            // Check structures
+            I nnz_A = 0;
+
+            rocsparse_local_spmat A(A_m,
+                                    A_n,
+                                    nnz_A,
+                                    dcsc_col_ptr,
+                                    dcsc_row_ind,
+                                    dcsc_val,
+                                    itype,
+                                    jtype,
+                                    base,
+                                    ttype,
+                                    rocsparse_format_csc);
+            rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order);
+            rocsparse_local_dnmat C(C_m, C_n, ldc, dC, ttype, order);
+
+            size_t buffer_size;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
+                                                   trans_A,
+                                                   trans_B,
+                                                   &halpha,
+                                                   A,
+                                                   B,
+                                                   &hbeta,
+                                                   C,
+                                                   ttype,
+                                                   alg,
+                                                   rocsparse_spmm_stage_buffer_size,
+                                                   &buffer_size,
+                                                   nullptr),
+                                    rocsparse_status_success);
+
+            void* dbuffer;
+            CHECK_HIP_ERROR(hipMalloc(&dbuffer, safe_size));
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
+                                                   trans_A,
+                                                   trans_B,
+                                                   &halpha,
+                                                   A,
+                                                   B,
+                                                   &hbeta,
+                                                   C,
+                                                   ttype,
+                                                   alg,
+                                                   rocsparse_spmm_stage_preprocess,
+                                                   &buffer_size,
+                                                   dbuffer),
+                                    rocsparse_status_success);
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
+                                                   trans_A,
+                                                   trans_B,
+                                                   &halpha,
+                                                   A,
+                                                   B,
+                                                   &hbeta,
+                                                   C,
+                                                   ttype,
+                                                   alg,
+                                                   rocsparse_spmm_stage_compute,
+                                                   &buffer_size,
+                                                   dbuffer),
+                                    rocsparse_status_success);
+
+            CHECK_HIP_ERROR(hipFree(dbuffer));
+        }
+
         return;
     }
 
     // Allocate host memory for matrix
+    host_vector<I> hcsc_col_ptr;
+    host_vector<J> hcsc_row_ind;
+    host_vector<T> hcsc_val;
+
+    // Allocate host memory for matrix
     rocsparse_matrix_factory<T, I, J> matrix_factory(arg);
 
-    // Generate single batch of A matrix
-    host_vector<I> hcsr_row_ptr_temp;
-    host_vector<J> hcsr_col_ind_temp;
-    host_vector<T> hcsr_val_temp;
-
     I nnz_A;
-    matrix_factory.init_csr(hcsr_row_ptr_temp,
-                            hcsr_col_ind_temp,
-                            hcsr_val_temp,
+    matrix_factory.init_csc(hcsc_col_ptr,
+                            hcsc_row_ind,
+                            hcsc_val,
                             (trans_A == rocsparse_operation_none) ? M : K,
                             (trans_A == rocsparse_operation_none) ? K : M,
                             nnz_A,
@@ -229,53 +285,38 @@ void testing_spmm_batched_csr(const Arguments& arg)
     I nnz_B = nrowB * ncolB;
     I nnz_C = nrowC * ncolC;
 
-    I offsets_batch_stride_A        = (batch_count_A > 1) ? (A_m + 1) : 0;
-    I columns_values_batch_stride_A = (batch_count_A > 1) ? nnz_A : 0;
-    I batch_stride_B                = (batch_count_B > 1) ? nnz_B : 0;
-    I batch_stride_C                = (batch_count_C > 1) ? nnz_C : 0;
-
-    // Allocate host memory for all batches of A matrix
-    host_vector<I> hcsr_row_ptr(batch_count_A * (A_m + 1));
-    host_vector<J> hcsr_col_ind(batch_count_A * nnz_A);
-    host_vector<T> hcsr_val(batch_count_A * nnz_A);
-
-    for(J i = 0; i < batch_count_A; i++)
-    {
-        for(size_t j = 0; j < (A_m + 1); j++)
-        {
-            hcsr_row_ptr[(A_m + 1) * i + j] = hcsr_row_ptr_temp[j];
-        }
-
-        for(size_t j = 0; j < nnz_A; j++)
-        {
-            hcsr_col_ind[nnz_A * i + j] = hcsr_col_ind_temp[j];
-            hcsr_val[nnz_A * i + j]     = hcsr_val_temp[j];
-        }
-    }
-
     // Allocate host memory for vectors
-    host_vector<T> hB(batch_count_B * nnz_B);
-    host_vector<T> hC_1(batch_count_C * nnz_C);
-    host_vector<T> hC_2(batch_count_C * nnz_C);
-    host_vector<T> hC_gold(batch_count_C * nnz_C);
+    host_vector<T> hB(nnz_B);
+    host_vector<T> hC_1(nnz_C);
+    host_vector<T> hC_2(nnz_C);
+    host_vector<T> hC_gold(nnz_C);
 
     // Initialize data on CPU
-    rocsparse_init<T>(hB, batch_count_B * nnz_B, 1, 1);
-    rocsparse_init<T>(hC_1, batch_count_C * nnz_C, 1, 1);
+    rocsparse_init<T>(hB, nnz_B, 1, 1);
+    rocsparse_init<T>(hC_1, nnz_C, 1, 1);
 
     hC_2    = hC_1;
     hC_gold = hC_1;
 
     // Allocate device memory
-    device_vector<I> dcsr_row_ptr(hcsr_row_ptr);
-    device_vector<J> dcsr_col_ind(hcsr_col_ind);
-    device_vector<T> dcsr_val(hcsr_val);
-    device_vector<T> dB(hB);
-    device_vector<T> dC_1(hC_1);
-    device_vector<T> dC_2(hC_2);
+    device_vector<I> dcsc_col_ptr(A_n + 1);
+    device_vector<J> dcsc_row_ind(nnz_A);
+    device_vector<T> dcsc_val(nnz_A);
+    device_vector<T> dB(nnz_B);
+    device_vector<T> dC_1(nnz_C);
+    device_vector<T> dC_2(nnz_C);
     device_vector<T> dalpha(1);
     device_vector<T> dbeta(1);
 
+    // Copy data from CPU to device
+    CHECK_HIP_ERROR(
+        hipMemcpy(dcsc_col_ptr, hcsc_col_ptr.data(), sizeof(I) * (A_n + 1), hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(
+        hipMemcpy(dcsc_row_ind, hcsc_row_ind.data(), sizeof(J) * nnz_A, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcsc_val, hcsc_val.data(), sizeof(T) * nnz_A, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dB, hB, sizeof(T) * nnz_B, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dC_1, hC_1, sizeof(T) * nnz_C, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dC_2, hC_2, sizeof(T) * nnz_C, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dalpha, &halpha, sizeof(T), hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dbeta, &hbeta, sizeof(T), hipMemcpyHostToDevice));
 
@@ -283,23 +324,17 @@ void testing_spmm_batched_csr(const Arguments& arg)
     rocsparse_local_spmat A(A_m,
                             A_n,
                             nnz_A,
-                            dcsr_row_ptr,
-                            dcsr_col_ind,
-                            dcsr_val,
+                            dcsc_col_ptr,
+                            dcsc_row_ind,
+                            dcsc_val,
                             itype,
                             jtype,
                             base,
                             ttype,
-                            rocsparse_format_csr);
+                            rocsparse_format_csc);
     rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order);
     rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order);
     rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order);
-
-    CHECK_ROCSPARSE_ERROR(rocsparse_csr_set_strided_batch(
-        A, batch_count_A, offsets_batch_stride_A, columns_values_batch_stride_A));
-    CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(B, batch_count_B, batch_stride_B));
-    CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(C1, batch_count_C, batch_stride_C));
-    CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(C2, batch_count_C, batch_stride_C));
 
     // Query SpMM buffer
     size_t buffer_size;
@@ -337,6 +372,8 @@ void testing_spmm_batched_csr(const Arguments& arg)
 
     if(arg.unit_check)
     {
+        // SpMM
+
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_spmm(handle,
@@ -370,34 +407,26 @@ void testing_spmm_batched_csr(const Arguments& arg)
                                              dbuffer));
 
         // Copy output to host
-        hC_1.transfer_from(dC_1);
-        hC_2.transfer_from(dC_2);
+        CHECK_HIP_ERROR(hipMemcpy(hC_1, dC_1, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
 
-        // CPU csrmm_batched
-        host_csrmm_batched<T, I, J>(A_m,
-                                    N,
-                                    A_n,
-                                    batch_count_A,
-                                    offsets_batch_stride_A,
-                                    columns_values_batch_stride_A,
-                                    trans_A,
-                                    trans_B,
-                                    halpha,
-                                    hcsr_row_ptr,
-                                    hcsr_col_ind,
-                                    hcsr_val,
-                                    hB,
-                                    ldb,
-                                    batch_count_B,
-                                    batch_stride_B,
-                                    hbeta,
-                                    hC_gold,
-                                    ldc,
-                                    batch_count_C,
-                                    batch_stride_C,
-                                    order,
-                                    base,
-                                    false);
+        // CPU cscmm
+        host_cscmm<T, I, J>(A_m,
+                            N,
+                            A_n,
+                            trans_A,
+                            trans_B,
+                            halpha,
+                            hcsc_col_ptr,
+                            hcsc_row_ind,
+                            hcsc_val,
+                            hB,
+                            ldb,
+                            hbeta,
+                            hC_gold,
+                            ldc,
+                            order,
+                            base);
 
         hC_gold.near_check(hC_1);
         hC_gold.near_check(hC_2);
@@ -451,19 +480,12 @@ void testing_spmm_batched_csr(const Arguments& arg)
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
         double gflop_count
-            = batch_count_C
-              * spmm_gflop_count(N, nnz_A, (I)C_m * (I)C_n, hbeta != static_cast<T>(0));
+            = spmm_gflop_count(N, nnz_A, (I)C_m * (I)C_n, hbeta != static_cast<T>(0));
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
 
-        double gbyte_count = csrmm_batched_gbyte_count<T>(A_m,
-                                                          nnz_A,
-                                                          (I)B_m * (I)B_n,
-                                                          (I)C_m * (I)C_n,
-                                                          batch_count_A,
-                                                          batch_count_B,
-                                                          batch_count_C,
-                                                          hbeta != static_cast<T>(0));
-        double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
+        double gbyte_count = cscmm_gbyte_count<T>(
+            A_n, nnz_A, (I)B_m * (I)B_n, (I)C_m * (I)C_n, hbeta != static_cast<T>(0));
+        double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
         display_timing_info("M",
                             M,
@@ -473,12 +495,6 @@ void testing_spmm_batched_csr(const Arguments& arg)
                             K,
                             "nnz_A",
                             nnz_A,
-                            "batch_count_A",
-                            batch_count_A,
-                            "batch_count_B",
-                            batch_count_B,
-                            "batch_count_C",
-                            batch_count_C,
                             "alpha",
                             halpha,
                             "beta",
@@ -496,9 +512,9 @@ void testing_spmm_batched_csr(const Arguments& arg)
     CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                       \
-    template void testing_spmm_batched_csr_bad_arg<ITYPE, JTYPE, TTYPE>(const Arguments& arg); \
-    template void testing_spmm_batched_csr<ITYPE, JTYPE, TTYPE>(const Arguments& arg)
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                               \
+    template void testing_spmm_csc_bad_arg<ITYPE, JTYPE, TTYPE>(const Arguments& arg); \
+    template void testing_spmm_csc<ITYPE, JTYPE, TTYPE>(const Arguments& arg)
 
 INSTANTIATE(int32_t, int32_t, float);
 INSTANTIATE(int32_t, int32_t, double);

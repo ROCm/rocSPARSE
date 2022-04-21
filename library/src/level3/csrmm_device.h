@@ -28,16 +28,22 @@
 
 #include "common.h"
 
+template <typename T>
+static ROCSPARSE_DEVICE_ILF T conj_val(T val, bool conj)
+{
+    return conj ? rocsparse_conj(val) : val;
+}
+
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
-static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(rocsparse_operation trans_A,
-                                                        rocsparse_operation trans_B,
-                                                        J                   M,
-                                                        J                   N,
-                                                        J                   K,
-                                                        I                   nnz,
-                                                        J                   offsets_batch_stride_A,
-                                                        I columns_values_batch_stride_A,
-                                                        T alpha,
+static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
+                                                        bool conj_B,
+                                                        J    M,
+                                                        J    N,
+                                                        J    K,
+                                                        I    nnz,
+                                                        I    offsets_batch_stride_A,
+                                                        I    columns_values_batch_stride_A,
+                                                        T    alpha,
                                                         const I* __restrict__ csr_row_ptr,
                                                         const J* __restrict__ csr_col_ind,
                                                         const T* __restrict__ csr_val,
@@ -85,7 +91,8 @@ static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(rocsparse_operation tran
         {
             shared_col[wid][lid]
                 = csr_col_ind[k + columns_values_batch_stride_A * batch] - idx_base;
-            shared_val[wid][lid] = csr_val[k + columns_values_batch_stride_A * batch];
+            shared_val[wid][lid]
+                = conj_val(csr_val[k + columns_values_batch_stride_A * batch], conj_A);
         }
         else
         {
@@ -97,24 +104,12 @@ static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(rocsparse_operation tran
 
         if(col < N)
         {
-            if(trans_B == rocsparse_operation_conjugate_transpose)
+            for(J i = 0; i < WF_SIZE; ++i)
             {
-                for(J i = 0; i < WF_SIZE; ++i)
-                {
-                    sum = rocsparse_fma(
-                        shared_val[wid][i],
-                        rocsparse_conj(B[shared_col[wid][i] + colB + batch_stride_B * batch]),
-                        sum);
-                }
-            }
-            else
-            {
-                for(J i = 0; i < WF_SIZE; ++i)
-                {
-                    sum = rocsparse_fma(shared_val[wid][i],
-                                        B[shared_col[wid][i] + colB + batch_stride_B * batch],
-                                        sum);
-                }
+                sum = rocsparse_fma(
+                    shared_val[wid][i],
+                    conj_val(B[shared_col[wid][i] + colB + batch_stride_B * batch], conj_B),
+                    sum);
             }
         }
     }
@@ -154,17 +149,17 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(rocsparse_operation trans_A,
-                                                             rocsparse_operation trans_B,
-                                                             J                   offset,
-                                                             J                   ncol,
-                                                             J                   M,
-                                                             J                   N,
-                                                             J                   K,
-                                                             I                   nnz,
-                                                             J offsets_batch_stride_A,
-                                                             I columns_values_batch_stride_A,
-                                                             T alpha,
+static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
+                                                             bool conj_B,
+                                                             J    offset,
+                                                             J    ncol,
+                                                             J    M,
+                                                             J    N,
+                                                             J    K,
+                                                             I    nnz,
+                                                             I    offsets_batch_stride_A,
+                                                             I    columns_values_batch_stride_A,
+                                                             T    alpha,
                                                              const I* __restrict__ csr_row_ptr,
                                                              const J* __restrict__ csr_col_ind,
                                                              const T* __restrict__ csr_val,
@@ -223,8 +218,9 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(rocsparse_operation
                       * (rocsparse_nontemporal_load(csr_col_ind + k
                                                     + columns_values_batch_stride_A * batch)
                          - idx_base);
-                shared_val[wid][lid] = rocsparse_nontemporal_load(
-                    csr_val + k + columns_values_batch_stride_A * batch);
+                shared_val[wid][lid] = conj_val(
+                    rocsparse_nontemporal_load(csr_val + k + columns_values_batch_stride_A * batch),
+                    conj_A);
             }
             else
             {
@@ -234,37 +230,18 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(rocsparse_operation
 
             __threadfence_block();
 
-            if(trans_B == rocsparse_operation_conjugate_transpose)
+            for(J i = 0; i < WF_SIZE; ++i)
             {
-                for(J i = 0; i < WF_SIZE; ++i)
-                {
-                    J sc = shared_col[wid][i];
-                    T sv = shared_val[wid][i];
+                J sc = shared_col[wid][i];
+                T sv = shared_val[wid][i];
 
-                    for(J p = 0; p < LOOPS; p++)
-                    {
-                        sum[p]
-                            = rocsparse_fma(sv,
-                                            rocsparse_conj(rocsparse_ldg(B + col + p * WF_SIZE + sc
-                                                                         + batch_stride_B * batch)),
-                                            sum[p]);
-                    }
-                }
-            }
-            else
-            {
-                for(J i = 0; i < WF_SIZE; ++i)
+                for(J p = 0; p < LOOPS; p++)
                 {
-                    J sc = shared_col[wid][i];
-                    T sv = shared_val[wid][i];
-
-                    for(J p = 0; p < LOOPS; p++)
-                    {
-                        sum[p] = rocsparse_fma(
-                            sv,
-                            rocsparse_ldg(B + col + p * WF_SIZE + sc + batch_stride_B * batch),
-                            sum[p]);
-                    }
+                    sum[p] = rocsparse_fma(
+                        sv,
+                        conj_val(rocsparse_ldg(B + col + p * WF_SIZE + sc + batch_stride_B * batch),
+                                 conj_B),
+                        sum[p]);
                 }
             }
         }
@@ -313,15 +290,15 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(rocsparse_operation
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
-static ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(rocsparse_operation trans_A,
-                                                                  rocsparse_operation trans_B,
-                                                                  J                   offset,
-                                                                  J                   ncol,
-                                                                  J                   M,
-                                                                  J                   N,
-                                                                  J                   K,
-                                                                  I                   nnz,
-                                                                  J offsets_batch_stride_A,
+static ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
+                                                                  bool conj_B,
+                                                                  J    offset,
+                                                                  J    ncol,
+                                                                  J    M,
+                                                                  J    N,
+                                                                  J    K,
+                                                                  I    nnz,
+                                                                  I    offsets_batch_stride_A,
                                                                   I columns_values_batch_stride_A,
                                                                   T alpha,
                                                                   const I* __restrict__ csr_row_ptr,
@@ -376,8 +353,9 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(rocsparse_oper
                       * (rocsparse_nontemporal_load(csr_col_ind + k
                                                     + columns_values_batch_stride_A * batch)
                          - idx_base);
-                shared_val[wid][lid] = rocsparse_nontemporal_load(
-                    csr_val + k + columns_values_batch_stride_A * batch);
+                shared_val[wid][lid] = conj_val(
+                    rocsparse_nontemporal_load(csr_val + k + columns_values_batch_stride_A * batch),
+                    conj_A);
             }
             else
             {
@@ -389,26 +367,13 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(rocsparse_oper
 
             if(col < ncol)
             {
-                if(trans_B == rocsparse_operation_conjugate_transpose)
+                for(J i = 0; i < WF_SIZE; ++i)
                 {
-                    for(J i = 0; i < WF_SIZE; ++i)
-                    {
-                        sum = rocsparse_fma(
-                            shared_val[wid][i],
-                            rocsparse_conj(rocsparse_ldg(B + col + shared_col[wid][i]
-                                                         + batch_stride_B * batch)),
-                            sum);
-                    }
-                }
-                else
-                {
-                    for(J i = 0; i < WF_SIZE; ++i)
-                    {
-                        sum = rocsparse_fma(
-                            shared_val[wid][i],
-                            rocsparse_ldg(B + col + shared_col[wid][i] + batch_stride_B * batch),
-                            sum);
-                    }
+                    sum = rocsparse_fma(shared_val[wid][i],
+                                        conj_val(rocsparse_ldg(B + col + shared_col[wid][i]
+                                                               + batch_stride_B * batch),
+                                                 conj_B),
+                                        sum);
                 }
             }
         }
@@ -472,15 +437,15 @@ static ROCSPARSE_DEVICE_ILF void csrmm_scale_device(
 // 2014 20th IEEE International Conference on Parallel and Distributed Systems (ICPADS), 2014, pp. 987-992,
 // doi: 10.1109/PADSW.2014.7097920.
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
-static ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(rocsparse_operation trans_A,
-                                                        rocsparse_operation trans_B,
-                                                        J                   M,
-                                                        J                   N,
-                                                        J                   K,
-                                                        I                   nnz,
-                                                        J                   offsets_batch_stride_A,
-                                                        I columns_values_batch_stride_A,
-                                                        T alpha,
+static ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
+                                                        bool conj_B,
+                                                        J    M,
+                                                        J    N,
+                                                        J    K,
+                                                        I    nnz,
+                                                        I    offsets_batch_stride_A,
+                                                        I    columns_values_batch_stride_A,
+                                                        T    alpha,
                                                         const I* __restrict__ csr_row_ptr,
                                                         const J* __restrict__ csr_col_ind,
                                                         const T* __restrict__ csr_val,
@@ -512,15 +477,8 @@ static ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(rocsparse_operation tran
     J colB = cid * ldb;
 
     __shared__ T shared_B[BLOCKSIZE / WF_SIZE][WF_SIZE];
-    if(trans_B == rocsparse_operation_conjugate_transpose)
-    {
-        shared_B[wid][lid] = (cid < N) ? rocsparse_conj(B[row + colB + batch_stride_B * batch])
-                                       : static_cast<T>(0);
-    }
-    else
-    {
-        shared_B[wid][lid] = (cid < N) ? B[row + colB + batch_stride_B * batch] : static_cast<T>(0);
-    }
+    shared_B[wid][lid]
+        = (cid < N) ? conj_val(B[row + colB + batch_stride_B * batch], conj_B) : static_cast<T>(0);
 
     __threadfence_block();
     I row_start = csr_row_ptr[row + offsets_batch_stride_A * batch] - idx_base;
@@ -529,15 +487,8 @@ static ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(rocsparse_operation tran
     for(I j = row_start + lid; j < row_end; j += WF_SIZE)
     {
         J col = csr_col_ind[j + columns_values_batch_stride_A * batch] - idx_base;
-        T val;
-        if(trans_A == rocsparse_operation_conjugate_transpose)
-        {
-            val = alpha * rocsparse_conj(csr_val[j + columns_values_batch_stride_A * batch]);
-        }
-        else
-        {
-            val = alpha * csr_val[j + columns_values_batch_stride_A * batch];
-        }
+        T val = alpha * conj_val(csr_val[j + columns_values_batch_stride_A * batch], conj_A);
+
         if(order == rocsparse_order_column)
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
@@ -561,15 +512,15 @@ static ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(rocsparse_operation tran
 // 2014 20th IEEE International Conference on Parallel and Distributed Systems (ICPADS), 2014, pp. 987-992,
 // doi: 10.1109/PADSW.2014.7097920.
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
-static ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(rocsparse_operation trans_A,
-                                                        rocsparse_operation trans_B,
-                                                        J                   M,
-                                                        J                   N,
-                                                        J                   K,
-                                                        I                   nnz,
-                                                        J                   offsets_batch_stride_A,
-                                                        I columns_values_batch_stride_A,
-                                                        T alpha,
+static ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
+                                                        bool conj_B,
+                                                        J    M,
+                                                        J    N,
+                                                        J    K,
+                                                        I    nnz,
+                                                        I    offsets_batch_stride_A,
+                                                        I    columns_values_batch_stride_A,
+                                                        T    alpha,
                                                         const I* __restrict__ csr_row_ptr,
                                                         const J* __restrict__ csr_col_ind,
                                                         const T* __restrict__ csr_val,
@@ -600,16 +551,8 @@ static ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(rocsparse_operation tran
 
     __shared__ T shared_B[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
-    if(trans_B == rocsparse_operation_conjugate_transpose)
-    {
-        shared_B[wid][lid] = (cid < N) ? rocsparse_conj(B[ldb * row + cid + batch_stride_B * batch])
-                                       : static_cast<T>(0);
-    }
-    else
-    {
-        shared_B[wid][lid]
-            = (cid < N) ? B[ldb * row + cid + batch_stride_B * batch] : static_cast<T>(0);
-    }
+    shared_B[wid][lid] = (cid < N) ? conj_val(B[ldb * row + cid + batch_stride_B * batch], conj_B)
+                                   : static_cast<T>(0);
 
     __threadfence_block();
     I row_start = csr_row_ptr[row + offsets_batch_stride_A * batch] - idx_base;
@@ -618,16 +561,7 @@ static ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(rocsparse_operation tran
     for(I j = row_start + lid; j < row_end; j += WF_SIZE)
     {
         J col = csr_col_ind[j + columns_values_batch_stride_A * batch] - idx_base;
-        T val;
-
-        if(trans_A == rocsparse_operation_conjugate_transpose)
-        {
-            val = alpha * rocsparse_conj(csr_val[j + columns_values_batch_stride_A * batch]);
-        }
-        else
-        {
-            val = alpha * csr_val[j + columns_values_batch_stride_A * batch];
-        }
+        T val = alpha * conj_val(csr_val[j + columns_values_batch_stride_A * batch], conj_A);
 
         if(order == rocsparse_order_column)
         {

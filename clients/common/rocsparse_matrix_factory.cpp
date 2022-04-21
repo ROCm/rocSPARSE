@@ -177,6 +177,27 @@ void rocsparse_matrix_factory<T, I, J>::init_gebsr(std::vector<I>&      bsr_row_
 }
 
 template <typename T, typename I, typename J>
+void rocsparse_matrix_factory<T, I, J>::init_csc(std::vector<I>&      csc_col_ptr,
+                                                 std::vector<J>&      csc_row_ind,
+                                                 std::vector<T>&      csc_val,
+                                                 J&                   M,
+                                                 J&                   N,
+                                                 I&                   nnz,
+                                                 rocsparse_index_base base)
+{
+    this->m_instance->init_csr(csc_col_ptr,
+                               csc_row_ind,
+                               csc_val,
+                               N,
+                               M,
+                               nnz,
+                               base,
+                               this->m_arg.matrix_type,
+                               this->m_arg.uplo,
+                               this->m_arg.storage);
+}
+
+template <typename T, typename I, typename J>
 void rocsparse_matrix_factory<T, I, J>::init_bsr(std::vector<I>&      bsr_row_ptr,
                                                  std::vector<J>&      bsr_col_ind,
                                                  std::vector<T>&      bsr_val,

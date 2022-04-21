@@ -1387,6 +1387,12 @@ void host_coomv_aos(rocsparse_operation  trans,
     }
 }
 
+template <typename T>
+inline T conj_val(T val, bool conj)
+{
+    return conj ? rocsparse_conj(val) : val;
+}
+
 template <typename I, typename J, typename T>
 static void host_csrmv_general(rocsparse_operation  trans,
                                J                    M,
@@ -1400,8 +1406,11 @@ static void host_csrmv_general(rocsparse_operation  trans,
                                T                    beta,
                                T*                   y,
                                rocsparse_index_base base,
-                               rocsparse_spmv_alg   algo)
+                               rocsparse_spmv_alg   algo,
+                               bool                 force_conj)
 {
+    bool conj = (trans == rocsparse_operation_conjugate_transpose || force_conj);
+
     if(trans == rocsparse_operation_none)
     {
         if(algo == rocsparse_spmv_alg_csr_stream)
@@ -1445,8 +1454,9 @@ static void host_csrmv_general(rocsparse_operation  trans,
                     {
                         if(j + k < row_end)
                         {
-                            sum[k] = std::fma(
-                                alpha * csr_val[j + k], x[csr_col_ind[j + k] - base], sum[k]);
+                            sum[k] = std::fma(alpha * conj_val(csr_val[j + k], conj),
+                                              x[csr_col_ind[j + k] - base],
+                                              sum[k]);
                         }
                     }
                 }
@@ -1485,7 +1495,7 @@ static void host_csrmv_general(rocsparse_operation  trans,
                 for(I j = row_begin; j < row_end; ++j)
                 {
                     T old  = sum;
-                    T prod = alpha * csr_val[j] * x[csr_col_ind[j] - base];
+                    T prod = alpha * conj_val(csr_val[j], conj) * x[csr_col_ind[j] - base];
 
                     sum = sum + prod;
                     err = (old - (sum - (sum - old))) + (prod - (sum - old)) + err;
@@ -1520,9 +1530,7 @@ static void host_csrmv_general(rocsparse_operation  trans,
             for(I j = row_begin; j < row_end; ++j)
             {
                 J col  = csr_col_ind[j] - base;
-                T val  = (trans == rocsparse_operation_conjugate_transpose)
-                             ? rocsparse_conj(csr_val[j])
-                             : csr_val[j];
+                T val  = conj_val(csr_val[j], conj);
                 y[col] = std::fma(val, row_val, y[col]);
             }
         }
@@ -1542,8 +1550,11 @@ static void host_csrmv_symmetric(rocsparse_operation  trans,
                                  T                    beta,
                                  T*                   y,
                                  rocsparse_index_base base,
-                                 rocsparse_spmv_alg   algo)
+                                 rocsparse_spmv_alg   algo,
+                                 bool                 force_conj)
 {
+    bool conj = (trans == rocsparse_operation_conjugate_transpose || force_conj);
+
     if(algo == rocsparse_spmv_alg_csr_stream || trans != rocsparse_operation_none)
     {
         // Get device properties
@@ -1585,9 +1596,7 @@ static void host_csrmv_symmetric(rocsparse_operation  trans,
                 {
                     if(j + k < row_end)
                     {
-                        T val  = (trans == rocsparse_operation_conjugate_transpose)
-                                     ? rocsparse_conj(csr_val[j + k])
-                                     : csr_val[j + k];
+                        T val  = conj_val(csr_val[j + k], conj);
                         sum[k] = std::fma(alpha * val, x[csr_col_ind[j + k] - base], sum[k]);
                     }
                 }
@@ -1621,9 +1630,7 @@ static void host_csrmv_symmetric(rocsparse_operation  trans,
             {
                 if((csr_col_ind[j] - base) != i)
                 {
-                    y[csr_col_ind[j] - base] += (trans == rocsparse_operation_conjugate_transpose)
-                                                    ? rocsparse_conj(csr_val[j]) * x_val
-                                                    : csr_val[j] * x_val;
+                    y[csr_col_ind[j] - base] += conj_val(csr_val[j], conj) * x_val;
                 }
             }
         }
@@ -1653,7 +1660,7 @@ static void host_csrmv_symmetric(rocsparse_operation  trans,
             for(I j = row_begin; j < row_end; ++j)
             {
                 T old  = sum;
-                T prod = alpha * csr_val[j] * x[csr_col_ind[j] - base];
+                T prod = alpha * conj_val(csr_val[j], conj) * x[csr_col_ind[j] - base];
 
                 sum = sum + prod;
                 err = (old - (sum - (sum - old))) + (prod - (sum - old)) + err;
@@ -1672,7 +1679,7 @@ static void host_csrmv_symmetric(rocsparse_operation  trans,
             {
                 if((csr_col_ind[j] - base) != i)
                 {
-                    y[csr_col_ind[j] - base] += csr_val[j] * x_val;
+                    y[csr_col_ind[j] - base] += conj_val(csr_val[j], conj) * x_val;
                 }
             }
         }
@@ -1693,21 +1700,121 @@ void host_csrmv(rocsparse_operation   trans,
                 T*                    y,
                 rocsparse_index_base  base,
                 rocsparse_matrix_type matrix_type,
-                rocsparse_spmv_alg    algo)
+                rocsparse_spmv_alg    algo,
+                bool                  force_conj)
 {
     switch(matrix_type)
     {
     case rocsparse_matrix_type_symmetric:
     {
-        host_csrmv_symmetric(
-            trans, M, N, nnz, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y, base, algo);
+        host_csrmv_symmetric(trans,
+                             M,
+                             N,
+                             nnz,
+                             alpha,
+                             csr_row_ptr,
+                             csr_col_ind,
+                             csr_val,
+                             x,
+                             beta,
+                             y,
+                             base,
+                             algo,
+                             force_conj);
         break;
     }
     default:
     {
-        host_csrmv_general(
-            trans, M, N, nnz, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y, base, algo);
+        host_csrmv_general(trans,
+                           M,
+                           N,
+                           nnz,
+                           alpha,
+                           csr_row_ptr,
+                           csr_col_ind,
+                           csr_val,
+                           x,
+                           beta,
+                           y,
+                           base,
+                           algo,
+                           force_conj);
         break;
+    }
+    }
+}
+
+template <typename I, typename J, typename T>
+void host_cscmv(rocsparse_operation trans,
+                J                   M,
+                J                   N,
+                I                   nnz,
+                T                   alpha,
+                const I* __restrict__ csc_col_ptr,
+                const J* __restrict__ csc_row_ind,
+                const T* __restrict__ csc_val,
+                const T* __restrict__ x,
+                T beta,
+                T* __restrict__ y,
+                rocsparse_index_base  base,
+                rocsparse_matrix_type matrix_type,
+                rocsparse_spmv_alg    algo)
+{
+    switch(trans)
+    {
+    case rocsparse_operation_none:
+    {
+        return host_csrmv(rocsparse_operation_transpose,
+                          N,
+                          M,
+                          nnz,
+                          alpha,
+                          csc_col_ptr,
+                          csc_row_ind,
+                          csc_val,
+                          x,
+                          beta,
+                          y,
+                          base,
+                          matrix_type,
+                          algo,
+                          false);
+    }
+    case rocsparse_operation_transpose:
+    {
+        return host_csrmv(rocsparse_operation_none,
+                          N,
+                          M,
+                          nnz,
+                          alpha,
+                          csc_col_ptr,
+                          csc_row_ind,
+                          csc_val,
+                          x,
+                          beta,
+                          y,
+                          base,
+                          matrix_type,
+                          algo,
+                          false);
+    }
+    case rocsparse_operation_conjugate_transpose:
+    {
+        return host_csrmv(rocsparse_operation_none,
+                          N,
+                          M,
+                          nnz,
+                          alpha,
+                          csc_col_ptr,
+                          csc_row_ind,
+                          csc_val,
+                          x,
+                          beta,
+                          y,
+                          base,
+                          matrix_type,
+                          algo,
+                          true);
     }
     }
 }
@@ -2378,8 +2485,12 @@ void host_csrmm(J                    M,
                 T*                   C,
                 J                    ldc,
                 rocsparse_order      order,
-                rocsparse_index_base base)
+                rocsparse_index_base base,
+                bool                 force_conj_A)
 {
+    bool conj_A = (transA == rocsparse_operation_conjugate_transpose || force_conj_A);
+    bool conj_B = (transB == rocsparse_operation_conjugate_transpose);
+
     if(transA == rocsparse_operation_none)
     {
 #ifdef _OPENMP
@@ -2409,14 +2520,7 @@ void host_csrmm(J                    M,
                         idx_B = (j + (csr_col_ind_A[k] - base) * ldb);
                     }
 
-                    if(transB == rocsparse_operation_conjugate_transpose)
-                    {
-                        sum = std::fma(csr_val_A[k], rocsparse_conj(B[idx_B]), sum);
-                    }
-                    else
-                    {
-                        sum = std::fma(csr_val_A[k], B[idx_B], sum);
-                    }
+                    sum = std::fma(conj_val(csr_val_A[k], conj_A), conj_val(B[idx_B], conj_B), sum);
                 }
 
                 J idx_C = (order == rocsparse_order_column) ? i + j * ldc : i * ldc + j;
@@ -2454,11 +2558,7 @@ void host_csrmm(J                    M,
                 for(I k = row_begin; k < row_end; ++k)
                 {
                     J col = csr_col_ind_A[k] - base;
-                    T val = csr_val_A[k];
-                    if(transA == rocsparse_operation_conjugate_transpose)
-                    {
-                        val = rocsparse_conj(val);
-                    }
+                    T val = conj_val(csr_val_A[k], conj_A);
 
                     J idx_B = 0;
 
@@ -2475,14 +2575,8 @@ void host_csrmm(J                    M,
                     }
 
                     J idx_C = (order == rocsparse_order_column) ? col + j * ldc : col * ldc + j;
-                    if(transB == rocsparse_operation_conjugate_transpose)
-                    {
-                        C[idx_C] += alpha * val * rocsparse_conj(B[idx_B]);
-                    }
-                    else
-                    {
-                        C[idx_C] += alpha * val * B[idx_B];
-                    }
+
+                    C[idx_C] += alpha * val * conj_val(B[idx_B], conj_B);
                 }
             }
         }
@@ -2494,7 +2588,7 @@ void host_csrmm_batched(J                    M,
                         J                    N,
                         J                    K,
                         J                    batch_count_A,
-                        J                    offsets_batch_stride_A,
+                        I                    offsets_batch_stride_A,
                         I                    columns_values_batch_stride_A,
                         rocsparse_operation  transA,
                         rocsparse_operation  transB,
@@ -2512,7 +2606,8 @@ void host_csrmm_batched(J                    M,
                         J                    batch_count_C,
                         I                    batch_stride_C,
                         rocsparse_order      order,
-                        rocsparse_index_base base)
+                        rocsparse_index_base base,
+                        bool                 force_conj_A)
 {
     const bool Ci_A_Bi  = (batch_count_A == 1 && batch_count_B == batch_count_C);
     const bool Ci_Ai_B  = (batch_count_B == 1 && batch_count_A == batch_count_C);
@@ -2542,7 +2637,8 @@ void host_csrmm_batched(J                    M,
                        C + batch_stride_C * i,
                        ldc,
                        order,
-                       base);
+                       base,
+                       force_conj_A);
         }
     }
     else if(Ci_Ai_B)
@@ -2564,7 +2660,8 @@ void host_csrmm_batched(J                    M,
                        C + batch_stride_C * i,
                        ldc,
                        order,
-                       base);
+                       base,
+                       force_conj_A);
         }
     }
     else if(Ci_Ai_Bi)
@@ -2586,7 +2683,8 @@ void host_csrmm_batched(J                    M,
                        C + batch_stride_C * i,
                        ldc,
                        order,
-                       base);
+                       base,
+                       force_conj_A);
         }
     }
 }
@@ -2750,6 +2848,200 @@ void host_coomm_batched(I                    M,
                        order,
                        base);
         }
+    }
+}
+
+template <typename T, typename I, typename J>
+void host_cscmm(J                   M,
+                J                   N,
+                J                   K,
+                rocsparse_operation transA,
+                rocsparse_operation transB,
+                T                   alpha,
+                const I* __restrict__ csc_col_ptr_A,
+                const J* __restrict__ csc_row_ind_A,
+                const T* __restrict__ csc_val_A,
+                const T* __restrict__ B,
+                J ldb,
+                T beta,
+                T* __restrict__ C,
+                J                    ldc,
+                rocsparse_order      order,
+                rocsparse_index_base base)
+{
+    switch(transA)
+    {
+    case rocsparse_operation_none:
+    {
+        return host_csrmm(K,
+                          N,
+                          M,
+                          rocsparse_operation_transpose,
+                          transB,
+                          alpha,
+                          csc_col_ptr_A,
+                          csc_row_ind_A,
+                          csc_val_A,
+                          B,
+                          ldb,
+                          beta,
+                          C,
+                          ldc,
+                          order,
+                          base,
+                          false);
+    }
+    case rocsparse_operation_transpose:
+    {
+        return host_csrmm(K,
+                          N,
+                          M,
+                          rocsparse_operation_none,
+                          transB,
+                          alpha,
+                          csc_col_ptr_A,
+                          csc_row_ind_A,
+                          csc_val_A,
+                          B,
+                          ldb,
+                          beta,
+                          C,
+                          ldc,
+                          order,
+                          base,
+                          false);
+    }
+    case rocsparse_operation_conjugate_transpose:
+    {
+        return host_csrmm(K,
+                          N,
+                          M,
+                          rocsparse_operation_none,
+                          transB,
+                          alpha,
+                          csc_col_ptr_A,
+                          csc_row_ind_A,
+                          csc_val_A,
+                          B,
+                          ldb,
+                          beta,
+                          C,
+                          ldc,
+                          order,
+                          base,
+                          true);
+    }
+    }
+}
+
+template <typename T, typename I, typename J>
+void host_cscmm_batched(J                    M,
+                        J                    N,
+                        J                    K,
+                        J                    batch_count_A,
+                        I                    offsets_batch_stride_A,
+                        I                    rows_values_batch_stride_A,
+                        rocsparse_operation  transA,
+                        rocsparse_operation  transB,
+                        T                    alpha,
+                        const I*             csc_col_ptr_A,
+                        const J*             csc_row_ind_A,
+                        const T*             csc_val_A,
+                        const T*             B,
+                        J                    ldb,
+                        J                    batch_count_B,
+                        I                    batch_stride_B,
+                        T                    beta,
+                        T*                   C,
+                        J                    ldc,
+                        J                    batch_count_C,
+                        I                    batch_stride_C,
+                        rocsparse_order      order,
+                        rocsparse_index_base base)
+{
+    switch(transA)
+    {
+    case rocsparse_operation_none:
+    {
+        return host_csrmm_batched(K,
+                                  N,
+                                  M,
+                                  batch_count_A,
+                                  offsets_batch_stride_A,
+                                  rows_values_batch_stride_A,
+                                  rocsparse_operation_transpose,
+                                  transB,
+                                  alpha,
+                                  csc_col_ptr_A,
+                                  csc_row_ind_A,
+                                  csc_val_A,
+                                  B,
+                                  ldb,
+                                  batch_count_B,
+                                  batch_stride_B,
+                                  beta,
+                                  C,
+                                  ldc,
+                                  batch_count_C,
+                                  batch_stride_C,
+                                  order,
+                                  base,
+                                  false);
+    }
+    case rocsparse_operation_transpose:
+    {
+        return host_csrmm_batched(K,
+                                  N,
+                                  M,
+                                  batch_count_A,
+                                  offsets_batch_stride_A,
+                                  rows_values_batch_stride_A,
+                                  rocsparse_operation_none,
+                                  transB,
+                                  alpha,
+                                  csc_col_ptr_A,
+                                  csc_row_ind_A,
+                                  csc_val_A,
+                                  B,
+                                  ldb,
+                                  batch_count_B,
+                                  batch_stride_B,
+                                  beta,
+                                  C,
+                                  ldc,
+                                  batch_count_C,
+                                  batch_stride_C,
+                                  order,
+                                  base,
+                                  false);
+    }
+    case rocsparse_operation_conjugate_transpose:
+    {
+        return host_csrmm_batched(K,
+                                  N,
+                                  M,
+                                  batch_count_A,
+                                  offsets_batch_stride_A,
+                                  rows_values_batch_stride_A,
+                                  rocsparse_operation_none,
+                                  transB,
+                                  alpha,
+                                  csc_col_ptr_A,
+                                  csc_row_ind_A,
+                                  csc_val_A,
+                                  B,
+                                  ldb,
+                                  batch_count_B,
+                                  batch_stride_B,
+                                  beta,
+                                  C,
+                                  ldc,
+                                  batch_count_C,
+                                  batch_stride_C,
+                                  order,
+                                  base,
+                                  true);
+    }
     }
 }
 
@@ -8946,6 +9238,21 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                   TTYPE*                y,                     \
                                                   rocsparse_index_base  base,                  \
                                                   rocsparse_matrix_type matrix_type,           \
+                                                  rocsparse_spmv_alg    algo,                  \
+                                                  bool                  force_conj);                            \
+    template void host_cscmv<ITYPE, JTYPE, TTYPE>(rocsparse_operation   trans,                 \
+                                                  JTYPE                 M,                     \
+                                                  JTYPE                 N,                     \
+                                                  ITYPE                 nnz,                   \
+                                                  TTYPE                 alpha,                 \
+                                                  const ITYPE*          csc_col_ptr,           \
+                                                  const JTYPE*          csc_row_ind,           \
+                                                  const TTYPE*          csc_val,               \
+                                                  const TTYPE*          x,                     \
+                                                  TTYPE                 beta,                  \
+                                                  TTYPE*                y,                     \
+                                                  rocsparse_index_base  base,                  \
+                                                  rocsparse_matrix_type matrix_type,           \
                                                   rocsparse_spmv_alg    algo);                    \
     template void host_csrmm<TTYPE, ITYPE, JTYPE>(JTYPE                M,                      \
                                                   JTYPE                N,                      \
@@ -8962,12 +9269,13 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                   TTYPE*               C,                      \
                                                   JTYPE                ldc,                    \
                                                   rocsparse_order      order,                  \
-                                                  rocsparse_index_base base);                  \
+                                                  rocsparse_index_base base,                   \
+                                                  bool                 force_conj_A);                          \
     template void host_csrmm_batched<TTYPE, ITYPE, JTYPE>(JTYPE M,                             \
                                                           JTYPE N,                             \
                                                           JTYPE K,                             \
                                                           JTYPE batch_count_A,                 \
-                                                          JTYPE offsets_batch_stride_A,        \
+                                                          ITYPE offsets_batch_stride_A,        \
                                                           ITYPE columns_values_batch_stride_A, \
                                                           rocsparse_operation  transA,         \
                                                           rocsparse_operation  transB,         \
@@ -8975,6 +9283,46 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                           const ITYPE*         csr_row_ptr_A,  \
                                                           const JTYPE*         csr_col_ind_A,  \
                                                           const TTYPE*         csr_val_A,      \
+                                                          const TTYPE*         B,              \
+                                                          JTYPE                ldb,            \
+                                                          JTYPE                batch_count_B,  \
+                                                          ITYPE                batch_stride_B, \
+                                                          TTYPE                beta,           \
+                                                          TTYPE*               C,              \
+                                                          JTYPE                ldc,            \
+                                                          JTYPE                batch_count_C,  \
+                                                          ITYPE                batch_stride_C, \
+                                                          rocsparse_order      order,          \
+                                                          rocsparse_index_base base,           \
+                                                          bool                 force_conj_A);                  \
+    template void host_cscmm<TTYPE, ITYPE, JTYPE>(JTYPE                M,                      \
+                                                  JTYPE                N,                      \
+                                                  JTYPE                K,                      \
+                                                  rocsparse_operation  transA,                 \
+                                                  rocsparse_operation  transB,                 \
+                                                  TTYPE                alpha,                  \
+                                                  const ITYPE*         csc_col_ptr_A,          \
+                                                  const JTYPE*         csc_row_ind_A,          \
+                                                  const TTYPE*         csc_val_A,              \
+                                                  const TTYPE*         B,                      \
+                                                  JTYPE                ldb,                    \
+                                                  TTYPE                beta,                   \
+                                                  TTYPE*               C,                      \
+                                                  JTYPE                ldc,                    \
+                                                  rocsparse_order      order,                  \
+                                                  rocsparse_index_base base);                  \
+    template void host_cscmm_batched<TTYPE, ITYPE, JTYPE>(JTYPE M,                             \
+                                                          JTYPE N,                             \
+                                                          JTYPE K,                             \
+                                                          JTYPE batch_count_A,                 \
+                                                          ITYPE offsets_batch_stride_A,        \
+                                                          ITYPE rows_values_batch_stride_A,    \
+                                                          rocsparse_operation  transA,         \
+                                                          rocsparse_operation  transB,         \
+                                                          TTYPE                alpha,          \
+                                                          const ITYPE*         csc_col_ptr_A,  \
+                                                          const JTYPE*         csc_row_ind_A,  \
+                                                          const TTYPE*         csc_val_A,      \
                                                           const TTYPE*         B,              \
                                                           JTYPE                ldb,            \
                                                           JTYPE                batch_count_B,  \

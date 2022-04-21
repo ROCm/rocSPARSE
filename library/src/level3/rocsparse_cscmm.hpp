@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,15 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CSRMM_HPP
-#define ROCSPARSE_CSRMM_HPP
+#ifndef ROCSPARSE_CSCMM_HPP
+#define ROCSPARSE_CSCMM_HPP
 
 #include "handle.h"
 
-typedef enum rocsparse_csrmm_alg_
-{
-    rocsparse_csrmm_alg_default = 0,
-    rocsparse_csrmm_alg_row_split,
-    rocsparse_csrmm_alg_merge
-} rocsparse_csrmm_alg;
+#include "rocsparse_csrmm.hpp"
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          handle,
+rocsparse_status rocsparse_cscmm_buffer_size_template(rocsparse_handle          handle,
                                                       rocsparse_operation       trans_A,
                                                       rocsparse_csrmm_alg       alg,
                                                       J                         m,
@@ -44,13 +39,13 @@ rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          
                                                       J                         k,
                                                       I                         nnz,
                                                       const rocsparse_mat_descr descr,
-                                                      const T*                  csr_val,
-                                                      const I*                  csr_row_ptr,
-                                                      const J*                  csr_col_ind,
+                                                      const T*                  csc_val,
+                                                      const I*                  csc_col_ptr,
+                                                      const J*                  csc_row_ind,
                                                       size_t*                   buffer_size);
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          handle,
+rocsparse_status rocsparse_cscmm_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_csrmm_alg       alg,
                                                    J                         m,
@@ -58,43 +53,13 @@ rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          han
                                                    J                         k,
                                                    I                         nnz,
                                                    const rocsparse_mat_descr descr,
-                                                   const T*                  csr_val,
-                                                   const I*                  csr_row_ptr,
-                                                   const J*                  csr_col_ind,
+                                                   const T*                  csc_val,
+                                                   const I*                  csc_col_ptr,
+                                                   const J*                  csc_row_ind,
                                                    void*                     temp_buffer);
 
-template <typename I, typename J, typename T, typename U>
-rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
-                                                   rocsparse_operation trans_A,
-                                                   rocsparse_operation trans_B,
-                                                   rocsparse_order     order,
-                                                   rocsparse_csrmm_alg alg,
-                                                   J                   m,
-                                                   J                   n,
-                                                   J                   k,
-                                                   I                   nnz,
-                                                   J                   batch_count_A,
-                                                   I                   offsets_batch_stride_A,
-                                                   I columns_values_batch_stride_A,
-                                                   U alpha_device_host,
-                                                   const rocsparse_mat_descr descr,
-                                                   const T*                  csr_val,
-                                                   const I*                  csr_row_ptr,
-                                                   const J*                  csr_col_ind,
-                                                   const T*                  B,
-                                                   J                         ldb,
-                                                   J                         batch_count_B,
-                                                   I                         batch_stride_B,
-                                                   U                         beta_device_host,
-                                                   T*                        C,
-                                                   J                         ldc,
-                                                   J                         batch_count_C,
-                                                   I                         batch_stride_C,
-                                                   void*                     temp_buffer,
-                                                   bool                      force_conj_A);
-
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
+rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_A,
                                           rocsparse_operation       trans_B,
                                           rocsparse_order           order_B,
@@ -106,12 +71,12 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           I                         nnz,
                                           J                         batch_count_A,
                                           I                         offsets_batch_stride_A,
-                                          I                         columns_values_batch_stride_A,
+                                          I                         rows_values_batch_stride_A,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T*                  csr_val,
-                                          const I*                  csr_row_ptr,
-                                          const J*                  csr_col_ind,
+                                          const T*                  csc_val,
+                                          const I*                  csc_col_ptr,
+                                          const J*                  csc_row_ind,
                                           const T*                  B,
                                           J                         ldb,
                                           J                         batch_count_B,
@@ -121,7 +86,6 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           J                         ldc,
                                           J                         batch_count_C,
                                           I                         batch_stride_C,
-                                          void*                     temp_buffer,
-                                          bool                      force_conj_A);
+                                          void*                     temp_buffer);
 
-#endif // ROCSPARSE_CSRMM_HPP
+#endif // ROCSPARSE_CSCMM_HPP

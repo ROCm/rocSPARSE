@@ -363,7 +363,8 @@ void testing_csrmm(const Arguments& arg)
                                                         hC,
                                                         hC.ld,
                                                         order,
-                                                        base);
+                                                        base,
+                                                        false);
             hC.near_check(dC);
             dC = hC_copy;
         }

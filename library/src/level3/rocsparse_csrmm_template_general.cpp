@@ -44,15 +44,15 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmmnn_general_kernel(rocsparse_operation trans_A,
-                                rocsparse_operation trans_B,
-                                J                   m,
-                                J                   n,
-                                J                   k,
-                                I                   nnz,
-                                J                   offsets_batch_stride_A,
-                                I                   columns_values_batch_stride_A,
-                                U                   alpha_device_host,
+    void csrmmnn_general_kernel(bool conj_A,
+                                bool conj_B,
+                                J    m,
+                                J    n,
+                                J    k,
+                                I    nnz,
+                                I    offsets_batch_stride_A,
+                                I    columns_values_batch_stride_A,
+                                U    alpha_device_host,
                                 const I* __restrict__ csr_row_ptr,
                                 const J* __restrict__ csr_col_ind,
                                 const T* __restrict__ csr_val,
@@ -74,8 +74,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         return;
     }
 
-    csrmmnn_general_device<BLOCKSIZE, WF_SIZE>(trans_A,
-                                               trans_B,
+    csrmmnn_general_device<BLOCKSIZE, WF_SIZE>(conj_A,
+                                               conj_B,
                                                m,
                                                n,
                                                k,
@@ -105,17 +105,17 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmmnt_general_main_kernel(rocsparse_operation trans_A,
-                                     rocsparse_operation trans_B,
-                                     J                   offset,
-                                     J                   ncol,
-                                     J                   m,
-                                     J                   n,
-                                     J                   k,
-                                     I                   nnz,
-                                     J                   offsets_batch_stride_A,
-                                     I                   columns_values_batch_stride_A,
-                                     U                   alpha_device_host,
+    void csrmmnt_general_main_kernel(bool conj_A,
+                                     bool conj_B,
+                                     J    offset,
+                                     J    ncol,
+                                     J    m,
+                                     J    n,
+                                     J    k,
+                                     I    nnz,
+                                     I    offsets_batch_stride_A,
+                                     I    columns_values_batch_stride_A,
+                                     U    alpha_device_host,
                                      const I* __restrict__ csr_row_ptr,
                                      const J* __restrict__ csr_col_ind,
                                      const T* __restrict__ csr_val,
@@ -136,8 +136,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     {
         return;
     }
-    csrmmnt_general_main_device<BLOCKSIZE, WF_SIZE, LOOPS>(trans_A,
-                                                           trans_B,
+    csrmmnt_general_main_device<BLOCKSIZE, WF_SIZE, LOOPS>(conj_A,
+                                                           conj_B,
                                                            offset,
                                                            ncol,
                                                            m,
@@ -168,17 +168,17 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmmnt_general_remainder_kernel(rocsparse_operation trans_A,
-                                          rocsparse_operation trans_B,
-                                          J                   offset,
-                                          J                   ncol,
-                                          J                   m,
-                                          J                   n,
-                                          J                   k,
-                                          I                   nnz,
-                                          J                   offsets_batch_stride_A,
-                                          I                   columns_values_batch_stride_A,
-                                          U                   alpha_device_host,
+    void csrmmnt_general_remainder_kernel(bool conj_A,
+                                          bool conj_B,
+                                          J    offset,
+                                          J    ncol,
+                                          J    m,
+                                          J    n,
+                                          J    k,
+                                          I    nnz,
+                                          I    offsets_batch_stride_A,
+                                          I    columns_values_batch_stride_A,
+                                          U    alpha_device_host,
                                           const I* __restrict__ csr_row_ptr,
                                           const J* __restrict__ csr_col_ind,
                                           const T* __restrict__ csr_val,
@@ -199,8 +199,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     {
         return;
     }
-    csrmmnt_general_remainder_device<BLOCKSIZE, WF_SIZE>(trans_A,
-                                                         trans_B,
+    csrmmnt_general_remainder_device<BLOCKSIZE, WF_SIZE>(conj_A,
+                                                         conj_B,
                                                          offset,
                                                          ncol,
                                                          m,
@@ -231,15 +231,15 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmmtn_general_kernel(rocsparse_operation trans_A,
-                                rocsparse_operation trans_B,
-                                J                   m,
-                                J                   n,
-                                J                   k,
-                                I                   nnz,
-                                J                   offsets_batch_stride_A,
-                                I                   columns_values_batch_stride_A,
-                                U                   alpha_device_host,
+    void csrmmtn_general_kernel(bool conj_A,
+                                bool conj_B,
+                                J    m,
+                                J    n,
+                                J    k,
+                                I    nnz,
+                                I    offsets_batch_stride_A,
+                                I    columns_values_batch_stride_A,
+                                U    alpha_device_host,
                                 const I* __restrict__ csr_row_ptr,
                                 const J* __restrict__ csr_col_ind,
                                 const T* __restrict__ csr_val,
@@ -260,8 +260,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     {
         return;
     }
-    csrmmtn_general_device<BLOCKSIZE, WF_SIZE>(trans_A,
-                                               trans_B,
+    csrmmtn_general_device<BLOCKSIZE, WF_SIZE>(conj_A,
+                                               conj_B,
                                                m,
                                                n,
                                                k,
@@ -290,15 +290,15 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmmtt_general_kernel(rocsparse_operation trans_A,
-                                rocsparse_operation trans_B,
-                                J                   m,
-                                J                   n,
-                                J                   k,
-                                I                   nnz,
-                                J                   offsets_batch_stride_A,
-                                I                   columns_values_batch_stride_A,
-                                U                   alpha_device_host,
+    void csrmmtt_general_kernel(bool conj_A,
+                                bool conj_B,
+                                J    m,
+                                J    n,
+                                J    k,
+                                I    nnz,
+                                I    offsets_batch_stride_A,
+                                I    columns_values_batch_stride_A,
+                                U    alpha_device_host,
                                 const I* __restrict__ csr_row_ptr,
                                 const J* __restrict__ csr_col_ind,
                                 const T* __restrict__ csr_val,
@@ -319,8 +319,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     {
         return;
     }
-    csrmmtt_general_device<BLOCKSIZE, WF_SIZE>(trans_A,
-                                               trans_B,
+    csrmmtt_general_device<BLOCKSIZE, WF_SIZE>(conj_A,
+                                               conj_B,
                                                m,
                                                n,
                                                k,
@@ -342,43 +342,14 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                                                idx_base);
 }
 
-#define LAUNCH_CSRMMNN_GENERAL_KERNEL(CSRMMNN_DIM, WF_SIZE)                              \
-    hipLaunchKernelGGL(                                                                  \
-        (csrmmnn_general_kernel<CSRMMNN_DIM, WF_SIZE>),                                  \
-        dim3((WF_SIZE * m - 1) / CSRMMNN_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C), \
-        dim3(CSRMMNN_DIM),                                                               \
-        0,                                                                               \
-        stream,                                                                          \
-        trans_A,                                                                         \
-        trans_B,                                                                         \
-        m,                                                                               \
-        n,                                                                               \
-        k,                                                                               \
-        nnz,                                                                             \
-        offsets_batch_stride_A,                                                          \
-        columns_values_batch_stride_A,                                                   \
-        alpha_device_host,                                                               \
-        csr_row_ptr,                                                                     \
-        csr_col_ind,                                                                     \
-        csr_val,                                                                         \
-        B,                                                                               \
-        ldb,                                                                             \
-        batch_stride_B,                                                                  \
-        beta_device_host,                                                                \
-        C,                                                                               \
-        ldc,                                                                             \
-        batch_stride_C,                                                                  \
-        order,                                                                           \
-        descr->base);
-
 #define LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(CSRMMNT_DIM, WF_SIZE, LOOPS)            \
     hipLaunchKernelGGL((csrmmnt_general_main_kernel<CSRMMNT_DIM, WF_SIZE, LOOPS>), \
                        dim3((WF_SIZE * m - 1) / CSRMMNT_DIM + 1, batch_count_C),   \
                        dim3(CSRMMNT_DIM),                                          \
                        0,                                                          \
-                       stream,                                                     \
-                       trans_A,                                                    \
-                       trans_B,                                                    \
+                       handle->stream,                                             \
+                       conj_A,                                                     \
+                       conj_B,                                                     \
                        (J)0,                                                       \
                        main,                                                       \
                        m,                                                          \
@@ -406,9 +377,9 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                        dim3((WF_SIZE * m - 1) / CSRMMNT_DIM + 1, batch_count_C), \
                        dim3(CSRMMNT_DIM),                                        \
                        0,                                                        \
-                       stream,                                                   \
-                       trans_A,                                                  \
-                       trans_B,                                                  \
+                       handle->stream,                                           \
+                       conj_A,                                                   \
+                       conj_B,                                                   \
                        main,                                                     \
                        n,                                                        \
                        m,                                                        \
@@ -432,6 +403,478 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                        descr->base);
 
 template <typename I, typename J, typename T, typename U>
+rocsparse_status rocsparse_csrmmnn_template_general(rocsparse_handle handle,
+                                                    rocsparse_order  order,
+                                                    bool             conj_A,
+                                                    bool             conj_B,
+                                                    J                m,
+                                                    J                n,
+                                                    J                k,
+                                                    I                nnz,
+                                                    J                batch_count_A,
+                                                    I                offsets_batch_stride_A,
+                                                    I                columns_values_batch_stride_A,
+                                                    U                alpha_device_host,
+                                                    const rocsparse_mat_descr descr,
+                                                    const T*                  csr_val,
+                                                    const I*                  csr_row_ptr,
+                                                    const J*                  csr_col_ind,
+                                                    const T*                  B,
+                                                    J                         ldb,
+                                                    J                         batch_count_B,
+                                                    I                         batch_stride_B,
+                                                    U                         beta_device_host,
+                                                    T*                        C,
+                                                    J                         ldc,
+                                                    J                         batch_count_C,
+                                                    I                         batch_stride_C)
+{
+#define CSRMMNN_DIM 256
+#define WF_SIZE 8
+    hipLaunchKernelGGL(
+        (csrmmnn_general_kernel<CSRMMNN_DIM, WF_SIZE>),
+        dim3((WF_SIZE * m - 1) / CSRMMNN_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
+        dim3(CSRMMNN_DIM),
+        0,
+        handle->stream,
+        conj_A,
+        conj_B,
+        m,
+        n,
+        k,
+        nnz,
+        offsets_batch_stride_A,
+        columns_values_batch_stride_A,
+        alpha_device_host,
+        csr_row_ptr,
+        csr_col_ind,
+        csr_val,
+        B,
+        ldb,
+        batch_stride_B,
+        beta_device_host,
+        C,
+        ldc,
+        batch_stride_C,
+        order,
+        descr->base);
+#undef CSRMMNN_DIM
+#undef WF_SIZE
+
+    return rocsparse_status_success;
+}
+
+template <typename I, typename J, typename T, typename U>
+rocsparse_status rocsparse_csrmmnt_template_general(rocsparse_handle handle,
+                                                    rocsparse_order  order,
+                                                    bool             conj_A,
+                                                    bool             conj_B,
+                                                    J                m,
+                                                    J                n,
+                                                    J                k,
+                                                    I                nnz,
+                                                    J                batch_count_A,
+                                                    I                offsets_batch_stride_A,
+                                                    I                columns_values_batch_stride_A,
+                                                    U                alpha_device_host,
+                                                    const rocsparse_mat_descr descr,
+                                                    const T*                  csr_val,
+                                                    const I*                  csr_row_ptr,
+                                                    const J*                  csr_col_ind,
+                                                    const T*                  B,
+                                                    J                         ldb,
+                                                    J                         batch_count_B,
+                                                    I                         batch_stride_B,
+                                                    U                         beta_device_host,
+                                                    T*                        C,
+                                                    J                         ldc,
+                                                    J                         batch_count_C,
+                                                    I                         batch_stride_C)
+{
+    // Average nnz per row of A
+    I avg_row_nnz = (nnz - 1) / m + 1;
+
+    J main      = 0;
+    J remainder = 0;
+
+    // Launch appropriate kernel depending on row nnz of A
+    if(avg_row_nnz < 16)
+    {
+        if(n >= 128)
+        {
+            remainder = n % (8 * 16);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(128, 8, 16);
+        }
+        else if(n >= 64)
+        {
+            remainder = n % (8 * 8);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 8, 8);
+        }
+        else if(n >= 32)
+        {
+            remainder = n % (8 * 4);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 8, 4);
+        }
+        else if(n >= 16)
+        {
+            remainder = n % (8 * 2);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 8, 2);
+        }
+        else if(n >= 8)
+        {
+            remainder = n % (8 * 1);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 8, 1);
+        }
+        else
+        {
+            remainder = n;
+        }
+    }
+    else if(avg_row_nnz < 32)
+    {
+        if(n >= 256)
+        {
+            remainder = n % (16 * 16);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(128, 16, 16);
+        }
+        else if(n >= 128)
+        {
+            remainder = n % (16 * 8);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 16, 8);
+        }
+        else if(n >= 64)
+        {
+            remainder = n % (16 * 4);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 16, 4);
+        }
+        else if(n >= 32)
+        {
+            remainder = n % (16 * 2);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 16, 2);
+        }
+        else if(n >= 16)
+        {
+            remainder = n % (16 * 1);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 16, 1);
+        }
+        else
+        {
+            remainder = n;
+        }
+    }
+    else if(avg_row_nnz < 64 || handle->wavefront_size == 32)
+    {
+        if(n >= 512)
+        {
+            remainder = n % (32 * 16);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(128, 32, 16);
+        }
+        else if(n >= 256)
+        {
+            remainder = n % (32 * 8);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 32, 8);
+        }
+        else if(n >= 128)
+        {
+            remainder = n % (32 * 4);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 32, 4);
+        }
+        else if(n >= 64)
+        {
+            remainder = n % (32 * 2);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 32, 2);
+        }
+        else if(n >= 32)
+        {
+            remainder = n % (32 * 1);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 32, 1);
+        }
+        else
+        {
+            remainder = n;
+        }
+    }
+    else if(handle->wavefront_size == 64)
+    {
+        if(n >= 512)
+        {
+            remainder = n % (64 * 8);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 64, 8);
+        }
+        else if(n >= 256)
+        {
+            remainder = n % (64 * 4);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 64, 4);
+        }
+        else if(n >= 128)
+        {
+            remainder = n % (64 * 2);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 64, 2);
+        }
+        else if(n >= 64)
+        {
+            remainder = n % (64 * 1);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 64, 1);
+        }
+        else
+        {
+            remainder = n;
+        }
+    }
+    else
+    {
+        return rocsparse_status_arch_mismatch;
+    }
+
+    // Process remainder
+    if(remainder > 0)
+    {
+        if(remainder <= 8)
+        {
+            LAUNCH_CSRMMNT_GENERAL_REMAINDER_KERNEL(256, 8);
+        }
+        else if(remainder <= 16)
+        {
+            LAUNCH_CSRMMNT_GENERAL_REMAINDER_KERNEL(256, 16);
+        }
+        else if(remainder <= 32 || handle->wavefront_size == 32)
+        {
+            LAUNCH_CSRMMNT_GENERAL_REMAINDER_KERNEL(256, 32);
+        }
+        else if(remainder <= 64 || handle->wavefront_size == 64)
+        {
+            LAUNCH_CSRMMNT_GENERAL_REMAINDER_KERNEL(256, 64);
+        }
+        else
+        {
+            return rocsparse_status_arch_mismatch;
+        }
+    }
+
+    return rocsparse_status_success;
+}
+
+template <typename I, typename J, typename T, typename U>
+rocsparse_status rocsparse_csrmmtn_template_general(rocsparse_handle handle,
+                                                    rocsparse_order  order,
+                                                    bool             conj_A,
+                                                    bool             conj_B,
+                                                    J                m,
+                                                    J                n,
+                                                    J                k,
+                                                    I                nnz,
+                                                    J                batch_count_A,
+                                                    I                offsets_batch_stride_A,
+                                                    I                columns_values_batch_stride_A,
+                                                    U                alpha_device_host,
+                                                    const rocsparse_mat_descr descr,
+                                                    const T*                  csr_val,
+                                                    const I*                  csr_row_ptr,
+                                                    const J*                  csr_col_ind,
+                                                    const T*                  B,
+                                                    J                         ldb,
+                                                    J                         batch_count_B,
+                                                    I                         batch_stride_B,
+                                                    U                         beta_device_host,
+                                                    T*                        C,
+                                                    J                         ldc,
+                                                    J                         batch_count_C,
+                                                    I                         batch_stride_C)
+{
+#define CSRMMTN_DIM 256
+#define WF_SIZE 4
+
+    // Scale C with beta
+    hipLaunchKernelGGL((csrmm_scale<CSRMMTN_DIM, WF_SIZE>),
+                       dim3((k - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
+                       dim3(CSRMMTN_DIM, WF_SIZE),
+                       0,
+                       handle->stream,
+                       k,
+                       n,
+                       beta_device_host,
+                       C,
+                       ldc,
+                       (J)batch_stride_C,
+                       order);
+
+    hipLaunchKernelGGL(
+        (csrmmtn_general_kernel<CSRMMTN_DIM, WF_SIZE>),
+        dim3((WF_SIZE * m - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
+        dim3(CSRMMTN_DIM),
+        0,
+        handle->stream,
+        conj_A,
+        conj_B,
+        m,
+        n,
+        k,
+        nnz,
+        offsets_batch_stride_A,
+        columns_values_batch_stride_A,
+        alpha_device_host,
+        csr_row_ptr,
+        csr_col_ind,
+        csr_val,
+        B,
+        ldb,
+        batch_stride_B,
+        beta_device_host,
+        C,
+        ldc,
+        batch_stride_C,
+        order,
+        descr->base);
+
+#undef CSRMMTN_DIM
+#undef WF_SIZE
+
+    return rocsparse_status_success;
+}
+
+template <typename I, typename J, typename T, typename U>
+rocsparse_status rocsparse_csrmmtt_template_general(rocsparse_handle handle,
+                                                    rocsparse_order  order,
+                                                    bool             conj_A,
+                                                    bool             conj_B,
+                                                    J                m,
+                                                    J                n,
+                                                    J                k,
+                                                    I                nnz,
+                                                    J                batch_count_A,
+                                                    I                offsets_batch_stride_A,
+                                                    I                columns_values_batch_stride_A,
+                                                    U                alpha_device_host,
+                                                    const rocsparse_mat_descr descr,
+                                                    const T*                  csr_val,
+                                                    const I*                  csr_row_ptr,
+                                                    const J*                  csr_col_ind,
+                                                    const T*                  B,
+                                                    J                         ldb,
+                                                    J                         batch_count_B,
+                                                    I                         batch_stride_B,
+                                                    U                         beta_device_host,
+                                                    T*                        C,
+                                                    J                         ldc,
+                                                    J                         batch_count_C,
+                                                    I                         batch_stride_C)
+{
+#define CSRMMTT_DIM 256
+#define WF_SIZE 4
+    // Scale C with beta
+    hipLaunchKernelGGL((csrmm_scale<CSRMMTT_DIM, WF_SIZE>),
+                       dim3((k - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
+                       dim3(CSRMMTT_DIM, WF_SIZE),
+                       0,
+                       handle->stream,
+                       k,
+                       n,
+                       beta_device_host,
+                       C,
+                       ldc,
+                       (J)batch_stride_C,
+                       order);
+
+    hipLaunchKernelGGL(
+        (csrmmtt_general_kernel<CSRMMTT_DIM, WF_SIZE>),
+        dim3((WF_SIZE * m - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
+        dim3(CSRMMTT_DIM),
+        0,
+        handle->stream,
+        conj_A,
+        conj_B,
+        m,
+        n,
+        k,
+        nnz,
+        offsets_batch_stride_A,
+        columns_values_batch_stride_A,
+        alpha_device_host,
+        csr_row_ptr,
+        csr_col_ind,
+        csr_val,
+        B,
+        ldb,
+        batch_stride_B,
+        beta_device_host,
+        C,
+        ldc,
+        batch_stride_C,
+        order,
+        descr->base);
+
+#undef CSRMMTT_DIM
+#undef WF_SIZE
+
+    return rocsparse_status_success;
+}
+
+#define ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(NAME) \
+    NAME(handle,                                    \
+         order,                                     \
+         conj_A,                                    \
+         conj_B,                                    \
+         m,                                         \
+         n,                                         \
+         k,                                         \
+         nnz,                                       \
+         batch_count_A,                             \
+         offsets_batch_stride_A,                    \
+         columns_values_batch_stride_A,             \
+         alpha_device_host,                         \
+         descr,                                     \
+         csr_val,                                   \
+         csr_row_ptr,                               \
+         csr_col_ind,                               \
+         B,                                         \
+         ldb,                                       \
+         batch_count_B,                             \
+         batch_stride_B,                            \
+         beta_device_host,                          \
+         C,                                         \
+         ldc,                                       \
+         batch_count_C,                             \
+         batch_stride_C);
+
+template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
                                                   rocsparse_operation trans_A,
                                                   rocsparse_operation trans_B,
@@ -441,7 +884,7 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
                                                   J                   k,
                                                   I                   nnz,
                                                   J                   batch_count_A,
-                                                  J                   offsets_batch_stride_A,
+                                                  I                   offsets_batch_stride_A,
                                                   I                   columns_values_batch_stride_A,
                                                   U                   alpha_device_host,
                                                   const rocsparse_mat_descr descr,
@@ -456,10 +899,11 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
                                                   T*                        C,
                                                   J                         ldc,
                                                   J                         batch_count_C,
-                                                  I                         batch_stride_C)
+                                                  I                         batch_stride_C,
+                                                  bool                      force_conj_A)
 {
-    // Stream
-    hipStream_t stream = handle->stream;
+    bool conj_A = (trans_A == rocsparse_operation_conjugate_transpose || force_conj_A);
+    bool conj_B = (trans_B == rocsparse_operation_conjugate_transpose);
 
     // Run different csrmm kernels
     if(trans_A == rocsparse_operation_none)
@@ -468,333 +912,33 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
         {
-            LAUNCH_CSRMMNN_GENERAL_KERNEL(256, 8);
+            return ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmnn_template_general);
         }
         else if((order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
                 || (order == rocsparse_order_column
                     && trans_B == rocsparse_operation_conjugate_transpose)
                 || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
-            // Average nnz per row of A
-            I avg_row_nnz = (nnz - 1) / m + 1;
-
-            J main      = 0;
-            J remainder = 0;
-
-            // Launch appropriate kernel depending on row nnz of A
-            if(avg_row_nnz < 16)
-            {
-                if(n >= 128)
-                {
-                    remainder = n % (8 * 16);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(128, 8, 16);
-                }
-                else if(n >= 64)
-                {
-                    remainder = n % (8 * 8);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 8, 8);
-                }
-                else if(n >= 32)
-                {
-                    remainder = n % (8 * 4);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 8, 4);
-                }
-                else if(n >= 16)
-                {
-                    remainder = n % (8 * 2);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 8, 2);
-                }
-                else if(n >= 8)
-                {
-                    remainder = n % (8 * 1);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 8, 1);
-                }
-                else
-                {
-                    remainder = n;
-                }
-            }
-            else if(avg_row_nnz < 32)
-            {
-                if(n >= 256)
-                {
-                    remainder = n % (16 * 16);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(128, 16, 16);
-                }
-                else if(n >= 128)
-                {
-                    remainder = n % (16 * 8);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 16, 8);
-                }
-                else if(n >= 64)
-                {
-                    remainder = n % (16 * 4);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 16, 4);
-                }
-                else if(n >= 32)
-                {
-                    remainder = n % (16 * 2);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 16, 2);
-                }
-                else if(n >= 16)
-                {
-                    remainder = n % (16 * 1);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 16, 1);
-                }
-                else
-                {
-                    remainder = n;
-                }
-            }
-            else if(avg_row_nnz < 64 || handle->wavefront_size == 32)
-            {
-                if(n >= 512)
-                {
-                    remainder = n % (32 * 16);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(128, 32, 16);
-                }
-                else if(n >= 256)
-                {
-                    remainder = n % (32 * 8);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 32, 8);
-                }
-                else if(n >= 128)
-                {
-                    remainder = n % (32 * 4);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 32, 4);
-                }
-                else if(n >= 64)
-                {
-                    remainder = n % (32 * 2);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 32, 2);
-                }
-                else if(n >= 32)
-                {
-                    remainder = n % (32 * 1);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 32, 1);
-                }
-                else
-                {
-                    remainder = n;
-                }
-            }
-            else if(handle->wavefront_size == 64)
-            {
-                if(n >= 512)
-                {
-                    remainder = n % (64 * 8);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 64, 8);
-                }
-                else if(n >= 256)
-                {
-                    remainder = n % (64 * 4);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 64, 4);
-                }
-                else if(n >= 128)
-                {
-                    remainder = n % (64 * 2);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 64, 2);
-                }
-                else if(n >= 64)
-                {
-                    remainder = n % (64 * 1);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(256, 64, 1);
-                }
-                else
-                {
-                    remainder = n;
-                }
-            }
-            else
-            {
-                return rocsparse_status_arch_mismatch;
-            }
-
-            // Process remainder
-            if(remainder > 0)
-            {
-                if(remainder <= 8)
-                {
-                    LAUNCH_CSRMMNT_GENERAL_REMAINDER_KERNEL(256, 8);
-                }
-                else if(remainder <= 16)
-                {
-                    LAUNCH_CSRMMNT_GENERAL_REMAINDER_KERNEL(256, 16);
-                }
-                else if(remainder <= 32 || handle->wavefront_size == 32)
-                {
-                    LAUNCH_CSRMMNT_GENERAL_REMAINDER_KERNEL(256, 32);
-                }
-                else if(remainder <= 64 || handle->wavefront_size == 64)
-                {
-                    LAUNCH_CSRMMNT_GENERAL_REMAINDER_KERNEL(256, 64);
-                }
-                else
-                {
-                    return rocsparse_status_arch_mismatch;
-                }
-            }
-        }
-        else
-        {
-            return rocsparse_status_not_implemented;
+            return ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmnt_template_general);
         }
     }
     else
     {
-
         if((order == rocsparse_order_column && trans_B == rocsparse_operation_none)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
         {
-
-#define CSRMMTN_DIM 256
-#define WF_SIZE 4
-
-            // Scale C with beta
-            hipLaunchKernelGGL(
-                (csrmm_scale<CSRMMTN_DIM, WF_SIZE>),
-                dim3((k - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
-                dim3(CSRMMTN_DIM, WF_SIZE),
-                0,
-                handle->stream,
-                k,
-                n,
-                beta_device_host,
-                C,
-                ldc,
-                (J)batch_stride_C,
-                order);
-
-            hipLaunchKernelGGL(
-                (csrmmtn_general_kernel<CSRMMTN_DIM, WF_SIZE>),
-                dim3((WF_SIZE * m - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
-                dim3(CSRMMTN_DIM),
-                0,
-                stream,
-                trans_A,
-                trans_B,
-                m,
-                n,
-                k,
-                nnz,
-                offsets_batch_stride_A,
-                columns_values_batch_stride_A,
-                alpha_device_host,
-                csr_row_ptr,
-                csr_col_ind,
-                csr_val,
-                B,
-                ldb,
-                batch_stride_B,
-                beta_device_host,
-                C,
-                ldc,
-                batch_stride_C,
-                order,
-                descr->base);
-
-#undef CSRMMTN_DIM
-#undef WF_SIZE
+            return ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmtn_template_general);
         }
         else if((order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
                 || (order == rocsparse_order_column
                     && trans_B == rocsparse_operation_conjugate_transpose)
                 || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
-
-#define CSRMMTT_DIM 256
-#define WF_SIZE 4
-            // Scale C with beta
-            hipLaunchKernelGGL(
-                (csrmm_scale<CSRMMTT_DIM, WF_SIZE>),
-                dim3((k - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
-                dim3(CSRMMTT_DIM, WF_SIZE),
-                0,
-                handle->stream,
-                k,
-                n,
-                beta_device_host,
-                C,
-                ldc,
-                (J)batch_stride_C,
-                order);
-
-            hipLaunchKernelGGL(
-                (csrmmtt_general_kernel<CSRMMTT_DIM, WF_SIZE>),
-                dim3((WF_SIZE * m - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
-                dim3(CSRMMTT_DIM),
-                0,
-                stream,
-                trans_A,
-                trans_B,
-                m,
-                n,
-                k,
-                nnz,
-                offsets_batch_stride_A,
-                columns_values_batch_stride_A,
-                alpha_device_host,
-                csr_row_ptr,
-                csr_col_ind,
-                csr_val,
-                B,
-                ldb,
-                batch_stride_B,
-                beta_device_host,
-                C,
-                ldc,
-                batch_stride_C,
-                order,
-                descr->base);
-
-#undef CSRMMTT_DIM
-#undef WF_SIZE
-        }
-        else
-        {
-            return rocsparse_status_not_implemented;
+            return ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmtt_template_general);
         }
     }
-    return rocsparse_status_success;
+    return rocsparse_status_not_implemented;
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE, UTYPE)                  \
@@ -808,7 +952,7 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
         JTYPE                     k,                             \
         ITYPE                     nnz,                           \
         JTYPE                     batch_count_A,                 \
-        JTYPE                     offsets_batch_stride_A,        \
+        ITYPE                     offsets_batch_stride_A,        \
         ITYPE                     columns_values_batch_stride_A, \
         UTYPE                     alpha_device_host,             \
         const rocsparse_mat_descr descr,                         \
@@ -823,7 +967,8 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
         TTYPE*                    C,                             \
         JTYPE                     ldc,                           \
         JTYPE                     batch_count_C,                 \
-        ITYPE                     batch_stride_C)
+        ITYPE                     batch_stride_C,                \
+        bool                      force_conj_A)
 
 INSTANTIATE(int32_t, int32_t, float, float);
 INSTANTIATE(int32_t, int32_t, double, double);

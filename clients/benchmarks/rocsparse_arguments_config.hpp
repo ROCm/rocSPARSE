@@ -59,6 +59,8 @@ private:
     rocsparse_int b_dir{};
     rocsparse_int b_order{};
     rocsparse_int b_format{};
+    rocsparse_int b_spmv_alg{};
+    rocsparse_int b_spmm_alg{};
     rocsparse_int b_gtsv_interleaved_alg{};
 
 public:

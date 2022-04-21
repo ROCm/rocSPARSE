@@ -130,15 +130,18 @@ set(ROCSPARSE_TEST_SOURCES
   test_spmv_coo.cpp
   test_spmv_coo_aos.cpp
   test_spmv_csr.cpp
+  test_spmv_csc.cpp
   test_spmv_ell.cpp
   test_spsv_csr.cpp
   test_spsv_coo.cpp
   test_spsm_csr.cpp
   test_spsm_coo.cpp
   test_spmm_csr.cpp
+  test_spmm_csc.cpp
   test_spmm_coo.cpp
   test_spmm_bell.cpp
   test_spmm_batched_csr.cpp
+  test_spmm_batched_csc.cpp
   test_spmm_batched_coo.cpp
   test_spmm_batched_bell.cpp
   test_spvv.cpp
@@ -233,15 +236,18 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spmv_coo.cpp
 ../testings/testing_spmv_coo_aos.cpp
 ../testings/testing_spmv_csr.cpp
+../testings/testing_spmv_csc.cpp
 ../testings/testing_spmv_ell.cpp
 ../testings/testing_spsv_csr.cpp
 ../testings/testing_spsv_coo.cpp
 ../testings/testing_spsm_csr.cpp
 ../testings/testing_spsm_coo.cpp
 ../testings/testing_spmm_csr.cpp
+../testings/testing_spmm_csc.cpp
 ../testings/testing_spmm_coo.cpp
 ../testings/testing_spmm_bell.cpp
 ../testings/testing_spmm_batched_csr.cpp
+../testings/testing_spmm_batched_csc.cpp
 ../testings/testing_spmm_batched_coo.cpp
 ../testings/testing_spmm_batched_bell.cpp
 ../testings/testing_spvv.cpp

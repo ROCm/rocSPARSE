@@ -77,9 +77,11 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_gebsrmm.cpp
 ../testings/testing_csrmm.cpp
 ../testings/testing_spmm_csr.cpp
+../testings/testing_spmm_csc.cpp
 ../testings/testing_spmm_coo.cpp
 ../testings/testing_spmm_bell.cpp
 ../testings/testing_spmm_batched_csr.cpp
+../testings/testing_spmm_batched_csc.cpp
 ../testings/testing_spmm_batched_coo.cpp
 ../testings/testing_spmm_batched_bell.cpp
 ../testings/testing_csrsm.cpp
@@ -131,6 +133,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spmv_coo.cpp
 ../testings/testing_spmv_coo_aos.cpp
 ../testings/testing_spmv_csr.cpp
+../testings/testing_spmv_csc.cpp
 ../testings/testing_spmv_ell.cpp
 ../testings/testing_spsv_csr.cpp
 ../testings/testing_spsv_coo.cpp

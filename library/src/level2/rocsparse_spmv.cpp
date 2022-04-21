@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,93 @@
 
 #include "rocsparse_coomv.hpp"
 #include "rocsparse_coomv_aos.hpp"
+#include "rocsparse_cscmv.hpp"
 #include "rocsparse_csrmv.hpp"
 #include "rocsparse_ellmv.hpp"
+
+rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocsparse_spmv_alg alg)
+{
+    switch(format)
+    {
+    case rocsparse_format_csr:
+    case rocsparse_format_csc:
+    {
+        switch(alg)
+        {
+        case rocsparse_spmv_alg_default:
+        case rocsparse_spmv_alg_csr_stream:
+        case rocsparse_spmv_alg_csr_adaptive:
+        {
+            return rocsparse_status_success;
+        }
+        case rocsparse_spmv_alg_coo:
+        case rocsparse_spmv_alg_ell:
+        {
+            return rocsparse_status_invalid_value;
+        }
+        }
+
+        return rocsparse_status_invalid_value;
+    }
+    case rocsparse_format_coo:
+    case rocsparse_format_coo_aos:
+    {
+        switch(alg)
+        {
+        case rocsparse_spmv_alg_default:
+        case rocsparse_spmv_alg_coo:
+        {
+            return rocsparse_status_success;
+        }
+        case rocsparse_spmv_alg_csr_stream:
+        case rocsparse_spmv_alg_csr_adaptive:
+        case rocsparse_spmv_alg_ell:
+        {
+            return rocsparse_status_invalid_value;
+        }
+        }
+
+        return rocsparse_status_invalid_value;
+    }
+    case rocsparse_format_ell:
+    {
+        switch(alg)
+        {
+        case rocsparse_spmv_alg_default:
+        case rocsparse_spmv_alg_ell:
+        {
+            return rocsparse_status_success;
+        }
+        case rocsparse_spmv_alg_csr_stream:
+        case rocsparse_spmv_alg_csr_adaptive:
+        case rocsparse_spmv_alg_coo:
+        {
+            return rocsparse_status_invalid_value;
+        }
+        }
+
+        return rocsparse_status_invalid_value;
+    }
+    case rocsparse_format_bell:
+    {
+        switch(alg)
+        {
+        case rocsparse_spmv_alg_default:
+        case rocsparse_spmv_alg_coo:
+        case rocsparse_spmv_alg_csr_stream:
+        case rocsparse_spmv_alg_csr_adaptive:
+        case rocsparse_spmv_alg_ell:
+        {
+            return rocsparse_status_invalid_value;
+        }
+        }
+
+        return rocsparse_status_invalid_value;
+    }
+    }
+
+    return rocsparse_status_invalid_value;
+}
 
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
@@ -43,15 +128,65 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                          size_t*                     buffer_size,
                                          void*                       temp_buffer)
 {
-    // If temp_buffer is nullptr, return buffer_size
-    if(temp_buffer == nullptr)
-    {
-        // We do not need a buffer
-        *buffer_size = 4;
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_check_spmv_alg(mat->format, alg)));
 
-        // Run CSR analysis step when format is CSR
-        if(mat->format == rocsparse_format_csr)
+    switch(mat->format)
+    {
+    case rocsparse_format_coo:
+    {
+        if(temp_buffer == nullptr)
         {
+            // We do not need a buffer
+            *buffer_size = 4;
+            return rocsparse_status_success;
+        }
+
+        return rocsparse_coomv_template(handle,
+                                        trans,
+                                        (I)mat->rows,
+                                        (I)mat->cols,
+                                        (I)mat->nnz,
+                                        (const T*)alpha,
+                                        mat->descr,
+                                        (const T*)mat->val_data,
+                                        (const I*)mat->row_data,
+                                        (const I*)mat->col_data,
+                                        (const T*)x->values,
+                                        (const T*)beta,
+                                        (T*)y->values);
+    }
+
+    case rocsparse_format_coo_aos:
+    {
+        if(temp_buffer == nullptr)
+        {
+            // We do not need a buffer
+            *buffer_size = 4;
+            return rocsparse_status_success;
+        }
+
+        return rocsparse_coomv_aos_template(handle,
+                                            trans,
+                                            (I)mat->rows,
+                                            (I)mat->cols,
+                                            (I)mat->nnz,
+                                            (const T*)alpha,
+                                            mat->descr,
+                                            (const T*)mat->val_data,
+                                            (const I*)mat->ind_data,
+                                            (const T*)x->values,
+                                            (const T*)beta,
+                                            (T*)y->values);
+    }
+
+    case rocsparse_format_csr:
+    {
+        // If temp_buffer is nullptr, return buffer_size
+        if(temp_buffer == nullptr)
+        {
+            // We do not need a buffer
+            *buffer_size = 4;
+
             // If algorithm 1 or default is selected and analysis step is required
             if((alg == rocsparse_spmv_alg_default || alg == rocsparse_spmv_alg_csr_adaptive)
                && mat->analysed == false)
@@ -70,50 +205,10 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
 
                 mat->analysed = true;
             }
+
+            return rocsparse_status_success;
         }
 
-        return rocsparse_status_success;
-    }
-
-    switch(mat->format)
-    {
-    case rocsparse_format_coo:
-    {
-        return rocsparse_coomv_template(handle,
-                                        trans,
-                                        (I)mat->rows,
-                                        (I)mat->cols,
-                                        (I)mat->nnz,
-                                        (const T*)alpha,
-                                        mat->descr,
-                                        (const T*)mat->val_data,
-                                        (const I*)mat->row_data,
-                                        (const I*)mat->col_data,
-                                        (const T*)x->values,
-                                        (const T*)beta,
-                                        (T*)y->values);
-    }
-
-        // COO (AoS)
-    case rocsparse_format_coo_aos:
-    {
-        return rocsparse_coomv_aos_template(handle,
-                                            trans,
-                                            (I)mat->rows,
-                                            (I)mat->cols,
-                                            (I)mat->nnz,
-                                            (const T*)alpha,
-                                            mat->descr,
-                                            (const T*)mat->val_data,
-                                            (const I*)mat->ind_data,
-                                            (const T*)x->values,
-                                            (const T*)beta,
-                                            (T*)y->values);
-    }
-
-        // CSR
-    case rocsparse_format_csr:
-    {
         return rocsparse_csrmv_template(handle,
                                         trans,
                                         (J)mat->rows,
@@ -128,12 +223,66 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                                                                : mat->info,
                                         (const T*)x->values,
                                         (const T*)beta,
+                                        (T*)y->values,
+                                        false);
+    }
+
+    case rocsparse_format_csc:
+    {
+        // If temp_buffer is nullptr, return buffer_size
+        if(temp_buffer == nullptr)
+        {
+            // We do not need a buffer
+            *buffer_size = 4;
+
+            // If algorithm 1 or default is selected and analysis step is required
+            if((alg == rocsparse_spmv_alg_default || alg == rocsparse_spmv_alg_csr_adaptive)
+               && mat->analysed == false)
+            {
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (rocsparse_cscmv_analysis_template(handle,
+                                                       trans,
+                                                       (J)mat->rows,
+                                                       (J)mat->cols,
+                                                       (I)mat->nnz,
+                                                       mat->descr,
+                                                       (const T*)mat->val_data,
+                                                       (const I*)mat->col_data,
+                                                       (const J*)mat->row_data,
+                                                       mat->info)));
+
+                mat->analysed = true;
+            }
+
+            return rocsparse_status_success;
+        }
+
+        return rocsparse_cscmv_template(handle,
+                                        trans,
+                                        (J)mat->rows,
+                                        (J)mat->cols,
+                                        (I)mat->nnz,
+                                        (const T*)alpha,
+                                        mat->descr,
+                                        (const T*)mat->val_data,
+                                        (const I*)mat->col_data,
+                                        (const J*)mat->row_data,
+                                        (alg == rocsparse_spmv_alg_csr_stream) ? nullptr
+                                                                               : mat->info,
+                                        (const T*)x->values,
+                                        (const T*)beta,
                                         (T*)y->values);
     }
 
-        // ELL
     case rocsparse_format_ell:
     {
+        if(temp_buffer == nullptr)
+        {
+            // We do not need a buffer
+            *buffer_size = 4;
+            return rocsparse_status_success;
+        }
+
         return rocsparse_ellmv_template(handle,
                                         trans,
                                         (I)mat->rows,
@@ -148,14 +297,6 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                         (T*)y->values);
     }
 
-        // CSC
-    case rocsparse_format_csc:
-    {
-        // LCOV_EXCL_START
-        return rocsparse_status_not_implemented;
-        // LCOV_EXCL_STOP
-    }
-        // BELL
     case rocsparse_format_bell:
     {
         // LCOV_EXCL_START
@@ -163,6 +304,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
         // LCOV_EXCL_STOP
     }
     }
+
     return rocsparse_status_invalid_value;
 }
 
@@ -228,6 +370,44 @@ rocsparse_status rocsparse_spmv_dynamic_dispatch(rocsparse_indextype itype,
 #undef DATATYPE_CASE
     }
     return rocsparse_status_invalid_value;
+}
+
+static rocsparse_indextype determine_I_index_type(rocsparse_spmat_descr mat)
+{
+    switch(mat->format)
+    {
+    case rocsparse_format_coo:
+    case rocsparse_format_coo_aos:
+    case rocsparse_format_csr:
+    case rocsparse_format_ell:
+    case rocsparse_format_bell:
+    {
+        return mat->row_type;
+    }
+    case rocsparse_format_csc:
+    {
+        return mat->col_type;
+    }
+    }
+}
+
+static rocsparse_indextype determine_J_index_type(rocsparse_spmat_descr mat)
+{
+    switch(mat->format)
+    {
+    case rocsparse_format_coo:
+    case rocsparse_format_coo_aos:
+    case rocsparse_format_csr:
+    case rocsparse_format_ell:
+    case rocsparse_format_bell:
+    {
+        return mat->col_type;
+    }
+    case rocsparse_format_csc:
+    {
+        return mat->row_type;
+    }
+    }
 }
 
 /*
@@ -311,8 +491,8 @@ extern "C" rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
         return rocsparse_status_not_implemented;
     }
 
-    return rocsparse_spmv_dynamic_dispatch(mat->row_type,
-                                           mat->col_type,
+    return rocsparse_spmv_dynamic_dispatch(determine_I_index_type(mat),
+                                           determine_J_index_type(mat),
                                            compute_type,
                                            handle,
                                            trans,

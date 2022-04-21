@@ -45,7 +45,8 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                 U                         beta_device_host,
                                                 T*                        C,
                                                 J                         ldc,
-                                                void*                     temp_buffer)
+                                                void*                     temp_buffer,
+                                                bool                      force_conj_A)
 {
     // Temporary buffer entry points
     char* ptr         = reinterpret_cast<char*>(temp_buffer);
@@ -98,7 +99,8 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                              UTYPE  beta_device_host,               \
                                                              TTYPE* C,                              \
                                                              JTYPE  ldc,                            \
-                                                             void*  temp_buffer)
+                                                             void*  temp_buffer,                    \
+                                                             bool   force_conj_A)
 
 INSTANTIATE(int32_t, int32_t, float, float);
 INSTANTIATE(int32_t, int32_t, double, double);

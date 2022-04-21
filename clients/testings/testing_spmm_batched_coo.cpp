@@ -69,6 +69,10 @@ void testing_spmm_batched_coo_bad_arg(const Arguments& arg)
     rocsparse_dnmat_descr mat_B = local_mat_B;
     rocsparse_dnmat_descr mat_C = local_mat_C;
 
+#define PARAMS                                                                                    \
+    handle, trans_A, trans_B, &alpha, mat_A, mat_B, &beta, mat_C, ttype, alg, stage, buffer_size, \
+        temp_buffer
+
     int     batch_count_A;
     int     batch_count_B;
     int     batch_count_C;
@@ -90,20 +94,7 @@ void testing_spmm_batched_coo_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_C, batch_count_C, batch_stride_C),
                             rocsparse_status_success);
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                           trans_A,
-                                           trans_B,
-                                           &alpha,
-                                           mat_A,
-                                           mat_B,
-                                           &beta,
-                                           mat_C,
-                                           ttype,
-                                           alg,
-                                           stage,
-                                           buffer_size,
-                                           temp_buffer),
-                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(PARAMS), rocsparse_status_invalid_value);
 
     // C_i = A_i * B
     batch_count_A  = 10;
@@ -119,20 +110,7 @@ void testing_spmm_batched_coo_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_C, batch_count_C, batch_stride_C),
                             rocsparse_status_success);
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                           trans_A,
-                                           trans_B,
-                                           &alpha,
-                                           mat_A,
-                                           mat_B,
-                                           &beta,
-                                           mat_C,
-                                           ttype,
-                                           alg,
-                                           stage,
-                                           buffer_size,
-                                           temp_buffer),
-                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(PARAMS), rocsparse_status_invalid_value);
 
     // C_i = A_i * B_i
     batch_count_A  = 10;
@@ -148,20 +126,8 @@ void testing_spmm_batched_coo_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_C, batch_count_C, batch_stride_C),
                             rocsparse_status_success);
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                           trans_A,
-                                           trans_B,
-                                           &alpha,
-                                           mat_A,
-                                           mat_B,
-                                           &beta,
-                                           mat_C,
-                                           ttype,
-                                           alg,
-                                           stage,
-                                           buffer_size,
-                                           temp_buffer),
-                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(PARAMS), rocsparse_status_invalid_value);
+#undef PARAMS
 }
 
 template <typename I, typename T>
@@ -275,32 +241,15 @@ void testing_spmm_batched_coo(const Arguments& arg)
     hC_gold = hC_1;
 
     // Allocate device memory
-    device_vector<I> dcoo_row_ind(batch_count_A * nnz_A);
-    device_vector<I> dcoo_col_ind(batch_count_A * nnz_A);
-    device_vector<T> dcoo_val(batch_count_A * nnz_A);
-    device_vector<T> dB(batch_count_B * nnz_B);
-    device_vector<T> dC_1(batch_count_C * nnz_C);
-    device_vector<T> dC_2(batch_count_C * nnz_C);
+    device_vector<I> dcoo_row_ind(hcoo_row_ind);
+    device_vector<I> dcoo_col_ind(hcoo_col_ind);
+    device_vector<T> dcoo_val(hcoo_val);
+    device_vector<T> dB(hB);
+    device_vector<T> dC_1(hC_1);
+    device_vector<T> dC_2(hC_2);
     device_vector<T> dalpha(1);
     device_vector<T> dbeta(1);
 
-    // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(dcoo_row_ind,
-                              hcoo_row_ind.data(),
-                              sizeof(I) * batch_count_A * nnz_A,
-                              hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcoo_col_ind,
-                              hcoo_col_ind.data(),
-                              sizeof(I) * batch_count_A * nnz_A,
-                              hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcoo_val, hcoo_val.data(), sizeof(T) * batch_count_A * nnz_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(
-        hipMemcpy(dB, hB.data(), sizeof(T) * batch_count_B * nnz_B, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(
-        hipMemcpy(dC_1, hC_1.data(), sizeof(T) * batch_count_C * nnz_C, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(
-        hipMemcpy(dC_2, hC_2.data(), sizeof(T) * batch_count_C * nnz_C, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dalpha, &halpha, sizeof(T), hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dbeta, &hbeta, sizeof(T), hipMemcpyHostToDevice));
 
@@ -385,10 +334,8 @@ void testing_spmm_batched_coo(const Arguments& arg)
                                              dbuffer));
 
         // Copy output to host
-        CHECK_HIP_ERROR(
-            hipMemcpy(hC_1.data(), dC_1, sizeof(T) * batch_count_C * nnz_C, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(hC_2.data(), dC_2, sizeof(T) * batch_count_C * nnz_C, hipMemcpyDeviceToHost));
+        hC_1.transfer_from(dC_1);
+        hC_2.transfer_from(dC_2);
 
         // CPU coomm_batched
         host_coomm_batched<T, I>(A_m,
@@ -478,9 +425,6 @@ void testing_spmm_batched_coo(const Arguments& arg)
                                                           batch_count_C,
                                                           hbeta != static_cast<T>(0));
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
-
-        CHECK_ROCSPARSE_ERROR(
-            rocsparse_record_timing(get_gpu_time_msec(gpu_time_used), gpu_gflops, gpu_gbyte));
 
         display_timing_info("M",
                             M,

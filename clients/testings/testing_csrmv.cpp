@@ -199,7 +199,8 @@ void testing_csrmv(const Arguments& arg)
                                                     hy,
                                                     base,
                                                     matrix_type,
-                                                    alg);
+                                                    alg,
+                                                    false);
 
         hy.near_check(dy, tol);
         dy = hy_copy;

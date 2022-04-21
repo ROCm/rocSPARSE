@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,12 @@
 
 #include "common.h"
 
+template <typename T>
+static __device__ T conj_val(T val, bool conj)
+{
+    return conj ? rocsparse_conj(val) : val;
+}
+
 // See Yang C., Bulu? A., Owens J.D. (2018) Design Principles for Sparse Matrix Multiplication on the GPU.
 // In: Aldinucci M., Padovani L., Torquati M. (eds) Euro-Par 2018: Parallel Processing. Euro-Par 2018.
 // Lecture Notes in Computer Science, vol 11014. Springer, Cham. https://doi.org/10.1007/978-3-319-96983-1_48
@@ -37,14 +43,14 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-static __device__ void csrmmnn_row_split_device(rocsparse_operation trans_A,
-                                                rocsparse_operation trans_B,
-                                                J                   offset,
-                                                J                   M,
-                                                J                   N,
-                                                J                   K,
-                                                I                   nnz,
-                                                T                   alpha,
+static __device__ void csrmmnn_row_split_device(bool conj_A,
+                                                bool conj_B,
+                                                J    offset,
+                                                J    M,
+                                                J    N,
+                                                J    K,
+                                                I    nnz,
+                                                T    alpha,
                                                 const I* __restrict__ csr_row_ptr,
                                                 const J* __restrict__ csr_col_ind,
                                                 const T* __restrict__ csr_val,
@@ -75,22 +81,12 @@ static __device__ void csrmmnn_row_split_device(rocsparse_operation trans_A,
     for(I j = row_start + lid; j < row_end; j += WF_SIZE)
     {
         J col = csr_col_ind[j] - idx_base;
-        T val = csr_val[j];
+        T val = conj_val(csr_val[j], conj_A);
 
-        if(trans_B == rocsparse_operation_conjugate_transpose)
+        for(J p = 0; p < LOOPS; p++)
         {
-            for(J p = 0; p < LOOPS; p++)
-            {
-                sum[p] = rocsparse_fma(
-                    val, rocsparse_conj(rocsparse_ldg(B + col + (colB + p) * ldb)), sum[p]);
-            }
-        }
-        else
-        {
-            for(J p = 0; p < LOOPS; p++)
-            {
-                sum[p] = rocsparse_fma(val, rocsparse_ldg(B + col + (colB + p) * ldb), sum[p]);
-            }
+            sum[p] = rocsparse_fma(
+                val, conj_val(rocsparse_ldg(B + col + (colB + p) * ldb), conj_B), sum[p]);
         }
     }
 
@@ -149,15 +145,15 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-static __device__ void csrmmnt_row_split_main_device(rocsparse_operation trans_A,
-                                                     rocsparse_operation trans_B,
-                                                     J                   offset,
-                                                     J                   ncol,
-                                                     J                   M,
-                                                     J                   N,
-                                                     J                   K,
-                                                     I                   nnz,
-                                                     T                   alpha,
+static __device__ void csrmmnt_row_split_main_device(bool conj_A,
+                                                     bool conj_B,
+                                                     J    offset,
+                                                     J    ncol,
+                                                     J    M,
+                                                     J    N,
+                                                     J    K,
+                                                     I    nnz,
+                                                     T    alpha,
                                                      const I* __restrict__ csr_row_ptr,
                                                      const J* __restrict__ csr_col_ind,
                                                      const T* __restrict__ csr_val,
@@ -203,7 +199,7 @@ static __device__ void csrmmnt_row_split_main_device(rocsparse_operation trans_A
             if(k < row_end)
             {
                 col = ldb * (rocsparse_nontemporal_load(csr_col_ind + k) - idx_base);
-                val = rocsparse_nontemporal_load(csr_val + k);
+                val = conj_val(rocsparse_nontemporal_load(csr_val + k), conj_A);
             }
             else
             {
@@ -211,32 +207,15 @@ static __device__ void csrmmnt_row_split_main_device(rocsparse_operation trans_A
                 val = static_cast<T>(0);
             }
 
-            if(trans_B == rocsparse_operation_conjugate_transpose)
+            for(J i = 0; i < WF_SIZE; ++i)
             {
-                for(J i = 0; i < WF_SIZE; ++i)
-                {
-                    T v = rocsparse_shfl(val, i, WF_SIZE);
-                    J c = __shfl(col, i, WF_SIZE);
+                T v = rocsparse_shfl(val, i, WF_SIZE);
+                J c = __shfl(col, i, WF_SIZE);
 
-                    for(J p = 0; p < LOOPS; p++)
-                    {
-                        sum[p] = rocsparse_fma(
-                            v, rocsparse_conj(rocsparse_ldg(B + colB + p * WF_SIZE + c)), sum[p]);
-                    }
-                }
-            }
-            else
-            {
-                for(J i = 0; i < WF_SIZE; ++i)
+                for(J p = 0; p < LOOPS; p++)
                 {
-                    T v = rocsparse_shfl(val, i, WF_SIZE);
-                    J c = __shfl(col, i, WF_SIZE);
-
-                    for(J p = 0; p < LOOPS; p++)
-                    {
-                        sum[p]
-                            = rocsparse_fma(v, rocsparse_ldg(B + colB + p * WF_SIZE + c), sum[p]);
-                    }
+                    sum[p] = rocsparse_fma(
+                        v, conj_val(rocsparse_ldg(B + colB + p * WF_SIZE + c), conj_B), sum[p]);
                 }
             }
         }
@@ -284,15 +263,15 @@ static __device__ void csrmmnt_row_split_main_device(rocsparse_operation trans_A
 // In: Aldinucci M., Padovani L., Torquati M. (eds) Euro-Par 2018: Parallel Processing. Euro-Par 2018.
 // Lecture Notes in Computer Science, vol 11014. Springer, Cham. https://doi.org/10.1007/978-3-319-96983-1_48
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
-static __device__ void csrmmnt_row_split_remainder_device(rocsparse_operation trans_A,
-                                                          rocsparse_operation trans_B,
-                                                          J                   offset,
-                                                          J                   ncol,
-                                                          J                   M,
-                                                          J                   N,
-                                                          J                   K,
-                                                          I                   nnz,
-                                                          T                   alpha,
+static __device__ void csrmmnt_row_split_remainder_device(bool conj_A,
+                                                          bool conj_B,
+                                                          J    offset,
+                                                          J    ncol,
+                                                          J    M,
+                                                          J    N,
+                                                          J    K,
+                                                          I    nnz,
+                                                          T    alpha,
                                                           const I* __restrict__ csr_row_ptr,
                                                           const J* __restrict__ csr_col_ind,
                                                           const T* __restrict__ csr_val,
@@ -332,7 +311,7 @@ static __device__ void csrmmnt_row_split_remainder_device(rocsparse_operation tr
             if(k < row_end)
             {
                 col = ldb * (rocsparse_nontemporal_load(csr_col_ind + k) - idx_base);
-                val = rocsparse_nontemporal_load(csr_val + k);
+                val = conj_val(rocsparse_nontemporal_load(csr_val + k), conj_A);
             }
             else
             {
@@ -340,27 +319,14 @@ static __device__ void csrmmnt_row_split_remainder_device(rocsparse_operation tr
                 val = static_cast<T>(0);
             }
 
-            if(trans_B == rocsparse_operation_conjugate_transpose)
+            for(J i = 0; i < WF_SIZE; ++i)
             {
-                for(J i = 0; i < WF_SIZE; ++i)
-                {
-                    T v = rocsparse_shfl(val, i, WF_SIZE);
-                    J c = __shfl(col, i, WF_SIZE);
-                    sum = rocsparse_fma(v,
-                                        (colB < ncol) ? rocsparse_conj(rocsparse_ldg(B + colB + c))
-                                                      : static_cast<T>(0),
-                                        sum);
-                }
-            }
-            else
-            {
-                for(J i = 0; i < WF_SIZE; ++i)
-                {
-                    T v = rocsparse_shfl(val, i, WF_SIZE);
-                    J c = __shfl(col, i, WF_SIZE);
-                    sum = rocsparse_fma(
-                        v, (colB < ncol) ? rocsparse_ldg(B + colB + c) : static_cast<T>(0), sum);
-                }
+                T v = rocsparse_shfl(val, i, WF_SIZE);
+                J c = __shfl(col, i, WF_SIZE);
+                sum = rocsparse_fma(v,
+                                    (colB < ncol) ? conj_val(rocsparse_ldg(B + colB + c), conj_B)
+                                                  : static_cast<T>(0),
+                                    sum);
             }
         }
 
