@@ -412,7 +412,8 @@ rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle,
                                                            nullptr,
                                                            x,
                                                            beta,
-                                                           y));
+                                                           y,
+                                                           false));
 
         return rocsparse_status_success;
     }

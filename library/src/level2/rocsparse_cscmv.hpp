@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,54 +23,37 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CSRMV_HPP
-#define ROCSPARSE_CSRMV_HPP
+#ifndef ROCSPARSE_CSCMV_HPP
+#define ROCSPARSE_CSCMV_HPP
 
 #include "handle.h"
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          handle,
+rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans,
                                                    J                         m,
                                                    J                         n,
                                                    I                         nnz,
                                                    const rocsparse_mat_descr descr,
-                                                   const T*                  csr_val,
-                                                   const I*                  csr_row_ptr,
-                                                   const J*                  csr_col_ind,
+                                                   const T*                  csc_val,
+                                                   const I*                  csc_col_ptr,
+                                                   const J*                  csc_row_ind,
                                                    rocsparse_mat_info        info);
 
-template <typename I, typename J, typename T, typename U>
-rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          handle,
-                                                   rocsparse_operation       trans,
-                                                   J                         m,
-                                                   J                         n,
-                                                   I                         nnz,
-                                                   U                         alpha_device_host,
-                                                   const rocsparse_mat_descr descr,
-                                                   const T*                  csr_val,
-                                                   const I*                  csr_row_ptr,
-                                                   const J*                  csr_col_ind,
-                                                   const T*                  x,
-                                                   U                         beta_device_host,
-                                                   T*                        y,
-                                                   bool                      force_conj);
-
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
+rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
                                           J                         m,
                                           J                         n,
                                           I                         nnz,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T*                  csr_val,
-                                          const I*                  csr_row_ptr,
-                                          const J*                  csr_col_ind,
+                                          const T*                  csc_val,
+                                          const I*                  csc_col_ptr,
+                                          const J*                  csc_row_ind,
                                           rocsparse_mat_info        info,
                                           const T*                  x,
                                           const T*                  beta,
-                                          T*                        y,
-                                          bool                      force_conj);
+                                          T*                        y);
 
-#endif // ROCSPARSE_CSRMV_HPP
+#endif // ROCSPARSE_CSCMV_HPP

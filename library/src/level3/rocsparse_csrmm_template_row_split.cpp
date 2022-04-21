@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,14 +34,14 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmmnn_row_split_kernel(rocsparse_operation trans_A,
-                                  rocsparse_operation trans_B,
-                                  J                   offset,
-                                  J                   m,
-                                  J                   n,
-                                  J                   k,
-                                  I                   nnz,
-                                  U                   alpha_device_host,
+    void csrmmnn_row_split_kernel(bool conj_A,
+                                  bool conj_B,
+                                  J    offset,
+                                  J    m,
+                                  J    n,
+                                  J    k,
+                                  I    nnz,
+                                  U    alpha_device_host,
                                   const I* __restrict__ csr_row_ptr,
                                   const J* __restrict__ csr_col_ind,
                                   const T* __restrict__ csr_val,
@@ -61,8 +61,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         return;
     }
 
-    csrmmnn_row_split_device<BLOCKSIZE, WF_SIZE, LOOPS>(trans_A,
-                                                        trans_B,
+    csrmmnn_row_split_device<BLOCKSIZE, WF_SIZE, LOOPS>(conj_A,
+                                                        conj_B,
                                                         offset,
                                                         m,
                                                         n,
@@ -89,15 +89,15 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmmnt_row_split_main_kernel(rocsparse_operation trans_A,
-                                       rocsparse_operation trans_B,
-                                       J                   offset,
-                                       J                   ncol,
-                                       J                   m,
-                                       J                   n,
-                                       J                   k,
-                                       I                   nnz,
-                                       U                   alpha_device_host,
+    void csrmmnt_row_split_main_kernel(bool conj_A,
+                                       bool conj_B,
+                                       J    offset,
+                                       J    ncol,
+                                       J    m,
+                                       J    n,
+                                       J    k,
+                                       I    nnz,
+                                       U    alpha_device_host,
                                        const I* __restrict__ csr_row_ptr,
                                        const J* __restrict__ csr_col_ind,
                                        const T* __restrict__ csr_val,
@@ -117,8 +117,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         return;
     }
 
-    csrmmnt_row_split_main_device<BLOCKSIZE, WF_SIZE, LOOPS>(trans_A,
-                                                             trans_B,
+    csrmmnt_row_split_main_device<BLOCKSIZE, WF_SIZE, LOOPS>(conj_A,
+                                                             conj_B,
                                                              offset,
                                                              ncol,
                                                              m,
@@ -145,15 +145,15 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmmnt_row_split_remainder_kernel(rocsparse_operation trans_A,
-                                            rocsparse_operation trans_B,
-                                            J                   offset,
-                                            J                   ncol,
-                                            J                   m,
-                                            J                   n,
-                                            J                   k,
-                                            I                   nnz,
-                                            U                   alpha_device_host,
+    void csrmmnt_row_split_remainder_kernel(bool conj_A,
+                                            bool conj_B,
+                                            J    offset,
+                                            J    ncol,
+                                            J    m,
+                                            J    n,
+                                            J    k,
+                                            I    nnz,
+                                            U    alpha_device_host,
                                             const I* __restrict__ csr_row_ptr,
                                             const J* __restrict__ csr_col_ind,
                                             const T* __restrict__ csr_val,
@@ -173,8 +173,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         return;
     }
 
-    csrmmnt_row_split_remainder_device<BLOCKSIZE, WF_SIZE>(trans_A,
-                                                           trans_B,
+    csrmmnt_row_split_remainder_device<BLOCKSIZE, WF_SIZE>(conj_A,
+                                                           conj_B,
                                                            offset,
                                                            ncol,
                                                            m,
@@ -199,9 +199,9 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                        dim3((WF_SIZE * m - 1) / CSRMMNT_DIM + 1),                    \
                        dim3(CSRMMNT_DIM),                                            \
                        0,                                                            \
-                       stream,                                                       \
-                       trans_A,                                                      \
-                       trans_B,                                                      \
+                       handle->stream,                                               \
+                       conj_A,                                                       \
+                       conj_B,                                                       \
                        (J)0,                                                         \
                        main,                                                         \
                        m,                                                            \
@@ -225,9 +225,9 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                        dim3((WF_SIZE * m - 1) / CSRMMNT_DIM + 1),                  \
                        dim3(CSRMMNT_DIM),                                          \
                        0,                                                          \
-                       stream,                                                     \
-                       trans_A,                                                    \
-                       trans_B,                                                    \
+                       handle->stream,                                             \
+                       conj_A,                                                     \
+                       conj_B,                                                     \
                        main,                                                       \
                        n,                                                          \
                        m,                                                          \
@@ -247,6 +247,341 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                        descr->base);
 
 template <typename I, typename J, typename T, typename U>
+rocsparse_status rocsparse_csrmmnn_template_row_split(rocsparse_handle          handle,
+                                                      rocsparse_order           order,
+                                                      bool                      conj_A,
+                                                      bool                      conj_B,
+                                                      J                         m,
+                                                      J                         n,
+                                                      J                         k,
+                                                      I                         nnz,
+                                                      U                         alpha_device_host,
+                                                      const rocsparse_mat_descr descr,
+                                                      const T*                  csr_val,
+                                                      const I*                  csr_row_ptr,
+                                                      const J*                  csr_col_ind,
+                                                      const T*                  B,
+                                                      J                         ldb,
+                                                      U                         beta_device_host,
+                                                      T*                        C,
+                                                      J                         ldc)
+{
+#define CSRMMNN_DIM 256
+#define SUB_WF_SIZE 8
+    J remainder = n % 8;
+    J main      = n - remainder;
+
+    if(main > 0)
+    {
+        dim3 csrmmnn_blocks((SUB_WF_SIZE * m - 1) / CSRMMNN_DIM + 1, (main - 1) / 8 + 1);
+        dim3 csrmmnn_threads(CSRMMNN_DIM);
+        hipLaunchKernelGGL((csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 8>),
+                           csrmmnn_blocks,
+                           csrmmnn_threads,
+                           0,
+                           handle->stream,
+                           conj_A,
+                           conj_B,
+                           (J)0,
+                           m,
+                           n,
+                           k,
+                           nnz,
+                           alpha_device_host,
+                           csr_row_ptr,
+                           csr_col_ind,
+                           csr_val,
+                           B,
+                           ldb,
+                           beta_device_host,
+                           C,
+                           ldc,
+                           order,
+                           descr->base);
+    }
+
+    if(remainder > 0)
+    {
+        dim3 csrmmnn_blocks((SUB_WF_SIZE * m - 1) / CSRMMNN_DIM + 1, (remainder - 1) / 1 + 1);
+        dim3 csrmmnn_threads(CSRMMNN_DIM);
+        hipLaunchKernelGGL((csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 1>),
+                           csrmmnn_blocks,
+                           csrmmnn_threads,
+                           0,
+                           handle->stream,
+                           conj_A,
+                           conj_B,
+                           main,
+                           m,
+                           n,
+                           k,
+                           nnz,
+                           alpha_device_host,
+                           csr_row_ptr,
+                           csr_col_ind,
+                           csr_val,
+                           B,
+                           ldb,
+                           beta_device_host,
+                           C,
+                           ldc,
+                           order,
+                           descr->base);
+    }
+#undef SUB_WF_SIZE
+#undef CSRMMNN_DIM
+
+    return rocsparse_status_success;
+}
+
+template <typename I, typename J, typename T, typename U>
+rocsparse_status rocsparse_csrmmnt_template_row_split(rocsparse_handle          handle,
+                                                      rocsparse_order           order,
+                                                      bool                      conj_A,
+                                                      bool                      conj_B,
+                                                      J                         m,
+                                                      J                         n,
+                                                      J                         k,
+                                                      I                         nnz,
+                                                      U                         alpha_device_host,
+                                                      const rocsparse_mat_descr descr,
+                                                      const T*                  csr_val,
+                                                      const I*                  csr_row_ptr,
+                                                      const J*                  csr_col_ind,
+                                                      const T*                  B,
+                                                      J                         ldb,
+                                                      U                         beta_device_host,
+                                                      T*                        C,
+                                                      J                         ldc)
+{
+    // Average nnz per row of A
+    I avg_row_nnz = (nnz - 1) / m + 1;
+
+    // Computation is split into two parts, main and remainder
+    // First step: Compute main, which is the maximum number of
+    //             columns of B that is dividable by the next
+    //             power of two of the average row nnz of A.
+    // Second step: Compute remainder, which is the remaining
+    //              columns of B.
+    J main      = 0;
+    J remainder = 0;
+
+    // Launch appropriate kernel depending on row nnz of A
+    if(avg_row_nnz < 16)
+    {
+        if(n >= 128)
+        {
+            remainder = n % (8 * 16);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(128, 8, 16);
+        }
+        else if(n >= 64)
+        {
+            remainder = n % (8 * 8);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 8, 8);
+        }
+        else if(n >= 32)
+        {
+            remainder = n % (8 * 4);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 8, 4);
+        }
+        else if(n >= 16)
+        {
+            remainder = n % (8 * 2);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 8, 2);
+        }
+        else if(n >= 8)
+        {
+            remainder = n % (8 * 1);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 8, 1);
+        }
+        else
+        {
+            remainder = n;
+        }
+    }
+    else if(avg_row_nnz < 32)
+    {
+        if(n >= 256)
+        {
+            remainder = n % (16 * 16);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(128, 16, 16);
+        }
+        else if(n >= 128)
+        {
+            remainder = n % (16 * 8);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 16, 8);
+        }
+        else if(n >= 64)
+        {
+            remainder = n % (16 * 4);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 16, 4);
+        }
+        else if(n >= 32)
+        {
+            remainder = n % (16 * 2);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 16, 2);
+        }
+        else if(n >= 16)
+        {
+            remainder = n % (16 * 1);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 16, 1);
+        }
+        else
+        {
+            remainder = n;
+        }
+    }
+    else if(avg_row_nnz < 64 || handle->wavefront_size == 32)
+    {
+        if(n >= 512)
+        {
+            remainder = n % (32 * 16);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(128, 32, 16);
+        }
+        else if(n >= 256)
+        {
+            remainder = n % (32 * 8);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 32, 8);
+        }
+        else if(n >= 128)
+        {
+            remainder = n % (32 * 4);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 32, 4);
+        }
+        else if(n >= 64)
+        {
+            remainder = n % (32 * 2);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 32, 2);
+        }
+        else if(n >= 32)
+        {
+            remainder = n % (32 * 1);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 32, 1);
+        }
+        else
+        {
+            remainder = n;
+        }
+    }
+    else if(handle->wavefront_size == 64)
+    {
+        if(n >= 512)
+        {
+            remainder = n % (64 * 8);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 64, 8);
+        }
+        else if(n >= 256)
+        {
+            remainder = n % (64 * 4);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 64, 4);
+        }
+        else if(n >= 128)
+        {
+            remainder = n % (64 * 2);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 64, 2);
+        }
+        else if(n >= 64)
+        {
+            remainder = n % (64 * 1);
+            main      = n - remainder;
+
+            LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 64, 1);
+        }
+        else
+        {
+            remainder = n;
+        }
+    }
+    else
+    {
+        return rocsparse_status_arch_mismatch;
+    }
+
+    // Process remainder
+    if(remainder > 0)
+    {
+        if(remainder <= 8)
+        {
+            LAUNCH_CSRMMNT_ROW_SPLIT_REMAINDER_KERNEL(256, 8);
+        }
+        else if(remainder <= 16)
+        {
+            LAUNCH_CSRMMNT_ROW_SPLIT_REMAINDER_KERNEL(256, 16);
+        }
+        else if(remainder <= 32 || handle->wavefront_size == 32)
+        {
+            LAUNCH_CSRMMNT_ROW_SPLIT_REMAINDER_KERNEL(256, 32);
+        }
+        else if(remainder <= 64 || handle->wavefront_size == 64)
+        {
+            LAUNCH_CSRMMNT_ROW_SPLIT_REMAINDER_KERNEL(256, 64);
+        }
+        else
+        {
+            return rocsparse_status_arch_mismatch;
+        }
+    }
+
+    return rocsparse_status_success;
+}
+
+#define ROCSPARSE_CSRMM_TEMPLATE_ROW_SPLIT_IMPL(NAME) \
+    NAME(handle,                                      \
+         order,                                       \
+         conj_A,                                      \
+         conj_B,                                      \
+         m,                                           \
+         n,                                           \
+         k,                                           \
+         nnz,                                         \
+         alpha_device_host,                           \
+         descr,                                       \
+         csr_val,                                     \
+         csr_row_ptr,                                 \
+         csr_col_ind,                                 \
+         B,                                           \
+         ldb,                                         \
+         beta_device_host,                            \
+         C,                                           \
+         ldc);
+
+template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          handle,
                                                     rocsparse_operation       trans_A,
                                                     rocsparse_operation       trans_B,
@@ -264,10 +599,11 @@ rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          ha
                                                     J                         ldb,
                                                     U                         beta_device_host,
                                                     T*                        C,
-                                                    J                         ldc)
+                                                    J                         ldc,
+                                                    bool                      force_conj_A)
 {
-    // Stream
-    hipStream_t stream = handle->stream;
+    bool conj_A = (trans_A == rocsparse_operation_conjugate_transpose || force_conj_A);
+    bool conj_B = (trans_B == rocsparse_operation_conjugate_transpose);
 
     // Run different csrmv kernels
     if(trans_A == rocsparse_operation_none)
@@ -276,292 +612,18 @@ rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          ha
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
         {
-#define CSRMMNN_DIM 256
-#define SUB_WF_SIZE 8
-            J remainder = n % 8;
-            J main      = n - remainder;
-
-            if(main > 0)
-            {
-                dim3 csrmmnn_blocks((SUB_WF_SIZE * m - 1) / CSRMMNN_DIM + 1, (main - 1) / 8 + 1);
-                dim3 csrmmnn_threads(CSRMMNN_DIM);
-                hipLaunchKernelGGL((csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 8>),
-                                   csrmmnn_blocks,
-                                   csrmmnn_threads,
-                                   0,
-                                   stream,
-                                   trans_A,
-                                   trans_B,
-                                   (J)0,
-                                   m,
-                                   n,
-                                   k,
-                                   nnz,
-                                   alpha_device_host,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   B,
-                                   ldb,
-                                   beta_device_host,
-                                   C,
-                                   ldc,
-                                   order,
-                                   descr->base);
-            }
-
-            if(remainder > 0)
-            {
-                dim3 csrmmnn_blocks((SUB_WF_SIZE * m - 1) / CSRMMNN_DIM + 1,
-                                    (remainder - 1) / 1 + 1);
-                dim3 csrmmnn_threads(CSRMMNN_DIM);
-                hipLaunchKernelGGL((csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 1>),
-                                   csrmmnn_blocks,
-                                   csrmmnn_threads,
-                                   0,
-                                   stream,
-                                   trans_A,
-                                   trans_B,
-                                   main,
-                                   m,
-                                   n,
-                                   k,
-                                   nnz,
-                                   alpha_device_host,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   B,
-                                   ldb,
-                                   beta_device_host,
-                                   C,
-                                   ldc,
-                                   order,
-                                   descr->base);
-            }
-#undef SUB_WF_SIZE
-#undef CSRMMNN_DIM
+            return ROCSPARSE_CSRMM_TEMPLATE_ROW_SPLIT_IMPL(rocsparse_csrmmnn_template_row_split);
         }
         else if((order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
                 || (order == rocsparse_order_column
                     && trans_B == rocsparse_operation_conjugate_transpose)
                 || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
-            // Average nnz per row of A
-            I avg_row_nnz = (nnz - 1) / m + 1;
-
-            // Computation is split into two parts, main and remainder
-            // First step: Compute main, which is the maximum number of
-            //             columns of B that is dividable by the next
-            //             power of two of the average row nnz of A.
-            // Second step: Compute remainder, which is the remaining
-            //              columns of B.
-            J main      = 0;
-            J remainder = 0;
-
-            // Launch appropriate kernel depending on row nnz of A
-            if(avg_row_nnz < 16)
-            {
-                if(n >= 128)
-                {
-                    remainder = n % (8 * 16);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(128, 8, 16);
-                }
-                else if(n >= 64)
-                {
-                    remainder = n % (8 * 8);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 8, 8);
-                }
-                else if(n >= 32)
-                {
-                    remainder = n % (8 * 4);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 8, 4);
-                }
-                else if(n >= 16)
-                {
-                    remainder = n % (8 * 2);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 8, 2);
-                }
-                else if(n >= 8)
-                {
-                    remainder = n % (8 * 1);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 8, 1);
-                }
-                else
-                {
-                    remainder = n;
-                }
-            }
-            else if(avg_row_nnz < 32)
-            {
-                if(n >= 256)
-                {
-                    remainder = n % (16 * 16);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(128, 16, 16);
-                }
-                else if(n >= 128)
-                {
-                    remainder = n % (16 * 8);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 16, 8);
-                }
-                else if(n >= 64)
-                {
-                    remainder = n % (16 * 4);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 16, 4);
-                }
-                else if(n >= 32)
-                {
-                    remainder = n % (16 * 2);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 16, 2);
-                }
-                else if(n >= 16)
-                {
-                    remainder = n % (16 * 1);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 16, 1);
-                }
-                else
-                {
-                    remainder = n;
-                }
-            }
-            else if(avg_row_nnz < 64 || handle->wavefront_size == 32)
-            {
-                if(n >= 512)
-                {
-                    remainder = n % (32 * 16);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(128, 32, 16);
-                }
-                else if(n >= 256)
-                {
-                    remainder = n % (32 * 8);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 32, 8);
-                }
-                else if(n >= 128)
-                {
-                    remainder = n % (32 * 4);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 32, 4);
-                }
-                else if(n >= 64)
-                {
-                    remainder = n % (32 * 2);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 32, 2);
-                }
-                else if(n >= 32)
-                {
-                    remainder = n % (32 * 1);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 32, 1);
-                }
-                else
-                {
-                    remainder = n;
-                }
-            }
-            else if(handle->wavefront_size == 64)
-            {
-                if(n >= 512)
-                {
-                    remainder = n % (64 * 8);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 64, 8);
-                }
-                else if(n >= 256)
-                {
-                    remainder = n % (64 * 4);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 64, 4);
-                }
-                else if(n >= 128)
-                {
-                    remainder = n % (64 * 2);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 64, 2);
-                }
-                else if(n >= 64)
-                {
-                    remainder = n % (64 * 1);
-                    main      = n - remainder;
-
-                    LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(256, 64, 1);
-                }
-                else
-                {
-                    remainder = n;
-                }
-            }
-            else
-            {
-                return rocsparse_status_arch_mismatch;
-            }
-
-            // Process remainder
-            if(remainder > 0)
-            {
-                if(remainder <= 8)
-                {
-                    LAUNCH_CSRMMNT_ROW_SPLIT_REMAINDER_KERNEL(256, 8);
-                }
-                else if(remainder <= 16)
-                {
-                    LAUNCH_CSRMMNT_ROW_SPLIT_REMAINDER_KERNEL(256, 16);
-                }
-                else if(remainder <= 32 || handle->wavefront_size == 32)
-                {
-                    LAUNCH_CSRMMNT_ROW_SPLIT_REMAINDER_KERNEL(256, 32);
-                }
-                else if(remainder <= 64 || handle->wavefront_size == 64)
-                {
-                    LAUNCH_CSRMMNT_ROW_SPLIT_REMAINDER_KERNEL(256, 64);
-                }
-                else
-                {
-                    return rocsparse_status_arch_mismatch;
-                }
-            }
-        }
-        else
-        {
-            return rocsparse_status_not_implemented;
+            return ROCSPARSE_CSRMM_TEMPLATE_ROW_SPLIT_IMPL(rocsparse_csrmmnt_template_row_split);
         }
     }
-    else
-    {
-        return rocsparse_status_not_implemented;
-    }
 
-    return rocsparse_status_success;
+    return rocsparse_status_not_implemented;
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE, UTYPE)                                                     \
@@ -582,7 +644,8 @@ rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          ha
                                                                  JTYPE        ldb,                  \
                                                                  UTYPE        beta_device_host,     \
                                                                  TTYPE*       C,                    \
-                                                                 JTYPE        ldc)
+                                                                 JTYPE        ldc,                  \
+                                                                 bool         force_conj_A)
 
 INSTANTIATE(int32_t, int32_t, float, float);
 INSTANTIATE(int32_t, int32_t, double, double);

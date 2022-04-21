@@ -56,8 +56,11 @@ ROCSPARSE_DO_ROUTINE(csrgemm)					\
 ROCSPARSE_DO_ROUTINE(csrgemm_reuse)				\
 ROCSPARSE_DO_ROUTINE(csrmv)					\
 ROCSPARSE_DO_ROUTINE(csrmv_managed)				\
+ROCSPARSE_DO_ROUTINE(cscmv)					\
 ROCSPARSE_DO_ROUTINE(csrmm)					\
 ROCSPARSE_DO_ROUTINE(csrmm_batched)					\
+ROCSPARSE_DO_ROUTINE(cscmm)					\
+ROCSPARSE_DO_ROUTINE(cscmm_batched)					\
 ROCSPARSE_DO_ROUTINE(csrsm)					\
 ROCSPARSE_DO_ROUTINE(csrsort)					\
 ROCSPARSE_DO_ROUTINE(csrsv)					\

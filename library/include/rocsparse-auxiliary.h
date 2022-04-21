@@ -1507,6 +1507,12 @@ rocsparse_status rocsparse_csr_set_strided_batch(rocsparse_spmat_descr descr,
  *  \retval rocsparse_status_invalid_size if \p data_size is invalid.
  */
 ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csc_set_strided_batch(rocsparse_spmat_descr descr,
+                                                 int                   batch_count,
+                                                 int64_t               offsets_batch_stride,
+                                                 int64_t               rows_values_batch_stride);
+
+ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
                                                rocsparse_spmat_attribute attribute,
                                                void*                     data,

@@ -340,7 +340,8 @@ void testing_csrmv_managed(const Arguments& arg)
                    &y_gold[0],
                    base,
                    rocsparse_matrix_type_general,
-                   alg);
+                   alg,
+                   false);
 
         near_check_segments<T>(M, &y_gold[0], y_1);
         near_check_segments<T>(M, &y_gold[0], y_2);

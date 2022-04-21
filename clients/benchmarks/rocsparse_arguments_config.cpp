@@ -252,7 +252,7 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      "SPARSE function to test. Options:\n"
      "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
      "  Level2: bsrmv, bsrxmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, coosv, ellmv, hybmv, gebsrmv, gemvi\n"
-     "  Level3: bsrmm, bsrsm, gebsrmm, csrmm, csrmm_batched, coomm, coomm_batched, csrsm, coosm, gemmi, sddmm\n"
+     "  Level3: bsrmm, bsrsm, gebsrmm, csrmm, csrmm_batched, coomm, coomm_batched, cscmm, cscmm_batched, csrsm, coosm, gemmi, sddmm\n"
      "  Extra: csrgeam, csrgemm, csrgemm_reuse\n"
      "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, gtsv, gtsv_no_pivot, gtsv_no_pivot_strided_batch, gtsv_interleaved_batch, gpsv_interleaved_batch\n"
      "  Conversion: csr2coo, csr2csc, gebsr2gebsc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
@@ -317,6 +317,14 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      value<rocsparse_int>(&this->batch_stride)->default_value(128),
      "Indicates the batch stride for batched routines.")
 
+    ("spmv_alg",
+      value<rocsparse_int>(&this->b_spmv_alg)->default_value(rocsparse_spmv_alg_default),
+      "Indicates what algorithm to use when running SpMV. Possibly choices are default: 0, COO: 1, CSR adaptive: 2, CSR stream: 3, ELL: 4 (default:0)")
+
+    ("spmm_alg",
+      value<rocsparse_int>(&this->b_spmm_alg)->default_value(rocsparse_spmm_alg_default),
+      "Indicates what algorithm to use when running SpMM. Possibly choices are default: 0, CSR: 1, COO segmented: 2, COO atomic: 3, CSR row split: 4, CSR merge: 5, COO segmented atomic: 6, BELL: 7 (default:0)")
+
     ("gtsv_interleaved_alg",
       value<rocsparse_int>(&this->b_gtsv_interleaved_alg)->default_value(rocsparse_gtsv_interleaved_alg_default),
       "Indicates what algorithm to use when running rocsparse_gtsv_interleaved_batch. Possibly choices are thomas: 1, lu: 2, qr: 3 (default:3)");
@@ -352,6 +360,29 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   {
     std::cerr << "Invalid value for --format" << std::endl;
     return -1;
+  }
+
+  if(this->b_spmv_alg != rocsparse_spmv_alg_default
+       && this->b_spmv_alg != rocsparse_spmv_alg_coo
+       && this->b_spmv_alg != rocsparse_spmv_alg_csr_adaptive
+       && this->b_spmv_alg != rocsparse_spmv_alg_csr_stream
+       && this->b_spmv_alg != rocsparse_spmv_alg_ell)
+  {
+      std::cerr << "Invalid value for --spmv_alg" << std::endl;
+      return -1;
+  }
+
+  if(this->b_spmm_alg != rocsparse_spmm_alg_default
+       && this->b_spmm_alg != rocsparse_spmm_alg_csr
+       && this->b_spmm_alg != rocsparse_spmm_alg_coo_segmented
+       && this->b_spmm_alg != rocsparse_spmm_alg_coo_atomic
+       && this->b_spmm_alg != rocsparse_spmm_alg_csr_row_split
+       && this->b_spmm_alg != rocsparse_spmm_alg_csr_merge
+       && this->b_spmm_alg != rocsparse_spmm_alg_coo_segmented_atomic
+       && this->b_spmm_alg != rocsparse_spmm_alg_bell)
+  {
+      std::cerr << "Invalid value for --spmm_alg" << std::endl;
+      return -1;
   }
 
   if(this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_default
@@ -411,6 +442,8 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
     = (this->b_dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
   this->order  = (this->b_order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
   this->format = (rocsparse_format)this->b_format;
+  this->spmv_alg = (rocsparse_spmv_alg)this->b_spmv_alg;
+  this->spmm_alg = (rocsparse_spmm_alg)this->b_spmm_alg;
   this->gtsv_interleaved_alg = (rocsparse_gtsv_interleaved_alg)this->b_gtsv_interleaved_alg;
 
 
@@ -580,6 +613,29 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
     return -1;
   }
 
+  if(this->b_spmv_alg != rocsparse_spmv_alg_default
+       && this->b_spmv_alg != rocsparse_spmv_alg_coo
+       && this->b_spmv_alg != rocsparse_spmv_alg_csr_adaptive
+       && this->b_spmv_alg != rocsparse_spmv_alg_csr_stream
+       && this->b_spmv_alg != rocsparse_spmv_alg_ell)
+  {
+      std::cerr << "Invalid value for --spmv_alg" << std::endl;
+      return -1;
+  }
+
+  if(this->b_spmm_alg != rocsparse_spmm_alg_default
+       && this->b_spmm_alg != rocsparse_spmm_alg_csr
+       && this->b_spmm_alg != rocsparse_spmm_alg_coo_segmented
+       && this->b_spmm_alg != rocsparse_spmm_alg_coo_atomic
+       && this->b_spmm_alg != rocsparse_spmm_alg_csr_row_split
+       && this->b_spmm_alg != rocsparse_spmm_alg_csr_merge
+       && this->b_spmm_alg != rocsparse_spmm_alg_coo_segmented_atomic
+       && this->b_spmm_alg != rocsparse_spmm_alg_bell)
+  {
+      std::cerr << "Invalid value for --spmm_alg" << std::endl;
+      return -1;
+  }
+
   if(this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_default
        && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_thomas
        && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_lu
@@ -634,6 +690,8 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
     = (b_dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
   this->order  = (b_order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
   this->format = (rocsparse_format)b_format;
+  this->spmv_alg = (rocsparse_spmv_alg)this->b_spmv_alg;
+  this->spmm_alg = (rocsparse_spmm_alg)this->b_spmm_alg;
   this->gtsv_interleaved_alg = (rocsparse_gtsv_interleaved_alg)this->b_gtsv_interleaved_alg;
 
   // rocALUTION parameter overrides filename parameter

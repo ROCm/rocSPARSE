@@ -297,7 +297,7 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
                                                   J                   k,
                                                   I                   nnz,
                                                   J                   batch_count_A,
-                                                  J                   offsets_batch_stride_A,
+                                                  I                   offsets_batch_stride_A,
                                                   I                   columns_values_batch_stride_A,
                                                   U                   alpha_device_host,
                                                   const rocsparse_mat_descr descr,
@@ -312,7 +312,8 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
                                                   T*                        C,
                                                   J                         ldc,
                                                   J                         batch_count_C,
-                                                  I                         batch_stride_C);
+                                                  I                         batch_stride_C,
+                                                  bool                      force_conj_A);
 
 template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          handle,
@@ -332,7 +333,8 @@ rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          ha
                                                     J                         ldb,
                                                     U                         beta_device_host,
                                                     T*                        C,
-                                                    J                         ldc);
+                                                    J                         ldc,
+                                                    bool                      force_conj_A);
 
 template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle,
@@ -353,7 +355,8 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                 U                         beta_device_host,
                                                 T*                        C,
                                                 J                         ldc,
-                                                void*                     temp_buffer);
+                                                void*                     temp_buffer,
+                                                bool                      force_conj_A);
 
 template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
@@ -366,7 +369,7 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
                                                    J                   k,
                                                    I                   nnz,
                                                    J                   batch_count_A,
-                                                   J                   offsets_batch_stride_A,
+                                                   I                   offsets_batch_stride_A,
                                                    I columns_values_batch_stride_A,
                                                    U alpha_device_host,
                                                    const rocsparse_mat_descr descr,
@@ -382,7 +385,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
                                                    J                         ldc,
                                                    J                         batch_count_C,
                                                    I                         batch_stride_C,
-                                                   void*                     temp_buffer)
+                                                   void*                     temp_buffer,
+                                                   bool                      force_conj_A)
 {
     switch(alg)
     {
@@ -413,7 +417,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
                                                 C,
                                                 ldc,
                                                 batch_count_C,
-                                                batch_stride_C);
+                                                batch_stride_C,
+                                                force_conj_A);
     }
 
     case rocsparse_csrmm_alg_merge:
@@ -440,7 +445,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
                                                   beta_device_host,
                                                   C,
                                                   ldc,
-                                                  temp_buffer);
+                                                  temp_buffer,
+                                                  force_conj_A);
         }
         case rocsparse_operation_transpose:
         case rocsparse_operation_conjugate_transpose:
@@ -469,7 +475,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
                                                     C,
                                                     ldc,
                                                     batch_count_C,
-                                                    batch_stride_C);
+                                                    batch_stride_C,
+                                                    force_conj_A);
         }
         }
     }
@@ -497,7 +504,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
                                                       ldb,
                                                       beta_device_host,
                                                       C,
-                                                      ldc);
+                                                      ldc,
+                                                      force_conj_A);
         }
         case rocsparse_operation_transpose:
         case rocsparse_operation_conjugate_transpose:
@@ -526,7 +534,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
                                                     C,
                                                     ldc,
                                                     batch_count_C,
-                                                    batch_stride_C);
+                                                    batch_stride_C,
+                                                    force_conj_A);
         }
         }
     }
@@ -546,7 +555,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           J                         k,
                                           I                         nnz,
                                           J                         batch_count_A,
-                                          J                         offsets_batch_stride_A,
+                                          I                         offsets_batch_stride_A,
                                           I                         columns_values_batch_stride_A,
                                           const T*                  alpha_device_host,
                                           const rocsparse_mat_descr descr,
@@ -562,7 +571,8 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           J                         ldc,
                                           J                         batch_count_C,
                                           I                         batch_stride_C,
-                                          void*                     temp_buffer)
+                                          void*                     temp_buffer,
+                                          bool                      force_conj_A)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -791,7 +801,8 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                                  ldc,
                                                  batch_count_C,
                                                  batch_stride_C,
-                                                 temp_buffer);
+                                                 temp_buffer,
+                                                 force_conj_A);
     }
     else
     {
@@ -821,10 +832,9 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                                  ldc,
                                                  batch_count_C,
                                                  batch_stride_C,
-                                                 temp_buffer);
+                                                 temp_buffer,
+                                                 force_conj_A);
     }
-
-    return rocsparse_status_success;
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                 \
@@ -898,7 +908,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
         JTYPE                     k,                                         \
         ITYPE                     nnz,                                       \
         JTYPE                     batch_count_A,                             \
-        JTYPE                     offsets_batch_stride_A,                    \
+        ITYPE                     offsets_batch_stride_A,                    \
         ITYPE                     columns_values_batch_stride_A,             \
         const TTYPE*              alpha_device_host,                         \
         const rocsparse_mat_descr descr,                                     \
@@ -914,7 +924,8 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
         JTYPE                     ldc,                                       \
         JTYPE                     batch_count_C,                             \
         ITYPE                     batch_stride_C,                            \
-        void*                     temp_buffer);
+        void*                     temp_buffer,                               \
+        bool                      force_conj_A);
 
 INSTANTIATE(int32_t, int32_t, float);
 INSTANTIATE(int32_t, int32_t, double);
@@ -982,7 +993,8 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                         ldc,                                \
                                         1,                                  \
                                         0,                                  \
-                                        nullptr);                           \
+                                        nullptr,                            \
+                                        false);                             \
     }
 
 C_IMPL(rocsparse_scsrmm, float);

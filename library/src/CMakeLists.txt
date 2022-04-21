@@ -67,6 +67,7 @@ set(rocsparse_source
   src/level2/rocsparse_coomv.cpp
   src/level2/rocsparse_coomv_aos.cpp
   src/level2/rocsparse_csrmv.cpp
+  src/level2/rocsparse_cscmv.cpp
   src/level2/rocsparse_csrsv.cpp
   src/level2/rocsparse_csrsv_analysis.cpp
   src/level2/rocsparse_csrsv_buffer_size.cpp
@@ -102,6 +103,7 @@ set(rocsparse_source
   src/level3/rocsparse_csrmm_template_row_split.cpp
   src/level3/rocsparse_csrmm_template_merge.cpp
   src/level3/rocsparse_csrmm.cpp
+  src/level3/rocsparse_cscmm.cpp
   src/level3/rocsparse_coomm.cpp
   src/level3/rocsparse_coomm_template_atomic.cpp
   src/level3/rocsparse_coomm_template_segmented.cpp

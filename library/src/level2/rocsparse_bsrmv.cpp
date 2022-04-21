@@ -65,7 +65,8 @@ rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          han
                                                                     bsr_col_ind,
                                                                     x,
                                                                     beta_device_host,
-                                                                    y));
+                                                                    y,
+                                                                    false));
 
         return rocsparse_status_success;
     }

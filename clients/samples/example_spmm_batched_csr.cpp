@@ -70,7 +70,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     J batch_count_B = 100;
     J batch_count_C = 100;
 
-    J offsets_batch_stride_A        = (batch_count_A > 1) ? (m + 1) : 0;
+    I offsets_batch_stride_A        = (batch_count_A > 1) ? (m + 1) : 0;
     I columns_values_batch_stride_A = (batch_count_A > 1) ? nnz_A : 0;
     I batch_stride_B                = (batch_count_B > 1) ? nnz_B : 0;
     I batch_stride_C                = (batch_count_C > 1) ? nnz_C : 0;

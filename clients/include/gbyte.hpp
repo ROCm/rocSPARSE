@@ -105,6 +105,13 @@ constexpr double csrmv_gbyte_count(J M, J N, I nnz, bool beta = false)
            / 1e9;
 }
 
+template <typename T, typename I, typename J>
+constexpr double cscmv_gbyte_count(J M, J N, I nnz, bool beta = false)
+{
+    return ((N + 1) * sizeof(I) + nnz * sizeof(J) + (M + N + nnz + (beta ? M : 0)) * sizeof(T))
+           / 1e9;
+}
+
 template <typename T>
 constexpr double bsrsv_gbyte_count(rocsparse_int mb, rocsparse_int nnzb, rocsparse_int bsr_dim)
 {
@@ -215,6 +222,37 @@ constexpr double csrmm_batched_gbyte_count(J    M,
 {
     // read A matrix
     size_t readA = batch_count_A * ((M + 1) * sizeof(I) + nnz_A * sizeof(J) + nnz_A * sizeof(T));
+
+    // read B matrix
+    size_t readB = batch_count_B * nnz_B * sizeof(T);
+
+    // read C matrix
+    size_t readC = batch_count_C * (beta ? nnz_C : 0) * sizeof(T);
+
+    // write C matrix
+    size_t writeC = batch_count_C * nnz_C * sizeof(T);
+
+    return (readA + readB + readC + writeC) / 1e9;
+}
+
+template <typename T, typename I, typename J>
+constexpr double cscmm_gbyte_count(J N, I nnz_A, I nnz_B, I nnz_C, bool beta = false)
+{
+    return csrmm_gbyte_count<T>(N, nnz_A, nnz_B, nnz_C, beta);
+}
+
+template <typename T, typename I, typename J>
+constexpr double cscmm_batched_gbyte_count(J    N,
+                                           I    nnz_A,
+                                           I    nnz_B,
+                                           I    nnz_C,
+                                           J    batch_count_A,
+                                           J    batch_count_B,
+                                           J    batch_count_C,
+                                           bool beta = false)
+{
+    // read A matrix
+    size_t readA = batch_count_A * ((N + 1) * sizeof(I) + nnz_A * sizeof(J) + nnz_A * sizeof(T));
 
     // read B matrix
     size_t readB = batch_count_B * nnz_B * sizeof(T);

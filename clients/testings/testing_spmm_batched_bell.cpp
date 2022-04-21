@@ -70,6 +70,10 @@ void testing_spmm_batched_bell_bad_arg(const Arguments& arg)
     rocsparse_dnmat_descr mat_B = local_mat_B;
     rocsparse_dnmat_descr mat_C = local_mat_C;
 
+#define PARAMS                                                                                    \
+    handle, trans_A, trans_B, &alpha, mat_A, mat_B, &beta, mat_C, ttype, alg, stage, buffer_size, \
+        temp_buffer
+
     int     batch_count_B;
     int     batch_count_C;
     int64_t batch_stride_B;
@@ -85,20 +89,7 @@ void testing_spmm_batched_bell_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_C, batch_count_C, batch_stride_C),
                             rocsparse_status_success);
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                           trans_A,
-                                           trans_B,
-                                           &alpha,
-                                           mat_A,
-                                           mat_B,
-                                           &beta,
-                                           mat_C,
-                                           ttype,
-                                           alg,
-                                           stage,
-                                           buffer_size,
-                                           temp_buffer),
-                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(PARAMS), rocsparse_status_invalid_value);
 
     // C_i = A_i * B
     batch_count_B  = 1;
@@ -110,20 +101,7 @@ void testing_spmm_batched_bell_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_C, batch_count_C, batch_stride_C),
                             rocsparse_status_success);
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                           trans_A,
-                                           trans_B,
-                                           &alpha,
-                                           mat_A,
-                                           mat_B,
-                                           &beta,
-                                           mat_C,
-                                           ttype,
-                                           alg,
-                                           stage,
-                                           buffer_size,
-                                           temp_buffer),
-                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(PARAMS), rocsparse_status_invalid_value);
 
     // C_i = A_i * B_i
     batch_count_B  = 10;
@@ -135,20 +113,8 @@ void testing_spmm_batched_bell_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(mat_C, batch_count_C, batch_stride_C),
                             rocsparse_status_success);
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                           trans_A,
-                                           trans_B,
-                                           &alpha,
-                                           mat_A,
-                                           mat_B,
-                                           &beta,
-                                           mat_C,
-                                           ttype,
-                                           alg,
-                                           stage,
-                                           buffer_size,
-                                           temp_buffer),
-                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(PARAMS), rocsparse_status_invalid_value);
+#undef PARAMS
 }
 
 template <typename I, typename T>

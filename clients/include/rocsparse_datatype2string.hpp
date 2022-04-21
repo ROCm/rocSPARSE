@@ -337,19 +337,19 @@ constexpr auto rocsparse_spmmalg2string(rocsparse_spmm_alg alg)
     case rocsparse_spmm_alg_default:
         return "default";
     case rocsparse_spmm_alg_csr:
-        return "spmm_alg_csr";
+        return "csr";
     case rocsparse_spmm_alg_coo_segmented:
-        return "spmm_alg_coo_segmented";
+        return "coosegmented";
     case rocsparse_spmm_alg_coo_atomic:
-        return "spmm_alg_coo_atomic";
+        return "cooatomic";
     case rocsparse_spmm_alg_bell:
-        return "spmm_alg_bell";
+        return "bell";
     case rocsparse_spmm_alg_coo_segmented_atomic:
-        return "spmm_alg_coo_segmented_atomic";
+        return "coosegmented_atomic";
     case rocsparse_spmm_alg_csr_row_split:
-        return "spmm_alg_csr_row_split";
+        return "csrrow_split";
     case rocsparse_spmm_alg_csr_merge:
-        return "spmm_alg_csr_merge";
+        return "csrmerge";
     }
     return "invalid";
 }

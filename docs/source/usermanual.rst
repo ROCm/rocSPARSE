@@ -879,6 +879,8 @@ Auxiliary Functions
 +---------------------------------------------+
 |:cpp:func:`rocsparse_csr_set_strided_batch`  |
 +---------------------------------------------+
+|:cpp:func:`rocsparse_csc_set_strided_batch`  |
++---------------------------------------------+
 |:cpp:func:`rocsparse_spmat_get_attribute`    |
 +---------------------------------------------+
 |:cpp:func:`rocsparse_spmat_set_attribute`    |
@@ -1489,6 +1491,11 @@ rocsparse_csr_set_strided_batch
 -------------------------------
 
 .. doxygenfunction:: rocsparse_csr_set_strided_batch
+
+rocsparse_csc_set_strided_batch
+-------------------------------
+
+.. doxygenfunction:: rocsparse_csc_set_strided_batch
 
 rocsparse_spmat_get_attribute
 -----------------------------
