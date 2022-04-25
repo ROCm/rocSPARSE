@@ -132,8 +132,8 @@ Tests:
   filename: [nos1,
              nos5,
              nos7,
-	           mplate,
-	           Chevron3]
+                   mplate,
+                   Chevron3]
 
 - name: spsm_coo_file
   category: pre_checkin
