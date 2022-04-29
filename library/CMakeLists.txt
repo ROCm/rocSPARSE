@@ -103,7 +103,7 @@ include(GenerateExportHeader)
 generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-export.h)
 
 
-if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
+if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY AND NOT WIN32)
   rocm_wrap_header_file(
     rocsparse-version.h rocsparse-export.h
     GUARDS SYMLINK WRAPPER
