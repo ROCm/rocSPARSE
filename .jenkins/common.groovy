@@ -107,7 +107,7 @@ def runPackageCommand(platform, project, String dirmode = "release")
 
     String pkgType
     String pkgInfoCommand
-    if(platform.jenkinsLabel.contains('centos') || platform.jenkinsLabel.contains('sles'))
+    if(platform.jenkinsLabel.contains('centos') || platform.jenkinsLabel.contains('sles') || platform.jenkinsLabel.contains('rhel') || platform.jenkinsLabel.contains('cs9'))
     {
         pkgType = "rpm"
         pkgInfoCommand = "rpm -qlp package/*.rpm"
