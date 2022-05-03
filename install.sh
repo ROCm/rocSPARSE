@@ -147,12 +147,12 @@ install_packages( )
   local client_dependencies_sles=( "pkg-config" "dpkg" "python3-pip" )
 
   if [[ ( "${ID}" == "centos" ) || ( "${ID}" == "rhel" ) ]]; then
-    if [[ "${VERSION_ID}" == "6" ]]; then
+    if [[ "${MAJORVERSION}" == "6" ]]; then
       library_dependencies_centos+=( "numactl" )
     else
       library_dependencies_centos+=( "numactl-libs" )
     fi
-    if [[ "${VERSION_ID}" == "8" ]]; then
+    if [[ "${MAJORVERSION}" == "8" ]]; then
       client_dependencies_centos8+=( "python3-pyyaml" )
     else
       client_dependencies_centos8+=( "PyYAML" )
@@ -173,7 +173,7 @@ install_packages( )
 #     yum -y update brings *all* installed packages up to date
 #     without seeking user approval
 #     elevate_if_not_root yum -y update
-      if [[ "${VERSION_ID}" -ge 8 ]]; then
+      if [[ "${MAJORVERSION}" -ge 8 ]]; then
         install_yum_packages "${library_dependencies_centos8[@]}"
         if [[ "${build_clients}" == true ]]; then
           install_yum_packages "${client_dependencies_centos8[@]}"
@@ -235,6 +235,8 @@ else
   echo "This script depends on the /etc/os-release file"
   exit 2
 fi
+
+MAJORVERSION=$(echo $VERSION_ID | cut -f1 -d.)
 
 # The following function exits script if an unsupported distro is detected
 supported_distro
