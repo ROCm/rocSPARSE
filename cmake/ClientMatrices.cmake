@@ -146,11 +146,21 @@ foreach(i RANGE 0 ${len1})
     endif()
 
     execute_process(COMMAND tar xf ${mat}.tar.gz
+      RESULT_VARIABLE STATUS
       WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
+    if(STATUS AND NOT STATUS EQUAL 0)
+      message(FATAL_ERROR "uncompressing failed, aborting.")
+    endif()
 
     file(RENAME ${CMAKE_MATRICES_DIR}/${mat}/${mat}.mtx ${CMAKE_MATRICES_DIR}/${mat}.mtx)
     execute_process(COMMAND ${PROJECT_BINARY_DIR}/mtx2csr.exe ${mat}.mtx ${mat}.csr
+      RESULT_VARIABLE STATUS
       WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
+    if(STATUS AND NOT STATUS EQUAL 0)
+      message(FATAL_ERROR "mxt2csr.exe failed, aborting.")
+    else()
+      message(STATUS "${mat} success.")
+    endif()
     # TODO: add 'COMMAND_ERROR_IS_FATAL ANY' once cmake supported version is 3.19
     file(REMOVE_RECURSE ${CMAKE_MATRICES_DIR}/${mat}.tar.gz ${CMAKE_MATRICES_DIR}/${mat} ${CMAKE_MATRICES_DIR}/${mat}.mtx)
 
