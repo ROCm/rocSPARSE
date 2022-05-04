@@ -290,7 +290,7 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
         else
         {
             RETURN_IF_HIP_ERROR(
-                hipMemcpy(nnz_total_dev_host_ptr, d_nnz, sizeof(I), hipMemcpyDeviceToHost));
+                hipMemcpyWithStream(nnz_total_dev_host_ptr, d_nnz, sizeof(I), hipMemcpyDeviceToHost, handle->stream));
         }
 
         //

@@ -307,7 +307,7 @@ rocsparse_status
         {
             T h_threshold = static_cast<T>(0);
             RETURN_IF_HIP_ERROR(
-                hipMemcpy(&h_threshold, d_threshold, sizeof(T), hipMemcpyDeviceToHost));
+                hipMemcpyWithStream(&h_threshold, d_threshold, sizeof(T), hipMemcpyDeviceToHost, handle->stream));
             hipLaunchKernelGGL((prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
                                grid,
                                threads,
@@ -322,7 +322,7 @@ rocsparse_status
         }
     }
     // Store threshold at first entry in output array
-    RETURN_IF_HIP_ERROR(hipMemcpy(output, d_threshold, sizeof(T), hipMemcpyDeviceToDevice));
+    RETURN_IF_HIP_ERROR(hipMemcpyWithStream(output, d_threshold, sizeof(T), hipMemcpyDeviceToDevice, handle->stream));
 
     // Compute csr_row_ptr with the right index base.
     rocsparse_int first_value = descr->base;
@@ -449,9 +449,9 @@ rocsparse_status rocsparse_prune_dense2csr_by_percentage_template(rocsparse_hand
         rocsparse_int end   = 0;
 
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&end, &csr_row_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&end, &csr_row_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&start, &csr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&start, &csr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
 
         rocsparse_int nnz = (end - start);
 

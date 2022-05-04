@@ -121,7 +121,7 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
                            workspace,
                            (T*)nullptr);
 
-        RETURN_IF_HIP_ERROR(hipMemcpy(result, workspace, sizeof(T), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpyWithStream(result, workspace, sizeof(T), hipMemcpyDeviceToHost, handle->stream));
     }
 #undef DOTCI_DIM
 

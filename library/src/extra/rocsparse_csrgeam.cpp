@@ -291,9 +291,9 @@ rocsparse_status rocsparse_csrgeam_template(rocsparse_handle          handle,
         rocsparse_int end   = 0;
 
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&end, &csr_row_ptr_C[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&end, &csr_row_ptr_C[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&start, &csr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&start, &csr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
 
         rocsparse_int nnz_C = (end - start);
 
@@ -541,7 +541,7 @@ extern "C" rocsparse_status rocsparse_csrgeam_nnz(rocsparse_handle          hand
     {
         // Blocking mode
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(nnz_C, csr_row_ptr_C + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(nnz_C, csr_row_ptr_C + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
 
         // Adjust index base of nnz_C
         *nnz_C -= descr_C->base;

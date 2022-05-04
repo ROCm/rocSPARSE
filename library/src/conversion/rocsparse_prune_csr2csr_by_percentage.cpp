@@ -457,7 +457,7 @@ rocsparse_status
     else
     {
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&h_threshold, &output[nnz_A + pos], sizeof(T), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&h_threshold, &output[nnz_A + pos], sizeof(T), hipMemcpyDeviceToHost, handle->stream));
 
         threshold = &h_threshold;
     }
@@ -593,7 +593,7 @@ rocsparse_status
 
     // Store threshold at first entry in output array
     RETURN_IF_HIP_ERROR(
-        hipMemcpy(output, &output[nnz_A + pos], sizeof(T), hipMemcpyDeviceToDevice));
+        hipMemcpyWithStream(output, &output[nnz_A + pos], sizeof(T), hipMemcpyDeviceToDevice, handle->stream));
 
     // Compute csr_row_ptr_C with the right index base.
     rocsparse_int first_value = csr_descr_C->base;
@@ -628,10 +628,11 @@ rocsparse_status
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMemcpy(nnz_total_dev_host_ptr,
+        RETURN_IF_HIP_ERROR(hipMemcpyWithStream(nnz_total_dev_host_ptr,
                                       &csr_row_ptr_C[m],
                                       sizeof(rocsparse_int),
-                                      hipMemcpyDeviceToHost));
+                                      hipMemcpyDeviceToHost,
+                                      stream));
 
         *nnz_total_dev_host_ptr -= csr_descr_C->base;
     }
@@ -736,9 +737,9 @@ rocsparse_status
         rocsparse_int end   = 0;
 
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&end, &csr_row_ptr_C[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&end, &csr_row_ptr_C[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&start, &csr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&start, &csr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
 
         rocsparse_int nnz = (end - start);
 
@@ -757,10 +758,11 @@ rocsparse_status
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMemcpy(&h_threshold,
+        RETURN_IF_HIP_ERROR(hipMemcpyWithStream(&h_threshold,
                                       &(reinterpret_cast<T*>(temp_buffer))[0],
                                       sizeof(T),
-                                      hipMemcpyDeviceToHost));
+                                      hipMemcpyDeviceToHost,
+                                      handle->stream));
 
         threshold = &h_threshold;
     }

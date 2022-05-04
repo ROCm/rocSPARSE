@@ -128,16 +128,16 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
         if(is_row_oriented)
         {
             RETURN_IF_HIP_ERROR(
-                hipMemcpy(&end, &csx_row_col_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                &start, &csx_row_col_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+                hipMemcpyWithStream(&end, &csx_row_col_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyWithStream(
+                &start, &csx_row_col_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         }
         else
         {
             RETURN_IF_HIP_ERROR(
-                hipMemcpy(&end, &csx_row_col_ptr[n], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                &start, &csx_row_col_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+                hipMemcpyWithStream(&end, &csx_row_col_ptr[n], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyWithStream(
+                &start, &csx_row_col_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         }
 
         rocsparse_int nnz = (end - start);

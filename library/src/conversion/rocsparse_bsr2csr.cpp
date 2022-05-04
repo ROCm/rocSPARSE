@@ -139,9 +139,9 @@ rocsparse_status rocsparse_bsr2csr_template(rocsparse_handle          handle,
         rocsparse_int end   = 0;
 
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
 
         rocsparse_int nnzb = (end - start);
 

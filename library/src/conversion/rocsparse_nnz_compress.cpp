@@ -121,9 +121,9 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
     // Find number of non-zeros in input CSR matrix on host
     rocsparse_int nnz_A, nnz_A_0;
     RETURN_IF_HIP_ERROR(
-        hipMemcpy(&nnz_A, &csr_row_ptr_A[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        hipMemcpyWithStream(&nnz_A, &csr_row_ptr_A[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
     RETURN_IF_HIP_ERROR(
-        hipMemcpy(&nnz_A_0, &csr_row_ptr_A[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        hipMemcpyWithStream(&nnz_A_0, &csr_row_ptr_A[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
     nnz_A -= nnz_A_0;
     if(nnz_A < 0)
     {
@@ -379,7 +379,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
 
     if(handle->pointer_mode == rocsparse_pointer_mode_host)
     {
-        RETURN_IF_HIP_ERROR(hipMemcpy(nnz_C, dnnz_C, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpyWithStream(nnz_C, dnnz_C, sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         RETURN_IF_HIP_ERROR(hipFree(dnnz_C));
     }
 

@@ -589,7 +589,7 @@ extern "C" rocsparse_status rocsparse_bsrilu0_zero_pivot(rocsparse_handle   hand
     {
         // rocsparse_pointer_mode_host
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(position, info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(position, info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
 
         // If no zero pivot is found, set -1
         if(*position == std::numeric_limits<rocsparse_int>::max())

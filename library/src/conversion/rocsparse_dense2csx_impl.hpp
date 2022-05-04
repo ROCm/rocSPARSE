@@ -142,10 +142,11 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
             csx_row_col_ptr_A, &first_value, sizeof(I), hipMemcpyHostToDevice, handle->stream));
 
-        RETURN_IF_HIP_ERROR(hipMemcpy(csx_row_col_ptr_A + 1,
+        RETURN_IF_HIP_ERROR(hipMemcpyWithStream(csx_row_col_ptr_A + 1,
                                       nnz_per_row_column,
                                       sizeof(I) * dimdir,
-                                      hipMemcpyDeviceToDevice));
+                                      hipMemcpyDeviceToDevice,
+                                      handle->stream));
 
         size_t temp_storage_bytes = 0;
         // Obtain rocprim buffer size
@@ -195,17 +196,17 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
 
         if(is_row_oriented)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                &end, &csx_row_col_ptr_A[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                &start, &csx_row_col_ptr_A[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            RETURN_IF_HIP_ERROR(hipMemcpyWithStream(
+                &end, &csx_row_col_ptr_A[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyWithStream(
+                &start, &csx_row_col_ptr_A[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         }
         else
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                &end, &csx_row_col_ptr_A[n], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                &start, &csx_row_col_ptr_A[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            RETURN_IF_HIP_ERROR(hipMemcpyWithStream(
+                &end, &csx_row_col_ptr_A[n], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyWithStream(
+                &start, &csx_row_col_ptr_A[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         }
 
         rocsparse_int nnz = (end - start);

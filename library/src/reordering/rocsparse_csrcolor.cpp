@@ -390,7 +390,7 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
         //
         // Copy colored max vertices for current iteration to host
         //
-        RETURN_IF_HIP_ERROR(hipMemcpy(&num_uncolored, workspace, sizeof(J), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpyWithStream(&num_uncolored, workspace, sizeof(J), hipMemcpyDeviceToHost, handle->stream));
     }
 
     //
@@ -415,7 +415,7 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
                            stream,
                            workspace);
 
-        RETURN_IF_HIP_ERROR(hipMemcpy(ncolors, workspace, sizeof(J), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpyWithStream(ncolors, workspace, sizeof(J), hipMemcpyDeviceToHost, handle->stream));
         *ncolors += 1;
     }
     //

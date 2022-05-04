@@ -273,9 +273,9 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
     rocsparse_int start = 0;
     rocsparse_int end   = 0;
     RETURN_IF_HIP_ERROR(
-        hipMemcpy(&end, &bsr_row_ptr_C[mb_c], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        hipMemcpyWithStream(&end, &bsr_row_ptr_C[mb_c], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
     RETURN_IF_HIP_ERROR(
-        hipMemcpy(&start, &bsr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        hipMemcpyWithStream(&start, &bsr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
 
     rocsparse_int nnzb_C = end - start;
 
@@ -520,10 +520,10 @@ extern "C" rocsparse_status rocsparse_gebsr2csr_nnz(rocsparse_handle          ha
         rocsparse_int start = 0;
         rocsparse_int end   = 0;
 
-        RETURN_IF_HIP_ERROR(hipMemcpy(
-            &end, &bsr_row_ptr[mb * row_block_dim], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpyWithStream(
+            &end, &bsr_row_ptr[mb * row_block_dim], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
 
         rocsparse_int nnzb = (end - start);
 
@@ -869,10 +869,10 @@ extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          
         {
             rocsparse_int hstart = 0;
             rocsparse_int hend   = 0;
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                &hend, &bsr_row_ptr_C[mb_c], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                &hstart, &bsr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            RETURN_IF_HIP_ERROR(hipMemcpyWithStream(
+                &hend, &bsr_row_ptr_C[mb_c], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyWithStream(
+                &hstart, &bsr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
             *nnz_total_dev_host_ptr = hend - hstart;
         }
     }

@@ -563,10 +563,11 @@ rocsparse_status rocsparse_prune_csr2csr_nnz_template(rocsparse_handle          
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMemcpy(nnz_total_dev_host_ptr,
+        RETURN_IF_HIP_ERROR(hipMemcpyWithStream(nnz_total_dev_host_ptr,
                                       &csr_row_ptr_C[m],
                                       sizeof(rocsparse_int),
-                                      hipMemcpyDeviceToHost));
+                                      hipMemcpyDeviceToHost,
+                                      stream));
 
         *nnz_total_dev_host_ptr -= csr_descr_C->base;
     }
@@ -671,9 +672,9 @@ rocsparse_status rocsparse_prune_csr2csr_template(rocsparse_handle          hand
         rocsparse_int end   = 0;
 
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&end, &csr_row_ptr_C[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&end, &csr_row_ptr_C[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&start, &csr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpyWithStream(&start, &csr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
 
         rocsparse_int nnz = (end - start);
 

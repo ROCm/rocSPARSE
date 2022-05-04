@@ -118,7 +118,7 @@ T log_trace_scalar_value(rocsparse_handle handle, const T* value)
     T host;
     if(value && handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipMemcpy(&host, value, sizeof(host), hipMemcpyDeviceToHost);
+        hipMemcpyWithStream(&host, value, sizeof(host), hipMemcpyDeviceToHost, handle->stream);
         value = &host;
     }
     return log_trace_scalar_value(value);
@@ -139,7 +139,7 @@ T log_bench_scalar_value(rocsparse_handle handle, const T* value)
     T host;
     if(value && handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipMemcpy(&host, value, sizeof(host), hipMemcpyDeviceToHost);
+        hipMemcpyWithStream(&host, value, sizeof(host), hipMemcpyDeviceToHost, handle->stream);
         value = &host;
     }
     return log_bench_scalar_value(value);
