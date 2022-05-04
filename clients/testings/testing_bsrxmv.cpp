@@ -227,7 +227,8 @@ void testing_bsrxmv(const Arguments& arg)
         //
         // Unique random integer values.
         //
-        rocsparse_int* marker = new rocsparse_int[mb];
+        rocsparse_int* marker;
+        rocsparse_hipHostMalloc(&marker, mb * sizeof(rocsparse_int));
         for(rocsparse_int i = 0; i < mb; ++i)
         {
             marker[i] = 0;
@@ -276,7 +277,7 @@ void testing_bsrxmv(const Arguments& arg)
             }
         }
 
-        delete[] marker;
+        rocsparse_hipHostFree(marker);
     }
 
     device_dense_vector<rocsparse_int> dbsr_mask_ptr(hbsr_mask_ptr);

@@ -648,7 +648,7 @@ void testing_csrgemm_reuse(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_buffer_size<T>(
         PARAMS_BUFFER_SIZE(h_alpha, h_beta, d_A, d_B, d_C, d_D, out_buffer_size)));
 
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, out_buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, out_buffer_size));
 
     if(arg.unit_check)
     {
@@ -831,7 +831,7 @@ void testing_csrgemm_reuse(const Arguments& arg)
     }
 
     // Free buffer
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(TYPE)                                                    \

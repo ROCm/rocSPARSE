@@ -154,7 +154,7 @@ void testing_gtsv_interleaved_batch(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_gtsv_interleaved_batch_buffer_size<T>(PARAMS_BUFFER_SIZE));
 
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     if(arg.unit_check)
     {
@@ -264,7 +264,7 @@ void testing_gtsv_interleaved_batch(const Arguments& arg)
     }
 
     // Free buffer
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_SOLVE

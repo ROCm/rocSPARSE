@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(BUILD_VERBOSE)
   include(../cmake/Verbose.cmake)
 endif()
+
+# MEMSTAT ?
+if(BUILD_MEMSTAT)
+  add_compile_options(-DROCSPARSE_WITH_MEMSTAT)
+endif()
+
 
 # Configure a header file to pass the rocSPARSE version
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse-version.h.in"

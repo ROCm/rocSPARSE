@@ -453,13 +453,13 @@ public:
                 EXPECT_ROCSPARSE_STATUS(
                     rocsparse_sddmm_buffer_size(PARAMS_BUFFER_SIZE(h_alpha, A, B, h_beta, C)),
                     rocsparse_status_success);
-                CHECK_HIP_ERROR(hipMalloc(&dbuffer, 10));
+                CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, 10));
                 EXPECT_ROCSPARSE_STATUS(
                     rocsparse_sddmm_preprocess(PARAMS(h_alpha, A, B, h_beta, C)),
                     rocsparse_status_success);
                 EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm(PARAMS(h_alpha, A, B, h_beta, C)),
                                         rocsparse_status_success);
-                CHECK_HIP_ERROR(hipFree(dbuffer));
+                CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
                 return;
             }
             return;
@@ -505,7 +505,7 @@ public:
         CHECK_ROCSPARSE_ERROR(
             rocsparse_sddmm_buffer_size(PARAMS_BUFFER_SIZE(h_alpha, A, B, h_beta, C)));
         void* dbuffer = nullptr;
-        CHECK_HIP_ERROR(hipMalloc(&dbuffer, std::max(buffer_size, sizeof(I))));
+        CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, std::max(buffer_size, sizeof(I))));
         if(arg.unit_check)
         {
             // Pointer mode host
@@ -602,7 +602,7 @@ public:
                                 get_gpu_time_msec(gpu_time_used));
         }
 
-        CHECK_HIP_ERROR(hipFree(dbuffer));
+        CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
         return;
     }
 };

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 #include "rocsparse_test.hpp"
 #endif
 #include <cinttypes>
+#include <iostream>
 #include <locale.h>
 struct memory_mode
 {
@@ -106,12 +107,101 @@ struct memory_mode
     }
 };
 
-/* ============================================================================================ */
-/*! \brief  Set of static functions for padded memory allocation
- *  \details This set of functions is responsible of allocating memory with extra padding.
- *  The extra memory size of the 3 segments of size \ref PAD, GUARD_VALUES, PREMEM and POSTMEM.
- *  The memory layout is GUARD_VALUES, PREMEM, MEMORY and POSTMEM.
- */
+#ifndef ROCSPARSE_WITH_MEMSTAT
+
+#define rocsparse_hipMalloc(p_, nbytes_) hipMalloc(p_, nbytes_)
+
+#define rocsparse_hipFree(p_) hipFree(p_)
+
+#define rocsparse_hipHostMalloc(p_, nbytes_) hipHostMalloc(p_, nbytes_)
+#define rocsparse_hipHostFree(p_) hipHostFree(p_)
+
+#define rocsparse_hipMallocManaged(p_, nbytes_) hipMallocManaged(p_, nbytes_)
+#define rocsparse_hipFreeManaged(p_) hipFree(p_)
+
+#else
+
+template <typename T>
+hipError_t rocsparse_hip_free_template(T* mem, const char* tag)
+{
+    return rocsparse_hip_free(static_cast<void*>(mem), tag);
+}
+
+template <typename T>
+hipError_t rocsparse_hip_malloc_template(T** mem, size_t nbytes, const char* tag)
+{
+    void* m;
+    auto  error = rocsparse_hip_malloc(&m, nbytes, tag);
+    if(error != hipSuccess)
+    {
+        return error;
+    }
+    mem[0] = static_cast<T*>(m);
+    return hipSuccess;
+}
+
+template <typename T>
+hipError_t rocsparse_hip_host_free_template(T* mem, const char* tag)
+{
+    return rocsparse_hip_host_free(static_cast<void*>(mem), tag);
+}
+
+template <typename T>
+hipError_t rocsparse_hip_host_malloc_template(T** mem, size_t nbytes, const char* tag)
+{
+    void* m;
+    auto  error = rocsparse_hip_host_malloc(&m, nbytes, tag);
+    if(error != hipSuccess)
+    {
+        return error;
+    }
+    mem[0] = static_cast<T*>(m);
+    return hipSuccess;
+}
+template <typename T>
+hipError_t rocsparse_hip_free_managed_template(T* mem, const char* tag)
+{
+    return rocsparse_hip_free_managed(static_cast<void*>(mem), tag);
+}
+
+template <typename T>
+hipError_t rocsparse_hip_malloc_managed_template(T** mem, size_t nbytes, const char* tag)
+{
+    void* m;
+    auto  error = rocsparse_hip_malloc_managed(&m, nbytes, tag);
+    if(error != hipSuccess)
+    {
+        return error;
+    }
+    mem[0] = static_cast<T*>(m);
+    return hipSuccess;
+}
+
+#define ROCSPARSE_CLIENTS_MEMORY_SOURCE_LINE(line_) #line_
+#define ROCSPARSE_CLIENTS_MEMORY_SOURCE_TAG(line_) \
+    __FILE__ " " ROCSPARSE_CLIENTS_MEMORY_SOURCE_LINE(line_)
+
+#define rocsparse_hipMalloc(p_, nbytes_) \
+    rocsparse_hip_malloc_template(p_, nbytes_, ROCSPARSE_CLIENTS_MEMORY_SOURCE_TAG(__LINE__))
+
+#define rocsparse_hipFree(p_) \
+    rocsparse_hip_free_template(p_, ROCSPARSE_CLIENTS_MEMORY_SOURCE_TAG(__LINE__))
+
+#define rocsparse_hipHostMalloc(p_, nbytes_) \
+    rocsparse_hip_host_malloc_template(p_, nbytes_, ROCSPARSE_CLIENTS_MEMORY_SOURCE_TAG(__LINE__))
+
+#define rocsparse_hipHostFree(p_) \
+    rocsparse_hip_host_free_template(p_, ROCSPARSE_CLIENTS_MEMORY_SOURCE_TAG(__LINE__))
+
+#define rocsparse_hipMallocManaged(p_, nbytes_) \
+    rocsparse_hip_malloc_managed_template(      \
+        p_, nbytes_, ROCSPARSE_CLIENTS_MEMORY_SOURCE_TAG(__LINE__))
+
+#define rocsparse_hipFreeManaged(p_) \
+    rocsparse_hip_free_managed_template(p_, ROCSPARSE_CLIENTS_MEMORY_SOURCE_TAG(__LINE__))
+
+#endif
+
 template <memory_mode::value_t MODE, typename T, size_t PAD = 4096, typename U = T>
 struct rocsparse_allocator
 {
@@ -188,7 +278,7 @@ public:
         {
         case memory_mode::host:
         {
-            if((hipHostMalloc)(&d, nbytes) != hipSuccess)
+            if(rocsparse_hipHostMalloc(&d, nbytes) != hipSuccess)
             {
                 fprintf(stderr, "Error allocating %'zu bytes (%zu GB)\n", nbytes, nbytes >> 30);
                 d = nullptr;
@@ -198,7 +288,7 @@ public:
         }
         case memory_mode::device:
         {
-            if((hipMalloc)(&d, nbytes) != hipSuccess)
+            if(rocsparse_hipMalloc(&d, nbytes) != hipSuccess)
             {
                 fprintf(stderr, "Error allocating %'zu bytes (%zu GB)\n", nbytes, nbytes >> 30);
                 d = nullptr;
@@ -209,7 +299,7 @@ public:
         case memory_mode::managed:
         {
 
-            if((hipMallocManaged)(&d, nbytes) != hipSuccess)
+            if(rocsparse_hipMallocManaged(&d, nbytes) != hipSuccess)
             {
                 fprintf(stderr, "Error allocating %'zu bytes (%zu GB)\n", nbytes, nbytes >> 30);
                 d = nullptr;
@@ -276,19 +366,31 @@ public:
             {
             case memory_mode::host:
             {
-                auto status = hipHostFree(d);
+                auto status = rocsparse_hipHostFree(d);
                 if(status != hipSuccess)
                 {
+                    throw status;
                 }
+
                 break;
             }
             case memory_mode::device:
+            {
+                // Free device memory
+                auto status = rocsparse_hipFree(d);
+                if(status != hipSuccess)
+                {
+                    throw status;
+                }
+                break;
+            }
             case memory_mode::managed:
             {
                 // Free device memory
-                auto status = hipFree(d);
+                auto status = rocsparse_hipFreeManaged(d);
                 if(status != hipSuccess)
                 {
+                    throw status;
                 }
                 break;
             }
@@ -304,6 +406,6 @@ template <typename T>
 using rocsparse_device_allocator = rocsparse_allocator<memory_mode::device, T>;
 
 template <typename T>
-using rocsparse_managed_allocator = rocsparse_allocator<memory_mode::device, T>;
+using rocsparse_managed_allocator = rocsparse_allocator<memory_mode::managed, T>;
 
 #endif // ROCSPARSE_ALLOCATOR_HPP

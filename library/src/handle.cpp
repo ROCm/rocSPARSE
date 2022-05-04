@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 #include "handle.h"
 #include "definitions.h"
 #include "logging.h"
+#include "utility.h"
 
 #include <hip/hip_runtime.h>
 
@@ -69,13 +70,13 @@ _rocsparse_handle::_rocsparse_handle()
 
     // Allocate device buffer
     buffer_size = (coomv_size > 1024 * 1024) ? coomv_size : 1024 * 1024;
-    THROW_IF_HIP_ERROR(hipMalloc(&buffer, buffer_size));
+    THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&buffer, buffer_size));
 
     // Device one
-    THROW_IF_HIP_ERROR(hipMalloc(&sone, sizeof(float)));
-    THROW_IF_HIP_ERROR(hipMalloc(&done, sizeof(double)));
-    THROW_IF_HIP_ERROR(hipMalloc(&cone, sizeof(rocsparse_float_complex)));
-    THROW_IF_HIP_ERROR(hipMalloc(&zone, sizeof(rocsparse_double_complex)));
+    THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&sone, sizeof(float)));
+    THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&done, sizeof(double)));
+    THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&cone, sizeof(rocsparse_float_complex)));
+    THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&zone, sizeof(rocsparse_double_complex)));
 
     // Execute empty kernel for initialization
     hipLaunchKernelGGL(init_kernel, dim3(1), dim3(1), 0, stream);
@@ -120,11 +121,11 @@ _rocsparse_handle::_rocsparse_handle()
  ******************************************************************************/
 _rocsparse_handle::~_rocsparse_handle()
 {
-    PRINT_IF_HIP_ERROR(hipFree(buffer));
-    PRINT_IF_HIP_ERROR(hipFree(sone));
-    PRINT_IF_HIP_ERROR(hipFree(done));
-    PRINT_IF_HIP_ERROR(hipFree(cone));
-    PRINT_IF_HIP_ERROR(hipFree(zone));
+    PRINT_IF_HIP_ERROR(rocsparse_hipFree(buffer));
+    PRINT_IF_HIP_ERROR(rocsparse_hipFree(sone));
+    PRINT_IF_HIP_ERROR(rocsparse_hipFree(done));
+    PRINT_IF_HIP_ERROR(rocsparse_hipFree(cone));
+    PRINT_IF_HIP_ERROR(rocsparse_hipFree(zone));
 
     // Close log files
     if(log_trace_ofs.is_open())
@@ -282,7 +283,7 @@ rocsparse_status rocsparse_copy_csrmv_info(rocsparse_csrmv_info       dest,
     {
         if(dest->row_blocks == nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&dest->row_blocks, I_size * src->size));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->row_blocks, I_size * src->size));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(
             dest->row_blocks, src->row_blocks, I_size * src->size, hipMemcpyDeviceToDevice));
@@ -293,7 +294,7 @@ rocsparse_status rocsparse_copy_csrmv_info(rocsparse_csrmv_info       dest,
         if(dest->wg_flags == nullptr)
         {
             RETURN_IF_HIP_ERROR(
-                hipMalloc((void**)&dest->wg_flags, sizeof(unsigned int) * src->size));
+                rocsparse_hipMalloc((void**)&dest->wg_flags, sizeof(unsigned int) * src->size));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->wg_flags,
                                       src->wg_flags,
@@ -305,7 +306,7 @@ rocsparse_status rocsparse_copy_csrmv_info(rocsparse_csrmv_info       dest,
     {
         if(dest->wg_ids == nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&dest->wg_ids, J_size * src->size));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->wg_ids, J_size * src->size));
         }
         RETURN_IF_HIP_ERROR(
             hipMemcpy(dest->wg_ids, src->wg_ids, J_size * src->size, hipMemcpyDeviceToDevice));
@@ -341,9 +342,9 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
     // Clean up row blocks
     if(info->size > 0)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->row_blocks));
-        RETURN_IF_HIP_ERROR(hipFree(info->wg_flags));
-        RETURN_IF_HIP_ERROR(hipFree(info->wg_ids));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->row_blocks));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->wg_flags));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->wg_ids));
     }
 
     // Destruct
@@ -474,7 +475,7 @@ rocsparse_status rocsparse_copy_trm_info(rocsparse_trm_info dest, const rocspars
     {
         if(dest->row_map == nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&(dest->row_map), J_size * src->m));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&(dest->row_map), J_size * src->m));
         }
         RETURN_IF_HIP_ERROR(
             hipMemcpy(dest->row_map, src->row_map, J_size * src->m, hipMemcpyDeviceToDevice));
@@ -484,7 +485,8 @@ rocsparse_status rocsparse_copy_trm_info(rocsparse_trm_info dest, const rocspars
     {
         if(dest->trm_diag_ind == nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&(dest->trm_diag_ind), I_size * src->m));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc((void**)&(dest->trm_diag_ind), I_size * src->m));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(
             dest->trm_diag_ind, src->trm_diag_ind, I_size * src->m, hipMemcpyDeviceToDevice));
@@ -494,7 +496,7 @@ rocsparse_status rocsparse_copy_trm_info(rocsparse_trm_info dest, const rocspars
     {
         if(dest->trmt_perm == nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&(dest->trmt_perm), I_size * src->nnz));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&(dest->trmt_perm), I_size * src->nnz));
         }
         RETURN_IF_HIP_ERROR(
             hipMemcpy(dest->trmt_perm, src->trmt_perm, I_size * src->nnz, hipMemcpyDeviceToDevice));
@@ -504,7 +506,8 @@ rocsparse_status rocsparse_copy_trm_info(rocsparse_trm_info dest, const rocspars
     {
         if(dest->trmt_row_ptr == nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&(dest->trmt_row_ptr), I_size * (src->m + 1)));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc((void**)&(dest->trmt_row_ptr), I_size * (src->m + 1)));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(
             dest->trmt_row_ptr, src->trmt_row_ptr, I_size * (src->m + 1), hipMemcpyDeviceToDevice));
@@ -514,7 +517,8 @@ rocsparse_status rocsparse_copy_trm_info(rocsparse_trm_info dest, const rocspars
     {
         if(dest->trmt_col_ind == nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&(dest->trmt_col_ind), J_size * src->nnz));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc((void**)&(dest->trmt_col_ind), J_size * src->nnz));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(
             dest->trmt_col_ind, src->trmt_col_ind, J_size * src->nnz, hipMemcpyDeviceToDevice));
@@ -547,32 +551,32 @@ rocsparse_status rocsparse_destroy_trm_info(rocsparse_trm_info info)
     // Clean up
     if(info->row_map != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->row_map));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->row_map));
         info->row_map = nullptr;
     }
 
     if(info->trm_diag_ind != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->trm_diag_ind));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->trm_diag_ind));
         info->trm_diag_ind = nullptr;
     }
 
     // Clear trmt arrays
     if(info->trmt_perm != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->trmt_perm));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->trmt_perm));
         info->trmt_perm = nullptr;
     }
 
     if(info->trmt_row_ptr != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->trmt_row_ptr));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->trmt_row_ptr));
         info->trmt_row_ptr = nullptr;
     }
 
     if(info->trmt_col_ind != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->trmt_col_ind));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->trmt_col_ind));
         info->trmt_col_ind = nullptr;
     }
 

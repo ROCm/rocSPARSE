@@ -24,6 +24,11 @@
 find_package(GTest 1.11.0 REQUIRED)
 find_package(rocsparseio QUIET)
 
+# MEMSTAT ?
+if(BUILD_MEMSTAT)
+  add_compile_options(-DROCSPARSE_WITH_MEMSTAT)
+endif()
+
 #
 # Client matrices.
 #

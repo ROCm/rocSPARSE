@@ -25,6 +25,8 @@
 #include "handle.h"
 #include "rocsparse.h"
 #include "utility.h"
+#include <iomanip>
+#include <map>
 
 #include <hip/hip_runtime_api.h>
 
@@ -505,8 +507,8 @@ rocsparse_status rocsparse_copy_hyb_mat(rocsparse_hyb_mat dest, const rocsparse_
     {
         if(dest->ell_col_ind == nullptr)
         {
-            RETURN_IF_HIP_ERROR(
-                hipMalloc((void**)&(dest->ell_col_ind), sizeof(rocsparse_int) * src->ell_nnz));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&(dest->ell_col_ind),
+                                                    sizeof(rocsparse_int) * src->ell_nnz));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->ell_col_ind,
                                       src->ell_col_ind,
@@ -518,7 +520,8 @@ rocsparse_status rocsparse_copy_hyb_mat(rocsparse_hyb_mat dest, const rocsparse_
     {
         if(dest->ell_val == nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&(dest->ell_val), T_size * src->ell_nnz));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc((void**)&(dest->ell_val), T_size * src->ell_nnz));
         }
         RETURN_IF_HIP_ERROR(
             hipMemcpy(dest->ell_val, src->ell_val, T_size * src->ell_nnz, hipMemcpyDeviceToDevice));
@@ -528,8 +531,8 @@ rocsparse_status rocsparse_copy_hyb_mat(rocsparse_hyb_mat dest, const rocsparse_
     {
         if(dest->coo_row_ind == nullptr)
         {
-            RETURN_IF_HIP_ERROR(
-                hipMalloc((void**)&(dest->coo_row_ind), sizeof(rocsparse_int) * src->coo_nnz));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&(dest->coo_row_ind),
+                                                    sizeof(rocsparse_int) * src->coo_nnz));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->coo_row_ind,
                                       src->coo_row_ind,
@@ -541,8 +544,8 @@ rocsparse_status rocsparse_copy_hyb_mat(rocsparse_hyb_mat dest, const rocsparse_
     {
         if(dest->coo_col_ind == nullptr)
         {
-            RETURN_IF_HIP_ERROR(
-                hipMalloc((void**)&(dest->coo_col_ind), sizeof(rocsparse_int) * src->coo_nnz));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&(dest->coo_col_ind),
+                                                    sizeof(rocsparse_int) * src->coo_nnz));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->coo_col_ind,
                                       src->coo_col_ind,
@@ -554,7 +557,8 @@ rocsparse_status rocsparse_copy_hyb_mat(rocsparse_hyb_mat dest, const rocsparse_
     {
         if(dest->coo_val == nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&(dest->coo_val), T_size * src->coo_nnz));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc((void**)&(dest->coo_val), T_size * src->coo_nnz));
         }
         RETURN_IF_HIP_ERROR(
             hipMemcpy(dest->coo_val, src->coo_val, T_size * src->coo_nnz, hipMemcpyDeviceToDevice));
@@ -582,25 +586,25 @@ rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb)
         // Clean up ELL part
         if(hyb->ell_col_ind != nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipFree(hyb->ell_col_ind));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(hyb->ell_col_ind));
         }
         if(hyb->ell_val != nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipFree(hyb->ell_val));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(hyb->ell_val));
         }
 
         // Clean up COO part
         if(hyb->coo_row_ind != nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipFree(hyb->coo_row_ind));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(hyb->coo_row_ind));
         }
         if(hyb->coo_col_ind != nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipFree(hyb->coo_col_ind));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(hyb->coo_col_ind));
         }
         if(hyb->coo_val != nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipFree(hyb->coo_val));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(hyb->coo_val));
         }
 
         delete hyb;
@@ -923,7 +927,7 @@ rocsparse_status rocsparse_copy_mat_info(rocsparse_mat_info dest, const rocspars
 
         if(dest->zero_pivot == nullptr)
         {
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&dest->zero_pivot, J_size));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->zero_pivot, J_size));
         }
 
         RETURN_IF_HIP_ERROR(
@@ -1157,7 +1161,7 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
     // Clear zero pivot
     if(info->zero_pivot != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->zero_pivot));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->zero_pivot));
         info->zero_pivot = nullptr;
     }
 

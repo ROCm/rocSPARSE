@@ -286,7 +286,7 @@ void testing_csrilu0(const Arguments& arg)
         handle, M, nnz, descr, dcsr_val_1, dcsr_row_ptr, dcsr_col_ind, info, &buffer_size));
 
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     if(arg.unit_check)
     {
@@ -501,7 +501,7 @@ void testing_csrilu0(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_clear(handle, info));
 
     // Free buffer
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(TYPE)                                              \

@@ -196,7 +196,7 @@ struct rocsparse_matrix_utils
                                                                        &buffer_size));
 
         int* buffer = NULL;
-        CHECK_HIP_THROW_ERROR(hipMalloc(&buffer, buffer_size));
+        CHECK_HIP_THROW_ERROR(rocsparse_hipMalloc(&buffer, buffer_size));
 
         CHECK_ROCSPARSE_THROW_ERROR(
             rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
@@ -232,7 +232,7 @@ struct rocsparse_matrix_utils
                                                            result.col_block_dim,
                                                            buffer));
 
-        hipFree(buffer);
+        rocsparse_hipFree(buffer);
 
         CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_mat_descr(result_descr));
         CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_mat_descr(that_descr));
@@ -1010,14 +1010,20 @@ struct rocsparse_matrix_utils
         //
         // Compute (A + A^T) / 2
         //
-        J* blank = (J*)calloc(M, sizeof(J));
-        if(!blank)
+        J*   blank;
+        auto err = rocsparse_hipHostMalloc(&blank, M * sizeof(J));
+        if(err != hipSuccess)
         {
             return rocsparse_status_memory_error;
         }
+        for(J i = 0; i < M; ++i)
+        {
+            blank[i] = static_cast<J>(0);
+        }
 
-        J* select = (J*)malloc(M * sizeof(J));
-        if(!select)
+        J* select;
+        err = rocsparse_hipHostMalloc(&select, M * sizeof(J));
+        if(err != hipSuccess)
         {
             return rocsparse_status_memory_error;
         }
@@ -1131,8 +1137,8 @@ struct rocsparse_matrix_utils
             }
         }
 
-        free(select);
-        free(blank);
+        rocsparse_hipHostFree(select);
+        rocsparse_hipHostFree(blank);
 
         return rocsparse_status_success;
     }

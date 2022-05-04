@@ -148,7 +148,7 @@ void testing_csr2csc(const Arguments& arg)
         handle, M, N, nnz, dcsr_row_ptr, dcsr_col_ind, action, &buffer_size));
 
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     if(arg.unit_check)
     {
@@ -258,7 +258,7 @@ void testing_csr2csc(const Arguments& arg)
     }
 
     // Free buffer
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(TYPE)                                              \

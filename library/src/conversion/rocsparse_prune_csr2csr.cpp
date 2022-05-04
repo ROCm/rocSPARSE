@@ -557,7 +557,7 @@ rocsparse_status rocsparse_prune_csr2csr_nnz_template(rocsparse_handle          
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
         temp_alloc = true;
     }
 
@@ -593,7 +593,7 @@ rocsparse_status rocsparse_prune_csr2csr_nnz_template(rocsparse_handle          
 
     if(temp_alloc)
     {
-        RETURN_IF_HIP_ERROR(hipFree(temp_storage_ptr));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
     }
 
     return rocsparse_status_success;

@@ -181,7 +181,7 @@ void testing_prune_dense2csr_by_percentage(const Arguments& arg)
                                                                                  &buffer_size));
 
     T* d_temp_buffer = nullptr;
-    CHECK_HIP_ERROR(hipMalloc(&d_temp_buffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&d_temp_buffer, buffer_size));
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
     CHECK_ROCSPARSE_ERROR(rocsparse_prune_dense2csr_nnz_by_percentage<T>(handle,
@@ -337,7 +337,7 @@ void testing_prune_dense2csr_by_percentage(const Arguments& arg)
                             get_gpu_time_msec(gpu_time_used));
     }
 
-    CHECK_HIP_ERROR(hipFree(d_temp_buffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(d_temp_buffer));
 }
 
 #define INSTANTIATE(TYPE)                                                                    \

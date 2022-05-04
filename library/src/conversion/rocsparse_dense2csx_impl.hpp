@@ -175,7 +175,7 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
         }
         else
         {
-            RETURN_IF_HIP_ERROR(hipMalloc(&d_temp_storage, temp_storage_bytes));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&d_temp_storage, temp_storage_bytes));
             d_temp_alloc = true;
         }
 
@@ -190,7 +190,7 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
         // Free rocprim buffer, if allocated
         if(d_temp_alloc == true)
         {
-            RETURN_IF_HIP_ERROR(hipFree(d_temp_storage));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(d_temp_storage));
         }
     }
 

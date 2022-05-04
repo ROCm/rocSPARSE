@@ -1049,7 +1049,7 @@ static inline rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle 
             if(info_C->csrgemm_info->mul == true)
             {
                 // Allocate additional buffer for C = alpha * A * B
-                RETURN_IF_HIP_ERROR(hipMalloc((void**)&workspace_B, sizeof(I) * nnz_A));
+                RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&workspace_B, sizeof(I) * nnz_A));
             }
 
             hipLaunchKernelGGL(
@@ -1087,7 +1087,7 @@ static inline rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle 
 
             if(info_C->csrgemm_info->mul == true)
             {
-                RETURN_IF_HIP_ERROR(hipFree(workspace_B));
+                RETURN_IF_HIP_ERROR(rocsparse_hipFree(workspace_B));
             }
 #undef CSRGEMM_CHUNKSIZE
 #undef CSRGEMM_SUB
@@ -1404,7 +1404,7 @@ static inline rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle 
             if(info_C->csrgemm_info->mul == true)
             {
                 // Allocate additional buffer for C = alpha * A * B
-                RETURN_IF_HIP_ERROR(hipMalloc((void**)&workspace_B, sizeof(I) * nnz_A));
+                RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&workspace_B, sizeof(I) * nnz_A));
             }
 
             hipLaunchKernelGGL(
@@ -1442,7 +1442,7 @@ static inline rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle 
 
             if(info_C->csrgemm_info->mul == true)
             {
-                RETURN_IF_HIP_ERROR(hipFree(workspace_B));
+                RETURN_IF_HIP_ERROR(rocsparse_hipFree(workspace_B));
             }
 #undef CSRGEMM_CHUNKSIZE
 #undef CSRGEMM_SUB

@@ -146,7 +146,7 @@ rocsparse_status rocsparse_exporter_rocalution::write_sparse_csx(rocsparse_direc
     const int*    ind = nullptr;
     const double* val = nullptr;
 
-    int* __restrict__ ptr_mem      = nullptr;
+    int*                  ptr_mem  = nullptr;
     int*                  ind_mem  = nullptr;
     double*               val_mem  = nullptr;
     static constexpr bool ptr_same = std::is_same<I, int>();
@@ -156,13 +156,24 @@ rocsparse_status rocsparse_exporter_rocalution::write_sparse_csx(rocsparse_direc
 
     bool is_T_complex = (std::is_same<T, rocsparse_double_complex>()
                          || std::is_same<T, rocsparse_float_complex>());
-    ptr_mem           = (ptr_same || (base_ == rocsparse_index_base_zero))
-                            ? nullptr
-                            : (int*)malloc(sizeof(int) * (m + 1));
-    ind_mem           = (ind_same || (base_ == rocsparse_index_base_zero)) ? nullptr
-                                                                           : (int*)malloc(sizeof(int) * nnz);
-    val_mem
-        = (val_same) ? nullptr : (double*)malloc(sizeof(double) * (is_T_complex ? (2 * nnz) : nnz));
+
+    ptr_mem = nullptr;
+    if(!ptr_same && (base_ != rocsparse_index_base_zero))
+    {
+        rocsparse_hipHostMalloc(&ptr_mem, sizeof(int) * (m + 1));
+    }
+
+    ind_mem = nullptr;
+    if(!ind_same && (base_ != rocsparse_index_base_zero))
+    {
+        rocsparse_hipHostMalloc(&ind_mem, sizeof(int) * nnz);
+    }
+
+    val_mem = nullptr;
+    if(!val_same)
+    {
+        rocsparse_hipHostMalloc(&val_mem, sizeof(double) * (is_T_complex ? (2 * nnz) : nnz));
+    }
 
     ptr = (ptr_same || (base_ == rocsparse_index_base_zero)) ? ((const int*)ptr_) : ptr_mem;
     ind = (ind_same || (base_ == rocsparse_index_base_zero)) ? ((const int*)ind_) : ind_mem;
@@ -229,17 +240,17 @@ rocsparse_status rocsparse_exporter_rocalution::write_sparse_csx(rocsparse_direc
     status = rocalution_write_sparse_csx(this->m_filename.c_str(), m, n, nnz, ptr, ind, val);
     if(val_mem != nullptr)
     {
-        free(val_mem);
+        rocsparse_hipFree(val_mem);
         val_mem = nullptr;
     }
     if(ind_mem != nullptr)
     {
-        free(ind_mem);
+        rocsparse_hipFree(ind_mem);
         ind_mem = nullptr;
     }
     if(ptr_mem != nullptr)
     {
-        free(ptr_mem);
+        rocsparse_hipFree(ptr_mem);
         ptr_mem = nullptr;
     }
 

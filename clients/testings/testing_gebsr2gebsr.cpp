@@ -209,7 +209,7 @@ void testing_gebsr2gebsr(const Arguments& arg)
                                                                &buffer_size));
 
     T* dtemp_buffer = nullptr;
-    CHECK_HIP_ERROR(hipMalloc(&dtemp_buffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dtemp_buffer, buffer_size));
 
     host_vector<rocsparse_int> hnnzb_C(1);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
@@ -419,7 +419,7 @@ void testing_gebsr2gebsr(const Arguments& arg)
                             get_gpu_time_msec(gpu_time_used));
 
         // Free buffer
-        CHECK_HIP_ERROR(hipFree(dtemp_buffer));
+        CHECK_HIP_ERROR(rocsparse_hipFree(dtemp_buffer));
     }
 }
 

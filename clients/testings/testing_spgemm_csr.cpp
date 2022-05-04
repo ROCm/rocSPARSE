@@ -335,7 +335,7 @@ void testing_spgemm_csr(const Arguments& arg)
             rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)),
             rocsparse_status_success);
 
-        CHECK_HIP_ERROR(hipMalloc(&dbuffer, safe_size));
+        CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, safe_size));
 
         EXPECT_ROCSPARSE_STATUS(
             rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)),
@@ -352,7 +352,7 @@ void testing_spgemm_csr(const Arguments& arg)
             unit_check_scalar(zero, nnz_C);
         }
 
-        CHECK_HIP_ERROR(hipFree(dbuffer));
+        CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
         return;
     }
 
@@ -462,7 +462,7 @@ void testing_spgemm_csr(const Arguments& arg)
 
                 CHECK_ROCSPARSE_ERROR(
                     rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
-                CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+                CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
                 //
                 // Compute symbolic C.
@@ -485,7 +485,7 @@ void testing_spgemm_csr(const Arguments& arg)
                 //
                 CHECK_ROCSPARSE_ERROR(
                     rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
-                CHECK_HIP_ERROR(hipFree(dbuffer));
+                CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
             }
 
             //
@@ -522,7 +522,7 @@ void testing_spgemm_csr(const Arguments& arg)
 
                     CHECK_ROCSPARSE_ERROR(
                         rocsparse_spgemm(PARAMS(d_alpha_ptr, A, B, D, d_beta_ptr, C, dbuffer)));
-                    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+                    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
                     //
                     // Compute symbolic C.
@@ -545,7 +545,7 @@ void testing_spgemm_csr(const Arguments& arg)
                     //
                     CHECK_ROCSPARSE_ERROR(
                         rocsparse_spgemm(PARAMS(d_alpha_ptr, A, B, D, d_beta_ptr, C, dbuffer)));
-                    CHECK_HIP_ERROR(hipFree(dbuffer));
+                    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
                 }
 
                 if((!h_alpha_ptr || std::abs(*h_alpha_ptr) == ((I)std::abs(*h_alpha_ptr)))
@@ -590,7 +590,7 @@ void testing_spgemm_csr(const Arguments& arg)
                 CHECK_ROCSPARSE_ERROR(
                     rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
                 //
-                CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+                CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
                 //
                 CHECK_ROCSPARSE_ERROR(
                     rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
@@ -605,7 +605,7 @@ void testing_spgemm_csr(const Arguments& arg)
                 CHECK_ROCSPARSE_ERROR(
                     rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
                 //
-                CHECK_HIP_ERROR(hipFree(dbuffer));
+                CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
             }
         }
 
@@ -628,7 +628,7 @@ void testing_spgemm_csr(const Arguments& arg)
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
             //
-            CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+            CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
             //
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
@@ -655,14 +655,14 @@ void testing_spgemm_csr(const Arguments& arg)
             }
 
             gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
-            CHECK_HIP_ERROR(hipFree(dbuffer));
+            CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
         }
 
         double gflop_count = csrgemm_gflop_count<T, I, J>(
-            M, h_alpha_ptr, dA.ptr, dA.ind, dB.ptr, h_beta_ptr, dD.ptr, dA.base);
+            M, h_alpha_ptr, hA.ptr, hA.ind, hB.ptr, h_beta_ptr, hD.ptr, hA.base);
 
         double gbyte_count = csrgemm_gbyte_count<T, I, J>(
-            M, N, K, dA.nnz, dB.nnz, C_nnz, dD.nnz, h_alpha_ptr, h_beta_ptr);
+            M, N, K, hA.nnz, hB.nnz, C_nnz, hD.nnz, h_alpha_ptr, h_beta_ptr);
 
         double gpu_gbyte  = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
         double gpu_gflops = get_gpu_gflops(gpu_solve_time_used, gflop_count);

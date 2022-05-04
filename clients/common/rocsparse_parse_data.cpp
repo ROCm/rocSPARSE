@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,7 +101,9 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
     std::string filename;
     char**      argv_p = argv + 1;
     bool        help = false, yaml = false;
-
+#ifdef ROCSPARSE_WITH_MEMSTAT
+    const char* memory_report_filename = nullptr;
+#endif
     // Scan, process and remove any --yaml or --data options
     for(int i = 1; argv[i]; ++i)
     {
@@ -121,6 +123,17 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
             }
             filename = argv[++i];
         }
+#ifdef ROCSPARSE_WITH_MEMSTAT
+        else if(!strcmp(argv[i], "--memstat-report"))
+        {
+            if(!argv[i + 1] || !argv[i + 1][0])
+            {
+                std::cerr << "The " << argv[i] << " option requires an argument" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            memory_report_filename = argv[++i];
+        }
+#endif
         else
         {
             *argv_p++ = argv[i];
@@ -133,6 +146,16 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
             }
         }
     }
+
+#ifdef ROCSPARSE_WITH_MEMSTAT
+    rocsparse_status status = rocsparse_memstat_report(
+        memory_report_filename ? memory_report_filename : "rocsparse_test_memstat.json");
+    if(status != rocsparse_status_success)
+    {
+        std::cerr << "rocsparse_memstat_report failed " << std::endl;
+        exit(EXIT_FAILURE);
+    }
+#endif
 
     // argc and argv contain remaining options and non-option arguments
     *argv_p = nullptr;

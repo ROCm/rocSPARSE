@@ -283,7 +283,7 @@ void testing_spmm_batched_coo(const Arguments& arg)
 
     // Allocate buffer
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     CHECK_ROCSPARSE_ERROR(rocsparse_spmm(handle,
                                          trans_A,
@@ -454,7 +454,7 @@ void testing_spmm_batched_coo(const Arguments& arg)
                             get_gpu_time_msec(gpu_time_used));
     }
 
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(ITYPE, TTYPE)                                                       \
