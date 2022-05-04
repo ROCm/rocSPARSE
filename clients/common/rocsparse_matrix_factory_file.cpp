@@ -286,6 +286,11 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_gebsr(
     {
         rocsparse_matrix_utils::host_gebsrunsort<T, I, J>(
             bsr_row_ptr.data(), bsr_col_ind.data(), Mb, base);
+        break;
+    }
+    case rocsparse_storage_mode_sorted:
+    {
+        break;
     }
     }
 
@@ -391,6 +396,11 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_csr(
     {
         rocsparse_matrix_utils::host_csrunsort<T, I, J>(
             csr_row_ptr.data(), csr_col_ind.data(), M, base);
+        break;
+    }
+    case rocsparse_storage_mode_sorted:
+    {
+        break;
     }
     }
 
@@ -488,6 +498,11 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_coo(
     {
         rocsparse_matrix_utils::host_coounsort<T, I>(
             coo_row_ind.data(), coo_col_ind.data(), M, nnz, base);
+        break;
+    }
+    case rocsparse_storage_mode_sorted:
+    {
+        break;
     }
     }
 
