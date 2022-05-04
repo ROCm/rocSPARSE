@@ -371,11 +371,8 @@ rocsparse_status
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(nnz_total_dev_host_ptr,
-                                           &csr_row_ptr[m],
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyDeviceToHost,
-                                           stream));
+        RETURN_IF_HIP_ERROR(hipMemcpy(
+            nnz_total_dev_host_ptr, &csr_row_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         *nnz_total_dev_host_ptr -= descr->base;
     }
