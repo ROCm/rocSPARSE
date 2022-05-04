@@ -319,11 +319,12 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
                                         (T*)d_dense_val,
                                         LD));
 
-        void* buffer = malloc(sizeof(T) * LD * N);
+        void* buffer;
+        rocsparse_hipHostMalloc(&buffer, sizeof(T) * LD * N);
         CHECK_HIP_ERROR(hipMemcpy(buffer, d_dense_val, sizeof(T) * LD * N, hipMemcpyDeviceToHost));
         unit_check_general(M, N, (T*)h_dense_val, LD, (T*)buffer, LD);
         unit_check_general(M, N, (T*)h_dense_val, LD, (T*)h_dense_val_ref, LD);
-        free(buffer);
+        rocsparse_hipHostFree(buffer);
         buffer = nullptr;
     }
 

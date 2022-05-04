@@ -330,8 +330,10 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
                                         (rocsparse_int*)d_csx_row_col_ptr,
                                         (rocsparse_int*)d_csx_col_row_ind));
 
-        void* buffer
-            = malloc(std::max(sizeof(T), sizeof(rocsparse_int)) * std::max(DIMDIR + 1, nnz));
+        void* buffer;
+        rocsparse_hipHostMalloc(
+            &buffer, std::max(sizeof(T), sizeof(rocsparse_int)) * std::max(DIMDIR + 1, nnz));
+
         //
         // Transfer and check results.
         //
@@ -349,7 +351,7 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         unit_check_segments(
             (DIMDIR + 1), (rocsparse_int*)cpu_csx_row_col_ptr, (rocsparse_int*)buffer);
 
-        free(buffer);
+        rocsparse_hipHostFree(buffer);
         buffer = nullptr;
     }
 

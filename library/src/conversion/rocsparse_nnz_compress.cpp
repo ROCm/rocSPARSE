@@ -354,7 +354,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
     rocsparse_int* dnnz_C;
     if(handle->pointer_mode == rocsparse_pointer_mode_host)
     {
-        RETURN_IF_HIP_ERROR(hipMalloc(&dnnz_C, sizeof(rocsparse_int)));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&dnnz_C, sizeof(rocsparse_int)));
     }
     else
     {
@@ -376,7 +376,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
         temp_alloc = true;
     }
 
@@ -386,12 +386,12 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
     if(handle->pointer_mode == rocsparse_pointer_mode_host)
     {
         RETURN_IF_HIP_ERROR(hipMemcpy(nnz_C, dnnz_C, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-        RETURN_IF_HIP_ERROR(hipFree(dnnz_C));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(dnnz_C));
     }
 
     if(temp_alloc)
     {
-        RETURN_IF_HIP_ERROR(hipFree(temp_storage_ptr));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
     }
 
     return rocsparse_status_success;

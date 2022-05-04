@@ -146,6 +146,7 @@ int main(int argc, char* argv[])
             {
                 return status;
             }
+
             return status;
         }
         catch(const rocsparse_status& status)

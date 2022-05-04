@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -173,7 +173,7 @@ void testing_copy_info(const Arguments& arg)
     buffer_size        = std::max(buffer_size, temp3);
 
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(handle,
                                                       arg.transA,
@@ -230,7 +230,7 @@ void testing_copy_info(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_copy_mat_info(dest, src));
     }
 
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 
     CHECK_ROCSPARSE_ERROR(rocsparse_destroy_mat_info(dest));
     CHECK_ROCSPARSE_ERROR(rocsparse_destroy_mat_info(src));

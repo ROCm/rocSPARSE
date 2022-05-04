@@ -150,7 +150,7 @@ void testing_cscsort(const Arguments& arg)
 
     // Allocate buffer
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     if(arg.unit_check)
     {
@@ -243,7 +243,7 @@ void testing_cscsort(const Arguments& arg)
     }
 
     // Clear buffer
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(TYPE)                                              \

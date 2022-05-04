@@ -145,13 +145,15 @@ void testing_csrmv_managed(const Arguments& arg)
         T*             alpha;
         T*             beta;
 
-        CHECK_HIP_ERROR(hipMallocManaged((void**)&csr_row_ptr, safe_size * sizeof(rocsparse_int)));
-        CHECK_HIP_ERROR(hipMallocManaged((void**)&csr_col_ind, safe_size * sizeof(rocsparse_int)));
-        CHECK_HIP_ERROR(hipMallocManaged((void**)&csr_val, safe_size * sizeof(T)));
-        CHECK_HIP_ERROR(hipMallocManaged((void**)&x, safe_size * sizeof(T)));
-        CHECK_HIP_ERROR(hipMallocManaged((void**)&y, safe_size * sizeof(T)));
-        CHECK_HIP_ERROR(hipMallocManaged((void**)&alpha, sizeof(T)));
-        CHECK_HIP_ERROR(hipMallocManaged((void**)&beta, sizeof(T)));
+        CHECK_HIP_ERROR(
+            rocsparse_hipMallocManaged((void**)&csr_row_ptr, safe_size * sizeof(rocsparse_int)));
+        CHECK_HIP_ERROR(
+            rocsparse_hipMallocManaged((void**)&csr_col_ind, safe_size * sizeof(rocsparse_int)));
+        CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&csr_val, safe_size * sizeof(T)));
+        CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&x, safe_size * sizeof(T)));
+        CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&y, safe_size * sizeof(T)));
+        CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&alpha, sizeof(T)));
+        CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&beta, sizeof(T)));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
@@ -187,13 +189,13 @@ void testing_csrmv_managed(const Arguments& arg)
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_clear(handle, info), rocsparse_status_success);
         }
 
-        CHECK_HIP_ERROR(hipFree(csr_row_ptr));
-        CHECK_HIP_ERROR(hipFree(csr_col_ind));
-        CHECK_HIP_ERROR(hipFree(csr_val));
-        CHECK_HIP_ERROR(hipFree(x));
-        CHECK_HIP_ERROR(hipFree(y));
-        CHECK_HIP_ERROR(hipFree(alpha));
-        CHECK_HIP_ERROR(hipFree(beta));
+        CHECK_HIP_ERROR(rocsparse_hipFree(csr_row_ptr));
+        CHECK_HIP_ERROR(rocsparse_hipFree(csr_col_ind));
+        CHECK_HIP_ERROR(rocsparse_hipFree(csr_val));
+        CHECK_HIP_ERROR(rocsparse_hipFree(x));
+        CHECK_HIP_ERROR(rocsparse_hipFree(y));
+        CHECK_HIP_ERROR(rocsparse_hipFree(alpha));
+        CHECK_HIP_ERROR(rocsparse_hipFree(beta));
 
         return;
     }
@@ -239,14 +241,15 @@ void testing_csrmv_managed(const Arguments& arg)
     T*             alpha;
     T*             beta;
 
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&csr_row_ptr, (M + 1) * sizeof(rocsparse_int)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&csr_col_ind, nnz * sizeof(rocsparse_int)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&csr_val, nnz * sizeof(T)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&x, N * sizeof(T)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&y_1, M * sizeof(T)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&y_2, M * sizeof(T)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&alpha, sizeof(T)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&beta, sizeof(T)));
+    CHECK_HIP_ERROR(
+        rocsparse_hipMallocManaged((void**)&csr_row_ptr, (M + 1) * sizeof(rocsparse_int)));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&csr_col_ind, nnz * sizeof(rocsparse_int)));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&csr_val, nnz * sizeof(T)));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&x, N * sizeof(T)));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&y_1, M * sizeof(T)));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&y_2, M * sizeof(T)));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&alpha, sizeof(T)));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&beta, sizeof(T)));
 
     // Copy data to managed arrays
     for(rocsparse_int i = 0; i < M + 1; i++)
@@ -432,14 +435,14 @@ void testing_csrmv_managed(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_clear(handle, info));
     }
 
-    CHECK_HIP_ERROR(hipFree(csr_row_ptr));
-    CHECK_HIP_ERROR(hipFree(csr_col_ind));
-    CHECK_HIP_ERROR(hipFree(csr_val));
-    CHECK_HIP_ERROR(hipFree(x));
-    CHECK_HIP_ERROR(hipFree(y_1));
-    CHECK_HIP_ERROR(hipFree(y_2));
-    CHECK_HIP_ERROR(hipFree(alpha));
-    CHECK_HIP_ERROR(hipFree(beta));
+    CHECK_HIP_ERROR(rocsparse_hipFree(csr_row_ptr));
+    CHECK_HIP_ERROR(rocsparse_hipFree(csr_col_ind));
+    CHECK_HIP_ERROR(rocsparse_hipFree(csr_val));
+    CHECK_HIP_ERROR(rocsparse_hipFree(x));
+    CHECK_HIP_ERROR(rocsparse_hipFree(y_1));
+    CHECK_HIP_ERROR(rocsparse_hipFree(y_2));
+    CHECK_HIP_ERROR(rocsparse_hipFree(alpha));
+    CHECK_HIP_ERROR(rocsparse_hipFree(beta));
 }
 
 #define INSTANTIATE(TYPE)                                                    \

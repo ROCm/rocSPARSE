@@ -189,7 +189,7 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
         temp_alloc = true;
     }
 
@@ -203,7 +203,7 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
 
     if(temp_alloc)
     {
-        RETURN_IF_HIP_ERROR(hipFree(temp_storage_ptr));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
     }
 
     if(csr_val_C == nullptr && csr_col_ind_C == nullptr)

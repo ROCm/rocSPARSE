@@ -460,7 +460,7 @@ rocsparse_status
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
         temp_alloc = true;
     }
 
@@ -632,7 +632,7 @@ rocsparse_status
     // Free rocprim buffer, if allocated
     if(temp_alloc == true)
     {
-        RETURN_IF_HIP_ERROR(hipFree(temp_storage_ptr));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
     }
 
     // compute nnz_total_dev_host_ptr

@@ -62,7 +62,9 @@ private:
     rocsparse_int b_spmv_alg{};
     rocsparse_int b_spmm_alg{};
     rocsparse_int b_gtsv_interleaved_alg{};
-
+#ifdef ROCSPARSE_WITH_MEMSTAT
+    std::string b_memory_report_filename{};
+#endif
 public:
     rocsparse_arguments_config();
     void set_description(options_description& desc);

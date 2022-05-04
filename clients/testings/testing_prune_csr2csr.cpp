@@ -177,10 +177,10 @@ void testing_prune_csr2csr(const Arguments& arg)
                                                                  &buffer_size));
 
     T* d_temp_buffer = nullptr;
-    CHECK_HIP_ERROR(hipMalloc(&d_temp_buffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&d_temp_buffer, buffer_size));
 
     T* d_threshold = nullptr;
-    CHECK_HIP_ERROR(hipMalloc(&d_threshold, sizeof(T)));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&d_threshold, sizeof(T)));
 
     CHECK_HIP_ERROR(hipMemcpy(d_threshold, &threshold, sizeof(T), hipMemcpyHostToDevice));
 
@@ -356,8 +356,8 @@ void testing_prune_csr2csr(const Arguments& arg)
                             get_gpu_time_msec(gpu_time_used));
     }
 
-    CHECK_HIP_ERROR(hipFree(d_temp_buffer));
-    CHECK_HIP_ERROR(hipFree(d_threshold));
+    CHECK_HIP_ERROR(rocsparse_hipFree(d_temp_buffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(d_threshold));
 }
 
 #define INSTANTIATE(TYPE)                                                    \

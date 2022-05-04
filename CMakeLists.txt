@@ -76,6 +76,7 @@ option(BUILD_CLIENTS_SAMPLES "Build examples" OFF)
 option(BUILD_VERBOSE "Output additional build information" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSPARSE with code coverage enabled" OFF)
 option(BUILD_ADDRESS_SANITIZER "Build rocSPARSE with address sanitizer enabled" OFF)
+option(BUILD_MEMSTAT "Build rocSPARSE with memory statistics enabled" OFF)
 
 #
 if(BUILD_CODE_COVERAGE)

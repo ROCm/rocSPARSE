@@ -490,12 +490,12 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
     // Allocate memory on device to hold csrmv info, if required
     if(info->csrmv_info->size > 0)
     {
-        RETURN_IF_HIP_ERROR(
-            hipMalloc((void**)&info->csrmv_info->row_blocks, sizeof(I) * info->csrmv_info->size));
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->csrmv_info->wg_flags,
-                                      sizeof(unsigned int) * info->csrmv_info->size));
-        RETURN_IF_HIP_ERROR(
-            hipMalloc((void**)&info->csrmv_info->wg_ids, sizeof(J) * info->csrmv_info->size));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->csrmv_info->row_blocks,
+                                                sizeof(I) * info->csrmv_info->size));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->csrmv_info->wg_flags,
+                                                sizeof(unsigned int) * info->csrmv_info->size));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->csrmv_info->wg_ids,
+                                                sizeof(J) * info->csrmv_info->size));
 
         // Copy row blocks information to device
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->csrmv_info->row_blocks,

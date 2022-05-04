@@ -535,10 +535,10 @@ public:
                 void*  dbuffer = nullptr;
                 EXPECT_ROCSPARSE_STATUS(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)),
                                         rocsparse_status_success);
-                CHECK_HIP_ERROR(hipMalloc(&dbuffer, 10));
+                CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, 10));
                 EXPECT_ROCSPARSE_STATUS(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)),
                                         rocsparse_status_success);
-                CHECK_HIP_ERROR(hipFree(dbuffer));
+                CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
                 return;
             }
             return;
@@ -604,7 +604,7 @@ public:
         void*  dbuffer = nullptr;
         size_t buffer_size;
         CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)));
-        CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+        CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
         if(arg.unit_check)
         {
@@ -686,7 +686,7 @@ public:
                                 get_gpu_time_msec(gpu_time_used));
         }
 
-        CHECK_HIP_ERROR(hipFree(dbuffer));
+        CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
         return;
     }
 };

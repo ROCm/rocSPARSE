@@ -135,14 +135,14 @@ void testing_spvv(const Arguments& arg)
             rocsparse_spvv(handle, trans, x, y, &h_result, ttype, &buffer_size, nullptr),
             rocsparse_status_success);
 
-        CHECK_HIP_ERROR(hipMalloc(&temp_buffer, buffer_size));
+        CHECK_HIP_ERROR(rocsparse_hipMalloc(&temp_buffer, buffer_size));
 
         // SpVV
         EXPECT_ROCSPARSE_STATUS(
             rocsparse_spvv(handle, trans, x, y, &h_result, ttype, &buffer_size, temp_buffer),
             rocsparse_status_success);
 
-        CHECK_HIP_ERROR(hipFree(temp_buffer));
+        CHECK_HIP_ERROR(rocsparse_hipFree(temp_buffer));
 
         return;
     }
@@ -185,7 +185,7 @@ void testing_spvv(const Arguments& arg)
     // Obtain buffer size
     CHECK_ROCSPARSE_ERROR(
         rocsparse_spvv(handle, trans, x, y, &hdot_1[0], ttype, &buffer_size, nullptr));
-    CHECK_HIP_ERROR(hipMalloc(&temp_buffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&temp_buffer, buffer_size));
 
     if(arg.unit_check)
     {
@@ -257,7 +257,7 @@ void testing_spvv(const Arguments& arg)
                             get_gpu_time_msec(gpu_time_used));
     }
 
-    CHECK_HIP_ERROR(hipFree(temp_buffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(temp_buffer));
 }
 
 #define INSTANTIATE(ITYPE, TTYPE)                                           \

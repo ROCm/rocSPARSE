@@ -192,7 +192,7 @@ void testing_spmm_coo(const Arguments& arg)
                                     rocsparse_status_success);
 
             void* dbuffer;
-            CHECK_HIP_ERROR(hipMalloc(&dbuffer, safe_size));
+            CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, safe_size));
             EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
                                                    trans_A,
                                                    trans_B,
@@ -221,7 +221,7 @@ void testing_spmm_coo(const Arguments& arg)
                                                    &buffer_size,
                                                    dbuffer),
                                     rocsparse_status_success);
-            CHECK_HIP_ERROR(hipFree(dbuffer));
+            CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
         }
 
         return;
@@ -323,7 +323,7 @@ void testing_spmm_coo(const Arguments& arg)
 
     // Allocate buffer
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     CHECK_ROCSPARSE_ERROR(rocsparse_spmm(handle,
                                          trans_A,
@@ -475,7 +475,7 @@ void testing_spmm_coo(const Arguments& arg)
                             get_gpu_time_msec(gpu_time_used));
     }
 
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(ITYPE, TTYPE)                                               \

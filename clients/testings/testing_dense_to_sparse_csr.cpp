@@ -163,7 +163,7 @@ void testing_dense_to_sparse_csr(const Arguments& arg)
                 rocsparse_status_success);
 
             void* dbuffer;
-            CHECK_HIP_ERROR(hipMalloc(&dbuffer, safe_size));
+            CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, safe_size));
 
             // Perform analysis
             EXPECT_ROCSPARSE_STATUS(
@@ -174,7 +174,7 @@ void testing_dense_to_sparse_csr(const Arguments& arg)
             EXPECT_ROCSPARSE_STATUS(
                 rocsparse_dense_to_sparse(handle, mat_A, mat_B, alg, &buffer_size, dbuffer),
                 rocsparse_status_success);
-            CHECK_HIP_ERROR(hipFree(dbuffer));
+            CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
         }
 
         return;

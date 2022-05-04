@@ -114,7 +114,7 @@ void testing_csricsv(const Arguments& arg)
 
     // Allocate buffer
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     if(!dbuffer)
     {
@@ -157,7 +157,7 @@ void testing_csricsv(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_csric0<T>(
         handle, M, nnz, descrM, dcsr_val, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
 
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 
     // Check for numerical zero pivot using host pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
@@ -284,7 +284,7 @@ void testing_csricsv(const Arguments& arg)
     // Determine buffer size maximum
     buffer_size = std::max(buffer_size_l, buffer_size_lt);
 
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     if(!dbuffer)
     {
@@ -481,7 +481,7 @@ void testing_csricsv(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_csric0_clear(handle, info));
 
     // Free buffer
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(TYPE)                                      \

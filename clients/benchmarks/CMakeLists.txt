@@ -23,6 +23,11 @@
 
 find_package(rocsparseio QUIET)
 
+# MEMSTAT ?
+if(BUILD_MEMSTAT)
+  add_compile_options(-DROCSPARSE_WITH_MEMSTAT)
+endif()
+
 set(ROCSPARSE_BENCHMARK_SOURCES
   client.cpp
   rocsparse_bench_app.cpp

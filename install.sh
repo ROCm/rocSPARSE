@@ -21,6 +21,7 @@ function display_help()
   echo "    [-k|--relwithdebinfo] -DCMAKE_BUILD_TYPE=RelWithDebInfo"
   echo "    [--hip-clang] build library for amdgpu backend using hip-clang"
   echo "    [--static] build static library"
+  echo "    [--memstat] build with memory statistics enabled."
   echo "    [--address-sanitizer] build with address sanitizer"
   echo "    [--codecoverage] build with code coverage profiling enabled"
   echo "    [--matrices-dir] existing client matrices directory"
@@ -256,6 +257,7 @@ install_prefix=rocsparse-install
 rocm_path=/opt/rocm
 build_relocatable=false
 build_address_sanitizer=false
+build_memstat=false
 matrices_dir=
 matrices_dir_install=
 gpu_architecture=all
@@ -268,7 +270,8 @@ build_freorg_bkwdcomp=true
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir --options hicdgrka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,memstat,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir --options hicdgrka: -- "$@")
+
 else
   echo "Need a new version of getopt"
   exit 1
@@ -310,6 +313,9 @@ while true; do
             shift ;;
         --address-sanitizer)
             build_address_sanitizer=true
+            shift ;;
+        --memstat)
+            build_memstat=true
             shift ;;
         -k|--relwithdebinfo)
             build_release=false
@@ -460,6 +466,12 @@ pushd .
   # address sanitizer
   if [[ "${build_address_sanitizer}" == true ]]; then
     cmake_common_options="${cmake_common_options} -DBUILD_ADDRESS_SANITIZER=ON"
+  fi
+
+
+  # memstat
+  if [[ "${build_memstat}" == true ]]; then
+    cmake_common_options="${cmake_common_options} -DBUILD_MEMSTAT=ON"
   fi
 
   # freorg backward compatible support enable

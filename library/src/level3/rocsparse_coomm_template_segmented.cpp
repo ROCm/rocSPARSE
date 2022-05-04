@@ -331,7 +331,7 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
         }
         else
         {
-            RETURN_IF_HIP_ERROR(hipMalloc(&temp_storage_ptr, required_size));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&temp_storage_ptr, required_size));
             temp_alloc = true;
         }
 
@@ -470,7 +470,7 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
 
         if(temp_alloc)
         {
-            RETURN_IF_HIP_ERROR(hipFree(temp_storage_ptr));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
         }
     }
     else

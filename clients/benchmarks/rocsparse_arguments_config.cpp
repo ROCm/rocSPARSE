@@ -317,6 +317,12 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      value<rocsparse_int>(&this->batch_stride)->default_value(128),
      "Indicates the batch stride for batched routines.")
 
+#ifdef ROCSPARSE_WITH_MEMSTAT
+    ("memstat-report",
+     value<std::string>(&this->b_memory_report_filename)->default_value("rocsparse_bench_memstat.json"),
+     "output filename for memory report.")
+#endif
+
     ("spmv_alg",
       value<rocsparse_int>(&this->b_spmv_alg)->default_value(rocsparse_spmv_alg_default),
       "Indicates what algorithm to use when running SpMV. Possibly choices are default: 0, COO: 1, CSR adaptive: 2, CSR stream: 3, ELL: 4 (default:0)")
@@ -446,6 +452,14 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   this->spmm_alg = (rocsparse_spmm_alg)this->b_spmm_alg;
   this->gtsv_interleaved_alg = (rocsparse_gtsv_interleaved_alg)this->b_gtsv_interleaved_alg;
 
+#ifdef ROCSPARSE_WITH_MEMSTAT
+  rocsparse_status status = rocsparse_memstat_report(this->b_memory_report_filename.c_str());
+  if (status != rocsparse_status_success)
+    {
+      std::cerr << "rocsparse_memstat_report failed " << std::endl;
+      return -1;
+    }
+#endif
 
   // rocALUTION parameter overrides filename parameter
   if(this->b_file != "")

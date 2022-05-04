@@ -121,7 +121,7 @@ void testing_gemvi(const Arguments& arg)
             rocsparse_gemvi_buffer_size<T>(handle, trans, M, N, nnz, &buffer_size));
 
         void* buffer;
-        CHECK_HIP_ERROR(hipMalloc(&buffer, buffer_size));
+        CHECK_HIP_ERROR(rocsparse_hipMalloc(&buffer, buffer_size));
         EXPECT_ROCSPARSE_STATUS(rocsparse_gemvi<T>(handle,
                                                    trans,
                                                    M,
@@ -139,7 +139,7 @@ void testing_gemvi(const Arguments& arg)
                                 (M < 0 || N < 0) ? rocsparse_status_invalid_size
                                                  : rocsparse_status_success);
 
-        CHECK_HIP_ERROR(hipFree(buffer));
+        CHECK_HIP_ERROR(rocsparse_hipFree(buffer));
 
         return;
     }
@@ -181,7 +181,7 @@ void testing_gemvi(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_gemvi_buffer_size<T>(handle, trans, M, N, nnz, &buffer_size));
 
     void* buffer;
-    CHECK_HIP_ERROR(hipMalloc(&buffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&buffer, buffer_size));
 
     if(arg.unit_check)
     {
@@ -311,7 +311,7 @@ void testing_gemvi(const Arguments& arg)
                             gpu_time_used / 1e3);
     }
 
-    CHECK_HIP_ERROR(hipFree(buffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(buffer));
 }
 
 #define INSTANTIATE(TYPE)                                            \

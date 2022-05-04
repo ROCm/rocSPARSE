@@ -1794,6 +1794,125 @@ rocsparse_status rocsparse_dnmat_set_strided_batch(rocsparse_dnmat_descr descr,
                                                    int                   batch_count,
                                                    int64_t               batch_stride);
 
+//
+// If ROCSPARSE_WITH_MEMSTAT is defined
+// then a set of extra routines is offered
+// to manage memory with a recording of some traces.
+//
+#ifdef ROCSPARSE_WITH_MEMSTAT
+/*! \ingroup aux_module
+   *  \brief Set the memory report filename.
+   *
+   *  \details
+   *  \p rocsparse_memstat_report set the filename to use for the memory report.
+   *  This routine is optional, but it must be called before any hip memory operation.
+   *  Note that the default memory report filename is 'rocsparse_memstat.json'.
+   *  Also note that if any operation occurs before calling this routine, the default filename rocsparse_memstat.json
+   *  will be used but renamed after this call.
+   *  The content of the memory report summarizes memory operations from the use of the routines
+   *  \ref rocsparse_hip_malloc,
+   *  \ref rocsparse_hip_free,
+   *  \ref rocsparse_hip_host_malloc,
+   *  \ref rocsparse_hip_host_free,
+   *  \ref rocsparse_hip_host_managed,
+   *  \ref rocsparse_hip_free_managed.
+   *
+   *  @param[in]
+   *  filename  the memory report filename.
+   *
+   *  \retval rocsparse_status_success the operation succeeded.
+   *  \retval rocsparse_status_invalid_pointer \p handle filename is an invalid pointer.
+   *  \retval rocsparse_status_internal_error an internal error occurred.
+   */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_memstat_report(const char* filename);
+
+/*! \ingroup aux_module
+   *  \brief Wrap hipFree.
+   *
+   *  @param[in]
+   *  mem  memory pointer
+   *  @param[in]
+   *  tag  tag to attach to the operation.
+   *
+   *  \retval error from the related hip operation.
+   */
+ROCSPARSE_EXPORT
+hipError_t rocsparse_hip_free(void* mem, const char* tag);
+
+/*! \ingroup aux_module
+   *  \brief Wrap hipMalloc.
+   *
+   *  @param[in]
+   *  mem  pointer of memory pointer
+   *  @param[in]
+   *  nbytes  number of bytes
+   *  @param[in]
+   *  tag  tag to attach to the operation
+   *
+   *  \retval error from the related hip operation
+   */
+ROCSPARSE_EXPORT
+hipError_t rocsparse_hip_malloc(void** mem, size_t nbytes, const char* tag);
+
+/*! \ingroup aux_module
+   *  \brief Wrap hipHostFree.
+   *
+   *  @param[in]
+   *  mem  memory pointer
+   *  @param[in]
+   *  tag  tag to attach to the operation.
+   *
+   *  \retval error from the related hip operation.
+   */
+ROCSPARSE_EXPORT
+hipError_t rocsparse_hip_host_free(void* mem, const char* tag);
+
+/*! \ingroup aux_module
+   *  \brief Wrap hipHostMalloc.
+   *
+   *  @param[in]
+   *  mem  pointer of memory pointer
+   *  @param[in]
+   *  nbytes  number of bytes
+   *  @param[in]
+   *  tag  tag to attach to the operation
+   *
+   *  \retval error from the related hip operation
+   */
+ROCSPARSE_EXPORT
+hipError_t rocsparse_hip_host_malloc(void** mem, size_t nbytes, const char* tag);
+
+/*! \ingroup aux_module
+   *  \brief Wrap hipFreeManaged.
+   *
+   *  @param[in]
+   *  mem  memory pointer
+   *  @param[in]
+   *  tag  tag to attach to the operation.
+   *
+   *  \retval error from the related hip operation.
+   */
+ROCSPARSE_EXPORT
+hipError_t rocsparse_hip_free_managed(void* mem, const char* tag);
+
+/*! \ingroup aux_module
+   *  \brief Wrap hipMallocManaged.
+   *
+   *  @param[in]
+   *  mem  pointer of memory pointer
+   *  @param[in]
+   *  nbytes  number of bytes
+   *  @param[in]
+   *  tag  tag to attach to the operation
+   *
+   *  \retval error from the related hip operation
+   */
+ROCSPARSE_EXPORT
+hipError_t rocsparse_hip_malloc_managed(void** mem, size_t nbytes, const char* tag);
+
+#endif
+
 #ifdef __cplusplus
 }
 #endif

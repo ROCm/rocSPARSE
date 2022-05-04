@@ -78,9 +78,9 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
             tmp_work1, csr_col_ind, sizeof(J) * nnz, hipMemcpyDeviceToDevice, stream));
 
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->trmt_perm, sizeof(I) * nnz));
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->trmt_row_ptr, sizeof(I) * (m + 1)));
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->trmt_col_ind, sizeof(J) * nnz));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->trmt_perm, sizeof(I) * nnz));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->trmt_row_ptr, sizeof(I) * (m + 1)));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->trmt_col_ind, sizeof(J) * nnz));
 
         if(nnz > 0)
         {
@@ -168,13 +168,13 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     void* rocprim_buffer = reinterpret_cast<void*>(ptr);
 
     // Allocate buffer to hold diagonal entry point
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->trm_diag_ind, sizeof(I) * m));
+    RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->trm_diag_ind, sizeof(I) * m));
 
     // Allocate buffer to hold zero pivot
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)zero_pivot, sizeof(J)));
+    RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)zero_pivot, sizeof(J)));
 
     // Allocate buffer to hold row map
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->row_map, sizeof(J) * m));
+    RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->row_map, sizeof(J) * m));
 
     // Initialize zero pivot
     J max = std::numeric_limits<J>::max();

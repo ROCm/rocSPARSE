@@ -198,7 +198,7 @@ void testing_spsm_csr(const Arguments& arg)
                                     rocsparse_status_success);
 
             void* dbuffer;
-            CHECK_HIP_ERROR(hipMalloc(&dbuffer, safe_size));
+            CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, safe_size));
 
             EXPECT_ROCSPARSE_STATUS(rocsparse_spsm(handle,
                                                    trans_A,
@@ -227,7 +227,7 @@ void testing_spsm_csr(const Arguments& arg)
                                                    &buffer_size,
                                                    dbuffer),
                                     rocsparse_status_success);
-            CHECK_HIP_ERROR(hipFree(dbuffer));
+            CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
         }
 
         return;
@@ -337,7 +337,7 @@ void testing_spsm_csr(const Arguments& arg)
 
     // Allocate buffer
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     // Perform analysis on host
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
@@ -503,7 +503,7 @@ void testing_spsm_csr(const Arguments& arg)
                             get_gpu_time_msec(gpu_time_used));
     }
 
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                               \

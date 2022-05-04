@@ -287,7 +287,7 @@ void testing_bsrsv(const Arguments& arg)
     {
         size_t buffer_size;
         CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_buffer_size<T>(PARAMS_BUFFER_SIZE(dA)));
-        CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+        CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
     }
 
     if(arg.unit_check)
@@ -424,7 +424,7 @@ void testing_bsrsv(const Arguments& arg)
                                                &buffer_size,
                                                buffer,
                                                rocsparse_matrix_utils::bsrilu0_analysis);
-            CHECK_HIP_ERROR(hipMalloc(&buffer, buffer_size));
+            CHECK_HIP_ERROR(rocsparse_hipMalloc(&buffer, buffer_size));
             rocsparse_matrix_utils::bsrilu0<T>(descr,
                                                dA,
                                                info,
@@ -436,7 +436,7 @@ void testing_bsrsv(const Arguments& arg)
                                                &buffer_size,
                                                buffer,
                                                rocsparse_matrix_utils::bsrilu0_analysis);
-            CHECK_HIP_ERROR(hipFree(buffer));
+            CHECK_HIP_ERROR(rocsparse_hipFree(buffer));
 
             CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
             CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
@@ -458,7 +458,7 @@ void testing_bsrsv(const Arguments& arg)
                                               &buffer_size,
                                               buffer,
                                               rocsparse_matrix_utils::bsric0_analysis);
-            CHECK_HIP_ERROR(hipMalloc(&buffer, buffer_size));
+            CHECK_HIP_ERROR(rocsparse_hipMalloc(&buffer, buffer_size));
             rocsparse_matrix_utils::bsric0<T>(descr,
                                               dA,
                                               info,
@@ -467,7 +467,7 @@ void testing_bsrsv(const Arguments& arg)
                                               &buffer_size,
                                               buffer,
                                               rocsparse_matrix_utils::bsric0_analysis);
-            CHECK_HIP_ERROR(hipFree(buffer));
+            CHECK_HIP_ERROR(rocsparse_hipFree(buffer));
 
             CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
             CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
@@ -545,7 +545,7 @@ void testing_bsrsv(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_clear(handle, info));
 
     // Free buffer
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(TYPE)                                            \

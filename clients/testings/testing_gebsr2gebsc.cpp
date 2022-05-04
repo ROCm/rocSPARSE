@@ -210,7 +210,7 @@ void testing_gebsr2gebsc(const Arguments& arg)
     // Allocate the buffer size.
     //
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     //
     // Allocate device bsc matrix.
@@ -349,7 +349,7 @@ void testing_gebsr2gebsc(const Arguments& arg)
                             get_gpu_time_msec(gpu_time_used));
     }
     // Free buffer
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(TYPE)                                                  \

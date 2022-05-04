@@ -445,7 +445,7 @@ void testing_bsrsm(const Arguments& arg)
     CALL_BUFFER_SIZE;
 
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     if(arg.unit_check)
     {
@@ -639,7 +639,7 @@ void testing_bsrsm(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_bsrsm_clear(handle, info));
 
     // Free buffer
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(TYPE)                                            \
