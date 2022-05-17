@@ -264,8 +264,10 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
 
         if(avg_row_nnz < 64)
         {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
+            using config = rocprim::segmented_radix_sort_config<6,
+                                                                5,
+                                                                rocprim::kernel_config<64, 1>,
+                                                                rocprim::WarpSortConfig<32, 1>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys2,
@@ -280,8 +282,10 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         }
         else if(avg_row_nnz < 128)
         {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
+            using config = rocprim::segmented_radix_sort_config<6,
+                                                                5,
+                                                                rocprim::kernel_config<64, 2>,
+                                                                rocprim::WarpSortConfig<32, 2>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys2,
@@ -296,8 +300,10 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         }
         else if(avg_row_nnz < 256)
         {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
+            using config = rocprim::segmented_radix_sort_config<6,
+                                                                5,
+                                                                rocprim::kernel_config<64, 4>,
+                                                                rocprim::WarpSortConfig<32, 4>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys2,
@@ -388,22 +394,28 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
 
         if(avg_row_nnz < 64)
         {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
+            using config = rocprim::segmented_radix_sort_config<6,
+                                                                5,
+                                                                rocprim::kernel_config<64, 1>,
+                                                                rocprim::WarpSortConfig<32, 1>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
                 tmp_rocprim, size, vals, nnz, nsegm, work4, work4 + 1, startbit, endbit, stream));
         }
         else if(avg_row_nnz < 128)
         {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
+            using config = rocprim::segmented_radix_sort_config<6,
+                                                                5,
+                                                                rocprim::kernel_config<64, 2>,
+                                                                rocprim::WarpSortConfig<32, 2>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
                 tmp_rocprim, size, vals, nnz, nsegm, work4, work4 + 1, startbit, endbit, stream));
         }
         else if(avg_row_nnz < 256)
         {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
+            using config = rocprim::segmented_radix_sort_config<6,
+                                                                5,
+                                                                rocprim::kernel_config<64, 4>,
+                                                                rocprim::WarpSortConfig<32, 4>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
                 tmp_rocprim, size, vals, nnz, nsegm, work4, work4 + 1, startbit, endbit, stream));
         }
