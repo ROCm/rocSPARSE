@@ -5117,20 +5117,16 @@ void host_gtsv_no_pivot(rocsparse_int         m,
                         std::vector<T>&       B,
                         rocsparse_int         ldb)
 {
-    rocsparse_int BLOCKSIZE = 0;
-    if((m & (m - 1)) == 0)
-    {
-        BLOCKSIZE = m;
-    }
-    else
-    {
-        for(BLOCKSIZE = 1; BLOCKSIZE < m; BLOCKSIZE <<= 1)
-            ;
-    }
+    rocsparse_int iter;
+    size_t        BLOCKSIZE;
+
+    for(iter = 0, BLOCKSIZE = 1; BLOCKSIZE < m; BLOCKSIZE <<= 1, ++iter)
+        ;
+    --iter;
+
 
     for(rocsparse_int col = 0; col < n; col++)
     {
-        rocsparse_int iter   = static_cast<rocsparse_int>(log2(BLOCKSIZE / 2));
         rocsparse_int stride = 1;
 
         std::vector<T> sa(BLOCKSIZE, static_cast<T>(0));
@@ -5228,20 +5224,15 @@ void host_gtsv_no_pivot_strided_batch(rocsparse_int         m,
                                       rocsparse_int         batch_count,
                                       rocsparse_int         batch_stride)
 {
-    rocsparse_int BLOCKSIZE = 0;
-    if((m & (m - 1)) == 0)
-    {
-        BLOCKSIZE = m;
-    }
-    else
-    {
-        for(BLOCKSIZE = 1; BLOCKSIZE < m; BLOCKSIZE <<= 1)
-            ;
-    }
+
+    rocsparse_int iter;
+    size_t        BLOCKSIZE;
+    for(iter = 0, BLOCKSIZE = 1; BLOCKSIZE < m; BLOCKSIZE <<= 1, ++iter)
+        ;
+    --iter;
 
     for(rocsparse_int col = 0; col < batch_count; col++)
     {
-        rocsparse_int iter   = static_cast<rocsparse_int>(log2(BLOCKSIZE / 2));
         rocsparse_int stride = 1;
 
         std::vector<T> sa(BLOCKSIZE, static_cast<T>(0));
