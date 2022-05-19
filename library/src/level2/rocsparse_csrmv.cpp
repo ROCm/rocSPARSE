@@ -240,9 +240,8 @@ static inline void ComputeRowBlocks(I*       rowBlocks,
             // Check to ensure #workgroups can fit in 32 bits, if not
             // then the last workgroup will do all the remaining work
             // Note: Maximum number of workgroups is 2^31-1 = 2147483647
-            numWGReq = (numWGReq < static_cast<I>(std::pow(2, 31) - 1))
-                           ? numWGReq
-                           : static_cast<I>(std::pow(2, 31) - 1);
+            static constexpr I maxNumberOfWorkgroups = static_cast<I>(INT_MAX);
+            numWGReq = (numWGReq < maxNumberOfWorkgroups) ? numWGReq : maxNumberOfWorkgroups;
 
             if(allocate_row_blocks)
             {

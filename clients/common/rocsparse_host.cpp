@@ -5124,7 +5124,8 @@ void host_gtsv_no_pivot(rocsparse_int         m,
     }
     else
     {
-        BLOCKSIZE = pow(2, static_cast<rocsparse_int>(log2(m)) + 1);
+        for(BLOCKSIZE = 1; BLOCKSIZE < m; BLOCKSIZE <<= 1)
+            ;
     }
 
     for(rocsparse_int col = 0; col < n; col++)
@@ -5234,7 +5235,8 @@ void host_gtsv_no_pivot_strided_batch(rocsparse_int         m,
     }
     else
     {
-        BLOCKSIZE = pow(2, static_cast<rocsparse_int>(log2(m)) + 1);
+        for(BLOCKSIZE = 1; BLOCKSIZE < m; BLOCKSIZE <<= 1)
+            ;
     }
 
     for(rocsparse_int col = 0; col < batch_count; col++)
