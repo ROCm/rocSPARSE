@@ -5117,13 +5117,16 @@ void host_gtsv_no_pivot(rocsparse_int         m,
                         std::vector<T>&       B,
                         rocsparse_int         ldb)
 {
+    //
+    // Compute BLOCKSIZE as the lowest power of 2 greater or equal than m,
+    // and compute the exponent 'iter' of (BLOCKSIZE / 2).
+    // Note: if m = 1 then the calculation below leads to iter = -1 which is, in this algorithm, as acceptable as log2(m / 2) = -Inf.
+    //
     rocsparse_int iter;
     size_t        BLOCKSIZE;
-
     for(iter = 0, BLOCKSIZE = 1; BLOCKSIZE < m; BLOCKSIZE <<= 1, ++iter)
         ;
     --iter;
-
 
     for(rocsparse_int col = 0; col < n; col++)
     {
@@ -5224,7 +5227,11 @@ void host_gtsv_no_pivot_strided_batch(rocsparse_int         m,
                                       rocsparse_int         batch_count,
                                       rocsparse_int         batch_stride)
 {
-
+    //
+    // Compute BLOCKSIZE as the lowest power of 2 greater or equal than m,
+    // and compute the exponent 'iter' of (BLOCKSIZE / 2).
+    // Note: if m = 1 then the calculation below leads to iter = -1 which is, in this algorithm, as acceptable as log2(m / 2) = -Inf.
+    //
     rocsparse_int iter;
     size_t        BLOCKSIZE;
     for(iter = 0, BLOCKSIZE = 1; BLOCKSIZE < m; BLOCKSIZE <<= 1, ++iter)
