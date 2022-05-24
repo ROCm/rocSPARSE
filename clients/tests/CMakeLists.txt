@@ -32,7 +32,6 @@ endif()
 #
 # Client matrices.
 #
-
 if(NOT EXISTS "${CMAKE_MATRICES_DIR}")
   #
   # Download.
@@ -48,12 +47,17 @@ if(NOT EXISTS "${CMAKE_MATRICES_DIR}")
   endif()
 
 else()
-
   #
   # Copy.
   #
   if(NOT CMAKE_MATRICES_DIR STREQUAL "${PROJECT_BINARY_DIR}/matrices")
-    execute_process(COMMAND cp -r ${CMAKE_MATRICES_DIR} ${PROJECT_BINARY_DIR}/matrices)
+    message("Copy matrix files from ${CMAKE_MATRICES_DIR} to ${PROJECT_BINARY_DIR}/matrices")
+
+    execute_process(COMMAND cp -r ${CMAKE_MATRICES_DIR} ${PROJECT_BINARY_DIR}/matrices RESULT_VARIABLE STATUS WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
+
+    if(STATUS AND NOT STATUS EQUAL 0)
+      message(FATAL_ERROR "Failed to copy matrix .csr files, aborting.")
+    endif()
   endif()
 
 endif()

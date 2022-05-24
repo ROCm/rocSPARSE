@@ -46,6 +46,20 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_csrmm_alg value_)
 };
 
 template <typename I, typename J, typename T>
+rocsparse_status rocsparse_csrmm_buffer_size_template_merge(rocsparse_handle          handle,
+                                                            rocsparse_operation       trans_A,
+                                                            rocsparse_csrmm_alg       alg,
+                                                            J                         m,
+                                                            J                         n,
+                                                            J                         k,
+                                                            I                         nnz,
+                                                            const rocsparse_mat_descr descr,
+                                                            const T*                  csr_val,
+                                                            const I*                  csr_row_ptr,
+                                                            const J*                  csr_col_ind,
+                                                            size_t*                   buffer_size);
+
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          handle,
                                                       rocsparse_operation       trans_A,
                                                       rocsparse_csrmm_alg       alg,
@@ -139,20 +153,18 @@ rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          
     {
     case rocsparse_csrmm_alg_merge:
     {
-        switch(trans_A)
-        {
-        case rocsparse_operation_none:
-        {
-            *buffer_size = sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
-            return rocsparse_status_success;
-        }
-        case rocsparse_operation_transpose:
-        case rocsparse_operation_conjugate_transpose:
-        {
-            *buffer_size = 4;
-            return rocsparse_status_success;
-        }
-        }
+        return rocsparse_csrmm_buffer_size_template_merge(handle,
+                                                          trans_A,
+                                                          alg,
+                                                          m,
+                                                          n,
+                                                          k,
+                                                          nnz,
+                                                          descr,
+                                                          csr_val,
+                                                          csr_row_ptr,
+                                                          csr_col_ind,
+                                                          buffer_size);
     }
 
     case rocsparse_csrmm_alg_default:
@@ -164,6 +176,20 @@ rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          
     }
     return rocsparse_status_invalid_value;
 }
+
+template <typename I, typename J, typename T>
+rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle          handle,
+                                                         rocsparse_operation       trans_A,
+                                                         rocsparse_csrmm_alg       alg,
+                                                         J                         m,
+                                                         J                         n,
+                                                         J                         k,
+                                                         I                         nnz,
+                                                         const rocsparse_mat_descr descr,
+                                                         const T*                  csr_val,
+                                                         const I*                  csr_row_ptr,
+                                                         const J*                  csr_col_ind,
+                                                         void*                     temp_buffer);
 
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          handle,
@@ -259,23 +285,18 @@ rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          han
     {
     case rocsparse_csrmm_alg_merge:
     {
-        switch(trans_A)
-        {
-        case rocsparse_operation_none:
-        {
-            char* ptr         = reinterpret_cast<char*>(temp_buffer);
-            J*    csr_row_ind = reinterpret_cast<J*>(ptr);
-            // ptr += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
-            RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_csr2coo_template(handle, csr_row_ptr, nnz, m, csr_row_ind, descr->base));
-            return rocsparse_status_success;
-        }
-        case rocsparse_operation_transpose:
-        case rocsparse_operation_conjugate_transpose:
-        {
-            return rocsparse_status_success;
-        }
-        }
+        return rocsparse_csrmm_analysis_template_merge(handle,
+                                                       trans_A,
+                                                       alg,
+                                                       m,
+                                                       n,
+                                                       k,
+                                                       nnz,
+                                                       descr,
+                                                       csr_val,
+                                                       csr_row_ptr,
+                                                       csr_col_ind,
+                                                       temp_buffer);
     }
 
     case rocsparse_csrmm_alg_default:

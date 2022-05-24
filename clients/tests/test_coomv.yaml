@@ -199,7 +199,7 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_sorted]
   filename: [mplate,
              Chevron3]
 
