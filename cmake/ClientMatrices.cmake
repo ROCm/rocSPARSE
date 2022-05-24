@@ -79,12 +79,15 @@ if(NOT CMAKE_MATRICES_DIR)
   message(FATAL_ERROR "Unspecified CMAKE_MATRICES_DIR")
 endif()
 
-
 if(NOT CONVERT_SOURCE)
   set(CONVERT_SOURCE ${CMAKE_SOURCE_DIR}/deps/convert.cpp)
 endif()
 
-execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
+execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe RESULT_VARIABLE STATUS)
+
+if(STATUS AND NOT STATUS EQUAL 0)
+  message(FATAL_ERROR "mtx2csr.exe failed to build, aborting.")
+endif()
 
 list(LENGTH TEST_MATRICES len)
 math(EXPR len1 "${len} - 1")
@@ -157,7 +160,7 @@ foreach(i RANGE 0 ${len1})
       RESULT_VARIABLE STATUS
       WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
     if(STATUS AND NOT STATUS EQUAL 0)
-      message(FATAL_ERROR "mxt2csr.exe failed, aborting.")
+      message(FATAL_ERROR "mtx2csr.exe failed, aborting.")
     else()
       message(STATUS "${mat} success.")
     endif()

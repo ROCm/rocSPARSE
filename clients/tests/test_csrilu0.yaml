@@ -158,8 +158,7 @@ Tests:
              amazon0312,
              Chebyshev4,
              sme3Dc,
-             webbase-1M,
-             shipsec1]
+             webbase-1M]
 
 - name: csrilu0_file
   category: quick
