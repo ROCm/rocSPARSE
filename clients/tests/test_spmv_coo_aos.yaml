@@ -56,7 +56,8 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
 
 - name: spmv_coo_aos
   category: pre_checkin
@@ -69,7 +70,8 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_unsorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
 
 - name: spmv_coo_aos
   category: nightly
@@ -82,7 +84,8 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
 
 - name: spmv_coo_aos_file
   category: quick
@@ -95,7 +98,8 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_unsorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
   filename: [mac_econ_fwd500,
              nos2,
              nos4,
@@ -113,7 +117,8 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
   filename: [rma10,
              mc2depi,
              ASIC_320k,
@@ -133,7 +138,8 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
   filename: [bibd_22_8,
              bmwcra_1,
              amazon0312,
@@ -153,7 +159,8 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_unsorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
   filename: [Chevron2]
 
 - name: spmv_coo_aos_file
@@ -168,6 +175,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
   filename: [qc2534]
 
 - name: spmv_coo_aos_file
@@ -182,6 +190,7 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
   filename: [Chevron3]
 
 - name: spmv_coo_aos_file
@@ -196,6 +205,7 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   storage: [rocsparse_storage_mode_unsorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
   filename: [mplate]
 
 - name: spmv_coo_aos_file
@@ -209,5 +219,6 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
   filename: [Chevron4]

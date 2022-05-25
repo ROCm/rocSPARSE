@@ -300,7 +300,8 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
         return rocsparse_status_invalid_pointer;
     }
 
-    hipMemset(bsr_val_C, 0, nnzb_C * row_block_dim_C * col_block_dim_C * sizeof(T));
+    RETURN_IF_HIP_ERROR(
+        hipMemset(bsr_val_C, 0, nnzb_C * row_block_dim_C * col_block_dim_C * sizeof(T)));
 
     // Check the description type of the matrix.
     if(rocsparse_matrix_type_general != descr_A->type

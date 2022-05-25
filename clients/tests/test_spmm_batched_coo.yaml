@@ -83,7 +83,7 @@ Tests:
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
-  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic]
   order: [rocsparse_order_row]
 
 - name: spmm_batched_coo
@@ -102,7 +102,7 @@ Tests:
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
-  spmm_alg: [rocsparse_spmm_alg_coo_segmented_atomic]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
   order: [rocsparse_order_column]
 
 ##############################
@@ -143,7 +143,7 @@ Tests:
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic]
   order: [rocsparse_order_row]
   filename: [nos1,
              nos5]
@@ -164,7 +164,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_coo_segmented_atomic]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
   order: [rocsparse_order_row]
   filename: [nos2,
              nos4,
@@ -231,6 +231,6 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic]
   order: [rocsparse_order_row]
   filename: [Chevron2]

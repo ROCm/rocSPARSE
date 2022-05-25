@@ -107,7 +107,8 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle,
     I nm = order == rocsparse_order_column ? n : m;
 
     // Set memory to zero.
-    hipMemset2DAsync(A, lda * sizeof(T), 0, mn * sizeof(T), nm, handle->stream);
+    RETURN_IF_HIP_ERROR(
+        hipMemset2DAsync(A, lda * sizeof(T), 0, mn * sizeof(T), nm, handle->stream));
 
     if(nnz > 0)
     {

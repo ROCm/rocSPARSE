@@ -22,7 +22,6 @@
 *
 * ************************************************************************ */
 
-#include "rocsparse_coomm_template_segmented_atomic.hpp"
 #include "common.h"
 #include "definitions.h"
 #include "utility.h"

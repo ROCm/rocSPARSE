@@ -419,10 +419,11 @@ typedef enum rocsparse_gtsv_interleaved_alg_
 typedef enum rocsparse_spmv_alg_
 {
     rocsparse_spmv_alg_default      = 0, /**< Default SpMV algorithm for the given format. */
-    rocsparse_spmv_alg_coo          = 1, /**< COO SpMV algorithm for COO matrices. */
+    rocsparse_spmv_alg_coo          = 1, /**< COO SpMV algorithm 1 (segmented) for COO matrices. */
     rocsparse_spmv_alg_csr_adaptive = 2, /**< CSR SpMV algorithm 1 (adaptive) for CSR matrices. */
     rocsparse_spmv_alg_csr_stream   = 3, /**< CSR SpMV algorithm 2 (stream) for CSR matrices. */
-    rocsparse_spmv_alg_ell          = 4 /**< ELL SpMV algorithm for ELL matrices. */
+    rocsparse_spmv_alg_ell          = 4, /**< ELL SpMV algorithm for ELL matrices. */
+    rocsparse_spmv_alg_coo_atomic   = 5 /**< COO SpMV algorithm 2 (atomic) for COO matrices. */
 } rocsparse_spmv_alg;
 
 /*! \ingroup types_module

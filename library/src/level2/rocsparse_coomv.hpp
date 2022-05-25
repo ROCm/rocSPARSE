@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,17 @@
 
 #include "handle.h"
 
+typedef enum rocsparse_coomv_alg_
+{
+    rocsparse_coomv_alg_default = 0,
+    rocsparse_coomv_alg_segmented,
+    rocsparse_coomv_alg_atomic
+} rocsparse_coomv_alg;
+
 template <typename I, typename T>
 rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
+                                          rocsparse_coomv_alg       alg,
                                           I                         m,
                                           I                         n,
                                           I                         nnz,

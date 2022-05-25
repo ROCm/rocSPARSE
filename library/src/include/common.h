@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -146,6 +146,8 @@ __device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_double_com
 __device__ __forceinline__ void rocsparse_nontemporal_store(int32_t val, int32_t* ptr) { __builtin_nontemporal_store(val, ptr); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(int64_t val, int64_t* ptr) { __builtin_nontemporal_store(val, ptr); }
 
+__device__ __forceinline__ int32_t rocsparse_shfl(int32_t var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
+__device__ __forceinline__ int64_t rocsparse_shfl(int64_t var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
 __device__ __forceinline__ float rocsparse_shfl(float var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
 __device__ __forceinline__ double rocsparse_shfl(double var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_shfl(rocsparse_float_complex var, int src_lane, int width = warpSize) { return rocsparse_float_complex(__shfl(std::real(var), src_lane, width), __shfl(std::imag(var), src_lane, width)); }

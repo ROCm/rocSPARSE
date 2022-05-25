@@ -138,6 +138,7 @@ Datatypes:
         rocsparse_spmv_alg_csr_adaptive: 2
         rocsparse_spmv_alg_csr_stream: 3
         rocsparse_spmv_alg_ell: 4
+        rocsparse_spmv_alg_coo_atomic: 5
   - rocsparse_spsv_alg:
       bases: [c_int ]
       attr:

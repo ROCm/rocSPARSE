@@ -204,7 +204,7 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
 
     if(bsr_val != nullptr)
     {
-        hipMemset(bsr_val, 0, nnzb * block_dim * block_dim * sizeof(T));
+        RETURN_IF_HIP_ERROR(hipMemset(bsr_val, 0, nnzb * block_dim * block_dim * sizeof(T)));
     }
 
     // Stream

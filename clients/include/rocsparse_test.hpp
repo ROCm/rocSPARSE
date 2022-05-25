@@ -73,6 +73,18 @@ inline const char* rocsparse_status_to_string(rocsparse_status status)
         return "rocsparse_status_memory_error";
     case rocsparse_status_internal_error:
         return "rocsparse_status_internal_error";
+    case rocsparse_status_invalid_value:
+        return "rocsparse_status_invalid_value";
+    case rocsparse_status_arch_mismatch:
+        return "rocsparse_status_arch_mismatch";
+    case rocsparse_status_zero_pivot:
+        return "rocsparse_status_zero_pivot";
+    case rocsparse_status_not_initialized:
+        return "rocsparse_status_not_initialized";
+    case rocsparse_status_type_mismatch:
+        return "rocsparse_status_type_mismatch";
+    case rocsparse_status_requires_sorted_storage:
+        return "rocsparse_status_requires_sorted_storage";
     default:
         return "<undefined rocsparse_status value>";
     }
