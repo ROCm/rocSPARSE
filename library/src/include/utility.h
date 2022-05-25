@@ -470,6 +470,7 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
     case rocsparse_spmv_alg_csr_adaptive:
     case rocsparse_spmv_alg_csr_stream:
     case rocsparse_spmv_alg_ell:
+    case rocsparse_spmv_alg_coo_atomic:
     {
         return false;
     }

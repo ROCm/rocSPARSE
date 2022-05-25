@@ -168,7 +168,8 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
     //
     // Set memory to zero.
     //
-    hipMemset2DAsync(A, lda * sizeof(T), 0, mn * sizeof(T), nm, handle->stream);
+    RETURN_IF_HIP_ERROR(
+        hipMemset2DAsync(A, lda * sizeof(T), 0, mn * sizeof(T), nm, handle->stream));
 
     //
     // Compute the conversion.

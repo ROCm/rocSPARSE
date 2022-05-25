@@ -316,7 +316,7 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
     //
     // Set bsr val to zero.
     //
-    hipMemset(bsr_val, 0, nnzb * row_block_dim * col_block_dim * sizeof(T));
+    RETURN_IF_HIP_ERROR(hipMemset(bsr_val, 0, nnzb * row_block_dim * col_block_dim * sizeof(T)));
     if(row_block_dim == 1 && col_block_dim == 1)
     {
         constexpr rocsparse_int block_size = 256;

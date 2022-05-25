@@ -49,6 +49,7 @@ rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocsparse_spm
         }
         case rocsparse_spmv_alg_coo:
         case rocsparse_spmv_alg_ell:
+        case rocsparse_spmv_alg_coo_atomic:
         {
             return rocsparse_status_invalid_value;
         }
@@ -63,6 +64,7 @@ rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocsparse_spm
         {
         case rocsparse_spmv_alg_default:
         case rocsparse_spmv_alg_coo:
+        case rocsparse_spmv_alg_coo_atomic:
         {
             return rocsparse_status_success;
         }
@@ -88,6 +90,7 @@ rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocsparse_spm
         case rocsparse_spmv_alg_csr_stream:
         case rocsparse_spmv_alg_csr_adaptive:
         case rocsparse_spmv_alg_coo:
+        case rocsparse_spmv_alg_coo_atomic:
         {
             return rocsparse_status_invalid_value;
         }
@@ -104,6 +107,7 @@ rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocsparse_spm
         case rocsparse_spmv_alg_csr_stream:
         case rocsparse_spmv_alg_csr_adaptive:
         case rocsparse_spmv_alg_ell:
+        case rocsparse_spmv_alg_coo_atomic:
         {
             return rocsparse_status_invalid_value;
         }
@@ -113,6 +117,72 @@ rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocsparse_spm
     }
     }
 
+    return rocsparse_status_invalid_value;
+}
+
+rocsparse_status rocsparse_spmv_alg2coomv_alg(rocsparse_spmv_alg   spmv_alg,
+                                              rocsparse_coomv_alg& coomv_alg)
+{
+    switch(spmv_alg)
+    {
+    case rocsparse_spmv_alg_default:
+    {
+        coomv_alg = rocsparse_coomv_alg_default;
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_spmv_alg_coo:
+    {
+        coomv_alg = rocsparse_coomv_alg_segmented;
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_spmv_alg_coo_atomic:
+    {
+        coomv_alg = rocsparse_coomv_alg_atomic;
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_spmv_alg_csr_adaptive:
+    case rocsparse_spmv_alg_csr_stream:
+    case rocsparse_spmv_alg_ell:
+    {
+        return rocsparse_status_invalid_value;
+    }
+    }
+    return rocsparse_status_invalid_value;
+}
+
+rocsparse_status rocsparse_spmv_alg2coomv_aos_alg(rocsparse_spmv_alg       spmv_alg,
+                                                  rocsparse_coomv_aos_alg& coomv_aos_alg)
+{
+    switch(spmv_alg)
+    {
+    case rocsparse_spmv_alg_default:
+    {
+        coomv_aos_alg = rocsparse_coomv_aos_alg_default;
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_spmv_alg_coo:
+    {
+        coomv_aos_alg = rocsparse_coomv_aos_alg_segmented;
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_spmv_alg_coo_atomic:
+    {
+        coomv_aos_alg = rocsparse_coomv_aos_alg_atomic;
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_spmv_alg_csr_adaptive:
+    case rocsparse_spmv_alg_csr_stream:
+    case rocsparse_spmv_alg_ell:
+    {
+        return rocsparse_status_invalid_value;
+    }
+    }
     return rocsparse_status_invalid_value;
 }
 
@@ -134,6 +204,9 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
     {
     case rocsparse_format_coo:
     {
+        rocsparse_coomv_alg coomv_alg;
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_spmv_alg2coomv_alg(alg, coomv_alg)));
+
         if(temp_buffer == nullptr)
         {
             // We do not need a buffer
@@ -143,6 +216,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
 
         return rocsparse_coomv_template(handle,
                                         trans,
+                                        coomv_alg,
                                         (I)mat->rows,
                                         (I)mat->cols,
                                         (I)mat->nnz,
@@ -158,6 +232,9 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
 
     case rocsparse_format_coo_aos:
     {
+        rocsparse_coomv_aos_alg coomv_aos_alg;
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_spmv_alg2coomv_aos_alg(alg, coomv_aos_alg)));
+
         if(temp_buffer == nullptr)
         {
             // We do not need a buffer
@@ -167,6 +244,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
 
         return rocsparse_coomv_aos_template(handle,
                                             trans,
+                                            coomv_aos_alg,
                                             (I)mat->rows,
                                             (I)mat->cols,
                                             (I)mat->nnz,

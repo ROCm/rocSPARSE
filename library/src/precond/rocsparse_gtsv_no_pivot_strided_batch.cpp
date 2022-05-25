@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -364,14 +364,14 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_large_template(rocsparse_
     T* drhs1 = reinterpret_cast<T*>(ptr);
     // ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
 
-    hipMemset(da0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256);
-    hipMemset(da1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256);
-    hipMemset(db0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256);
-    hipMemset(db1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256);
-    hipMemset(dc0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256);
-    hipMemset(dc1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256);
-    hipMemset(drhs0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256);
-    hipMemset(drhs1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256);
+    RETURN_IF_HIP_ERROR(hipMemset(da0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
+    RETURN_IF_HIP_ERROR(hipMemset(da1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
+    RETURN_IF_HIP_ERROR(hipMemset(db0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
+    RETURN_IF_HIP_ERROR(hipMemset(db1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
+    RETURN_IF_HIP_ERROR(hipMemset(dc0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
+    RETURN_IF_HIP_ERROR(hipMemset(dc1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
+    RETURN_IF_HIP_ERROR(hipMemset(drhs0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
+    RETURN_IF_HIP_ERROR(hipMemset(drhs1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
 
     // Run special algorithm if m is power of 2
     if((m & (m - 1)) == 0)

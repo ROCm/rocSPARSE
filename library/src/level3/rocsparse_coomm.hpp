@@ -36,6 +36,35 @@ typedef enum rocsparse_coomm_alg_
     rocsparse_coomm_alg_segmented_atomic
 } rocsparse_coomm_alg;
 
+template <typename I, typename T>
+rocsparse_status rocsparse_coomm_buffer_size_template(rocsparse_handle          handle,
+                                                      rocsparse_operation       trans_A,
+                                                      rocsparse_coomm_alg       alg,
+                                                      I                         m,
+                                                      I                         n,
+                                                      I                         k,
+                                                      I                         nnz,
+                                                      I                         batch_count,
+                                                      const rocsparse_mat_descr descr,
+                                                      const T*                  coo_val,
+                                                      const I*                  coo_row_ind,
+                                                      const I*                  coo_col_ind,
+                                                      size_t*                   buffer_size);
+
+template <typename I, typename T>
+rocsparse_status rocsparse_coomm_analysis_template(rocsparse_handle          handle,
+                                                   rocsparse_operation       trans_A,
+                                                   rocsparse_coomm_alg       alg,
+                                                   I                         m,
+                                                   I                         n,
+                                                   I                         k,
+                                                   I                         nnz,
+                                                   const rocsparse_mat_descr descr,
+                                                   const T*                  coo_val,
+                                                   const I*                  coo_row_ind,
+                                                   const I*                  coo_col_ind,
+                                                   void*                     temp_buffer);
+
 template <typename I, typename T, typename U>
 rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
@@ -61,7 +90,8 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                    T*                        C,
                                                    I                         ldc,
                                                    I                         batch_count_C,
-                                                   I                         batch_stride_C);
+                                                   I                         batch_stride_C,
+                                                   void*                     temp_buffer);
 
 template <typename I, typename T>
 rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
@@ -89,6 +119,7 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                           T*                        C,
                                           I                         ldc,
                                           I                         batch_count_C,
-                                          I                         batch_stride_C);
+                                          I                         batch_stride_C,
+                                          void*                     temp_buffer);
 
 #endif // ROCSPARSE_COOMM_HPP

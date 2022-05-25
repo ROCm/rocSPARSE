@@ -347,28 +347,39 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
 
         switch(stage)
         {
-            //
-            // STAGE BUFFER SIZE
-            //
         case rocsparse_spmm_stage_buffer_size:
         {
-            RETURN_IF_NULLPTR(buffer_size);
-            *buffer_size = 4;
-            return rocsparse_status_success;
+            return rocsparse_coomm_buffer_size_template(handle,
+                                                        trans_A,
+                                                        coomm_alg,
+                                                        (I)mat_A->rows,
+                                                        (I)mat_C->cols,
+                                                        (I)mat_A->cols,
+                                                        (I)mat_A->nnz,
+                                                        (I)mat_C->batch_count,
+                                                        mat_A->descr,
+                                                        (const T*)mat_A->val_data,
+                                                        (const I*)mat_A->row_data,
+                                                        (const I*)mat_A->col_data,
+                                                        buffer_size);
         }
 
-            //
-            // STAGE PREPROCESS
-            //
         case rocsparse_spmm_stage_preprocess:
         {
-            RETURN_IF_NULLPTR(temp_buffer);
-            return rocsparse_status_success;
+            return rocsparse_coomm_analysis_template(handle,
+                                                     trans_A,
+                                                     coomm_alg,
+                                                     (I)mat_A->rows,
+                                                     (I)mat_C->cols,
+                                                     (I)mat_A->cols,
+                                                     (I)mat_A->nnz,
+                                                     mat_A->descr,
+                                                     (const T*)mat_A->val_data,
+                                                     (const I*)mat_A->row_data,
+                                                     (const I*)mat_A->col_data,
+                                                     temp_buffer);
         }
 
-            //
-            // STAGE COMPUTE
-            //
         case rocsparse_spmm_stage_compute:
         {
             return rocsparse_coomm_template(handle,
@@ -396,7 +407,8 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
                                             (T*)mat_C->values,
                                             (I)mat_C->ld,
                                             (I)mat_C->batch_count,
-                                            (I)mat_C->batch_stride);
+                                            (I)mat_C->batch_stride,
+                                            temp_buffer);
         }
 
         case rocsparse_spmm_stage_auto:
