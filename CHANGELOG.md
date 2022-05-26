@@ -2,7 +2,7 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## rocSPARSE 2.1.0 for ROCm 5.1.0
+## rocSPARSE 2.2.0 for ROCm 5.1.0
 ### Added 
 - Packages for test and benchmark executables on all supported OSes using CPack.
 
