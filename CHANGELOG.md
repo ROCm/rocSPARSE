@@ -2,6 +2,25 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
+## rocSPARSE 2.2.0 for ROCm 5.2.0
+
+### Added
+- batched SpMM for CSR, COO and Blocked ELL formats. 
+- Packages for test and benchmark executables on all supported OSes using CPack.
+- Clients file importers and exporters.
+
+### Improved
+- Clients code size reduction.
+- Clients error handling.
+- Clients benchmarking for performance tracking.
+
+### Changed
+- Test adjustments due to roundoff errors.
+- Fixing API calls compatiblity with rocPRIM.
+
+### Known Issues
+- none
+
 ## rocSPARSE 2.1.0 for ROCm 5.1.0
 ### Added
 - gtsv_interleaved_batch
