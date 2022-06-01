@@ -769,10 +769,11 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
         T* val_block_red = reinterpret_cast<T*>(reinterpret_cast<void*>(ptr));
         // ptr += ((sizeof(T) * nblocks * n * batch_count_C - 1) / COOMMN_DIM + 1) * COOMMN_DIM;
 
-        RETURN_IF_HIP_ERROR(
-            hipMemset(row_block_red,
-                      0XFF,
-                      ((sizeof(I) * nblocks * batch_count_C - 1) / COOMMN_DIM + 1) * COOMMN_DIM));
+        RETURN_IF_HIP_ERROR(hipMemsetAsync(
+            row_block_red,
+            0XFF,
+            ((sizeof(I) * nblocks * batch_count_C - 1) / COOMMN_DIM + 1) * COOMMN_DIM,
+            stream));
 
         if((order == rocsparse_order_column && trans_B == rocsparse_operation_none)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)

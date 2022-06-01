@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -121,7 +121,9 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
                            workspace,
                            (T*)nullptr);
 
-        RETURN_IF_HIP_ERROR(hipMemcpy(result, workspace, sizeof(T), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpyAsync(result, workspace, sizeof(T), hipMemcpyDeviceToHost, handle->stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
     }
 #undef DOTCI_DIM
 

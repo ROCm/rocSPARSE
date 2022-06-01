@@ -322,8 +322,9 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle          hand
         }
         else
         {
-            RETURN_IF_HIP_ERROR(
-                hipMemcpy(csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
             // Adjust nnz according to index base
             *csr_nnz -= csr_descr->base;
@@ -338,8 +339,9 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle          hand
         }
         else
         {
-            RETURN_IF_HIP_ERROR(
-                hipMemcpy(csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
         }
     }
 
