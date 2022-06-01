@@ -117,8 +117,11 @@ rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle,
 
     I start;
     I end;
-    RETURN_IF_HIP_ERROR(hipMemcpy(&start, &row_ptr[0], sizeof(I), hipMemcpyDeviceToHost));
-    RETURN_IF_HIP_ERROR(hipMemcpy(&end, &row_ptr[m], sizeof(I), hipMemcpyDeviceToHost));
+    RETURN_IF_HIP_ERROR(
+        hipMemcpyAsync(&start, &row_ptr[0], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
+    RETURN_IF_HIP_ERROR(
+        hipMemcpyAsync(&end, &row_ptr[m], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
     I nnz = end - start;
 

@@ -1218,7 +1218,9 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle      
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMemcpy(nnz_C, csr_row_ptr_C + m, sizeof(I), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            nnz_C, csr_row_ptr_C + m, sizeof(I), hipMemcpyDeviceToHost, handle->stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
         // Adjust nnz by index base
         *nnz_C -= descr_C->base;

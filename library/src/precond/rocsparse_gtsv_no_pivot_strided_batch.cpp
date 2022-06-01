@@ -364,14 +364,22 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_large_template(rocsparse_
     T* drhs1 = reinterpret_cast<T*>(ptr);
     // ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
 
-    RETURN_IF_HIP_ERROR(hipMemset(da0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
-    RETURN_IF_HIP_ERROR(hipMemset(da1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
-    RETURN_IF_HIP_ERROR(hipMemset(db0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
-    RETURN_IF_HIP_ERROR(hipMemset(db1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
-    RETURN_IF_HIP_ERROR(hipMemset(dc0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
-    RETURN_IF_HIP_ERROR(hipMemset(dc1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
-    RETURN_IF_HIP_ERROR(hipMemset(drhs0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
-    RETURN_IF_HIP_ERROR(hipMemset(drhs1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(
+        da0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(
+        da1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(
+        db0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(
+        db1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(
+        dc0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(
+        dc1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(
+        drhs0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(
+        drhs1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
 
     // Run special algorithm if m is power of 2
     if((m & (m - 1)) == 0)

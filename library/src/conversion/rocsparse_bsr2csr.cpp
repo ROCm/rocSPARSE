@@ -145,10 +145,11 @@ rocsparse_status rocsparse_bsr2csr_template(rocsparse_handle          handle,
         rocsparse_int start = 0;
         rocsparse_int end   = 0;
 
-        RETURN_IF_HIP_ERROR(
-            hipMemcpy(&end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-        RETURN_IF_HIP_ERROR(
-            hipMemcpy(&start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
         rocsparse_int nnzb = (end - start);
 
