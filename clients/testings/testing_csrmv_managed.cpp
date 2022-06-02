@@ -242,12 +242,12 @@ void testing_csrmv_managed(const Arguments& arg)
     T*             beta;
 
     CHECK_HIP_ERROR(
-        rocsparse_hipMallocManaged((void**)&csr_row_ptr, (M + 1) * sizeof(rocsparse_int)));
-    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&csr_col_ind, nnz * sizeof(rocsparse_int)));
-    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&csr_val, nnz * sizeof(T)));
-    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&x, N * sizeof(T)));
-    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&y_1, M * sizeof(T)));
-    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&y_2, M * sizeof(T)));
+        rocsparse_hipMallocManaged((void**)&csr_row_ptr, sizeof(rocsparse_int) * (M + 1)));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&csr_col_ind, sizeof(rocsparse_int) * nnz));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&csr_val, sizeof(T) * nnz));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&x, sizeof(T) * N));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&y_1, sizeof(T) * M));
+    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&y_2, sizeof(T) * M));
     CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&alpha, sizeof(T)));
     CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&beta, sizeof(T)));
 

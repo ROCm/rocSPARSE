@@ -143,7 +143,7 @@ inline void rocsparse_init_csr_and_bsr_matrix(const Arguments&            arg,
 
     // Allocate device memory for BSR col indices and values array
     device_vector<rocsparse_int> dbsr_col_ind(nnzb);
-    device_vector<T>             dbsr_val(nnzb * block_dim * block_dim);
+    device_vector<T>             dbsr_val(size_t(nnzb) * block_dim * block_dim);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr<T>(handle,
                                                direction,
@@ -162,7 +162,7 @@ inline void rocsparse_init_csr_and_bsr_matrix(const Arguments&            arg,
     // Resize BSR arrays
     bsr_row_ptr.resize(Mb + 1);
     bsr_col_ind.resize(nnzb);
-    bsr_val.resize(nnzb * block_dim * block_dim);
+    bsr_val.resize(size_t(nnzb) * block_dim * block_dim);
 
     // Copy BSR matrix output to host
     CHECK_HIP_ERROR(hipMemcpy(
@@ -313,12 +313,12 @@ void testing_bsr2csr(const Arguments& arg)
     // Allocate device memory for input BSR matrix
     device_vector<rocsparse_int> dbsr_row_ptr(Mb + 1);
     device_vector<rocsparse_int> dbsr_col_ind(nnzb);
-    device_vector<T>             dbsr_val(nnzb * block_dim * block_dim);
+    device_vector<T>             dbsr_val(size_t(nnzb) * block_dim * block_dim);
 
     // Allocate device memory for output CSR matrix
     device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
-    device_vector<rocsparse_int> dcsr_col_ind(nnzb * block_dim * block_dim);
-    device_vector<T>             dcsr_val(nnzb * block_dim * block_dim);
+    device_vector<rocsparse_int> dcsr_col_ind(size_t(nnzb) * block_dim * block_dim);
+    device_vector<T>             dcsr_val(size_t(nnzb) * block_dim * block_dim);
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(

@@ -231,7 +231,7 @@ int main(int argc, char* argv[])
     }
 
     double solve_time = (utils_time_us() - time) / (trials * batch_size * 1e3);
-    double bandwidth  = ((m + 1 + nnz) * sizeof(rocsparse_int) + (m + m + nnz) * sizeof(double))
+    double bandwidth  = (sizeof(rocsparse_int) * (m + 1 + nnz) + sizeof(double) * (m + m + nnz))
                        / solve_time / 1e6;
 
     // Check for zero pivots

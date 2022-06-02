@@ -173,7 +173,7 @@ void testing_gebsr2gebsr(const Arguments& arg)
     // Allocate device memory for input BSR matrix
     device_vector<rocsparse_int> dbsr_row_ptr_A(Mb + 1);
     device_vector<rocsparse_int> dbsr_col_ind_A(hnnzb_A);
-    device_vector<T>             dbsr_val_A(hnnzb_A * row_block_dim_A * col_block_dim_A);
+    device_vector<T>             dbsr_val_A(size_t(hnnzb_A) * row_block_dim_A * col_block_dim_A);
 
     // Allocate device memory for output BSR row pointer array
     device_vector<rocsparse_int> dbsr_row_ptr_C(Mb_C + 1);
@@ -250,7 +250,7 @@ void testing_gebsr2gebsr(const Arguments& arg)
                                                     dtemp_buffer));
 
     device_vector<rocsparse_int> dbsr_col_ind_C(hnnzb_C[0]);
-    device_vector<T>             dbsr_val_C(hnnzb_C[0] * row_block_dim_C * col_block_dim_C);
+    device_vector<T>             dbsr_val_C(size_t(hnnzb_C[0]) * row_block_dim_C * col_block_dim_C);
 
     if(arg.unit_check)
     {
@@ -282,7 +282,7 @@ void testing_gebsr2gebsr(const Arguments& arg)
 
         host_vector<rocsparse_int> hbsr_row_ptr_C(Mb_C + 1);
         host_vector<rocsparse_int> hbsr_col_ind_C(hnnzb_C[0]);
-        host_vector<T>             hbsr_val_C(hnnzb_C[0] * row_block_dim_C * col_block_dim_C);
+        host_vector<T> hbsr_val_C(size_t(hnnzb_C[0]) * row_block_dim_C * col_block_dim_C);
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hbsr_row_ptr_C,

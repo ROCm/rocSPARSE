@@ -507,7 +507,7 @@ void testing_bsrsv(const Arguments& arg)
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
 
         double gflop_count
-            = csrsv_gflop_count(M, dA.nnzb * dA.row_block_dim * dA.row_block_dim, diag);
+            = csrsv_gflop_count(M, size_t(dA.nnzb) * dA.row_block_dim * dA.row_block_dim, diag);
         double gbyte_count = bsrsv_gbyte_count<T>(dA.mb, dA.nnzb, dA.row_block_dim);
 
         double gpu_gflops = get_gpu_gflops(gpu_solve_time_used, gflop_count);
@@ -516,7 +516,7 @@ void testing_bsrsv(const Arguments& arg)
         display_timing_info("M",
                             M,
                             "nnz",
-                            dA.nnzb * dA.row_block_dim * dA.row_block_dim,
+                            size_t(dA.nnzb) * dA.row_block_dim * dA.row_block_dim,
                             "alpha",
                             h_alpha,
                             "pivot",

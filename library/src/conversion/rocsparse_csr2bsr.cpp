@@ -207,7 +207,7 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
     if(bsr_val != nullptr)
     {
         RETURN_IF_HIP_ERROR(
-            hipMemsetAsync(bsr_val, 0, nnzb * block_dim * block_dim * sizeof(T), handle->stream));
+            hipMemsetAsync(bsr_val, 0, sizeof(T) * nnzb * block_dim * block_dim, handle->stream));
     }
 
     // Stream
@@ -344,8 +344,8 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
         rocsparse_int grid_size = mb;
 
         size_t buffer_size
-            = grid_size * block_size
-              * (3 * rows_per_segment * sizeof(rocsparse_int) + rows_per_segment * sizeof(T));
+            = size_t(grid_size) * block_size
+              * (sizeof(rocsparse_int) * 3 * rows_per_segment + sizeof(T) * rows_per_segment);
 
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;
@@ -364,7 +364,7 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
 
         rocsparse_int* temp1 = reinterpret_cast<rocsparse_int*>(temp);
         T*             temp2 = reinterpret_cast<T*>(
-            temp + grid_size * block_size * 3 * rows_per_segment * sizeof(rocsparse_int));
+            temp + sizeof(rocsparse_int) * grid_size * block_size * 3 * rows_per_segment);
 
         hipLaunchKernelGGL((csr2bsr_65_inf_kernel<block_size>),
                            dim3(grid_size),
@@ -665,7 +665,7 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
 
         rocsparse_int grid_size = mb;
 
-        size_t buffer_size = grid_size * block_size * 2 * rows_per_segment * sizeof(rocsparse_int);
+        size_t buffer_size = sizeof(rocsparse_int) * grid_size * block_size * 2 * rows_per_segment;
 
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;

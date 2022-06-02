@@ -161,9 +161,9 @@ rocsparse_status rocsparse_gebsr2gebsr_buffer_size_template(rocsparse_handle    
         // Perform the conversion gebsr->gebsr by performing gebsr->csr->gebsr.
         rocsparse_int m = mb * row_block_dim_A;
 
-        *buffer_size = (m + 1) * sizeof(rocsparse_int)
-                       + row_block_dim_A * col_block_dim_A * nnzb * sizeof(rocsparse_int)
-                       + row_block_dim_A * col_block_dim_A * nnzb * sizeof(T);
+        *buffer_size = sizeof(rocsparse_int) * (m + 1)
+                       + sizeof(rocsparse_int) * row_block_dim_A * col_block_dim_A * nnzb
+                       + sizeof(T) * row_block_dim_A * col_block_dim_A * nnzb;
     }
 
     return rocsparse_status_success;
@@ -302,7 +302,7 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
     }
 
     RETURN_IF_HIP_ERROR(hipMemsetAsync(
-        bsr_val_C, 0, nnzb_C * row_block_dim_C * col_block_dim_C * sizeof(T), handle->stream));
+        bsr_val_C, 0, sizeof(T) * nnzb_C * row_block_dim_C * col_block_dim_C, handle->stream));
 
     // Check the description type of the matrix.
     if(rocsparse_matrix_type_general != descr_A->type
@@ -402,9 +402,9 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
         rocsparse_int* csr_row_ptr = reinterpret_cast<rocsparse_int*>(ptr);
         ptr += (m + 1);
         rocsparse_int* csr_col_ind = reinterpret_cast<rocsparse_int*>(ptr);
-        ptr += row_block_dim_A * col_block_dim_A * nnzb;
+        ptr += size_t(nnzb) * col_block_dim_A * row_block_dim_A;
         T* csr_val = reinterpret_cast<T*>(ptr);
-        ptr += row_block_dim_A * col_block_dim_A * nnzb;
+        ptr += size_t(nnzb) * row_block_dim_A * col_block_dim_A;
 
         rocsparse_status status = rocsparse_gebsr2csr_template(handle,
                                                                dir,
