@@ -226,14 +226,15 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
 
     time = (utils_time_us() - time) / (trials * batch_size * 1e3);
 
-    size_t readA  = batch_count_A * (nnz_A * sizeof(I) + nnz_A * sizeof(I) + nnz_A * sizeof(T));
-    size_t readB  = batch_count_B * nnz_B * sizeof(T);
-    size_t readC  = batch_count_C * (hbeta != static_cast<T>(0) ? nnz_C : 0) * sizeof(T);
-    size_t writeC = batch_count_C * nnz_C * sizeof(T);
+    size_t readA
+        = size_t(batch_count_A) * (sizeof(I) * nnz_A + sizeof(I) * nnz_A + sizeof(T) * nnz_A);
+    size_t readB  = sizeof(T) * batch_count_B * nnz_B;
+    size_t readC  = sizeof(T) * batch_count_C * (hbeta != static_cast<T>(0) ? nnz_C : 0);
+    size_t writeC = sizeof(T) * batch_count_C * nnz_C;
 
     double bandwidth = static_cast<double>(readA + readB + readC + writeC) / time / 1e6;
     double gflops
-        = batch_count_C
+        = double(batch_count_C)
           * static_cast<double>(2.0 * nnz_A * n + (hbeta != static_cast<T>(0) ? nnz_C : 0)) / time
           / 1e6;
 

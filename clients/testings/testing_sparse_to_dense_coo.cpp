@@ -235,10 +235,10 @@ void testing_sparse_to_dense_coo(const Arguments& arg)
     host_vector<T> h_coo_val(nnz);
 
     CHECK_HIP_ERROR(
-        hipMemcpy(h_coo_row_ind.data(), d_coo_row_ind, nnz * sizeof(I), hipMemcpyDeviceToHost));
+        hipMemcpy(h_coo_row_ind.data(), d_coo_row_ind, sizeof(I) * nnz, hipMemcpyDeviceToHost));
     CHECK_HIP_ERROR(
-        hipMemcpy(h_coo_col_ind.data(), d_coo_col_ind, nnz * sizeof(I), hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(h_coo_val.data(), d_coo_val, nnz * sizeof(T), hipMemcpyDeviceToHost));
+        hipMemcpy(h_coo_col_ind.data(), d_coo_col_ind, sizeof(I) * nnz, hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(h_coo_val.data(), d_coo_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
     if(arg.unit_check)
     {

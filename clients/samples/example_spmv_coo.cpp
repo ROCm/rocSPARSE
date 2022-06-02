@@ -167,11 +167,11 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
         HIP_CHECK(hipDeviceSynchronize());
     }
 
-    time = (utils_time_us() - time) / (trials * batch_size * 1e3);
-    double bandwidth
-        = static_cast<double>(sizeof(T) * (2 * m + nnz) + sizeof(I) * (m + 1) + sizeof(I) * nnz)
-          / time / 1e6;
-    double gflops = static_cast<double>(2 * nnz) / time / 1e6;
+    time             = (utils_time_us() - time) / (trials * batch_size * 1e3);
+    double bandwidth = static_cast<double>(sizeof(T) * (size_t(2) * m + nnz) + sizeof(I) * (m + 1)
+                                           + sizeof(I) * nnz)
+                       / time / 1e6;
+    double gflops = static_cast<double>(size_t(2) * nnz) / time / 1e6;
 
     std::cout << std::setw(12) << "m" << std::setw(12) << "n" << std::setw(12) << "nnz"
               << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12) << "GFlop/s"

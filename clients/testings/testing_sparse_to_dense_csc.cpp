@@ -262,10 +262,10 @@ void testing_sparse_to_dense_csc(const Arguments& arg)
     host_vector<T> h_csc_val(nnz);
 
     CHECK_HIP_ERROR(
-        hipMemcpy(h_csc_col_ptr.data(), d_csc_col_ptr, (n + 1) * sizeof(I), hipMemcpyDeviceToHost));
+        hipMemcpy(h_csc_col_ptr.data(), d_csc_col_ptr, sizeof(I) * (n + 1), hipMemcpyDeviceToHost));
     CHECK_HIP_ERROR(
-        hipMemcpy(h_csc_row_ind.data(), d_csc_row_ind, nnz * sizeof(J), hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(h_csc_val.data(), d_csc_val, nnz * sizeof(T), hipMemcpyDeviceToHost));
+        hipMemcpy(h_csc_row_ind.data(), d_csc_row_ind, sizeof(J) * nnz, hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(h_csc_val.data(), d_csc_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
     if(arg.unit_check)
     {

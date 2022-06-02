@@ -70,7 +70,7 @@ struct gebsx_matrix
         , ptr((rocsparse_direction_row == direction_) ? ((mb > 0) ? (mb + 1) : 0)
                                                       : ((nb > 0) ? (nb + 1) : 0))
         , ind(nnzb)
-        , val(nnzb * row_block_dim * col_block_dim){};
+        , val(size_t(nnzb) * row_block_dim * col_block_dim){};
 
     template <memory_mode::value_t THAT_MODE>
     explicit gebsx_matrix(const gebsx_matrix<THAT_MODE, direction_, T, I, J>& that_,
@@ -250,7 +250,7 @@ struct gebsx_matrix
         {
             this->nnzb = nnzb_;
             this->ind.resize(this->nnzb);
-            this->val.resize(this->nnzb * this->col_block_dim * this->row_block_dim);
+            this->val.resize(size_t(this->nnzb) * this->col_block_dim * this->row_block_dim);
         }
 
         if(base_ != this->base)

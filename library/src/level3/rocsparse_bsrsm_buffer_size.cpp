@@ -137,7 +137,7 @@ rocsparse_status rocsparse_bsrsm_buffer_size_template(rocsparse_handle          
     int narrays = (nrhs - 1) / ncol + 1;
 
     // int done_array
-    *buffer_size += sizeof(int) * ((mb * narrays - 1) / 256 + 1) * 256;
+    *buffer_size += sizeof(int) * ((size_t(mb) * narrays - 1) / 256 + 1) * 256;
 
     // rocsparse_int workspace
     *buffer_size += sizeof(rocsparse_int) * ((mb - 1) / 256 + 1) * 256;
@@ -161,7 +161,7 @@ rocsparse_status rocsparse_bsrsm_buffer_size_template(rocsparse_handle          
     // Additional buffer to store transpose of B, if trans_X == rocsparse_operation_none
     if(trans_X == rocsparse_operation_none)
     {
-        *buffer_size += sizeof(T) * ((mb * block_dim * nrhs - 1) / 256 + 1) * 256;
+        *buffer_size += sizeof(T) * ((size_t(mb) * block_dim * nrhs - 1) / 256 + 1) * 256;
     }
 
     // Additional buffer to store transpose A, if transA == rocsparse_operation_transpose
@@ -175,7 +175,7 @@ rocsparse_status rocsparse_bsrsm_buffer_size_template(rocsparse_handle          
 
         // rocPRIM does not support in-place sorting, so we need an additional buffer
         transpose_size += sizeof(rocsparse_int) * ((nnzb - 1) / 256 + 1) * 256;
-        transpose_size += sizeof(T) * ((nnzb * block_dim * block_dim - 1) / 256 + 1) * 256;
+        transpose_size += sizeof(T) * ((size_t(nnzb) * block_dim * block_dim - 1) / 256 + 1) * 256;
 
         *buffer_size += transpose_size;
     }

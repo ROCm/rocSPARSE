@@ -210,9 +210,9 @@ private:
     static size_t compute_nbytes(size_t s)
     {
 #ifdef GOOGLE_TEST
-        return (s + PAD * 3) * sizeof(T);
+        return sizeof(T) * (s + PAD * 3);
 #else
-        return s * sizeof(T);
+        return sizeof(T) * s;
 #endif
     }
 

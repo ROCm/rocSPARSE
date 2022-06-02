@@ -363,7 +363,7 @@ void testing_bsrxmv(const Arguments& arg)
             xnnzb += (hbsr_end_ptr[i] - hbsr_row_ptr[i]);
         }
         double gflop_count = spmv_gflop_count(
-            M, xnnzb * dA.row_block_dim * dA.col_block_dim, *h_beta != static_cast<T>(0));
+            M, size_t(xnnzb) * dA.row_block_dim * dA.col_block_dim, *h_beta != static_cast<T>(0));
         double gbyte_count = bsrmv_gbyte_count<T>(
             size_of_mask, dA.nb, xnnzb, dA.row_block_dim, *h_beta != static_cast<T>(0));
 

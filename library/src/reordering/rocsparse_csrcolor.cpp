@@ -443,7 +443,7 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
         //
         // Create identity.
         //
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&reordering_identity, m * sizeof(J)));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&reordering_identity, sizeof(J) * m));
 
         //
         //
@@ -459,7 +459,7 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
         //
         // Alloc output sorted colors.
         //
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&sorted_colors, m * sizeof(J)));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&sorted_colors, sizeof(J) * m));
 
         {
             rocsparse_int* keys_input    = colors;
@@ -481,7 +481,7 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
                                       values_output,
                                       m,
                                       0,
-                                      8 * sizeof(rocsparse_int),
+                                      sizeof(rocsparse_int) * 8,
                                       stream);
 
             //
@@ -500,7 +500,7 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
                                       values_output,
                                       m,
                                       0,
-                                      8 * sizeof(rocsparse_int),
+                                      sizeof(rocsparse_int) * 8,
                                       stream);
 
             RETURN_IF_HIP_ERROR(rocsparse_hipFree(temporary_storage_ptr));
