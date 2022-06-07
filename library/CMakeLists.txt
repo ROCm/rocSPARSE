@@ -53,12 +53,6 @@ set(rocsparse_headers_public
 
 source_group("Header Files\\Public" FILES ${rocsparse_headers_public})
 
-include(GNUInstallDirs)
-
-set(BIN_INSTALL_DIR ${CMAKE_INSTALL_BINDIR})
-set(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
-set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
-
 # Include sources
 include(src/CMakeLists.txt)
 
@@ -86,7 +80,7 @@ target_include_directories(rocsparse
                                    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
                            PUBLIC  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/rocsparse>
                                    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-                                   $<INSTALL_INTERFACE:include>
+                                   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 # Target link libraries
@@ -113,7 +107,7 @@ if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY AND NOT WIN32)
   rocm_wrap_header_file(
     rocsparse-version.h rocsparse-export.h
     GUARDS SYMLINK WRAPPER
-    WRAPPER_LOCATIONS include rocsparse/include
+    WRAPPER_LOCATIONS ${CMAKE_INSTALL_INCLUDEDIR} rocsparse/${CMAKE_INSTALL_INCLUDEDIR}
   )
 endif( )
 
@@ -122,7 +116,7 @@ endif( )
 # Force installation of .f module file
 rocm_install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse.f90"
               "${CMAKE_SOURCE_DIR}/library/src/rocsparse_enums.f90"
-        DESTINATION "include/rocsparse"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/rocsparse"
 )
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/library/include ${PROJECT_BINARY_DIR}/include/rocsparse)
