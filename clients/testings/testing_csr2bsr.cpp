@@ -303,7 +303,7 @@ void testing_csr2bsr(const Arguments& arg)
 
         // Allocate device memory for BSR col indices and values array
         device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
-        device_vector<T>             dbsr_val(hbsr_nnzb * block_dim * block_dim);
+        device_vector<T>             dbsr_val(size_t(hbsr_nnzb) * block_dim * block_dim);
 
         if((hbsr_nnzb > 0) && (!dbsr_col_ind || !dbsr_val))
         {
@@ -328,7 +328,7 @@ void testing_csr2bsr(const Arguments& arg)
 
         // Allocate host memory for BSR col indices and values array
         host_vector<rocsparse_int> hbsr_col_ind(hbsr_nnzb);
-        host_vector<T>             hbsr_val(hbsr_nnzb * block_dim * block_dim);
+        host_vector<T>             hbsr_val(size_t(hbsr_nnzb) * block_dim * block_dim);
 
         // Copy BSR matrix output to host
         CHECK_HIP_ERROR(hipMemcpy(
@@ -347,8 +347,8 @@ void testing_csr2bsr(const Arguments& arg)
         N = Nb * block_dim;
 
         device_vector<rocsparse_int> dcsr_row_ptr_gold_A(M + 1);
-        device_vector<rocsparse_int> dcsr_col_ind_gold_A(hbsr_nnzb * block_dim * block_dim);
-        device_vector<T>             dcsr_val_gold_A(hbsr_nnzb * block_dim * block_dim);
+        device_vector<rocsparse_int> dcsr_col_ind_gold_A(size_t(hbsr_nnzb) * block_dim * block_dim);
+        device_vector<T>             dcsr_val_gold_A(size_t(hbsr_nnzb) * block_dim * block_dim);
 
         if(!dcsr_row_ptr_gold_A)
         {
@@ -480,7 +480,7 @@ void testing_csr2bsr(const Arguments& arg)
 
             // Allocate device memory for BSR col indices and values array
             device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
-            device_vector<T>             dbsr_val(hbsr_nnzb * block_dim * block_dim);
+            device_vector<T>             dbsr_val(size_t(hbsr_nnzb) * block_dim * block_dim);
 
             if((hbsr_nnzb > 0) && (!dbsr_col_ind || !dbsr_val))
             {
@@ -517,7 +517,7 @@ void testing_csr2bsr(const Arguments& arg)
 
         // Allocate device memory for BSR col indices and values array
         device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
-        device_vector<T>             dbsr_val(hbsr_nnzb * block_dim * block_dim);
+        device_vector<T>             dbsr_val(size_t(hbsr_nnzb) * block_dim * block_dim);
 
         if((hbsr_nnzb > 0) && (!dbsr_col_ind || !dbsr_val))
         {

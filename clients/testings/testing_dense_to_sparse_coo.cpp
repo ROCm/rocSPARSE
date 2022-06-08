@@ -241,15 +241,15 @@ void testing_dense_to_sparse_coo(const Arguments& arg)
         host_vector<T> h_coo_val_gpu(nnz);
 
         CHECK_HIP_ERROR(hipMemcpy(
-            h_coo_row_ind_gpu.data(), d_coo_row_ind, nnz * sizeof(I), hipMemcpyDeviceToHost));
+            h_coo_row_ind_gpu.data(), d_coo_row_ind, sizeof(I) * nnz, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(
-            h_coo_col_ind_gpu.data(), d_coo_col_ind, nnz * sizeof(I), hipMemcpyDeviceToHost));
+            h_coo_col_ind_gpu.data(), d_coo_col_ind, sizeof(I) * nnz, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(
-            hipMemcpy(h_coo_val_gpu.data(), d_coo_val, nnz * sizeof(T), hipMemcpyDeviceToHost));
+            hipMemcpy(h_coo_val_gpu.data(), d_coo_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
         host_vector<I> nnz_per_row(m);
         CHECK_HIP_ERROR(
-            hipMemcpy(nnz_per_row.data(), d_temp_buffer, m * sizeof(I), hipMemcpyDeviceToHost));
+            hipMemcpy(nnz_per_row.data(), d_temp_buffer, sizeof(I) * m, hipMemcpyDeviceToHost));
 
         host_vector<I> h_coo_row_ind_cpu(nnz);
         host_vector<I> h_coo_col_ind_cpu(nnz);

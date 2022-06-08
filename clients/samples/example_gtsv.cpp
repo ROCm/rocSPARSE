@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
     }
 
     double solve_time = (utils_time_us() - time) / (trials * batch_size * 1e3);
-    double bandwidth  = ((3 * m + 2 * m * n) * sizeof(double)) / solve_time / 1e6;
+    double bandwidth  = (sizeof(double) * (size_t(3) * m + size_t(2) * m * n)) / solve_time / 1e6;
 
     // Print result
     HIP_CHECK(hipMemcpy(hB.data(), dB, sizeof(double) * ldb * n, hipMemcpyDeviceToHost));

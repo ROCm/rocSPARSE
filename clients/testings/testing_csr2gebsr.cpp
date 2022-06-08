@@ -306,7 +306,7 @@ void testing_csr2gebsr(const Arguments& arg)
         // Allocate device memory for BSR col indices and values array
 
         device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
-        device_vector<T>             dbsr_val(hbsr_nnzb * row_block_dim * col_block_dim);
+        device_vector<T>             dbsr_val(size_t(hbsr_nnzb) * row_block_dim * col_block_dim);
 
         // Finish conversion
         CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr<T>(handle,
@@ -327,7 +327,7 @@ void testing_csr2gebsr(const Arguments& arg)
 
         // Allocate host memory for BSR col indices and values array
         host_vector<rocsparse_int> hbsr_col_ind(hbsr_nnzb);
-        host_vector<T>             hbsr_val(hbsr_nnzb * row_block_dim * col_block_dim);
+        host_vector<T>             hbsr_val(size_t(hbsr_nnzb) * row_block_dim * col_block_dim);
 
         // Copy BSR matrix output to host
         CHECK_HIP_ERROR(hipMemcpy(
@@ -348,8 +348,9 @@ void testing_csr2gebsr(const Arguments& arg)
         N = Nb * col_block_dim;
 
         device_vector<rocsparse_int> dcsr_row_ptr_gold_A(M + 1);
-        device_vector<rocsparse_int> dcsr_col_ind_gold_A(hbsr_nnzb * row_block_dim * col_block_dim);
-        device_vector<T>             dcsr_val_gold_A(hbsr_nnzb * row_block_dim * col_block_dim);
+        device_vector<rocsparse_int> dcsr_col_ind_gold_A(size_t(hbsr_nnzb) * row_block_dim
+                                                         * col_block_dim);
+        device_vector<T> dcsr_val_gold_A(size_t(hbsr_nnzb) * row_block_dim * col_block_dim);
 
         CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2csr<T>(handle,
                                                      direction,
@@ -454,7 +455,7 @@ void testing_csr2gebsr(const Arguments& arg)
 
             // Allocate device memory for BSR col indices and values array
             device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
-            device_vector<T>             dbsr_val(hbsr_nnzb * row_block_dim * col_block_dim);
+            device_vector<T> dbsr_val(size_t(hbsr_nnzb) * row_block_dim * col_block_dim);
 
             CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr<T>(handle,
                                                          direction,
@@ -490,7 +491,7 @@ void testing_csr2gebsr(const Arguments& arg)
 
         // Allocate device memory for BSR col indices and values array
         device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
-        device_vector<T>             dbsr_val(hbsr_nnzb * row_block_dim * col_block_dim);
+        device_vector<T>             dbsr_val(size_t(hbsr_nnzb) * row_block_dim * col_block_dim);
 
         double gpu_time_used = get_time_us();
 

@@ -286,8 +286,7 @@ rocsparse_status rocsparse_prune_csr2csr_by_percentage_buffer_size_template(
         return rocsparse_status_invalid_pointer;
     }
 
-    *buffer_size = std::max(2 * nnz_A * static_cast<rocsparse_int>(sizeof(T)), 512);
-
+    *buffer_size = std::max(sizeof(T) * 2 * nnz_A, size_t(512));
     return rocsparse_status_success;
 }
 

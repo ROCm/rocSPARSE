@@ -591,7 +591,8 @@ void testing_bsrsm(const Arguments& arg)
 
         rocsparse_bsrsm_zero_pivot(handle, info, solve_pivot_gold);
 
-        double gflop_count = csrsv_gflop_count(m, dA.nnzb * block_dim * block_dim, diag) * nrhs;
+        double gflop_count
+            = csrsv_gflop_count(m, size_t(dA.nnzb) * block_dim * block_dim, diag) * nrhs;
         double gbyte_count = bsrsv_gbyte_count<T>(mb, dA.nnzb, block_dim) * nrhs;
 
         double gpu_gflops = get_gpu_gflops(gpu_solve_time_used, gflop_count);
@@ -604,7 +605,7 @@ void testing_bsrsm(const Arguments& arg)
         display_timing_info("M",
                             m,
                             "nnz",
-                            hA.nnzb * block_dim * block_dim,
+                            size_t(hA.nnzb) * block_dim * block_dim,
                             "nrhs",
                             nrhs,
                             "block_dim",

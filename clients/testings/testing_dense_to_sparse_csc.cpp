@@ -264,15 +264,15 @@ void testing_dense_to_sparse_csc(const Arguments& arg)
         host_vector<T> h_csc_val_gpu(nnz);
 
         CHECK_HIP_ERROR(hipMemcpy(
-            h_csc_col_ptr_gpu.data(), d_csc_col_ptr, (n + 1) * sizeof(I), hipMemcpyDeviceToHost));
+            h_csc_col_ptr_gpu.data(), d_csc_col_ptr, sizeof(I) * (n + 1), hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(
-            h_csc_row_ind_gpu.data(), d_csc_row_ind, nnz * sizeof(J), hipMemcpyDeviceToHost));
+            h_csc_row_ind_gpu.data(), d_csc_row_ind, sizeof(J) * nnz, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(
-            hipMemcpy(h_csc_val_gpu.data(), d_csc_val, nnz * sizeof(T), hipMemcpyDeviceToHost));
+            hipMemcpy(h_csc_val_gpu.data(), d_csc_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
         host_vector<I> nnz_per_column(n);
         CHECK_HIP_ERROR(
-            hipMemcpy(nnz_per_column.data(), d_temp_buffer, n * sizeof(I), hipMemcpyDeviceToHost));
+            hipMemcpy(nnz_per_column.data(), d_temp_buffer, sizeof(I) * n, hipMemcpyDeviceToHost));
 
         host_vector<I> h_csc_col_ptr_cpu(n + 1);
         host_vector<J> h_csc_row_ind_cpu(nnz);

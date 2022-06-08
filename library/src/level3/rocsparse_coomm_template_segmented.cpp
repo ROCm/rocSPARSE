@@ -656,7 +656,8 @@ rocsparse_status rocsparse_coomm_buffer_size_template_segmented(rocsparse_handle
 #define LOOPS 4
 #define COOMMN_DIM 256
     I nblocks    = (nnz - 1) / (COOMMN_DIM * LOOPS) + 1;
-    *buffer_size = 256 + ((sizeof(I) * nblocks * batch_count - 1) / COOMMN_DIM + 1) * COOMMN_DIM
+    *buffer_size = size_t(256)
+                   + ((sizeof(I) * nblocks * batch_count - 1) / COOMMN_DIM + 1) * COOMMN_DIM
                    + ((sizeof(T) * nblocks * n * batch_count - 1) / COOMMN_DIM + 1) * COOMMN_DIM;
 #undef COOMMN_DIM
 #undef LOOPS
