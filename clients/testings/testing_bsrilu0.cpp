@@ -258,8 +258,8 @@ void testing_bsrilu0(const Arguments& arg)
     // Allocate device memory for BSR matrix
     device_vector<rocsparse_int> dbsr_row_ptr(Mb + 1);
     device_vector<rocsparse_int> dbsr_col_ind(nnzb);
-    device_vector<T>             dbsr_val_1(nnzb * block_dim * block_dim);
-    device_vector<T>             dbsr_val_2(nnzb * block_dim * block_dim);
+    device_vector<T>             dbsr_val_1(size_t(nnzb) * block_dim * block_dim);
+    device_vector<T>             dbsr_val_2(size_t(nnzb) * block_dim * block_dim);
 
     // Copy BSR matrix from host to device
     CHECK_HIP_ERROR(hipMemcpy(dbsr_row_ptr,

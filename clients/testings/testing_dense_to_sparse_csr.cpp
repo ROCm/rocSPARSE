@@ -245,7 +245,7 @@ void testing_dense_to_sparse_csr(const Arguments& arg)
 
     host_vector<I> nnz_per_row(m);
     CHECK_HIP_ERROR(
-        hipMemcpy(nnz_per_row.data(), d_temp_buffer, m * sizeof(I), hipMemcpyDeviceToHost));
+        hipMemcpy(nnz_per_row.data(), d_temp_buffer, sizeof(I) * m, hipMemcpyDeviceToHost));
 
     // Allocate memory on device
     device_vector<J> d_csr_col_ind(nnz);
@@ -269,11 +269,11 @@ void testing_dense_to_sparse_csr(const Arguments& arg)
         host_vector<T> h_csr_val_gpu(nnz);
 
         CHECK_HIP_ERROR(hipMemcpy(
-            h_csr_row_ptr_gpu.data(), d_csr_row_ptr, (m + 1) * sizeof(I), hipMemcpyDeviceToHost));
+            h_csr_row_ptr_gpu.data(), d_csr_row_ptr, sizeof(I) * (m + 1), hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(
-            h_csr_col_ind_gpu.data(), d_csr_col_ind, nnz * sizeof(J), hipMemcpyDeviceToHost));
+            h_csr_col_ind_gpu.data(), d_csr_col_ind, sizeof(J) * nnz, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(
-            hipMemcpy(h_csr_val_gpu.data(), d_csr_val, nnz * sizeof(T), hipMemcpyDeviceToHost));
+            hipMemcpy(h_csr_val_gpu.data(), d_csr_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
         host_vector<I> h_csr_row_ptr_cpu(m + 1);
         host_vector<J> h_csr_col_ind_cpu(nnz);

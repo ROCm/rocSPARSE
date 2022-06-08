@@ -200,8 +200,8 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     }
 
     time             = (utils_time_us() - time) / (trials * batch_size * 1e3);
-    double bandwidth = static_cast<double>(sizeof(T) * (nnz_A + nnz_B + nnz_C) + sizeof(I) * (m + 1)
-                                           + sizeof(J) * nnz_A)
+    double bandwidth = static_cast<double>(sizeof(T) * (size_t(nnz_A) + nnz_B + nnz_C)
+                                           + sizeof(I) * (m + 1) + sizeof(J) * nnz_A)
                        / time / 1e6;
     double gflops = static_cast<double>(3.0 * nnz_A * n) / time / 1e6;
 

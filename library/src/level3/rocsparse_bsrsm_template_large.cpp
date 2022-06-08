@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -145,14 +145,14 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
 
     // done_array
     int* done_array = reinterpret_cast<int*>(ptr);
-    ptr += sizeof(int) * ((mb * narrays - 1) / 256 + 1) * 256;
+    ptr += sizeof(int) * ((size_t(mb) * narrays - 1) / 256 + 1) * 256;
 
     // Temporary array to store transpose of X
     T* Xt = X;
     if(trans_X == rocsparse_operation_none)
     {
         Xt = reinterpret_cast<T*>(ptr);
-        ptr += sizeof(T) * ((mb * block_dim * nrhs - 1) / 256 + 1) * 256;
+        ptr += sizeof(T) * ((size_t(mb) * block_dim * nrhs - 1) / 256 + 1) * 256;
     }
 
     // Initialize buffers

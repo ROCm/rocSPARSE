@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +73,8 @@
             *buffer_size -= sizeof(TYPE) * ((nnzb - 1) / 256 + 1) * 256;                           \
                                                                                                    \
             /* Add BSR buffer instead */                                                           \
-            *buffer_size += sizeof(TYPE) * ((nnzb * block_dim * block_dim - 1) / 256 + 1) * 256;   \
+            *buffer_size                                                                           \
+                += sizeof(TYPE) * ((size_t(nnzb) * block_dim * block_dim - 1) / 256 + 1) * 256;    \
         }                                                                                          \
                                                                                                    \
         return stat;                                                                               \

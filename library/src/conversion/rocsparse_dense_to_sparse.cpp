@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,15 +94,15 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
     {
         if(mat_B->format == rocsparse_format_coo)
         {
-            *buffer_size = mat_A->rows * sizeof(I);
+            *buffer_size = sizeof(I) * mat_A->rows;
         }
         else if(mat_B->format == rocsparse_format_csr)
         {
-            *buffer_size = mat_A->rows * sizeof(I);
+            *buffer_size = sizeof(I) * mat_A->rows;
         }
         else if(mat_B->format == rocsparse_format_csc)
         {
-            *buffer_size = mat_A->cols * sizeof(I);
+            *buffer_size = sizeof(I) * mat_A->cols;
         }
 
         return rocsparse_status_success;

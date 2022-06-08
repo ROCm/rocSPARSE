@@ -175,10 +175,10 @@ int main(int argc, char* argv[])
         HIP_CHECK(hipDeviceSynchronize());
     }
 
-    time = (utils_time_us() - time) / (trials * batch_size * 1e3);
-    double bandwidth
-        = static_cast<double>(sizeof(double) * (4 * m + nnz) + sizeof(rocsparse_int) * (2 * nnz))
-          / time / 1e6;
+    time             = (utils_time_us() - time) / (trials * batch_size * 1e3);
+    double bandwidth = static_cast<double>(sizeof(double) * (size_t(4) * m + nnz)
+                                           + sizeof(rocsparse_int) * (size_t(2) * nnz))
+                       / time / 1e6;
     double gflops = static_cast<double>(3 * nnz) / time / 1e6;
 
     std::cout.precision(2);

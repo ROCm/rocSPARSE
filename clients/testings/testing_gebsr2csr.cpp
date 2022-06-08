@@ -146,9 +146,9 @@ void testing_gebsr2csr(const Arguments& arg)
                                          nnzb,
                                          bsr_base);
 
-    M                 = Mb * row_block_dim;
-    N                 = Nb * col_block_dim;
-    rocsparse_int nnz = nnzb * row_block_dim * col_block_dim;
+    M          = Mb * row_block_dim;
+    N          = Nb * col_block_dim;
+    size_t nnz = size_t(nnzb) * row_block_dim * col_block_dim;
     // Allocate device memory for input BSR matrix
     device_vector<rocsparse_int> dbsr_row_ptr(Mb + 1);
     device_vector<rocsparse_int> dbsr_col_ind(nnzb);
@@ -193,7 +193,8 @@ void testing_gebsr2csr(const Arguments& arg)
         //
         // Check values of hcsr_val_ref, must be 1,2,3,4,5,6,7,...
         //
-        for(rocsparse_int i = 0; i < nnzb * row_block_dim * col_block_dim; ++i)
+        size_t len = size_t(nnzb) * row_block_dim * col_block_dim;
+        for(size_t i = 0; i < len; ++i)
         {
             T ref = static_cast<T>(i + 1);
             unit_check_scalar(hcsr_val_ref[i], ref);

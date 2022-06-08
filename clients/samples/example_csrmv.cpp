@@ -174,8 +174,8 @@ int main(int argc, char* argv[])
     }
 
     time             = (utils_time_us() - time) / (trials * batch_size * 1e3);
-    double bandwidth = static_cast<double>(sizeof(double) * (2 * m + nnz)
-                                           + sizeof(rocsparse_int) * (m + 1 + nnz))
+    double bandwidth = static_cast<double>(sizeof(double) * (size_t(2) * m + nnz)
+                                           + sizeof(rocsparse_int) * (size_t(m) + 1 + nnz))
                        / time / 1e6;
     double gflops = static_cast<double>(2 * nnz) / time / 1e6;
 
@@ -251,10 +251,10 @@ int main(int argc, char* argv[])
     }
 
     time      = (utils_time_us() - time) / (trials * batch_size * 1e3);
-    bandwidth = static_cast<double>(sizeof(double) * (2 * m + nnz)
-                                    + sizeof(rocsparse_int) * (m + 1 + nnz))
+    bandwidth = static_cast<double>(sizeof(double) * (size_t(2) * m + nnz)
+                                    + sizeof(rocsparse_int) * (size_t(m) + 1 + nnz))
                 / time / 1e6;
-    gflops = static_cast<double>(2 * nnz) / time / 1e6;
+    gflops = static_cast<double>(size_t(2) * nnz) / time / 1e6;
 
     std::vector<double> hy(m);
     HIP_CHECK(hipMemcpy(hy.data(), dy, sizeof(double) * m, hipMemcpyDeviceToHost));

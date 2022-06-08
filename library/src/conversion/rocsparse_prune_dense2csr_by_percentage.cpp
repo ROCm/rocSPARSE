@@ -132,8 +132,7 @@ rocsparse_status
         return rocsparse_status_invalid_pointer;
     }
 
-    *buffer_size = 2 * m * n * sizeof(T);
-
+    *buffer_size = sizeof(T) * 2 * m * n;
     return rocsparse_status_success;
 }
 

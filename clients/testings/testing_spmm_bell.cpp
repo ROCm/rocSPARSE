@@ -300,9 +300,9 @@ void testing_spmm_bell(const Arguments& arg)
                 }
             }
 
-            I* coo_row = new I[nnzb * block_dim * block_dim];
-            I* coo_col = new I[nnzb * block_dim * block_dim];
-            T* coo_val = new T[nnzb * block_dim * block_dim];
+            I* coo_row = new I[size_t(nnzb) * block_dim * block_dim];
+            I* coo_col = new I[size_t(nnzb) * block_dim * block_dim];
+            T* coo_val = new T[size_t(nnzb) * block_dim * block_dim];
 
             size_t at = 0;
             for(I ib = 0; ib < Mb; ++ib)

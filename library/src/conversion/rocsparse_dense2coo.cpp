@@ -110,7 +110,7 @@ rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle,
     }
 
     I* row_ptr;
-    RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&row_ptr, (m + 1) * sizeof(I)));
+    RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&row_ptr, sizeof(I) * (m + 1)));
 
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_dense2csx_impl<rocsparse_direction_row>(
         handle, order, m, n, descr, A, ld, nnz_per_rows, coo_val, row_ptr, coo_col_ind));
