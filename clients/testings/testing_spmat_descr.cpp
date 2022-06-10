@@ -95,6 +95,11 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
             &A, rows, cols, 0, row_data, nullptr, nullptr, itype, jtype, base, ttype),
         rocsparse_status_success);
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_create_csr_descr(
+            &A, rows, cols, 0, nullptr, nullptr, nullptr, itype, jtype, base, ttype),
+        rocsparse_status_success);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
 
     EXPECT_ROCSPARSE_STATUS(
         rocsparse_create_csc_descr(
