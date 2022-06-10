@@ -1705,7 +1705,7 @@ rocsparse_status rocsparse_create_csr_descr(rocsparse_spmat_descr* descr,
     }
 
     // Check for valid pointers
-    if(nnz != 0 && rows > 0 && csr_row_ptr == nullptr)
+    if(nnz > 0 && rows > 0 && csr_row_ptr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
