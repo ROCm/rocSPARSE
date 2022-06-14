@@ -332,6 +332,48 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrilu0_hash(rocsparse_int   
                                                  boost_val);
 }
 
+
+
+template <unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int HASH,
+          bool         SLEEP,
+          typename T,
+          typename U,
+          typename V>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrilu0_hybrid(rocsparse_int        m,
+                                                                const rocsparse_int* csr_row_ptr,
+                                                                const rocsparse_int* csr_col_ind,
+                                                                T*                   csr_val,
+                                                                const rocsparse_int* csr_diag_ind,
+                                                                int*                 done,
+                                                                const rocsparse_int* map,
+                                                                rocsparse_int*       zero_pivot,
+                                                                rocsparse_index_base idx_base,
+                                                                int                  enable_boost,
+                                                                U boost_tol_device_host,
+                                                                V boost_val_device_host)
+{
+    auto boost_tol = (enable_boost) ? load_scalar_device_host(boost_tol_device_host)
+                                    : zero_scalar_device_host(boost_tol_device_host);
+
+    auto boost_val = (enable_boost) ? load_scalar_device_host(boost_val_device_host)
+                                    : zero_scalar_device_host(boost_val_device_host);
+
+    csrilu0_hybrid_kernel<BLOCKSIZE, WFSIZE, HASH, SLEEP>(m,
+                                                 csr_row_ptr,
+                                                 csr_col_ind,
+                                                 csr_val,
+                                                 csr_diag_ind,
+                                                 done,
+                                                 map,
+                                                 zero_pivot,
+                                                 idx_base,
+                                                 enable_boost,
+                                                 boost_tol,
+                                                 boost_val);
+}
+
 template <typename T, typename U, typename V>
 rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                             rocsparse_int             m,
@@ -393,8 +435,12 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
     }
     else
     {
+#undef USE_ORIGINAL
         if(handle->wavefront_size == 32)
         {
+
+
+#ifdef USE_ORIGINAL
             if(max_nnz <= 32)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 1>),
@@ -515,6 +561,27 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_tol_device_host,
                                    boost_val_device_host);
             }
+#else
+
+                hipLaunchKernelGGL((csrilu0_hybrid<CSRILU0_DIM, 32, 1,false>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+
+#endif
         }
         else if(handle->wavefront_size == 64)
         {

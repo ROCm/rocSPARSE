@@ -377,4 +377,75 @@ __device__ void csrilu0_binsearch_kernel(rocsparse_int m_,
     }
 }
 
+
+
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH, bool SLEEP,typename T, typename U>
+__device__ void csrilu0_hybrid_kernel(rocsparse_int m,
+                                    const rocsparse_int* __restrict__ csr_row_ptr,
+                                    const rocsparse_int* __restrict__ csr_col_ind,
+                                    T* __restrict__ csr_val,
+                                    const rocsparse_int* __restrict__ csr_diag_ind,
+                                    int* __restrict__ done,
+                                    const rocsparse_int* __restrict__ map,
+                                    rocsparse_int* __restrict__ zero_pivot,
+                                    rocsparse_index_base idx_base,
+                                    int                  boost,
+                                    U                    boost_tol,
+                                    T                    boost_val)
+{
+    int lid = hipThreadIdx_x & (WFSIZE - 1);
+    int wid = hipThreadIdx_x / WFSIZE;
+
+    __shared__ rocsparse_int stable[BLOCKSIZE * HASH];
+    __shared__ rocsparse_int sdata[BLOCKSIZE * HASH];
+
+    // Pointer to each wavefronts shared data
+    rocsparse_int* table = &stable[wid * WFSIZE * HASH];
+    rocsparse_int* data  = &sdata[wid * WFSIZE * HASH];
+
+    // Initialize hash table with -1
+    for(unsigned int j = lid; j < WFSIZE * HASH; j += WFSIZE)
+    {
+        table[j] = -1;
+    }
+
+    __threadfence_block();
+
+    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
+
+    // Do not run out of bounds
+    if(idx >= m)
+    {
+        return;
+    }
+
+
+#include "hash_algorithm.h"
+#include "bisection_algorithm.h"
+
+    // Current row this wavefront is working on
+    rocsparse_int row = map[idx];
+
+
+
+
+    // ---------------------------------------
+
+
+    // Row entry point
+    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
+    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+
+    auto const row_nz = row_end - row_begin;
+    bool const use_hash = (row_nz < WFSIZE * HASH );
+    if (use_hash) {
+       hash_algorithm( row );
+       }
+    else {
+       bisection_algorithm( row );
+       };
+
+
+}
+
 #endif // CSRILU0_DEVICE_H
