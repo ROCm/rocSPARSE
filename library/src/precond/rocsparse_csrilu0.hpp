@@ -435,12 +435,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
     }
     else
     {
-#undef USE_ORIGINAL
         if(handle->wavefront_size == 32)
         {
 
 
-#ifdef USE_ORIGINAL
             if(max_nnz <= 32)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 1>),
@@ -543,6 +541,8 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
             }
             else
             {
+
+#ifdef USE_ORIGINAL
                 hipLaunchKernelGGL((csrilu0_binsearch<CSRILU0_DIM, 32, false>),
                                    csrilu0_blocks,
                                    csrilu0_threads,
@@ -560,8 +560,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    info->boost_enable,
                                    boost_tol_device_host,
                                    boost_val_device_host);
-            }
 #else
+                // ------------------------
+                // use new hybrid algorithm
+                // ------------------------
 
                 hipLaunchKernelGGL((csrilu0_hybrid<CSRILU0_DIM, 32, 4,false>),
                                    csrilu0_blocks,
@@ -582,10 +584,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_val_device_host);
 
 #endif
+            }
         }
         else if(handle->wavefront_size == 64)
         {
-#ifdef USE_ORIGINAL
             if(max_nnz <= 64)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 1>),
@@ -688,6 +690,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
             }
             else
             {
+#ifdef USE_ORIGINAL
                 hipLaunchKernelGGL((csrilu0_binsearch<CSRILU0_DIM, 64, false>),
                                    csrilu0_blocks,
                                    csrilu0_threads,
@@ -705,7 +708,6 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    info->boost_enable,
                                    boost_tol_device_host,
                                    boost_val_device_host);
-            }
 
 #else
                 hipLaunchKernelGGL((csrilu0_hybrid<CSRILU0_DIM, 64, 2,false>),
@@ -726,6 +728,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_tol_device_host,
                                    boost_val_device_host);
 #endif
+            }
         }
         else
         {
