@@ -563,7 +563,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
             }
 #else
 
-                hipLaunchKernelGGL((csrilu0_hybrid<CSRILU0_DIM, 32, 1,false>),
+                hipLaunchKernelGGL((csrilu0_hybrid<CSRILU0_DIM, 32, 4,false>),
                                    csrilu0_blocks,
                                    csrilu0_threads,
                                    0,
@@ -585,6 +585,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
         }
         else if(handle->wavefront_size == 64)
         {
+#ifdef USE_ORIGINAL
             if(max_nnz <= 64)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 1>),
@@ -705,6 +706,26 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_tol_device_host,
                                    boost_val_device_host);
             }
+
+#else
+                hipLaunchKernelGGL((csrilu0_hybrid<CSRILU0_DIM, 64, 2,false>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+#endif
         }
         else
         {
