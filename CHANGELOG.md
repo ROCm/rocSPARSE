@@ -2,6 +2,11 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
+## rocSPARSE 2.3.1
+
+### Improved
+- Fixed a bug in csrilu0 which could cause a deadlock
+
 ## rocSPARSE 2.2.0 for ROCm 5.2.0
 
 ### Added

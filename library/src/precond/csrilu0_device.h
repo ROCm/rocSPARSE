@@ -89,7 +89,8 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
         rocsparse_int hash = (key * 103) & (WFSIZE * HASH - 1);
 
         // Hash operation
-        while(true)
+#pragma unroll 4
+        for(unsigned int h = 0; h < WFSIZE * HASH; ++h)
         {
             if(table[hash] == key)
             {
@@ -184,7 +185,8 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
             rocsparse_int hash = (key * 103) & (WFSIZE * HASH - 1);
 
             // Hash operation
-            while(true)
+#pragma unroll 4
+            for(unsigned int h = 0; h < WFSIZE * HASH; ++h)
             {
                 if(table[hash] == -1)
                 {

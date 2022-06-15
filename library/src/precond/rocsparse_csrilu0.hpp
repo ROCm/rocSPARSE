@@ -395,7 +395,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
     {
         if(handle->wavefront_size == 32)
         {
-            if(max_nnz <= 32)
+            if(max_nnz < 32)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 1>),
                                    csrilu0_blocks,
@@ -415,7 +415,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_tol_device_host,
                                    boost_val_device_host);
             }
-            else if(max_nnz <= 64)
+            else if(max_nnz < 64)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 2>),
                                    csrilu0_blocks,
@@ -435,7 +435,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_tol_device_host,
                                    boost_val_device_host);
             }
-            else if(max_nnz <= 128)
+            else if(max_nnz < 128)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 4>),
                                    csrilu0_blocks,
@@ -455,7 +455,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_tol_device_host,
                                    boost_val_device_host);
             }
-            else if(max_nnz <= 256)
+            else if(max_nnz < 256)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 8>),
                                    csrilu0_blocks,
@@ -475,7 +475,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_tol_device_host,
                                    boost_val_device_host);
             }
-            else if(max_nnz <= 512)
+            else if(max_nnz < 512)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 16>),
                                    csrilu0_blocks,
@@ -518,7 +518,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
         }
         else if(handle->wavefront_size == 64)
         {
-            if(max_nnz <= 64)
+            if(max_nnz < 64)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 1>),
                                    csrilu0_blocks,
@@ -538,7 +538,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_tol_device_host,
                                    boost_val_device_host);
             }
-            else if(max_nnz <= 128)
+            else if(max_nnz < 128)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 2>),
                                    csrilu0_blocks,
@@ -558,7 +558,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_tol_device_host,
                                    boost_val_device_host);
             }
-            else if(max_nnz <= 256)
+            else if(max_nnz < 256)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 4>),
                                    csrilu0_blocks,
@@ -578,7 +578,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_tol_device_host,
                                    boost_val_device_host);
             }
-            else if(max_nnz <= 512)
+            else if(max_nnz < 512)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 8>),
                                    csrilu0_blocks,
@@ -598,7 +598,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    boost_tol_device_host,
                                    boost_val_device_host);
             }
-            else if(max_nnz <= 1024)
+            else if(max_nnz < 1024)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 16>),
                                    csrilu0_blocks,
