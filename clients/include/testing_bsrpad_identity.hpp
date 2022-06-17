@@ -23,21 +23,14 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_BSRPAD_IDENTITY_HPP
-#define ROCSPARSE_BSRPAD_IDENTITY_HPP
+#ifndef TESTING_BSRPAD_IDENTITY_HPP
+#define TESTING_BSRPAD_IDENTITY_HPP
 
-#include "handle.h"
+#include "rocsparse_arguments.hpp"
 
 template <typename T>
-rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          handle,
-                                                    rocsparse_int             m,
-                                                    rocsparse_int             n,
-                                                    rocsparse_int             mb,
-                                                    rocsparse_int             nb,
-                                                    rocsparse_int             block_dim,
-                                                    const rocsparse_mat_descr bsr_descr,
-                                                    T*                        bsr_val,
-                                                    rocsparse_int*            bsr_row_ptr,
-                                                    rocsparse_int*            bsr_col_ind);
+void testing_bsrpad_identity_bad_arg(const Arguments& arg);
+template <typename T>
+void testing_bsrpad_identity(const Arguments& arg);
 
-#endif // ROCSPARSE_BSRPAD_IDENTITY_HPP
+#endif // TESTING_BSRPAD_IDENTITY_HPP

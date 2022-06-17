@@ -1,0 +1,130 @@
+# ########################################################################
+# Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# ########################################################################
+
+---
+include: rocsparse_common.yaml
+include: known_bugs.yaml
+
+Tests:
+- name: bsrpad_identity_bad_arg
+  category: pre_checkin
+  function: bsrpad_identity_bad_arg
+  precision: *single_double_precisions_complex_real
+
+- name: bsrpad_identity
+  category: pre_checkin
+  function: bsrpad_identity
+  precision: *single_double_precisions_complex_real
+  K: [-1, 0, 1]
+  M: [99]
+  N: [99]
+  block_dim: [-1, 0, 1]
+  baseA: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row]
+  matrix: [rocsparse_matrix_random]
+
+- name: bsrpad_identity
+  category: pre_checkin
+  function: bsrpad_identity
+  precision: *single_double_precisions_complex_real
+  K: [100]
+  M: [99]
+  N: [99]
+  block_dim: [1]
+  baseA: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row]
+  matrix: [rocsparse_matrix_random]
+
+- name: bsrpad_identity
+  category: pre_checkin
+  function: bsrpad_identity
+  precision: *single_double_precisions_complex_real
+  K: [1]
+  M: [2, 98]
+  N: [3, 99]
+  block_dim: [1]
+  baseA: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row]
+  matrix: [rocsparse_matrix_random]
+
+- name: bsrpad_identity
+  category: quick
+  function: bsrpad_identity
+  precision: *single_double_precisions_complex_real
+  K: [0, 10, 100, 1000]
+  M: [100]
+  N: [100]
+  block_dim: [10]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
+  matrix: [rocsparse_matrix_random]
+
+- name: bsrpad_identity_file
+  category: quick
+  function: bsrpad_identity
+  precision: *single_double_precisions
+  K: [0, 100, 500, 1000]
+  M: 1
+  N: 1
+  block_dim: [5, 9]
+  baseA: [rocsparse_index_base_one]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mac_econ_fwd500,
+             nos2,
+             nos4,
+             nos6,
+             scircuit]
+
+- name: bsrpad_identity_file
+  category: nightly
+  function: bsrpad_identity
+  precision: *single_double_precisions_complex
+  K: [0, 1000, 10000, 50000]
+  M: 1
+  N: 1
+  block_dim: [3, 7]
+  baseA: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron2,
+             Chevron3,
+             Chevron4]
+
+- name: bsrpad_identity_file
+  category: nightly
+  function: bsrpad_identity
+  precision: *single_double_precisions
+  K: [0, 1000, 100000, 500000]
+  M: 1
+  N: 1
+  block_dim: [5, 7]
+  baseA: [rocsparse_index_base_one]
+  direction: [rocsparse_direction_column]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [amazon0312,
+             bmwcra_1,
+             mac_econ_fwd500,
+             sme3Dc,
+             webbase-1M,
+             Chebyshev4]

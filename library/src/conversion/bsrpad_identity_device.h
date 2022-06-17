@@ -70,4 +70,4 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     }
 }
 
-#endif
+#endif // BSRPAD_IDENTITY_DEVICE_H

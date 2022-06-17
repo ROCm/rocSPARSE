@@ -166,6 +166,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_sddmm.cpp
   test_csrcolor.cpp
   test_copy_info.cpp
+  test_bsrpad_identity.cpp
 )
 
 set(ROCSPARSE_CLIENTS_TESTINGS
@@ -272,6 +273,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_sddmm.cpp
 ../testings/testing_csrcolor.cpp
 ../testings/testing_copy_info.cpp
+../testings/testing_bsrpad_identity.cpp
   )
 
 

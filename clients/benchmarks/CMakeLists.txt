@@ -154,6 +154,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_gemvi.cpp
 ../testings/testing_sddmm.cpp
 ../testings/testing_csrcolor.cpp
+../testings/testing_bsrpad_identity.cpp
 )
 
 add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})
