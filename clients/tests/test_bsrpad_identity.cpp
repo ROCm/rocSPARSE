@@ -22,22 +22,16 @@
  *
  * ************************************************************************ */
 
-#pragma once
-#ifndef ROCSPARSE_BSRPAD_IDENTITY_HPP
-#define ROCSPARSE_BSRPAD_IDENTITY_HPP
+#include "test.hpp"
 
-#include "handle.h"
+#include "testing_bsrpad_identity.hpp"
 
-template <typename T>
-rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          handle,
-                                                    rocsparse_int             m,
-                                                    rocsparse_int             n,
-                                                    rocsparse_int             mb,
-                                                    rocsparse_int             nb,
-                                                    rocsparse_int             block_dim,
-                                                    const rocsparse_mat_descr bsr_descr,
-                                                    T*                        bsr_val,
-                                                    rocsparse_int*            bsr_row_ptr,
-                                                    rocsparse_int*            bsr_col_ind);
-
-#endif // ROCSPARSE_BSRPAD_IDENTITY_HPP
+TEST_ROUTINE(bsrpad_identity,
+             conversion,
+             arg.K,
+             arg.M,
+             arg.N,
+             arg.block_dim,
+             arg.baseA,
+             arg.direction,
+             arg.matrix);

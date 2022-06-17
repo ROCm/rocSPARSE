@@ -75,12 +75,12 @@ rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          ha
     }
 
     // Check sizes
-    if(m < 0 || n < 0 || mb < 0 || nb < 0 || block_dim < 0)
+    if(m < 0 || n < 0 || mb < 0 || nb < 0 || block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
 
-    if(mb * block_dim < m && nb * block_dim < n)
+    if(mb * block_dim < m || nb * block_dim < n)
     {
         return rocsparse_status_invalid_size;
     }
