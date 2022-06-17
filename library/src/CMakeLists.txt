@@ -180,6 +180,7 @@ set(rocsparse_source
   src/conversion/rocsparse_coosort.cpp
   src/conversion/rocsparse_sparse_to_dense.cpp
   src/conversion/rocsparse_dense_to_sparse.cpp
+  src/conversion/rocsparse_bsrpad_identity.cpp
 
 # Reordering
   src/reordering/rocsparse_csrcolor.cpp

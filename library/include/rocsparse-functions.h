@@ -12743,6 +12743,54 @@ rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
                                     rocsparse_int*                  bsr_col_ind);
 /**@}*/
 
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sbsrpad_identity(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             n,
+                                            rocsparse_int             mb,
+                                            rocsparse_int             nb,
+                                            rocsparse_int             block_dim,
+                                            const rocsparse_mat_descr bsr_descr,
+                                            float*                    bsr_val,
+                                            rocsparse_int*            bsr_row_ptr,
+                                            rocsparse_int*            bsr_col_ind);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dbsrpad_identity(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             n,
+                                            rocsparse_int             mb,
+                                            rocsparse_int             nb,
+                                            rocsparse_int             block_dim,
+                                            const rocsparse_mat_descr bsr_descr,
+                                            double*                   bsr_val,
+                                            rocsparse_int*            bsr_row_ptr,
+                                            rocsparse_int*            bsr_col_ind);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cbsrpad_identity(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             n,
+                                            rocsparse_int             mb,
+                                            rocsparse_int             nb,
+                                            rocsparse_int             block_dim,
+                                            const rocsparse_mat_descr bsr_descr,
+                                            rocsparse_float_complex*  bsr_val,
+                                            rocsparse_int*            bsr_row_ptr,
+                                            rocsparse_int*            bsr_col_ind);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zbsrpad_identity(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             n,
+                                            rocsparse_int             mb,
+                                            rocsparse_int             nb,
+                                            rocsparse_int             block_dim,
+                                            const rocsparse_mat_descr bsr_descr,
+                                            rocsparse_double_complex* bsr_val,
+                                            rocsparse_int*            bsr_row_ptr,
+                                            rocsparse_int*            bsr_col_ind);
+
 /*! \ingroup conv_module
 *  \brief
  *  \details
