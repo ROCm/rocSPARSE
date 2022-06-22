@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,8 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
                                 rocsparse_int        block_dim,
                                 rocsparse_index_base bsr_base,
                                 T* __restrict__ bsr_val,
-                                rocsparse_int* __restrict__ bsr_row_ptr,
-                                rocsparse_int* __restrict__ bsr_col_ind)
+                                const rocsparse_int* __restrict__ bsr_row_ptr,
+                                const rocsparse_int* __restrict__ bsr_col_ind)
 {
     rocsparse_int block_id = hipBlockIdx_x;
     rocsparse_int local_id = hipThreadIdx_x;

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,8 @@ rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          ha
                                                     rocsparse_int             block_dim,
                                                     const rocsparse_mat_descr bsr_descr,
                                                     T*                        bsr_val,
-                                                    rocsparse_int*            bsr_row_ptr,
-                                                    rocsparse_int*            bsr_col_ind)
+                                                    const rocsparse_int*      bsr_row_ptr,
+                                                    const rocsparse_int*      bsr_col_ind)
 {
     // Check for valid handle
     if(handle == nullptr)
