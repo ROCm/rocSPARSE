@@ -31,9 +31,7 @@
 template <rocsparse_int BLOCK_SIZE, typename T>
 __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void bsrpad_identity_kernel(rocsparse_int        m,
-                                rocsparse_int        n,
                                 rocsparse_int        mb,
-                                rocsparse_int        nb,
                                 rocsparse_int        block_dim,
                                 rocsparse_index_base bsr_base,
                                 T* __restrict__ bsr_val,
@@ -47,24 +45,35 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
 
     if(row < mb)
     {
-        //search for diagonal block
-        for(rocsparse_int i = bsr_row_ptr[row] - bsr_base; i < bsr_row_ptr[row + 1] - bsr_base; i++)
+        rocsparse_int low  = bsr_row_ptr[row] - bsr_base;
+        rocsparse_int high = bsr_row_ptr[row + 1] - 1 - bsr_base;
+
+        while(low < high)
         {
-            if(bsr_col_ind[i] - bsr_base == row)
+            rocsparse_int mid = low + ((high - low) >> 1);
+
+            if(bsr_col_ind[mid] - bsr_base < row)
             {
-                for(rocsparse_int k = 0; k < block_dim; k++)
+                low = mid + 1;
+            }
+            else
+            {
+                high = mid;
+            }
+        }
+
+        if(bsr_col_ind[low] - bsr_base == row)
+        {
+            for(rocsparse_int k = 0; k < block_dim; k++)
+            {
+                if(row * block_dim + k >= m)
                 {
-                    if(row * block_dim + k >= m)
+                    rocsparse_int j = low * block_dim * block_dim + k * block_dim + k;
+                    if(bsr_val[j] == static_cast<T>(0))
                     {
-                        rocsparse_int j = i * block_dim * block_dim + k * block_dim + k;
-                        if(bsr_val[j] == static_cast<T>(0))
-                        {
-                            bsr_val[j] = static_cast<T>(1);
-                        }
+                        bsr_val[j] = static_cast<T>(1);
                     }
                 }
-
-                break;
             }
         }
     }

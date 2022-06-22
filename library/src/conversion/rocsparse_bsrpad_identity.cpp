@@ -28,12 +28,24 @@
 
 #include "bsrpad_identity_device.h"
 
+#define launch_bsrpad_identity_kernel(block_size_)            \
+    hipLaunchKernelGGL((bsrpad_identity_kernel<block_size_>), \
+                       dim3(grid_size),                       \
+                       dim3(block_size_),                     \
+                       0,                                     \
+                       handle->stream,                        \
+                       m,                                     \
+                       mb,                                    \
+                       block_dim,                             \
+                       bsr_descr->base,                       \
+                       bsr_val,                               \
+                       bsr_row_ptr,                           \
+                       bsr_col_ind);
+
 template <typename T>
 rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          handle,
                                                     rocsparse_int             m,
-                                                    rocsparse_int             n,
                                                     rocsparse_int             mb,
-                                                    rocsparse_int             nb,
                                                     rocsparse_int             block_dim,
                                                     const rocsparse_mat_descr bsr_descr,
                                                     T*                        bsr_val,
@@ -56,9 +68,7 @@ rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          ha
     log_trace(handle,
               replaceX<T>("rocsparse_Xbsrpad_identity"),
               m,
-              n,
               mb,
-              nb,
               block_dim,
               bsr_descr,
               (const void*&)bsr_val,
@@ -75,23 +85,18 @@ rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          ha
     }
 
     // Check sizes
-    if(m < 0 || n < 0 || mb < 0 || nb < 0 || block_dim <= 0)
+    if(m < 0 || mb < 0 || block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
 
-    if(mb * block_dim < m || nb * block_dim < n)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    if(m != n || mb != nb)
+    if(mb * block_dim < m)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(mb == 0 || nb == 0 || block_dim == 0)
+    if(mb == 0)
     {
         return rocsparse_status_success;
     }
@@ -129,40 +134,25 @@ rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          ha
     }
 
     // Quick return if possible
-    if(mb * block_dim == m && nb * block_dim == n)
+    if(mb * block_dim == m)
     {
         return rocsparse_status_success;
     }
 
     rocsparse_int remaining_blocks = mb - (m / block_dim);
 
-    constexpr rocsparse_int block_size = 32;
+    constexpr rocsparse_int block_size = 256;
 
     rocsparse_int grid_size = (remaining_blocks + block_size - 1) / block_size;
 
-    hipLaunchKernelGGL((bsrpad_identity_kernel<block_size>),
-                       dim3(grid_size),
-                       dim3(block_size),
-                       0,
-                       handle->stream,
-                       m,
-                       n,
-                       mb,
-                       nb,
-                       block_dim,
-                       bsr_descr->base,
-                       bsr_val,
-                       bsr_row_ptr,
-                       bsr_col_ind);
+    launch_bsrpad_identity_kernel(block_size);
 
     return rocsparse_status_success;
 }
 
 extern "C" rocsparse_status rocsparse_sbsrpad_identity(rocsparse_handle          handle,
                                                        rocsparse_int             m,
-                                                       rocsparse_int             n,
                                                        rocsparse_int             mb,
-                                                       rocsparse_int             nb,
                                                        rocsparse_int             block_dim,
                                                        const rocsparse_mat_descr bsr_descr,
                                                        float*                    bsr_val,
@@ -170,14 +160,12 @@ extern "C" rocsparse_status rocsparse_sbsrpad_identity(rocsparse_handle         
                                                        rocsparse_int*            bsr_col_ind)
 {
     return rocsparse_bsrpad_identity_template(
-        handle, m, n, mb, nb, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
+        handle, m, mb, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
 }
 
 extern "C" rocsparse_status rocsparse_dbsrpad_identity(rocsparse_handle          handle,
                                                        rocsparse_int             m,
-                                                       rocsparse_int             n,
                                                        rocsparse_int             mb,
-                                                       rocsparse_int             nb,
                                                        rocsparse_int             block_dim,
                                                        const rocsparse_mat_descr bsr_descr,
                                                        double*                   bsr_val,
@@ -185,14 +173,12 @@ extern "C" rocsparse_status rocsparse_dbsrpad_identity(rocsparse_handle         
                                                        rocsparse_int*            bsr_col_ind)
 {
     return rocsparse_bsrpad_identity_template(
-        handle, m, n, mb, nb, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
+        handle, m, mb, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
 }
 
 extern "C" rocsparse_status rocsparse_cbsrpad_identity(rocsparse_handle          handle,
                                                        rocsparse_int             m,
-                                                       rocsparse_int             n,
                                                        rocsparse_int             mb,
-                                                       rocsparse_int             nb,
                                                        rocsparse_int             block_dim,
                                                        const rocsparse_mat_descr bsr_descr,
                                                        rocsparse_float_complex*  bsr_val,
@@ -200,14 +186,12 @@ extern "C" rocsparse_status rocsparse_cbsrpad_identity(rocsparse_handle         
                                                        rocsparse_int*            bsr_col_ind)
 {
     return rocsparse_bsrpad_identity_template(
-        handle, m, n, mb, nb, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
+        handle, m, mb, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
 }
 
 extern "C" rocsparse_status rocsparse_zbsrpad_identity(rocsparse_handle          handle,
                                                        rocsparse_int             m,
-                                                       rocsparse_int             n,
                                                        rocsparse_int             mb,
-                                                       rocsparse_int             nb,
                                                        rocsparse_int             block_dim,
                                                        const rocsparse_mat_descr bsr_descr,
                                                        rocsparse_double_complex* bsr_val,
@@ -215,5 +199,5 @@ extern "C" rocsparse_status rocsparse_zbsrpad_identity(rocsparse_handle         
                                                        rocsparse_int*            bsr_col_ind)
 {
     return rocsparse_bsrpad_identity_template(
-        handle, m, n, mb, nb, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
+        handle, m, mb, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
 }

@@ -26,12 +26,5 @@
 
 #include "testing_bsrpad_identity.hpp"
 
-TEST_ROUTINE(bsrpad_identity,
-             conversion,
-             arg.K,
-             arg.M,
-             arg.N,
-             arg.block_dim,
-             arg.baseA,
-             arg.direction,
-             arg.matrix);
+TEST_ROUTINE(
+    bsrpad_identity, conversion, arg.K, arg.M, arg.block_dim, arg.baseA, arg.direction, arg.matrix);
