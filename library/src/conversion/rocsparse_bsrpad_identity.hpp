@@ -31,9 +31,7 @@
 template <typename T>
 rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          handle,
                                                     rocsparse_int             m,
-                                                    rocsparse_int             n,
                                                     rocsparse_int             mb,
-                                                    rocsparse_int             nb,
                                                     rocsparse_int             block_dim,
                                                     const rocsparse_mat_descr bsr_descr,
                                                     T*                        bsr_val,
