@@ -515,6 +515,9 @@ pushd .
     cmake_client_options=""
   fi
 
+  #Setting default GNU LIBDIR in build scripts as per architecture board decision
+  cmake_common_options="${cmake_common_options} -DCMAKE_INSTALL_LIBDIR=lib"
+
   # Build library with AMD toolchain because of existense of device kernels
   if [[ "${build_relocatable}" == true ]]; then
     FC=gfortran CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF \
