@@ -373,8 +373,8 @@ Functions:
   rocsparse_cscsort: { function: cscsort }
   rocsparse_coosort_by_row: { function: coosort }
   rocsparse_coosort_by_column: { function: coosort }
-  rocsparse_sbsrpad_identity: { function: bsrpad_identity, <<: *single_precision }
-  rocsparse_dbsrpad_identity: { function: bsrpad_identity, <<: *double_precision }
-  rocsparse_cbsrpad_identity: { function: bsrpad_identity, <<: *single_precision_complex }
-  rocsparse_zbsrpad_identity: { function: bsrpad_identity, <<: *double_precision_complex }
+  rocsparse_sbsrpad_value: { function: bsrpad_value, <<: *single_precision }
+  rocsparse_dbsrpad_value: { function: bsrpad_value, <<: *double_precision }
+  rocsparse_cbsrpad_value: { function: bsrpad_value, <<: *single_precision_complex }
+  rocsparse_zbsrpad_value: { function: bsrpad_value, <<: *double_precision_complex }
 Tests:

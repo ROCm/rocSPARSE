@@ -966,15 +966,14 @@ void host_csr_to_gebsr(rocsparse_direction               direction,
                        rocsparse_index_base              bsr_base);
 
 template <typename T>
-void host_bsrpad_identity(rocsparse_int               m,
-                          rocsparse_int               n,
-                          rocsparse_int               mb,
-                          rocsparse_int               nb,
-                          rocsparse_int               block_dim,
-                          std::vector<T>&             bsr_val,
-                          std::vector<rocsparse_int>& bsr_row_ptr,
-                          std::vector<rocsparse_int>& bsr_col_ind,
-                          rocsparse_index_base        bsr_base);
+void host_bsrpad_value(rocsparse_int        m,
+                       rocsparse_int        mb,
+                       rocsparse_int        block_dim,
+                       T                    value,
+                       T*                   bsr_val,
+                       const rocsparse_int* bsr_row_ptr,
+                       const rocsparse_int* bsr_col_ind,
+                       rocsparse_index_base bsr_base);
 
 template <typename T>
 void host_gebsr_to_gebsr(rocsparse_direction               direction,

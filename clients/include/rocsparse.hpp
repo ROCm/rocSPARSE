@@ -1282,12 +1282,13 @@ REAL_COMPLEX_TEMPLATE(csr2bsr,
                       rocsparse_int*            bsr_row_ptr,
                       rocsparse_int*            bsr_col_ind);
 
-// bsrpad_identity
-REAL_COMPLEX_TEMPLATE(bsrpad_identity,
+// bsrpad_value
+REAL_COMPLEX_TEMPLATE(bsrpad_value,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             mb,
                       rocsparse_int             block_dim,
+                      T                         value,
                       const rocsparse_mat_descr bsr_descr,
                       T*                        bsr_val,
                       rocsparse_int*            bsr_row_ptr,

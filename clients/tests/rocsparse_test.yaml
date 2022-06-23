@@ -124,4 +124,4 @@ include: test_gemvi.yaml
 include: test_sddmm.yaml
 include: test_csrcolor.yaml
 include: test_copy_info.yaml
-include: test_bsrpad_identity.yaml
+include: test_bsrpad_value.yaml

@@ -26,60 +26,55 @@ include: rocsparse_common.yaml
 include: known_bugs.yaml
 
 Tests:
-- name: bsrpad_identity_bad_arg
+- name: bsrpad_value_bad_arg
   category: pre_checkin
-  function: bsrpad_identity_bad_arg
+  function: bsrpad_value_bad_arg
   precision: *single_double_precisions_complex_real
 
-- name: bsrpad_identity
+- name: bsrpad_value
   category: pre_checkin
-  function: bsrpad_identity
+  function: bsrpad_value
   precision: *single_double_precisions_complex_real
-  K: [-1, 0, 1]
   M: [99]
   block_dim: [-1, 0, 1]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
   matrix: [rocsparse_matrix_random]
 
-- name: bsrpad_identity
+- name: bsrpad_value
   category: pre_checkin
-  function: bsrpad_identity
+  function: bsrpad_value
   precision: *single_double_precisions_complex_real
-  K: [100]
   M: [99]
   block_dim: [1]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
   matrix: [rocsparse_matrix_random]
 
-- name: bsrpad_identity
+- name: bsrpad_value
   category: pre_checkin
-  function: bsrpad_identity
+  function: bsrpad_value
   precision: *single_double_precisions_complex_real
-  K: [1]
   M: [2, 98]
   block_dim: [1]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
   matrix: [rocsparse_matrix_random]
 
-- name: bsrpad_identity
+- name: bsrpad_value
   category: quick
-  function: bsrpad_identity
+  function: bsrpad_value
   precision: *single_double_precisions_complex_real
-  K: [0, 10, 100, 1000]
   M: [100]
   block_dim: [10]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
   matrix: [rocsparse_matrix_random]
 
-- name: bsrpad_identity_file
+- name: bsrpad_value_file
   category: quick
-  function: bsrpad_identity
+  function: bsrpad_value
   precision: *single_double_precisions
-  K: [0, 100, 500, 1000]
   M: 1
   block_dim: [5, 9]
   baseA: [rocsparse_index_base_one]
@@ -91,25 +86,33 @@ Tests:
              nos6,
              scircuit]
 
-- name: bsrpad_identity_file
+- name: bsrpad_value_file
   category: nightly
-  function: bsrpad_identity
+  function: bsrpad_value
   precision: *single_double_precisions_complex
-  K: [0, 1000, 10000, 50000]
+  M: 1
+  block_dim: [3, 7, 1024, 1025]
+  baseA: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron2]
+
+- name: bsrpad_value_file
+  category: nightly
+  function: bsrpad_value
+  precision: *single_double_precisions_complex
   M: 1
   block_dim: [3, 7]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron2,
-             Chevron3,
+  filename: [Chevron3,
              Chevron4]
 
-- name: bsrpad_identity_file
+- name: bsrpad_value_file
   category: nightly
-  function: bsrpad_identity
+  function: bsrpad_value
   precision: *single_double_precisions
-  K: [0, 1000, 100000, 500000]
   M: 1
   block_dim: [5, 7]
   baseA: [rocsparse_index_base_one]
