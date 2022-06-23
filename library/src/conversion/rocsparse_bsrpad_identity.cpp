@@ -28,20 +28,6 @@
 
 #include "bsrpad_identity_device.h"
 
-#define launch_bsrpad_identity_kernel(block_size_)            \
-    hipLaunchKernelGGL((bsrpad_identity_kernel<block_size_>), \
-                       dim3(grid_size),                       \
-                       dim3(block_size_),                     \
-                       0,                                     \
-                       handle->stream,                        \
-                       m,                                     \
-                       mb,                                    \
-                       block_dim,                             \
-                       bsr_descr->base,                       \
-                       bsr_val,                               \
-                       bsr_row_ptr,                           \
-                       bsr_col_ind);
-
 template <typename T>
 rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          handle,
                                                     rocsparse_int             m,
@@ -77,12 +63,6 @@ rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          ha
 
     log_bench(
         handle, "./rocsparse-bench -f bsrpad_identity -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
-
-    // Check matrix sorting mode
-    if(bsr_descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_not_implemented;
-    }
 
     // Check sizes
     if(m < 0 || mb < 0 || block_dim <= 0)
@@ -139,13 +119,41 @@ rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          ha
         return rocsparse_status_success;
     }
 
-    rocsparse_int remaining_blocks = mb - (m / block_dim);
+    constexpr rocsparse_int block_size = 1024;
 
-    constexpr rocsparse_int block_size = 256;
+    rocsparse_int grid_size = (block_dim + block_size - 1) / block_size;
 
-    rocsparse_int grid_size = (remaining_blocks + block_size - 1) / block_size;
-
-    launch_bsrpad_identity_kernel(block_size);
+    // Check matrix sorting mode
+    if(bsr_descr->storage_mode == rocsparse_storage_mode_sorted)
+    {
+        hipLaunchKernelGGL((bsrpad_identity_kernel_sorted<block_size>),
+                           dim3(grid_size),
+                           dim3(block_size),
+                           0,
+                           handle->stream,
+                           m,
+                           mb,
+                           block_dim,
+                           bsr_descr->base,
+                           bsr_val,
+                           bsr_row_ptr,
+                           bsr_col_ind);
+    }
+    else
+    {
+        hipLaunchKernelGGL((bsrpad_identity_kernel_unsorted<block_size>),
+                           dim3(grid_size),
+                           dim3(block_size),
+                           0,
+                           handle->stream,
+                           m,
+                           mb,
+                           block_dim,
+                           bsr_descr->base,
+                           bsr_val,
+                           bsr_row_ptr,
+                           bsr_col_ind);
+    }
 
     return rocsparse_status_success;
 }
