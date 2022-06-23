@@ -30,49 +30,79 @@
 
 template <rocsparse_int BLOCK_SIZE, typename T>
 __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void bsrpad_identity_kernel(rocsparse_int        m,
-                                rocsparse_int        mb,
-                                rocsparse_int        block_dim,
-                                rocsparse_index_base bsr_base,
-                                T* __restrict__ bsr_val,
-                                const rocsparse_int* __restrict__ bsr_row_ptr,
-                                const rocsparse_int* __restrict__ bsr_col_ind)
+    void bsrpad_identity_kernel_sorted(rocsparse_int        m,
+                                       rocsparse_int        mb,
+                                       rocsparse_int        block_dim,
+                                       rocsparse_index_base bsr_base,
+                                       T* __restrict__ bsr_val,
+                                       const rocsparse_int* __restrict__ bsr_row_ptr,
+                                       const rocsparse_int* __restrict__ bsr_col_ind)
 {
     rocsparse_int block_id = hipBlockIdx_x;
     rocsparse_int local_id = hipThreadIdx_x;
 
-    rocsparse_int row = m / block_dim + block_id * BLOCK_SIZE + local_id;
+    rocsparse_int i = block_id * BLOCK_SIZE + local_id;
 
-    if(row < mb)
+    if(i < block_dim)
     {
-        rocsparse_int low  = bsr_row_ptr[row] - bsr_base;
-        rocsparse_int high = bsr_row_ptr[row + 1] - 1 - bsr_base;
-
-        while(low < high)
+        rocsparse_int size_block_to_pad = m % block_dim;
+        if(size_block_to_pad > 0
+           && bsr_col_ind[(bsr_row_ptr[mb] - bsr_base) - 1] - bsr_base == mb - 1)
         {
-            rocsparse_int mid = low + ((high - low) >> 1);
-
-            if(bsr_col_ind[mid] - bsr_base < row)
+            if(i >= size_block_to_pad)
             {
-                low = mid + 1;
-            }
-            else
-            {
-                high = mid;
+                bsr_val[((bsr_row_ptr[mb] - bsr_base) - 1) * block_dim * block_dim + i * block_dim
+                        + i]
+                    = 1;
             }
         }
+    }
+}
 
-        if(bsr_col_ind[low] - bsr_base == row)
+template <rocsparse_int BLOCK_SIZE, typename T>
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
+    void bsrpad_identity_kernel_unsorted(rocsparse_int        m,
+                                         rocsparse_int        mb,
+                                         rocsparse_int        block_dim,
+                                         rocsparse_index_base bsr_base,
+                                         T* __restrict__ bsr_val,
+                                         const rocsparse_int* __restrict__ bsr_row_ptr,
+                                         const rocsparse_int* __restrict__ bsr_col_ind)
+{
+    rocsparse_int block_id = hipBlockIdx_x;
+    rocsparse_int local_id = hipThreadIdx_x;
+
+    __shared__ rocsparse_int block_index;
+
+    rocsparse_int i = block_id * BLOCK_SIZE + local_id;
+
+    if(local_id == 0)
+    {
+        block_index = -1;
+    }
+
+    //find block
+    for(rocsparse_int index = local_id; bsr_row_ptr[mb - 1] + index < bsr_row_ptr[mb];
+        index += hipBlockDim_x)
+    {
+        if(bsr_col_ind[(bsr_row_ptr[mb - 1] - bsr_base) + index] - bsr_base == mb - 1)
         {
-            for(rocsparse_int k = 0; k < block_dim; k++)
+            block_index = (bsr_row_ptr[mb - 1] - bsr_base) + index;
+        }
+    }
+
+    __threadfence_block();
+
+    if(block_index >= 0)
+    {
+        if(i < block_dim)
+        {
+            rocsparse_int size_block_to_pad = m % block_dim;
+            if(size_block_to_pad > 0)
             {
-                if(row * block_dim + k >= m)
+                if(i >= size_block_to_pad)
                 {
-                    rocsparse_int j = low * block_dim * block_dim + k * block_dim + k;
-                    if(bsr_val[j] == static_cast<T>(0))
-                    {
-                        bsr_val[j] = static_cast<T>(1);
-                    }
+                    bsr_val[block_index * block_dim * block_dim + i * block_dim + i] = 1;
                 }
             }
         }
