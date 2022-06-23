@@ -27,7 +27,7 @@
 #include "auto_testing_bad_arg.hpp"
 
 template <typename T>
-void testing_bsrpad_identity_bad_arg(const Arguments& arg)
+void testing_bsrpad_value_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
@@ -41,40 +41,39 @@ void testing_bsrpad_identity_bad_arg(const Arguments& arg)
     rocsparse_int             m           = safe_size;
     rocsparse_int             mb          = safe_size;
     rocsparse_int             block_dim   = safe_size;
+    T                         value       = 1;
     const rocsparse_mat_descr bsr_descr   = local_bsr_descr;
     T*                        bsr_val     = (T*)0x4;
     rocsparse_int*            bsr_row_ptr = (rocsparse_int*)0x4;
     rocsparse_int*            bsr_col_ind = (rocsparse_int*)0x4;
 
-#define PARAMS handle, m, mb, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind
+    int       nargs_to_exclude   = 1;
+    const int args_to_exclude[1] = {4};
 
-    auto_testing_bad_arg(rocsparse_bsrpad_identity<T>, PARAMS);
+#define PARAMS handle, m, mb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind
 
-    CHECK_ROCSPARSE_ERROR(
-        rocsparse_set_mat_storage_mode(bsr_descr, rocsparse_storage_mode_unsorted));
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrpad_identity<T>(PARAMS), rocsparse_status_not_implemented);
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(bsr_descr, rocsparse_storage_mode_sorted));
+    auto_testing_bad_arg(rocsparse_bsrpad_value<T>, nargs_to_exclude, args_to_exclude, PARAMS);
 
     mb = 3;
     m  = block_dim * mb + 1;
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrpad_identity<T>(PARAMS), rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrpad_value<T>(PARAMS), rocsparse_status_invalid_size);
     mb = m = safe_size;
 
 #undef PARAMS
 }
 
 template <typename T>
-void testing_bsrpad_identity(const Arguments& arg)
+void testing_bsrpad_value(const Arguments& arg)
 {
     static constexpr bool       toint     = false;
     static constexpr bool       full_rank = false;
     rocsparse_matrix_factory<T> matrix_factory(arg, toint, full_rank);
 
     rocsparse_int        M         = arg.M;
-    rocsparse_int        K         = arg.K; //size of m
     rocsparse_int        block_dim = arg.block_dim;
     rocsparse_index_base base      = arg.baseA;
     rocsparse_direction  direction = arg.direction;
+    T                    value     = 1;
 
     rocsparse_int Mb = -1;
     if(block_dim > 0)
@@ -95,7 +94,7 @@ void testing_bsrpad_identity(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(bsr_descr, base));
 
     // Argument sanity check before allocating invalid memory
-    if(Mb <= 0 || block_dim <= 0 || K < 0 || Mb * block_dim < K)
+    if(Mb <= 0 || block_dim <= 0 || Mb * block_dim < M)
     {
         static const size_t safe_size = 100;
 
@@ -105,11 +104,10 @@ void testing_bsrpad_identity(const Arguments& arg)
         device_vector<T>             dbsr_val(safe_size);
 
         EXPECT_ROCSPARSE_STATUS(
-            rocsparse_bsrpad_identity<T>(
-                handle, K, Mb, block_dim, bsr_descr, dbsr_val, dbsr_row_ptr, dbsr_col_ind),
-            (Mb < 0 || block_dim <= 0 || K < 0 || Mb * block_dim < K)
-                ? rocsparse_status_invalid_size
-                : rocsparse_status_success);
+            rocsparse_bsrpad_value<T>(
+                handle, M, Mb, block_dim, value, bsr_descr, dbsr_val, dbsr_row_ptr, dbsr_col_ind),
+            (Mb < 0 || block_dim <= 0 || Mb * block_dim < M) ? rocsparse_status_invalid_size
+                                                             : rocsparse_status_success);
 
         return;
     }
@@ -125,20 +123,19 @@ void testing_bsrpad_identity(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_identity<T>(
-            handle, K, Mb, block_dim, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
+        CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_value<T>(
+            handle, M, Mb, block_dim, value, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
 
         // Copy output to host
         host_gebsr_matrix<T> hbsrC(dbsr);
 
         host_gebsr_matrix<T> hbsrC_gold(hbsrA);
 
-        // CPU bsrpad_identity
-        host_bsrpad_identity(K,
-                             K,
-                             Mb,
+        // CPU bsrpad_value
+        host_bsrpad_value<T>(M,
                              Mb,
                              block_dim,
+                             value,
                              hbsrC_gold.val,
                              hbsrC_gold.ptr,
                              hbsrC_gold.ind,
@@ -154,8 +151,8 @@ void testing_bsrpad_identity(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_identity<T>(
-                handle, K, Mb, block_dim, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
+            CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_value<T>(
+                handle, M, Mb, block_dim, value, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
         }
 
         double gpu_time_used = get_time_us();
@@ -163,8 +160,8 @@ void testing_bsrpad_identity(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_identity<T>(
-                handle, K, Mb, block_dim, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
+            CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_value<T>(
+                handle, M, Mb, block_dim, value, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
@@ -172,8 +169,8 @@ void testing_bsrpad_identity(const Arguments& arg)
         double gbyte_count = 0;
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("K",
-                            K,
+        display_timing_info("M",
+                            M,
                             "Mb",
                             Mb,
                             "blockdim",
@@ -185,9 +182,9 @@ void testing_bsrpad_identity(const Arguments& arg)
     }
 }
 
-#define INSTANTIATE(TYPE)                                                      \
-    template void testing_bsrpad_identity_bad_arg<TYPE>(const Arguments& arg); \
-    template void testing_bsrpad_identity<TYPE>(const Arguments& arg)
+#define INSTANTIATE(TYPE)                                                   \
+    template void testing_bsrpad_value_bad_arg<TYPE>(const Arguments& arg); \
+    template void testing_bsrpad_value<TYPE>(const Arguments& arg)
 INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);

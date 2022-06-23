@@ -23,20 +23,21 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef BSRPAD_IDENTITY_DEVICE_H
-#define BSRPAD_IDENTITY_DEVICE_H
+#ifndef BSRPAD_VALUE_DEVICE_H
+#define BSRPAD_VALUE_DEVICE_H
 
 #include "common.h"
 
 template <rocsparse_int BLOCK_SIZE, typename T>
 __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void bsrpad_identity_kernel_sorted(rocsparse_int        m,
-                                       rocsparse_int        mb,
-                                       rocsparse_int        block_dim,
-                                       rocsparse_index_base bsr_base,
-                                       T* __restrict__ bsr_val,
-                                       const rocsparse_int* __restrict__ bsr_row_ptr,
-                                       const rocsparse_int* __restrict__ bsr_col_ind)
+    void bsrpad_value_kernel_sorted(rocsparse_int        m,
+                                    rocsparse_int        mb,
+                                    rocsparse_int        block_dim,
+                                    T                    value,
+                                    rocsparse_index_base bsr_base,
+                                    T* __restrict__ bsr_val,
+                                    const rocsparse_int* __restrict__ bsr_row_ptr,
+                                    const rocsparse_int* __restrict__ bsr_col_ind)
 {
     rocsparse_int block_id = hipBlockIdx_x;
     rocsparse_int local_id = hipThreadIdx_x;
@@ -53,7 +54,7 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
             {
                 bsr_val[((bsr_row_ptr[mb] - bsr_base) - 1) * block_dim * block_dim + i * block_dim
                         + i]
-                    = 1;
+                    = value;
             }
         }
     }
@@ -61,13 +62,14 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
 
 template <rocsparse_int BLOCK_SIZE, typename T>
 __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void bsrpad_identity_kernel_unsorted(rocsparse_int        m,
-                                         rocsparse_int        mb,
-                                         rocsparse_int        block_dim,
-                                         rocsparse_index_base bsr_base,
-                                         T* __restrict__ bsr_val,
-                                         const rocsparse_int* __restrict__ bsr_row_ptr,
-                                         const rocsparse_int* __restrict__ bsr_col_ind)
+    void bsrpad_value_kernel_unsorted(rocsparse_int        m,
+                                      rocsparse_int        mb,
+                                      rocsparse_int        block_dim,
+                                      T                    value,
+                                      rocsparse_index_base bsr_base,
+                                      T* __restrict__ bsr_val,
+                                      const rocsparse_int* __restrict__ bsr_row_ptr,
+                                      const rocsparse_int* __restrict__ bsr_col_ind)
 {
     rocsparse_int block_id = hipBlockIdx_x;
     rocsparse_int local_id = hipThreadIdx_x;
@@ -102,11 +104,11 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
             {
                 if(i >= size_block_to_pad)
                 {
-                    bsr_val[block_index * block_dim * block_dim + i * block_dim + i] = 1;
+                    bsr_val[block_index * block_dim * block_dim + i * block_dim + i] = value;
                 }
             }
         }
     }
 }
 
-#endif // BSRPAD_IDENTITY_DEVICE_H
+#endif // BSRPAD_VALUE_DEVICE_H

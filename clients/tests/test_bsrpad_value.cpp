@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,20 +22,8 @@
  *
  * ************************************************************************ */
 
-#pragma once
-#ifndef ROCSPARSE_BSRPAD_IDENTITY_HPP
-#define ROCSPARSE_BSRPAD_IDENTITY_HPP
+#include "test.hpp"
 
-#include "handle.h"
+#include "testing_bsrpad_value.hpp"
 
-template <typename T>
-rocsparse_status rocsparse_bsrpad_identity_template(rocsparse_handle          handle,
-                                                    rocsparse_int             m,
-                                                    rocsparse_int             mb,
-                                                    rocsparse_int             block_dim,
-                                                    const rocsparse_mat_descr bsr_descr,
-                                                    T*                        bsr_val,
-                                                    const rocsparse_int*      bsr_row_ptr,
-                                                    const rocsparse_int*      bsr_col_ind);
-
-#endif // ROCSPARSE_BSRPAD_IDENTITY_HPP
+TEST_ROUTINE(bsrpad_value, conversion, arg.M, arg.block_dim, arg.baseA, arg.direction, arg.matrix);

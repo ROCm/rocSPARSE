@@ -23,14 +23,14 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef TESTING_BSRPAD_IDENTITY_HPP
-#define TESTING_BSRPAD_IDENTITY_HPP
+#ifndef TESTING_BSRPAD_VALUE_HPP
+#define TESTING_BSRPAD_VALUE_HPP
 
 #include "rocsparse_arguments.hpp"
 
 template <typename T>
-void testing_bsrpad_identity_bad_arg(const Arguments& arg);
+void testing_bsrpad_value_bad_arg(const Arguments& arg);
 template <typename T>
-void testing_bsrpad_identity(const Arguments& arg);
+void testing_bsrpad_value(const Arguments& arg);
 
-#endif // TESTING_BSRPAD_IDENTITY_HPP
+#endif // TESTING_BSRPAD_VALUE_HPP
