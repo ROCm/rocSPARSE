@@ -69,11 +69,12 @@ void testing_bsrpad_value(const Arguments& arg)
     static constexpr bool       full_rank = false;
     rocsparse_matrix_factory<T> matrix_factory(arg, toint, full_rank);
 
-    rocsparse_int        M         = arg.M;
-    rocsparse_int        block_dim = arg.block_dim;
-    rocsparse_index_base base      = arg.baseA;
-    rocsparse_direction  direction = arg.direction;
-    T                    value     = 1;
+    rocsparse_int          M         = arg.M;
+    rocsparse_int          block_dim = arg.block_dim;
+    rocsparse_index_base   base      = arg.baseA;
+    rocsparse_direction    direction = arg.direction;
+    rocsparse_storage_mode storage   = arg.storage;
+    T                      value     = 1;
 
     rocsparse_int Mb = -1;
     if(block_dim > 0)
@@ -92,6 +93,9 @@ void testing_bsrpad_value(const Arguments& arg)
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(bsr_descr, base));
+
+    // Set matrix storage mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(bsr_descr, storage));
 
     // Argument sanity check before allocating invalid memory
     if(Mb <= 0 || block_dim <= 0 || Mb * block_dim < M)

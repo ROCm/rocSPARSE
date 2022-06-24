@@ -93,7 +93,7 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
         }
     }
 
-    __threadfence_block();
+    __syncthreads();
 
     if(block_index >= 0)
     {
