@@ -26,4 +26,11 @@
 
 #include "testing_bsrpad_value.hpp"
 
-TEST_ROUTINE(bsrpad_value, conversion, arg.M, arg.block_dim, arg.baseA, arg.direction, arg.matrix);
+TEST_ROUTINE(bsrpad_value,
+             conversion,
+             arg.M,
+             arg.block_dim,
+             arg.baseA,
+             arg.direction,
+             arg.storage,
+             arg.matrix);
