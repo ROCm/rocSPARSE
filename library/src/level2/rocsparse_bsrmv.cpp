@@ -26,19 +26,19 @@
 #include "rocsparse_bsrxmv_spzl.hpp"
 #include "rocsparse_csrmv.hpp"
 
-template <typename T, typename U>
+template <typename T, typename I, typename J, typename U>
 rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          handle,
                                                    rocsparse_direction       dir,
                                                    rocsparse_operation       trans,
-                                                   rocsparse_int             mb,
-                                                   rocsparse_int             nb,
-                                                   rocsparse_int             nnzb,
+                                                   J                         mb,
+                                                   J                         nb,
+                                                   I                         nnzb,
                                                    U                         alpha_device_host,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  bsr_val,
-                                                   const rocsparse_int*      bsr_row_ptr,
-                                                   const rocsparse_int*      bsr_col_ind,
-                                                   rocsparse_int             block_dim,
+                                                   const I*                  bsr_row_ptr,
+                                                   const J*                  bsr_col_ind,
+                                                   J                         block_dim,
                                                    const T*                  x,
                                                    U                         beta_device_host,
                                                    T*                        y)
@@ -76,195 +76,195 @@ rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          han
     if(handle->wavefront_size == 32)
     {
 
-        bsrxmvn_general(handle,
-                        dir,
-                        mb,
-                        alpha_device_host,
-                        0,
-                        nullptr,
-                        bsr_row_ptr,
-                        nullptr,
-                        bsr_col_ind,
-                        bsr_val,
-                        block_dim,
-                        x,
-                        beta_device_host,
-                        y,
-                        descr->base);
+        bsrxmvn_general<T, I, J>(handle,
+                                 dir,
+                                 mb,
+                                 alpha_device_host,
+                                 0,
+                                 nullptr,
+                                 bsr_row_ptr,
+                                 nullptr,
+                                 bsr_col_ind,
+                                 bsr_val,
+                                 block_dim,
+                                 x,
+                                 beta_device_host,
+                                 y,
+                                 descr->base);
         return rocsparse_status_success;
     }
     // LCOV_EXCL_STOP
 
     if(block_dim == 2)
     {
-        bsrxmvn_2x2(handle,
-                    dir,
-                    mb,
-                    nnzb,
-                    alpha_device_host,
-                    0,
-                    nullptr,
-                    bsr_row_ptr,
-                    nullptr,
+        bsrxmvn_2x2<T, I, J>(handle,
+                             dir,
+                             mb,
+                             nnzb,
+                             alpha_device_host,
+                             0,
+                             nullptr,
+                             bsr_row_ptr,
+                             nullptr,
 
-                    bsr_col_ind,
-                    bsr_val,
-                    x,
-                    beta_device_host,
-                    y,
-                    descr->base);
+                             bsr_col_ind,
+                             bsr_val,
+                             x,
+                             beta_device_host,
+                             y,
+                             descr->base);
     }
     else if(block_dim == 3)
     {
-        bsrxmvn_3x3(handle,
-                    dir,
-                    mb,
-                    nnzb,
-                    alpha_device_host,
-                    0,
-                    nullptr,
-                    bsr_row_ptr,
-                    nullptr,
+        bsrxmvn_3x3<T, I, J>(handle,
+                             dir,
+                             mb,
+                             nnzb,
+                             alpha_device_host,
+                             0,
+                             nullptr,
+                             bsr_row_ptr,
+                             nullptr,
 
-                    bsr_col_ind,
-                    bsr_val,
-                    x,
-                    beta_device_host,
-                    y,
-                    descr->base);
+                             bsr_col_ind,
+                             bsr_val,
+                             x,
+                             beta_device_host,
+                             y,
+                             descr->base);
     }
     else if(block_dim == 4)
     {
-        bsrxmvn_4x4(handle,
-                    dir,
-                    mb,
-                    nnzb,
-                    alpha_device_host,
-                    0,
-                    nullptr,
-                    bsr_row_ptr,
-                    nullptr,
+        bsrxmvn_4x4<T, I, J>(handle,
+                             dir,
+                             mb,
+                             nnzb,
+                             alpha_device_host,
+                             0,
+                             nullptr,
+                             bsr_row_ptr,
+                             nullptr,
 
-                    bsr_col_ind,
-                    bsr_val,
-                    x,
-                    beta_device_host,
-                    y,
-                    descr->base);
+                             bsr_col_ind,
+                             bsr_val,
+                             x,
+                             beta_device_host,
+                             y,
+                             descr->base);
     }
     else if(block_dim == 5)
     {
-        bsrxmvn_5x5(handle,
-                    dir,
-                    mb,
-                    nnzb,
-                    alpha_device_host,
-                    0,
-                    nullptr,
-                    bsr_row_ptr,
-                    nullptr,
+        bsrxmvn_5x5<T, I, J>(handle,
+                             dir,
+                             mb,
+                             nnzb,
+                             alpha_device_host,
+                             0,
+                             nullptr,
+                             bsr_row_ptr,
+                             nullptr,
 
-                    bsr_col_ind,
-                    bsr_val,
-                    x,
-                    beta_device_host,
-                    y,
-                    descr->base);
+                             bsr_col_ind,
+                             bsr_val,
+                             x,
+                             beta_device_host,
+                             y,
+                             descr->base);
     }
     else if(block_dim == 8)
     {
-        bsrxmvn_8x8(handle,
-                    dir,
-                    mb,
-                    nnzb,
-                    alpha_device_host,
-                    0,
-                    nullptr,
-                    bsr_row_ptr,
-                    nullptr,
+        bsrxmvn_8x8<T, I, J>(handle,
+                             dir,
+                             mb,
+                             nnzb,
+                             alpha_device_host,
+                             0,
+                             nullptr,
+                             bsr_row_ptr,
+                             nullptr,
 
-                    bsr_col_ind,
-                    bsr_val,
-                    x,
-                    beta_device_host,
-                    y,
-                    descr->base);
+                             bsr_col_ind,
+                             bsr_val,
+                             x,
+                             beta_device_host,
+                             y,
+                             descr->base);
     }
     else if(block_dim == 16)
     {
-        bsrxmvn_16x16(handle,
-                      dir,
-                      mb,
-                      nnzb,
-                      alpha_device_host,
-                      0,
-                      nullptr,
-                      bsr_row_ptr,
-                      nullptr,
+        bsrxmvn_16x16<T, I, J>(handle,
+                               dir,
+                               mb,
+                               nnzb,
+                               alpha_device_host,
+                               0,
+                               nullptr,
+                               bsr_row_ptr,
+                               nullptr,
 
-                      bsr_col_ind,
-                      bsr_val,
-                      x,
-                      beta_device_host,
-                      y,
-                      descr->base);
+                               bsr_col_ind,
+                               bsr_val,
+                               x,
+                               beta_device_host,
+                               y,
+                               descr->base);
     }
     else if(block_dim > 16 && block_dim <= 32)
     {
 
-        bsrxmvn_17_32(handle,
-                      dir,
-                      mb,
-                      nnzb,
-                      alpha_device_host,
-                      0,
-                      nullptr,
-                      bsr_row_ptr,
-                      nullptr,
+        bsrxmvn_17_32<T, I, J>(handle,
+                               dir,
+                               mb,
+                               nnzb,
+                               alpha_device_host,
+                               0,
+                               nullptr,
+                               bsr_row_ptr,
+                               nullptr,
 
-                      bsr_col_ind,
-                      bsr_val,
-                      block_dim,
-                      x,
-                      beta_device_host,
-                      y,
-                      descr->base);
+                               bsr_col_ind,
+                               bsr_val,
+                               block_dim,
+                               x,
+                               beta_device_host,
+                               y,
+                               descr->base);
     }
     else
     {
-        bsrxmvn_general(handle,
-                        dir,
-                        mb,
-                        alpha_device_host,
-                        0,
-                        nullptr,
-                        bsr_row_ptr,
-                        nullptr,
-                        bsr_col_ind,
-                        bsr_val,
-                        block_dim,
-                        x,
-                        beta_device_host,
-                        y,
-                        descr->base);
+        bsrxmvn_general<T, I, J>(handle,
+                                 dir,
+                                 mb,
+                                 alpha_device_host,
+                                 0,
+                                 nullptr,
+                                 bsr_row_ptr,
+                                 nullptr,
+                                 bsr_col_ind,
+                                 bsr_val,
+                                 block_dim,
+                                 x,
+                                 beta_device_host,
+                                 y,
+                                 descr->base);
     }
 
     return rocsparse_status_success;
 }
 
-template <typename T>
+template <typename T, typename I, typename J>
 rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
                                           rocsparse_direction       dir,
                                           rocsparse_operation       trans,
-                                          rocsparse_int             mb,
-                                          rocsparse_int             nb,
-                                          rocsparse_int             nnzb,
+                                          J                         mb,
+                                          J                         nb,
+                                          I                         nnzb,
                                           const T*                  alpha_device_host,
                                           const rocsparse_mat_descr descr,
                                           const T*                  bsr_val,
-                                          const rocsparse_int*      bsr_row_ptr,
-                                          const rocsparse_int*      bsr_col_ind,
-                                          rocsparse_int             block_dim,
+                                          const I*                  bsr_row_ptr,
+                                          const J*                  bsr_col_ind,
+                                          J                         block_dim,
                                           const T*                  x,
                                           const T*                  beta_device_host,
                                           T*                        y)
@@ -425,6 +425,41 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
                                                  y);
     }
 }
+
+#define INSTANTIATE(TTYPE, ITYPE, JTYPE)                                     \
+    template rocsparse_status rocsparse_bsrmv_template<TTYPE, ITYPE, JTYPE>( \
+        rocsparse_handle          handle,                                    \
+        rocsparse_direction       dir,                                       \
+        rocsparse_operation       trans,                                     \
+        JTYPE                     mb,                                        \
+        JTYPE                     nb,                                        \
+        ITYPE                     nnzb,                                      \
+        const TTYPE*              alpha_device_host,                         \
+        const rocsparse_mat_descr descr,                                     \
+        const TTYPE*              bsr_val,                                   \
+        const ITYPE*              bsr_row_ptr,                               \
+        const JTYPE*              bsr_col_ind,                               \
+        JTYPE                     block_dim,                                 \
+        const TTYPE*              x,                                         \
+        const TTYPE*              beta_device_host,                          \
+        TTYPE*                    y)
+
+INSTANTIATE(float, int32_t, int32_t);
+INSTANTIATE(double, int32_t, int32_t);
+INSTANTIATE(rocsparse_float_complex, int32_t, int32_t);
+INSTANTIATE(rocsparse_double_complex, int32_t, int32_t);
+
+INSTANTIATE(float, int64_t, int32_t);
+INSTANTIATE(double, int64_t, int32_t);
+INSTANTIATE(rocsparse_float_complex, int64_t, int32_t);
+INSTANTIATE(rocsparse_double_complex, int64_t, int32_t);
+
+INSTANTIATE(float, int64_t, int64_t);
+INSTANTIATE(double, int64_t, int64_t);
+INSTANTIATE(rocsparse_float_complex, int64_t, int64_t);
+INSTANTIATE(rocsparse_double_complex, int64_t, int64_t);
+
+#undef INSTANTIATE
 
 /*
  * ===========================================================================

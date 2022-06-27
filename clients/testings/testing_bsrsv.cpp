@@ -263,7 +263,7 @@ void testing_bsrsv(const Arguments& arg)
     device_gebsr_matrix<T> dA;
 
     // Sample matrix
-    matrix_factory.init_bsr(hA, dA, mb, nb);
+    matrix_factory.init_bsr(hA, dA, mb, nb, base);
 
     M = dA.mb * dA.row_block_dim;
     N = dA.nb * dA.col_block_dim;

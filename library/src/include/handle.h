@@ -84,8 +84,8 @@ struct _rocsparse_handle
     // logging streams
     std::ofstream log_trace_ofs;
     std::ofstream log_bench_ofs;
-    std::ostream* log_trace_os = nullptr;
-    std::ostream* log_bench_os = nullptr;
+    std::ostream* log_trace_os{};
+    std::ostream* log_bench_os{};
 };
 
 /********************************************************************************
@@ -119,24 +119,24 @@ struct _rocsparse_mat_descr
 struct _rocsparse_hyb_mat
 {
     // num rows
-    rocsparse_int m = 0;
+    rocsparse_int m{};
     // num cols
-    rocsparse_int n = 0;
+    rocsparse_int n{};
 
     // partition type
     rocsparse_hyb_partition partition = rocsparse_hyb_partition_auto;
 
     // ELL matrix part
-    rocsparse_int  ell_nnz     = 0;
-    rocsparse_int  ell_width   = 0;
-    rocsparse_int* ell_col_ind = nullptr;
-    void*          ell_val     = nullptr;
+    rocsparse_int  ell_nnz{};
+    rocsparse_int  ell_width{};
+    rocsparse_int* ell_col_ind{};
+    void*          ell_val{};
 
     // COO matrix part
-    rocsparse_int  coo_nnz     = 0;
-    rocsparse_int* coo_row_ind = nullptr;
-    rocsparse_int* coo_col_ind = nullptr;
-    void*          coo_val     = nullptr;
+    rocsparse_int  coo_nnz{};
+    rocsparse_int* coo_row_ind{};
+    rocsparse_int* coo_col_ind{};
+    void*          coo_val{};
 
     rocsparse_datatype data_type_T = rocsparse_datatype_f32_r;
 };
@@ -151,38 +151,38 @@ struct _rocsparse_hyb_mat
 struct _rocsparse_mat_info
 {
     // info structs
-    rocsparse_trm_info bsrsv_upper_info  = nullptr;
-    rocsparse_trm_info bsrsv_lower_info  = nullptr;
-    rocsparse_trm_info bsrsvt_upper_info = nullptr;
-    rocsparse_trm_info bsrsvt_lower_info = nullptr;
-    rocsparse_trm_info bsric0_info       = nullptr;
-    rocsparse_trm_info bsrilu0_info      = nullptr;
-    rocsparse_trm_info bsrsm_upper_info  = nullptr;
-    rocsparse_trm_info bsrsm_lower_info  = nullptr;
-    rocsparse_trm_info bsrsmt_upper_info = nullptr;
-    rocsparse_trm_info bsrsmt_lower_info = nullptr;
+    rocsparse_trm_info bsrsv_upper_info{};
+    rocsparse_trm_info bsrsv_lower_info{};
+    rocsparse_trm_info bsrsvt_upper_info{};
+    rocsparse_trm_info bsrsvt_lower_info{};
+    rocsparse_trm_info bsric0_info{};
+    rocsparse_trm_info bsrilu0_info{};
+    rocsparse_trm_info bsrsm_upper_info{};
+    rocsparse_trm_info bsrsm_lower_info{};
+    rocsparse_trm_info bsrsmt_upper_info{};
+    rocsparse_trm_info bsrsmt_lower_info{};
 
-    rocsparse_csrmv_info   csrmv_info        = nullptr;
-    rocsparse_trm_info     csric0_info       = nullptr;
-    rocsparse_trm_info     csrilu0_info      = nullptr;
-    rocsparse_trm_info     csrsv_upper_info  = nullptr;
-    rocsparse_trm_info     csrsv_lower_info  = nullptr;
-    rocsparse_trm_info     csrsvt_upper_info = nullptr;
-    rocsparse_trm_info     csrsvt_lower_info = nullptr;
-    rocsparse_trm_info     csrsm_upper_info  = nullptr;
-    rocsparse_trm_info     csrsm_lower_info  = nullptr;
-    rocsparse_trm_info     csrsmt_upper_info = nullptr;
-    rocsparse_trm_info     csrsmt_lower_info = nullptr;
-    rocsparse_csrgemm_info csrgemm_info      = nullptr;
+    rocsparse_csrmv_info   csrmv_info{};
+    rocsparse_trm_info     csric0_info{};
+    rocsparse_trm_info     csrilu0_info{};
+    rocsparse_trm_info     csrsv_upper_info{};
+    rocsparse_trm_info     csrsv_lower_info{};
+    rocsparse_trm_info     csrsvt_upper_info{};
+    rocsparse_trm_info     csrsvt_lower_info{};
+    rocsparse_trm_info     csrsm_upper_info{};
+    rocsparse_trm_info     csrsm_lower_info{};
+    rocsparse_trm_info     csrsmt_upper_info{};
+    rocsparse_trm_info     csrsmt_lower_info{};
+    rocsparse_csrgemm_info csrgemm_info{};
 
     // zero pivot for csrsv, csrsm, csrilu0, csric0
-    void* zero_pivot = nullptr;
+    void* zero_pivot{};
 
     // numeric boost for ilu0
-    int         boost_enable        = 0;
-    int         use_double_prec_tol = 0;
-    const void* boost_tol           = nullptr;
-    const void* boost_val           = nullptr;
+    int         boost_enable{};
+    int         use_double_prec_tol{};
+    const void* boost_tol{};
+    const void* boost_val{};
 };
 
 /********************************************************************************
@@ -205,21 +205,21 @@ struct _rocsparse_color_info
 struct _rocsparse_csrmv_info
 {
     // num row blocks
-    size_t size = 0;
+    size_t size{};
     // row blocks
-    void*         row_blocks = nullptr;
-    unsigned int* wg_flags   = nullptr;
-    void*         wg_ids     = nullptr;
+    void*         row_blocks{};
+    unsigned int* wg_flags{};
+    void*         wg_ids{};
 
     // some data to verify correct execution
-    rocsparse_operation         trans       = rocsparse_operation_none;
-    int64_t                     m           = 0;
-    int64_t                     n           = 0;
-    int64_t                     nnz         = 0;
-    int64_t                     max_rows    = 0;
-    const _rocsparse_mat_descr* descr       = nullptr;
-    const void*                 csr_row_ptr = nullptr;
-    const void*                 csr_col_ind = nullptr;
+    rocsparse_operation         trans = rocsparse_operation_none;
+    int64_t                     m{};
+    int64_t                     n{};
+    int64_t                     nnz{};
+    int64_t                     max_rows{};
+    const _rocsparse_mat_descr* descr{};
+    const void*                 csr_row_ptr{};
+    const void*                 csr_col_ind{};
 
     rocsparse_indextype index_type_I = rocsparse_indextype_u16;
     rocsparse_indextype index_type_J = rocsparse_indextype_u16;
@@ -247,23 +247,23 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info);
 struct _rocsparse_trm_info
 {
     // maximum non-zero entries per row
-    int64_t max_nnz = 0;
+    int64_t max_nnz{};
 
     // device array to hold row permutation
-    void* row_map = nullptr;
+    void* row_map{};
     // device array to hold pointer to diagonal entry
-    void* trm_diag_ind = nullptr;
+    void* trm_diag_ind{};
     // device pointers to hold transposed data
-    void* trmt_perm    = nullptr;
-    void* trmt_row_ptr = nullptr;
-    void* trmt_col_ind = nullptr;
+    void* trmt_perm{};
+    void* trmt_row_ptr{};
+    void* trmt_col_ind{};
 
     // some data to verify correct execution
-    int64_t                     m           = 0;
-    int64_t                     nnz         = 0;
-    const _rocsparse_mat_descr* descr       = nullptr;
-    const void*                 trm_row_ptr = nullptr;
-    const void*                 trm_col_ind = nullptr;
+    int64_t                     m{};
+    int64_t                     nnz{};
+    const _rocsparse_mat_descr* descr{};
+    const void*                 trm_row_ptr{};
+    const void*                 trm_col_ind{};
 
     rocsparse_indextype index_type_I = rocsparse_indextype_u16;
     rocsparse_indextype index_type_J = rocsparse_indextype_u16;
@@ -336,79 +336,79 @@ rocsparse_status rocsparse_destroy_csrgemm_info(rocsparse_csrgemm_info info);
 
 struct _rocsparse_spvec_descr
 {
-    bool init = false;
+    bool init{};
 
-    int64_t size;
-    int64_t nnz;
+    int64_t size{};
+    int64_t nnz{};
 
-    void* idx_data;
-    void* val_data;
+    void* idx_data{};
+    void* val_data{};
 
-    rocsparse_indextype idx_type;
-    rocsparse_datatype  data_type;
+    rocsparse_indextype idx_type{};
+    rocsparse_datatype  data_type{};
 
-    rocsparse_index_base idx_base;
+    rocsparse_index_base idx_base{};
 };
 
 struct _rocsparse_spmat_descr
 {
-    bool init     = false;
-    bool analysed = false;
+    bool init{};
+    bool analysed{};
 
-    int64_t rows;
-    int64_t cols;
-    int64_t nnz;
+    int64_t rows{};
+    int64_t cols{};
+    int64_t nnz{};
 
-    void* row_data;
-    void* col_data;
-    void* ind_data;
-    void* val_data;
+    void* row_data{};
+    void* col_data{};
+    void* ind_data{};
+    void* val_data{};
 
-    rocsparse_indextype row_type;
-    rocsparse_indextype col_type;
-    rocsparse_datatype  data_type;
+    rocsparse_indextype row_type{};
+    rocsparse_indextype col_type{};
+    rocsparse_datatype  data_type{};
 
-    rocsparse_index_base idx_base;
-    rocsparse_format     format;
+    rocsparse_index_base idx_base{};
+    rocsparse_format     format{};
 
-    rocsparse_mat_descr descr;
-    rocsparse_mat_info  info;
+    rocsparse_mat_descr descr{};
+    rocsparse_mat_info  info{};
 
-    rocsparse_direction block_dir;
-    int64_t             block_dim;
-    int64_t             ell_cols;
-    int64_t             ell_width;
+    rocsparse_direction block_dir{};
+    int64_t             block_dim{};
+    int64_t             ell_cols{};
+    int64_t             ell_width{};
 
-    int64_t batch_count;
-    int64_t batch_stride;
-    int64_t offsets_batch_stride;
-    int64_t columns_values_batch_stride;
+    int64_t batch_count{};
+    int64_t batch_stride{};
+    int64_t offsets_batch_stride{};
+    int64_t columns_values_batch_stride{};
 };
 
 struct _rocsparse_dnvec_descr
 {
-    bool init = false;
+    bool init{};
 
-    int64_t            size;
-    void*              values;
-    rocsparse_datatype data_type;
+    int64_t            size{};
+    void*              values{};
+    rocsparse_datatype data_type{};
 };
 
 struct _rocsparse_dnmat_descr
 {
-    bool init = false;
+    bool init{};
 
-    int64_t rows;
-    int64_t cols;
-    int64_t ld;
+    int64_t rows{};
+    int64_t cols{};
+    int64_t ld{};
 
-    void* values;
+    void* values{};
 
-    rocsparse_datatype data_type;
-    rocsparse_order    order;
+    rocsparse_datatype data_type{};
+    rocsparse_order    order{};
 
-    int64_t batch_count;
-    int64_t batch_stride;
+    int64_t batch_count{};
+    int64_t batch_stride{};
 };
 
 #endif // HANDLE_H

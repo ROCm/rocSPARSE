@@ -170,7 +170,7 @@ void testing_bsrmv(const Arguments& arg)
     host_gebsr_matrix<T>   hA;
     device_gebsr_matrix<T> dA;
 
-    matrix_factory.init_bsr(hA, dA, mb, nb);
+    matrix_factory.init_bsr(hA, dA, mb, nb, base);
 
     M = dA.mb * dA.row_block_dim;
     N = dA.nb * dA.col_block_dim;
@@ -192,20 +192,20 @@ void testing_bsrmv(const Arguments& arg)
         {
             host_dense_matrix<T> hy_copy(hy);
             // CPU bsrmv
-            host_bsrmv<T>(dir,
-                          trans,
-                          hA.mb,
-                          hA.nb,
-                          hA.nnzb,
-                          *h_alpha,
-                          hA.ptr,
-                          hA.ind,
-                          hA.val,
-                          hA.row_block_dim,
-                          hx,
-                          *h_beta,
-                          hy,
-                          base);
+            host_bsrmv<T, rocsparse_int, rocsparse_int>(dir,
+                                                        trans,
+                                                        hA.mb,
+                                                        hA.nb,
+                                                        hA.nnzb,
+                                                        *h_alpha,
+                                                        hA.ptr,
+                                                        hA.ind,
+                                                        hA.val,
+                                                        hA.row_block_dim,
+                                                        hx,
+                                                        *h_beta,
+                                                        hy,
+                                                        base);
 
             hy.near_check(dy);
             dy = hy_copy;

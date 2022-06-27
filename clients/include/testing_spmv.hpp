@@ -55,6 +55,18 @@ struct testing_matrix_type_traits<rocsparse_format_csc, I, J, T>
 };
 
 //
+// TRAITS FOR BSR FORMAT.
+//
+template <typename I, typename J, typename T>
+struct testing_matrix_type_traits<rocsparse_format_bsr, I, J, T>
+{
+    template <typename U>
+    using host_sparse_matrix = host_gebsr_matrix<U, I, J>;
+    template <typename U>
+    using device_sparse_matrix = device_gebsr_matrix<U, I, J>;
+};
+
+//
 // TRAITS FOR COO FORMAT.
 //
 template <typename I, typename T>
@@ -106,12 +118,23 @@ struct testing_spmv_dispatch_traits<rocsparse_format_csr, I, J, T>
     template <typename U>
     using device_sparse_matrix = typename traits::template device_sparse_matrix<U>;
 
-    template <typename... Ts>
     static void sparse_initialization(rocsparse_matrix_factory<T, I, J>& matrix_factory,
                                       host_sparse_matrix<T>&             hA,
-                                      Ts&&... ts)
+                                      J&                                 m,
+                                      J&                                 n,
+                                      rocsparse_index_base               base)
     {
-        matrix_factory.init_csr(hA, ts...);
+        matrix_factory.init_csr(hA, m, n, base);
+    }
+
+    template <typename... Ts>
+    static void display_info(const Arguments&         arg,
+                             const char*              trans,
+                             const char*              trans_value,
+                             device_sparse_matrix<T>& dA,
+                             Ts&&... ts)
+    {
+        display_timing_info(trans, trans_value, "M", dA.m, "N", dA.n, "nnz", dA.nnz, ts...);
     }
 
     static void host_calculation(rocsparse_operation    trans,
@@ -140,7 +163,12 @@ struct testing_spmv_dispatch_traits<rocsparse_format_csr, I, J, T>
                             false);
     }
 
-    static double spmv_byte_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    static double gflop_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    {
+        return spmv_gflop_count(hA.m, hA.nnz, nonzero_beta);
+    }
+
+    static double byte_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
     {
         return csrmv_gbyte_count<T>(hA.m, hA.n, hA.nnz, nonzero_beta);
     }
@@ -159,12 +187,23 @@ struct testing_spmv_dispatch_traits<rocsparse_format_csc, I, J, T>
     template <typename U>
     using device_sparse_matrix = typename traits::template device_sparse_matrix<U>;
 
-    template <typename... Ts>
     static void sparse_initialization(rocsparse_matrix_factory<T, I, J>& matrix_factory,
                                       host_sparse_matrix<T>&             hA,
-                                      Ts&&... ts)
+                                      J&                                 m,
+                                      J&                                 n,
+                                      rocsparse_index_base               base)
     {
-        matrix_factory.init_csc(hA, ts...);
+        matrix_factory.init_csc(hA, m, n, base);
+    }
+
+    template <typename... Ts>
+    static void display_info(const Arguments&         arg,
+                             const char*              trans,
+                             const char*              trans_value,
+                             device_sparse_matrix<T>& dA,
+                             Ts&&... ts)
+    {
+        display_timing_info(trans, trans_value, "M", dA.m, "N", dA.n, "nnz", dA.nnz, ts...);
     }
 
     static void host_calculation(rocsparse_operation    trans,
@@ -192,9 +231,98 @@ struct testing_spmv_dispatch_traits<rocsparse_format_csc, I, J, T>
                             alg);
     }
 
-    static double spmv_byte_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    static double gflop_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    {
+        return spmv_gflop_count(hA.m, hA.nnz, nonzero_beta);
+    }
+
+    static double byte_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
     {
         return cscmv_gbyte_count<T>(hA.m, hA.n, hA.nnz, nonzero_beta);
+    }
+};
+
+//
+// TRAITS FOR BSR FORMAT.
+//
+template <typename I, typename J, typename T>
+struct testing_spmv_dispatch_traits<rocsparse_format_bsr, I, J, T>
+{
+    using traits = testing_matrix_type_traits<rocsparse_format_bsr, I, J, T>;
+
+    template <typename U>
+    using host_sparse_matrix = typename traits::template host_sparse_matrix<U>;
+    template <typename U>
+    using device_sparse_matrix = typename traits::template device_sparse_matrix<U>;
+
+    static void sparse_initialization(rocsparse_matrix_factory<T, I, J>& matrix_factory,
+                                      host_sparse_matrix<T>&             hA,
+                                      J&                                 m,
+                                      J&                                 n,
+                                      rocsparse_index_base               base)
+    {
+        J block_dim = matrix_factory.m_arg.block_dim;
+        matrix_factory.init_gebsr(hA, m, n, block_dim, block_dim, base);
+        m *= block_dim;
+        n *= block_dim;
+    }
+
+    template <typename... Ts>
+    static void display_info(const Arguments&         arg,
+                             const char*              trans,
+                             const char*              trans_value,
+                             device_sparse_matrix<T>& dA,
+                             Ts&&... ts)
+    {
+        display_timing_info(trans,
+                            trans_value,
+                            "M",
+                            dA.mb * dA.row_block_dim,
+                            "N",
+                            dA.nb * dA.col_block_dim,
+                            "nnz",
+                            dA.nnzb * dA.row_block_dim * dA.col_block_dim,
+                            "bdim",
+                            dA.row_block_dim,
+                            "bdir",
+                            rocsparse_direction2string(dA.block_direction),
+                            ts...);
+    }
+
+    static void host_calculation(rocsparse_operation    trans,
+                                 T*                     h_alpha,
+                                 host_sparse_matrix<T>& hA,
+                                 T*                     hx,
+                                 T*                     h_beta,
+                                 T*                     hy,
+                                 rocsparse_spmv_alg     alg,
+                                 rocsparse_matrix_type  matrix_type = rocsparse_matrix_type_general)
+    {
+        host_bsrmv<T, I, J>(hA.block_direction,
+                            trans,
+                            hA.mb,
+                            hA.nb,
+                            hA.nnzb,
+                            *h_alpha,
+                            hA.ptr,
+                            hA.ind,
+                            hA.val,
+                            hA.row_block_dim,
+                            hx,
+                            *h_beta,
+                            hy,
+                            hA.base);
+    }
+
+    static double byte_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    {
+        return bsrmv_gbyte_count<T>(hA.mb, hA.nb, hA.nnzb, hA.row_block_dim, nonzero_beta);
+    }
+
+    static double gflop_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    {
+        return spmv_gflop_count(
+            hA.mb * hA.row_block_dim, hA.nnzb * hA.row_block_dim * hA.col_block_dim, nonzero_beta);
     }
 };
 
@@ -211,12 +339,23 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo, I, I, T>
     template <typename U>
     using device_sparse_matrix = typename traits::template device_sparse_matrix<U>;
 
-    template <typename... Ts>
     static void sparse_initialization(rocsparse_matrix_factory<T, I, I>& matrix_factory,
                                       host_sparse_matrix<T>&             hA,
-                                      Ts&&... ts)
+                                      I&                                 m,
+                                      I&                                 n,
+                                      rocsparse_index_base               base)
     {
-        matrix_factory.init_coo(hA, ts...);
+        matrix_factory.init_coo(hA, m, n, base);
+    }
+
+    template <typename... Ts>
+    static void display_info(const Arguments&         arg,
+                             const char*              trans,
+                             const char*              trans_value,
+                             device_sparse_matrix<T>& dA,
+                             Ts&&... ts)
+    {
+        display_timing_info(trans, trans_value, "M", dA.m, "N", dA.n, "nnz", dA.nnz, ts...);
     }
 
     static void host_calculation(rocsparse_operation    trans,
@@ -242,9 +381,14 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo, I, I, T>
                          hA.base);
     }
 
-    static double spmv_byte_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    static double byte_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
     {
         return coomv_gbyte_count<T>(hA.m, hA.n, hA.nnz, nonzero_beta);
+    }
+
+    static double gflop_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    {
+        return spmv_gflop_count(hA.m, hA.nnz, nonzero_beta);
     }
 };
 
@@ -261,12 +405,23 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo_aos, I, I, T>
     template <typename U>
     using device_sparse_matrix = typename traits::template device_sparse_matrix<U>;
 
-    template <typename... Ts>
     static void sparse_initialization(rocsparse_matrix_factory<T, I, I>& matrix_factory,
                                       host_sparse_matrix<T>&             hA,
-                                      Ts&&... ts)
+                                      I&                                 m,
+                                      I&                                 n,
+                                      rocsparse_index_base               base)
     {
-        matrix_factory.init_coo_aos(hA, ts...);
+        matrix_factory.init_coo_aos(hA, m, n, base);
+    }
+
+    template <typename... Ts>
+    static void display_info(const Arguments&         arg,
+                             const char*              trans,
+                             const char*              trans_value,
+                             device_sparse_matrix<T>& dA,
+                             Ts&&... ts)
+    {
+        display_timing_info(trans, trans_value, "M", dA.m, "N", dA.n, "nnz", dA.nnz, ts...);
     }
 
     static void host_calculation(rocsparse_operation    trans,
@@ -282,9 +437,14 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo_aos, I, I, T>
             trans, hA.m, hA.n, hA.nnz, *h_alpha, hA.ind, hA.val, hx, *h_beta, hy, hA.base);
     }
 
-    static double spmv_byte_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    static double byte_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
     {
         return coomv_gbyte_count<T>(hA.m, hA.n, hA.nnz, nonzero_beta);
+    }
+
+    static double gflop_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    {
+        return spmv_gflop_count(hA.m, hA.nnz, nonzero_beta);
     }
 };
 
@@ -300,12 +460,23 @@ struct testing_spmv_dispatch_traits<rocsparse_format_ell, I, I, T>
     template <typename U>
     using device_sparse_matrix = typename traits::template device_sparse_matrix<U>;
 
-    template <typename... Ts>
     static void sparse_initialization(rocsparse_matrix_factory<T, I, I>& matrix_factory,
                                       host_sparse_matrix<T>&             hA,
-                                      Ts&&... ts)
+                                      I&                                 m,
+                                      I&                                 n,
+                                      rocsparse_index_base               base)
     {
-        matrix_factory.init_ell(hA, ts...);
+        matrix_factory.init_ell(hA, m, n, base);
+    }
+
+    template <typename... Ts>
+    static void display_info(const Arguments&         arg,
+                             const char*              trans,
+                             const char*              trans_value,
+                             device_sparse_matrix<T>& dA,
+                             Ts&&... ts)
+    {
+        display_timing_info(trans, trans_value, "M", dA.m, "N", dA.n, "nnz", dA.nnz, ts...);
     }
 
     static void host_calculation(rocsparse_operation    trans,
@@ -321,9 +492,14 @@ struct testing_spmv_dispatch_traits<rocsparse_format_ell, I, I, T>
             trans, hA.m, hA.n, *h_alpha, hA.ind, hA.val, hA.width, hx, *h_beta, hy, hA.base);
     }
 
-    static double spmv_byte_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    static double byte_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
     {
         return ellmv_gbyte_count<T>(hA.m, hA.n, hA.nnz, nonzero_beta);
+    }
+
+    static double gflop_count(host_sparse_matrix<T>& hA, bool nonzero_beta)
+    {
+        return spmv_gflop_count(hA.m, hA.nnz, nonzero_beta);
     }
 };
 
@@ -572,10 +748,8 @@ public:
         {
             return;
         }
-
         device_sparse_matrix<T> dA(hA);
-
-        host_dense_matrix<T> hx((trans == rocsparse_operation_none) ? N : M, 1);
+        host_dense_matrix<T>    hx((trans == rocsparse_operation_none) ? N : M, 1);
         rocsparse_matrix_utils::init_exact(hx);
         device_dense_matrix<T> dx(hx);
 
@@ -601,18 +775,21 @@ public:
                                     A, rocsparse_spmat_storage_mode, &storage, sizeof(storage)),
                                 rocsparse_status_success);
 
-        void*  dbuffer = nullptr;
-        size_t buffer_size;
+        void*  dbuffer     = nullptr;
+        size_t buffer_size = 0;
         CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)));
         CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
         if(arg.unit_check)
         {
+
             // Pointer mode host
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
             CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)));
 
+            //
             // CPU spmv
+            //
             {
                 host_dense_matrix<T> hy_copy(hy);
                 //
@@ -624,7 +801,9 @@ public:
                 dy.transfer_from(hy_copy);
             }
 
+            //
             // Pointer mode device
+            //
             {
                 device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
                 CHECK_ROCSPARSE_ERROR(
@@ -637,8 +816,8 @@ public:
 
         if(arg.timing)
         {
-            int number_cold_calls = 2;
-            int number_hot_calls  = arg.iters;
+            const int number_cold_calls = 2;
+            const int number_hot_calls  = arg.iters;
 
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
@@ -658,32 +837,28 @@ public:
 
             gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-            double gflop_count = spmv_gflop_count(hA.m, hA.nnz, *h_beta != static_cast<T>(0));
-            double gbyte_count = traits::spmv_byte_count(hA, *h_beta != static_cast<T>(0));
+            const double gflop_count = traits::gflop_count(hA, *h_beta != static_cast<T>(0));
+            const double gbyte_count = traits::byte_count(hA, *h_beta != static_cast<T>(0));
 
-            double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
-            double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
+            const double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
+            const double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-            display_timing_info("trans",
-                                rocsparse_operation2string(trans),
-                                "M",
-                                M,
-                                "N",
-                                N,
-                                "nnz",
-                                dA.nnz,
-                                "alpha",
-                                *h_alpha,
-                                "beta",
-                                *h_beta,
-                                "Algorithm",
-                                rocsparse_spmvalg2string(alg),
-                                s_timing_info_perf,
-                                gpu_gflops,
-                                s_timing_info_bandwidth,
-                                gpu_gbyte,
-                                s_timing_info_time,
-                                get_gpu_time_msec(gpu_time_used));
+            traits::display_info(arg,
+                                 "trans",
+                                 rocsparse_operation2string(trans),
+                                 dA,
+                                 "alpha",
+                                 *h_alpha,
+                                 "beta",
+                                 *h_beta,
+                                 "Algorithm",
+                                 rocsparse_spmvalg2string(alg),
+                                 s_timing_info_perf,
+                                 gpu_gflops,
+                                 s_timing_info_bandwidth,
+                                 gpu_gbyte,
+                                 s_timing_info_time,
+                                 get_gpu_time_msec(gpu_time_used));
         }
 
         CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));

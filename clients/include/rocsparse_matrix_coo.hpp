@@ -198,6 +198,15 @@ struct coo_matrix
         }
     }
 
+    void info() const
+    {
+        std::cout << "INFO COO " << std::endl;
+        std::cout << " m    : " << this->m << std::endl;
+        std::cout << " n    : " << this->n << std::endl;
+        std::cout << " nnz  : " << this->nnz << std::endl;
+        std::cout << " base : " << this->base << std::endl;
+    }
+
     void print() const
     {
         switch(MODE)

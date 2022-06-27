@@ -363,7 +363,8 @@ typedef enum rocsparse_format_
     rocsparse_format_csr     = 2, /**< CSR sparse matrix format. */
     rocsparse_format_csc     = 3, /**< CSC sparse matrix format. */
     rocsparse_format_ell     = 4, /**< ELL sparse matrix format. */
-    rocsparse_format_bell    = 5 /**< BLOCKED ELL sparse matrix format. */
+    rocsparse_format_bell    = 5, /**< BLOCKED ELL sparse matrix format. */
+    rocsparse_format_bsr     = 6 /**< BSR sparse matrix format. */
 } rocsparse_format;
 
 /*! \ingroup types_module
@@ -423,7 +424,8 @@ typedef enum rocsparse_spmv_alg_
     rocsparse_spmv_alg_csr_adaptive = 2, /**< CSR SpMV algorithm 1 (adaptive) for CSR matrices. */
     rocsparse_spmv_alg_csr_stream   = 3, /**< CSR SpMV algorithm 2 (stream) for CSR matrices. */
     rocsparse_spmv_alg_ell          = 4, /**< ELL SpMV algorithm for ELL matrices. */
-    rocsparse_spmv_alg_coo_atomic   = 5 /**< COO SpMV algorithm 2 (atomic) for COO matrices. */
+    rocsparse_spmv_alg_coo_atomic   = 5, /**< COO SpMV algorithm 2 (atomic) for COO matrices. */
+    rocsparse_spmv_alg_bsr          = 6 /**< BSR SpMV algorithm 1 for BSR matrices. */
 } rocsparse_spmv_alg;
 
 /*! \ingroup types_module
@@ -496,7 +498,8 @@ typedef enum rocsparse_spmm_alg_
     rocsparse_spmm_alg_csr_row_split, /**< SpMM algorithm for CSR format using row split and shfl. */
     rocsparse_spmm_alg_csr_merge, /**< SpMM algorithm for CSR format using conversion to COO. */
     rocsparse_spmm_alg_coo_segmented_atomic, /**< SpMM algorithm for COO format using segmented scan and atomics. */
-    rocsparse_spmm_alg_bell /**< SpMM algorithm for Blocked ELL format. */
+    rocsparse_spmm_alg_bell, /**< SpMM algorithm for Blocked ELL format. */
+    rocsparse_spmm_alg_bsr /**< SpMM algorithm for BSR format. */
 } rocsparse_spmm_alg;
 
 /*! \ingroup types_module

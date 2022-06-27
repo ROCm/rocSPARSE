@@ -25,6 +25,9 @@
 #include "rocsparse_matrix_factory.hpp"
 #include "rocsparse_init.hpp"
 
+//
+// Destructor.
+//
 template <typename T, typename I, typename J>
 rocsparse_matrix_factory<T, I, J>::~rocsparse_matrix_factory()
 {
@@ -35,6 +38,9 @@ rocsparse_matrix_factory<T, I, J>::~rocsparse_matrix_factory()
     }
 }
 
+//
+// Constructor.
+//
 template <typename T, typename I, typename J>
 rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments&      arg,
                                                             rocsparse_matrix_init matrix,
@@ -119,6 +125,9 @@ rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments&    
     assert(this->m_instance != nullptr);
 }
 
+//
+// Constructor.
+//
 template <typename T, typename I, typename J>
 rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments& arg,
                                                             bool             to_int, //  = false,
@@ -128,101 +137,9 @@ rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments& arg
 {
 }
 
-template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_csr(std::vector<I>&      csr_row_ptr,
-                                                 std::vector<J>&      csr_col_ind,
-                                                 std::vector<T>&      csr_val,
-                                                 J&                   M,
-                                                 J&                   N,
-                                                 I&                   nnz,
-                                                 rocsparse_index_base base)
-{
-    this->m_instance->init_csr(csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               M,
-                               N,
-                               nnz,
-                               base,
-                               this->m_arg.matrix_type,
-                               this->m_arg.uplo,
-                               this->m_arg.storage);
-}
-
-template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_gebsr(std::vector<I>&      bsr_row_ptr,
-                                                   std::vector<J>&      bsr_col_ind,
-                                                   std::vector<T>&      bsr_val,
-                                                   rocsparse_direction  dirb,
-                                                   J&                   Mb,
-                                                   J&                   Nb,
-                                                   I&                   nnzb,
-                                                   J&                   row_block_dim,
-                                                   J&                   col_block_dim,
-                                                   rocsparse_index_base base)
-{
-    this->m_instance->init_gebsr(bsr_row_ptr,
-                                 bsr_col_ind,
-                                 bsr_val,
-                                 dirb,
-                                 Mb,
-                                 Nb,
-                                 nnzb,
-                                 row_block_dim,
-                                 col_block_dim,
-                                 base,
-                                 this->m_arg.matrix_type,
-                                 this->m_arg.uplo,
-                                 this->m_arg.storage);
-}
-
-template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_csc(std::vector<I>&      csc_col_ptr,
-                                                 std::vector<J>&      csc_row_ind,
-                                                 std::vector<T>&      csc_val,
-                                                 J&                   M,
-                                                 J&                   N,
-                                                 I&                   nnz,
-                                                 rocsparse_index_base base)
-{
-    this->m_instance->init_csr(csc_col_ptr,
-                               csc_row_ind,
-                               csc_val,
-                               N,
-                               M,
-                               nnz,
-                               base,
-                               this->m_arg.matrix_type,
-                               this->m_arg.uplo,
-                               this->m_arg.storage);
-}
-
-template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_bsr(std::vector<I>&      bsr_row_ptr,
-                                                 std::vector<J>&      bsr_col_ind,
-                                                 std::vector<T>&      bsr_val,
-                                                 rocsparse_direction  dirb,
-                                                 J&                   Mb,
-                                                 J&                   Nb,
-                                                 I&                   nnzb,
-                                                 J&                   block_dim,
-                                                 rocsparse_index_base base)
-{
-    this->m_instance->init_gebsr(bsr_row_ptr,
-                                 bsr_col_ind,
-                                 bsr_val,
-                                 dirb,
-                                 Mb,
-                                 Nb,
-                                 nnzb,
-                                 block_dim,
-                                 block_dim,
-                                 base,
-                                 this->m_arg.matrix_type,
-                                 this->m_arg.uplo,
-                                 this->m_arg.storage);
-}
-
+//
+// COO
+//
 template <typename T, typename I, typename J>
 void rocsparse_matrix_factory<T, I, J>::init_coo(std::vector<I>&      coo_row_ind,
                                                  std::vector<I>&      coo_col_ind,
@@ -244,7 +161,76 @@ void rocsparse_matrix_factory<T, I, J>::init_coo(std::vector<I>&      coo_row_in
                                this->m_arg.storage);
 }
 
-// @brief Init host csr matrix.
+template <typename T, typename I, typename J>
+void rocsparse_matrix_factory<T, I, J>::init_coo(host_coo_matrix<T, I>& that)
+{
+    that.base = this->m_arg.baseA;
+    that.m    = this->m_arg.M;
+    that.n    = this->m_arg.N;
+    this->m_instance->init_coo(that.row_ind,
+                               that.col_ind,
+                               that.val,
+                               that.m,
+                               that.n,
+                               that.nnz,
+                               that.base,
+                               this->m_arg.matrix_type,
+                               this->m_arg.uplo,
+                               this->m_arg.storage);
+}
+
+template <typename T, typename I, typename J>
+void rocsparse_matrix_factory<T, I, J>::init_coo(host_coo_matrix<T, I>& that, I& M, I& N)
+{
+    this->init_coo(that, M, N, this->m_arg.baseA);
+}
+
+template <typename T, typename I, typename J>
+void rocsparse_matrix_factory<T, I, J>::init_coo(host_coo_matrix<T, I>& that,
+                                                 I&                     M,
+                                                 I&                     N,
+                                                 rocsparse_index_base   base)
+{
+    that.base = base;
+    that.m    = M;
+    that.n    = N;
+    this->m_instance->init_coo(that.row_ind,
+                               that.col_ind,
+                               that.val,
+                               that.m,
+                               that.n,
+                               that.nnz,
+                               that.base,
+                               this->m_arg.matrix_type,
+                               this->m_arg.uplo,
+                               this->m_arg.storage);
+    M = that.m;
+    N = that.n;
+}
+
+//
+// CSR
+//
+template <typename T, typename I, typename J>
+void rocsparse_matrix_factory<T, I, J>::init_csr(std::vector<I>&      csr_row_ptr,
+                                                 std::vector<J>&      csr_col_ind,
+                                                 std::vector<T>&      csr_val,
+                                                 J&                   m,
+                                                 J&                   n,
+                                                 I&                   nnz,
+                                                 rocsparse_index_base base)
+{
+    this->m_instance->init_csr(csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               m,
+                               n,
+                               nnz,
+                               base,
+                               this->m_arg.matrix_type,
+                               this->m_arg.uplo,
+                               this->m_arg.storage);
+}
 
 template <typename T, typename I, typename J>
 void rocsparse_matrix_factory<T, I, J>::init_csr(host_csr_matrix<T, I, J>& that)
@@ -262,12 +248,6 @@ void rocsparse_matrix_factory<T, I, J>::init_csr(host_csr_matrix<T, I, J>& that)
                                this->m_arg.matrix_type,
                                this->m_arg.uplo,
                                this->m_arg.storage);
-}
-
-template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_csr(host_csr_matrix<T, I, J>& that, J& m, J& n)
-{
-    this->init_csr(that, m, n, this->m_arg.baseA);
 }
 
 template <typename T, typename I, typename J>
@@ -294,6 +274,36 @@ void rocsparse_matrix_factory<T, I, J>::init_csr(host_csr_matrix<T, I, J>& that,
 }
 
 template <typename T, typename I, typename J>
+void rocsparse_matrix_factory<T, I, J>::init_csr(host_csr_matrix<T, I, J>& that, J& m, J& n)
+{
+    this->init_csr(that, m, n, this->m_arg.baseA);
+}
+
+//
+// CSC
+//
+template <typename T, typename I, typename J>
+void rocsparse_matrix_factory<T, I, J>::init_csc(std::vector<I>&      csc_col_ptr,
+                                                 std::vector<J>&      csc_row_ind,
+                                                 std::vector<T>&      csc_val,
+                                                 J&                   M,
+                                                 J&                   N,
+                                                 I&                   nnz,
+                                                 rocsparse_index_base base)
+{
+    this->m_instance->init_csr(csc_col_ptr,
+                               csc_row_ind,
+                               csc_val,
+                               N,
+                               M,
+                               nnz,
+                               base,
+                               this->m_arg.matrix_type,
+                               this->m_arg.uplo,
+                               this->m_arg.storage);
+}
+
+template <typename T, typename I, typename J>
 void rocsparse_matrix_factory<T, I, J>::init_csc(host_csc_matrix<T, I, J>& that,
                                                  J&                        m,
                                                  J&                        n,
@@ -314,74 +324,34 @@ void rocsparse_matrix_factory<T, I, J>::init_csc(host_csc_matrix<T, I, J>& that,
     that.n = n;
 }
 
-template <typename T, typename I, typename J, class FILTER = void>
-struct traits_init_bsr
-{
-
-    static void init(rocsparse_matrix_factory<T, I, J>& factory,
-                     host_gebsr_matrix<T, I, J>&        that,
-                     device_gebsr_matrix<T, I, J>&      that_on_device,
-                     J&                                 mb_,
-                     J&                                 nb_)
-    {
-        std::cerr << "ICITE2 " << std::endl;
-        exit(1);
-    };
-};
-
+//
+// GEBSR
+//
 template <typename T, typename I, typename J>
-struct traits_init_bsr<
-    T,
-    I,
-    J,
-    std::enable_if_t<std::is_same<rocsparse_int, J>{} && std::is_same<rocsparse_int, I>{}>>
+void rocsparse_matrix_factory<T, I, J>::init_gebsr(std::vector<I>&      bsr_row_ptr,
+                                                   std::vector<J>&      bsr_col_ind,
+                                                   std::vector<T>&      bsr_val,
+                                                   rocsparse_direction  dirb,
+                                                   J&                   Mb,
+                                                   J&                   Nb,
+                                                   I&                   nnzb,
+                                                   J&                   row_block_dim,
+                                                   J&                   col_block_dim,
+                                                   rocsparse_index_base base)
 {
-
-    static void init(rocsparse_matrix_factory<T, I, J>& factory,
-                     host_gebsr_matrix<T, I, J>&        that,
-                     device_gebsr_matrix<T, I, J>&      that_on_device,
-                     J&                                 mb_,
-                     J&                                 nb_)
-    {
-        //
-        // Initialize in case init_csr requires it as input.
-        //
-        rocsparse_int            block_dim = factory.m_arg.block_dim;
-        rocsparse_int            M         = mb_ * block_dim;
-        rocsparse_int            N         = nb_ * block_dim;
-        rocsparse_index_base     base      = factory.m_arg.baseA;
-        host_csr_matrix<T, I, J> hA_uncompressed;
-        factory.init_csr(hA_uncompressed, M, N, base);
-
-        {
-            device_csr_matrix<T, I, J> dA_uncompressed(hA_uncompressed);
-            device_csr_matrix<T, I, J> dA_compressed;
-            rocsparse_matrix_utils::compress(dA_compressed, dA_uncompressed, base);
-            rocsparse_matrix_utils::convert(
-                dA_compressed, factory.m_arg.direction, block_dim, base, that_on_device);
-        }
-
-        that(that_on_device);
-
-        mb_ = that.mb;
-        nb_ = that.nb;
-    };
-};
-
-template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_bsr(host_gebsr_matrix<T, I, J>& that, J& mb_, J& nb_)
-{
-    device_gebsr_matrix<T, I, J> dB;
-    this->init_bsr(that, dB, mb_, nb_);
-}
-
-template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_bsr(host_gebsr_matrix<T, I, J>&   that,
-                                                 device_gebsr_matrix<T, I, J>& that_on_device,
-                                                 J&                            mb_,
-                                                 J&                            nb_)
-{
-    traits_init_bsr<T, I, J>::init(*this, that, that_on_device, mb_, nb_);
+    this->m_instance->init_gebsr(bsr_row_ptr,
+                                 bsr_col_ind,
+                                 bsr_val,
+                                 dirb,
+                                 Mb,
+                                 Nb,
+                                 nnzb,
+                                 row_block_dim,
+                                 col_block_dim,
+                                 base,
+                                 this->m_arg.matrix_type,
+                                 this->m_arg.uplo,
+                                 this->m_arg.storage);
 }
 
 template <typename T, typename I, typename J>
@@ -448,14 +418,19 @@ void rocsparse_matrix_factory<T, I, J>::init_gebsr(host_gebsr_matrix<T, I, J>& t
 }
 
 template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_gebsr(
-    host_gebsr_matrix<T, I, J>& that, J& mb, J& nb, J& row_block_dim, J& col_block_dim)
+void rocsparse_matrix_factory<T, I, J>::init_gebsr(host_gebsr_matrix<T, I, J>& that,
+                                                   J&                          mb,
+                                                   J&                          nb,
+                                                   J&                          row_block_dim,
+                                                   J&                          col_block_dim,
+                                                   rocsparse_index_base        base_)
 {
 
-    that.base          = this->m_arg.baseA;
-    that.mb            = mb;
-    that.nb            = nb;
-    that.nnzb          = this->m_arg.nnz;
+    that.base = base_;
+    that.mb   = mb;
+    that.nb   = nb;
+    that.nnzb = this->m_arg.nnz;
+
     that.row_block_dim = row_block_dim;
     that.col_block_dim = col_block_dim;
 
@@ -544,53 +519,115 @@ void rocsparse_matrix_factory<T, I, J>::init_gebsr_spezial(host_gebsr_matrix<T, 
     that.ind.transfer_from(hA.ind);
 }
 
+//
+// BSR
+//
+
 template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_coo(host_coo_matrix<T, I>& that)
+void rocsparse_matrix_factory<T, I, J>::init_bsr(std::vector<I>&      bsr_row_ptr,
+                                                 std::vector<J>&      bsr_col_ind,
+                                                 std::vector<T>&      bsr_val,
+                                                 rocsparse_direction  dirb,
+                                                 J&                   Mb,
+                                                 J&                   Nb,
+                                                 I&                   nnzb,
+                                                 J&                   block_dim,
+                                                 rocsparse_index_base base)
 {
-    that.base = this->m_arg.baseA;
-    that.m    = this->m_arg.M;
-    that.n    = this->m_arg.N;
-    this->m_instance->init_coo(that.row_ind,
-                               that.col_ind,
-                               that.val,
-                               that.m,
-                               that.n,
-                               that.nnz,
-                               that.base,
-                               this->m_arg.matrix_type,
-                               this->m_arg.uplo,
-                               this->m_arg.storage);
+    this->m_instance->init_gebsr(bsr_row_ptr,
+                                 bsr_col_ind,
+                                 bsr_val,
+                                 dirb,
+                                 Mb,
+                                 Nb,
+                                 nnzb,
+                                 block_dim,
+                                 block_dim,
+                                 base,
+                                 this->m_arg.matrix_type,
+                                 this->m_arg.uplo,
+                                 this->m_arg.storage);
+}
+
+template <typename T, typename I, typename J, class FILTER = void>
+struct traits_init_bsr
+{
+
+    static void init(rocsparse_matrix_factory<T, I, J>& factory,
+                     host_gebsr_matrix<T, I, J>&        that,
+                     device_gebsr_matrix<T, I, J>&      that_on_device,
+                     J&                                 mb_,
+                     J&                                 nb_,
+                     rocsparse_index_base               base_)
+    {
+        std::cout << "default traits_init_bsr not implemented (file: " << __FILE__ << ")"
+                  << std::endl;
+        throw rocsparse_status_internal_error;
+    }
+};
+
+template <typename T, typename I, typename J>
+struct traits_init_bsr<
+    T,
+    I,
+    J,
+    std::enable_if_t<std::is_same<rocsparse_int, J>{} && std::is_same<rocsparse_int, I>{}>>
+{
+
+    static void init(rocsparse_matrix_factory<T, I, J>& factory,
+                     host_gebsr_matrix<T, I, J>&        that,
+                     device_gebsr_matrix<T, I, J>&      that_on_device,
+                     J&                                 mb_,
+                     J&                                 nb_,
+                     rocsparse_index_base               base_)
+    {
+        //
+        // Initialize in case init_csr requires it as input.
+        //
+        rocsparse_int            block_dim = factory.m_arg.block_dim;
+        rocsparse_int            M         = mb_ * block_dim;
+        rocsparse_int            N         = nb_ * block_dim;
+        host_csr_matrix<T, I, J> hA_uncompressed;
+        factory.init_csr(hA_uncompressed, M, N, base_);
+
+        {
+            device_csr_matrix<T, I, J> dA_uncompressed(hA_uncompressed);
+            device_csr_matrix<T, I, J> dA_compressed;
+            rocsparse_matrix_utils::compress(dA_compressed, dA_uncompressed, base_);
+            rocsparse_matrix_utils::convert(
+                dA_compressed, factory.m_arg.direction, block_dim, base_, that_on_device);
+        }
+
+        that(that_on_device);
+
+        mb_ = that.mb;
+        nb_ = that.nb;
+    };
+};
+
+template <typename T, typename I, typename J>
+void rocsparse_matrix_factory<T, I, J>::init_bsr(host_gebsr_matrix<T, I, J>& that_,
+                                                 J&                          mb_,
+                                                 J&                          nb_,
+                                                 rocsparse_index_base        base_)
+{
+    device_gebsr_matrix<T, I, J> dB;
+    this->init_bsr(that_, dB, mb_, nb_, base_);
 }
 
 template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_coo(host_coo_matrix<T, I>& that, I& M, I& N)
+void rocsparse_matrix_factory<T, I, J>::init_bsr(host_gebsr_matrix<T, I, J>&   that_,
+                                                 device_gebsr_matrix<T, I, J>& that_on_device_,
+                                                 J&                            mb_,
+                                                 J&                            nb_,
+                                                 rocsparse_index_base          base_)
 {
-    this->init_coo(that, M, N, this->m_arg.baseA);
+    traits_init_bsr<T, I, J>::init(*this, that_, that_on_device_, mb_, nb_, base_);
 }
 
-template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_coo(host_coo_matrix<T, I>& that,
-                                                 I&                     M,
-                                                 I&                     N,
-                                                 rocsparse_index_base   base)
-{
-    that.base = base;
-    that.m    = M;
-    that.n    = N;
-    this->m_instance->init_coo(that.row_ind,
-                               that.col_ind,
-                               that.val,
-                               that.m,
-                               that.n,
-                               that.nnz,
-                               that.base,
-                               this->m_arg.matrix_type,
-                               this->m_arg.uplo,
-                               this->m_arg.storage);
-    M = that.m;
-    N = that.n;
-}
-
+//
+// COO AOS
+//
 template <typename T, typename I, typename J, class FILTER = void>
 struct traits_init_coo_aos
 {
@@ -633,6 +670,9 @@ void rocsparse_matrix_factory<T, I, J>::init_coo_aos(host_coo_aos_matrix<T, I>& 
     traits_init_coo_aos<T, I, J>::init(*this, that, M, N, base);
 }
 
+//
+// ELL
+//
 template <typename T, typename I, typename J, class FILTER = void>
 struct traits_init_ell
 {
@@ -674,6 +714,9 @@ void rocsparse_matrix_factory<T, I, J>::init_ell(host_ell_matrix<T, I>& that,
     traits_init_ell<T, I, J>::init(*this, that, M, N, base);
 }
 
+//
+// HYB
+//
 template <typename T, typename I, typename J, class FILTER = void>
 struct traits_init_hyb
 {
@@ -763,6 +806,9 @@ void rocsparse_matrix_factory<T, I, J>::init_hyb(
     traits_init_hyb<T, I, J>::init(*this, that, M, N, nnz, base, conform);
 }
 
+//
+// INSTANTIATE.
+//
 template struct rocsparse_matrix_factory<float, int32_t, int32_t>;
 template struct rocsparse_matrix_factory<float, int64_t, int32_t>;
 template struct rocsparse_matrix_factory<float, int64_t, int64_t>;

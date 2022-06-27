@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -233,6 +233,7 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
         case rocsparse_format_csc:
         case rocsparse_format_ell:
         case rocsparse_format_bell:
+        case rocsparse_format_bsr:
         {
             return rocsparse_status_not_implemented;
         }
@@ -273,6 +274,7 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
         case rocsparse_format_csc:
         case rocsparse_format_ell:
         case rocsparse_format_bell:
+        case rocsparse_format_bsr:
         {
             return rocsparse_status_not_implemented;
         }
@@ -326,6 +328,7 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
         case rocsparse_format_csc:
         case rocsparse_format_ell:
         case rocsparse_format_bell:
+        case rocsparse_format_bsr:
         {
             return rocsparse_status_not_implemented;
         }
@@ -374,6 +377,7 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
         case rocsparse_format_csc:
         case rocsparse_format_ell:
         case rocsparse_format_bell:
+        case rocsparse_format_bsr:
         {
             return rocsparse_status_not_implemented;
         }
@@ -416,6 +420,7 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
         case rocsparse_format_csc:
         case rocsparse_format_ell:
         case rocsparse_format_bell:
+        case rocsparse_format_bsr:
         {
             return rocsparse_status_not_implemented;
         }

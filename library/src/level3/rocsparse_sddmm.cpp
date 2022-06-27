@@ -80,6 +80,10 @@ rocsparse_status rocsparse_sddmm_buffer_size_dispatch_format(rocsparse_format   
     {
         return rocsparse_status_not_implemented;
     }
+    case rocsparse_format_bsr:
+    {
+        return rocsparse_status_not_implemented;
+    }
     }
     return rocsparse_status_invalid_value;
 }
@@ -292,6 +296,10 @@ rocsparse_status rocsparse_sddmm_preprocess_dispatch_format(rocsparse_format    
     }
 
     case rocsparse_format_bell:
+    {
+        return rocsparse_status_not_implemented;
+    }
+    case rocsparse_format_bsr:
     {
         return rocsparse_status_not_implemented;
     }
@@ -508,6 +516,10 @@ rocsparse_status
     }
 
     case rocsparse_format_bell:
+    {
+        return rocsparse_status_not_implemented;
+    }
+    case rocsparse_format_bsr:
     {
         return rocsparse_status_not_implemented;
     }

@@ -129,17 +129,17 @@ void host_sctr(I nnz, const T* x_val, const I* x_ind, T* y, rocsparse_index_base
  *    level 2 SPARSE
  * ===========================================================================
  */
-template <typename T>
+template <typename T, typename I, typename J>
 void host_bsrmv(rocsparse_direction  dir,
                 rocsparse_operation  trans,
-                rocsparse_int        mb,
-                rocsparse_int        nb,
-                rocsparse_int        nnzb,
+                J                    mb,
+                J                    nb,
+                I                    nnzb,
                 T                    alpha,
-                const rocsparse_int* bsr_row_ptr,
-                const rocsparse_int* bsr_col_ind,
+                const I*             bsr_row_ptr,
+                const J*             bsr_col_ind,
                 const T*             bsr_val,
-                rocsparse_int        bsr_dim,
+                J                    bsr_dim,
                 const T*             x,
                 T                    beta,
                 T*                   y,
@@ -150,7 +150,7 @@ void host_bsrmv(rocsparse_direction  dir,
     {
         if(beta != static_cast<T>(1))
         {
-            for(rocsparse_int i = 0; i < mb * bsr_dim; ++i)
+            for(J i = 0; i < mb * bsr_dim; ++i)
             {
                 y[i] *= beta;
             }
@@ -159,11 +159,11 @@ void host_bsrmv(rocsparse_direction  dir,
         return;
     }
 
-    rocsparse_int WFSIZE;
+    unsigned int WFSIZE;
 
     if(bsr_dim == 2)
     {
-        rocsparse_int blocks_per_row = nnzb / mb;
+        I blocks_per_row = nnzb / mb;
 
         if(blocks_per_row < 8)
         {
@@ -202,23 +202,23 @@ void host_bsrmv(rocsparse_direction  dir,
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
 #endif
-    for(rocsparse_int row = 0; row < mb; ++row)
+    for(J row = 0; row < mb; ++row)
     {
-        rocsparse_int row_begin = bsr_row_ptr[row] - base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - base;
+        I row_begin = bsr_row_ptr[row] - base;
+        I row_end   = bsr_row_ptr[row + 1] - base;
 
         if(bsr_dim == 2)
         {
             std::vector<T> sum0(WFSIZE, static_cast<T>(0));
             std::vector<T> sum1(WFSIZE, static_cast<T>(0));
 
-            for(rocsparse_int j = row_begin; j < row_end; j += WFSIZE)
+            for(I j = row_begin; j < row_end; j += WFSIZE)
             {
-                for(rocsparse_int k = 0; k < WFSIZE; ++k)
+                for(unsigned int k = 0; k < WFSIZE; ++k)
                 {
                     if(j + k < row_end)
                     {
-                        rocsparse_int col = bsr_col_ind[j + k] - base;
+                        J col = bsr_col_ind[j + k] - base;
 
                         if(dir == rocsparse_direction_column)
                         {
@@ -276,15 +276,15 @@ void host_bsrmv(rocsparse_direction  dir,
         }
         else
         {
-            for(rocsparse_int bi = 0; bi < bsr_dim; ++bi)
+            for(J bi = 0; bi < bsr_dim; ++bi)
             {
                 std::vector<T> sum(WFSIZE, static_cast<T>(0));
 
-                for(rocsparse_int j = row_begin; j < row_end; ++j)
+                for(I j = row_begin; j < row_end; ++j)
                 {
-                    rocsparse_int col = bsr_col_ind[j] - base;
+                    J col = bsr_col_ind[j] - base;
 
-                    for(rocsparse_int bj = 0; bj < bsr_dim; bj += WFSIZE)
+                    for(J bj = 0; bj < bsr_dim; bj += WFSIZE)
                     {
                         for(unsigned int k = 0; k < WFSIZE; ++k)
                         {
@@ -7217,20 +7217,6 @@ template void host_gthrz(rocsparse_int        nnz,
  *    level 2 SPARSE
  * ===========================================================================
  */
-template void host_bsrmv(rocsparse_direction  dir,
-                         rocsparse_operation  trans,
-                         rocsparse_int        mb,
-                         rocsparse_int        nb,
-                         rocsparse_int        nnzb,
-                         float                alpha,
-                         const rocsparse_int* bsr_row_ptr,
-                         const rocsparse_int* bsr_col_ind,
-                         const float*         bsr_val,
-                         rocsparse_int        bsr_dim,
-                         const float*         x,
-                         float                beta,
-                         float*               y,
-                         rocsparse_index_base base);
 
 template void host_bsrxmv(rocsparse_direction  dir,
                           rocsparse_operation  trans,
@@ -7763,20 +7749,6 @@ template void host_gthrz(rocsparse_int        nnz,
  *    level 2 SPARSE
  * ===========================================================================
  */
-template void host_bsrmv(rocsparse_direction  dir,
-                         rocsparse_operation  trans,
-                         rocsparse_int        mb,
-                         rocsparse_int        nb,
-                         rocsparse_int        nnzb,
-                         double               alpha,
-                         const rocsparse_int* bsr_row_ptr,
-                         const rocsparse_int* bsr_col_ind,
-                         const double*        bsr_val,
-                         rocsparse_int        bsr_dim,
-                         const double*        x,
-                         double               beta,
-                         double*              y,
-                         rocsparse_index_base base);
 
 template void host_bsrxmv(rocsparse_direction  dir,
                           rocsparse_operation  trans,
@@ -8225,20 +8197,6 @@ template void host_gthrz(rocsparse_int             nnz,
  *    level 2 SPARSE
  * ===========================================================================
  */
-template void host_bsrmv(rocsparse_direction             dir,
-                         rocsparse_operation             trans,
-                         rocsparse_int                   mb,
-                         rocsparse_int                   nb,
-                         rocsparse_int                   nnzb,
-                         rocsparse_double_complex        alpha,
-                         const rocsparse_int*            bsr_row_ptr,
-                         const rocsparse_int*            bsr_col_ind,
-                         const rocsparse_double_complex* bsr_val,
-                         rocsparse_int                   bsr_dim,
-                         const rocsparse_double_complex* x,
-                         rocsparse_double_complex        beta,
-                         rocsparse_double_complex*       y,
-                         rocsparse_index_base            base);
 
 template void host_bsrxmv(rocsparse_direction             dir,
                           rocsparse_operation             trans,
@@ -8639,20 +8597,6 @@ template void host_gthrz(rocsparse_int            nnz,
  *    level 2 SPARSE
  * ===========================================================================
  */
-template void host_bsrmv(rocsparse_direction            dir,
-                         rocsparse_operation            trans,
-                         rocsparse_int                  mb,
-                         rocsparse_int                  nb,
-                         rocsparse_int                  nnzb,
-                         rocsparse_float_complex        alpha,
-                         const rocsparse_int*           bsr_row_ptr,
-                         const rocsparse_int*           bsr_col_ind,
-                         const rocsparse_float_complex* bsr_val,
-                         rocsparse_int                  bsr_dim,
-                         const rocsparse_float_complex* x,
-                         rocsparse_float_complex        beta,
-                         rocsparse_float_complex*       y,
-                         rocsparse_index_base           base);
 
 template void host_bsrxmv(rocsparse_direction            dir,
                           rocsparse_operation            trans,
@@ -9225,6 +9169,20 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                   rocsparse_index_base base,                   \
                                                   JTYPE*               struct_pivot,           \
                                                   JTYPE*               numeric_pivot);                       \
+    template void host_bsrmv(rocsparse_direction  dir,                                         \
+                             rocsparse_operation  trans,                                       \
+                             JTYPE                mb,                                          \
+                             JTYPE                nb,                                          \
+                             ITYPE                nnzb,                                        \
+                             TTYPE                alpha,                                       \
+                             const ITYPE*         bsr_row_ptr,                                 \
+                             const JTYPE*         bsr_col_ind,                                 \
+                             const TTYPE*         bsr_val,                                     \
+                             JTYPE                bsr_dim,                                     \
+                             const TTYPE*         x,                                           \
+                             TTYPE                beta,                                        \
+                             TTYPE*               y,                                           \
+                             rocsparse_index_base base);                                       \
     template void host_csrmv<ITYPE, JTYPE, TTYPE>(rocsparse_operation   trans,                 \
                                                   JTYPE                 M,                     \
                                                   JTYPE                 N,                     \

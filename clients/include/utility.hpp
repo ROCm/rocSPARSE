@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -418,6 +418,61 @@ public:
                                 get_datatype<T>(),
                                 (DIRECTION_ == rocsparse_direction_row) ? rocsparse_format_csr
                                                                         : rocsparse_format_csc)
+    {
+    }
+
+    rocsparse_local_spmat(int64_t              mb,
+                          int64_t              nb,
+                          int64_t              nnzb,
+                          rocsparse_direction  block_dir,
+                          int64_t              block_dim,
+                          void*                row_col_ptr,
+                          void*                row_col_ind,
+                          void*                val,
+                          rocsparse_indextype  row_col_ptr_type,
+                          rocsparse_indextype  row_col_ind_type,
+                          rocsparse_index_base idx_base,
+                          rocsparse_datatype   compute_type,
+                          rocsparse_format     format)
+    {
+
+        if(format == rocsparse_format_bsr)
+        {
+            rocsparse_create_bsr_descr(&this->descr,
+                                       mb,
+                                       nb,
+                                       nnzb,
+                                       block_dir,
+                                       block_dim,
+                                       row_col_ptr,
+                                       row_col_ind,
+                                       val,
+                                       row_col_ptr_type,
+                                       row_col_ind_type,
+                                       idx_base,
+                                       compute_type);
+        }
+    }
+
+    template <memory_mode::value_t MODE,
+              rocsparse_direction  DIRECTION_,
+              typename T,
+              typename I = rocsparse_int,
+              typename J = rocsparse_int>
+    explicit rocsparse_local_spmat(gebsx_matrix<MODE, DIRECTION_, T, I, J>& h)
+        : rocsparse_local_spmat(h.mb,
+                                h.nb,
+                                h.nnzb,
+                                h.block_direction,
+                                (h.row_block_dim == h.col_block_dim) ? h.row_block_dim : -1,
+                                h.ptr,
+                                h.ind,
+                                h.val,
+                                get_indextype<I>(),
+                                get_indextype<J>(),
+                                h.base,
+                                get_datatype<T>(),
+                                rocsparse_format_bsr)
     {
     }
 

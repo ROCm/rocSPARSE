@@ -815,6 +815,60 @@ rocsparse_status rocsparse_create_coo_aos_descr(rocsparse_spmat_descr* descr,
                                                 rocsparse_datatype     data_type);
 
 /*! \ingroup aux_module
+ *  \brief Create a sparse BSR matrix descriptor
+ *  \details
+ *  \p rocsparse_create_bsr_descr creates a sparse BSR matrix descriptor. It should be
+ *  destroyed at the end using \p rocsparse_destroy_spmat_descr.
+ *
+ *  @param[out]
+ *  descr        the pointer to the sparse BSR matrix descriptor.
+ *  @param[in]
+ *  mb           number of rows in the BSR matrix.
+ *  @param[in]
+ *  nb           number of columns in the BSR matrix
+ *  @param[in]
+ *  nnzb         number of non-zeros in the BSR matrix.
+ *  @param[in]
+ *  block_dir    direction of the internal block storage.
+ *  @param[in]
+ *  block_dim    dimension of the blocks.
+ *  @param[in]
+ *  bsr_row_ptr  row offsets of the BSR matrix (must be array of length \p mb+1 ).
+ *  @param[in]
+ *  bsr_col_ind  column indices of the BSR matrix (must be array of length \p nnzb ).
+ *  @param[in]
+ *  bsr_val      values of the BSR matrix (must be array of length \p nnzb * \p block_dim * \p block_dim ).
+ *  @param[in]
+ *  row_ptr_type \ref rocsparse_indextype_i32 or \ref rocsparse_indextype_i64.
+ *  @param[in]
+ *  col_ind_type \ref rocsparse_indextype_i32 or \ref rocsparse_indextype_i64.
+ *  @param[in]
+ *  idx_base     \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
+ *  @param[in]
+ *  data_type    \ref rocsparse_datatype_f32_r, \ref rocsparse_datatype_f64_r,
+ *               \ref rocsparse_datatype_f32_c or \ref rocsparse_datatype_f64_c.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer if \p descr or \p bsr_row_ptr or \p bsr_col_ind or \p bsr_val is invalid.
+ *  \retval rocsparse_status_invalid_size if \p mb or \p nb or \p nnzb \p block_dim is invalid.
+ *  \retval rocsparse_status_invalid_value if \p row_ptr_type or \p col_ind_type or \p idx_base or \p data_type or \p block_dir is invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_bsr_descr(rocsparse_spmat_descr* descr,
+                                            int64_t                mb,
+                                            int64_t                nb,
+                                            int64_t                nnzb,
+                                            rocsparse_direction    block_dir,
+                                            int64_t                block_dim,
+                                            void*                  bsr_row_ptr,
+                                            void*                  bsr_col_ind,
+                                            void*                  bsr_val,
+                                            rocsparse_indextype    row_ptr_type,
+                                            rocsparse_indextype    col_ind_type,
+                                            rocsparse_index_base   idx_base,
+                                            rocsparse_datatype     data_type);
+
+/*! \ingroup aux_module
  *  \brief Create a sparse CSR matrix descriptor
  *  \details
  *  \p rocsparse_create_csr_descr creates a sparse CSR matrix descriptor. It should be

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,6 +66,12 @@ void testing_sddmm_bad_arg(const Arguments& arg)
         exit(1);
         return;
     }
+    case rocsparse_format_bsr:
+    {
+        std::cerr << "rocsparse_status_not_implemented" << std::endl;
+        exit(1);
+        return;
+    }
     }
 }
 
@@ -106,6 +112,12 @@ void testing_sddmm(const Arguments& arg)
         return;
     }
     case rocsparse_format_bell:
+    {
+        std::cerr << "rocsparse_status_not_implemented" << std::endl;
+        exit(1);
+        return;
+    }
+    case rocsparse_format_bsr:
     {
         std::cerr << "rocsparse_status_not_implemented" << std::endl;
         exit(1);

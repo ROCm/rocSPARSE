@@ -476,6 +476,7 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
     case rocsparse_spmv_alg_csr_stream:
     case rocsparse_spmv_alg_ell:
     case rocsparse_spmv_alg_coo_atomic:
+    case rocsparse_spmv_alg_bsr:
     {
         return false;
     }
@@ -554,6 +555,7 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmm_alg value_)
     case rocsparse_spmm_alg_csr_merge:
     case rocsparse_spmm_alg_coo_segmented_atomic:
     case rocsparse_spmm_alg_bell:
+    case rocsparse_spmm_alg_bsr:
     {
         return false;
     }
