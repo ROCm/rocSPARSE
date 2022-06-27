@@ -40,16 +40,17 @@ struct gebsx_matrix
 
     static constexpr rocsparse_direction dir = direction_;
 
-    J                    mb{};
-    J                    nb{};
-    I                    nnzb{};
-    rocsparse_direction  block_direction{};
-    J                    row_block_dim{};
-    J                    col_block_dim{};
-    rocsparse_index_base base{};
-    array_t<I>           ptr{};
-    array_t<J>           ind{};
-    array_t<T>           val{};
+    J                      mb{};
+    J                      nb{};
+    I                      nnzb{};
+    rocsparse_direction    block_direction{};
+    J                      row_block_dim{};
+    J                      col_block_dim{};
+    rocsparse_index_base   base{};
+    rocsparse_storage_mode storage_mode{rocsparse_storage_mode_sorted};
+    array_t<I>             ptr{};
+    array_t<J>             ind{};
+    array_t<T>             val{};
 
     gebsx_matrix(){};
     ~gebsx_matrix(){};

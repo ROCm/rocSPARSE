@@ -34,12 +34,13 @@ struct coo_aos_matrix
     template <typename S>
     using array_t = typename memory_traits<MODE>::template array_t<S>;
 
-    I                    m{};
-    I                    n{};
-    I                    nnz{};
-    rocsparse_index_base base{};
-    array_t<I>           ind{};
-    array_t<T>           val{};
+    I                      m{};
+    I                      n{};
+    I                      nnz{};
+    rocsparse_index_base   base{};
+    rocsparse_storage_mode storage_mode{rocsparse_storage_mode_sorted};
+    array_t<I>             ind{};
+    array_t<T>             val{};
 
     coo_aos_matrix(){};
     ~coo_aos_matrix(){};
