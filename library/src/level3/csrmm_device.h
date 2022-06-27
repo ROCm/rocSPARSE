@@ -28,12 +28,6 @@
 
 #include "common.h"
 
-template <typename T>
-static ROCSPARSE_DEVICE_ILF T conj_val(T val, bool conj)
-{
-    return conj ? rocsparse_conj(val) : val;
-}
-
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
 static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
                                                         bool conj_B,

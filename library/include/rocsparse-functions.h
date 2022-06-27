@@ -16200,7 +16200,9 @@ rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
 *  one can specify the algorithm to be rocsparse_spmm_alg_default. In the case of CSR matrices this will
 *  set the algorithm to be rocsparse_spmm_alg_csr, in the case of Blocked ELL matrices this will set the
 *  algorithm to be rocsparse_spmm_alg_bell and for COO matrices it will set the algorithm to be
-*  rocsparse_spmm_alg_coo_atomic.
+*  rocsparse_spmm_alg_coo_atomic. When A is transposed, rocsparse_spmm will revert to using
+*  rocsparse_spmm_alg_csr for CSR format and rocsparse_spmm_alg_coo_atomic for COO format regardless
+*  of algorithm selected.
 *
 *  \note
 *  This function writes the required allocation size (in bytes) to \p buffer_size and

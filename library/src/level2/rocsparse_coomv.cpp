@@ -50,7 +50,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     auto beta = load_scalar_device_host(beta_device_host);
     if(beta != static_cast<T>(1))
     {
-        coomv_scale_device(size, beta, data);
+        coomv_scale_device<BLOCKSIZE>(size, beta, data);
     }
 }
 

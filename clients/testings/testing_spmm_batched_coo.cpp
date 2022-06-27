@@ -340,9 +340,11 @@ void testing_spmm_batched_coo(const Arguments& arg)
         // CPU coomm_batched
         host_coomm_batched<T, I>(A_m,
                                  N,
+                                 A_n,
                                  nnz_A,
                                  batch_count_A,
                                  batch_stride_A,
+                                 trans_A,
                                  trans_B,
                                  halpha,
                                  hcoo_row_ind.data(),

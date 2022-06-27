@@ -29,17 +29,24 @@
 #include "common.h"
 
 // Scale kernel for beta != 1.0
-template <typename I, typename T>
+template <unsigned int BLOCKSIZE, typename I, typename T>
 ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, T* __restrict__ data)
 {
-    I gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(gid >= size)
     {
         return;
     }
 
-    data[gid] = data[gid] * beta;
+    if(beta == static_cast<T>(0))
+    {
+        data[gid] = static_cast<T>(0);
+    }
+    else
+    {
+        data[gid] = data[gid] * beta;
+    }
 }
 
 // Implementation motivated by papers 'Efficient Sparse Matrix-Vector Multiplication on CUDA',
@@ -400,14 +407,25 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_device(I nnz,
     __shared__ I shared_row[BLOCKSIZE];
     __shared__ T shared_val[BLOCKSIZE];
 
-    I row = (gid < nnz) ? rocsparse_nontemporal_load(&coo_row_ind[gid]) - idx_base : -1;
-    I col = (gid < nnz) ? rocsparse_nontemporal_load(&coo_col_ind[gid]) - idx_base : 0;
-    T val = (gid < nnz) ? alpha * rocsparse_nontemporal_load(&coo_val[gid]) : static_cast<T>(0);
+    I row;
+    I col;
+    T val;
 
-    T sum = val * x[col];
+    if(gid < nnz)
+    {
+        row = rocsparse_nontemporal_load(&coo_row_ind[gid]) - idx_base;
+        col = rocsparse_nontemporal_load(&coo_col_ind[gid]) - idx_base;
+        val = rocsparse_nontemporal_load(&coo_val[gid]) * x[col];
+    }
+    else
+    {
+        row = -1;
+        col = 0;
+        val = static_cast<T>(0);
+    }
 
     shared_row[tid] = row;
-    shared_val[tid] = sum;
+    shared_val[tid] = val;
     __syncthreads();
 
     // segmented reduction
@@ -417,11 +435,11 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_device(I nnz,
         {
             if(row == shared_row[tid - j])
             {
-                sum = sum + shared_val[tid - j];
+                val = val + shared_val[tid - j];
             }
         }
         __syncthreads();
-        shared_val[tid] = sum;
+        shared_val[tid] = val;
         __syncthreads();
     }
 
@@ -429,7 +447,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_device(I nnz,
     {
         if(row != shared_row[tid + 1] && row >= 0)
         {
-            atomicAdd(&y[row], sum);
+            atomicAdd(&y[row], alpha * val);
         }
     }
 
@@ -437,7 +455,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_device(I nnz,
     {
         if(row >= 0)
         {
-            atomicAdd(&y[row], sum);
+            atomicAdd(&y[row], alpha * val);
         }
     }
 }
@@ -457,14 +475,25 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_device(I nnz,
     __shared__ I shared_row[BLOCKSIZE];
     __shared__ T shared_val[BLOCKSIZE];
 
-    I row = (gid < nnz) ? rocsparse_nontemporal_load(&coo_ind[2 * gid]) - idx_base : -1;
-    I col = (gid < nnz) ? rocsparse_nontemporal_load(&coo_ind[2 * gid + 1]) - idx_base : 0;
-    T val = (gid < nnz) ? alpha * rocsparse_nontemporal_load(&coo_val[gid]) : static_cast<T>(0);
+    I row;
+    I col;
+    T val;
 
-    T sum = val * x[col];
+    if(gid < nnz)
+    {
+        row = rocsparse_nontemporal_load(&coo_ind[2 * gid]) - idx_base;
+        col = rocsparse_nontemporal_load(&coo_ind[2 * gid + 1]) - idx_base;
+        val = rocsparse_nontemporal_load(&coo_val[gid]) * x[col];
+    }
+    else
+    {
+        row = -1;
+        col = 0;
+        val = static_cast<T>(0);
+    }
 
     shared_row[tid] = row;
-    shared_val[tid] = sum;
+    shared_val[tid] = val;
     __syncthreads();
 
     // segmented reduction
@@ -474,11 +503,11 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_device(I nnz,
         {
             if(row == shared_row[tid - j])
             {
-                sum = sum + shared_val[tid - j];
+                val = val + shared_val[tid - j];
             }
         }
         __syncthreads();
-        shared_val[tid] = sum;
+        shared_val[tid] = val;
         __syncthreads();
     }
 
@@ -486,7 +515,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_device(I nnz,
     {
         if(row != shared_row[tid + 1] && row >= 0)
         {
-            atomicAdd(&y[row], sum);
+            atomicAdd(&y[row], alpha * val);
         }
     }
 
@@ -494,7 +523,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_device(I nnz,
     {
         if(row >= 0)
         {
-            atomicAdd(&y[row], sum);
+            atomicAdd(&y[row], alpha * val);
         }
     }
 }
