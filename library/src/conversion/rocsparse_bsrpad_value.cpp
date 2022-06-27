@@ -32,6 +32,7 @@ template <typename T>
 rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handle,
                                                  rocsparse_int             m,
                                                  rocsparse_int             mb,
+                                                 rocsparse_int             nnzb,
                                                  rocsparse_int             block_dim,
                                                  T                         value,
                                                  const rocsparse_mat_descr bsr_descr,
@@ -56,7 +57,9 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
               replaceX<T>("rocsparse_Xbsrpad_value"),
               m,
               mb,
+              nnzb,
               block_dim,
+              value,
               bsr_descr,
               (const void*&)bsr_val,
               (const void*&)bsr_row_ptr,
@@ -66,18 +69,18 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
         handle, "./rocsparse-bench -f bsrpad_value -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
     // Check sizes
-    if(m < 0 || mb < 0 || block_dim <= 0)
+    if(m < 0 || mb < 0 || nnzb < 0 || block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
 
-    if(mb * block_dim < m)
+    if((mb * block_dim < m) || (m <= (mb - 1) * block_dim))
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(mb == 0)
+    if(mb == 0 || nnzb == 0)
     {
         return rocsparse_status_success;
     }
@@ -95,23 +98,9 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
         return rocsparse_status_invalid_pointer;
     }
 
-    rocsparse_int start = 0;
-    rocsparse_int end   = 0;
-
-    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-        &end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-        &start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-
-    rocsparse_int nnzb = (end - start);
-
-    if(bsr_val == nullptr && bsr_col_ind == nullptr)
+    if(bsr_val == nullptr && bsr_col_ind == nullptr && nnzb != 0)
     {
-        if(nnzb != 0)
-        {
-            return rocsparse_status_invalid_pointer;
-        }
+        return rocsparse_status_invalid_pointer;
     }
 
     // Quick return if possible
@@ -161,58 +150,28 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
     return rocsparse_status_success;
 }
 
-extern "C" rocsparse_status rocsparse_sbsrpad_value(rocsparse_handle          handle,
-                                                    rocsparse_int             m,
-                                                    rocsparse_int             mb,
-                                                    rocsparse_int             block_dim,
-                                                    float                     value,
-                                                    const rocsparse_mat_descr bsr_descr,
-                                                    float*                    bsr_val,
-                                                    rocsparse_int*            bsr_row_ptr,
-                                                    rocsparse_int*            bsr_col_ind)
-{
-    return rocsparse_bsrpad_value_template(
-        handle, m, mb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
-}
+//
+// C INTERFACE
+//
+#define C_IMPL(NAME, TYPE)                                                                        \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                            \
+                                     rocsparse_int             m,                                 \
+                                     rocsparse_int             mb,                                \
+                                     rocsparse_int             nnzb,                              \
+                                     rocsparse_int             block_dim,                         \
+                                     TYPE                      value,                             \
+                                     const rocsparse_mat_descr bsr_descr,                         \
+                                     TYPE*                     bsr_val,                           \
+                                     const rocsparse_int*      bsr_row_ptr,                       \
+                                     const rocsparse_int*      bsr_col_ind)                       \
+                                                                                                  \
+    {                                                                                             \
+        return rocsparse_bsrpad_value_template<TYPE>(                                             \
+            handle, m, mb, nnzb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind); \
+    }
 
-extern "C" rocsparse_status rocsparse_dbsrpad_value(rocsparse_handle          handle,
-                                                    rocsparse_int             m,
-                                                    rocsparse_int             mb,
-                                                    rocsparse_int             block_dim,
-                                                    double                    value,
-                                                    const rocsparse_mat_descr bsr_descr,
-                                                    double*                   bsr_val,
-                                                    rocsparse_int*            bsr_row_ptr,
-                                                    rocsparse_int*            bsr_col_ind)
-{
-    return rocsparse_bsrpad_value_template(
-        handle, m, mb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
-}
-
-extern "C" rocsparse_status rocsparse_cbsrpad_value(rocsparse_handle          handle,
-                                                    rocsparse_int             m,
-                                                    rocsparse_int             mb,
-                                                    rocsparse_int             block_dim,
-                                                    rocsparse_float_complex   value,
-                                                    const rocsparse_mat_descr bsr_descr,
-                                                    rocsparse_float_complex*  bsr_val,
-                                                    rocsparse_int*            bsr_row_ptr,
-                                                    rocsparse_int*            bsr_col_ind)
-{
-    return rocsparse_bsrpad_value_template(
-        handle, m, mb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
-}
-
-extern "C" rocsparse_status rocsparse_zbsrpad_value(rocsparse_handle          handle,
-                                                    rocsparse_int             m,
-                                                    rocsparse_int             mb,
-                                                    rocsparse_int             block_dim,
-                                                    rocsparse_double_complex  value,
-                                                    const rocsparse_mat_descr bsr_descr,
-                                                    rocsparse_double_complex* bsr_val,
-                                                    rocsparse_int*            bsr_row_ptr,
-                                                    rocsparse_int*            bsr_col_ind)
-{
-    return rocsparse_bsrpad_value_template(
-        handle, m, mb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind);
-}
+C_IMPL(rocsparse_sbsrpad_value, float);
+C_IMPL(rocsparse_dbsrpad_value, double);
+C_IMPL(rocsparse_cbsrpad_value, rocsparse_float_complex);
+C_IMPL(rocsparse_zbsrpad_value, rocsparse_double_complex);
+#undef C_IMPL

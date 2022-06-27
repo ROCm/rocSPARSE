@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,8 @@ void testing_bsrpad_value_bad_arg(const Arguments& arg)
     rocsparse_handle          handle      = local_handle;
     rocsparse_int             m           = safe_size;
     rocsparse_int             mb          = safe_size;
-    rocsparse_int             block_dim   = safe_size;
+    rocsparse_int             nnzb        = safe_size;
+    rocsparse_int             block_dim   = 1;
     T                         value       = 1;
     const rocsparse_mat_descr bsr_descr   = local_bsr_descr;
     T*                        bsr_val     = (T*)0x4;
@@ -48,14 +49,19 @@ void testing_bsrpad_value_bad_arg(const Arguments& arg)
     rocsparse_int*            bsr_col_ind = (rocsparse_int*)0x4;
 
     int       nargs_to_exclude   = 1;
-    const int args_to_exclude[1] = {4};
+    const int args_to_exclude[1] = {5};
 
-#define PARAMS handle, m, mb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind
+#define PARAMS handle, m, mb, nnzb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind
 
     auto_testing_bad_arg(rocsparse_bsrpad_value<T>, nargs_to_exclude, args_to_exclude, PARAMS);
 
     mb = 3;
     m  = block_dim * mb + 1;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrpad_value<T>(PARAMS), rocsparse_status_invalid_size);
+    mb = m = safe_size;
+
+    mb = 3;
+    m  = block_dim * (mb - 1);
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrpad_value<T>(PARAMS), rocsparse_status_invalid_size);
     mb = m = safe_size;
 
@@ -107,20 +113,32 @@ void testing_bsrpad_value(const Arguments& arg)
         device_vector<rocsparse_int> dbsr_col_ind(safe_size);
         device_vector<T>             dbsr_val(safe_size);
 
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_bsrpad_value<T>(
-                handle, M, Mb, block_dim, value, bsr_descr, dbsr_val, dbsr_row_ptr, dbsr_col_ind),
-            (Mb < 0 || block_dim <= 0 || Mb * block_dim < M) ? rocsparse_status_invalid_size
-                                                             : rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrpad_value<T>(handle,
+                                                          M,
+                                                          Mb,
+                                                          safe_size,
+                                                          block_dim,
+                                                          value,
+                                                          bsr_descr,
+                                                          dbsr_val,
+                                                          dbsr_row_ptr,
+                                                          dbsr_col_ind),
+                                (Mb < 0 || block_dim <= 0 || Mb * block_dim < M)
+                                    ? rocsparse_status_invalid_size
+                                    : rocsparse_status_success);
 
         return;
     }
 
     // Allocate host memory for BSR matrix
     host_gebsr_matrix<T> hbsrA(direction, Mb, Mb, 0, block_dim, block_dim, base);
+    host_csr_matrix<T>   tempCsr;
 
     // Generate BSR matrix on host (or read from file)
     matrix_factory.init_bsr(hbsrA, Mb, Mb);
+
+    // Generate a temporary csr matrix to get the correct dimensions
+    matrix_factory.init_csr(tempCsr, M, M);
 
     // Convert to device memory
     device_gebsr_matrix<T> dbsr(hbsrA);
@@ -128,7 +146,7 @@ void testing_bsrpad_value(const Arguments& arg)
     if(arg.unit_check)
     {
         CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_value<T>(
-            handle, M, Mb, block_dim, value, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
+            handle, M, Mb, dbsr.nnzb, block_dim, value, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
 
         // Copy output to host
         host_gebsr_matrix<T> hbsrC(dbsr);
@@ -155,8 +173,16 @@ void testing_bsrpad_value(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_value<T>(
-                handle, M, Mb, block_dim, value, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
+            CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_value<T>(handle,
+                                                            M,
+                                                            Mb,
+                                                            dbsr.nnzb,
+                                                            block_dim,
+                                                            value,
+                                                            bsr_descr,
+                                                            dbsr.val,
+                                                            dbsr.ptr,
+                                                            dbsr.ind));
         }
 
         double gpu_time_used = get_time_us();
@@ -164,8 +190,16 @@ void testing_bsrpad_value(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_value<T>(
-                handle, M, Mb, block_dim, value, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
+            CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_value<T>(handle,
+                                                            M,
+                                                            Mb,
+                                                            dbsr.nnzb,
+                                                            block_dim,
+                                                            value,
+                                                            bsr_descr,
+                                                            dbsr.val,
+                                                            dbsr.ptr,
+                                                            dbsr.ind));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

@@ -7194,13 +7194,13 @@ void host_bsrpad_value(rocsparse_int        m,
                        const rocsparse_int* bsr_col_ind,
                        rocsparse_index_base bsr_base)
 {
-    rocsparse_int size_block_to_pad = m % block_dim;
-    if(size_block_to_pad > 0)
+    rocsparse_int start_local_index = m % block_dim;
+    if(start_local_index > 0)
     {
-        if(bsr_col_ind[(bsr_row_ptr[mb] - bsr_base) - 1] - bsr_base == mb - 1)
+        if((bsr_col_ind[(bsr_row_ptr[mb] - bsr_base) - 1] - bsr_base) == (mb - 1))
         {
             // then we pad.
-            for(int i = size_block_to_pad; i < block_dim; ++i)
+            for(rocsparse_int i = start_local_index; i < block_dim; ++i)
             {
                 bsr_val[((bsr_row_ptr[mb] - bsr_base) - 1) * block_dim * block_dim + i * block_dim
                         + i]
@@ -7211,13 +7211,13 @@ void host_bsrpad_value(rocsparse_int        m,
         {
             // search for diagonal block
             for(rocsparse_int index = bsr_row_ptr[mb - 1] - bsr_base;
-                index < bsr_row_ptr[mb] - bsr_base;
+                index < (bsr_row_ptr[mb] - bsr_base);
                 index++)
             {
-                if(bsr_col_ind[index] - bsr_base == mb - 1)
+                if((bsr_col_ind[index] - bsr_base) == (mb - 1))
                 {
                     // then we pad.
-                    for(int i = size_block_to_pad; i < block_dim; ++i)
+                    for(int i = start_local_index; i < block_dim; ++i)
                     {
                         bsr_val[index * block_dim * block_dim + i * block_dim + i] = value;
                     }

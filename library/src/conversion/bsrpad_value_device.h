@@ -46,11 +46,11 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
 
     if(i < block_dim)
     {
-        rocsparse_int size_block_to_pad = m % block_dim;
-        if(size_block_to_pad > 0
-           && bsr_col_ind[(bsr_row_ptr[mb] - bsr_base) - 1] - bsr_base == mb - 1)
+        rocsparse_int start_local_index = m % block_dim;
+        if((start_local_index > 0)
+           && ((bsr_col_ind[(bsr_row_ptr[mb] - bsr_base) - 1] - bsr_base) == (mb - 1)))
         {
-            if(i >= size_block_to_pad)
+            if(i >= start_local_index)
             {
                 bsr_val[((bsr_row_ptr[mb] - bsr_base) - 1) * block_dim * block_dim + i * block_dim
                         + i]
@@ -83,6 +83,8 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
         block_index = -1;
     }
 
+    __syncthreads();
+
     //find block
     for(rocsparse_int index = local_id; bsr_row_ptr[mb - 1] + index < bsr_row_ptr[mb];
         index += hipBlockDim_x)
@@ -99,10 +101,10 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     {
         if(i < block_dim)
         {
-            rocsparse_int size_block_to_pad = m % block_dim;
-            if(size_block_to_pad > 0)
+            rocsparse_int start_local_index = m % block_dim;
+            if(start_local_index > 0)
             {
-                if(i >= size_block_to_pad)
+                if(i >= start_local_index)
                 {
                     bsr_val[block_index * block_dim * block_dim + i * block_dim + i] = value;
                 }
