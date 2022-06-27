@@ -2058,6 +2058,116 @@ rocsparse_status rocsparse_create_bell_descr(rocsparse_spmat_descr* descr,
 }
 
 /********************************************************************************
+ * \brief rocsparse_create_bsr_descr creates a descriptor holding the BSR matrix
+ * data, sizes and properties. It must be called prior to all subsequent library
+ * function calls that involve sparse matrices. It should be destroyed at the end
+ * using rocsparse_destroy_spmat_descr(). All data pointers remain valid.
+ *******************************************************************************/
+rocsparse_status rocsparse_create_bsr_descr(rocsparse_spmat_descr* descr,
+                                            int64_t                mb,
+                                            int64_t                nb,
+                                            int64_t                nnzb,
+                                            rocsparse_direction    block_dir,
+                                            int64_t                block_dim,
+                                            void*                  bsr_row_ptr,
+                                            void*                  bsr_col_ind,
+                                            void*                  bsr_val,
+                                            rocsparse_indextype    row_ptr_type,
+                                            rocsparse_indextype    col_ind_type,
+                                            rocsparse_index_base   idx_base,
+                                            rocsparse_datatype     data_type)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(row_ptr_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(col_ind_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check for valid sizes
+    if(mb < 0 || nb < 0 || nnzb < 0 || nnzb > mb * nb)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check for valid pointers
+    if(nnzb > 0 && mb > 0 && bsr_row_ptr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnzb != 0 && (bsr_col_ind == nullptr || bsr_val == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    *descr = nullptr;
+    // Allocate
+    try
+    {
+        *descr = new _rocsparse_spmat_descr;
+
+        (*descr)->init = true;
+
+        (*descr)->rows = mb;
+        (*descr)->cols = nb;
+        (*descr)->nnz  = nnzb;
+
+        (*descr)->row_data = bsr_row_ptr;
+        (*descr)->col_data = bsr_col_ind;
+        (*descr)->val_data = bsr_val;
+
+        (*descr)->row_type  = row_ptr_type;
+        (*descr)->col_type  = col_ind_type;
+        (*descr)->data_type = data_type;
+
+        (*descr)->idx_base = idx_base;
+        (*descr)->format   = rocsparse_format_bsr;
+
+        (*descr)->block_dim = block_dim;
+        (*descr)->block_dir = block_dir;
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(*descr)->descr));
+        // Don't create mat_info.
+
+        // RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&(*descr)->info));
+
+        // Initialize descriptor
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base((*descr)->descr, idx_base));
+
+        (*descr)->batch_count                 = 1;
+        (*descr)->batch_stride                = 0;
+        (*descr)->offsets_batch_stride        = 0;
+        (*descr)->columns_values_batch_stride = 0;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
  * \brief rocsparse_destroy_spmat_descr destroys a sparse matrix descriptor.
  *******************************************************************************/
 rocsparse_status rocsparse_destroy_spmat_descr(rocsparse_spmat_descr descr)

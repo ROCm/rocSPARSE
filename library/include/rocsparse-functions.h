@@ -15919,6 +15919,9 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  The sparse matrix formats currently supported are: rocsparse_format_bsr, rocsparse_format_coo, rocsparse_format_coo_aos, rocsparse_format_csr, rocsparse_format_csc and rocsparse_format_ell.
+*
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
 *  @param[in]

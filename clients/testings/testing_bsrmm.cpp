@@ -368,7 +368,7 @@ void testing_bsrmm(const Arguments& arg)
     host_gebsr_matrix<T>   hA;
     device_gebsr_matrix<T> dA;
 
-    matrix_factory.init_bsr(hA, dA, Mb, Kb);
+    matrix_factory.init_bsr(hA, dA, Mb, Kb, base);
 
     M = Mb * dA.row_block_dim;
     K = Kb * dA.col_block_dim;

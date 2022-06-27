@@ -159,6 +159,16 @@ struct ell_matrix
         }
         }
     }
+
+    void info() const
+    {
+        std::cout << "INFO ELL" << std::endl;
+        std::cout << " m     : " << this->m << std::endl;
+        std::cout << " n     : " << this->n << std::endl;
+        std::cout << " nnz   : " << this->nnz << std::endl;
+        std::cout << " width : " << this->width << std::endl;
+        std::cout << " base  : " << this->base << std::endl;
+    }
 };
 
 template <typename T, typename I = rocsparse_int>

@@ -179,17 +179,17 @@ void host_sctr(I nnz, const T* x_val, const I* x_ind, T* y, rocsparse_index_base
  *    level 2 SPARSE
  * ===========================================================================
  */
-template <typename T>
+template <typename T, typename I, typename J>
 void host_bsrmv(rocsparse_direction  dir,
                 rocsparse_operation  trans,
-                rocsparse_int        mb,
-                rocsparse_int        nb,
-                rocsparse_int        nnzb,
+                J                    mb,
+                J                    nb,
+                I                    nnzb,
                 T                    alpha,
-                const rocsparse_int* bsr_row_ptr,
-                const rocsparse_int* bsr_col_ind,
+                const I*             bsr_row_ptr,
+                const J*             bsr_col_ind,
                 const T*             bsr_val,
-                rocsparse_int        bsr_dim,
+                J                    bsr_dim,
                 const T*             x,
                 T                    beta,
                 T*                   y,

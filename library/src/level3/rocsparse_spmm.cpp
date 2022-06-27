@@ -43,6 +43,7 @@ rocsparse_status rocsparse_spmm_alg2bellmm_alg(rocsparse_spmm_alg    spmm_alg,
         return rocsparse_status_success;
     }
 
+    case rocsparse_spmm_alg_bsr:
     case rocsparse_spmm_alg_csr:
     case rocsparse_spmm_alg_csr_row_split:
     case rocsparse_spmm_alg_csr_merge:
@@ -81,6 +82,7 @@ rocsparse_status rocsparse_spmm_alg2csrmm_alg(rocsparse_spmm_alg   spmm_alg,
     }
 
     case rocsparse_spmm_alg_bell:
+    case rocsparse_spmm_alg_bsr:
     case rocsparse_spmm_alg_coo_segmented:
     case rocsparse_spmm_alg_coo_atomic:
     case rocsparse_spmm_alg_coo_segmented_atomic:
@@ -121,6 +123,7 @@ rocsparse_status rocsparse_spmm_alg2coomm_alg(rocsparse_spmm_alg   spmm_alg,
     }
 
     case rocsparse_spmm_alg_bell:
+    case rocsparse_spmm_alg_bsr:
     case rocsparse_spmm_alg_csr:
     case rocsparse_spmm_alg_csr_row_split:
     case rocsparse_spmm_alg_csr_merge:
@@ -559,6 +562,7 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
 
     case rocsparse_format_coo_aos:
     case rocsparse_format_ell:
+    case rocsparse_format_bsr:
     {
         return rocsparse_status_not_implemented;
     }
@@ -825,6 +829,7 @@ static rocsparse_indextype determine_I_index_type(rocsparse_spmat_descr mat)
     case rocsparse_format_csr:
     case rocsparse_format_ell:
     case rocsparse_format_bell:
+    case rocsparse_format_bsr:
     {
         return mat->row_type;
     }
@@ -844,6 +849,7 @@ static rocsparse_indextype determine_J_index_type(rocsparse_spmat_descr mat)
     case rocsparse_format_csr:
     case rocsparse_format_ell:
     case rocsparse_format_bell:
+    case rocsparse_format_bsr:
     {
         return mat->col_type;
     }

@@ -160,6 +160,7 @@ inline void rocsparse_expect_status(rocsparse_status status, rocsparse_status ex
     INSTANTIATE_TEST_CATEGORY(testclass, quick)       \
     INSTANTIATE_TEST_CATEGORY(testclass, pre_checkin) \
     INSTANTIATE_TEST_CATEGORY(testclass, nightly)     \
+    INSTANTIATE_TEST_CATEGORY(testclass, stress)      \
     INSTANTIATE_TEST_CATEGORY(testclass, known_bug)
 
 /* ============================================================================================ */

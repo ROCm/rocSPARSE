@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +25,15 @@
 #include "rocsparse_bsrxmv_spzl.hpp"
 
 // BSRXMV kernel for BSR block dimension of 16
-template <unsigned int BLOCKSIZE, typename T>
-__device__ void bsrxmvn_16x16_device(rocsparse_int       mb,
+template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+__device__ void bsrxmvn_16x16_device(J                   mb,
                                      rocsparse_direction dir,
                                      T                   alpha,
-                                     rocsparse_int       size_of_mask,
-                                     const rocsparse_int* __restrict__ bsr_mask_ptr,
-                                     const rocsparse_int* __restrict__ bsr_row_ptr,
-                                     const rocsparse_int* __restrict__ bsr_end_ptr,
-                                     const rocsparse_int* __restrict__ bsr_col_ind,
+                                     J                   size_of_mask,
+                                     const J* __restrict__ bsr_mask_ptr,
+                                     const I* __restrict__ bsr_row_ptr,
+                                     const I* __restrict__ bsr_end_ptr,
+                                     const J* __restrict__ bsr_col_ind,
                                      const T* __restrict__ bsr_val,
                                      const T* __restrict__ x,
                                      T beta,
@@ -41,16 +41,16 @@ __device__ void bsrxmvn_16x16_device(rocsparse_int       mb,
                                      rocsparse_index_base idx_base)
 {
     // BSR block dimension
-    static constexpr int BSRDIM = 16;
+    static constexpr int BSRDIM   = 16;
+    static constexpr int SQBSRDIM = BSRDIM * BSRDIM;
 
     // BSR block lane id
-    rocsparse_int lid = hipThreadIdx_x % BSRDIM;
+    J lid = hipThreadIdx_x % BSRDIM;
     // Offset into x vector
-    rocsparse_int idx
-        = (dir == rocsparse_direction_column) ? ((hipThreadIdx_x / BSRDIM) % BSRDIM) : lid;
+    J idx = (dir == rocsparse_direction_column) ? ((hipThreadIdx_x / BSRDIM) % BSRDIM) : lid;
 
     // Each thread block processes a single BSR row
-    rocsparse_int row = hipBlockIdx_x;
+    J row = hipBlockIdx_x;
 
     if(bsr_mask_ptr != nullptr)
     {
@@ -58,39 +58,34 @@ __device__ void bsrxmvn_16x16_device(rocsparse_int       mb,
     }
 
     // BSR row entry and exit point
-    rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = (bsr_end_ptr == nullptr) ? (bsr_row_ptr[row + 1] - idx_base)
-                                                       : (bsr_end_ptr[row] - idx_base);
-
-#if 0
-
-    // Each thread block processes a single BSR row
-    rocsparse_int row = bsr_mask_ptr[hipBlockIdx_x] - idx_base;
-
-    // BSR row entry and exit point
-    rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = bsr_end_ptr[row] - idx_base;
-#endif
+    I row_begin = bsr_row_ptr[row] - idx_base;
+    I row_end   = (bsr_end_ptr == nullptr) ? (bsr_row_ptr[row + 1] - idx_base)
+                                           : (bsr_end_ptr[row] - idx_base);
 
     // BSR block row accumulator
     T sum = static_cast<T>(0);
 
     // Loop over all BSR blocks in the current row where each lane
     // processes a BSR block value
-    for(rocsparse_int j = row_begin; j < row_end; ++j)
+
+    bsr_val += size_t(row_begin) * SQBSRDIM + hipThreadIdx_x;
+
+    I j = row_begin;
+    for(; j < row_end; ++j)
     {
-        rocsparse_int k = j + hipThreadIdx_x / (BSRDIM * BSRDIM);
+        I k = j + hipThreadIdx_x / (BSRDIM * BSRDIM);
 
         // Do not exceed the row
         if(k < row_end)
         {
             // Column index into x vector
-            rocsparse_int col = (bsr_col_ind[k] - idx_base) * BSRDIM;
+            J col = (bsr_col_ind[k] - idx_base) * BSRDIM;
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
-            sum = rocsparse_fma(bsr_val[j * BSRDIM * BSRDIM + hipThreadIdx_x], x[col + idx], sum);
+            sum = rocsparse_fma(*bsr_val, x[col + idx], sum);
         }
+        bsr_val += SQBSRDIM;
     }
 
     // Accumulate each row sum of the BSR block
@@ -147,16 +142,16 @@ __device__ void bsrxmvn_16x16_device(rocsparse_int       mb,
     }
 }
 
-template <unsigned int BLOCKSIZE, typename T, typename U>
+template <unsigned int BLOCKSIZE, typename T, typename I, typename J, typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrxmvn_16x16_kernel(rocsparse_int       mb,
+    void bsrxmvn_16x16_kernel(J                   mb,
                               rocsparse_direction dir,
                               U                   alpha_device_host,
-                              rocsparse_int       size_of_mask,
-                              const rocsparse_int* __restrict__ bsr_mask_ptr,
-                              const rocsparse_int* __restrict__ bsr_row_ptr,
-                              const rocsparse_int* __restrict__ bsr_end_ptr,
-                              const rocsparse_int* __restrict__ bsr_col_ind,
+                              J                   size_of_mask,
+                              const J* __restrict__ bsr_mask_ptr,
+                              const I* __restrict__ bsr_row_ptr,
+                              const I* __restrict__ bsr_end_ptr,
+                              const J* __restrict__ bsr_col_ind,
                               const T* __restrict__ bsr_val,
                               const T* __restrict__ x,
                               U beta_device_host,
@@ -183,24 +178,24 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     }
 }
 
-template <typename T, typename U>
+template <typename T, typename I, typename J, typename U>
 void bsrxmvn_16x16(rocsparse_handle     handle,
                    rocsparse_direction  dir,
-                   rocsparse_int        mb,
-                   rocsparse_int        nnzb,
+                   J                    mb,
+                   I                    nnzb,
                    U                    alpha_device_host,
-                   rocsparse_int        size_of_mask,
-                   const rocsparse_int* bsr_mask_ptr,
-                   const rocsparse_int* bsr_row_ptr,
-                   const rocsparse_int* bsr_end_ptr,
-                   const rocsparse_int* bsr_col_ind,
+                   J                    size_of_mask,
+                   const J*             bsr_mask_ptr,
+                   const I*             bsr_row_ptr,
+                   const I*             bsr_end_ptr,
+                   const J*             bsr_col_ind,
                    const T*             bsr_val,
                    const T*             x,
                    U                    beta_device_host,
                    T*                   y,
                    rocsparse_index_base base)
 {
-    const rocsparse_int size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
+    const J size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
     hipLaunchKernelGGL((bsrxmvn_16x16_kernel<256>),
                        dim3(size),
                        dim3(256),
@@ -224,41 +219,51 @@ void bsrxmvn_16x16(rocsparse_handle     handle,
 //
 // INSTANTIATE.
 //
-#define INSTANTIATE(TYPE)                                               \
+#define INSTANTIATE(T, I, J)                                            \
     template void bsrxmvn_16x16(rocsparse_handle     handle,            \
                                 rocsparse_direction  dir,               \
-                                rocsparse_int        mb,                \
-                                rocsparse_int        nnzb,              \
-                                const TYPE*          alpha_device_host, \
-                                rocsparse_int        size_of_mask,      \
-                                const rocsparse_int* bsr_mask_ptr,      \
-                                const rocsparse_int* bsr_row_ptr,       \
-                                const rocsparse_int* bsr_end_ptr,       \
-                                const rocsparse_int* bsr_col_ind,       \
-                                const TYPE*          bsr_val,           \
-                                const TYPE*          x,                 \
-                                const TYPE*          beta_device_host,  \
-                                TYPE*                y,                 \
+                                J                    mb,                \
+                                I                    nnzb,              \
+                                const T*             alpha_device_host, \
+                                J                    size_of_mask,      \
+                                const J*             bsr_mask_ptr,      \
+                                const I*             bsr_row_ptr,       \
+                                const I*             bsr_end_ptr,       \
+                                const J*             bsr_col_ind,       \
+                                const T*             bsr_val,           \
+                                const T*             x,                 \
+                                const T*             beta_device_host,  \
+                                T*                   y,                 \
                                 rocsparse_index_base base);             \
     template void bsrxmvn_16x16(rocsparse_handle     handle,            \
                                 rocsparse_direction  dir,               \
-                                rocsparse_int        mb,                \
-                                rocsparse_int        nnzb,              \
-                                TYPE                 alpha_device_host, \
-                                rocsparse_int        size_of_mask,      \
-                                const rocsparse_int* bsr_mask_ptr,      \
-                                const rocsparse_int* bsr_row_ptr,       \
-                                const rocsparse_int* bsr_end_ptr,       \
-                                const rocsparse_int* bsr_col_ind,       \
-                                const TYPE*          bsr_val,           \
-                                const TYPE*          x,                 \
-                                TYPE                 beta_device_host,  \
-                                TYPE*                y,                 \
+                                J                    mb,                \
+                                I                    nnzb,              \
+                                T                    alpha_device_host, \
+                                J                    size_of_mask,      \
+                                const J*             bsr_mask_ptr,      \
+                                const I*             bsr_row_ptr,       \
+                                const I*             bsr_end_ptr,       \
+                                const J*             bsr_col_ind,       \
+                                const T*             bsr_val,           \
+                                const T*             x,                 \
+                                T                    beta_device_host,  \
+                                T*                   y,                 \
                                 rocsparse_index_base base)
 
-INSTANTIATE(float);
-INSTANTIATE(double);
-INSTANTIATE(rocsparse_float_complex);
-INSTANTIATE(rocsparse_double_complex);
+INSTANTIATE(float, int32_t, int32_t);
+INSTANTIATE(double, int32_t, int32_t);
+INSTANTIATE(rocsparse_float_complex, int32_t, int32_t);
+INSTANTIATE(rocsparse_double_complex, int32_t, int32_t);
+
+INSTANTIATE(float, int64_t, int32_t);
+INSTANTIATE(double, int64_t, int32_t);
+INSTANTIATE(rocsparse_float_complex, int64_t, int32_t);
+INSTANTIATE(rocsparse_double_complex, int64_t, int32_t);
+
+INSTANTIATE(float, int64_t, int64_t);
+INSTANTIATE(double, int64_t, int64_t);
+INSTANTIATE(rocsparse_float_complex, int64_t, int64_t);
+INSTANTIATE(rocsparse_double_complex, int64_t, int64_t);
 
 #undef INSTANTIATE

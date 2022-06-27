@@ -150,6 +150,15 @@ struct coo_aos_matrix
         }
     }
 
+    void info() const
+    {
+        std::cout << "INFO COO AOS" << std::endl;
+        std::cout << " m    : " << this->m << std::endl;
+        std::cout << " n    : " << this->n << std::endl;
+        std::cout << " nnz  : " << this->nnz << std::endl;
+        std::cout << " base : " << this->base << std::endl;
+    }
+
     void print() const
     {
 

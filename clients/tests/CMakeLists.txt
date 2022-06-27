@@ -136,6 +136,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_spmat_descr.cpp
   test_dnvec_descr.cpp
   test_dnmat_descr.cpp
+  test_spmv_bsr.cpp
   test_spmv_coo.cpp
   test_spmv_coo_aos.cpp
   test_spmv_csr.cpp
@@ -244,6 +245,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_dnmat_descr.cpp
 ../testings/testing_spmv_coo.cpp
 ../testings/testing_spmv_coo_aos.cpp
+../testings/testing_spmv_bsr.cpp
 ../testings/testing_spmv_csr.cpp
 ../testings/testing_spmv_csc.cpp
 ../testings/testing_spmv_ell.cpp

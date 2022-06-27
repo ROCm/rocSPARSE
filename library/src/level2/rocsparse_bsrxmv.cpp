@@ -25,22 +25,22 @@
 #include "rocsparse_bsrxmv.hpp"
 #include "rocsparse_bsrxmv_spzl.hpp"
 
-template <typename T, typename U>
+template <typename T, typename I, typename J, typename U>
 rocsparse_status rocsparse_bsrxmv_template_dispatch(rocsparse_handle          handle,
                                                     rocsparse_direction       dir,
                                                     rocsparse_operation       trans,
-                                                    rocsparse_int             size_of_mask,
-                                                    rocsparse_int             mb,
-                                                    rocsparse_int             nb,
-                                                    rocsparse_int             nnzb,
+                                                    J                         size_of_mask,
+                                                    J                         mb,
+                                                    J                         nb,
+                                                    I                         nnzb,
                                                     U                         alpha_device_host,
                                                     const rocsparse_mat_descr descr,
                                                     const T*                  bsr_val,
-                                                    const rocsparse_int*      bsr_mask_ptr,
-                                                    const rocsparse_int*      bsr_row_ptr,
-                                                    const rocsparse_int*      bsr_end_ptr,
-                                                    const rocsparse_int*      bsr_col_ind,
-                                                    rocsparse_int             block_dim,
+                                                    const J*                  bsr_mask_ptr,
+                                                    const I*                  bsr_row_ptr,
+                                                    const I*                  bsr_end_ptr,
+                                                    const J*                  bsr_col_ind,
+                                                    J                         block_dim,
                                                     const T*                  x,
                                                     U                         beta_device_host,
                                                     T*                        y)
@@ -216,22 +216,22 @@ rocsparse_status rocsparse_bsrxmv_template_dispatch(rocsparse_handle          ha
     return rocsparse_status_success;
 }
 
-template <typename T>
+template <typename T, typename I, typename J>
 rocsparse_status rocsparse_bsrxmv_template(rocsparse_handle          handle,
                                            rocsparse_direction       dir,
                                            rocsparse_operation       trans,
-                                           rocsparse_int             size_of_mask,
-                                           rocsparse_int             mb,
-                                           rocsparse_int             nb,
-                                           rocsparse_int             nnzb,
+                                           J                         size_of_mask,
+                                           J                         mb,
+                                           J                         nb,
+                                           I                         nnzb,
                                            const T*                  alpha_device_host,
                                            const rocsparse_mat_descr descr,
                                            const T*                  bsr_val,
-                                           const rocsparse_int*      bsr_mask_ptr,
-                                           const rocsparse_int*      bsr_row_ptr,
-                                           const rocsparse_int*      bsr_end_ptr,
-                                           const rocsparse_int*      bsr_col_ind,
-                                           rocsparse_int             block_dim,
+                                           const J*                  bsr_mask_ptr,
+                                           const I*                  bsr_row_ptr,
+                                           const I*                  bsr_end_ptr,
+                                           const J*                  bsr_col_ind,
+                                           J                         block_dim,
                                            const T*                  x,
                                            const T*                  beta_device_host,
                                            T*                        y)
