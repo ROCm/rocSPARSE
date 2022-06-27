@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+# Copyright (c) 2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ Tests:
   function: bsrpad_value
   precision: *single_double_precisions_complex_real
   M: [99]
-  block_dim: [-1, 0, 1]
+  block_dim: [0, 1]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
   storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
@@ -47,7 +47,7 @@ Tests:
   function: bsrpad_value
   precision: *single_double_precisions_complex_real
   M: [99]
-  block_dim: [98, 99, 100, 1000, 1023, 1024, 1025]
+  block_dim: [98, 99, 100, 1000, 1023, 1024, 1025, 2000]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
   storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
@@ -96,7 +96,7 @@ Tests:
   function: bsrpad_value
   precision: *single_double_precisions_complex_real
   M: [10000]
-  block_dim: [1023, 1024, 1025]
+  block_dim: [1023, 1024, 1025, 2000]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_column]
   storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
@@ -107,7 +107,7 @@ Tests:
   function: bsrpad_value
   precision: *single_double_precisions_complex
   M: 1
-  block_dim: [3, 7, 1024, 1025]
+  block_dim: [3, 7, 1024, 1025, 2000]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
   storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]

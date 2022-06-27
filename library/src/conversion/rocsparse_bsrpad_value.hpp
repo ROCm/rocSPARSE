@@ -32,6 +32,7 @@ template <typename T>
 rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handle,
                                                  rocsparse_int             m,
                                                  rocsparse_int             mb,
+                                                 rocsparse_int             nnzb,
                                                  rocsparse_int             block_dim,
                                                  T                         value,
                                                  const rocsparse_mat_descr bsr_descr,
