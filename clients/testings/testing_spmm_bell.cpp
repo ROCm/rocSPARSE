@@ -348,7 +348,9 @@ void testing_spmm_bell(const Arguments& arg)
 
             host_coomm<T, I>(M,
                              N,
+                             K,
                              nnzb * block_dim * block_dim,
+                             trans_A,
                              trans_B,
                              *h_alpha,
                              coo_row,

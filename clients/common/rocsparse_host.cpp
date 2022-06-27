@@ -2692,7 +2692,9 @@ void host_csrmm_batched(J                    M,
 template <typename T, typename I>
 void host_coomm(I                    M,
                 I                    N,
+                I                    K,
                 I                    nnz,
+                rocsparse_operation  transA,
                 rocsparse_operation  transB,
                 T                    alpha,
                 const I*             coo_row_ind_A,
@@ -2706,49 +2708,90 @@ void host_coomm(I                    M,
                 rocsparse_order      order,
                 rocsparse_index_base base)
 {
-    for(I j = 0; j < N; j++)
+    bool conj_A = (transA == rocsparse_operation_conjugate_transpose);
+    bool conj_B = (transB == rocsparse_operation_conjugate_transpose);
+
+    if(transA == rocsparse_operation_none)
     {
+        for(I j = 0; j < N; j++)
+        {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
 #endif
-        for(I i = 0; i < M; ++i)
+            for(I i = 0; i < M; ++i)
+            {
+                I idx_C = (order == rocsparse_order_column) ? i + j * ldc : i * ldc + j;
+                C[idx_C] *= beta;
+            }
+        }
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(I j = 0; j < N; j++)
         {
-            I idx_C = order == rocsparse_order_column ? i + j * ldc : i * ldc + j;
-            C[idx_C] *= beta;
+            for(I i = 0; i < nnz; ++i)
+            {
+                I row = coo_row_ind_A[i] - base;
+                I col = coo_col_ind_A[i] - base;
+                T val = alpha * coo_val_A[i];
+
+                I idx_C = (order == rocsparse_order_column) ? row + j * ldc : row * ldc + j;
+
+                I idx_B = 0;
+                if((transB == rocsparse_operation_none && order == rocsparse_order_column)
+                   || (transB != rocsparse_operation_none && order != rocsparse_order_column))
+                {
+                    idx_B = (col + j * ldb);
+                }
+                else
+                {
+                    idx_B = (j + col * ldb);
+                }
+
+                C[idx_C] = std::fma(val, conj_val(B[idx_B], conj_B), C[idx_C]);
+            }
         }
     }
+    else
+    {
+        for(I j = 0; j < N; j++)
+        {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+            for(I i = 0; i < K; ++i)
+            {
+                I idx_C = (order == rocsparse_order_column) ? i + j * ldc : i * ldc + j;
+                C[idx_C] *= beta;
+            }
+        }
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
 #endif
-    for(I j = 0; j < N; j++)
-    {
-        for(I i = 0; i < nnz; ++i)
+        for(I j = 0; j < N; j++)
         {
-            I row = coo_row_ind_A[i] - base;
-            I col = coo_col_ind_A[i] - base;
-            T val = alpha * coo_val_A[i];
+            for(I i = 0; i < nnz; ++i)
+            {
+                I row = coo_row_ind_A[i] - base;
+                I col = coo_col_ind_A[i] - base;
+                T val = alpha * conj_val(coo_val_A[i], conj_A);
 
-            I idx_C = order == rocsparse_order_column ? row + j * ldc : row * ldc + j;
+                I idx_C = (order == rocsparse_order_column) ? col + j * ldc : col * ldc + j;
 
-            I idx_B = 0;
-            if((transB == rocsparse_operation_none && order == rocsparse_order_column)
-               || (transB != rocsparse_operation_none && order != rocsparse_order_column))
-            {
-                idx_B = (col + j * ldb);
-            }
-            else
-            {
-                idx_B = (j + col * ldb);
-            }
+                I idx_B = 0;
+                if((transB == rocsparse_operation_none && order == rocsparse_order_column)
+                   || (transB != rocsparse_operation_none && order != rocsparse_order_column))
+                {
+                    idx_B = (row + j * ldb);
+                }
+                else
+                {
+                    idx_B = (j + row * ldb);
+                }
 
-            if(transB == rocsparse_operation_conjugate_transpose)
-            {
-                C[idx_C] = std::fma(val, rocsparse_conj(B[idx_B]), C[idx_C]);
-            }
-            else
-            {
-                C[idx_C] = std::fma(val, B[idx_B], C[idx_C]);
+                C[idx_C] = std::fma(val, conj_val(B[idx_B], conj_B), C[idx_C]);
             }
         }
     }
@@ -2757,9 +2800,11 @@ void host_coomm(I                    M,
 template <typename T, typename I>
 void host_coomm_batched(I                    M,
                         I                    N,
+                        I                    K,
                         I                    nnz,
                         I                    batch_count_A,
                         I                    batch_stride_A,
+                        rocsparse_operation  transA,
                         rocsparse_operation  transB,
                         T                    alpha,
                         const I*             coo_row_ind_A,
@@ -2792,7 +2837,9 @@ void host_coomm_batched(I                    M,
         {
             host_coomm(M,
                        N,
+                       K,
                        nnz,
+                       transA,
                        transB,
                        alpha,
                        coo_row_ind_A,
@@ -2813,7 +2860,9 @@ void host_coomm_batched(I                    M,
         {
             host_coomm(M,
                        N,
+                       K,
                        nnz,
+                       transA,
                        transB,
                        alpha,
                        coo_row_ind_A + batch_stride_A * i,
@@ -2834,7 +2883,9 @@ void host_coomm_batched(I                    M,
         {
             host_coomm(M,
                        N,
+                       K,
                        nnz,
+                       transA,
                        transB,
                        alpha,
                        coo_row_ind_A + batch_stride_A * i,
@@ -9061,7 +9112,9 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                            ITYPE*                    numeric_pivot);                                \
     template void host_coomm<TTYPE, ITYPE>(ITYPE                M,                               \
                                            ITYPE                N,                               \
+                                           ITYPE                K,                               \
                                            ITYPE                NNZ,                             \
+                                           rocsparse_operation  transA,                          \
                                            rocsparse_operation  transB,                          \
                                            TTYPE                alpha,                           \
                                            const ITYPE*         coo_row_ind_A,                   \
@@ -9076,9 +9129,11 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                            rocsparse_index_base base);                           \
     template void host_coomm_batched<TTYPE, ITYPE>(ITYPE                M,                       \
                                                    ITYPE                N,                       \
+                                                   ITYPE                K,                       \
                                                    ITYPE                NNZ,                     \
                                                    ITYPE                batch_count_A,           \
                                                    ITYPE                batch_stride_A,          \
+                                                   rocsparse_operation  transA,                  \
                                                    rocsparse_operation  transB,                  \
                                                    TTYPE                alpha,                   \
                                                    const ITYPE*         coo_row_ind_A,           \

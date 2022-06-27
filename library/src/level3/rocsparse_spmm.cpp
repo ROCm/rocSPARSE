@@ -348,6 +348,10 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
         rocsparse_coomm_alg coomm_alg;
         RETURN_IF_ROCSPARSE_ERROR((rocsparse_spmm_alg2coomm_alg(alg, coomm_alg)));
 
+        const I m = (I)mat_A->rows;
+        const I n = (I)mat_C->cols;
+        const I k = (I)mat_A->cols;
+
         switch(stage)
         {
         case rocsparse_spmm_stage_buffer_size:
@@ -355,9 +359,9 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
             return rocsparse_coomm_buffer_size_template(handle,
                                                         trans_A,
                                                         coomm_alg,
-                                                        (I)mat_A->rows,
-                                                        (I)mat_C->cols,
-                                                        (I)mat_A->cols,
+                                                        m,
+                                                        n,
+                                                        k,
                                                         (I)mat_A->nnz,
                                                         (I)mat_C->batch_count,
                                                         mat_A->descr,
@@ -372,9 +376,9 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
             return rocsparse_coomm_analysis_template(handle,
                                                      trans_A,
                                                      coomm_alg,
-                                                     (I)mat_A->rows,
-                                                     (I)mat_C->cols,
-                                                     (I)mat_A->cols,
+                                                     m,
+                                                     n,
+                                                     k,
                                                      (I)mat_A->nnz,
                                                      mat_A->descr,
                                                      (const T*)mat_A->val_data,
@@ -391,9 +395,9 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
                                             mat_B->order,
                                             mat_C->order,
                                             coomm_alg,
-                                            (I)mat_A->rows,
-                                            (I)mat_C->cols,
-                                            (I)mat_A->cols,
+                                            m,
+                                            n,
+                                            k,
                                             (I)mat_A->nnz,
                                             (I)mat_A->batch_count,
                                             (I)mat_A->batch_stride,

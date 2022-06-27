@@ -169,6 +169,12 @@ __device__ __forceinline__ rocsparse_double_complex atomicAdd(rocsparse_double_c
                                     atomicAdd((double*)ptr + 1, std::imag(val)));
 }
 
+template <typename T>
+__device__ __forceinline__ T conj_val(T val, bool conj)
+{
+    return conj ? rocsparse_conj(val) : val;
+}
+
 // Block reduce kernel computing block sum
 template <unsigned int BLOCKSIZE, typename T>
 __device__ __forceinline__ void rocsparse_blockreduce_sum(int i, T* data)

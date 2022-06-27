@@ -138,11 +138,6 @@ rocsparse_status rocsparse_coomm_buffer_size_template(rocsparse_handle          
         return rocsparse_status_invalid_value;
     }
 
-    if(trans_A != rocsparse_operation_none)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
     if(rocsparse_enum_utils::is_invalid(alg))
     {
         return rocsparse_status_invalid_value;
@@ -265,11 +260,6 @@ rocsparse_status rocsparse_coomm_analysis_template(rocsparse_handle          han
     if(rocsparse_enum_utils::is_invalid(trans_A))
     {
         return rocsparse_status_invalid_value;
-    }
-
-    if(trans_A != rocsparse_operation_none)
-    {
-        return rocsparse_status_not_implemented;
     }
 
     if(rocsparse_enum_utils::is_invalid(alg))
@@ -446,19 +436,36 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                    I                         batch_stride_C,
                                                    void*                     temp_buffer)
 {
-    // Scale C with beta
-    hipLaunchKernelGGL((coommnn_scale_kernel<256>),
-                       dim3((m * n - 1) / 256 + 1, batch_count_C),
-                       dim3(256),
-                       0,
-                       handle->stream,
-                       m,
-                       n,
-                       beta_device_host,
-                       C,
-                       ldc,
-                       batch_stride_C,
-                       order);
+    if(trans_A == rocsparse_operation_none)
+    {
+        hipLaunchKernelGGL((coommnn_scale_kernel<256>),
+                           dim3((m * n - 1) / 256 + 1, batch_count_C),
+                           dim3(256),
+                           0,
+                           handle->stream,
+                           m,
+                           n,
+                           beta_device_host,
+                           C,
+                           ldc,
+                           batch_stride_C,
+                           order);
+    }
+    else
+    {
+        hipLaunchKernelGGL((coommnn_scale_kernel<256>),
+                           dim3((k * n - 1) / 256 + 1, batch_count_C),
+                           dim3(256),
+                           0,
+                           handle->stream,
+                           k,
+                           n,
+                           beta_device_host,
+                           C,
+                           ldc,
+                           batch_stride_C,
+                           order);
+    }
 
     switch(alg)
     {
@@ -493,59 +500,127 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
 
     case rocsparse_coomm_alg_segmented:
     {
-        return rocsparse_coomm_template_segmented(handle,
-                                                  trans_A,
-                                                  trans_B,
-                                                  order,
-                                                  m,
-                                                  n,
-                                                  k,
-                                                  nnz,
-                                                  batch_count_A,
-                                                  batch_stride_A,
-                                                  alpha_device_host,
-                                                  descr,
-                                                  coo_val,
-                                                  coo_row_ind,
-                                                  coo_col_ind,
-                                                  B,
-                                                  ldb,
-                                                  batch_count_B,
-                                                  batch_stride_B,
-                                                  beta_device_host,
-                                                  C,
-                                                  ldc,
-                                                  batch_count_C,
-                                                  batch_stride_C,
-                                                  temp_buffer);
+        switch(trans_A)
+        {
+        case rocsparse_operation_none:
+        {
+            return rocsparse_coomm_template_segmented(handle,
+                                                      trans_A,
+                                                      trans_B,
+                                                      order,
+                                                      m,
+                                                      n,
+                                                      k,
+                                                      nnz,
+                                                      batch_count_A,
+                                                      batch_stride_A,
+                                                      alpha_device_host,
+                                                      descr,
+                                                      coo_val,
+                                                      coo_row_ind,
+                                                      coo_col_ind,
+                                                      B,
+                                                      ldb,
+                                                      batch_count_B,
+                                                      batch_stride_B,
+                                                      beta_device_host,
+                                                      C,
+                                                      ldc,
+                                                      batch_count_C,
+                                                      batch_stride_C,
+                                                      temp_buffer);
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            return rocsparse_coomm_template_atomic(handle,
+                                                   trans_A,
+                                                   trans_B,
+                                                   order,
+                                                   m,
+                                                   n,
+                                                   k,
+                                                   nnz,
+                                                   batch_count_A,
+                                                   batch_stride_A,
+                                                   alpha_device_host,
+                                                   descr,
+                                                   coo_val,
+                                                   coo_row_ind,
+                                                   coo_col_ind,
+                                                   B,
+                                                   ldb,
+                                                   batch_count_B,
+                                                   batch_stride_B,
+                                                   beta_device_host,
+                                                   C,
+                                                   ldc,
+                                                   batch_count_C,
+                                                   batch_stride_C);
+        }
+        }
     }
 
     case rocsparse_coomm_alg_segmented_atomic:
     {
-        return rocsparse_coomm_template_segmented_atomic(handle,
-                                                         trans_A,
-                                                         trans_B,
-                                                         order,
-                                                         m,
-                                                         n,
-                                                         k,
-                                                         nnz,
-                                                         batch_count_A,
-                                                         batch_stride_A,
-                                                         alpha_device_host,
-                                                         descr,
-                                                         coo_val,
-                                                         coo_row_ind,
-                                                         coo_col_ind,
-                                                         B,
-                                                         ldb,
-                                                         batch_count_B,
-                                                         batch_stride_B,
-                                                         beta_device_host,
-                                                         C,
-                                                         ldc,
-                                                         batch_count_C,
-                                                         batch_stride_C);
+        switch(trans_A)
+        {
+        case rocsparse_operation_none:
+        {
+            return rocsparse_coomm_template_segmented_atomic(handle,
+                                                             trans_A,
+                                                             trans_B,
+                                                             order,
+                                                             m,
+                                                             n,
+                                                             k,
+                                                             nnz,
+                                                             batch_count_A,
+                                                             batch_stride_A,
+                                                             alpha_device_host,
+                                                             descr,
+                                                             coo_val,
+                                                             coo_row_ind,
+                                                             coo_col_ind,
+                                                             B,
+                                                             ldb,
+                                                             batch_count_B,
+                                                             batch_stride_B,
+                                                             beta_device_host,
+                                                             C,
+                                                             ldc,
+                                                             batch_count_C,
+                                                             batch_stride_C);
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            return rocsparse_coomm_template_atomic(handle,
+                                                   trans_A,
+                                                   trans_B,
+                                                   order,
+                                                   m,
+                                                   n,
+                                                   k,
+                                                   nnz,
+                                                   batch_count_A,
+                                                   batch_stride_A,
+                                                   alpha_device_host,
+                                                   descr,
+                                                   coo_val,
+                                                   coo_row_ind,
+                                                   coo_col_ind,
+                                                   B,
+                                                   ldb,
+                                                   batch_count_B,
+                                                   batch_stride_B,
+                                                   beta_device_host,
+                                                   C,
+                                                   ldc,
+                                                   batch_count_C,
+                                                   batch_stride_C);
+        }
+        }
     }
     }
     return rocsparse_status_invalid_value;
@@ -622,11 +697,6 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
     if(rocsparse_enum_utils::is_invalid(trans_A))
     {
         return rocsparse_status_invalid_value;
-    }
-
-    if(trans_A != rocsparse_operation_none)
-    {
-        return rocsparse_status_not_implemented;
     }
 
     if(rocsparse_enum_utils::is_invalid(trans_B))
