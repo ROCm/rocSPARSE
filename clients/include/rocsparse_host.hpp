@@ -970,14 +970,14 @@ void host_csr_to_gebsr(rocsparse_direction               direction,
                        rocsparse_index_base              bsr_base);
 
 template <typename T>
-void host_bsrpad_value(rocsparse_int        m,
-                       rocsparse_int        mb,
-                       rocsparse_int        nnzb,
-                       rocsparse_int        block_dim,
-                       T                    value,
-                       T*                   bsr_val,
-                       const rocsparse_int* bsr_row_ptr,
-                       const rocsparse_int* bsr_col_ind,
+void host_bsrpad_value(rocsparse_int m,
+                       rocsparse_int mb,
+                       rocsparse_int nnzb,
+                       rocsparse_int block_dim,
+                       T             value,
+                       T* __restrict__ bsr_val,
+                       const rocsparse_int* __restrict__ bsr_row_ptr,
+                       const rocsparse_int* __restrict__ bsr_col_ind,
                        rocsparse_index_base bsr_base);
 
 template <typename T>
