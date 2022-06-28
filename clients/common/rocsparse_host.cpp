@@ -7235,6 +7235,52 @@ void host_coosort_by_column(rocsparse_int               M,
     }
 }
 
+template <typename T>
+void host_bsrpad_value(rocsparse_int m,
+                       rocsparse_int mb,
+                       rocsparse_int nnzb,
+                       rocsparse_int block_dim,
+                       T             value,
+                       T* __restrict__ bsr_val,
+                       const rocsparse_int* __restrict__ bsr_row_ptr,
+                       const rocsparse_int* __restrict__ bsr_col_ind,
+                       rocsparse_index_base bsr_base)
+{
+    rocsparse_int start_local_index = m % block_dim;
+    if(start_local_index > 0)
+    {
+        if((bsr_col_ind[(bsr_row_ptr[mb] - bsr_base) - 1] - bsr_base) == (mb - 1))
+        {
+            // then we pad.
+            for(rocsparse_int i = start_local_index; i < block_dim; ++i)
+            {
+                bsr_val[((bsr_row_ptr[mb] - bsr_base) - 1) * block_dim * block_dim + i * block_dim
+                        + i]
+                    = value;
+            }
+        }
+        else
+        {
+            // search for diagonal block
+            for(rocsparse_int index = bsr_row_ptr[mb - 1] - bsr_base;
+                index < (bsr_row_ptr[mb] - bsr_base);
+                index++)
+            {
+                if((bsr_col_ind[index] - bsr_base) == (mb - 1))
+                {
+                    // then we pad.
+                    for(int i = start_local_index; i < block_dim; ++i)
+                    {
+                        bsr_val[index * block_dim * block_dim + i * block_dim + i] = value;
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
+}
+
 // INSTANTIATE
 
 template struct rocsparse_host<float, int32_t, int32_t>;
@@ -9030,6 +9076,17 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                      std::vector<rocsparse_int>&           coo_col_ind,
                                      std::vector<rocsparse_float_complex>& coo_val);
 
+#define INSTANTIATE1(TYPE)                                                  \
+    template void host_bsrpad_value<TYPE>(rocsparse_int m,                  \
+                                          rocsparse_int mb,                 \
+                                          rocsparse_int nnzb,               \
+                                          rocsparse_int block_dim,          \
+                                          TYPE          value,              \
+                                          TYPE * bsr_val,                   \
+                                          const rocsparse_int* bsr_row_ptr, \
+                                          const rocsparse_int* bsr_col_ind, \
+                                          rocsparse_index_base bsr_base);
+
 #define INSTANTIATE2(ITYPE, TTYPE)                                                               \
     template void host_gemvi<ITYPE, TTYPE>(ITYPE                M,                               \
                                            ITYPE                N,                               \
@@ -9422,6 +9479,11 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                            const JTYPE*         csx_col_row_ind,     \
                                                            TTYPE*               A,                   \
                                                            ITYPE                ld);
+
+INSTANTIATE1(float);
+INSTANTIATE1(double);
+INSTANTIATE1(rocsparse_float_complex);
+INSTANTIATE1(rocsparse_double_complex);
 
 INSTANTIATE2(int32_t, float);
 INSTANTIATE2(int32_t, double);
