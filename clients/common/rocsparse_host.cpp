@@ -7185,13 +7185,14 @@ void host_coosort_by_column(rocsparse_int               M,
 }
 
 template <typename T>
-void host_bsrpad_value(rocsparse_int        m,
-                       rocsparse_int        mb,
-                       rocsparse_int        block_dim,
-                       T                    value,
-                       T*                   bsr_val,
-                       const rocsparse_int* bsr_row_ptr,
-                       const rocsparse_int* bsr_col_ind,
+void host_bsrpad_value(rocsparse_int m,
+                       rocsparse_int mb,
+                       rocsparse_int nnzb,
+                       rocsparse_int block_dim,
+                       T             value,
+                       T* __restrict__ bsr_val,
+                       const rocsparse_int* __restrict__ bsr_row_ptr,
+                       const rocsparse_int* __restrict__ bsr_col_ind,
                        rocsparse_index_base bsr_base)
 {
     rocsparse_int start_local_index = m % block_dim;
@@ -9083,6 +9084,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
 #define INSTANTIATE1(TYPE)                                                  \
     template void host_bsrpad_value<TYPE>(rocsparse_int m,                  \
                                           rocsparse_int mb,                 \
+                                          rocsparse_int nnzb,               \
                                           rocsparse_int block_dim,          \
                                           TYPE          value,              \
                                           TYPE * bsr_val,                   \

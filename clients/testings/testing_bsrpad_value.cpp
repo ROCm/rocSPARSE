@@ -130,39 +130,37 @@ void testing_bsrpad_value(const Arguments& arg)
         return;
     }
 
-    // Allocate host memory for BSR matrix
-    host_gebsr_matrix<T> hbsrA(direction, Mb, Mb, 0, block_dim, block_dim, base);
-    host_csr_matrix<T>   tempCsr;
+    // Allocate device memory
+    device_gebsr_matrix<T> dbsr;
 
-    // Generate BSR matrix on host (or read from file)
-    matrix_factory.init_bsr(hbsrA, Mb, Mb);
+    {
+        host_csr_matrix<T> hcsrA;
 
-    // Generate a temporary csr matrix to get the correct dimensions
-    matrix_factory.init_csr(tempCsr, M, M);
+        // Generate a temporary csr matrix to get the correct dimensions
+        matrix_factory.init_csr(hcsrA, M, M);
 
-    // Convert to device memory
-    device_gebsr_matrix<T> dbsr(hbsrA);
+        device_csr_matrix<T> dcsrA(hcsrA);
+
+        rocsparse_matrix_utils::convert(dcsrA, direction, block_dim, base, dbsr);
+
+        Mb = dbsr.mb;
+    }
 
     if(arg.unit_check)
     {
+        // Allocate host memory for BSR matrix
+        host_gebsr_matrix<T> hbsr(dbsr);
+
         CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_value<T>(
             handle, M, Mb, dbsr.nnzb, block_dim, value, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
 
-        // Copy output to host
         host_gebsr_matrix<T> hbsrC(dbsr);
 
-        host_gebsr_matrix<T> hbsrC_gold(hbsrA);
-
         // CPU bsrpad_value
-        host_bsrpad_value<T>(M,
-                             Mb,
-                             block_dim,
-                             value,
-                             hbsrC_gold.val,
-                             hbsrC_gold.ptr,
-                             hbsrC_gold.ind,
-                             hbsrC_gold.base);
-        hbsrC.unit_check(hbsrC_gold);
+        host_bsrpad_value<T>(
+            M, Mb, hbsr.nnzb, block_dim, value, hbsr.val, hbsr.ptr, hbsr.ind, hbsr.base);
+
+        hbsrC.unit_check(hbsr);
     }
 
     if(arg.timing)

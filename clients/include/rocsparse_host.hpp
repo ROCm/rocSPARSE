@@ -968,6 +968,7 @@ void host_csr_to_gebsr(rocsparse_direction               direction,
 template <typename T>
 void host_bsrpad_value(rocsparse_int        m,
                        rocsparse_int        mb,
+                       rocsparse_int        nnzb,
                        rocsparse_int        block_dim,
                        T                    value,
                        T*                   bsr_val,
