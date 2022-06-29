@@ -71,5 +71,5 @@ truncate -s 0 $logname
 
 # Run coomv for all matrices available
 for filename in ./matrices/*.csr; do
-    $bench -f coomv --precision s --device $dev --alpha 1 --beta 0 --iters 1000 --rocalution $filename 2>&1 | tee -a $logname
+    $bench -f coomv --spmv_alg 5 --precision s --device $dev --alpha 1 --beta 0 --iters 1000 --rocalution $filename 2>&1 | tee -a $logname
 done
