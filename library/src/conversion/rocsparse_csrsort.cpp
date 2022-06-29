@@ -203,7 +203,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle          handle,
 
     // segm buffer
     rocsparse_int* tmp_segm = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    ptr += sizeof(rocsparse_int) * (m / 256 + 1) * 256;
 
     // Index base one requires shift of offset positions
     if(descr->base == rocsparse_index_base_one)
