@@ -374,9 +374,9 @@ Defaults:
   col_block_dimA: 2
   row_block_dimB: 2
   col_block_dimB: 2
-  dimx: 0
-  dimy: 0
-  dimz: 0
+  dimx: 1
+  dimy: 1
+  dimz: 1
   alpha: 1.0
   alphai: 0.0
   beta: 0.0

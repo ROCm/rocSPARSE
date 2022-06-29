@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,46 @@ template <typename T>
 inline T* rocsparse_fake_pointer()
 {
     return static_cast<T*>((void*)0x4);
+}
+
+template <typename T>
+inline T rocsparse_nan()
+{
+    return std::numeric_limits<T>::quiet_NaN();
+}
+
+template <>
+inline rocsparse_float_complex rocsparse_nan<rocsparse_float_complex>()
+{
+    return rocsparse_float_complex(std::numeric_limits<float>::quiet_NaN(),
+                                   std::numeric_limits<float>::quiet_NaN());
+}
+
+template <>
+inline rocsparse_double_complex rocsparse_nan<rocsparse_double_complex>()
+{
+    return rocsparse_double_complex(std::numeric_limits<double>::quiet_NaN(),
+                                    std::numeric_limits<double>::quiet_NaN());
+}
+
+template <typename T>
+inline T rocsparse_inf()
+{
+    return std::numeric_limits<T>::infinity();
+}
+
+template <>
+inline rocsparse_float_complex rocsparse_inf<rocsparse_float_complex>()
+{
+    return rocsparse_float_complex(std::numeric_limits<float>::infinity(),
+                                   std::numeric_limits<float>::infinity());
+}
+
+template <>
+inline rocsparse_double_complex rocsparse_inf<rocsparse_double_complex>()
+{
+    return rocsparse_double_complex(std::numeric_limits<double>::infinity(),
+                                    std::numeric_limits<double>::infinity());
 }
 
 template <typename T>

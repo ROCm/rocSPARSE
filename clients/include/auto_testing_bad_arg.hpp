@@ -157,6 +157,24 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_index_base& p)
 }
 
 template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_matrix_type& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_fill_mode& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_storage_mode& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_gtsv_interleaved_alg& p)
 {
     return rocsparse_status_invalid_value;
@@ -298,6 +316,24 @@ template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_index_base& p)
 {
     p = (rocsparse_index_base)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_matrix_type& p)
+{
+    p = (rocsparse_matrix_type)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_fill_mode& p)
+{
+    p = (rocsparse_fill_mode)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_storage_mode& p)
+{
+    p = (rocsparse_storage_mode)-1;
 }
 
 template <>

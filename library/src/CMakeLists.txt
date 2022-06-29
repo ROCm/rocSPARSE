@@ -185,4 +185,12 @@ set(rocsparse_source
 # Reordering
   src/reordering/rocsparse_csrcolor.cpp
 
+# Util
+  src/util/rocsparse_check_matrix_csr.cpp
+  src/util/rocsparse_check_matrix_csc.cpp
+  src/util/rocsparse_check_matrix_gebsr.cpp
+  src/util/rocsparse_check_matrix_gebsc.cpp
+  src/util/rocsparse_check_matrix_coo.cpp
+  src/util/rocsparse_check_matrix_ell.cpp
+  src/util/rocsparse_check_matrix_hyb.cpp
 )

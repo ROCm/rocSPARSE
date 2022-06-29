@@ -295,7 +295,8 @@ typedef enum rocsparse_layer_mode
 {
     rocsparse_layer_mode_none      = 0x0, /**< layer is not active. */
     rocsparse_layer_mode_log_trace = 0x1, /**< layer is in logging mode. */
-    rocsparse_layer_mode_log_bench = 0x2 /**< layer is in benchmarking mode. */
+    rocsparse_layer_mode_log_bench = 0x2, /**< layer is in benchmarking mode. */
+    rocsparse_layer_mode_log_debug = 0x4 /**< layer is in debug mode. */
 } rocsparse_layer_mode;
 
 /*! \ingroup types_module
@@ -321,6 +322,25 @@ typedef enum rocsparse_status_
     rocsparse_status_type_mismatch           = 11, /**< index types do not match. */
     rocsparse_status_requires_sorted_storage = 12 /**< sorted storage required. */
 } rocsparse_status;
+
+/*! \ingroup types_module
+ *  \brief List of rocsparse data status codes definition.
+ *
+ *  \details
+ *  This is a list of the \ref rocsparse_data_status types that are used by the rocSPARSE
+ *  library in the matrix check routines.
+ */
+typedef enum rocsparse_data_status_
+{
+    rocsparse_data_status_success            = 0, /**< success. */
+    rocsparse_data_status_inf                = 1, /**< An inf value detected. */
+    rocsparse_data_status_nan                = 2, /**< An nan value detected. */
+    rocsparse_data_status_invalid_offset_ptr = 3, /**< An invalid row pointer offset detected. */
+    rocsparse_data_status_invalid_index      = 4, /**< An invalid row indice detected. */
+    rocsparse_data_status_duplicate_entry    = 5, /**< Duplicate indice detected. */
+    rocsparse_data_status_invalid_sorting    = 6, /**< Incorrect sorting detected. */
+    rocsparse_data_status_invalid_fill       = 7 /**< Incorrect fill mode detected. */
+} rocsparse_data_status;
 
 /*! \ingroup types_module
  *  \brief List of rocsparse index types.

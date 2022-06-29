@@ -333,7 +333,7 @@ Tests:
   M: 1
   N: [11]
   K: 1
-  tolm: 4
+  tolm: 6
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none]

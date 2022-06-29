@@ -114,6 +114,12 @@ _rocsparse_handle::_rocsparse_handle()
     {
         open_log_stream(&log_bench_os, &log_bench_ofs, "ROCSPARSE_LOG_BENCH_PATH");
     }
+
+    // Open log_debug file
+    if(layer_mode & rocsparse_layer_mode_log_debug)
+    {
+        open_log_stream(&log_debug_os, &log_debug_ofs, "ROCSPARSE_LOG_DEBUG_PATH");
+    }
 }
 
 /*******************************************************************************
@@ -135,6 +141,10 @@ _rocsparse_handle::~_rocsparse_handle()
     if(log_bench_ofs.is_open())
     {
         log_bench_ofs.close();
+    }
+    if(log_debug_ofs.is_open())
+    {
+        log_debug_ofs.close();
     }
 }
 

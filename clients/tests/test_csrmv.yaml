@@ -272,8 +272,7 @@ Tests:
   category: quick
   function: csrmv
   precision: *single_double_precisions_complex_real
-  M: [0, 142]
-  N: [0, 142]
+  M_N: *M_N_range_quick
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_one]
@@ -369,8 +368,7 @@ Tests:
   matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
   uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
   spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
-  filename: [bibd_22_8,
-             bmwcra_1,
+  filename: [bmwcra_1,
              amazon0312,
              sme3Dc,
              shipsec1]

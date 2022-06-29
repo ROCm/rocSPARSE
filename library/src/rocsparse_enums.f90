@@ -108,6 +108,7 @@ module rocsparse_enums
         enumerator :: rocsparse_layer_mode_none = 0
         enumerator :: rocsparse_layer_mode_log_trace = 1
         enumerator :: rocsparse_layer_mode_log_bench = 2
+        enumerator :: rocsparse_layer_mode_log_debug = 4
     end enum
 
 !   rocsparse_status
