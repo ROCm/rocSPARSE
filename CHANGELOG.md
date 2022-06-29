@@ -4,7 +4,8 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 
 ## rocSPARSE 2.3.2
 ### Added
-- transpose A for SpMM COO format
+- Transpose A for SpMM COO format
+- Added atomic algorithm for COO SpMV
 ### Improved
 - Fixed a bug in csrilu0 which could cause a deadlock
 - Fixed a bug where asynchronous memcpy would use wrong stream
