@@ -727,16 +727,20 @@ rocsparse_gtsv_interleaved_alg
 
 Logging
 =======
-Three different environment variables can be set to enable logging in rocSPARSE: ``ROCSPARSE_LAYER``, ``ROCSPARSE_LOG_TRACE_PATH`` and ``ROCSPARSE_LOG_BENCH_PATH``.
+Three different environment variables can be set to enable logging in rocSPARSE: ``ROCSPARSE_LAYER``, ``ROCSPARSE_LOG_TRACE_PATH``, ``ROCSPARSE_LOG_BENCH_PATH`` and ``ROCSPARSE_LOG_DEBUG_PATH``.
 
 ``ROCSPARSE_LAYER`` is a bit mask, where several logging modes (:ref:`rocsparse_layer_mode_`) can be combined as follows:
 
-================================  ===========================================
+================================  =============================================================
 ``ROCSPARSE_LAYER`` unset         logging is disabled.
 ``ROCSPARSE_LAYER`` set to ``1``  trace logging is enabled.
 ``ROCSPARSE_LAYER`` set to ``2``  bench logging is enabled.
 ``ROCSPARSE_LAYER`` set to ``3``  trace logging and bench logging is enabled.
-================================  ===========================================
+``ROCSPARSE_LAYER`` set to ``4``  debug logging is enabled.
+``ROCSPARSE_LAYER`` set to ``5``  trace logging and debug logging is enabled.
+``ROCSPARSE_LAYER`` set to ``6``  bench logging and debug logging is enabled.
+``ROCSPARSE_LAYER`` set to ``7``  trace logging and bench logging and debug logging is enabled.
+================================  =============================================================
 
 When logging is enabled, each rocSPARSE function call will write the function name as well as function arguments to the logging stream. The default logging stream is ``stderr``.
 
@@ -1099,6 +1103,28 @@ Function name                                           single double single com
 ======================================================= ====== ====== ============== ==============
 :cpp:func:`rocsparse_Xcsrcolor() <rocsparse_scsrcolor>` x      x      x              x
 ======================================================= ====== ====== ============== ==============
+
+Utility Functions
+-----------------
+
+=================================================================================================== ====== ====== ============== ==============
+Function name                                                                                       single double single complex double complex
+=================================================================================================== ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xcheck_matrix_csr_buffer_size() <rocsparse_scheck_matrix_csr_buffer_size>`     x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_csr() <rocsparse_scheck_matrix_csr>`                             x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_csc_buffer_size() <rocsparse_scheck_matrix_csc_buffer_size>`     x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_csc() <rocsparse_scheck_matrix_csc>`                             x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_coo_buffer_size() <rocsparse_scheck_matrix_coo_buffer_size>`     x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_coo() <rocsparse_scheck_matrix_coo>`                             x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_gebsr_buffer_size() <rocsparse_scheck_matrix_gebsr_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_gebsr() <rocsparse_scheck_matrix_gebsr>`                         x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_gebsc_buffer_size() <rocsparse_scheck_matrix_gebsc_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_gebsc() <rocsparse_scheck_matrix_gebsc>`                         x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_ell_buffer_size() <rocsparse_scheck_matrix_ell_buffer_size>`     x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_ell() <rocsparse_scheck_matrix_ell>`                             x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_hyb_buffer_size() <rocsparse_scheck_matrix_hyb_buffer_size>`     x      x      x              x
+:cpp:func:`rocsparse_Xcheck_matrix_hyb() <rocsparse_scheck_matrix_hyb>`                             x      x      x              x
+=================================================================================================== ====== ====== ============== ==============
 
 Sparse Generic Functions
 ------------------------
@@ -2833,6 +2859,166 @@ rocsparse_csrcolor()
   :outline:
 .. doxygenfunction:: rocsparse_zcsrcolor
 
+Utility Functions
+=================
+
+This module holds all sparse utility routines.
+
+The sparse utility routines allow for testing whether matrix data is valid for different matrix formats
+
+rocsparse_check_matrix_csr_buffer_size()
+----------------------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_csr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_csr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_csr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_csr_buffer_size
+
+rocsparse_check_matrix_csr()
+----------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_csr
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_csr
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_csr
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_csr
+
+rocsparse_check_matrix_csc_buffer_size()
+----------------------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_csc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_csc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_csc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_csc_buffer_size
+
+rocsparse_check_matrix_csc()
+----------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_csc
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_csc
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_csc
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_csc
+
+rocsparse_check_matrix_coo_buffer_size()
+----------------------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_coo_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_coo_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_coo_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_coo_buffer_size
+
+rocsparse_check_matrix_coo()
+----------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_coo
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_coo
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_coo
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_coo
+
+rocsparse_check_matrix_gebsr_buffer_size()
+------------------------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_gebsr_buffer_size
+
+rocsparse_check_matrix_gebsr()
+------------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_gebsr
+
+rocsparse_check_matrix_gebsc_buffer_size()
+------------------------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_gebsc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_gebsc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_gebsc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_gebsc_buffer_size
+
+rocsparse_check_matrix_gebsc()
+------------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_gebsc
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_gebsc
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_gebsc
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_gebsc
+
+rocsparse_check_matrix_ell_buffer_size()
+----------------------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_ell_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_ell_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_ell_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_ell_buffer_size
+
+rocsparse_check_matrix_ell()
+----------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_ell
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_ell
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_ell
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_ell
+
+rocsparse_check_matrix_hyb_buffer_size()
+----------------------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_hyb_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_hyb_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_hyb_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_hyb_buffer_size
+
+rocsparse_check_matrix_hyb()
+----------------------------
+
+.. doxygenfunction:: rocsparse_scheck_matrix_hyb
+  :outline:
+.. doxygenfunction:: rocsparse_dcheck_matrix_hyb
+  :outline:
+.. doxygenfunction:: rocsparse_ccheck_matrix_hyb
+  :outline:
+.. doxygenfunction:: rocsparse_zcheck_matrix_hyb
 
 Sparse Generic Functions
 ========================

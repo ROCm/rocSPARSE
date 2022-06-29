@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,8 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [16]
   N: [16]
-  row_block_dim: [8]
-  col_block_dim: [4]
+  row_block_dimA: [8]
+  col_block_dimA: [4]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_one]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
@@ -50,8 +50,8 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [8, 16]
   N: [8, 16]
-  row_block_dim: [2, 8]
-  col_block_dim: [2, 4, 8]
+  row_block_dimA: [2, 8]
+  col_block_dimA: [2, 4, 8]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_one]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
@@ -63,8 +63,8 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [1, 99, 200]
   N: [1, 89, 183, 256]
-  row_block_dim: [-1, 0, 1, 2, 3, 7, 8, 64]
-  col_block_dim: [-1, 0, 1, 64]
+  row_block_dimA: [-1, 0, 1, 2, 3, 7, 8, 64]
+  col_block_dimA: [-1, 0, 1, 64]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_one]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
@@ -76,8 +76,8 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  row_block_dim: [3, 4]
-  col_block_dim: [5, 7]
+  row_block_dimA: [3, 4]
+  col_block_dimA: [5, 7]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -93,8 +93,8 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [0, 500]
   N: [0, 242, 1000]
-  row_block_dim: [4]
-  col_block_dim: [4, 8, 10]
+  row_block_dimA: [4]
+  col_block_dimA: [4, 8, 10]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
@@ -106,8 +106,8 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  row_block_dim: [2, 3, 16]
-  col_block_dim: [4]
+  row_block_dimA: [2, 3, 16]
+  col_block_dimA: [4]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -123,8 +123,8 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [2742, 9412, 37586]
   N: [1858, 5719]
-  row_block_dim: [3]
-  col_block_dim: [3, 7]
+  row_block_dimA: [3]
+  col_block_dimA: [3, 7]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
@@ -136,8 +136,8 @@ Tests:
   precision: *single_double_precisions_complex
   M: 1
   N: 1
-  row_block_dim: [3 ]
-  col_block_dim: [3, 3]
+  row_block_dimA: [3 ]
+  col_block_dimA: [3, 3]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -150,8 +150,8 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  row_block_dim: [5, 7]
-  col_block_dim: [5]
+  row_block_dimA: [5, 7]
+  col_block_dimA: [5]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]

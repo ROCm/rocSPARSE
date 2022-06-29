@@ -5,6 +5,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 ## rocSPARSE 2.3.2
 ### Added
 - Transpose A for SpMM COO format
+- Added matrix checker routines for verifying matrix data
 - Added atomic algorithm for COO SpMV
 ### Improved
 - Fixed a bug in csrilu0 which could cause a deadlock
@@ -13,7 +14,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 
 ## rocSPARSE 2.2.0 for ROCm 5.2.0
 ### Added
-- batched SpMM for CSR, COO and Blocked ELL formats.
+- Batched SpMM for CSR, CSC, and COO formats.
 - Packages for test and benchmark executables on all supported OSes using CPack.
 - Clients file importers and exporters.
 ### Improved

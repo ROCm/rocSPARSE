@@ -155,6 +155,13 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_gemvi.cpp
 ../testings/testing_sddmm.cpp
 ../testings/testing_csrcolor.cpp
+../testings/testing_check_matrix_csr.cpp
+../testings/testing_check_matrix_csc.cpp
+../testings/testing_check_matrix_coo.cpp
+../testings/testing_check_matrix_gebsr.cpp
+../testings/testing_check_matrix_gebsc.cpp
+../testings/testing_check_matrix_ell.cpp
+../testings/testing_check_matrix_hyb.cpp
 ../testings/testing_bsrpad_value.cpp
 )
 

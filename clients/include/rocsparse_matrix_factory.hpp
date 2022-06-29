@@ -197,6 +197,17 @@ public:
 
     void init_gebsr_spezial(host_gebsr_matrix<T, I, J>& that, J& mb, J& nb);
 
+    void init_gebsc(std::vector<I>&      bsc_col_ptr,
+                    std::vector<J>&      bsc_row_ind,
+                    std::vector<T>&      bsc_val,
+                    rocsparse_direction  dirb,
+                    J&                   Mb,
+                    J&                   Nb,
+                    I&                   nnzb,
+                    J&                   row_block_dim,
+                    J&                   col_block_dim,
+                    rocsparse_index_base base);
+
     //
     // BSR
     //

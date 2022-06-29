@@ -84,8 +84,10 @@ struct _rocsparse_handle
     // logging streams
     std::ofstream log_trace_ofs;
     std::ofstream log_bench_ofs;
+    std::ofstream log_debug_ofs;
     std::ostream* log_trace_os{};
     std::ostream* log_bench_os{};
+    std::ostream* log_debug_os{};
 };
 
 /********************************************************************************

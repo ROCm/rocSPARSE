@@ -519,6 +519,33 @@ void rocsparse_matrix_factory<T, I, J>::init_gebsr_spezial(host_gebsr_matrix<T, 
     that.ind.transfer_from(hA.ind);
 }
 
+template <typename T, typename I, typename J>
+void rocsparse_matrix_factory<T, I, J>::init_gebsc(std::vector<I>&      bsc_col_ptr,
+                                                   std::vector<J>&      bsc_row_ind,
+                                                   std::vector<T>&      bsc_val,
+                                                   rocsparse_direction  dirb,
+                                                   J&                   Mb,
+                                                   J&                   Nb,
+                                                   I&                   nnzb,
+                                                   J&                   row_block_dim,
+                                                   J&                   col_block_dim,
+                                                   rocsparse_index_base base)
+{
+    this->m_instance->init_gebsr(bsc_col_ptr,
+                                 bsc_row_ind,
+                                 bsc_val,
+                                 dirb,
+                                 Nb,
+                                 Mb,
+                                 nnzb,
+                                 row_block_dim,
+                                 col_block_dim,
+                                 base,
+                                 this->m_arg.matrix_type,
+                                 this->m_arg.uplo,
+                                 this->m_arg.storage);
+}
+
 //
 // BSR
 //

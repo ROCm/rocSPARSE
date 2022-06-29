@@ -64,6 +64,177 @@
 
 /*
  * ===========================================================================
+ *    utility SPARSE
+ * ===========================================================================
+ */
+// check_matrix_csr
+REAL_COMPLEX_TEMPLATE(check_matrix_csr_buffer_size,
+                      rocsparse_handle       handle,
+                      rocsparse_int          m,
+                      rocsparse_int          n,
+                      rocsparse_int          nnz,
+                      const T*               csr_val,
+                      const rocsparse_int*   csr_row_ptr,
+                      const rocsparse_int*   csr_col_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      size_t*                buffer_size);
+
+REAL_COMPLEX_TEMPLATE(check_matrix_csr,
+                      rocsparse_handle       handle,
+                      rocsparse_int          m,
+                      rocsparse_int          n,
+                      rocsparse_int          nnz,
+                      const T*               csr_val,
+                      const rocsparse_int*   csr_row_ptr,
+                      const rocsparse_int*   csr_col_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      rocsparse_data_status* data_status,
+                      void*                  temp_buffer);
+
+// check_matrix_coo
+REAL_COMPLEX_TEMPLATE(check_matrix_coo_buffer_size,
+                      rocsparse_handle       handle,
+                      rocsparse_int          m,
+                      rocsparse_int          n,
+                      rocsparse_int          nnz,
+                      const T*               coo_val,
+                      const rocsparse_int*   coo_row_ind,
+                      const rocsparse_int*   coo_col_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      size_t*                buffer_size);
+
+REAL_COMPLEX_TEMPLATE(check_matrix_coo,
+                      rocsparse_handle       handle,
+                      rocsparse_int          m,
+                      rocsparse_int          n,
+                      rocsparse_int          nnz,
+                      const T*               coo_val,
+                      const rocsparse_int*   coo_row_ind,
+                      const rocsparse_int*   coo_col_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      rocsparse_data_status* data_status,
+                      void*                  temp_buffer);
+
+// check_matrix_gebsr
+REAL_COMPLEX_TEMPLATE(check_matrix_gebsr_buffer_size,
+                      rocsparse_handle       handle,
+                      rocsparse_direction    dir,
+                      rocsparse_int          mb,
+                      rocsparse_int          nb,
+                      rocsparse_int          nnzb,
+                      rocsparse_int          row_block_dim,
+                      rocsparse_int          col_block_dim,
+                      const T*               bsr_val,
+                      const rocsparse_int*   bsr_row_ptr,
+                      const rocsparse_int*   bsr_col_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      size_t*                buffer_size);
+
+REAL_COMPLEX_TEMPLATE(check_matrix_gebsr,
+                      rocsparse_handle       handle,
+                      rocsparse_direction    dir,
+                      rocsparse_int          mb,
+                      rocsparse_int          nb,
+                      rocsparse_int          nnzb,
+                      rocsparse_int          row_block_dim,
+                      rocsparse_int          col_block_dim,
+                      const T*               bsr_val,
+                      const rocsparse_int*   bsr_row_ptr,
+                      const rocsparse_int*   bsr_col_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      rocsparse_data_status* data_status,
+                      void*                  temp_buffer);
+
+// check_matrix_gebsc
+REAL_COMPLEX_TEMPLATE(check_matrix_gebsc_buffer_size,
+                      rocsparse_handle       handle,
+                      rocsparse_direction    dir,
+                      rocsparse_int          mb,
+                      rocsparse_int          nb,
+                      rocsparse_int          nnzb,
+                      rocsparse_int          row_block_dim,
+                      rocsparse_int          col_block_dim,
+                      const T*               bsc_val,
+                      const rocsparse_int*   bsc_col_ptr,
+                      const rocsparse_int*   bsc_row_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      size_t*                buffer_size);
+
+REAL_COMPLEX_TEMPLATE(check_matrix_gebsc,
+                      rocsparse_handle       handle,
+                      rocsparse_direction    dir,
+                      rocsparse_int          mb,
+                      rocsparse_int          nb,
+                      rocsparse_int          nnzb,
+                      rocsparse_int          row_block_dim,
+                      rocsparse_int          col_block_dim,
+                      const T*               bsc_val,
+                      const rocsparse_int*   bsc_col_ptr,
+                      const rocsparse_int*   bsc_row_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      rocsparse_data_status* data_status,
+                      void*                  temp_buffer);
+
+// check_matrix_csc
+REAL_COMPLEX_TEMPLATE(check_matrix_csc_buffer_size,
+                      rocsparse_handle       handle,
+                      rocsparse_int          m,
+                      rocsparse_int          n,
+                      rocsparse_int          nnz,
+                      const T*               csc_val,
+                      const rocsparse_int*   csc_col_ptr,
+                      const rocsparse_int*   csc_row_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      size_t*                buffer_size);
+
+REAL_COMPLEX_TEMPLATE(check_matrix_csc,
+                      rocsparse_handle       handle,
+                      rocsparse_int          m,
+                      rocsparse_int          n,
+                      rocsparse_int          nnz,
+                      const T*               csc_val,
+                      const rocsparse_int*   csc_col_ptr,
+                      const rocsparse_int*   csc_row_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      rocsparse_data_status* data_status,
+                      void*                  temp_buffer);
+
+// check_matrix_ell
+REAL_COMPLEX_TEMPLATE(check_matrix_ell_buffer_size,
+                      rocsparse_handle       handle,
+                      rocsparse_int          m,
+                      rocsparse_int          n,
+                      rocsparse_int          ell_width,
+                      const T*               ell_val,
+                      const rocsparse_int*   ell_col_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      size_t*                buffer_size);
+
+REAL_COMPLEX_TEMPLATE(check_matrix_ell,
+                      rocsparse_handle       handle,
+                      rocsparse_int          m,
+                      rocsparse_int          n,
+                      rocsparse_int          ell_width,
+                      const T*               ell_val,
+                      const rocsparse_int*   ell_col_ind,
+                      rocsparse_index_base   idx_base,
+                      rocsparse_storage_mode storage,
+                      rocsparse_data_status* data_status,
+                      void*                  temp_buffer);
+
+/*
+ * ===========================================================================
  *    level 1 SPARSE
  * ===========================================================================
  */
