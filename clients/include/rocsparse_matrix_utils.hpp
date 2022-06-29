@@ -699,6 +699,8 @@ struct rocsparse_matrix_utils
     {
         if(M != N)
         {
+            std::cerr << "error: host_csrtri only accepts square matrices" << std::endl;
+            exit(1);
             return;
         }
 
@@ -807,20 +809,23 @@ struct rocsparse_matrix_utils
     {
         if(M != N)
         {
+            std::cerr << "error: host_cootri only accepts square matrices" << std::endl;
+            exit(1);
             return;
         }
 
-        nnz = 0;
+        I old_nnz = nnz;
+        I new_nnz = 0;
         if(uplo == rocsparse_fill_mode_lower)
         {
             I index = 0;
             for(I i = 0; i < M; i++)
             {
-                while(row_ind[index] - base == i)
+                while(index < nnz && row_ind[index] - base == i)
                 {
                     if(col_ind[index] - base <= i)
                     {
-                        nnz++;
+                        new_nnz++;
                     }
 
                     index++;
@@ -832,11 +837,11 @@ struct rocsparse_matrix_utils
             I index = 0;
             for(I i = 0; i < M; i++)
             {
-                while(row_ind[index] - base == i)
+                while(index < nnz && row_ind[index] - base == i)
                 {
                     if(col_ind[index] - base >= i)
                     {
-                        nnz++;
+                        new_nnz++;
                     }
 
                     index++;
@@ -844,9 +849,9 @@ struct rocsparse_matrix_utils
             }
         }
 
-        coo_row_ind.resize(nnz, 0);
-        coo_col_ind.resize(nnz, 0);
-        coo_val.resize(nnz, static_cast<T>(0));
+        coo_row_ind.resize(new_nnz, 0);
+        coo_col_ind.resize(new_nnz, 0);
+        coo_val.resize(new_nnz, static_cast<T>(0));
 
         nnz = 0;
         if(uplo == rocsparse_fill_mode_lower)
@@ -854,7 +859,7 @@ struct rocsparse_matrix_utils
             I index = 0;
             for(I i = 0; i < M; i++)
             {
-                while(row_ind[index] - base == i)
+                while(index < old_nnz && row_ind[index] - base == i)
                 {
                     if(col_ind[index] - base <= i)
                     {
@@ -873,7 +878,7 @@ struct rocsparse_matrix_utils
             I index = 0;
             for(I i = 0; i < M; i++)
             {
-                while(row_ind[index] - base == i)
+                while(index < old_nnz && row_ind[index] - base == i)
                 {
                     if(col_ind[index] - base >= i)
                     {

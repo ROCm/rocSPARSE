@@ -50,7 +50,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     auto beta = load_scalar_device_host(beta_device_host);
     if(beta != static_cast<T>(1))
     {
-        coomv_scale_device(size, beta, data);
+        coomv_scale_device<BLOCKSIZE>(size, beta, data);
     }
 }
 
@@ -382,23 +382,6 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
     switch(alg)
     {
     case rocsparse_coomv_alg_default:
-    case rocsparse_coomv_alg_atomic:
-    {
-        return rocsparse_coomv_atomic_dispatch(handle,
-                                               trans,
-                                               m,
-                                               n,
-                                               nnz,
-                                               alpha_device_host,
-                                               descr,
-                                               coo_val,
-                                               coo_row_ind,
-                                               coo_col_ind,
-                                               x,
-                                               beta_device_host,
-                                               y);
-    }
-
     case rocsparse_coomv_alg_segmented:
     {
         return rocsparse_coomv_segmented_dispatch(handle,
@@ -414,6 +397,22 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
                                                   x,
                                                   beta_device_host,
                                                   y);
+    }
+    case rocsparse_coomv_alg_atomic:
+    {
+        return rocsparse_coomv_atomic_dispatch(handle,
+                                               trans,
+                                               m,
+                                               n,
+                                               nnz,
+                                               alpha_device_host,
+                                               descr,
+                                               coo_val,
+                                               coo_row_ind,
+                                               coo_col_ind,
+                                               x,
+                                               beta_device_host,
+                                               y);
     }
     }
 

@@ -32,7 +32,7 @@ template <unsigned int WF_SIZE,
           bool         NT,
           typename I,
           typename T>
-static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation transB,
+static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation trans_B,
                                                                  I                   nnz,
                                                                  I                   nstart,
                                                                  I                   batch_stride_A,
@@ -90,7 +90,7 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
 
         if(NT)
         {
-            if(transB == rocsparse_operation_conjugate_transpose)
+            if(trans_B == rocsparse_operation_conjugate_transpose)
             {
                 for(I p = 0; p < COLS; p++)
                 {
@@ -109,7 +109,7 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
         }
         else
         {
-            if(transB == rocsparse_operation_conjugate_transpose)
+            if(trans_B == rocsparse_operation_conjugate_transpose)
             {
                 for(I p = 0; p < COLS; p++)
                 {
@@ -269,22 +269,25 @@ __launch_bounds__(WF_SIZE) ROCSPARSE_KERNEL
                                   rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
-    coommnn_segmented_atomic_device<WF_SIZE, LOOPS, COLS, NT>(trans_B,
-                                                              nnz,
-                                                              n,
-                                                              batch_stride_A,
-                                                              alpha,
-                                                              coo_row_ind,
-                                                              coo_col_ind,
-                                                              coo_val,
-                                                              B,
-                                                              ldb,
-                                                              batch_stride_B,
-                                                              C,
-                                                              ldc,
-                                                              batch_stride_C,
-                                                              order,
-                                                              idx_base);
+    if(alpha != static_cast<T>(0))
+    {
+        coommnn_segmented_atomic_device<WF_SIZE, LOOPS, COLS, NT>(trans_B,
+                                                                  nnz,
+                                                                  n,
+                                                                  batch_stride_A,
+                                                                  alpha,
+                                                                  coo_row_ind,
+                                                                  coo_col_ind,
+                                                                  coo_val,
+                                                                  B,
+                                                                  ldb,
+                                                                  batch_stride_B,
+                                                                  C,
+                                                                  ldc,
+                                                                  batch_stride_C,
+                                                                  order,
+                                                                  idx_base);
+    }
 }
 
 #define LAUNCH_COOMMNN_SEGMENTED_ATOMIC_MAIN_KERNEL(WF_SIZE, LOOPS, COLS, NT) \

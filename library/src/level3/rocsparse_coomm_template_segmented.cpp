@@ -26,12 +26,6 @@
 #include "definitions.h"
 #include "utility.h"
 
-template <typename T>
-static ROCSPARSE_DEVICE_ILF T conj_val(T val, bool conj)
-{
-    return conj ? rocsparse_conj(val) : val;
-}
-
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           unsigned int LOOPS,

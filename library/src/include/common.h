@@ -169,6 +169,22 @@ __device__ __forceinline__ rocsparse_double_complex atomicAdd(rocsparse_double_c
                                     atomicAdd((double*)ptr + 1, std::imag(val)));
 }
 
+__device__ __forceinline__ bool rocsparse_is_inf(float val){ return (val == std::numeric_limits<float>::infinity()); }
+__device__ __forceinline__ bool rocsparse_is_inf(double val){ return (val == std::numeric_limits<double>::infinity()); }
+__device__ __forceinline__ bool rocsparse_is_inf(rocsparse_float_complex val){ return (std::real(val) == std::numeric_limits<float>::infinity() || std::imag(val) == std::numeric_limits<float>::infinity()); }
+__device__ __forceinline__ bool rocsparse_is_inf(rocsparse_double_complex val){ return (std::real(val) == std::numeric_limits<double>::infinity() || std::imag(val) == std::numeric_limits<double>::infinity()); }
+
+__device__ __forceinline__ bool rocsparse_is_nan(float val){ return (val != val); }
+__device__ __forceinline__ bool rocsparse_is_nan(double val){ return (val != val); }
+__device__ __forceinline__ bool rocsparse_is_nan(rocsparse_float_complex val){ return (std::real(val) != std::real(val) || std::imag(val) != std::imag(val)); }
+__device__ __forceinline__ bool rocsparse_is_nan(rocsparse_double_complex val){ return (std::real(val) != std::real(val) || std::imag(val) != std::imag(val)); }
+
+template <typename T>
+__device__ __forceinline__ T conj_val(T val, bool conj)
+{
+    return conj ? rocsparse_conj(val) : val;
+}
+
 // Block reduce kernel computing block sum
 template <unsigned int BLOCKSIZE, typename T>
 __device__ __forceinline__ void rocsparse_blockreduce_sum(int i, T* data)

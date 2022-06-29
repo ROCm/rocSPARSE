@@ -26,6 +26,7 @@
 #include "rocsparse.h"
 #include "utility.h"
 
+#include "rocsparse_bsrmv.hpp"
 #include "rocsparse_coomv.hpp"
 #include "rocsparse_coomv_aos.hpp"
 #include "rocsparse_cscmv.hpp"
@@ -49,6 +50,7 @@ rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocsparse_spm
         }
         case rocsparse_spmv_alg_coo:
         case rocsparse_spmv_alg_ell:
+        case rocsparse_spmv_alg_bsr:
         case rocsparse_spmv_alg_coo_atomic:
         {
             return rocsparse_status_invalid_value;
@@ -70,6 +72,7 @@ rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocsparse_spm
         }
         case rocsparse_spmv_alg_csr_stream:
         case rocsparse_spmv_alg_csr_adaptive:
+        case rocsparse_spmv_alg_bsr:
         case rocsparse_spmv_alg_ell:
         {
             return rocsparse_status_invalid_value;
@@ -89,6 +92,7 @@ rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocsparse_spm
         }
         case rocsparse_spmv_alg_csr_stream:
         case rocsparse_spmv_alg_csr_adaptive:
+        case rocsparse_spmv_alg_bsr:
         case rocsparse_spmv_alg_coo:
         case rocsparse_spmv_alg_coo_atomic:
         {
@@ -107,6 +111,29 @@ rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocsparse_spm
         case rocsparse_spmv_alg_csr_stream:
         case rocsparse_spmv_alg_csr_adaptive:
         case rocsparse_spmv_alg_ell:
+        case rocsparse_spmv_alg_bsr:
+        case rocsparse_spmv_alg_coo_atomic:
+        {
+            return rocsparse_status_invalid_value;
+        }
+        }
+
+        return rocsparse_status_invalid_value;
+    }
+
+    case rocsparse_format_bsr:
+    {
+        switch(alg)
+        {
+        case rocsparse_spmv_alg_default:
+        case rocsparse_spmv_alg_bsr:
+        {
+            return rocsparse_status_success;
+        }
+        case rocsparse_spmv_alg_ell:
+        case rocsparse_spmv_alg_csr_stream:
+        case rocsparse_spmv_alg_csr_adaptive:
+        case rocsparse_spmv_alg_coo:
         case rocsparse_spmv_alg_coo_atomic:
         {
             return rocsparse_status_invalid_value;
@@ -145,6 +172,7 @@ rocsparse_status rocsparse_spmv_alg2coomv_alg(rocsparse_spmv_alg   spmv_alg,
 
     case rocsparse_spmv_alg_csr_adaptive:
     case rocsparse_spmv_alg_csr_stream:
+    case rocsparse_spmv_alg_bsr:
     case rocsparse_spmv_alg_ell:
     {
         return rocsparse_status_invalid_value;
@@ -178,6 +206,7 @@ rocsparse_status rocsparse_spmv_alg2coomv_aos_alg(rocsparse_spmv_alg       spmv_
 
     case rocsparse_spmv_alg_csr_adaptive:
     case rocsparse_spmv_alg_csr_stream:
+    case rocsparse_spmv_alg_bsr:
     case rocsparse_spmv_alg_ell:
     {
         return rocsparse_status_invalid_value;
@@ -209,7 +238,10 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
 
         if(temp_buffer == nullptr)
         {
-            // We do not need a buffer
+            // We do not need a buffer and we can't return a zero buffer size here
+            // otherwise the allocated buffer will be again a null pointer.
+            // That's a flaw we need to fix with the use of a rocsparse_spmv_stage enum.
+            // We need to wait the next major release where the C-API is allowed to be modified.
             *buffer_size = 4;
             return rocsparse_status_success;
         }
@@ -237,7 +269,10 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
 
         if(temp_buffer == nullptr)
         {
-            // We do not need a buffer
+            // We do not need a buffer and we can't return a zero buffer size here
+            // otherwise the allocated buffer will be again a null pointer.
+            // That's a flaw we need to fix with the use of a rocsparse_spmv_stage enum.
+            // We need to wait the next major release where the C-API is allowed to be modified.
             *buffer_size = 4;
             return rocsparse_status_success;
         }
@@ -262,7 +297,10 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
         // If temp_buffer is nullptr, return buffer_size
         if(temp_buffer == nullptr)
         {
-            // We do not need a buffer
+            // We do not need a buffer and we can't return a zero buffer size here
+            // otherwise the allocated buffer will be again a null pointer.
+            // That's a flaw we need to fix with the use of a rocsparse_spmv_stage enum.
+            // We need to wait the next major release where the C-API is allowed to be modified.
             *buffer_size = 4;
 
             // If algorithm 1 or default is selected and analysis step is required
@@ -310,7 +348,10 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
         // If temp_buffer is nullptr, return buffer_size
         if(temp_buffer == nullptr)
         {
-            // We do not need a buffer
+            // We do not need a buffer and we can't return a zero buffer size here
+            // otherwise the allocated buffer will be again a null pointer.
+            // That's a flaw we need to fix with the use of a rocsparse_spmv_stage enum.
+            // We need to wait the next major release where the C-API is allowed to be modified.
             *buffer_size = 4;
 
             // If algorithm 1 or default is selected and analysis step is required
@@ -356,7 +397,10 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
     {
         if(temp_buffer == nullptr)
         {
-            // We do not need a buffer
+            // We do not need a buffer and we can't return a zero buffer size here
+            // otherwise the allocated buffer will be again a null pointer.
+            // That's a flaw we need to fix with the use of a rocsparse_spmv_stage enum.
+            // We need to wait the next major release where the C-API is allowed to be modified.
             *buffer_size = 4;
             return rocsparse_status_success;
         }
@@ -380,6 +424,35 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
         // LCOV_EXCL_START
         return rocsparse_status_not_implemented;
         // LCOV_EXCL_STOP
+    }
+
+    case rocsparse_format_bsr:
+    {
+        if(temp_buffer == nullptr)
+        {
+            // We do not need a buffer and we can't return a zero buffer size here
+            // otherwise the allocated buffer will be again a null pointer.
+            // That's a flaw we need to fix with the use of a rocsparse_spmv_stage enum.
+            // We need to wait the next major release where the C-API is allowed to be modified.
+            *buffer_size = 4;
+            return rocsparse_status_success;
+        }
+
+        return rocsparse_bsrmv_template<T>(handle,
+                                           mat->block_dir,
+                                           trans,
+                                           (J)mat->rows,
+                                           (J)mat->cols,
+                                           (I)mat->nnz,
+                                           (const T*)alpha,
+                                           mat->descr,
+                                           (const T*)mat->val_data,
+                                           (const I*)mat->row_data,
+                                           (const J*)mat->col_data,
+                                           (J)mat->block_dim,
+                                           (const T*)x->values,
+                                           (const T*)beta,
+                                           (T*)y->values);
     }
     }
 
@@ -457,6 +530,7 @@ static rocsparse_indextype determine_I_index_type(rocsparse_spmat_descr mat)
     case rocsparse_format_coo:
     case rocsparse_format_coo_aos:
     case rocsparse_format_csr:
+    case rocsparse_format_bsr:
     case rocsparse_format_ell:
     case rocsparse_format_bell:
     {
@@ -476,6 +550,7 @@ static rocsparse_indextype determine_J_index_type(rocsparse_spmat_descr mat)
     case rocsparse_format_coo:
     case rocsparse_format_coo_aos:
     case rocsparse_format_csr:
+    case rocsparse_format_bsr:
     case rocsparse_format_ell:
     case rocsparse_format_bell:
     {

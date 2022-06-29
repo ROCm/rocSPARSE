@@ -28,12 +28,6 @@
 
 #include "common.h"
 
-template <typename T>
-static __device__ T conj_val(T val, bool conj)
-{
-    return conj ? rocsparse_conj(val) : val;
-}
-
 // See Yang C., Bulu? A., Owens J.D. (2018) Design Principles for Sparse Matrix Multiplication on the GPU.
 // In: Aldinucci M., Padovani L., Torquati M. (eds) Euro-Par 2018: Parallel Processing. Euro-Par 2018.
 // Lecture Notes in Computer Science, vol 11014. Springer, Cham. https://doi.org/10.1007/978-3-319-96983-1_48

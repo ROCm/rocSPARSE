@@ -162,7 +162,7 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
     }
     else if(std::is_same<T, double>{})
     {
-        hyb->data_type_T = rocsparse_datatype_f32_r;
+        hyb->data_type_T = rocsparse_datatype_f64_r;
     }
     else if(std::is_same<T, rocsparse_float_complex>{})
     {

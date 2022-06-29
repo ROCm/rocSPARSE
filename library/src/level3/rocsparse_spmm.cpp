@@ -43,6 +43,7 @@ rocsparse_status rocsparse_spmm_alg2bellmm_alg(rocsparse_spmm_alg    spmm_alg,
         return rocsparse_status_success;
     }
 
+    case rocsparse_spmm_alg_bsr:
     case rocsparse_spmm_alg_csr:
     case rocsparse_spmm_alg_csr_row_split:
     case rocsparse_spmm_alg_csr_merge:
@@ -81,6 +82,7 @@ rocsparse_status rocsparse_spmm_alg2csrmm_alg(rocsparse_spmm_alg   spmm_alg,
     }
 
     case rocsparse_spmm_alg_bell:
+    case rocsparse_spmm_alg_bsr:
     case rocsparse_spmm_alg_coo_segmented:
     case rocsparse_spmm_alg_coo_atomic:
     case rocsparse_spmm_alg_coo_segmented_atomic:
@@ -121,6 +123,7 @@ rocsparse_status rocsparse_spmm_alg2coomm_alg(rocsparse_spmm_alg   spmm_alg,
     }
 
     case rocsparse_spmm_alg_bell:
+    case rocsparse_spmm_alg_bsr:
     case rocsparse_spmm_alg_csr:
     case rocsparse_spmm_alg_csr_row_split:
     case rocsparse_spmm_alg_csr_merge:
@@ -345,6 +348,10 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
         rocsparse_coomm_alg coomm_alg;
         RETURN_IF_ROCSPARSE_ERROR((rocsparse_spmm_alg2coomm_alg(alg, coomm_alg)));
 
+        const I m = (I)mat_A->rows;
+        const I n = (I)mat_C->cols;
+        const I k = (I)mat_A->cols;
+
         switch(stage)
         {
         case rocsparse_spmm_stage_buffer_size:
@@ -352,9 +359,9 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
             return rocsparse_coomm_buffer_size_template(handle,
                                                         trans_A,
                                                         coomm_alg,
-                                                        (I)mat_A->rows,
-                                                        (I)mat_C->cols,
-                                                        (I)mat_A->cols,
+                                                        m,
+                                                        n,
+                                                        k,
                                                         (I)mat_A->nnz,
                                                         (I)mat_C->batch_count,
                                                         mat_A->descr,
@@ -369,9 +376,9 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
             return rocsparse_coomm_analysis_template(handle,
                                                      trans_A,
                                                      coomm_alg,
-                                                     (I)mat_A->rows,
-                                                     (I)mat_C->cols,
-                                                     (I)mat_A->cols,
+                                                     m,
+                                                     n,
+                                                     k,
                                                      (I)mat_A->nnz,
                                                      mat_A->descr,
                                                      (const T*)mat_A->val_data,
@@ -388,9 +395,9 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
                                             mat_B->order,
                                             mat_C->order,
                                             coomm_alg,
-                                            (I)mat_A->rows,
-                                            (I)mat_C->cols,
-                                            (I)mat_A->cols,
+                                            m,
+                                            n,
+                                            k,
                                             (I)mat_A->nnz,
                                             (I)mat_A->batch_count,
                                             (I)mat_A->batch_stride,
@@ -559,6 +566,7 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
 
     case rocsparse_format_coo_aos:
     case rocsparse_format_ell:
+    case rocsparse_format_bsr:
     {
         return rocsparse_status_not_implemented;
     }
@@ -825,6 +833,7 @@ static rocsparse_indextype determine_I_index_type(rocsparse_spmat_descr mat)
     case rocsparse_format_csr:
     case rocsparse_format_ell:
     case rocsparse_format_bell:
+    case rocsparse_format_bsr:
     {
         return mat->row_type;
     }
@@ -844,6 +853,7 @@ static rocsparse_indextype determine_J_index_type(rocsparse_spmat_descr mat)
     case rocsparse_format_csr:
     case rocsparse_format_ell:
     case rocsparse_format_bell:
+    case rocsparse_format_bsr:
     {
         return mat->col_type;
     }

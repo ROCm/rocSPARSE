@@ -136,6 +136,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_spmat_descr.cpp
   test_dnvec_descr.cpp
   test_dnmat_descr.cpp
+  test_spmv_bsr.cpp
   test_spmv_coo.cpp
   test_spmv_coo_aos.cpp
   test_spmv_csr.cpp
@@ -166,6 +167,14 @@ set(ROCSPARSE_TEST_SOURCES
   test_sddmm.cpp
   test_csrcolor.cpp
   test_copy_info.cpp
+  test_check_matrix_csr.cpp
+  test_check_matrix_coo.cpp
+  test_check_matrix_gebsr.cpp
+  test_check_matrix_gebsc.cpp
+  test_check_matrix_csc.cpp
+  test_check_matrix_ell.cpp
+  test_check_matrix_hyb.cpp
+  test_bsrpad_value.cpp
 )
 
 set(ROCSPARSE_CLIENTS_TESTINGS
@@ -244,6 +253,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_dnmat_descr.cpp
 ../testings/testing_spmv_coo.cpp
 ../testings/testing_spmv_coo_aos.cpp
+../testings/testing_spmv_bsr.cpp
 ../testings/testing_spmv_csr.cpp
 ../testings/testing_spmv_csc.cpp
 ../testings/testing_spmv_ell.cpp
@@ -272,6 +282,14 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_sddmm.cpp
 ../testings/testing_csrcolor.cpp
 ../testings/testing_copy_info.cpp
+../testings/testing_check_matrix_csr.cpp
+../testings/testing_check_matrix_coo.cpp
+../testings/testing_check_matrix_gebsr.cpp
+../testings/testing_check_matrix_gebsc.cpp
+../testings/testing_check_matrix_csc.cpp
+../testings/testing_check_matrix_ell.cpp
+../testings/testing_check_matrix_hyb.cpp
+../testings/testing_bsrpad_value.cpp
   )
 
 

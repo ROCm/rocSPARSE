@@ -36,11 +36,21 @@
 #if defined(rocsparse_ILP64)
 static inline rocsparse_int rocsparse_clz(rocsparse_int n)
 {
+    // __builtin_clzll is undefined for n == 0
+    if(n == 0)
+    {
+        return 0;
+    }
     return 64 - __builtin_clzll(n);
 }
 #else
 static inline rocsparse_int rocsparse_clz(rocsparse_int n)
 {
+    // __builtin_clz is undefined for n == 0
+    if(n == 0)
+    {
+        return 0;
+    }
     return 32 - __builtin_clz(n);
 }
 #endif
@@ -102,6 +112,25 @@ void log_bench(rocsparse_handle handle, H head, std::string precision, Ts&&... x
 
             std::ostream* os = handle->log_bench_os;
             log_arguments(*os, space_separator, head, precision, std::forward<Ts>(xs)...);
+        }
+    }
+}
+
+// if debug logging is turned on with
+// (handle->layer_mode & rocsparse_layer_mode_log_debug) == true
+// then
+// log_debug will call log_arguments to log a error message
+// when a routine returns a status which is not rocsparse_status_success.
+static inline void log_debug(rocsparse_handle handle, std::string message)
+{
+    if(nullptr != handle)
+    {
+        if(handle->layer_mode & rocsparse_layer_mode_log_debug)
+        {
+            std::string space_separator = " ";
+
+            std::ostream* os = handle->log_debug_os;
+            log_arguments(*os, space_separator, message);
         }
     }
 }
@@ -476,6 +505,7 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
     case rocsparse_spmv_alg_csr_stream:
     case rocsparse_spmv_alg_ell:
     case rocsparse_spmv_alg_coo_atomic:
+    case rocsparse_spmv_alg_bsr:
     {
         return false;
     }
@@ -554,6 +584,7 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmm_alg value_)
     case rocsparse_spmm_alg_csr_merge:
     case rocsparse_spmm_alg_coo_segmented_atomic:
     case rocsparse_spmm_alg_bell:
+    case rocsparse_spmm_alg_bsr:
     {
         return false;
     }

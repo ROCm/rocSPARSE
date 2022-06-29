@@ -753,4 +753,53 @@ constexpr double coosort_gbyte_count(rocsparse_int nnz, bool permute)
     return ((4.0 * nnz + (permute ? 2.0 * nnz : 0.0)) * sizeof(rocsparse_int)) / 1e9;
 }
 
+/*
+ * ===========================================================================
+ *    utility SPARSE
+ * ===========================================================================
+ */
+template <typename T, typename I, typename J>
+constexpr double check_matrix_csr_gbyte_count(J m, I nnz)
+{
+    return (sizeof(I) * (m + 1) + sizeof(J) * nnz + sizeof(T) * nnz) / 1e9;
+}
+
+template <typename T, typename I, typename J>
+constexpr double check_matrix_csc_gbyte_count(J n, I nnz)
+{
+    return check_matrix_csr_gbyte_count<T>(n, nnz);
+}
+
+template <typename T, typename I>
+constexpr double check_matrix_coo_gbyte_count(I nnz)
+{
+    return (2.0 * sizeof(I) * nnz + sizeof(T) * nnz) / 1e9;
+}
+
+template <typename T, typename I, typename J>
+constexpr double check_matrix_gebsr_gbyte_count(J mb, I nnzb, J row_block_dim, J col_block_dim)
+{
+    return (sizeof(I) * (mb + 1) + sizeof(J) * nnzb
+            + sizeof(T) * nnzb * row_block_dim * col_block_dim)
+           / 1e9;
+}
+
+template <typename T, typename I, typename J>
+constexpr double check_matrix_gebsc_gbyte_count(J nb, I nnzb, J row_block_dim, J col_block_dim)
+{
+    return check_matrix_gebsr_gbyte_count<T>(nb, nnzb, row_block_dim, col_block_dim);
+}
+
+template <typename T, typename I>
+constexpr double check_matrix_ell_gbyte_count(I ell_nnz)
+{
+    return (sizeof(I) * ell_nnz + sizeof(T) * ell_nnz) / 1e9;
+}
+
+template <typename T, typename I>
+constexpr double check_matrix_hyb_gbyte_count(I ell_nnz, I coo_nnz)
+{
+    return (sizeof(I) * (ell_nnz + 2.0 * coo_nnz) + sizeof(T) * (ell_nnz + coo_nnz)) / 1e9;
+}
+
 #endif // GBYTE_HPP

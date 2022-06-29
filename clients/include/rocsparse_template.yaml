@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -373,4 +373,37 @@ Functions:
   rocsparse_cscsort: { function: cscsort }
   rocsparse_coosort_by_row: { function: coosort }
   rocsparse_coosort_by_column: { function: coosort }
+  rocsparse_sbsrpad_value: { function: bsrpad_value, <<: *single_precision }
+  rocsparse_dbsrpad_value: { function: bsrpad_value, <<: *double_precision }
+  rocsparse_cbsrpad_value: { function: bsrpad_value, <<: *single_precision_complex }
+  rocsparse_zbsrpad_value: { function: bsrpad_value, <<: *double_precision_complex }
+
+  rocsparse_scheck_matrix_csr: { function: check_matrix_csr, <<: *single_precision }
+  rocsparse_dcheck_matrix_csr: { function: check_matrix_csr, <<: *double_precision }
+  rocsparse_ccheck_matrix_csr: { function: check_matrix_csr, <<: *single_precision_complex }
+  rocsparse_zcheck_matrix_csr: { function: check_matrix_csr, <<: *double_precision_complex }
+  rocsparse_scheck_matrix_csc: { function: check_matrix_csc, <<: *single_precision }
+  rocsparse_dcheck_matrix_csc: { function: check_matrix_csc, <<: *double_precision }
+  rocsparse_ccheck_matrix_csc: { function: check_matrix_csc, <<: *single_precision_complex }
+  rocsparse_zcheck_matrix_csc: { function: check_matrix_csc, <<: *double_precision_complex }
+  rocsparse_scheck_matrix_coo: { function: check_matrix_coo, <<: *single_precision }
+  rocsparse_dcheck_matrix_coo: { function: check_matrix_coo, <<: *double_precision }
+  rocsparse_ccheck_matrix_coo: { function: check_matrix_coo, <<: *single_precision_complex }
+  rocsparse_zcheck_matrix_coo: { function: check_matrix_coo, <<: *double_precision_complex }
+  rocsparse_scheck_matrix_gebsr: { function: check_matrix_gebsr, <<: *single_precision }
+  rocsparse_dcheck_matrix_gebsr: { function: check_matrix_gebsr, <<: *double_precision }
+  rocsparse_ccheck_matrix_gebsr: { function: check_matrix_gebsr, <<: *single_precision_complex }
+  rocsparse_zcheck_matrix_gebsr: { function: check_matrix_gebsr, <<: *double_precision_complex }
+  rocsparse_scheck_matrix_gebsc: { function: check_matrix_gebsc, <<: *single_precision }
+  rocsparse_dcheck_matrix_gebsc: { function: check_matrix_gebsc, <<: *double_precision }
+  rocsparse_ccheck_matrix_gebsc: { function: check_matrix_gebsc, <<: *single_precision_complex }
+  rocsparse_zcheck_matrix_gebsc: { function: check_matrix_gebsc, <<: *double_precision_complex }
+  rocsparse_scheck_matrix_ell: { function: check_matrix_ell, <<: *single_precision }
+  rocsparse_dcheck_matrix_ell: { function: check_matrix_ell, <<: *double_precision }
+  rocsparse_ccheck_matrix_ell: { function: check_matrix_ell, <<: *single_precision_complex }
+  rocsparse_zcheck_matrix_ell: { function: check_matrix_ell, <<: *double_precision_complex }
+  rocsparse_scheck_matrix_hyb: { function: check_matrix_hyb, <<: *single_precision }
+  rocsparse_dcheck_matrix_hyb: { function: check_matrix_hyb, <<: *double_precision }
+  rocsparse_ccheck_matrix_hyb: { function: check_matrix_hyb, <<: *single_precision_complex }
+  rocsparse_zcheck_matrix_hyb: { function: check_matrix_hyb, <<: *double_precision_complex }
 Tests:

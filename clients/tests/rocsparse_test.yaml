@@ -95,6 +95,7 @@ include: test_spvec_descr.yaml
 include: test_spmat_descr.yaml
 include: test_dnvec_descr.yaml
 include: test_dnmat_descr.yaml
+include: test_spmv_bsr.yaml
 include: test_spmv_coo.yaml
 include: test_spmv_coo_aos.yaml
 include: test_spmv_csr.yaml
@@ -124,3 +125,11 @@ include: test_gemvi.yaml
 include: test_sddmm.yaml
 include: test_csrcolor.yaml
 include: test_copy_info.yaml
+include: test_check_matrix_csr.yaml
+include: test_check_matrix_coo.yaml
+include: test_check_matrix_gebsr.yaml
+include: test_check_matrix_gebsc.yaml
+include: test_check_matrix_csc.yaml
+include: test_check_matrix_ell.yaml
+include: test_check_matrix_hyb.yaml
+include: test_bsrpad_value.yaml

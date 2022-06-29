@@ -272,6 +272,8 @@ constexpr auto rocsparse_format2string(rocsparse_format format)
         return "coo_aos";
     case rocsparse_format_csr:
         return "csr";
+    case rocsparse_format_bsr:
+        return "bsr";
     case rocsparse_format_csc:
         return "csc";
     case rocsparse_format_ell:
@@ -298,6 +300,8 @@ constexpr auto rocsparse_spmvalg2string(rocsparse_spmv_alg alg)
     {
     case rocsparse_spmv_alg_default:
         return "default";
+    case rocsparse_spmv_alg_bsr:
+        return "bsr";
     case rocsparse_spmv_alg_coo:
         return "coo";
     case rocsparse_spmv_alg_csr_adaptive:
@@ -338,6 +342,8 @@ constexpr auto rocsparse_spmmalg2string(rocsparse_spmm_alg alg)
     {
     case rocsparse_spmm_alg_default:
         return "default";
+    case rocsparse_spmm_alg_bsr:
+        return "bsr";
     case rocsparse_spmm_alg_csr:
         return "csr";
     case rocsparse_spmm_alg_coo_segmented:

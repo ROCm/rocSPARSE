@@ -37,6 +37,13 @@ ROCSPARSE_DO_ROUTINE(bsrsm)					\
 ROCSPARSE_DO_ROUTINE(bsrsv)					\
 ROCSPARSE_DO_ROUTINE(bsrxmv)					\
 ROCSPARSE_DO_ROUTINE(bsr2csr)					\
+ROCSPARSE_DO_ROUTINE(check_matrix_csr)					\
+ROCSPARSE_DO_ROUTINE(check_matrix_csc)					\
+ROCSPARSE_DO_ROUTINE(check_matrix_coo)					\
+ROCSPARSE_DO_ROUTINE(check_matrix_gebsr)					\
+ROCSPARSE_DO_ROUTINE(check_matrix_gebsc)					\
+ROCSPARSE_DO_ROUTINE(check_matrix_ell)					\
+ROCSPARSE_DO_ROUTINE(check_matrix_hyb)					\
 ROCSPARSE_DO_ROUTINE(coomm)					\
 ROCSPARSE_DO_ROUTINE(coomm_batched)					\
 ROCSPARSE_DO_ROUTINE(coomv)					\

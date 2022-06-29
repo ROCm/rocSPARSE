@@ -208,6 +208,7 @@ constexpr const char* rocsparse_routine::to_string() const
 #include "testing_gebsrmv.hpp"
 #include "testing_gemvi.hpp"
 #include "testing_hybmv.hpp"
+#include "testing_spmv_bsr.hpp"
 #include "testing_spmv_coo.hpp"
 #include "testing_spmv_coo_aos.hpp"
 #include "testing_spmv_csc.hpp"
@@ -288,8 +289,18 @@ constexpr const char* rocsparse_routine::to_string() const
 #include "testing_sparse_to_dense_coo.hpp"
 #include "testing_sparse_to_dense_csc.hpp"
 #include "testing_sparse_to_dense_csr.hpp"
+
 // Reordering
 #include "testing_csrcolor.hpp"
+
+// Util
+#include "testing_check_matrix_coo.hpp"
+#include "testing_check_matrix_csc.hpp"
+#include "testing_check_matrix_csr.hpp"
+#include "testing_check_matrix_ell.hpp"
+#include "testing_check_matrix_gebsc.hpp"
+#include "testing_check_matrix_gebsr.hpp"
+#include "testing_check_matrix_hyb.hpp"
 
 template <rocsparse_routine::value_type FNAME, typename T, typename I, typename J>
 rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
@@ -418,11 +429,17 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_T(bsric0);
         DEFINE_CASE_T(bsrilu0);
         DEFINE_CASE_T(bsrmm);
-        DEFINE_CASE_T(bsrmv);
         DEFINE_CASE_T(bsrsm);
         DEFINE_CASE_T(bsrsv);
         DEFINE_CASE_T(bsrxmv);
         DEFINE_CASE_T(bsr2csr);
+        DEFINE_CASE_T(check_matrix_csr);
+        DEFINE_CASE_T(check_matrix_csc);
+        DEFINE_CASE_T(check_matrix_coo);
+        DEFINE_CASE_T(check_matrix_gebsr);
+        DEFINE_CASE_T(check_matrix_gebsc);
+        DEFINE_CASE_T(check_matrix_ell);
+        DEFINE_CASE_T(check_matrix_hyb);
         DEFINE_CASE_IT_X(coomm, testing_spmm_coo);
         DEFINE_CASE_IT_X(coomm_batched, testing_spmm_batched_coo);
         DEFINE_CASE_IT_X(coomv, testing_spmv_coo);
@@ -440,6 +457,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_T(csrgeam);
         DEFINE_CASE_IJT_X(csrgemm, testing_spgemm_csr);
         DEFINE_CASE_T(csrgemm_reuse);
+        DEFINE_CASE_IJT_X(bsrmv, testing_spmv_bsr);
         DEFINE_CASE_IJT_X(csrmv, testing_spmv_csr);
         DEFINE_CASE_T(csrmv_managed);
         DEFINE_CASE_IJT_X(cscmv, testing_spmv_csc);

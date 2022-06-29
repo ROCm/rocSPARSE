@@ -179,17 +179,17 @@ void host_sctr(I nnz, const T* x_val, const I* x_ind, T* y, rocsparse_index_base
  *    level 2 SPARSE
  * ===========================================================================
  */
-template <typename T>
+template <typename T, typename I, typename J>
 void host_bsrmv(rocsparse_direction  dir,
                 rocsparse_operation  trans,
-                rocsparse_int        mb,
-                rocsparse_int        nb,
-                rocsparse_int        nnzb,
+                J                    mb,
+                J                    nb,
+                I                    nnzb,
                 T                    alpha,
-                const rocsparse_int* bsr_row_ptr,
-                const rocsparse_int* bsr_col_ind,
+                const I*             bsr_row_ptr,
+                const J*             bsr_col_ind,
                 const T*             bsr_val,
-                rocsparse_int        bsr_dim,
+                J                    bsr_dim,
                 const T*             x,
                 T                    beta,
                 T*                   y,
@@ -480,7 +480,9 @@ void host_csrmm_batched(J                    M,
 template <typename T, typename I>
 void host_coomm(I                    M,
                 I                    N,
+                I                    K,
                 I                    nnz,
+                rocsparse_operation  transA,
                 rocsparse_operation  transB,
                 T                    alpha,
                 const I*             coo_row_ind_A,
@@ -497,9 +499,11 @@ void host_coomm(I                    M,
 template <typename T, typename I>
 void host_coomm_batched(I                    M,
                         I                    N,
+                        I                    K,
                         I                    nnz,
                         I                    batch_count_A,
                         I                    batch_stride_A,
+                        rocsparse_operation  transA,
                         rocsparse_operation  transB,
                         T                    alpha,
                         const I*             coo_row_ind_A,
@@ -964,6 +968,17 @@ void host_csr_to_gebsr(rocsparse_direction               direction,
                        std::vector<rocsparse_int>&       bsr_row_ptr,
                        std::vector<rocsparse_int>&       bsr_col_ind,
                        rocsparse_index_base              bsr_base);
+
+template <typename T>
+void host_bsrpad_value(rocsparse_int m,
+                       rocsparse_int mb,
+                       rocsparse_int nnzb,
+                       rocsparse_int block_dim,
+                       T             value,
+                       T* __restrict bsr_val,
+                       const rocsparse_int* __restrict bsr_row_ptr,
+                       const rocsparse_int* __restrict bsr_col_ind,
+                       rocsparse_index_base bsr_base);
 
 template <typename T>
 void host_gebsr_to_gebsr(rocsparse_direction               direction,

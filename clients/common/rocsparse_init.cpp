@@ -564,6 +564,10 @@ void rocsparse_init_csr_laplace2d(std::vector<I>&      row_ptr,
 
     // Adjust nnz by index base
     nnz -= base;
+
+    // compress to actual nnz
+    col_ind.resize(nnz);
+    val.resize(nnz);
 }
 
 /* ==================================================================================== */
@@ -716,6 +720,10 @@ void rocsparse_init_csr_laplace3d(std::vector<I>&      row_ptr,
 
     // Adjust nnz by index base
     nnz -= base;
+
+    // compress to actual nnz
+    col_ind.resize(nnz);
+    val.resize(nnz);
 }
 
 /* ==================================================================================== */

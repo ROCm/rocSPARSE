@@ -38,7 +38,7 @@ std::string rocsparse_exepath();
 #include "rocsparse_matrix_factory_zero.hpp"
 
 template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
-struct rocsparse_matrix_factory
+struct rocsparse_matrix_factory : public rocsparse_matrix_factory_base<T, I, J>
 {
 public:
     const Arguments& m_arg;
@@ -61,67 +61,131 @@ public:
                                       bool             full_rank = false,
                                       bool             noseed    = false);
 
-    void init_csr(std::vector<I>&      csr_row_ptr,
-                  std::vector<J>&      csr_col_ind,
-                  std::vector<T>&      csr_val,
-                  J&                   M,
-                  J&                   N,
+    virtual void init_csr(std::vector<I>&        csr_row_ptr,
+                          std::vector<J>&        csr_col_ind,
+                          std::vector<T>&        csr_val,
+                          J&                     m,
+                          J&                     n,
+                          I&                     nnz,
+                          rocsparse_index_base   base,
+                          rocsparse_matrix_type  matrix_type,
+                          rocsparse_fill_mode    uplo,
+                          rocsparse_storage_mode storage)
+    {
+        return this->m_instance->init_csr(
+            csr_row_ptr, csr_col_ind, csr_val, m, n, nnz, base, matrix_type, uplo, storage);
+    }
+
+    virtual void init_gebsr(std::vector<I>&        bsr_row_ptr,
+                            std::vector<J>&        bsr_col_ind,
+                            std::vector<T>&        bsr_val,
+                            rocsparse_direction    dirb,
+                            J&                     mb,
+                            J&                     nb,
+                            I&                     nnzb,
+                            J&                     row_block_dim,
+                            J&                     col_block_dim,
+                            rocsparse_index_base   base,
+                            rocsparse_matrix_type  matrix_type,
+                            rocsparse_fill_mode    uplo,
+                            rocsparse_storage_mode storage)
+    {
+        return this->m_instance->init_gebsr(bsr_row_ptr,
+                                            bsr_col_ind,
+                                            bsr_val,
+                                            dirb,
+                                            mb,
+                                            nb,
+                                            nnzb,
+                                            row_block_dim,
+                                            col_block_dim,
+                                            base,
+                                            matrix_type,
+                                            uplo,
+                                            storage);
+    }
+
+    virtual void init_coo(std::vector<I>&        coo_row_ind,
+                          std::vector<I>&        coo_col_ind,
+                          std::vector<T>&        coo_val,
+                          I&                     m,
+                          I&                     n,
+                          I&                     nnz,
+                          rocsparse_index_base   base,
+                          rocsparse_matrix_type  matrix_type,
+                          rocsparse_fill_mode    uplo,
+                          rocsparse_storage_mode storage)
+    {
+        return this->m_instance->init_coo(
+            coo_row_ind, coo_col_ind, coo_val, m, n, nnz, base, matrix_type, uplo, storage);
+    }
+
+    //
+    // COO
+    //
+    void init_coo(std::vector<I>&      coo_row_ind,
+                  std::vector<I>&      coo_col_ind,
+                  std::vector<T>&      coo_val,
+                  I&                   m,
+                  I&                   n,
                   I&                   nnz,
                   rocsparse_index_base base);
 
+    void init_coo(host_coo_matrix<T, I>& that);
+    void init_coo(host_coo_matrix<T, I>& that, I& m, I& n);
+    void init_coo(host_coo_matrix<T, I>& that, I& m, I& n, rocsparse_index_base base);
+
+    //
+    // CSR
+    //
+    void init_csr(std::vector<I>&      csr_row_ptr,
+                  std::vector<J>&      csr_col_ind,
+                  std::vector<T>&      csr_val,
+                  J&                   m,
+                  J&                   n,
+                  I&                   nnz,
+                  rocsparse_index_base base);
+
+    void init_csr(host_csr_matrix<T, I, J>& that);
+    void init_csr(host_csr_matrix<T, I, J>& that, J& m, J& n);
+    void init_csr(host_csr_matrix<T, I, J>& that, J& m, J& n, rocsparse_index_base base);
+
+    //
+    // CSC
+    //
+    void init_csc(std::vector<I>&      csc_col_ptr,
+                  std::vector<J>&      csc_row_ind,
+                  std::vector<T>&      csc_val,
+                  J&                   m,
+                  J&                   n,
+                  I&                   nnz,
+                  rocsparse_index_base base);
+
+    void init_csc(host_csc_matrix<T, I, J>& that, J& m, J& n, rocsparse_index_base base);
+
+    //
+    // GEBSR
+    //
     void init_gebsr(std::vector<I>&      bsr_row_ptr,
                     std::vector<J>&      bsr_col_ind,
                     std::vector<T>&      bsr_val,
                     rocsparse_direction  dirb,
-                    J&                   Mb,
-                    J&                   Nb,
+                    J&                   mb,
+                    J&                   nb,
                     I&                   nnzb,
                     J&                   row_block_dim,
                     J&                   col_block_dim,
                     rocsparse_index_base base);
 
-    void init_coo(std::vector<I>&      coo_row_ind,
-                  std::vector<I>&      coo_col_ind,
-                  std::vector<T>&      coo_val,
-                  I&                   M,
-                  I&                   N,
-                  I&                   nnz,
-                  rocsparse_index_base base);
-
-    void init_csc(std::vector<I>&      csc_col_ptr,
-                  std::vector<J>&      csc_row_ind,
-                  std::vector<T>&      csc_val,
-                  J&                   M,
-                  J&                   N,
-                  I&                   nnz,
-                  rocsparse_index_base base);
-
-    void init_bsr(std::vector<I>&      bsr_row_ptr,
-                  std::vector<J>&      bsr_col_ind,
-                  std::vector<T>&      bsr_val,
-                  rocsparse_direction  dirb,
-                  J&                   Mb,
-                  J&                   Nb,
-                  I&                   nnzb,
-                  J&                   block_dim,
-                  rocsparse_index_base base);
-
-    // @brief Init host csr matrix.
-    void init_csr(host_csr_matrix<T, I, J>& that);
-    void init_csr(host_csr_matrix<T, I, J>& that, J& m, J& n);
-    void init_csr(host_csr_matrix<T, I, J>& that, J& m, J& n, rocsparse_index_base base);
-
-    void init_csc(host_csc_matrix<T, I, J>& that, J& m, J& n, rocsparse_index_base base);
-    void init_bsr(host_gebsr_matrix<T, I, J>&   that,
-                  device_gebsr_matrix<T, I, J>& that_on_device,
-                  J&                            mb_,
-                  J&                            nb_);
-
-    void init_bsr(host_gebsr_matrix<T, I, J>& that, J& mb_, J& nb_);
-
     void init_gebsr(host_gebsr_matrix<T, I, J>& that);
-    void init_gebsr(
-        host_gebsr_matrix<T, I, J>& that, J& mb, J& nb, J& row_block_dim, J& col_block_dim);
+
+    void init_gebsr(host_gebsr_matrix<T, I, J>& that,
+                    J&                          mb,
+                    J&                          nb,
+                    J&                          row_block_dim,
+                    J&                          col_block_dim,
+                    rocsparse_index_base        base_);
+
     void init_gebsr(host_gebsr_matrix<T, I, J>& that,
                     rocsparse_direction         block_dir_,
                     J&                          mb_,
@@ -130,18 +194,56 @@ public:
                     J&                          row_block_dim_,
                     J&                          col_block_dim_,
                     rocsparse_index_base        base_);
-    void init_gebsr_spezial(host_gebsr_matrix<T, I, J>& that, J& Mb, J& Nb);
 
-    void init_coo(host_coo_matrix<T, I>& that);
-    void init_coo(host_coo_matrix<T, I>& that, I& M, I& N);
-    void init_coo(host_coo_matrix<T, I>& that, I& M, I& N, rocsparse_index_base base);
+    void init_gebsr_spezial(host_gebsr_matrix<T, I, J>& that, J& mb, J& nb);
 
-    void init_coo_aos(host_coo_aos_matrix<T, I>& that, I& M, I& N, rocsparse_index_base base);
+    void init_gebsc(std::vector<I>&      bsc_col_ptr,
+                    std::vector<J>&      bsc_row_ind,
+                    std::vector<T>&      bsc_val,
+                    rocsparse_direction  dirb,
+                    J&                   Mb,
+                    J&                   Nb,
+                    I&                   nnzb,
+                    J&                   row_block_dim,
+                    J&                   col_block_dim,
+                    rocsparse_index_base base);
 
-    void init_ell(host_ell_matrix<T, I>& that, I& M, I& N, rocsparse_index_base base);
+    //
+    // BSR
+    //
+    void init_bsr(std::vector<I>&      bsr_row_ptr,
+                  std::vector<J>&      bsr_col_ind,
+                  std::vector<T>&      bsr_val,
+                  rocsparse_direction  dirb,
+                  J&                   mb,
+                  J&                   nb,
+                  I&                   nnzb,
+                  J&                   block_dim,
+                  rocsparse_index_base base);
 
+    void init_bsr(host_gebsr_matrix<T, I, J>& that_, J& mb_, J& nb_, rocsparse_index_base base_);
+
+    void init_bsr(host_gebsr_matrix<T, I, J>&   that,
+                  device_gebsr_matrix<T, I, J>& that_on_device,
+                  J&                            mb_,
+                  J&                            nb_,
+                  rocsparse_index_base          base_);
+
+    //
+    // COO AOS
+    //
+    void init_coo_aos(host_coo_aos_matrix<T, I>& that, I& m, I& n, rocsparse_index_base base);
+
+    //
+    // ELL
+    //
+    void init_ell(host_ell_matrix<T, I>& that, I& m, I& n, rocsparse_index_base base);
+
+    //
+    // HYBRID
+    //
     void init_hyb(
-        rocsparse_hyb_mat hyb, I& M, I& N, I& nnz, rocsparse_index_base base, bool& conform);
+        rocsparse_hyb_mat hyb, I& m, I& n, I& nnz, rocsparse_index_base base, bool& conform);
 };
 
 //
@@ -155,8 +257,8 @@ inline void rocsparse_init_gebsr_matrix_from_csr(rocsparse_matrix_factory<T>& ma
                                                  std::vector<rocsparse_int>&  bsr_col_ind,
                                                  std::vector<T>&              bsr_val,
                                                  rocsparse_direction          direction,
-                                                 rocsparse_int&               Mb,
-                                                 rocsparse_int&               Nb,
+                                                 rocsparse_int&               mb,
+                                                 rocsparse_int&               nb,
                                                  rocsparse_int                row_block_dim,
                                                  rocsparse_int                col_block_dim,
                                                  rocsparse_int&               nnzb,
@@ -167,7 +269,7 @@ inline void rocsparse_init_gebsr_matrix_from_csr(rocsparse_matrix_factory<T>& ma
 
     // Generate uncompressed CSR matrix on host (or read from file)
 
-    matrix_factory.init_csr(bsr_row_ptr, bsr_col_ind, hcsr_val_A, Mb, Nb, nnzb, bsr_base);
+    matrix_factory.init_csr(bsr_row_ptr, bsr_col_ind, hcsr_val_A, mb, nb, nnzb, bsr_base);
 
     bsr_val.resize(row_block_dim * col_block_dim * nnzb);
     rocsparse_int idx = 0;
@@ -176,7 +278,7 @@ inline void rocsparse_init_gebsr_matrix_from_csr(rocsparse_matrix_factory<T>& ma
     {
     case rocsparse_direction_column:
     {
-        for(rocsparse_int i = 0; i < Mb; ++i)
+        for(rocsparse_int i = 0; i < mb; ++i)
         {
             for(rocsparse_int r = 0; r < row_block_dim; ++r)
             {
@@ -196,7 +298,7 @@ inline void rocsparse_init_gebsr_matrix_from_csr(rocsparse_matrix_factory<T>& ma
 
     case rocsparse_direction_row:
     {
-        for(rocsparse_int i = 0; i < Mb; ++i)
+        for(rocsparse_int i = 0; i < mb; ++i)
         {
             for(rocsparse_int r = 0; r < row_block_dim; ++r)
             {

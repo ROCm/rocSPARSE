@@ -135,6 +135,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_csr2dense.cpp
 ../testings/testing_csc2dense.cpp
 ../testings/testing_coo2dense.cpp
+../testings/testing_spmv_bsr.cpp
 ../testings/testing_spmv_coo.cpp
 ../testings/testing_spmv_coo_aos.cpp
 ../testings/testing_spmv_csr.cpp
@@ -154,6 +155,14 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_gemvi.cpp
 ../testings/testing_sddmm.cpp
 ../testings/testing_csrcolor.cpp
+../testings/testing_check_matrix_csr.cpp
+../testings/testing_check_matrix_csc.cpp
+../testings/testing_check_matrix_coo.cpp
+../testings/testing_check_matrix_gebsr.cpp
+../testings/testing_check_matrix_gebsc.cpp
+../testings/testing_check_matrix_ell.cpp
+../testings/testing_check_matrix_hyb.cpp
+../testings/testing_bsrpad_value.cpp
 )
 
 add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})

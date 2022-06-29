@@ -52,6 +52,7 @@ rocsparse_status rocsparse_record_output_legend(const std::string&);
 #define CHECK_HIP_ERROR(ERROR) CHECK_HIP_ERROR2(ERROR)
 
 #define EXPECT_ROCSPARSE_STATUS ASSERT_EQ
+#define EXPECT_ROCSPARSE_DATA_STATUS ASSERT_EQ
 
 #else // GOOGLE_TEST
 
@@ -90,6 +91,31 @@ inline const char* rocsparse_status_to_string(rocsparse_status status)
     }
 }
 
+inline const char* rocsparse_data_status_to_string(rocsparse_data_status status)
+{
+    switch(status)
+    {
+    case rocsparse_data_status_success:
+        return "rocsparse_data_status_success";
+    case rocsparse_data_status_inf:
+        return "rocsparse_data_status_inf";
+    case rocsparse_data_status_nan:
+        return "rocsparse_data_status_nan";
+    case rocsparse_data_status_invalid_offset_ptr:
+        return "rocsparse_data_status_invalid_offset_ptr";
+    case rocsparse_data_status_invalid_index:
+        return "rocsparse_data_status_invalid_index";
+    case rocsparse_data_status_duplicate_entry:
+        return "rocsparse_data_status_duplicate_entry";
+    case rocsparse_data_status_invalid_sorting:
+        return "rocsparse_data_status_invalid_sorting";
+    case rocsparse_data_status_invalid_fill:
+        return "rocsparse_data_status_invalid_fill";
+    default:
+        return "<undefined rocsparse_status value>";
+    }
+}
+
 inline void rocsparse_expect_status(rocsparse_status status, rocsparse_status expect)
 {
     if(status != expect)
@@ -97,6 +123,20 @@ inline void rocsparse_expect_status(rocsparse_status status, rocsparse_status ex
         std::cerr << "rocSPARSE status error: Expected " << rocsparse_status_to_string(expect)
                   << ", received " << rocsparse_status_to_string(status) << std::endl;
         if(expect == rocsparse_status_success)
+        {
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
+inline void rocsparse_expect_data_status(rocsparse_data_status status, rocsparse_data_status expect)
+{
+    if(status != expect)
+    {
+        std::cerr << "rocSPARSE data status error: Expected "
+                  << rocsparse_data_status_to_string(expect) << ", received "
+                  << rocsparse_data_status_to_string(status) << std::endl;
+        if(expect == rocsparse_data_status_success)
         {
             exit(EXIT_FAILURE);
         }
@@ -120,11 +160,15 @@ inline void rocsparse_expect_status(rocsparse_status status, rocsparse_status ex
     } while(0)
 
 #define EXPECT_ROCSPARSE_STATUS rocsparse_expect_status
+#define EXPECT_ROCSPARSE_DATA_STATUS rocsparse_expect_data_status
 
 #endif // GOOGLE_TEST
 
 #define CHECK_ROCSPARSE_ERROR2(STATUS) EXPECT_ROCSPARSE_STATUS(STATUS, rocsparse_status_success)
 #define CHECK_ROCSPARSE_ERROR(STATUS) CHECK_ROCSPARSE_ERROR2(STATUS)
+#define CHECK_ROCSPARSE_DATA_ERROR2(STATUS) \
+    EXPECT_ROCSPARSE_DATA_STATUS(STATUS, rocsparse_data_status_success)
+#define CHECK_ROCSPARSE_DATA_ERROR(STATUS) CHECK_ROCSPARSE_DATA_ERROR2(STATUS)
 
 #define CHECK_ROCSPARSE_THROW_ERROR(STATUS) \
     if(STATUS != rocsparse_status_success)  \
@@ -160,6 +204,7 @@ inline void rocsparse_expect_status(rocsparse_status status, rocsparse_status ex
     INSTANTIATE_TEST_CATEGORY(testclass, quick)       \
     INSTANTIATE_TEST_CATEGORY(testclass, pre_checkin) \
     INSTANTIATE_TEST_CATEGORY(testclass, nightly)     \
+    INSTANTIATE_TEST_CATEGORY(testclass, stress)      \
     INSTANTIATE_TEST_CATEGORY(testclass, known_bug)
 
 /* ============================================================================================ */
