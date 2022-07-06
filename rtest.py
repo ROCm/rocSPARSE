@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # ########################################################################
-# Copyright (c) 2021 Advanced Micro Devices, Inc.
+# Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 #
 # Author: rocsparse-maintainer@amd.com
 #
-"""Copyright 2021 Advanced Micro Devices, Inc.
+"""Copyright 2021 Advanced Micro Devices, Inc. All rights Reserved.
 Run tests on build"""
 
 import re

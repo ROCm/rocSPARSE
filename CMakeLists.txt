@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
+# Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -179,7 +179,7 @@ if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
 endif( )
 
 # Setup version
-set(VERSION_STRING "2.3.2")
+set(VERSION_STRING "2.3.3")
 rocm_setup_version(VERSION ${VERSION_STRING})
 set(rocsparse_SOVERSION 0.1)
 
