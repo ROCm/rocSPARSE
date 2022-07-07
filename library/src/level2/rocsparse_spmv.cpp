@@ -243,6 +243,25 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
             // That's a flaw we need to fix with the use of a rocsparse_spmv_stage enum.
             // We need to wait the next major release where the C-API is allowed to be modified.
             *buffer_size = 4;
+
+            // If atomic algorithm is selected and analysis step is required
+            if(alg == rocsparse_spmv_alg_coo_atomic && mat->analysed == false)
+            {
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (rocsparse_coomv_analysis_template(handle,
+                                                       trans,
+                                                       coomv_alg,
+                                                       (I)mat->rows,
+                                                       (I)mat->cols,
+                                                       (I)mat->nnz,
+                                                       mat->descr,
+                                                       (const T*)mat->val_data,
+                                                       (const I*)mat->row_data,
+                                                       (const I*)mat->col_data)));
+
+                mat->analysed = true;
+            }
+
             return rocsparse_status_success;
         }
 

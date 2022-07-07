@@ -762,4 +762,32 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void conjugate(I m, T* __restrict_
     array[idx] = rocsparse_conj(array[idx]);
 }
 
+template <unsigned int BLOCKSIZE, typename I>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csr_max_nnz_per_row(I m, const I* __restrict__ csr_row_ptr, I* __restrict__ max_nnz)
+{
+    int tid = hipThreadIdx_x;
+    I   gid = tid + BLOCKSIZE * hipBlockIdx_x;
+
+    __shared__ I shared[BLOCKSIZE];
+
+    if(gid < m)
+    {
+        shared[tid] = csr_row_ptr[gid + 1] - csr_row_ptr[gid];
+    }
+    else
+    {
+        shared[tid] = 0;
+    }
+
+    __syncthreads();
+
+    rocsparse_blockreduce_max<BLOCKSIZE>(tid, shared);
+
+    if(tid == 0)
+    {
+        atomicMax(max_nnz, shared[0]);
+    }
+}
+
 #endif // COMMON_H

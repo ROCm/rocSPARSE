@@ -36,6 +36,18 @@ typedef enum rocsparse_coomv_alg_
 } rocsparse_coomv_alg;
 
 template <typename I, typename T>
+rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          handle,
+                                                   rocsparse_operation       trans,
+                                                   rocsparse_coomv_alg       alg,
+                                                   I                         m,
+                                                   I                         n,
+                                                   I                         nnz,
+                                                   const rocsparse_mat_descr descr,
+                                                   const T*                  coo_val,
+                                                   const I*                  coo_row_ind,
+                                                   const I*                  coo_col_ind);
+
+template <typename I, typename T>
 rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
                                           rocsparse_coomv_alg       alg,

@@ -54,39 +54,57 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvn_aos_wf(I nnz,
-                                                                 I loops,
-                                                                 U alpha_device_host,
-                                                                 const I* __restrict__ coo_ind,
-                                                                 const T* __restrict__ coo_val,
-                                                                 const T* __restrict__ x,
-                                                                 T* __restrict__ y,
-                                                                 I* __restrict__ row_block_red,
-                                                                 T* __restrict__ val_block_red,
-                                                                 rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void coomvn_aos_segmented_loops(I nnz,
+                                    I nloops,
+                                    U alpha_device_host,
+                                    const I* __restrict__ coo_ind,
+                                    const T* __restrict__ coo_val,
+                                    const T* __restrict__ x,
+                                    T* __restrict__ y,
+                                    I* __restrict__ row_block_red,
+                                    T* __restrict__ val_block_red,
+                                    rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != static_cast<T>(0))
     {
-        coomvn_aos_general_wf_reduce<BLOCKSIZE, WF_SIZE>(
-            nnz, loops, alpha, coo_ind, coo_val, x, y, row_block_red, val_block_red, idx_base);
+        coomvn_aos_segmented_loops_device<BLOCKSIZE>(
+            nnz, nloops, alpha, coo_ind, coo_val, x, y, row_block_red, val_block_red, idx_base);
     }
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvn_aos_atomic(I nnz,
-                                                                     U alpha_device_host,
-                                                                     const I* __restrict__ coo_ind,
-                                                                     const T* __restrict__ coo_val,
-                                                                     const T* __restrict__ x,
-                                                                     T* __restrict__ y,
-                                                                     rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void coomvn_segmented_loops_reduce(I nblocks,
+                                       U alpha_device_host,
+                                       const I* __restrict__ row_block_red,
+                                       const T* __restrict__ val_block_red,
+                                       T* __restrict__ y)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != static_cast<T>(0))
     {
-        coomvn_aos_atomic_device<BLOCKSIZE>(nnz, alpha, coo_ind, coo_val, x, y, idx_base);
+        coomvn_segmented_loops_reduce_device<BLOCKSIZE>(nblocks, row_block_red, val_block_red, y);
+    }
+}
+
+template <unsigned int BLOCKSIZE, unsigned int LOOPS, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void coomvn_aos_atomic_loops(I nnz,
+                                 U alpha_device_host,
+                                 const I* __restrict__ coo_ind,
+                                 const T* __restrict__ coo_val,
+                                 const T* __restrict__ x,
+                                 T* __restrict__ y,
+                                 rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    if(alpha != static_cast<T>(0))
+    {
+        coomvn_aos_atomic_loops_device<BLOCKSIZE, LOOPS>(
+            nnz, alpha, coo_ind, coo_val, x, y, idx_base);
     }
 }
 
@@ -164,15 +182,9 @@ rocsparse_status rocsparse_coomv_aos_atomic_dispatch(rocsparse_handle          h
     {
     case rocsparse_operation_none:
     {
-#define COOMVN_DIM 256
-        I nblocks = (nnz - 1) / COOMVN_DIM + 1;
-
-        dim3 coomvn_blocks(nblocks);
-        dim3 coomvn_threads(COOMVN_DIM);
-
-        hipLaunchKernelGGL((coomvn_aos_atomic<COOMVN_DIM>),
-                           coomvn_blocks,
-                           coomvn_threads,
+        hipLaunchKernelGGL((coomvn_aos_atomic_loops<256, 1>),
+                           dim3((nnz - 1) / 256 + 1),
+                           dim3(256),
                            0,
                            stream,
                            nnz,
@@ -182,7 +194,6 @@ rocsparse_status rocsparse_coomv_aos_atomic_dispatch(rocsparse_handle          h
                            x,
                            y,
                            descr->base);
-#undef COOMVN_DIM
         break;
     }
     case rocsparse_operation_transpose:
@@ -254,18 +265,14 @@ rocsparse_status rocsparse_coomv_aos_segmented_dispatch(rocsparse_handle        
     {
     case rocsparse_operation_none:
     {
-#define COOMVN_DIM 128
+#define COOMVN_DIM 256
         int maxthreads = handle->properties.maxThreadsPerBlock;
-        int nprocs     = handle->properties.multiProcessorCount;
+        int nprocs     = 2 * handle->properties.multiProcessorCount;
         int maxblocks  = (nprocs * maxthreads - 1) / COOMVN_DIM + 1;
 
         I minblocks = (nnz - 1) / COOMVN_DIM + 1;
         I nblocks   = maxblocks < minblocks ? maxblocks : minblocks;
-        I nwfs      = nblocks * (COOMVN_DIM / handle->wavefront_size);
-        I nloops    = (nnz / handle->wavefront_size + 1) / nwfs + 1;
-
-        dim3 coomvn_blocks(nblocks);
-        dim3 coomvn_threads(COOMVN_DIM);
+        I nloops    = (nnz / COOMVN_DIM + 1) / nblocks + 1;
 
         // Buffer
         char* ptr = reinterpret_cast<char*>(handle->buffer);
@@ -273,60 +280,34 @@ rocsparse_status rocsparse_coomv_aos_segmented_dispatch(rocsparse_handle        
 
         // row block reduction buffer
         I* row_block_red = reinterpret_cast<I*>(ptr);
-        ptr += ((sizeof(I) * nwfs - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(I) * nblocks - 1) / 256 + 1) * 256;
 
         // val block reduction buffer
         T* val_block_red = reinterpret_cast<T*>(ptr);
 
-        RETURN_IF_HIP_ERROR(
-            hipMemset(row_block_red, 0XFF, ((sizeof(I) * nwfs - 1) / 256 + 1) * 256));
-
-        if(handle->wavefront_size == 32)
-        {
-            // LCOV_EXCL_START
-            hipLaunchKernelGGL((coomvn_aos_wf<COOMVN_DIM, 32>),
-                               coomvn_blocks,
-                               coomvn_threads,
-                               0,
-                               stream,
-                               nnz,
-                               nloops,
-                               alpha_device_host,
-                               coo_ind,
-                               coo_val,
-                               x,
-                               y,
-                               row_block_red,
-                               val_block_red,
-                               descr->base);
-            // LCOV_EXCL_STOP
-        }
-        else
-        {
-            assert(handle->wavefront_size == 64);
-            hipLaunchKernelGGL((coomvn_aos_wf<COOMVN_DIM, 64>),
-                               coomvn_blocks,
-                               coomvn_threads,
-                               0,
-                               stream,
-                               nnz,
-                               nloops,
-                               alpha_device_host,
-                               coo_ind,
-                               coo_val,
-                               x,
-                               y,
-                               row_block_red,
-                               val_block_red,
-                               descr->base);
-        }
-
-        hipLaunchKernelGGL((coomvn_general_block_reduce<COOMVN_DIM>),
-                           dim3(1),
-                           coomvn_threads,
+        hipLaunchKernelGGL((coomvn_aos_segmented_loops<COOMVN_DIM>),
+                           dim3(nblocks),
+                           dim3(COOMVN_DIM),
                            0,
                            stream,
-                           nwfs,
+                           nnz,
+                           nloops,
+                           alpha_device_host,
+                           coo_ind,
+                           coo_val,
+                           x,
+                           y,
+                           row_block_red,
+                           val_block_red,
+                           descr->base);
+
+        hipLaunchKernelGGL((coomvn_segmented_loops_reduce<COOMVN_DIM>),
+                           dim3(1),
+                           dim3(COOMVN_DIM),
+                           0,
+                           stream,
+                           nblocks,
+                           alpha_device_host,
                            row_block_red,
                            val_block_red,
                            y);

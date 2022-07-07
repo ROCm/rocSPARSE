@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_coomv.hpp"
+#include "../conversion/rocsparse_coo2csr.hpp"
 #include "definitions.h"
 #include "utility.h"
 
@@ -54,50 +55,67 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvn_wf(I nnz,
-                                                             I loops,
-                                                             U alpha_device_host,
-                                                             const I* __restrict__ coo_row_ind,
-                                                             const I* __restrict__ coo_col_ind,
-                                                             const T* __restrict__ coo_val,
-                                                             const T* __restrict__ x,
-                                                             T* __restrict__ y,
-                                                             I* __restrict__ row_block_red,
-                                                             T* __restrict__ val_block_red,
-                                                             rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void coomvn_segmented_loops(I nnz,
+                                I nloops,
+                                U alpha_device_host,
+                                const I* __restrict__ coo_row_ind,
+                                const I* __restrict__ coo_col_ind,
+                                const T* __restrict__ coo_val,
+                                const T* __restrict__ x,
+                                T* __restrict__ y,
+                                I* __restrict__ row_block_red,
+                                T* __restrict__ val_block_red,
+                                rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != static_cast<T>(0))
     {
-        coomvn_general_wf_reduce<BLOCKSIZE, WF_SIZE>(nnz,
-                                                     loops,
-                                                     alpha,
-                                                     coo_row_ind,
-                                                     coo_col_ind,
-                                                     coo_val,
-                                                     x,
-                                                     y,
-                                                     row_block_red,
-                                                     val_block_red,
-                                                     idx_base);
+        coomvn_segmented_loops_device<BLOCKSIZE>(nnz,
+                                                 nloops,
+                                                 alpha,
+                                                 coo_row_ind,
+                                                 coo_col_ind,
+                                                 coo_val,
+                                                 x,
+                                                 y,
+                                                 row_block_red,
+                                                 val_block_red,
+                                                 idx_base);
     }
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvn_atomic(I nnz,
-                                                                 U alpha_device_host,
-                                                                 const I* __restrict__ coo_row_ind,
-                                                                 const I* __restrict__ coo_col_ind,
-                                                                 const T* __restrict__ coo_val,
-                                                                 const T* __restrict__ x,
-                                                                 T* __restrict__ y,
-                                                                 rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void coomvn_segmented_loops_reduce(I nblocks,
+                                       U alpha_device_host,
+                                       const I* __restrict__ row_block_red,
+                                       const T* __restrict__ val_block_red,
+                                       T* __restrict__ y)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != static_cast<T>(0))
     {
-        coomvn_atomic_device<BLOCKSIZE>(
+        coomvn_segmented_loops_reduce_device<BLOCKSIZE>(nblocks, row_block_red, val_block_red, y);
+    }
+}
+
+template <unsigned int BLOCKSIZE, unsigned int LOOPS, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void coomvn_atomic_loops(I nnz,
+                             U alpha_device_host,
+                             const I* __restrict__ coo_row_ind,
+                             const I* __restrict__ coo_col_ind,
+                             const T* __restrict__ coo_val,
+                             const T* __restrict__ x,
+                             T* __restrict__ y,
+                             rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    if(alpha != static_cast<T>(0))
+    {
+        coomvn_atomic_loops_device<BLOCKSIZE, LOOPS>(
             nnz, alpha, coo_row_ind, coo_col_ind, coo_val, x, y, idx_base);
     }
 }
@@ -118,6 +136,122 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvt_kernel(rocsparse_opera
     {
         coomvt_device(trans, nnz, alpha, coo_row_ind, coo_col_ind, coo_val, x, y, idx_base);
     }
+}
+
+template <typename I, typename T>
+rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          handle,
+                                                   rocsparse_operation       trans,
+                                                   rocsparse_coomv_alg       alg,
+                                                   I                         m,
+                                                   I                         n,
+                                                   I                         nnz,
+                                                   const rocsparse_mat_descr descr,
+                                                   const T*                  coo_val,
+                                                   const I*                  coo_row_ind,
+                                                   const I*                  coo_col_ind)
+{
+    // Check for valid handle and matrix descriptor
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xcoomv_analysis"),
+              trans,
+              alg,
+              m,
+              n,
+              nnz,
+              (const void*&)descr,
+              (const void*&)coo_val,
+              (const void*&)coo_row_ind,
+              (const void*&)coo_col_ind);
+
+    if(rocsparse_enum_utils::is_invalid(trans))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(alg))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check matrix type
+    if(descr->type != rocsparse_matrix_type_general)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
+    // Check sizes
+    if(m < 0 || n < 0 || nnz < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Quick return if possible
+    if(m == 0 || n == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    // All must be null (zero matrix) or none null
+    if(!(coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr)
+       && !(coo_val != nullptr && coo_row_ind != nullptr && coo_col_ind != nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz != 0 && (coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    switch(trans)
+    {
+    case rocsparse_operation_none:
+    {
+        I* max_nnz     = nullptr;
+        I* csr_row_ptr = nullptr;
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&max_nnz, sizeof(I)));
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&csr_row_ptr, sizeof(I) * (m + 1)));
+        RETURN_IF_HIP_ERROR(hipMemsetAsync(max_nnz, 0, sizeof(I), handle->stream));
+
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
+
+        hipLaunchKernelGGL((csr_max_nnz_per_row<256>),
+                           dim3((m - 1) / 256 + 1),
+                           dim3(256),
+                           0,
+                           handle->stream,
+                           m,
+                           csr_row_ptr,
+                           max_nnz);
+
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &descr->max_nnz_per_row, max_nnz, sizeof(I), hipMemcpyDeviceToHost, handle->stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+
+        RETURN_IF_HIP_ERROR(hipFree(max_nnz));
+        RETURN_IF_HIP_ERROR(hipFree(csr_row_ptr));
+        break;
+    }
+    case rocsparse_operation_transpose:
+    case rocsparse_operation_conjugate_transpose:
+    {
+        break;
+    }
+    }
+
+    return rocsparse_status_success;
 }
 
 template <typename I, typename T, typename U>
@@ -178,26 +312,38 @@ rocsparse_status rocsparse_coomv_atomic_dispatch(rocsparse_handle          handl
     {
     case rocsparse_operation_none:
     {
-#define COOMVN_DIM 256
-        I nblocks = (nnz - 1) / COOMVN_DIM + 1;
-
-        dim3 coomvn_blocks(nblocks);
-        dim3 coomvn_threads(COOMVN_DIM);
-
-        hipLaunchKernelGGL((coomvn_atomic<COOMVN_DIM>),
-                           coomvn_blocks,
-                           coomvn_threads,
-                           0,
-                           stream,
-                           nnz,
-                           alpha_device_host,
-                           coo_row_ind,
-                           coo_col_ind,
-                           coo_val,
-                           x,
-                           y,
-                           descr->base);
-#undef COOMVN_DIM
+        if(descr->max_nnz_per_row <= 10 * 256)
+        {
+            hipLaunchKernelGGL((coomvn_atomic_loops<256, 1>),
+                               dim3((nnz - 1) / (1 * 256) + 1),
+                               dim3(256),
+                               0,
+                               stream,
+                               nnz,
+                               alpha_device_host,
+                               coo_row_ind,
+                               coo_col_ind,
+                               coo_val,
+                               x,
+                               y,
+                               descr->base);
+        }
+        else
+        {
+            hipLaunchKernelGGL((coomvn_atomic_loops<256, 2>),
+                               dim3((nnz - 1) / (2 * 256) + 1),
+                               dim3(256),
+                               0,
+                               stream,
+                               nnz,
+                               alpha_device_host,
+                               coo_row_ind,
+                               coo_col_ind,
+                               coo_val,
+                               x,
+                               y,
+                               descr->base);
+        }
         break;
     }
     case rocsparse_operation_transpose:
@@ -270,18 +416,15 @@ rocsparse_status rocsparse_coomv_segmented_dispatch(rocsparse_handle          ha
     {
     case rocsparse_operation_none:
     {
-#define COOMVN_DIM 128
+#define COOMVN_DIM 256
+
         int maxthreads = handle->properties.maxThreadsPerBlock;
-        int nprocs     = handle->properties.multiProcessorCount;
+        int nprocs     = 2 * handle->properties.multiProcessorCount;
         int maxblocks  = (nprocs * maxthreads - 1) / COOMVN_DIM + 1;
 
         I minblocks = (nnz - 1) / COOMVN_DIM + 1;
         I nblocks   = maxblocks < minblocks ? maxblocks : minblocks;
-        I nwfs      = nblocks * (COOMVN_DIM / handle->wavefront_size);
-        I nloops    = (nnz / handle->wavefront_size + 1) / nwfs + 1;
-
-        dim3 coomvn_blocks(nblocks);
-        dim3 coomvn_threads(COOMVN_DIM);
+        I nloops    = (nnz / COOMVN_DIM + 1) / nblocks + 1;
 
         // Buffer
         char* ptr = reinterpret_cast<char*>(handle->buffer);
@@ -289,62 +432,35 @@ rocsparse_status rocsparse_coomv_segmented_dispatch(rocsparse_handle          ha
 
         // row block reduction buffer
         I* row_block_red = reinterpret_cast<I*>(ptr);
-        ptr += ((sizeof(I) * nwfs - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(I) * nblocks - 1) / 256 + 1) * 256;
 
         // val block reduction buffer
         T* val_block_red = reinterpret_cast<T*>(ptr);
 
-        RETURN_IF_HIP_ERROR(
-            hipMemset(row_block_red, 0XFF, ((sizeof(I) * nwfs - 1) / 256 + 1) * 256));
-
-        if(handle->wavefront_size == 32)
-        {
-            // LCOV_EXCL_START
-            hipLaunchKernelGGL((coomvn_wf<COOMVN_DIM, 32>),
-                               coomvn_blocks,
-                               coomvn_threads,
-                               0,
-                               stream,
-                               nnz,
-                               nloops,
-                               alpha_device_host,
-                               coo_row_ind,
-                               coo_col_ind,
-                               coo_val,
-                               x,
-                               y,
-                               row_block_red,
-                               val_block_red,
-                               descr->base);
-            // LCOV_EXCL_STOP
-        }
-        else
-        {
-            assert(handle->wavefront_size == 64);
-            hipLaunchKernelGGL((coomvn_wf<COOMVN_DIM, 64>),
-                               coomvn_blocks,
-                               coomvn_threads,
-                               0,
-                               stream,
-                               nnz,
-                               nloops,
-                               alpha_device_host,
-                               coo_row_ind,
-                               coo_col_ind,
-                               coo_val,
-                               x,
-                               y,
-                               row_block_red,
-                               val_block_red,
-                               descr->base);
-        }
-
-        hipLaunchKernelGGL((coomvn_general_block_reduce<COOMVN_DIM>),
-                           dim3(1),
-                           coomvn_threads,
+        hipLaunchKernelGGL((coomvn_segmented_loops<COOMVN_DIM>),
+                           dim3(nblocks),
+                           dim3(COOMVN_DIM),
                            0,
                            stream,
-                           nwfs,
+                           nnz,
+                           nloops,
+                           alpha_device_host,
+                           coo_row_ind,
+                           coo_col_ind,
+                           coo_val,
+                           x,
+                           y,
+                           row_block_red,
+                           val_block_red,
+                           descr->base);
+
+        hipLaunchKernelGGL((coomvn_segmented_loops_reduce<COOMVN_DIM>),
+                           dim3(1),
+                           dim3(COOMVN_DIM),
+                           0,
+                           stream,
+                           nblocks,
+                           alpha_device_host,
                            row_block_red,
                            val_block_red,
                            y);
@@ -450,6 +566,7 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
     log_trace(handle,
               replaceX<T>("rocsparse_Xcoomv"),
               trans,
+              alg,
               m,
               n,
               nnz,
@@ -566,6 +683,29 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
 
     return rocsparse_status_success;
 }
+
+#define INSTANTIATE(ITYPE, TTYPE)                                              \
+    template rocsparse_status rocsparse_coomv_analysis_template<ITYPE, TTYPE>( \
+        rocsparse_handle          handle,                                      \
+        rocsparse_operation       trans,                                       \
+        rocsparse_coomv_alg       coomv_alg,                                   \
+        ITYPE                     m,                                           \
+        ITYPE                     n,                                           \
+        ITYPE                     nnz,                                         \
+        const rocsparse_mat_descr descr,                                       \
+        const TTYPE*              coo_val,                                     \
+        const ITYPE*              coo_row_ind,                                 \
+        const ITYPE*              coo_col_ind);
+
+INSTANTIATE(int32_t, float)
+INSTANTIATE(int32_t, double)
+INSTANTIATE(int32_t, rocsparse_float_complex)
+INSTANTIATE(int32_t, rocsparse_double_complex)
+INSTANTIATE(int64_t, float)
+INSTANTIATE(int64_t, double)
+INSTANTIATE(int64_t, rocsparse_float_complex)
+INSTANTIATE(int64_t, rocsparse_double_complex)
+#undef INSTANTIATE
 
 #define INSTANTIATE(ITYPE, TTYPE)                                     \
     template rocsparse_status rocsparse_coomv_template<ITYPE, TTYPE>( \
