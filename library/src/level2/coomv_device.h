@@ -52,69 +52,84 @@ ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, T* __restrict__ dat
 // Implementation motivated by papers 'Efficient Sparse Matrix-Vector Multiplication on CUDA',
 // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
 // 'Segmented operations for sparse matrix computation on vector multiprocessors'
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_general_wf_reduce(I                    nnz,
-                                                          I                    loops,
-                                                          T                    alpha,
-                                                          const I*             coo_row_ind,
-                                                          const I*             coo_col_ind,
-                                                          const T*             coo_val,
-                                                          const T*             x,
-                                                          T*                   y,
-                                                          I*                   row_block_red,
-                                                          T*                   val_block_red,
-                                                          rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, typename I, typename T>
+static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(I nnz,
+                                                               I nloops,
+                                                               T alpha,
+                                                               const I* __restrict__ coo_row_ind,
+                                                               const I* __restrict__ coo_col_ind,
+                                                               const T* __restrict__ coo_val,
+                                                               const T* __restrict__ x,
+                                                               T* __restrict__ y,
+                                                               I* __restrict__ row_block_red,
+                                                               T* __restrict__ val_block_red,
+                                                               rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
-    I   gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    // Lane index (0,...,WF_SIZE)
-    int lid = tid & (WF_SIZE - 1);
-    // Wavefront index
-    I wid = gid / WF_SIZE;
-
-    // Initialize block buffers
-    if(lid == 0)
-    {
-        rocsparse_nontemporal_store(-1, row_block_red + wid);
-        rocsparse_nontemporal_store(static_cast<T>(0), val_block_red + wid);
-    }
-
-    // Global COO array index start for current wavefront
-    I offset = wid * loops * WF_SIZE;
 
     // Shared memory to hold row indices and values for segmented reduction
     __shared__ I shared_row[BLOCKSIZE];
     __shared__ T shared_val[BLOCKSIZE];
 
-    // Initialize shared memory
-    shared_row[tid] = -1;
-    shared_val[tid] = static_cast<T>(0);
-
-    __syncthreads();
-
-    // Quick return when thread is out of bounds
-    if(offset + lid >= nnz)
-    {
-        return;
-    }
+    // Current threads index into COO structure
+    I idx = hipBlockIdx_x * nloops * BLOCKSIZE + tid;
 
     I row;
     T val;
 
-    // Current threads index into COO structure
-    I idx = offset + lid;
-
-    // Each thread processes 'loop' COO entries
-    while(idx < offset + loops * WF_SIZE)
+    if(idx < nnz)
     {
+        row = rocsparse_nontemporal_load(coo_row_ind + idx) - idx_base;
+        val = rocsparse_nontemporal_load(coo_val + idx)
+              * rocsparse_ldg(x + rocsparse_nontemporal_load(coo_col_ind + idx) - idx_base);
+    }
+    else
+    {
+        row = -1;
+        val = static_cast<T>(0);
+    }
+
+    shared_row[tid] = row;
+    shared_val[tid] = val;
+    __syncthreads();
+
+    // Segmented wavefront reduction
+    for(int j = 1; j < BLOCKSIZE; j <<= 1)
+    {
+        if(tid >= j)
+        {
+            if(row == shared_row[tid - j])
+            {
+                val = val + shared_val[tid - j];
+            }
+        }
+        __syncthreads();
+        shared_val[tid] = val;
+        __syncthreads();
+    }
+
+    // All lanes but the last one write their result in y.
+    // The last value might need to be appended by the next iteration.
+    if(tid < BLOCKSIZE - 1)
+    {
+        if(row != shared_row[tid + 1] && row >= 0)
+        {
+            y[row] = rocsparse_fma(alpha, val, y[row]);
+        }
+    }
+
+    for(int i = 0; i < nloops - 1; i++)
+    {
+        // Keep going for the next iteration
+        idx += BLOCKSIZE;
+
         // Get corresponding COO entry, if not out of bounds.
         // This can happen when processing more than 1 entry if
-        // nnz % WF_SIZE != 0
+        // nnz % BLOCKSIZE != 0
         if(idx < nnz)
         {
             row = rocsparse_nontemporal_load(coo_row_ind + idx) - idx_base;
-            val = alpha * rocsparse_nontemporal_load(coo_val + idx)
+            val = rocsparse_nontemporal_load(coo_val + idx)
                   * rocsparse_ldg(x + rocsparse_nontemporal_load(coo_col_ind + idx) - idx_base);
         }
         else
@@ -126,32 +141,28 @@ static ROCSPARSE_DEVICE_ILF void coomvn_general_wf_reduce(I                    n
         // First thread in wavefront checks row index from previous loop
         // if it has been completed or if additional rows have to be
         // appended.
-        if(idx > offset && lid == 0)
+        if(tid == 0)
         {
-            I prevrow = shared_row[tid + WF_SIZE - 1];
+            I prevrow = shared_row[BLOCKSIZE - 1];
             if(row == prevrow)
             {
-                val = val + shared_val[tid + WF_SIZE - 1];
+                val = val + shared_val[BLOCKSIZE - 1];
             }
             else if(prevrow >= 0)
             {
-                y[prevrow] = y[prevrow] + shared_val[tid + WF_SIZE - 1];
+                y[prevrow] = rocsparse_fma(alpha, shared_val[BLOCKSIZE - 1], y[prevrow]);
             }
         }
 
         __syncthreads();
-
-        // Update shared buffers
         shared_row[tid] = row;
         shared_val[tid] = val;
-
         __syncthreads();
 
-#pragma unroll
         // Segmented wavefront reduction
-        for(int j = 1; j < WF_SIZE; j <<= 1)
+        for(int j = 1; j < BLOCKSIZE; j <<= 1)
         {
-            if(lid >= j)
+            if(tid >= j)
             {
                 if(row == shared_row[tid - j])
                 {
@@ -159,31 +170,26 @@ static ROCSPARSE_DEVICE_ILF void coomvn_general_wf_reduce(I                    n
                 }
             }
             __syncthreads();
-
             shared_val[tid] = val;
-
             __syncthreads();
         }
 
         // All lanes but the last one write their result in y.
         // The last value might need to be appended by the next iteration.
-        if(lid < WF_SIZE - 1)
+        if(tid < BLOCKSIZE - 1)
         {
             if(row != shared_row[tid + 1] && row >= 0)
             {
-                y[row] = y[row] + val;
+                y[row] = rocsparse_fma(alpha, val, y[row]);
             }
         }
-
-        // Keep going for the next iteration
-        idx += WF_SIZE;
     }
 
     // Write last entries into buffers for segmented block reduction
-    if(lid == WF_SIZE - 1)
+    if(tid == BLOCKSIZE - 1)
     {
-        rocsparse_nontemporal_store(row, row_block_red + wid);
-        rocsparse_nontemporal_store(val, val_block_red + wid);
+        rocsparse_nontemporal_store(row, row_block_red + hipBlockIdx_x);
+        rocsparse_nontemporal_store(alpha * val, val_block_red + hipBlockIdx_x);
     }
 }
 
@@ -213,27 +219,24 @@ static ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* rows, T* vals)
 
 // Do the final block reduction of the block reduction buffers back into global memory
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvn_general_block_reduce(
-    I nnz, const I* __restrict__ row_block_red, const T* __restrict__ val_block_red, T* y)
+static ROCSPARSE_DEVICE_ILF void
+    coomvn_segmented_loops_reduce_device(I nblocks,
+                                         const I* __restrict__ row_block_red,
+                                         const T* __restrict__ val_block_red,
+                                         T* __restrict__ y)
 {
     int tid = hipThreadIdx_x;
-
-    // Quick return when thread is out of bounds
-    if(tid >= nnz)
-    {
-        return;
-    }
 
     // Shared memory to hold row indices and values for segmented reduction
     __shared__ I shared_row[BLOCKSIZE];
     __shared__ T shared_val[BLOCKSIZE];
 
     // Loop over blocks that are subject for segmented reduction
-    for(I i = tid; i < nnz; i += BLOCKSIZE)
+    for(I i = 0; i < nblocks; i += BLOCKSIZE)
     {
         // Copy data to reduction buffers
-        shared_row[tid] = row_block_red[i];
-        shared_val[tid] = val_block_red[i];
+        shared_row[tid] = (tid + i < nblocks) ? row_block_red[tid + i] : -1;
+        shared_val[tid] = (tid + i < nblocks) ? val_block_red[tid + i] : static_cast<T>(0);
 
         __syncthreads();
 
@@ -257,68 +260,83 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvn_general_block_reduce(
 // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
 // 'Segmented operations for sparse matrix computation on vector multiprocessors' for array
 // of structure format (AoS)
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_aos_general_wf_reduce(I                    nnz,
-                                                              I                    loops,
-                                                              T                    alpha,
-                                                              const I*             coo_ind,
-                                                              const T*             coo_val,
-                                                              const T*             x,
-                                                              T*                   y,
-                                                              I*                   row_block_red,
-                                                              T*                   val_block_red,
-                                                              rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, typename I, typename T>
+static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(I nnz,
+                                                                   I nloops,
+                                                                   T alpha,
+                                                                   const I* __restrict__ coo_ind,
+                                                                   const T* __restrict__ coo_val,
+                                                                   const T* __restrict__ x,
+                                                                   T* __restrict__ y,
+                                                                   I* __restrict__ row_block_red,
+                                                                   T* __restrict__ val_block_red,
+                                                                   rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
-    I   gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    // Lane index (0,...,WF_SIZE)
-    int lid = tid & (WF_SIZE - 1);
-    // Wavefront index
-    I wid = gid / WF_SIZE;
-
-    // Initialize block buffers
-    if(lid == 0)
-    {
-        rocsparse_nontemporal_store(-1, row_block_red + wid);
-        rocsparse_nontemporal_store(static_cast<T>(0), val_block_red + wid);
-    }
-
-    // Global COO array index start for current wavefront
-    I offset = wid * loops * WF_SIZE;
 
     // Shared memory to hold row indices and values for segmented reduction
     __shared__ I shared_row[BLOCKSIZE];
     __shared__ T shared_val[BLOCKSIZE];
 
-    // Initialize shared memory
-    shared_row[tid] = -1;
-    shared_val[tid] = static_cast<T>(0);
-
-    __syncthreads();
-
-    // Quick return when thread is out of bounds
-    if(offset + lid >= nnz)
-    {
-        return;
-    }
+    // Current threads index into COO structure
+    I idx = hipBlockIdx_x * nloops * BLOCKSIZE + tid;
 
     I row;
     T val;
 
-    // Current threads index into COO structure
-    I idx = offset + lid;
-
-    // Each thread processes 'loop' COO entries
-    while(idx < offset + loops * WF_SIZE)
+    if(idx < nnz)
     {
+        row = rocsparse_nontemporal_load(coo_ind + 2 * idx) - idx_base;
+        val = rocsparse_nontemporal_load(coo_val + idx)
+              * rocsparse_ldg(x + rocsparse_nontemporal_load(coo_ind + 2 * idx + 1) - idx_base);
+    }
+    else
+    {
+        row = -1;
+        val = static_cast<T>(0);
+    }
+
+    shared_row[tid] = row;
+    shared_val[tid] = val;
+    __syncthreads();
+
+    // Segmented wavefront reduction
+    for(int j = 1; j < BLOCKSIZE; j <<= 1)
+    {
+        if(tid >= j)
+        {
+            if(row == shared_row[tid - j])
+            {
+                val = val + shared_val[tid - j];
+            }
+        }
+        __syncthreads();
+        shared_val[tid] = val;
+        __syncthreads();
+    }
+
+    // All lanes but the last one write their result in y.
+    // The last value might need to be appended by the next iteration.
+    if(tid < BLOCKSIZE - 1)
+    {
+        if(row != shared_row[tid + 1] && row >= 0)
+        {
+            y[row] = rocsparse_fma(alpha, val, y[row]);
+        }
+    }
+
+    for(int i = 0; i < nloops - 1; i++)
+    {
+        // Keep going for the next iteration
+        idx += BLOCKSIZE;
+
         // Get corresponding COO entry, if not out of bounds.
         // This can happen when processing more than 1 entry if
-        // nnz % WF_SIZE != 0
+        // nnz % BLOCKSIZE != 0
         if(idx < nnz)
         {
             row = rocsparse_nontemporal_load(coo_ind + 2 * idx) - idx_base;
-            val = alpha * rocsparse_nontemporal_load(coo_val + idx)
+            val = rocsparse_nontemporal_load(coo_val + idx)
                   * rocsparse_ldg(x + rocsparse_nontemporal_load(coo_ind + 2 * idx + 1) - idx_base);
         }
         else
@@ -330,32 +348,28 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_general_wf_reduce(I                 
         // First thread in wavefront checks row index from previous loop
         // if it has been completed or if additional rows have to be
         // appended.
-        if(idx > offset && lid == 0)
+        if(tid == 0)
         {
-            I prevrow = shared_row[tid + WF_SIZE - 1];
+            I prevrow = shared_row[BLOCKSIZE - 1];
             if(row == prevrow)
             {
-                val = val + shared_val[tid + WF_SIZE - 1];
+                val = val + shared_val[BLOCKSIZE - 1];
             }
             else if(prevrow >= 0)
             {
-                y[prevrow] = y[prevrow] + shared_val[tid + WF_SIZE - 1];
+                y[prevrow] = rocsparse_fma(alpha, shared_val[BLOCKSIZE - 1], y[prevrow]);
             }
         }
 
         __syncthreads();
-
-        // Update shared buffers
         shared_row[tid] = row;
         shared_val[tid] = val;
-
         __syncthreads();
 
-#pragma unroll
         // Segmented wavefront reduction
-        for(int j = 1; j < WF_SIZE; j <<= 1)
+        for(int j = 1; j < BLOCKSIZE; j <<= 1)
         {
-            if(lid >= j)
+            if(tid >= j)
             {
                 if(row == shared_row[tid - j])
                 {
@@ -363,46 +377,40 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_general_wf_reduce(I                 
                 }
             }
             __syncthreads();
-
             shared_val[tid] = val;
-
             __syncthreads();
         }
 
         // All lanes but the last one write their result in y.
         // The last value might need to be appended by the next iteration.
-        if(lid < WF_SIZE - 1)
+        if(tid < BLOCKSIZE - 1)
         {
             if(row != shared_row[tid + 1] && row >= 0)
             {
-                y[row] = y[row] + val;
+                y[row] = rocsparse_fma(alpha, val, y[row]);
             }
         }
-
-        // Keep going for the next iteration
-        idx += WF_SIZE;
     }
 
     // Write last entries into buffers for segmented block reduction
-    if(lid == WF_SIZE - 1)
+    if(tid == BLOCKSIZE - 1)
     {
-        rocsparse_nontemporal_store(row, row_block_red + wid);
-        rocsparse_nontemporal_store(val, val_block_red + wid);
+        rocsparse_nontemporal_store(row, row_block_red + hipBlockIdx_x);
+        rocsparse_nontemporal_store(alpha * val, val_block_red + hipBlockIdx_x);
     }
 }
 
-template <unsigned int BLOCKSIZE, typename I, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_atomic_device(I nnz,
-                                                      T alpha,
-                                                      const I* __restrict__ coo_row_ind,
-                                                      const I* __restrict__ coo_col_ind,
-                                                      const T* __restrict__ coo_val,
-                                                      const T* __restrict__ x,
-                                                      T* __restrict__ y,
-                                                      rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, unsigned int LOOPS, typename I, typename T>
+static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(I nnz,
+                                                            T alpha,
+                                                            const I* __restrict__ coo_row_ind,
+                                                            const I* __restrict__ coo_col_ind,
+                                                            const T* __restrict__ coo_val,
+                                                            const T* __restrict__ x,
+                                                            T* __restrict__ y,
+                                                            rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
-    I   gid = BLOCKSIZE * hipBlockIdx_x + tid;
 
     __shared__ I shared_row[BLOCKSIZE];
     __shared__ T shared_val[BLOCKSIZE];
@@ -411,11 +419,14 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_device(I nnz,
     I col;
     T val;
 
-    if(gid < nnz)
+    // Current threads index into COO structure
+    I idx = hipBlockIdx_x * LOOPS * BLOCKSIZE + tid;
+
+    if(idx < nnz)
     {
-        row = rocsparse_nontemporal_load(&coo_row_ind[gid]) - idx_base;
-        col = rocsparse_nontemporal_load(&coo_col_ind[gid]) - idx_base;
-        val = rocsparse_nontemporal_load(&coo_val[gid]) * x[col];
+        row = rocsparse_nontemporal_load(&coo_row_ind[idx]) - idx_base;
+        col = rocsparse_nontemporal_load(&coo_col_ind[idx]) - idx_base;
+        val = rocsparse_nontemporal_load(&coo_val[idx]) * x[col];
     }
     else
     {
@@ -448,6 +459,72 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_device(I nnz,
         if(row != shared_row[tid + 1] && row >= 0)
         {
             atomicAdd(&y[row], alpha * val);
+        }
+    }
+
+    if(LOOPS > 1)
+    {
+        for(int i = 0; i < LOOPS - 1; i++)
+        {
+            // Keep going for the next iteration
+            idx += BLOCKSIZE;
+
+            if(idx < nnz)
+            {
+                row = rocsparse_nontemporal_load(&coo_row_ind[idx]) - idx_base;
+                col = rocsparse_nontemporal_load(&coo_col_ind[idx]) - idx_base;
+                val = rocsparse_nontemporal_load(&coo_val[idx]) * x[col];
+            }
+            else
+            {
+                row = -1;
+                col = 0;
+                val = static_cast<T>(0);
+            }
+
+            // First thread in wavefront checks row index from previous loop
+            // if it has been completed or if additional rows have to be
+            // appended.
+            if(tid == 0)
+            {
+                I prevrow = shared_row[BLOCKSIZE - 1];
+                if(row == prevrow)
+                {
+                    val = val + shared_val[BLOCKSIZE - 1];
+                }
+                else if(prevrow >= 0)
+                {
+                    atomicAdd(&y[prevrow], alpha * shared_val[BLOCKSIZE - 1]);
+                }
+            }
+
+            __syncthreads();
+            shared_row[tid] = row;
+            shared_val[tid] = val;
+            __syncthreads();
+
+            // segmented reduction
+            for(I j = 1; j < BLOCKSIZE; j <<= 1)
+            {
+                if(tid >= j)
+                {
+                    if(row == shared_row[tid - j])
+                    {
+                        val = val + shared_val[tid - j];
+                    }
+                }
+                __syncthreads();
+                shared_val[tid] = val;
+                __syncthreads();
+            }
+
+            if(tid < BLOCKSIZE - 1)
+            {
+                if(row != shared_row[tid + 1] && row >= 0)
+                {
+                    atomicAdd(&y[row], alpha * val);
+                }
+            }
         }
     }
 
@@ -460,17 +537,16 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_device(I nnz,
     }
 }
 
-template <unsigned int BLOCKSIZE, typename I, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_device(I nnz,
-                                                          T alpha,
-                                                          const I* __restrict__ coo_ind,
-                                                          const T* __restrict__ coo_val,
-                                                          const T* __restrict__ x,
-                                                          T* __restrict__ y,
-                                                          rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, unsigned int LOOPS, typename I, typename T>
+static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(I nnz,
+                                                                T alpha,
+                                                                const I* __restrict__ coo_ind,
+                                                                const T* __restrict__ coo_val,
+                                                                const T* __restrict__ x,
+                                                                T* __restrict__ y,
+                                                                rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
-    I   gid = BLOCKSIZE * hipBlockIdx_x + tid;
 
     __shared__ I shared_row[BLOCKSIZE];
     __shared__ T shared_val[BLOCKSIZE];
@@ -479,11 +555,14 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_device(I nnz,
     I col;
     T val;
 
-    if(gid < nnz)
+    // Current threads index into COO structure
+    I idx = hipBlockIdx_x * LOOPS * BLOCKSIZE + tid;
+
+    if(idx < nnz)
     {
-        row = rocsparse_nontemporal_load(&coo_ind[2 * gid]) - idx_base;
-        col = rocsparse_nontemporal_load(&coo_ind[2 * gid + 1]) - idx_base;
-        val = rocsparse_nontemporal_load(&coo_val[gid]) * x[col];
+        row = rocsparse_nontemporal_load(&coo_ind[2 * idx]) - idx_base;
+        col = rocsparse_nontemporal_load(&coo_ind[2 * idx + 1]) - idx_base;
+        val = rocsparse_nontemporal_load(&coo_val[idx]) * x[col];
     }
     else
     {
@@ -516,6 +595,69 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_device(I nnz,
         if(row != shared_row[tid + 1] && row >= 0)
         {
             atomicAdd(&y[row], alpha * val);
+        }
+    }
+
+    for(int i = 0; i < LOOPS - 1; i++)
+    {
+        // Keep going for the next iteration
+        idx += BLOCKSIZE;
+
+        if(idx < nnz)
+        {
+            row = rocsparse_nontemporal_load(&coo_ind[2 * idx]) - idx_base;
+            col = rocsparse_nontemporal_load(&coo_ind[2 * idx + 1]) - idx_base;
+            val = rocsparse_nontemporal_load(&coo_val[idx]) * x[col];
+        }
+        else
+        {
+            row = -1;
+            col = 0;
+            val = static_cast<T>(0);
+        }
+
+        // First thread in wavefront checks row index from previous loop
+        // if it has been completed or if additional rows have to be
+        // appended.
+        if(tid == 0)
+        {
+            I prevrow = shared_row[BLOCKSIZE - 1];
+            if(row == prevrow)
+            {
+                val = val + shared_val[BLOCKSIZE - 1];
+            }
+            else if(prevrow >= 0)
+            {
+                atomicAdd(&y[prevrow], alpha * shared_val[BLOCKSIZE - 1]);
+            }
+        }
+
+        __syncthreads();
+        shared_row[tid] = row;
+        shared_val[tid] = val;
+        __syncthreads();
+
+        // segmented reduction
+        for(I j = 1; j < BLOCKSIZE; j <<= 1)
+        {
+            if(tid >= j)
+            {
+                if(row == shared_row[tid - j])
+                {
+                    val = val + shared_val[tid - j];
+                }
+            }
+            __syncthreads();
+            shared_val[tid] = val;
+            __syncthreads();
+        }
+
+        if(tid < BLOCKSIZE - 1)
+        {
+            if(row != shared_row[tid + 1] && row >= 0)
+            {
+                atomicAdd(&y[row], alpha * val);
+            }
         }
     }
 

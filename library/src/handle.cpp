@@ -62,11 +62,10 @@ _rocsparse_handle::_rocsparse_handle()
 
     // Obtain size for coomv device buffer
     rocsparse_int nthreads = properties.maxThreadsPerBlock;
-    rocsparse_int nprocs   = properties.multiProcessorCount;
-    rocsparse_int nblocks  = (nprocs * nthreads - 1) / 128 + 1;
-    rocsparse_int nwfs     = nblocks * (128 / properties.warpSize);
+    rocsparse_int nprocs   = 2 * properties.multiProcessorCount;
+    rocsparse_int nblocks  = (nprocs * nthreads - 1) / 256 + 1;
 
-    size_t coomv_size = (((sizeof(rocsparse_int) + 16) * nwfs - 1) / 256 + 1) * 256;
+    size_t coomv_size = (((sizeof(rocsparse_int) + 16) * nblocks - 1) / 256 + 1) * 256;
 
     // Allocate device buffer
     buffer_size = (coomv_size > 1024 * 1024) ? coomv_size : 1024 * 1024;
