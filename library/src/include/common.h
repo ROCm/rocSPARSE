@@ -34,6 +34,18 @@
 
 // clang-format off
 
+#ifndef ROCSPARSE_USE_MOVE_DPP
+#if defined(__gfx803__) || \
+    defined(__gfx900__) || \
+    defined(__gfx906__) || \
+    defined(__gfx908__) || \
+    defined(__gfx90a__)
+#define ROCSPARSE_USE_MOVE_DPP 1
+#else
+#define ROCSPARSE_USE_MOVE_DPP 0
+#endif
+#endif
+
 // BSR indexing macros
 #define BSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? BSR_IND_R(j, bi, bj) : BSR_IND_C(j, bi, bj))
 #define BSR_IND_R(j, bi, bj) (block_dim * block_dim * (j) + (bi) * block_dim + (bj))
@@ -233,7 +245,7 @@ __device__ __forceinline__ void rocsparse_blockreduce_min(int i, T* data)
     if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = min(data[i], data[i +   1]); } __syncthreads(); }
 }
 
-#if (!defined(__gfx1030__)) && (!defined(__gfx1011__))
+#if ROCSPARSE_USE_MOVE_DPP
 // DPP-based wavefront reduction maximum
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
@@ -499,7 +511,7 @@ __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
     sum = temp_sum.val;
     return sum;
 }
-#else
+#else /* ROCSPARSE_USE_MOVE_DPP */
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
 {
@@ -566,7 +578,7 @@ __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
 
     return sum;
 }
-#endif
+#endif /* ROCSPARSE_USE_MOVE_DPP */
 
 // DPP-based complex float wavefront reduction sum
 template <unsigned int WFSIZE>
