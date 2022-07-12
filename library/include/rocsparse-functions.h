@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (c) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 *  of Level 1, 2 and 3, using HIP optimized for AMD GPU hardware.
 */
 
-#pragma once
 #ifndef _ROCSPARSE_FUNCTIONS_H_
 #define _ROCSPARSE_FUNCTIONS_H_
 
