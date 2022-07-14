@@ -26,7 +26,6 @@
 *  of Level 1, 2 and 3, using HIP optimized for AMD GPU hardware.
 */
 
-#pragma once
 #ifndef _ROCSPARSE_FUNCTIONS_H_
 #define _ROCSPARSE_FUNCTIONS_H_
 

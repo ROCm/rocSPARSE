@@ -25,7 +25,6 @@
  * \brief rocsparse-types.h defines data types used by rocsparse
  */
 
-#pragma once
 #ifndef _ROCSPARSE_TYPES_H_
 #define _ROCSPARSE_TYPES_H_
 
