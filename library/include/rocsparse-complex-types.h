@@ -25,7 +25,6 @@
  *  \brief rocsparse-complex-types.h defines complex data types used in rocsparse
  */
 
-#pragma once
 #ifndef _ROCSPARSE_COMPLEX_TYPES_H_
 #define _ROCSPARSE_COMPLEX_TYPES_H_
 

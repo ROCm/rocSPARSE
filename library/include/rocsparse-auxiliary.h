@@ -25,7 +25,6 @@
  *  \brief rocsparse-auxiliary.h provides auxilary functions in rocsparse
  */
 
-#pragma once
 #ifndef _ROCSPARSE_AUXILIARY_H_
 #define _ROCSPARSE_AUXILIARY_H_
 
