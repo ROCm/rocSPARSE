@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CSRGEMM_HPP
-#define ROCSPARSE_CSRGEMM_HPP
 
 #include "handle.h"
 
@@ -172,5 +170,3 @@ rocsparse_status rocsparse_csrgemm_numeric_template(rocsparse_handle          ha
                                                     const J*                  csr_col_ind_C,
                                                     const rocsparse_mat_info  info_C,
                                                     void*                     temp_buffer);
-
-#endif // ROCSPARSE_CSRGEMM_HPP

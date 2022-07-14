@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef BSR2CSR_DEVICE_H
-#define BSR2CSR_DEVICE_H
 
 #include <hip/hip_runtime.h>
 
@@ -409,5 +407,3 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
         index += hipBlockDim_x * hipGridDim_x;
     }
 }
-
-#endif // BSR2CSR_DEVICE_H

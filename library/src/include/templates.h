@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef TEMPLATES_H
-#define TEMPLATES_H
 
 #include "rocsparse.h"
 
@@ -559,5 +557,3 @@ inline rocsparse_status rocsparse_csrmm(rocsparse_handle                handle,
                             C,
                             ldc);
 }
-
-#endif

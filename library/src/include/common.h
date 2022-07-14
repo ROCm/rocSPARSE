@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef COMMON_H
-#define COMMON_H
 
 #include "rocsparse.h"
 #ifdef WIN32
@@ -801,5 +799,3 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         atomicMax(max_nnz, shared[0]);
     }
 }
-
-#endif // COMMON_H

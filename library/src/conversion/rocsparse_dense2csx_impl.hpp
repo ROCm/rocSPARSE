@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,6 @@
  *
  * ************************************************************************ */
 #pragma once
-#ifndef ROCSPARSE_DENSE2CSX_IMPL_HPP
-#define ROCSPARSE_DENSE2CSX_IMPL_HPP
 
 #include "utility.h"
 
@@ -245,5 +243,3 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
     return rocsparse_dense2csx_template<DIRA>(
         handle, order, m, n, descr_A, A, lda, csx_val_A, csx_row_col_ptr_A, csx_col_row_ind_A);
 }
-
-#endif // ROCSPARSE_DENSE2CSX_IMPL_HPP

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,8 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_IDENTITY_HPP
-#define ROCSPARSE_IDENTITY_HPP
 
 #include "rocsparse.h"
 
 template <typename I>
 rocsparse_status rocsparse_create_identity_permutation_template(rocsparse_handle handle, I n, I* p);
-
-#endif // ROCSPARSE_IDENTITY_HPP

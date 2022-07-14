@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef HANDLE_H
-#define HANDLE_H
 
 #include "rocsparse.h"
 
@@ -414,5 +412,3 @@ struct _rocsparse_dnmat_descr
     int64_t batch_count{};
     int64_t batch_stride{};
 };
-
-#endif // HANDLE_H
