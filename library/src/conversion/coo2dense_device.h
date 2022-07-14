@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef COO2DENSE_DEVICE_H
-#define COO2DENSE_DEVICE_H
 
 #include <hip/hip_runtime.h>
 
@@ -60,5 +58,3 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coo2dense_kernel(I           
         A[lda * row + col] = val;
     }
 }
-
-#endif // COO2DENSE_DEVICE_H

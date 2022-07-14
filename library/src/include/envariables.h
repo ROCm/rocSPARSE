@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ENVARIABLES_H
-#define ENVARIABLES_H
 
 template <std::size_t N, typename T>
 inline constexpr std::size_t countof(T (&)[N])
@@ -99,5 +97,3 @@ private:
 };
 
 #define ROCSPARSE_ENVARIABLES rocsparse_envariables::Instance()
-
-#endif // UTILITY_H

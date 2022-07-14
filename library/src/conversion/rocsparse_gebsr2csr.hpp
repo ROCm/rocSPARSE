@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_GEBSR2CSR_HPP
-#define ROCSPARSE_GEBSR2CSR_HPP
 
 #include "handle.h"
 
@@ -43,5 +41,3 @@ rocsparse_status rocsparse_gebsr2csr_template(rocsparse_handle          handle,
                                               T*                        csr_val,
                                               rocsparse_int*            csr_row_ptr,
                                               rocsparse_int*            csr_col_ind);
-
-#endif // ROCSPARSE_GEBSR2CSR_HPP

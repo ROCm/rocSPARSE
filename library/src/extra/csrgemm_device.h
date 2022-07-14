@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef CSRGEMM_DEVICE_H
-#define CSRGEMM_DEVICE_H
 
 #include "common.h"
 
@@ -1473,5 +1471,3 @@ __device__ void csrgemm_fill_block_per_row_multipass_device(J n,
         __syncthreads();
     }
 }
-
-#endif // CSRGEMM_DEVICE_H

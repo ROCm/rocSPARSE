@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef CSRGEAM_DEVICE_H
-#define CSRGEAM_DEVICE_H
 
 #include "common.h"
 
@@ -367,5 +365,3 @@ __device__ void csrgeam_fill_multipass_device(rocsparse_int m,
         }
     }
 }
-
-#endif // CSRGEAM_DEVICE_H

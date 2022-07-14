@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,7 @@
  *
  * ************************************************************************ */
 
-#ifndef STATUS_H
-#define STATUS_H
+#pragma once
 
 #include "rocsparse.h"
 
@@ -33,5 +32,3 @@
  * \brief convert hipError_t to rocsparse_status
  ******************************************************************************/
 rocsparse_status get_rocsparse_status_for_hip_status(hipError_t status);
-
-#endif // STATUS_H

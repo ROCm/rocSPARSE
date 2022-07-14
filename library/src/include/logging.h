@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef LOGGING_H
-#define LOGGING_H
 
 #include <fstream>
 #include <string>
@@ -231,5 +229,3 @@ void log_argument(std::ostream& os, H head)
 {
     os << "\n" << head;
 }
-
-#endif // LOGGING_H

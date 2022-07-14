@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef UTILITY_H
-#define UTILITY_H
 
 #include "definitions.h"
 #include "handle.h"
@@ -702,5 +700,3 @@ using floating_data_t = typename floating_traits<T>::data_t;
 
 #include "envariables.h"
 #include "memstat.h"
-
-#endif // UTILITY_H

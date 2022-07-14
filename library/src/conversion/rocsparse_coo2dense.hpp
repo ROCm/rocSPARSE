@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (c) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
 * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_COO2DENSE_HPP
-#define ROCSPARSE_COO2DENSE_HPP
 
 #include "handle.h"
 
@@ -40,5 +38,3 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle,
                                               T*                        A,
                                               I                         lda,
                                               rocsparse_order           order);
-
-#endif // ROCSPARSE_COO2DENSE_HPP
