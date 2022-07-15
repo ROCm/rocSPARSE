@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2020 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,12 @@ message(STATUS "\t==>CMAKE_PREFIX_PATH link            : ${CMAKE_PREFIX_PATH}")
 message(STATUS "==============")
 message(STATUS "\t==>CMAKE_SYSTEM_NAME                 : ${CMAKE_SYSTEM_NAME}")
 message(STATUS "\t>>=HIP_ROOT_DIR                      : ${HIP_ROOT_DIR}")
-message(STATUS "\t==>CMAKE_CXX_COMPILER                : ${CMAKE_CXX_FLAGS}")
+message(STATUS "\t==>CMAKE_CXX_COMPILER                : ${CMAKE_CXX_COMPILER}")
+message(STATUS "\t==>CMAKE_CXX_FLAGS                   : ${CMAKE_CXX_FLAGS}")
 message(STATUS "\t==>CMAKE_CXX_COMPILER_VERSION        : ${CMAKE_CXX_COMPILER_VERSION}")
-message(STATUS "\t==>CMAKE_CXX_COMPILER debug          : ${CMAKE_CXX_FLAGS_DEBUG}")
-message(STATUS "\t==>CMAKE_CXX_COMPILER release        : ${CMAKE_CXX_FLAGS_RELEASE}")
-message(STATUS "\t==>CMAKE_CXX_COMPILER relwithdebinfo : ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+message(STATUS "\t==>CMAKE_CXX_FLAGS_DEBUG             : ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "\t==>CMAKE_CXX_FLAGS_RELEASE           : ${CMAKE_CXX_FLAGS_RELEASE}")
+message(STATUS "\t==>CMAKE_CXX_FLAGS_RELWITHDEBINFO    : ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 message(STATUS "\t==>CMAKE_EXE_LINKER_FLAGS            : ${CMAKE_EXE_LINKER_FLAGS}")
 message(STATUS "\t==>CMAKE_EXE_LINKER_FLAGS_RELEASE    : ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 message(STATUS "\t==>CMAKE_SHARED_LINKER_FLAGS         : ${CMAKE_SHARED_LINKER_FLAGS}")

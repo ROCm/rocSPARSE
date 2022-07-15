@@ -83,7 +83,11 @@ if(NOT CONVERT_SOURCE)
   set(CONVERT_SOURCE ${CMAKE_SOURCE_DIR}/deps/convert.cpp)
 endif()
 
-execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe RESULT_VARIABLE STATUS)
+if(BUILD_ADDRESS_SANITIZER)
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -fsanitize=address -shared-libasan -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
+else()
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
+endif()
 
 if(STATUS AND NOT STATUS EQUAL 0)
   message(FATAL_ERROR "mtx2csr.exe failed to build, aborting.")
