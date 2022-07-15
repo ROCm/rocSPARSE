@@ -46,12 +46,11 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     rocsparse_int block_index = -1;
 
     rocsparse_int i = block_id * BLOCK_SIZE + local_id;
-    
+
     rocsparse_int start = bsr_row_ptr[mb - 1] - bsr_base;
-    rocsparse_int end = bsr_row_ptr[mb] - bsr_base;
+    rocsparse_int end   = bsr_row_ptr[mb] - bsr_base;
 
     //find block
-
     if((end - start) > 0)
     {
         if((bsr_col_ind[end - 1] - bsr_base) == (mb - 1))
