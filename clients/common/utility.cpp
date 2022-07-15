@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,17 +32,17 @@
 
 #ifdef WIN32
 #define strcasecmp(A, B) _stricmp(A, B)
-#endif
 
 #ifdef __cpp_lib_filesystem
 #include <filesystem>
+namespace fs = std::filesystem;
 #else
 #include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#endif
 
-namespace std
-{
-    namespace filesystem = experimental::filesystem;
-}
+#else
+#include <fcntl.h>
 #endif
 
 // Random number generator
@@ -104,7 +104,7 @@ std::string rocsparse_exepath()
         result.resize(result.size() * 2);
     }
 
-    std::filesystem::path exepath(result.begin(), result.end());
+    fs::path exepath(result.begin(), result.end());
     exepath = exepath.remove_filename();
     exepath += exepath.empty() ? "" : "/";
     return exepath.string();

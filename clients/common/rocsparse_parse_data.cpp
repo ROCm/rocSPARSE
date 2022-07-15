@@ -30,16 +30,15 @@
 #include <sys/types.h>
 
 #ifdef WIN32
+
 #ifdef __cpp_lib_filesystem
 #include <filesystem>
+namespace fs = std::filesystem;
 #else
 #include <experimental/filesystem>
-
-namespace std
-{
-    namespace filesystem = experimental::filesystem;
-}
+namespace fs = std::experimental::filesystem;
 #endif
+
 #else
 #include <sys/wait.h>
 #include <unistd.h>
@@ -59,7 +58,7 @@ static std::string rocsparse_parse_yaml(const std::string& yaml)
         uniquestr += alphanum.at(rand() % stringlength);
     }
 
-    std::filesystem::path tmpname = std::filesystem::temp_directory_path() / uniquestr;
+    fs::path tmpname = fs::temp_directory_path() / uniquestr;
 
     auto exepath = rocsparse_exepath();
     auto cmd     = exepath + "rocsparse_gentest.py --template " + exepath
