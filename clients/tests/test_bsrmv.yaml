@@ -284,18 +284,3 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [Chevron3]
-
-
-- name: bsrmv_large
-  category: stress
-  function: bsrmv
-  precision: *single_precision
-  M: 470000000
-  N: 470000000
-  block_dim: [2,3,4,5,7,8,16,17]
-  alpha: [1.0]
-  beta: [0.0]
-  direction: [rocsparse_direction_column]
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_random]
