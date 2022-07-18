@@ -7249,7 +7249,7 @@ void host_bsrpad_value(rocsparse_int m,
     rocsparse_int start_local_index = m % block_dim;
 
     rocsparse_int start = bsr_row_ptr[mb - 1] - bsr_base;
-    rocsparse_int end = bsr_row_ptr[mb] - bsr_base;
+    rocsparse_int end   = bsr_row_ptr[mb] - bsr_base;
 
     if((start_local_index > 0) && (end - start > 0))
     {
