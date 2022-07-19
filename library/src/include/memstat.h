@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef MEMSTAT_H
-#define MEMSTAT_H
 
 #include <hip/hip_runtime_api.h>
 
@@ -69,5 +67,3 @@
     rocsparse_hip_free_managed((void**)(p_), ROCSPARSE_HIP_SOURCE_TAG(__LINE__))
 
 #endif
-
-#endif // UTILITY_H

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,7 @@
  *
  * ************************************************************************ */
 
-#ifndef DEFINITIONS_H
-#define DEFINITIONS_H
+#pragma once
 
 #include "status.h"
 
@@ -94,5 +93,3 @@
             return rocsparse_status_invalid_pointer; \
         }                                            \
     }
-
-#endif // DEFINITIONS_H

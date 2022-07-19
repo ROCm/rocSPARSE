@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,6 @@
  *
  * ************************************************************************ */
 #pragma once
-#ifndef NNZ_DEVICE_H
-#define NNZ_DEVICE_H
 
 #include "handle.h"
 #include <hip/hip_runtime.h>
@@ -227,5 +225,3 @@ __launch_bounds__(DIM_X* DIM_Y) ROCSPARSE_KERNEL void nnz_kernel_row(
         }
     }
 }
-
-#endif

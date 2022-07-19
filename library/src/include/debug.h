@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef DEBUG_H
-#define DEBUG_H
 
 #include <iostream>
 static constexpr const char* s_rocsparse_debug_str = "//rocsparse.degug: ";
@@ -67,5 +65,3 @@ inline rocsparse_status rocsparse_return_status_trace(const char*      function,
 #define ROCSPARSE_RETURN_STATUS(token__)  \
     return rocsparse_return_status_trace( \
         __FUNCTION__, __FILE__, __LINE__, rocsparse_status_##token__)
-
-#endif // DEBUG_H

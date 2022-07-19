@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef BSRPAD_VALUE_DEVICE_H
-#define BSRPAD_VALUE_DEVICE_H
 
 #include "common.h"
 
@@ -112,5 +110,3 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
         }
     }
 }
-
-#endif // BSRPAD_VALUE_DEVICE_H

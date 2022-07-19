@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef NNZ_COMPRESS_DEVICE_H
-#define NNZ_COMPRESS_DEVICE_H
 
 #include <limits>
 
@@ -88,5 +86,3 @@ __device__ void nnz_compress_device(rocsparse_int        m,
         nnz_per_row[row_index] = count;
     }
 }
-
-#endif // NNZ_COMPRESS_DEVICE_H

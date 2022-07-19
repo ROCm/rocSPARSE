@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef CSRSORT_DEVICE_H
-#define CSRSORT_DEVICE_H
 
 #include <hip/hip_runtime.h>
 
@@ -42,5 +40,3 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
     out[gid] = in[gid] - 1;
 }
-
-#endif // CSRSORT_DEVICE_H

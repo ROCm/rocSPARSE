@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CSR2ELL_HPP
-#define ROCSPARSE_CSR2ELL_HPP
 
 #include "handle.h"
 
@@ -39,5 +37,3 @@ rocsparse_status rocsparse_csr2ell_template(rocsparse_handle          handle,
                                             rocsparse_int             ell_width,
                                             T*                        ell_val,
                                             rocsparse_int*            ell_col_ind);
-
-#endif // ROCSPARSE_CSR2ELL_HPP

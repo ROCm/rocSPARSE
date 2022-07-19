@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef CSR2CSR_COMPRESS_DEVICE_H
-#define CSR2CSR_COMPRESS_DEVICE_H
 
 #include <limits>
 
@@ -146,5 +144,3 @@ __device__ void csr2csr_compress_device(rocsparse_int        m,
         }
     }
 }
-
-#endif // CSR2CSR_COMPRESS_DEVICE_H
