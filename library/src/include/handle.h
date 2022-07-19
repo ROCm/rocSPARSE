@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef HANDLE_H
-#define HANDLE_H
 
 #include "rocsparse.h"
 
@@ -414,5 +412,3 @@ struct _rocsparse_dnmat_descr
     int64_t batch_count{};
     int64_t batch_stride{};
 };
-
-#endif // HANDLE_H

@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef COMMON_H
-#define COMMON_H
 
 #include "rocsparse.h"
 #ifdef WIN32
@@ -801,5 +799,3 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         atomicMax(max_nnz, shared[0]);
     }
 }
-
-#endif // COMMON_H

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CSR2CSC_HPP
-#define ROCSPARSE_CSR2CSC_HPP
 
 #include "handle.h"
 
@@ -42,5 +40,3 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
                                             rocsparse_action     copy_values,
                                             rocsparse_index_base idx_base,
                                             void*                temp_buffer);
-
-#endif // ROCSPARSE_CSR2CSC_HPP

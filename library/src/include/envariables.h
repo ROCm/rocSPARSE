@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ENVARIABLES_H
-#define ENVARIABLES_H
 
 template <std::size_t N, typename T>
 inline constexpr std::size_t countof(T (&)[N])
@@ -99,5 +97,3 @@ private:
 };
 
 #define ROCSPARSE_ENVARIABLES rocsparse_envariables::Instance()
-
-#endif // UTILITY_H

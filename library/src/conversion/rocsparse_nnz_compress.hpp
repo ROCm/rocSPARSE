@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_NNZ_COMPRESS_HPP
-#define ROCSPARSE_NNZ_COMPRESS_HPP
 
 #include "handle.h"
 
@@ -37,5 +35,3 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
                                                  rocsparse_int*            nnz_per_row,
                                                  rocsparse_int*            nnz_C,
                                                  T                         tol);
-
-#endif // ROCSPARSE_NNZ_COMPRESS_HPP
