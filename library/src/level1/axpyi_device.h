@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef AXPYI_DEVICE_H
-#define AXPYI_DEVICE_H
 
 #include "common.h"
 
@@ -43,5 +41,3 @@ __device__ void axpyi_device(
     I i  = x_ind[idx] - idx_base;
     y[i] = rocsparse_fma(alpha, x_val[idx], y[i]);
 }
-
-#endif // AXPYI_DEVICE_H

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_REDUCE_HPP
-#define ROCSPARSE_REDUCE_HPP
 
 inline constexpr int rocsparse_reduce_log2ui(int x)
 {
@@ -136,5 +134,3 @@ inline size_t rocsparse_reduce_block_count(rocsparse_int n, rocsparse_int NB)
         n = 1; // avoid sign loss issues
     return size_t(n - 1) / NB + 1;
 }
-
-#endif

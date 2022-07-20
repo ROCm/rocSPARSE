@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef CSRMV_SYMM_DEVICE_H
-#define CSRMV_SYMM_DEVICE_H
 
 #include "common.h"
 
@@ -527,5 +525,3 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
         }
     }
 }
-
-#endif // CSRMV_SYMM_DEVICE_H

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_AXPYI_HPP
-#define ROCSPARSE_AXPYI_HPP
 
 #include "handle.h"
 
@@ -36,5 +34,3 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
                                           const I*             x_ind,
                                           T*                   y,
                                           rocsparse_index_base idx_base);
-
-#endif // ROCSPARSE_AXPYI_HPP

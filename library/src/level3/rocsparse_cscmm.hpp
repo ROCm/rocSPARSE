@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CSCMM_HPP
-#define ROCSPARSE_CSCMM_HPP
 
 #include "handle.h"
 
@@ -87,5 +85,3 @@ rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                           J                         batch_count_C,
                                           I                         batch_stride_C,
                                           void*                     temp_buffer);
-
-#endif // ROCSPARSE_CSCMM_HPP

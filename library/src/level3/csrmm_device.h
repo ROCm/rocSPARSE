@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef CSRMM_DEVICE_H
-#define CSRMM_DEVICE_H
 
 #include "common.h"
 
@@ -575,5 +573,3 @@ static ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
         }
     }
 }
-
-#endif // CSRMM_DEVICE_H

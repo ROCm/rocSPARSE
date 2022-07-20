@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef COOMV_DEVICE_H
-#define COOMV_DEVICE_H
 
 #include "common.h"
 
@@ -720,5 +718,3 @@ static ROCSPARSE_DEVICE_ILF void coomvt_aos_device(rocsparse_operation  trans,
 
     atomicAdd(&y[col], alpha * val * x[row]);
 }
-
-#endif // COOMV_DEVICE_H

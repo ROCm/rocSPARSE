@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_SCTR_HPP
-#define ROCSPARSE_SCTR_HPP
 #include "utility.h"
 
 #include "sctr_device.h"
@@ -106,5 +104,3 @@ rocsparse_status rocsparse_sctr_template(rocsparse_handle     handle,
 #undef SCTR_DIM
     return rocsparse_status_success;
 }
-
-#endif // ROCSPARSE_SCTR_HPP
