@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_GTSV_NO_PIVOT_STRIDED_BATCH_HPP
-#define ROCSPARSE_GTSV_NO_PIVOT_STRIDED_BATCH_HPP
 
 #include "definitions.h"
 #include "utility.h"
@@ -51,5 +49,3 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_template(rocsparse_handle
                                                                 rocsparse_int    batch_count,
                                                                 rocsparse_int    batch_stride,
                                                                 void*            temp_buffer);
-
-#endif // ROCSPARSE_GTSV_NO_PIVOT_STRIDED_BATCH_HPP

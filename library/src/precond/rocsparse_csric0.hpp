@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CSRIC0_HPP
-#define ROCSPARSE_CSRIC0_HPP
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "csric0_device.h"
@@ -559,5 +557,3 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
 
     return rocsparse_status_success;
 }
-
-#endif // ROCSPARSE_CSRIC0_HPP

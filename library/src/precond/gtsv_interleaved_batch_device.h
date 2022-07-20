@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
 * ************************************************************************ */
 
 #pragma once
-#ifndef GTSV_INTERLEAVED_BATCH_DEVICE_H
-#define GTSV_INTERLEAVED_BATCH_DEVICE_H
 
 #include "common.h"
 
@@ -264,5 +262,3 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                    / d[ind_k];
     }
 }
-
-#endif // GTSV_INTERLEAVED_BATCH_DEVICE_H
