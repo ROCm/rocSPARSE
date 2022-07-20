@@ -23,9 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_DOTCI_HPP
-#define ROCSPARSE_DOTCI_HPP
-
 #include "utility.h"
 
 #include "definitions.h"
@@ -129,5 +126,3 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
 
     return rocsparse_status_success;
 }
-
-#endif // ROCSPARSE_DOTCI_HPP

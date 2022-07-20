@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_COOMM_HPP
-#define ROCSPARSE_COOMM_HPP
 
 #include "handle.h"
 
@@ -121,5 +119,3 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                           I                         batch_count_C,
                                           I                         batch_stride_C,
                                           void*                     temp_buffer);
-
-#endif // ROCSPARSE_COOMM_HPP

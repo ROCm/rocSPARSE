@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_GTHR_HPP
-#define ROCSPARSE_GTHR_HPP
-
 #include "handle.h"
 
 template <typename I, typename T>
@@ -35,5 +32,3 @@ rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
                                          T*                   x_val,
                                          const I*             x_ind,
                                          rocsparse_index_base idx_base);
-
-#endif // ROCSPARSE_GTHR_HPP

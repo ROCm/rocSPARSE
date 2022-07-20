@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef BELLMM_GENERAL_DEVICE_H
-#define BELLMM_GENERAL_DEVICE_H
 
 #include "common.h"
 
@@ -169,5 +167,3 @@ static ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operat
         }
     }
 }
-
-#endif // BELLMM_GENERAL_DEVICE_H

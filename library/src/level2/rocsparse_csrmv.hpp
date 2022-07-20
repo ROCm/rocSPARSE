@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CSRMV_HPP
-#define ROCSPARSE_CSRMV_HPP
 
 #include "handle.h"
 
@@ -72,5 +70,3 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                           const T*                  beta,
                                           T*                        y,
                                           bool                      force_conj);
-
-#endif // ROCSPARSE_CSRMV_HPP
