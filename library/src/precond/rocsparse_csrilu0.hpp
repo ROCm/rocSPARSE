@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CSRILU0_HPP
-#define ROCSPARSE_CSRILU0_HPP
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "csrilu0_device.h"
@@ -778,5 +776,3 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                       : static_cast<T>(0));
     }
 }
-
-#endif // ROCSPARSE_CSRILU0_HPP
