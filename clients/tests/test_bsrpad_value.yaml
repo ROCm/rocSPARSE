@@ -46,7 +46,7 @@ Tests:
   category: pre_checkin
   function: bsrpad_value
   precision: *single_double_precisions_complex_real
-  M: [99]
+  M: [99, 221, 789]
   block_dim: [98, 99, 100, 1000, 1023, 1024, 1025, 2000]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
@@ -57,7 +57,7 @@ Tests:
   category: pre_checkin
   function: bsrpad_value
   precision: *single_double_precisions_complex_real
-  M: [2, 98]
+  M: [2, 98, 576, 1107, 3546, 12557]
   block_dim: [1]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
@@ -68,10 +68,10 @@ Tests:
   category: quick
   function: bsrpad_value
   precision: *single_double_precisions_complex_real
-  M: [100]
+  M: [100, 801, 2278]
   block_dim: [10]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  direction: [rocsparse_direction_row, rocsparse_direction_column]
+  baseA: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row]
   storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   matrix: [rocsparse_matrix_random]
 
@@ -82,7 +82,7 @@ Tests:
   M: 1
   block_dim: [5, 9]
   baseA: [rocsparse_index_base_one]
-  direction: [rocsparse_direction_row, rocsparse_direction_column]
+  direction: [rocsparse_direction_column]
   storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mac_econ_fwd500,
@@ -94,12 +94,12 @@ Tests:
 - name: bsrpad_value
   category: nightly
   function: bsrpad_value
-  precision: *single_double_precisions_complex_real
+  precision: *single_double_precisions
   M: [10000]
   block_dim: [1023, 1024, 1025, 2000]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_column]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_unsorted]
   matrix: [rocsparse_matrix_random]
 
 - name: bsrpad_value_file
@@ -107,10 +107,10 @@ Tests:
   function: bsrpad_value
   precision: *single_double_precisions_complex
   M: 1
-  block_dim: [3, 7, 1024, 1025, 2000]
+  block_dim: [3, 7, 14, 32]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_unsorted]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron2]
 
@@ -122,9 +122,11 @@ Tests:
   block_dim: [3, 7]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_sorted]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron3,
+  filename: [qc2534,
+             mplate,
+             Chevron3,
              Chevron4]
 
 - name: bsrpad_value_file
@@ -135,11 +137,14 @@ Tests:
   block_dim: [5, 7]
   baseA: [rocsparse_index_base_one]
   direction: [rocsparse_direction_column]
-  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_unsorted]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [amazon0312,
              bmwcra_1,
              mac_econ_fwd500,
              sme3Dc,
+             shipsec1,
+             rma10,
              webbase-1M,
-             Chebyshev4]
+             Chebyshev4,
+             ASIC_320k]
