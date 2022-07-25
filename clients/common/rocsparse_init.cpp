@@ -320,22 +320,32 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
         val.resize(nnz);
     }
 
-    //
-    // Compute row indices.
-    //
-    std::vector<int> count(M, 0);
-    I                start = 0;
+    // Generate histogram of non-zero counts per row based on average non-zeros per row
+    std::vector<I> count(M, 0);
+    I              start = full_rank ? std::min(M, nnz) : 0;
     if(full_rank)
     {
-        for(I k = 0; k < std::min(M, nnz); ++k)
+        for(I k = 0; k < start; ++k)
         {
-            count[k] += 1;
-            row_ind[k] = k;
+            count[k] = 1;
         }
-        start = std::min(M, nnz);
     }
 
-    for(I k = start; k < nnz; ++k)
+    I remaining_nnz   = nnz - start;
+    I avg_nnz_per_row = remaining_nnz / M;
+
+    for(I k = 0; k < M; k++)
+    {
+        I nnz_in_row = std::min(random_generator<I>(0, 2 * avg_nnz_per_row), N);
+        nnz_in_row   = std::min(remaining_nnz, nnz_in_row);
+
+        count[k] += nnz_in_row;
+
+        remaining_nnz -= nnz_in_row;
+    }
+
+    // Sprinkle any remaining non-zeros amoung the rows
+    for(I k = 0; k < remaining_nnz; ++k)
     {
         I   i       = random_generator<I>(0, M - 1);
         int maxiter = 0;
@@ -359,80 +369,74 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
             }
         }
         count[i] += 1;
-        row_ind[k] = i;
     }
 
-    std::sort(row_ind.begin(), row_ind.end());
-
-    std::vector<bool> marker(N, false);
-    std::vector<I>    select(N, 0);
-    I                 mx = count[0];
-    for(I i = 1; i < M; ++i)
+    // Compute row index array from non-zeros per row count histogram
+    I offset          = 0;
+    I max_nnz_per_row = count[0];
+    for(I k = 0; k < M; k++)
     {
-        if(mx < count[i])
-            mx = count[i];
+        I nnz_in_row = count[k];
+        if(max_nnz_per_row < nnz_in_row)
+            max_nnz_per_row = nnz_in_row;
+
+        for(I i = 0; i < nnz_in_row; i++)
+        {
+            row_ind[offset + i] = k;
+        }
+
+        offset += nnz_in_row;
     }
-    I sec = std::min(2 * mx, N);
-    I at  = 0;
+
+    // Generate column index array with values clustered around the diagonal
+    I              sec = std::min(2 * max_nnz_per_row, N);
+    std::vector<I> random(2 * sec + 1);
+    I              at = 0;
     for(I i = 0; i < M; ++i)
     {
-        I select_n = 0;
-        I begin    = at;
-        for(I k = 0; k < count[i]; ++k)
-        {
-            I j;
-            if(full_rank && k == 0)
-            {
-                j = i;
-            }
-            else
-            {
-                I maxiter = 0;
-                do
-                {
-                    //
-                    // Generate coefficients close to the diagonal
-                    //
-                    I bmax = std::min(i + sec, N - 1);
-                    I bmin = std::max(bmax - 2 * sec, ((I)0));
+        I begin      = at;
+        I nnz_in_row = count[i];
+        I bmax       = std::min(i + sec, N - 1);
+        I bmin       = std::max(bmax - 2 * sec, ((I)0));
 
-                    j = random_generator<I>(bmin, bmax);
-                    ++maxiter;
-                    if(maxiter == 10)
-                    {
-                        break;
-                    }
-                } while(j < 0 || j >= N || marker[j]);
-                if(maxiter == 10)
+        // Initial permutation of column indices
+        for(I k = 0; k <= (bmax - bmin); ++k)
+        {
+            random[k] = k;
+        }
+
+        // shuffle permutation
+        for(I k = 0; k < nnz_in_row; ++k)
+        {
+            std::swap(random[k], random[random_generator<I>(0, bmax - bmin)]);
+        }
+
+        if(full_rank)
+        {
+            col_ind[at++] = i;
+            for(I k = 1; k < nnz_in_row; ++k)
+            {
+                if(bmin + random[k] == i)
                 {
-                    for(j = 0; j < N; ++j)
-                    {
-                        if(!marker[j])
-                        {
-                            break;
-                        }
-                    }
-                    if(j == N)
-                    {
-                        std::cerr << "rocsparse_init_coo_matrix error" << std::endl;
-                        exit(1);
-                    }
+                    col_ind[at++] = bmin + random[bmax - bmin];
+                }
+                else
+                {
+                    col_ind[at++] = bmin + random[k];
                 }
             }
-
-            select[select_n++] = j;
-            marker[j]          = true;
-            col_ind[at++]      = j;
+        }
+        else
+        {
+            for(I k = 0; k < nnz_in_row; ++k)
+            {
+                col_ind[at++] = bmin + random[k];
+            }
         }
 
-        for(I k = 0; k < select_n; ++k)
+        if(nnz_in_row > 0)
         {
-            marker[select[k]] = false;
-        }
-
-        if(count[i] > 0)
-        {
-            std::sort(&col_ind[begin], &col_ind[begin + count[i]]);
+            std::sort(&col_ind[begin], &col_ind[begin + nnz_in_row]);
         }
     }
 
@@ -446,52 +450,65 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
         }
     }
 
+    constexpr size_t RANDOM_CACHE_SIZE = 1024;
+
     if(to_int)
     {
+        std::vector<T> random(RANDOM_CACHE_SIZE);
+        for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
+        {
+            random[i] = random_generator_exact<T>();
+        }
 
-        // Sample random off-diagonal values
+        // Sample random values
         for(I i = 0; i < nnz; ++i)
         {
-            if(row_ind[i] == col_ind[i])
-            {
-                // Sample diagonal values
-                val[i] = random_generator_exact<T>();
-            }
-            else
-            {
-                // Samples off-diagonal values
-                val[i] = random_generator_exact<T>();
-            }
+            val[i] = random[i % RANDOM_CACHE_SIZE];
         }
     }
     else
     {
         if(full_rank)
         {
+            std::vector<T> random_off_diag(RANDOM_CACHE_SIZE);
+            std::vector<T> random_diag1(RANDOM_CACHE_SIZE);
+            std::vector<T> random_diag2(RANDOM_CACHE_SIZE);
+            for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
+            {
+                random_off_diag[i] = random_generator<T>(static_cast<T>(-0.5), static_cast<T>(0.5));
+                random_diag1[i]    = random_generator<T>(static_cast<T>(4.0), static_cast<T>(8.0));
+                random_diag2[i]
+                    = random_generator<T>(static_cast<T>(-1.0e-2), static_cast<T>(1.0e-2));
+            }
+
             // Sample random off-diagonal values
             for(I i = 0; i < nnz; ++i)
             {
                 if(row_ind[i] == col_ind[i])
                 {
                     // Sample diagonal values
-                    val[i] = random_generator<T>(static_cast<T>(4.0), static_cast<T>(8.0));
-                    val[i]
-                        += val[i]
-                           * random_generator<T>(static_cast<T>(-1.0e-2), static_cast<T>(1.0e-2));
+                    val[i] = random_diag1[i % RANDOM_CACHE_SIZE];
+                    val[i] += val[i] * random_diag2[i % RANDOM_CACHE_SIZE];
                 }
                 else
                 {
                     // Samples off-diagonal values
-                    val[i] = random_generator<T>(static_cast<T>(-0.5), static_cast<T>(0.5));
+                    val[i] = random_off_diag[i % RANDOM_CACHE_SIZE];
                 }
             }
         }
         else
         {
-            // Sample random off-diagonal values
+            std::vector<T> random(RANDOM_CACHE_SIZE);
+            for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
+            {
+                random[i] = random_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
+            }
+
+            // Sample random values
             for(I i = 0; i < nnz; ++i)
             {
-                val[i] = random_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
+                val[i] = random[i % RANDOM_CACHE_SIZE];
             }
         }
     }

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -72,7 +72,7 @@ Tests:
 - name: csric0
   category: pre_checkin
   function: csric0
-  precision: *single_double_precisions_complex_real
+  precision: *double_only_precisions_complex
   M_N: *M_N_range_checkin
   transA: [rocsparse_operation_none]
   apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
