@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_BSRILU0_HPP
-#define ROCSPARSE_BSRILU0_HPP
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "bsrilu0_device.h"
@@ -752,5 +750,3 @@ rocsparse_status rocsparse_bsrilu0_template(rocsparse_handle          handle,
 
     return rocsparse_status_success;
 }
-
-#endif // ROCSPARSE_BSRILU0_HPP

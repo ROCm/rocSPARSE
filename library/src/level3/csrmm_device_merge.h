@@ -22,8 +22,6 @@
  *
  * ************************************************************************ */
 #pragma once
-#ifndef CSRMM_DEVICE_MERGE_H
-#define CSRMM_DEVICE_MERGE_H
 
 #include "common.h"
 
@@ -483,5 +481,3 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         row_limits[gid + 1] = m;
     }
 }
-
-#endif // CSRMM_DEVICE_MERGE_H

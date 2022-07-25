@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_BSRXMV_SPLZ_HPP
-#define ROCSPARSE_BSRXMV_SPLZ_HPP
 
 #include "definitions.h"
 
@@ -168,5 +166,3 @@ void bsrxmvn_general(rocsparse_handle     handle,
                      U                    beta_device_host,
                      T*                   y,
                      rocsparse_index_base base);
-
-#endif // ROCSPARSE_BSRXMV_HPP

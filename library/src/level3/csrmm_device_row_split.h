@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef CSRMM_DEVICE_ROW_SPLIT_H
-#define CSRMM_DEVICE_ROW_SPLIT_H
 
 #include "common.h"
 
@@ -351,5 +349,3 @@ static __device__ void csrmmnt_row_split_remainder_device(bool conj_A,
         }
     }
 }
-
-#endif // CSRMM_DEVICE_ROW_SPLIT_H

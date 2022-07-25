@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CSRSM_HPP
-#define ROCSPARSE_CSRSM_HPP
 
 #include "handle.h"
 
@@ -82,5 +80,3 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                                 rocsparse_mat_info        info,
                                                 rocsparse_solve_policy    policy,
                                                 void*                     temp_buffer);
-
-#endif // ROCSPARSE_CSRSM_HPP

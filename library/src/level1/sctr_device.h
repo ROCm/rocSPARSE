@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef SCTR_DEVICE_H
-#define SCTR_DEVICE_H
 
 #include <hip/hip_runtime.h>
 
@@ -41,5 +39,3 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
     y[x_ind[idx] - idx_base] = x_val[idx];
 }
-
-#endif // SCTR_DEVICE_H

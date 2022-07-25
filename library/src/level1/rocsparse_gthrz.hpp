@@ -23,9 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_GTHRZ_HPP
-#define ROCSPARSE_GTHRZ_HPP
-
 #include "utility.h"
 
 #include "gthrz_device.h"
@@ -107,5 +104,3 @@ rocsparse_status rocsparse_gthrz_template(rocsparse_handle     handle,
 #undef GTHRZ_DIM
     return rocsparse_status_success;
 }
-
-#endif // ROCSPARSE_GTHRZ_HPP

@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_GEMMI_HPP
-#define ROCSPARSE_GEMMI_HPP
 
 #include "definitions.h"
 #include "gemmi_device.h"
@@ -293,5 +291,3 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
 
     return rocsparse_status_success;
 }
-
-#endif // ROCSPARSE_GEMMI_HPP

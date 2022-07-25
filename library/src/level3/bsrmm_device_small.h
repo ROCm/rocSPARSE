@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef BSRMM_DEVICE_SMALL_H
-#define BSRMM_DEVICE_SMALL_H
 
 #include "common.h"
 
@@ -379,4 +377,3 @@ static __device__ void bsrmmnt_small_blockdim_device(rocsparse_direction directi
         }
     }
 }
-#endif // BSRMM_DEVICE_SMALL_H

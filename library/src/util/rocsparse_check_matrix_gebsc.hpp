@@ -21,8 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#ifndef ROCSPARSE_CHECK_MATRIX_GEBSC_HPP
-#define ROCSPARSE_CHECK_MATRIX_GEBSC_HPP
+#pragma once
 
 #include "handle.h"
 
@@ -61,5 +60,3 @@ rocsparse_status rocsparse_check_matrix_gebsc_template(rocsparse_handle       ha
                                                        rocsparse_storage_mode storage,
                                                        rocsparse_data_status* data_status,
                                                        void*                  temp_buffer);
-
-#endif // ROCSPARSE_CHECK_MATRIX_GEBSC_HPP

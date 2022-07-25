@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef CHECK_MATRIX_COO_DEVICE_H
-#define CHECK_MATRIX_COO_DEVICE_H
 
 #include "common.h"
 
@@ -129,5 +127,3 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         }
     }
 }
-
-#endif // CHECK_MATRIX_COO_DEVICE_H

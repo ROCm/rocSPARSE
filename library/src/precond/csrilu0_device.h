@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef CSRILU0_DEVICE_H
-#define CSRILU0_DEVICE_H
 
 #include "common.h"
 
@@ -378,5 +376,3 @@ __device__ void csrilu0_binsearch_kernel(rocsparse_int m_,
         atomicOr(&done[row], 1);
     }
 }
-
-#endif // CSRILU0_DEVICE_H

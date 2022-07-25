@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CSRCOLOR_HPP
-#define ROCSPARSE_CSRCOLOR_HPP
 
 #include "utility.h"
 
@@ -54,5 +52,3 @@ rocsparse_status rocsparse_csrcolor_template(rocsparse_handle          handle,
                                              J*                        coloring,
                                              J*                        reordering,
                                              rocsparse_color_info      info);
-
-#endif // ROCSPARSE_CSRCOLOR_HPP
