@@ -148,7 +148,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
             {
                 for(J c = 0; c < col_block_dim; c++)
                 {
-                    T val = bsr_val[row_block_dim * col_block_dim * j + col_block_dim * r + c];
+                    T val = bsr_val[int64_t(row_block_dim) * col_block_dim * j + col_block_dim * r
+                                    + c];
                     if(rocsparse_is_inf(val))
                     {
                         record_data_status(data_status, rocsparse_data_status_inf);
@@ -169,7 +170,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
             {
                 for(J r = 0; r < row_block_dim; r++)
                 {
-                    T val = bsr_val[row_block_dim * col_block_dim * j + row_block_dim * c + r];
+                    T val = bsr_val[int64_t(row_block_dim) * col_block_dim * j + row_block_dim * c
+                                    + r];
                     if(rocsparse_is_inf(val))
                     {
                         record_data_status(data_status, rocsparse_data_status_inf);
