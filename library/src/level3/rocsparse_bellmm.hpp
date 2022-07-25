@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_BELLMM_HPP
-#define ROCSPARSE_BELLMM_HPP
 
 #include "handle.h"
 
@@ -107,5 +105,3 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                            I                         batch_count_C,
                                            I                         batch_stride_C,
                                            void*                     temp_buffer);
-
-#endif // ROCSPARSE_BELLMM_HPP

@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_COOMV_AOS_HPP
-#define ROCSPARSE_COOMV_AOS_HPP
 
 #include "utility.h"
 
@@ -49,5 +47,3 @@ rocsparse_status rocsparse_coomv_aos_template(rocsparse_handle          handle,
                                               const T*                  x,
                                               const T*                  beta_device_host,
                                               T*                        y);
-
-#endif // ROCSPARSE_COOMV_AOS_HPP

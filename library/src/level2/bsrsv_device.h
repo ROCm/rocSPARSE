@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
 * ************************************************************************ */
 
 #pragma once
-#ifndef BSRSV_DEVICE_H
-#define BSRSV_DEVICE_H
 
 #include "common.h"
 
@@ -687,5 +685,3 @@ ROCSPARSE_DEVICE_ILF void bsrsv_upper_shared_device(rocsparse_int mb,
         }
     }
 }
-
-#endif // BSRSV_DEVICE_H

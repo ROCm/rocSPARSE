@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_BSRXMV_HPP
-#define ROCSPARSE_BSRXMV_HPP
 
 #include "handle.h"
 
@@ -67,5 +65,3 @@ rocsparse_status rocsparse_bsrxmv_template(rocsparse_handle          handle,
                                            const T*                  x,
                                            const T*                  beta_device_host,
                                            T*                        y);
-
-#endif // ROCSPARSE_BSRXMV_HPP

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ELLMV_DEVICE_H
-#define ELLMV_DEVICE_H
 
 #include "common.h"
 
@@ -134,5 +132,3 @@ static __device__ void ellmvt_device(rocsparse_operation  trans,
         }
     }
 }
-
-#endif // ELLMV_DEVICE_H

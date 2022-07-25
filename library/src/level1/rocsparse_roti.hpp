@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_ROTI_HPP
-#define ROCSPARSE_ROTI_HPP
 #include "utility.h"
 
 #include "roti_device.h"
@@ -159,5 +157,3 @@ rocsparse_status rocsparse_roti_template(rocsparse_handle     handle,
 #undef ROTI_DIM
     return rocsparse_status_success;
 }
-
-#endif // ROCSPARSE_ROTI_HPP
