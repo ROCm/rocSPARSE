@@ -200,15 +200,15 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
         {
             if(DIRECTION == rocsparse_direction_row)
             {
-                rocsparse_int j = (bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
-                                  + wf_segment_lane_id * block_dim + csr_col_index % block_dim;
+                int64_t j = int64_t(bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
+                            + wf_segment_lane_id * block_dim + csr_col_index % block_dim;
 
                 bsr_val[j] = csr_value;
             }
             else
             {
-                rocsparse_int j = (bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
-                                  + (csr_col_index % block_dim) * block_dim + wf_segment_lane_id;
+                int64_t j = int64_t(bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
+                            + (csr_col_index % block_dim) * block_dim + wf_segment_lane_id;
                 bsr_val[j] = csr_value;
             }
         }
@@ -428,18 +428,17 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
             {
                 if(DIRECTION == rocsparse_direction_row)
                 {
-                    rocsparse_int k = (bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
-                                      + (BLOCK_SIZE * j + lane_id) * block_dim
-                                      + csr_col_index[BLOCK_SIZE * j + lane_id] % block_dim;
+                    int64_t k = int64_t(bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
+                                + (BLOCK_SIZE * j + lane_id) * block_dim
+                                + csr_col_index[BLOCK_SIZE * j + lane_id] % block_dim;
 
                     bsr_val[k] = csr_value[BLOCK_SIZE * j + lane_id];
                 }
                 else
                 {
-                    rocsparse_int k
-                        = (bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
-                          + (csr_col_index[BLOCK_SIZE * j + lane_id] % block_dim) * block_dim
-                          + (BLOCK_SIZE * j + lane_id);
+                    int64_t k = int64_t(bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
+                                + (csr_col_index[BLOCK_SIZE * j + lane_id] % block_dim) * block_dim
+                                + (BLOCK_SIZE * j + lane_id);
                     bsr_val[k] = csr_value[BLOCK_SIZE * j + lane_id];
                 }
             }
@@ -657,17 +656,17 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
             {
                 if(direction == rocsparse_direction_row)
                 {
-                    rocsparse_int k = (bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
-                                      + (BLOCK_SIZE * j + lane_id) * block_dim
-                                      + csr_col_index[j] % block_dim;
+                    int64_t k = int64_t(bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
+                                + (BLOCK_SIZE * j + lane_id) * block_dim
+                                + csr_col_index[j] % block_dim;
 
                     bsr_val[k] = csr_value[j];
                 }
                 else
                 {
-                    rocsparse_int k = (bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
-                                      + (csr_col_index[j] % block_dim) * block_dim
-                                      + (BLOCK_SIZE * j + lane_id);
+                    int64_t k = int64_t(bsr_row_start + nnzb_per_row - 1) * block_dim * block_dim
+                                + (csr_col_index[j] % block_dim) * block_dim
+                                + (BLOCK_SIZE * j + lane_id);
                     bsr_val[k] = csr_value[j];
                 }
             }
