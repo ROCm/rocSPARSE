@@ -7247,24 +7247,24 @@ void host_bsrpad_value(rocsparse_int m,
                        rocsparse_index_base bsr_base)
 {
     rocsparse_int start_local_index = m % block_dim;
-    if(start_local_index > 0)
+
+    rocsparse_int start = bsr_row_ptr[mb - 1] - bsr_base;
+    rocsparse_int end   = bsr_row_ptr[mb] - bsr_base;
+
+    if((start_local_index > 0) && (end - start > 0))
     {
-        if((bsr_col_ind[(bsr_row_ptr[mb] - bsr_base) - 1] - bsr_base) == (mb - 1))
+        if((bsr_col_ind[end - 1] - bsr_base) == (mb - 1))
         {
             // then we pad.
             for(rocsparse_int i = start_local_index; i < block_dim; ++i)
             {
-                bsr_val[((bsr_row_ptr[mb] - bsr_base) - 1) * block_dim * block_dim + i * block_dim
-                        + i]
-                    = value;
+                bsr_val[(end - 1) * block_dim * block_dim + i * block_dim + i] = value;
             }
         }
         else
         {
             // search for diagonal block
-            for(rocsparse_int index = bsr_row_ptr[mb - 1] - bsr_base;
-                index < (bsr_row_ptr[mb] - bsr_base);
-                index++)
+            for(rocsparse_int index = start; index < end; index++)
             {
                 if((bsr_col_ind[index] - bsr_base) == (mb - 1))
                 {

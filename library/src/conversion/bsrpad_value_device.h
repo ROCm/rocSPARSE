@@ -37,22 +37,37 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
                                     const rocsparse_int* __restrict__ bsr_row_ptr,
                                     const rocsparse_int* __restrict__ bsr_col_ind)
 {
+
     rocsparse_int block_id = hipBlockIdx_x;
     rocsparse_int local_id = hipThreadIdx_x;
 
+    rocsparse_int block_index = -1;
+
     rocsparse_int i = block_id * BLOCK_SIZE + local_id;
 
-    if(i < block_dim)
+    rocsparse_int start = bsr_row_ptr[mb - 1] - bsr_base;
+    rocsparse_int end   = bsr_row_ptr[mb] - bsr_base;
+
+    //find block
+    if((end - start) > 0)
     {
-        rocsparse_int start_local_index = m % block_dim;
-        if((start_local_index > 0)
-           && ((bsr_col_ind[(bsr_row_ptr[mb] - bsr_base) - 1] - bsr_base) == (mb - 1)))
+        if((bsr_col_ind[end - 1] - bsr_base) == (mb - 1))
         {
-            if(i >= start_local_index)
+            block_index = end - 1;
+        }
+    }
+
+    if(block_index >= 0)
+    {
+        if(i < block_dim)
+        {
+            rocsparse_int start_local_index = m % block_dim;
+            if(start_local_index > 0)
             {
-                bsr_val[((bsr_row_ptr[mb] - bsr_base) - 1) * block_dim * block_dim + i * block_dim
-                        + i]
-                    = value;
+                if(i >= start_local_index)
+                {
+                    bsr_val[block_index * block_dim * block_dim + i * block_dim + i] = value;
+                }
             }
         }
     }
@@ -81,15 +96,17 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
         block_index = -1;
     }
 
+    rocsparse_int start = bsr_row_ptr[mb - 1] - bsr_base;
+    rocsparse_int end   = bsr_row_ptr[mb] - bsr_base;
+
     __syncthreads();
 
     //find block
-    for(rocsparse_int index = local_id; bsr_row_ptr[mb - 1] + index < bsr_row_ptr[mb];
-        index += hipBlockDim_x)
+    for(rocsparse_int index = start + local_id; index < end; index += BLOCK_SIZE)
     {
-        if(bsr_col_ind[(bsr_row_ptr[mb - 1] - bsr_base) + index] - bsr_base == mb - 1)
+        if(bsr_col_ind[index] - bsr_base == mb - 1)
         {
-            block_index = (bsr_row_ptr[mb - 1] - bsr_base) + index;
+            block_index = index;
         }
     }
 
