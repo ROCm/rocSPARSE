@@ -41,6 +41,9 @@ Definitions:
     - { alpha:   2.0, beta:  0.67, alphai:  0.0, betai:  1.5 }
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
 
+  - &alpha_beta_range_stress
+    - { alpha:   1.7, beta:  0.45, alphai:  0.5, betai:  1.2 }
+
 Tests:
 - name: bsrmv_bad_arg
   category: pre_checkin
@@ -284,3 +287,17 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [Chevron3]
+
+- name: bsrmv
+  category: stress
+  function: bsrmv
+  precision: *single_only_precisions
+  M: [1000000, 10000000]
+  N: [1000000, 10000000]
+  block_dim: [2, 13]
+  alpha_beta: *alpha_beta_range_stress
+  direction: [rocsparse_direction_column]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_tridiagonal, rocsparse_matrix_pentadiagonal]
+  storage: [rocsparse_storage_mode_sorted]

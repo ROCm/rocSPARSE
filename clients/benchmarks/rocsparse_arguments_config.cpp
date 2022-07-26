@@ -42,6 +42,10 @@ rocsparse_arguments_config::rocsparse_arguments_config()
         this->dimx           = static_cast<rocsparse_int>(0);
         this->dimy           = static_cast<rocsparse_int>(0);
         this->dimz           = static_cast<rocsparse_int>(0);
+        this->ll             = static_cast<rocsparse_int>(0);
+        this->l              = static_cast<rocsparse_int>(0);
+        this->u              = static_cast<rocsparse_int>(0);
+        this->uu             = static_cast<rocsparse_int>(0);
         this->index_type_I   = static_cast<rocsparse_indextype>(0);
         this->index_type_J   = static_cast<rocsparse_indextype>(0);
         this->compute_type   = static_cast<rocsparse_datatype>(0);
@@ -167,19 +171,35 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      "read from file with file extension detection. This will override parameters --rocsparseio,rocalution,mtx")
 
     ("dimx",
-     value<rocsparse_int>(&this->dimx)->default_value(0.0), "assemble "
+     value<rocsparse_int>(&this->dimx)->default_value(0), "assemble "
      "laplacian matrix with dimensions <dimx dimy dimz>. dimz is optional. This "
      "will override parameters -m, -n, -z and --mtx.")
 
     ("dimy",
-     value<rocsparse_int>(&this->dimy)->default_value(0.0), "assemble "
+     value<rocsparse_int>(&this->dimy)->default_value(0), "assemble "
      "laplacian matrix with dimensions <dimx dimy dimz>. dimz is optional. This "
      "will override parameters -m, -n, -z and --mtx.")
 
     ("dimz",
-     value<rocsparse_int>(&this->dimz)->default_value(0.0), "assemble "
+     value<rocsparse_int>(&this->dimz)->default_value(0), "assemble "
      "laplacian matrix with dimensions <dimx dimy dimz>. dimz is optional. This "
      "will override parameters -m, -n, -z and --mtx.")
+
+    ("diag_ll",
+     value<rocsparse_int>(&this->ll)->default_value(0), "assemble "
+     "pentadiagonal matrix with stencil <ll l u, uu>.")
+
+    ("diag_l",
+     value<rocsparse_int>(&this->l)->default_value(0), "assemble "
+     "tridiagonal matrix with stencil <l u> or pentadiagonal matrix with stencil <ll l u, uu>.")
+
+    ("diag_u",
+     value<rocsparse_int>(&this->u)->default_value(0), "assemble "
+     "tridiagonal matrix with stencil <l u> or pentadiagonal matrix with stencil <ll l u, uu>.")
+
+    ("diag_uu",
+     value<rocsparse_int>(&this->uu)->default_value(0), "assemble "
+     "pentadiagonal matrix with stencil <ll l u, uu>.")
 
     ("alpha",
      value<double>(&this->alpha)->default_value(1.0), "specifies the scalar alpha")
@@ -469,10 +489,10 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
     strcpy(this->filename, this->b_file.c_str());
   }
   else if(this->b_rocsparseio != "")
-    {
-      strcpy(this->filename, this->b_rocsparseio.c_str());
-      this->matrix = rocsparse_matrix_file_rocsparseio;
-    }
+  {
+    strcpy(this->filename, this->b_rocsparseio.c_str());
+    this->matrix = rocsparse_matrix_file_rocsparseio;
+  }
   else if(this->b_rocalution != "")
   {
     strcpy(this->filename, this->b_rocalution.c_str());
@@ -490,6 +510,14 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   {
     strcpy(this->filename, this->b_matrixmarket.c_str());
     this->matrix = rocsparse_matrix_file_mtx;
+  }
+  else if(this->ll == 0 && this->l != 0 && this->u != 0 && this->uu == 0)
+  {
+    this->matrix = rocsparse_matrix_tridiagonal;
+  }
+  else if(this->ll != 0 && this->l != 0 && this->u != 0 && this->uu != 0)
+  {
+    this->matrix = rocsparse_matrix_pentadiagonal;
   }
   else
   {

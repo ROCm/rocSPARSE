@@ -55,6 +55,11 @@ struct Arguments
     rocsparse_int dimy;
     rocsparse_int dimz;
 
+    rocsparse_int ll;
+    rocsparse_int l;
+    rocsparse_int u;
+    rocsparse_int uu;
+
     rocsparse_indextype index_type_I;
     rocsparse_indextype index_type_J;
     rocsparse_datatype  compute_type;
@@ -171,6 +176,10 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(dimx);
         ROCSPARSE_FORMAT_CHECK(dimy);
         ROCSPARSE_FORMAT_CHECK(dimz);
+        ROCSPARSE_FORMAT_CHECK(ll);
+        ROCSPARSE_FORMAT_CHECK(l);
+        ROCSPARSE_FORMAT_CHECK(u);
+        ROCSPARSE_FORMAT_CHECK(uu);
         ROCSPARSE_FORMAT_CHECK(index_type_I);
         ROCSPARSE_FORMAT_CHECK(index_type_J);
         ROCSPARSE_FORMAT_CHECK(compute_type);
@@ -373,6 +382,10 @@ private:
         print("dim_x", arg.dimx);
         print("dim_y", arg.dimy);
         print("dim_z", arg.dimz);
+        print("ll", arg.ll);
+        print("l", arg.l);
+        print("u", arg.u);
+        print("uu", arg.uu);
         print("alpha", arg.alpha);
         print("alphai", arg.alphai);
         print("beta", arg.beta);
