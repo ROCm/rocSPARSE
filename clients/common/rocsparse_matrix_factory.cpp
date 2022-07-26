@@ -81,6 +81,19 @@ rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments&    
         break;
     }
 
+    case rocsparse_matrix_tridiagonal:
+    {
+        this->m_instance = new rocsparse_matrix_factory_tridiagonal<T, I, J>(arg.l, arg.u);
+        break;
+    }
+
+    case rocsparse_matrix_pentadiagonal:
+    {
+        this->m_instance
+            = new rocsparse_matrix_factory_pentadiagonal<T, I, J>(arg.ll, arg.l, arg.u, arg.uu);
+        break;
+    }
+
     case rocsparse_matrix_file_rocalution:
     {
         std::string filename = arg.timing
@@ -425,7 +438,6 @@ void rocsparse_matrix_factory<T, I, J>::init_gebsr(host_gebsr_matrix<T, I, J>& t
                                                    J&                          col_block_dim,
                                                    rocsparse_index_base        base_)
 {
-
     that.base = base_;
     that.mb   = mb;
     that.nb   = nb;

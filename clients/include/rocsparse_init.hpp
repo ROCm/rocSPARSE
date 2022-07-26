@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -335,4 +335,93 @@ void rocsparse_init_gebsr_random(std::vector<I>&            row_ptr,
                                  rocsparse_matrix_init_kind init_kind,
                                  bool                       full_rank = false,
                                  bool                       to_int    = false);
+
+/* ==================================================================================== */
+/*! \brief  Generate a tridiagonal sparse matrix in COO format */
+template <typename I, typename T>
+void rocsparse_init_coo_tridiagonal(std::vector<I>&      row_ind,
+                                    std::vector<I>&      col_ind,
+                                    std::vector<T>&      val,
+                                    I                    M,
+                                    I                    N,
+                                    I&                   nnz,
+                                    rocsparse_index_base base,
+                                    I                    l,
+                                    I                    u);
+
+/* ==================================================================================== */
+/*! \brief  Generate a tridiagonal sparse matrix in CSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_csr_tridiagonal(std::vector<I>&      row_ptr,
+                                    std::vector<J>&      col_ind,
+                                    std::vector<T>&      val,
+                                    J                    M,
+                                    J                    N,
+                                    I&                   nnz,
+                                    rocsparse_index_base base,
+                                    J                    l,
+                                    J                    u);
+
+/* ==================================================================================== */
+/*! \brief  Generate a tridiagonal sparse matrix in GEBSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_tridiagonal(std::vector<I>&      row_ptr,
+                                      std::vector<J>&      col_ind,
+                                      std::vector<T>&      val,
+                                      J                    Mb,
+                                      J                    Nb,
+                                      I&                   nnzb,
+                                      J                    row_block_dim,
+                                      J                    col_block_dim,
+                                      rocsparse_index_base base,
+                                      J                    l,
+                                      J                    u);
+
+/* ==================================================================================== */
+/*! \brief  Generate a penta diagonal sparse matrix in COO format */
+template <typename I, typename T>
+void rocsparse_init_coo_pentadiagonal(std::vector<I>&      row_ind,
+                                      std::vector<I>&      col_ind,
+                                      std::vector<T>&      val,
+                                      I                    M,
+                                      I                    N,
+                                      I&                   nnz,
+                                      rocsparse_index_base base,
+                                      I                    ll,
+                                      I                    l,
+                                      I                    u,
+                                      I                    uu);
+
+/* ==================================================================================== */
+/*! \brief  Generate a penta diagonal sparse matrix in CSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_csr_pentadiagonal(std::vector<I>&      row_ptr,
+                                      std::vector<J>&      col_ind,
+                                      std::vector<T>&      val,
+                                      J                    M,
+                                      J                    N,
+                                      I&                   nnz,
+                                      rocsparse_index_base base,
+                                      J                    ll,
+                                      J                    l,
+                                      J                    u,
+                                      J                    uu);
+
+/* ==================================================================================== */
+/*! \brief  Generate a penta diagonal sparse matrix in GEBSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_pentadiagonal(std::vector<I>&      row_ptr,
+                                        std::vector<J>&      col_ind,
+                                        std::vector<T>&      val,
+                                        J                    Mb,
+                                        J                    Nb,
+                                        I&                   nnzb,
+                                        J                    row_block_dim,
+                                        J                    col_block_dim,
+                                        rocsparse_index_base base,
+                                        J                    ll,
+                                        J                    l,
+                                        J                    u,
+                                        J                    uu);
+
 #endif // ROCSPARSE_INIT_HPP

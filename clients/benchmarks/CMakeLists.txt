@@ -48,6 +48,8 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_matrix_factory_laplace3d.cpp
   ../common/rocsparse_matrix_factory_zero.cpp
   ../common/rocsparse_matrix_factory_random.cpp
+  ../common/rocsparse_matrix_factory_tridiagonal.cpp
+  ../common/rocsparse_matrix_factory_pentadiagonal.cpp
   ../common/rocsparse_matrix_factory_file.cpp
   ../common/rocsparse_exporter_rocsparseio.cpp
   ../common/rocsparse_exporter_rocalution.cpp

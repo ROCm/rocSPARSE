@@ -1097,6 +1097,282 @@ void rocsparse_init_gebsr_random(std::vector<I>&            row_ptr,
     }
 }
 
+/* ==================================================================================== */
+/*! \brief  Generate a tridiagonal sparse matrix in COO format */
+template <typename I, typename T>
+void rocsparse_init_coo_tridiagonal(std::vector<I>&      row_ind,
+                                    std::vector<I>&      col_ind,
+                                    std::vector<T>&      val,
+                                    I                    M,
+                                    I                    N,
+                                    I&                   nnz,
+                                    rocsparse_index_base base,
+                                    I                    l,
+                                    I                    u)
+{
+    if(l >= 0 || -l >= M)
+    {
+        std::cerr << "ERROR: l >= 0 || -l >= M" << std::endl;
+        return;
+    }
+
+    if(u <= 0 || u >= N)
+    {
+        std::cerr << "ERROR: u <= 0 || u >= N" << std::endl;
+        return;
+    }
+
+    I l_length = std::min((M + l), N);
+    I d_length = std::min(M, N);
+    I u_length = std::min((N - u), M);
+
+    nnz = l_length + d_length + u_length;
+
+    row_ind.resize(nnz);
+    col_ind.resize(nnz);
+    val.resize(nnz);
+
+    I row_index = 0;
+    I col_index = 0;
+    for(I i = 0; i < M; i++)
+    {
+        I l_col = i + l;
+        I d_col = i;
+        I u_col = i + u;
+
+        if(l_col >= 0 && l_col < N)
+        {
+            row_ind[row_index++] = i + base;
+            col_ind[col_index++] = l_col + base;
+        }
+
+        if(d_col >= 0 && d_col < N)
+        {
+            row_ind[row_index++] = i + base;
+            col_ind[col_index++] = d_col + base;
+        }
+
+        if(u_col >= 0 && u_col < N)
+        {
+            row_ind[row_index++] = i + base;
+            col_ind[col_index++] = u_col + base;
+        }
+    }
+
+    constexpr size_t RANDOM_CACHE_SIZE = 1024;
+
+    std::vector<T> random(RANDOM_CACHE_SIZE);
+    for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
+    {
+        random[i] = random_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
+    }
+
+    // Sample random values
+    for(I i = 0; i < nnz; i++)
+    {
+        val[i] = random[i % RANDOM_CACHE_SIZE];
+    }
+}
+
+/* ==================================================================================== */
+/*! \brief  Generate a tridiagonal sparse matrix in CSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_csr_tridiagonal(std::vector<I>&      row_ptr,
+                                    std::vector<J>&      col_ind,
+                                    std::vector<T>&      val,
+                                    J                    M,
+                                    J                    N,
+                                    I&                   nnz,
+                                    rocsparse_index_base base,
+                                    J                    l,
+                                    J                    u)
+{
+    J              coo_nnz;
+    std::vector<J> row_ind;
+    // Sample COO matrix
+    rocsparse_init_coo_tridiagonal<J>(row_ind, col_ind, val, M, N, coo_nnz, base, l, u);
+
+    nnz = coo_nnz;
+
+    // Convert to CSR
+    host_coo_to_csr(M, nnz, row_ind.data(), row_ptr, base);
+}
+
+/* ==================================================================================== */
+/*! \brief  Generate a tridiagonal sparse matrix in GEBSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_tridiagonal(std::vector<I>&      row_ptr,
+                                      std::vector<J>&      col_ind,
+                                      std::vector<T>&      val,
+                                      J                    Mb,
+                                      J                    Nb,
+                                      I&                   nnzb,
+                                      J                    row_block_dim,
+                                      J                    col_block_dim,
+                                      rocsparse_index_base base,
+                                      J                    l,
+                                      J                    u)
+{
+    rocsparse_init_csr_tridiagonal(row_ptr, col_ind, val, Mb, Nb, nnzb, base, l, u);
+
+    I nvalues = nnzb * row_block_dim * col_block_dim;
+    val.resize(nvalues);
+
+    for(I i = 0; i < nvalues; ++i)
+    {
+        val[i] = random_generator<T>();
+    }
+}
+
+/* ==================================================================================== */
+/*! \brief  Generate a pentadiagonal sparse matrix in COO format */
+template <typename I, typename T>
+void rocsparse_init_coo_pentadiagonal(std::vector<I>&      row_ind,
+                                      std::vector<I>&      col_ind,
+                                      std::vector<T>&      val,
+                                      I                    M,
+                                      I                    N,
+                                      I&                   nnz,
+                                      rocsparse_index_base base,
+                                      I                    ll,
+                                      I                    l,
+                                      I                    u,
+                                      I                    uu)
+{
+    if(ll >= 0 || l >= 0 || ll >= l || -l >= M || -ll >= M)
+    {
+        std::cerr << "ERROR: ll >= 0 || l >= 0 || ll >= l || -l >= M || -ll >= M" << std::endl;
+        return;
+    }
+
+    if(u <= 0 || uu <= 0 || uu <= u || u >= N || uu >= N)
+    {
+        std::cerr << "ERROR: u <= 0 || uu <= 0 || uu <= u || u >= N || uu >= N" << std::endl;
+        return;
+    }
+
+    I l_length  = std::min((M + l), N);
+    I ll_length = std::min((M + ll), N);
+    I d_length  = std::min(M, N);
+    I u_length  = std::min((N - u), M);
+    I uu_length = std::min((N - uu), M);
+
+    nnz = ll_length + l_length + d_length + u_length + uu_length;
+
+    row_ind.resize(nnz);
+    col_ind.resize(nnz);
+    val.resize(nnz);
+
+    I row_index = 0;
+    I col_index = 0;
+    for(I i = 0; i < M; i++)
+    {
+        I ll_col = i + ll;
+        I l_col  = i + l;
+        I d_col  = i;
+        I u_col  = i + u;
+        I uu_col = i + uu;
+
+        if(ll_col >= 0 && ll_col < N)
+        {
+            row_ind[row_index++] = i + base;
+            col_ind[col_index++] = ll_col + base;
+        }
+
+        if(l_col >= 0 && l_col < N)
+        {
+            row_ind[row_index++] = i + base;
+            col_ind[col_index++] = l_col + base;
+        }
+
+        if(d_col >= 0 && d_col < N)
+        {
+            row_ind[row_index++] = i + base;
+            col_ind[col_index++] = d_col + base;
+        }
+
+        if(u_col >= 0 && u_col < N)
+        {
+            row_ind[row_index++] = i + base;
+            col_ind[col_index++] = u_col + base;
+        }
+
+        if(uu_col >= 0 && uu_col < N)
+        {
+            row_ind[row_index++] = i + base;
+            col_ind[col_index++] = uu_col + base;
+        }
+    }
+
+    constexpr size_t RANDOM_CACHE_SIZE = 1024;
+
+    std::vector<T> random(RANDOM_CACHE_SIZE);
+    for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
+    {
+        random[i] = random_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
+    }
+
+    // Sample random values
+    for(I i = 0; i < nnz; i++)
+    {
+        val[i] = random[i % RANDOM_CACHE_SIZE];
+    }
+}
+
+/* ==================================================================================== */
+/*! \brief  Generate a pentadiagonal sparse matrix in CSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_csr_pentadiagonal(std::vector<I>&      row_ptr,
+                                      std::vector<J>&      col_ind,
+                                      std::vector<T>&      val,
+                                      J                    M,
+                                      J                    N,
+                                      I&                   nnz,
+                                      rocsparse_index_base base,
+                                      J                    ll,
+                                      J                    l,
+                                      J                    u,
+                                      J                    uu)
+{
+    J              coo_nnz;
+    std::vector<J> row_ind;
+    // Sample COO matrix
+    rocsparse_init_coo_pentadiagonal<J>(row_ind, col_ind, val, M, N, coo_nnz, base, ll, l, u, uu);
+
+    nnz = coo_nnz;
+
+    // Convert to CSR
+    host_coo_to_csr(M, nnz, row_ind.data(), row_ptr, base);
+}
+
+/* ==================================================================================== */
+/*! \brief  Generate a pentadiagonal sparse matrix in GEBSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_pentadiagonal(std::vector<I>&      row_ptr,
+                                        std::vector<J>&      col_ind,
+                                        std::vector<T>&      val,
+                                        J                    Mb,
+                                        J                    Nb,
+                                        I&                   nnzb,
+                                        J                    row_block_dim,
+                                        J                    col_block_dim,
+                                        rocsparse_index_base base,
+                                        J                    ll,
+                                        J                    l,
+                                        J                    u,
+                                        J                    uu)
+{
+    rocsparse_init_csr_pentadiagonal(row_ptr, col_ind, val, Mb, Nb, nnzb, base, ll, l, u, uu);
+
+    I nvalues = nnzb * row_block_dim * col_block_dim;
+    val.resize(nvalues);
+
+    for(I i = 0; i < nvalues; ++i)
+    {
+        val[i] = random_generator<T>();
+    }
+}
+
 #define INSTANTIATEI(TYPE)                    \
     template void rocsparse_init_index<TYPE>( \
         std::vector<TYPE> & x, size_t nnz, size_t start, size_t end);
@@ -1162,71 +1438,113 @@ void rocsparse_init_gebsr_random(std::vector<I>&            row_ptr,
                                                     std::vector<ITYPE>&       coo_ind,     \
                                                     rocsparse_index_base      base)
 
-#define INSTANTIATE2(ITYPE, TTYPE)                                                           \
-    template void rocsparse_init_coo_laplace2d<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,   \
-                                                             std::vector<ITYPE> & col_ind,   \
-                                                             std::vector<TTYPE> & val,       \
-                                                             int32_t dim_x,                  \
-                                                             int32_t dim_y,                  \
-                                                             ITYPE & M,                      \
-                                                             ITYPE & N,                      \
-                                                             ITYPE & nnz,                    \
-                                                             rocsparse_index_base base);     \
-    template void rocsparse_init_ell_laplace2d<ITYPE, TTYPE>(std::vector<ITYPE> & col_ind,   \
-                                                             std::vector<TTYPE> & val,       \
-                                                             int32_t dim_x,                  \
-                                                             int32_t dim_y,                  \
-                                                             ITYPE & M,                      \
-                                                             ITYPE & N,                      \
-                                                             ITYPE & width,                  \
-                                                             rocsparse_index_base base);     \
-    template void rocsparse_init_coo_matrix<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,      \
-                                                          std::vector<ITYPE> & col_ind,      \
-                                                          std::vector<TTYPE> & val,          \
-                                                          ITYPE                M,            \
-                                                          ITYPE                N,            \
-                                                          ITYPE                nnz,          \
-                                                          rocsparse_index_base base,         \
-                                                          bool                 full_rank,    \
-                                                          bool                 to_int);                      \
-    template void rocsparse_init_coo_laplace3d<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,   \
-                                                             std::vector<ITYPE> & col_ind,   \
-                                                             std::vector<TTYPE> & val,       \
-                                                             int32_t dim_x,                  \
-                                                             int32_t dim_y,                  \
-                                                             int32_t dim_z,                  \
-                                                             ITYPE & M,                      \
-                                                             ITYPE & N,                      \
-                                                             ITYPE & nnz,                    \
-                                                             rocsparse_index_base base);     \
-    template void rocsparse_init_coo_mtx<ITYPE, TTYPE>(const char*          filename,        \
-                                                       std::vector<ITYPE>&  coo_row_ind,     \
-                                                       std::vector<ITYPE>&  coo_col_ind,     \
-                                                       std::vector<TTYPE>&  coo_val,         \
-                                                       ITYPE&               M,               \
-                                                       ITYPE&               N,               \
-                                                       ITYPE&               nnz,             \
-                                                       rocsparse_index_base base);           \
-    template void rocsparse_init_coo_rocalution<ITYPE, TTYPE>(const char*          filename, \
-                                                              std::vector<ITYPE>&  row_ind,  \
-                                                              std::vector<ITYPE>&  col_ind,  \
-                                                              std::vector<TTYPE>&  val,      \
-                                                              ITYPE&               M,        \
-                                                              ITYPE&               N,        \
-                                                              ITYPE&               nnz,      \
-                                                              rocsparse_index_base base,     \
-                                                              bool                 toint);                   \
-    template void rocsparse_init_coo_random<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,      \
-                                                          std::vector<ITYPE> & col_ind,      \
-                                                          std::vector<TTYPE> & val,          \
-                                                          ITYPE M,                           \
-                                                          ITYPE N,                           \
-                                                          ITYPE & nnz,                       \
-                                                          rocsparse_index_base base,         \
-                                                          bool                 full_rank,    \
+#define INSTANTIATE2(ITYPE, TTYPE)                                                             \
+    template void rocsparse_init_coo_tridiagonal<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,   \
+                                                               std::vector<ITYPE> & col_ind,   \
+                                                               std::vector<TTYPE> & val,       \
+                                                               ITYPE M,                        \
+                                                               ITYPE N,                        \
+                                                               ITYPE & nnz,                    \
+                                                               rocsparse_index_base base,      \
+                                                               ITYPE                l,         \
+                                                               ITYPE                u);                       \
+    template void rocsparse_init_coo_pentadiagonal<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind, \
+                                                                 std::vector<ITYPE> & col_ind, \
+                                                                 std::vector<TTYPE> & val,     \
+                                                                 ITYPE M,                      \
+                                                                 ITYPE N,                      \
+                                                                 ITYPE & nnz,                  \
+                                                                 rocsparse_index_base base,    \
+                                                                 ITYPE                ll,      \
+                                                                 ITYPE                l,       \
+                                                                 ITYPE                u,       \
+                                                                 ITYPE                uu);                    \
+    template void rocsparse_init_coo_laplace2d<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,     \
+                                                             std::vector<ITYPE> & col_ind,     \
+                                                             std::vector<TTYPE> & val,         \
+                                                             int32_t dim_x,                    \
+                                                             int32_t dim_y,                    \
+                                                             ITYPE & M,                        \
+                                                             ITYPE & N,                        \
+                                                             ITYPE & nnz,                      \
+                                                             rocsparse_index_base base);       \
+    template void rocsparse_init_ell_laplace2d<ITYPE, TTYPE>(std::vector<ITYPE> & col_ind,     \
+                                                             std::vector<TTYPE> & val,         \
+                                                             int32_t dim_x,                    \
+                                                             int32_t dim_y,                    \
+                                                             ITYPE & M,                        \
+                                                             ITYPE & N,                        \
+                                                             ITYPE & width,                    \
+                                                             rocsparse_index_base base);       \
+    template void rocsparse_init_coo_matrix<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,        \
+                                                          std::vector<ITYPE> & col_ind,        \
+                                                          std::vector<TTYPE> & val,            \
+                                                          ITYPE                M,              \
+                                                          ITYPE                N,              \
+                                                          ITYPE                nnz,            \
+                                                          rocsparse_index_base base,           \
+                                                          bool                 full_rank,      \
+                                                          bool                 to_int);                        \
+    template void rocsparse_init_coo_laplace3d<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,     \
+                                                             std::vector<ITYPE> & col_ind,     \
+                                                             std::vector<TTYPE> & val,         \
+                                                             int32_t dim_x,                    \
+                                                             int32_t dim_y,                    \
+                                                             int32_t dim_z,                    \
+                                                             ITYPE & M,                        \
+                                                             ITYPE & N,                        \
+                                                             ITYPE & nnz,                      \
+                                                             rocsparse_index_base base);       \
+    template void rocsparse_init_coo_mtx<ITYPE, TTYPE>(const char*          filename,          \
+                                                       std::vector<ITYPE>&  coo_row_ind,       \
+                                                       std::vector<ITYPE>&  coo_col_ind,       \
+                                                       std::vector<TTYPE>&  coo_val,           \
+                                                       ITYPE&               M,                 \
+                                                       ITYPE&               N,                 \
+                                                       ITYPE&               nnz,               \
+                                                       rocsparse_index_base base);             \
+    template void rocsparse_init_coo_rocalution<ITYPE, TTYPE>(const char*          filename,   \
+                                                              std::vector<ITYPE>&  row_ind,    \
+                                                              std::vector<ITYPE>&  col_ind,    \
+                                                              std::vector<TTYPE>&  val,        \
+                                                              ITYPE&               M,          \
+                                                              ITYPE&               N,          \
+                                                              ITYPE&               nnz,        \
+                                                              rocsparse_index_base base,       \
+                                                              bool                 toint);                     \
+    template void rocsparse_init_coo_random<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,        \
+                                                          std::vector<ITYPE> & col_ind,        \
+                                                          std::vector<TTYPE> & val,            \
+                                                          ITYPE M,                             \
+                                                          ITYPE N,                             \
+                                                          ITYPE & nnz,                         \
+                                                          rocsparse_index_base base,           \
+                                                          bool                 full_rank,      \
                                                           bool                 to_int);
 
 #define INSTANTIATE3(ITYPE, JTYPE, TTYPE)                                                           \
+    template void rocsparse_init_csr_tridiagonal<ITYPE, JTYPE, TTYPE>(                              \
+        std::vector<ITYPE> & row_ptr,                                                               \
+        std::vector<JTYPE> & col_ind,                                                               \
+        std::vector<TTYPE> & val,                                                                   \
+        JTYPE M,                                                                                    \
+        JTYPE N,                                                                                    \
+        ITYPE & nnz,                                                                                \
+        rocsparse_index_base base,                                                                  \
+        JTYPE                l,                                                                     \
+        JTYPE                u);                                                                                   \
+    template void rocsparse_init_csr_pentadiagonal<ITYPE, JTYPE, TTYPE>(                            \
+        std::vector<ITYPE> & row_ptr,                                                               \
+        std::vector<JTYPE> & col_ind,                                                               \
+        std::vector<TTYPE> & val,                                                                   \
+        JTYPE M,                                                                                    \
+        JTYPE N,                                                                                    \
+        ITYPE & nnz,                                                                                \
+        rocsparse_index_base base,                                                                  \
+        JTYPE                ll,                                                                    \
+        JTYPE                l,                                                                     \
+        JTYPE                u,                                                                     \
+        JTYPE                uu);                                                                                  \
     template void rocsparse_init_csr_laplace2d<ITYPE, JTYPE, TTYPE>(std::vector<ITYPE> & row_ptr,   \
                                                                     std::vector<JTYPE> & col_ind,   \
                                                                     std::vector<TTYPE> & val,       \
@@ -1274,6 +1592,32 @@ void rocsparse_init_gebsr_random(std::vector<I>&            row_ptr,
         rocsparse_matrix_init_kind init_kind,                                                       \
         bool                       full_rank,                                                       \
         bool                       to_int);                                                                               \
+    template void rocsparse_init_gebsr_tridiagonal<ITYPE, JTYPE, TTYPE>(                            \
+        std::vector<ITYPE> & row_ptr,                                                               \
+        std::vector<JTYPE> & col_ind,                                                               \
+        std::vector<TTYPE> & val,                                                                   \
+        JTYPE Mb,                                                                                   \
+        JTYPE Nb,                                                                                   \
+        ITYPE & nnzb,                                                                               \
+        JTYPE                row_block_dim,                                                         \
+        JTYPE                col_block_dim,                                                         \
+        rocsparse_index_base base,                                                                  \
+        JTYPE                l,                                                                     \
+        JTYPE                u);                                                                                   \
+    template void rocsparse_init_gebsr_pentadiagonal<ITYPE, JTYPE, TTYPE>(                          \
+        std::vector<ITYPE> & row_ptr,                                                               \
+        std::vector<JTYPE> & col_ind,                                                               \
+        std::vector<TTYPE> & val,                                                                   \
+        JTYPE Mb,                                                                                   \
+        JTYPE Nb,                                                                                   \
+        ITYPE & nnzb,                                                                               \
+        JTYPE                row_block_dim,                                                         \
+        JTYPE                col_block_dim,                                                         \
+        rocsparse_index_base base,                                                                  \
+        JTYPE                ll,                                                                    \
+        JTYPE                l,                                                                     \
+        JTYPE                u,                                                                     \
+        JTYPE                uu);                                                                                  \
     template void rocsparse_init_gebsr_laplace2d<ITYPE, JTYPE, TTYPE>(                              \
         std::vector<ITYPE> & row_ptr,                                                               \
         std::vector<JTYPE> & col_ind,                                                               \

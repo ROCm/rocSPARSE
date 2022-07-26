@@ -44,6 +44,9 @@ Definitions:
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
     - { alpha:  -1.0, beta: -0.5,  alphai:  0.0, betai:  0.0 }
 
+  - &alpha_beta_range_stress
+    - { alpha:   0.6, beta:  -0.5, alphai:  0.5, betai:  0.7 }
+
   - &M_N_range_quick
     - { M: 10, N: 10 }
     - { M: 33, N: 33 }
@@ -263,6 +266,20 @@ Tests:
   matrix_type: [rocsparse_matrix_type_general]
   spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [Chevron4]
+
+- name: csrmv
+  category: stress
+  function: csrmv
+  precision: *single_only_precisions
+  M: [1000000, 10000000]
+  N: [1000000, 10000000]
+  alpha_beta: *alpha_beta_range_stress
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_tridiagonal, rocsparse_matrix_pentadiagonal]
+  matrix_type: [rocsparse_matrix_type_general]
+  uplo: [rocsparse_fill_mode_upper]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
 
 #
 # symmetric and triangular matrix type

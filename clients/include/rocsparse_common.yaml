@@ -50,6 +50,8 @@ Datatypes:
         rocsparse_matrix_file_rocalution: 4
         rocsparse_matrix_zero: 5
         rocsparse_matrix_file_rocsparseio: 6
+        rocsparse_matrix_tridiagonal: 7
+        rocsparse_matrix_pentadiagonal: 8
   - rocsparse_matrix_init_kind:
       bases: [ c_int ]
       attr:
@@ -265,6 +267,10 @@ Arguments:
   - dimx: rocsparse_int
   - dimy: rocsparse_int
   - dimz: rocsparse_int
+  - ll: rocsparse_int
+  - l: rocsparse_int
+  - u: rocsparse_int
+  - uu: rocsparse_int
   - index_type_I: rocsparse_indextype
   - index_type_J: rocsparse_indextype
   - compute_type: rocsparse_datatype
@@ -377,6 +383,10 @@ Defaults:
   dimx: 1
   dimy: 1
   dimz: 1
+  ll: -2
+  l: -1
+  u: 1
+  uu: 2
   alpha: 1.0
   alphai: 0.0
   beta: 0.0

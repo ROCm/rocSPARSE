@@ -34,7 +34,9 @@ std::string rocsparse_exepath();
 #include "rocsparse_matrix_factory_file.hpp"
 #include "rocsparse_matrix_factory_laplace2d.hpp"
 #include "rocsparse_matrix_factory_laplace3d.hpp"
+#include "rocsparse_matrix_factory_pentadiagonal.hpp"
 #include "rocsparse_matrix_factory_random.hpp"
+#include "rocsparse_matrix_factory_tridiagonal.hpp"
 #include "rocsparse_matrix_factory_zero.hpp"
 
 template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
