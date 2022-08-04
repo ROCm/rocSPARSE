@@ -78,6 +78,7 @@ set(rocsparse_source
   src/level2/rocsparse_ellmv.cpp
   src/level2/rocsparse_hybmv.cpp
   src/level2/rocsparse_spmv.cpp
+  src/level2/rocsparse_spmv_ex.cpp
   src/level2/rocsparse_spsv.cpp
   src/level2/rocsparse_gebsrmv.cpp
   src/level2/rocsparse_gebsrmv_template_row_block_dim_1.cpp

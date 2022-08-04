@@ -660,6 +660,12 @@ rocsparse_spmv_alg
 
 .. doxygenenum:: rocsparse_spmv_alg
 
+rocsparse_spmv_stage
+--------------------
+
+.. doxygenenum:: rocsparse_spmv_stage
+
+
 rocsparse_spsv_alg
 ------------------
 
@@ -1140,6 +1146,7 @@ Function name                           single double single complex double comp
 :cpp:func:`rocsparse_sparse_to_dense()` x      x      x              x
 :cpp:func:`rocsparse_dense_to_sparse()` x      x      x              x
 :cpp:func:`rocsparse_spmv()`            x      x      x              x
+:cpp:func:`rocsparse_spmv_ex()`         x      x      x              x
 :cpp:func:`rocsparse_spsv()`            x      x      x              x
 :cpp:func:`rocsparse_spmm()`            x      x      x              x
 :cpp:func:`rocsparse_spsm()`            x      x      x              x

@@ -430,6 +430,21 @@ typedef enum rocsparse_gtsv_interleaved_alg_
 } rocsparse_gtsv_interleaved_alg;
 
 /*! \ingroup types_module
+ *  \brief List of SpMV stages.
+ *
+ *  \details
+ *  This is a list of possible stages during SpMV computation. Typical order is
+ *  rocsparse_spmv_buffer_size, rocsparse_spmv_preprocess, rocsparse_spmv_compute.
+ */
+typedef enum rocsparse_spmv_stage_
+{
+    rocsparse_spmv_stage_auto        = 0, /**< Automatic stage detection. */
+    rocsparse_spmv_stage_buffer_size = 1, /**< Returns the required buffer size. */
+    rocsparse_spmv_stage_preprocess  = 2, /**< Preprocess data. */
+    rocsparse_spmv_stage_compute     = 3 /**< Performs the actual SpMV computation. */
+} rocsparse_spmv_stage;
+
+/*! \ingroup types_module
  *  \brief List of SpMV algorithms.
  *
  *  \details

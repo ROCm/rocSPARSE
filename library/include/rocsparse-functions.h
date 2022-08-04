@@ -17402,6 +17402,7 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *  \retval      rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval      rocsparse_status_invalid_pointer \p alpha, \p mat, \p x, \p beta, \p y or
 *               \p buffer_size pointer is invalid.
+*  \retval      rocsparse_status_invalid_value the value of \p trans, \p trans\_B, \p compute\_type, \p alg is incorrect.
 *  \retval      rocsparse_status_not_implemented \p compute_type or \p alg is
 *               currently not supported.
 */
@@ -17417,6 +17418,96 @@ rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
                                 rocsparse_spmv_alg          alg,
                                 size_t*                     buffer_size,
                                 void*                       temp_buffer);
+
+/*! \ingroup generic_module
+*  \brief Sparse matrix vector multiplication
+*
+*  \details
+*  \ref rocsparse_spmv_ex multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times n\f$
+*  matrix and the dense vector \f$x\f$ and adds the result to the dense vector \f$y\f$
+*  that is multiplied by the scalar \f$\beta\f$, such that
+*  \f[
+*    y := \alpha \cdot op(A) \cdot x + \beta \cdot y,
+*  \f]
+*  with
+*  \f[
+*    op(A) = \left\{
+*    \begin{array}{ll}
+*        A,   & \text{if trans == rocsparse_operation_none} \\
+*        A^T, & \text{if trans == rocsparse_operation_transpose} \\
+*        A^H, & \text{if trans == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*
+*  \note
+*  This function writes the required allocation size (in bytes) to \p buffer_size and
+*  returns without performing the SpMV operation, when a nullptr is passed for
+*  \p temp_buffer.
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  \note SpMV_ex requires three stages to complete. The first stage
+*  \ref rocsparse_spmv_stage_buffer_size will return the size of the temporary storage buffer
+*  that is required for subsequent calls to \ref rocsparse_spmv_ex. The second stage
+*  \ref rocsparse_spmv_stage_preprocess will preprocess data that would be saved in the temporary storage buffer.
+*  In the final stage \ref rocsparse_spmv_stage_compute, the actual computation is performed.
+*  \note If \ref rocsparse_spmv_stage_auto is selected, rocSPARSE will automatically detect
+*  which stage is required based on the following indicators:
+*  If \p temp_buffer is equal to \p nullptr, the required buffer size will be returned.
+*  Else, the SpMV_ex preprocess and the SpMV algorithm will be executed.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  trans        matrix operation type.
+*  @param[in]
+*  alpha        scalar \f$\alpha\f$.
+*  @param[in]
+*  mat          matrix descriptor.
+*  @param[in]
+*  x            vector descriptor.
+*  @param[in]
+*  beta         scalar \f$\beta\f$.
+*  @param[inout]
+*  y            vector descriptor.
+*  @param[in]
+*  compute_type floating point precision for the SpMV computation.
+*  @param[in]
+*  alg          SpMV algorithm for the SpMV computation.
+*  @param[in]
+*  stage        SpMV stage for the SpMV computation.
+*  @param[out]
+*  buffer_size  number of bytes of the temporary storage buffer. buffer_size is set when
+*               \p temp_buffer is nullptr.
+*  @param[in]
+*  temp_buffer  temporary storage buffer allocated by the user. When a nullptr is passed,
+*               the required allocation size (in bytes) is written to \p buffer_size and
+*               function returns without performing the SpMV operation.
+*
+*  \retval      rocsparse_status_success the operation completed successfully.
+*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_pointer \p alpha, \p mat, \p x, \p beta, \p y or
+*               \p buffer_size pointer is invalid.
+*  \retval      rocsparse_status_invalid_value the value of \p trans, \p trans\_B, \p compute\_type, \p alg or \p stage is incorrect.
+*  \retval      rocsparse_status_not_implemented \p compute_type or \p alg is
+*               currently not supported.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmv_ex(rocsparse_handle            handle,
+                                   rocsparse_operation         trans,
+                                   const void*                 alpha,
+                                   const rocsparse_spmat_descr mat,
+                                   const rocsparse_dnvec_descr x,
+                                   const void*                 beta,
+                                   const rocsparse_dnvec_descr y,
+                                   rocsparse_datatype          compute_type,
+                                   rocsparse_spmv_alg          alg,
+                                   rocsparse_spmv_stage        stage,
+                                   size_t*                     buffer_size,
+                                   void*                       temp_buffer);
 
 /*! \ingroup generic_module
 *  \brief Sparse triangular solve
