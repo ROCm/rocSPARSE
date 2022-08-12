@@ -22,7 +22,7 @@
  *
  * ************************************************************************ */
 #include "rocsparse_importer_matrixmarket.hpp"
-
+#include <stdio.h>
 rocsparse_importer_matrixmarket::rocsparse_importer_matrixmarket(const std::string& filename_)
     : m_filename(filename_)
 {
@@ -204,7 +204,52 @@ rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo(I*          
     if(status != rocsparse_status_success)
         return status;
 
-    snnz   = this->m_symm ? (snnz - m[0]) * 2 + m[0] : snnz;
+    if(this->m_symm)
+    {
+        //
+        //
+        // We need to count how many diagonal elements are in the file.
+        //
+        //
+
+        //
+        // Record position.
+        //
+        fpos_t pos;
+        if(0 != fgetpos(this->f, &pos))
+        {
+            throw rocsparse_status_internal_error;
+        }
+
+        //
+        // Count diagonal coefficients.
+        //
+        I num_diagonal_coefficients = 0;
+        while(fgets(line, 1024, f))
+        {
+            int32_t irow{};
+            int32_t icol{};
+            sscanf(line, "%d %d", &irow, &icol);
+            if(irow == icol)
+            {
+                ++num_diagonal_coefficients;
+            }
+        }
+
+        //
+        // Set position.
+        //
+        if(0 != fsetpos(this->f, &pos))
+        {
+            throw rocsparse_status_internal_error;
+        }
+
+        //
+        // Now calculate the right number of coefficients.
+        //
+        snnz = (snnz - num_diagonal_coefficients) * 2 + num_diagonal_coefficients;
+    }
+
     status = rocsparse_type_conversion(snnz, nnz[0]);
     if(status != rocsparse_status_success)
         return status;
@@ -217,8 +262,7 @@ rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo(I*          
 template <typename T, typename I>
 rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo(I* row_ind, I* col_ind, T* val)
 {
-    char line[1024];
-
+    char           line[1024];
     const size_t   nnz = this->m_nnz;
     std::vector<I> unsorted_row(nnz);
     std::vector<I> unsorted_col(nnz);
@@ -254,7 +298,6 @@ rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo(I* row_ind, 
         unsorted_val[idx] = ival;
 
         ++idx;
-
         if(this->m_symm && irow != icol)
         {
             if(idx >= nnz)
