@@ -105,6 +105,7 @@ rocsparse_arguments_config::rocsparse_arguments_config()
         this->function[0]          = '\0';
         this->name[0]              = '\0';
         this->category[0]          = '\0';
+        this->hardware[0]          = '\0';
     }
 
     this->precision = 's';

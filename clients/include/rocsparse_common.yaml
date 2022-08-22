@@ -328,6 +328,7 @@ Arguments:
   - function: c_char*64
   - name: c_char*64
   - category: c_char*32
+  - hardware: c_char*32
 
 # These named dictionary lists [ {dict1}, {dict2}, etc. ] supply subsets of
 # test arguments in a structured way. The dictionaries are applied to the test
@@ -439,6 +440,7 @@ Defaults:
   tolm: 1.0
   workspace_size: 0
   category: nightly
+  hardware: all
   filename: '*'
   name: '*'
   index_type_I: i32
