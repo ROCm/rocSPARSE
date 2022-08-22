@@ -85,6 +85,40 @@ namespace
                 return !strcmp(arg.function, name) || !strcmp(arg.function, s.c_str());
             }
 
+            static bool arch_filter(const Arguments& arg)
+            {
+                static int             dev;
+                static hipDeviceProp_t prop;
+
+                static bool query_device = true;
+                if(query_device)
+                {
+                    if(hipGetDevice(&dev) != hipSuccess)
+                    {
+                        return false;
+                    }
+                    if(hipGetDeviceProperties(&prop, dev) != hipSuccess)
+                    {
+                        return false;
+                    }
+                    query_device = false;
+                }
+
+                if(strncmp("gfx", arg.hardware, 3) == 0)
+                {
+                    if(strncmp(arg.hardware, prop.gcnArchName, strlen(arg.hardware)) == 0)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
             static std::string name_suffix(const Arguments& arg)
             {
                 const bool         from_file = (arg.matrix == rocsparse_matrix_file_rocalution

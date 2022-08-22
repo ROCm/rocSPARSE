@@ -46,6 +46,9 @@ Definitions:
   - &alpha_beta_range_stress
     - { alpha:   1.43, beta:  0.75, alphai:  -0.5, betai:  1.3 }
 
+  - &alpha_beta_range_arch
+    - { alpha:   2.0, beta: -1.2, alphai:  0.5, betai: -0.4 }
+
 Tests:
 - name: coomv_bad_arg
   category: pre_checkin
@@ -230,3 +233,15 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_tridiagonal, rocsparse_matrix_pentadiagonal]
   storage: [rocsparse_storage_mode_sorted]
+
+- name: coomv
+  category: quick
+  hardware: [gfx900, gfx906, gfx908, gfx90a, gfx1030]
+  function: coomv
+  precision: *single_double_precisions_complex_real
+  M: [1000]
+  N: [1000]
+  alpha_beta: *alpha_beta_range_arch
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]

@@ -126,6 +126,7 @@ struct Arguments
     char function[64];
     char name[64];
     char category[32];
+    char hardware[32];
 
     // Validate input format.
     // rocsparse_gentest.py is expected to conform to this format.
@@ -237,6 +238,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(function);
         ROCSPARSE_FORMAT_CHECK(name);
         ROCSPARSE_FORMAT_CHECK(category);
+        ROCSPARSE_FORMAT_CHECK(hardware);
     }
 
     template <typename T>
@@ -425,6 +427,7 @@ private:
         print("tolm", arg.tolm);
         print("name", arg.name);
         print("category", arg.category);
+        print("hardware", arg.hardware);
         print("unit_check", arg.unit_check);
         print("timing", arg.timing);
         print("iters", arg.iters);

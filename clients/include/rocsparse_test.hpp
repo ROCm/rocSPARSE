@@ -194,12 +194,12 @@ inline void rocsparse_expect_data_status(rocsparse_data_status status, rocsparse
         testing::ValuesIn(RocSPARSE_TestData::begin([](const Arguments& arg) { \
                               return !strcmp(arg.category, #categ0ry)          \
                                      && testclass::type_filter(arg)            \
-                                     && testclass::function_filter(arg);       \
+                                     && testclass::function_filter(arg)        \
+                                     && testclass::arch_filter(arg);           \
                           }),                                                  \
                           RocSPARSE_TestData::end()),                          \
         testclass::PrintToStringParamName());
 
-// Instantiate all test categories
 #define INSTANTIATE_TEST_CATEGORIES(testclass)        \
     INSTANTIATE_TEST_CATEGORY(testclass, quick)       \
     INSTANTIATE_TEST_CATEGORY(testclass, pre_checkin) \
