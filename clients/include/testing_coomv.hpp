@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_coomv_bad_arg(const Arguments& arg);
+void testing_coomv_extra(const Arguments& arg);
 template <typename T>
 void testing_coomv(const Arguments& arg);
 

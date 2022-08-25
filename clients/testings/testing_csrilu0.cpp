@@ -511,3 +511,4 @@ INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
+void testing_csrilu0_extra(const Arguments& arg) {}

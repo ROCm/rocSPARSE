@@ -29,6 +29,7 @@
 
 template <typename I, typename T>
 void testing_axpby_bad_arg(const Arguments& arg);
+void testing_axpby_extra(const Arguments& arg);
 template <typename I, typename T>
 void testing_axpby(const Arguments& arg);
 

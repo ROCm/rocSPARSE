@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_coo2dense_bad_arg(const Arguments& arg);
+void testing_coo2dense_extra(const Arguments& arg);
 template <typename T>
 void testing_coo2dense(const Arguments& arg);
 

@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_csr2hyb_bad_arg(const Arguments& arg);
+void testing_csr2hyb_extra(const Arguments& arg);
 template <typename T>
 void testing_csr2hyb(const Arguments& arg);
 

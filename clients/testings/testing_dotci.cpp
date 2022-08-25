@@ -187,3 +187,4 @@ void testing_dotci(const Arguments& arg)
 // INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
+void testing_dotci_extra(const Arguments& arg) {}

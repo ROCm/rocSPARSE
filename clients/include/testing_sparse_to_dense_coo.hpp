@@ -30,6 +30,7 @@
 
 template <typename I, typename T>
 void testing_sparse_to_dense_coo_bad_arg(const Arguments& arg);
+void testing_sparse_to_dense_coo_extra(const Arguments& arg);
 template <typename I, typename T>
 void testing_sparse_to_dense_coo(const Arguments& arg);
 

@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_coosort_bad_arg(const Arguments& arg);
+void testing_coosort_extra(const Arguments& arg);
 template <typename T>
 void testing_coosort(const Arguments& arg);
 

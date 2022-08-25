@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_check_matrix_ell_bad_arg(const Arguments& arg);
+void testing_check_matrix_ell_extra(const Arguments& arg);
 template <typename T>
 void testing_check_matrix_ell(const Arguments& arg);
 

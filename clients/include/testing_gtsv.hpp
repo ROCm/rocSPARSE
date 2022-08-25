@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_gtsv_bad_arg(const Arguments& arg);
+void testing_gtsv_extra(const Arguments& arg);
 template <typename T>
 void testing_gtsv(const Arguments& arg);
 

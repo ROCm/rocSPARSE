@@ -37,6 +37,10 @@
         /**/ {                                                                               \
             /**/ testing_##ROUTINE##_bad_arg<P...>(arg);                                     \
       /**/       }                                                                           \
+        /**/ static void testing_extra(const Arguments& arg)                                 \
+        /**/ {                                                                               \
+            /**/ testing_##ROUTINE##_extra(arg);                                             \
+      /**/       }                                                                           \
         /**/                                                                                 \
         /**/ template <typename... P> /**/ static void testing(const Arguments& arg)         \
         /**/ {                                                                               \

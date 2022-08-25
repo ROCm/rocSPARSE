@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_axpyi_bad_arg(const Arguments& arg);
+void testing_axpyi_extra(const Arguments& arg);
 template <typename T>
 void testing_axpyi(const Arguments& arg);
 

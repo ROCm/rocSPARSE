@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_dotci_bad_arg(const Arguments& arg);
+void testing_dotci_extra(const Arguments& arg);
 template <typename T>
 void testing_dotci(const Arguments& arg);
 

@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_gpsv_interleaved_batch_bad_arg(const Arguments& arg);
+void testing_gpsv_interleaved_batch_extra(const Arguments& arg);
 template <typename T>
 void testing_gpsv_interleaved_batch(const Arguments& arg);
 

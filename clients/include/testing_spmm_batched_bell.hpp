@@ -29,6 +29,7 @@
 
 template <typename I, typename T>
 void testing_spmm_batched_bell_bad_arg(const Arguments& arg);
+void testing_spmm_batched_bell_extra(const Arguments& arg);
 template <typename I, typename T>
 void testing_spmm_batched_bell(const Arguments& arg);
 

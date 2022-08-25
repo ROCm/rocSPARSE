@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_gtsv_no_pivot_strided_batch_bad_arg(const Arguments& arg);
+void testing_gtsv_no_pivot_strided_batch_extra(const Arguments& arg);
 template <typename T>
 void testing_gtsv_no_pivot_strided_batch(const Arguments& arg);
 

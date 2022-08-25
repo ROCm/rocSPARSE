@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_csr2csc_bad_arg(const Arguments& arg);
+void testing_csr2csc_extra(const Arguments& arg);
 template <typename T>
 void testing_csr2csc(const Arguments& arg);
 

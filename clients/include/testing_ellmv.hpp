@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_ellmv_bad_arg(const Arguments& arg);
+void testing_ellmv_extra(const Arguments& arg);
 template <typename T>
 void testing_ellmv(const Arguments& arg);
 

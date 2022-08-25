@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_gebsr2gebsr_bad_arg(const Arguments& arg);
+void testing_gebsr2gebsr_extra(const Arguments& arg);
 template <typename T>
 void testing_gebsr2gebsr(const Arguments& arg);
 

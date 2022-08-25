@@ -797,3 +797,4 @@ INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
+void testing_csrgemm_extra(const Arguments& arg) {}

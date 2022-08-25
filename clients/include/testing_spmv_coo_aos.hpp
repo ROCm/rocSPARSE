@@ -30,6 +30,7 @@
 
 template <typename I, typename T>
 void testing_spmv_coo_aos_bad_arg(const Arguments& arg);
+void testing_spmv_coo_aos_extra(const Arguments& arg);
 template <typename I, typename T>
 void testing_spmv_coo_aos(const Arguments& arg);
 

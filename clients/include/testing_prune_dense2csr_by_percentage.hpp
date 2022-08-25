@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_prune_dense2csr_by_percentage_bad_arg(const Arguments& arg);
+void testing_prune_dense2csr_by_percentage_extra(const Arguments& arg);
 template <typename T>
 void testing_prune_dense2csr_by_percentage(const Arguments& arg);
 
