@@ -60,10 +60,23 @@ namespace
                     std::string s(name_ROUTINE);
                     s += "_bad_arg";
                     if(!strcmp(arg.function, s.c_str()))
+                    {
                         call_t::template testing_bad_arg<P...>(arg);
+                    }
                     else
-                        FAIL() << "Internal error: Test called with unknown function: "
-                               << arg.function;
+                    {
+                        std::string s1(name_ROUTINE);
+                        s1 += "_extra";
+                        if(!strcmp(arg.function, s1.c_str()))
+                        {
+                            call_t::testing_extra(arg);
+                        }
+                        else
+                        {
+                            FAIL() << "Internal error: Test called with unknown function: "
+                                   << arg.function;
+                        }
+                    }
                 }
             }
         };
@@ -82,7 +95,10 @@ namespace
                 const char* name = rocsparse_test_enum::to_string(ROUTINE);
                 std::string s(name);
                 s += "_bad_arg";
-                return !strcmp(arg.function, name) || !strcmp(arg.function, s.c_str());
+                std::string s1(name);
+                s1 += "_extra";
+                return !strcmp(arg.function, name) || !strcmp(arg.function, s.c_str())
+                       || !strcmp(arg.function, s1.c_str());
             }
 
             static bool arch_filter(const Arguments& arg)
@@ -121,8 +137,25 @@ namespace
 
             static std::string name_suffix(const Arguments& arg)
             {
-                const bool         from_file = (arg.matrix == rocsparse_matrix_file_rocalution
+                //
+                // Check if this is extra tests.
+                //
+                {
+                    const char* name = rocsparse_test_enum::to_string(ROUTINE);
+                    std::string s1(name);
+                    s1 += "_extra";
+                    if(!strcmp(arg.function, s1.c_str()))
+                    {
+                        //
+                        // Return the name of the test.
+                        //
+                        return RocSPARSE_TestName<PROXY>{} << arg.name;
+                    }
+                }
+
+                const bool from_file = (arg.matrix == rocsparse_matrix_file_rocalution
                                         || arg.matrix == rocsparse_matrix_file_mtx);
+
                 std::ostringstream s;
                 switch(traits_t::s_dispatch)
                 {
@@ -147,16 +180,32 @@ namespace
                 }
                 }
 
-                const std::string suffix = functors_t::name_suffix(arg);
-                if(suffix.size() > 0)
+                //
+                // Check if this is bad_arg
+                //
                 {
-                    s << '_' << suffix;
+                    const char* name = rocsparse_test_enum::to_string(ROUTINE);
+                    std::string s1(name);
+                    s1 += "_bad_arg";
+                    if(!strcmp(arg.function, s1.c_str()))
+                    {
+                        s << "_bad_arg";
+                    }
+                    else
+                    {
+                        const std::string suffix = functors_t::name_suffix(arg);
+                        if(suffix.size() > 0)
+                        {
+                            s << '_' << suffix;
+                        }
+
+                        if(from_file)
+                        {
+                            s << '_' << rocsparse_filename2string(arg.filename);
+                        }
+                    }
                 }
 
-                if(from_file)
-                {
-                    s << '_' << rocsparse_filename2string(arg.filename);
-                }
                 return RocSPARSE_TestName<PROXY>{} << s.str();
             }
         };

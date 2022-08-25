@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_roti_bad_arg(const Arguments& arg);
+void testing_roti_extra(const Arguments& arg);
 template <typename T>
 void testing_roti(const Arguments& arg);
 

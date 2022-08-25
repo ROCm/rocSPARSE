@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_bsrxmv_bad_arg(const Arguments& arg);
+void testing_bsrxmv_extra(const Arguments& arg);
 template <typename T>
 void testing_bsrxmv(const Arguments& arg);
 

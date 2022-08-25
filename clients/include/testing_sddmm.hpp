@@ -29,6 +29,7 @@
 
 template <typename I, typename J, typename T>
 void testing_sddmm_bad_arg(const Arguments& arg);
+void testing_sddmm_extra(const Arguments& arg);
 
 template <typename I, typename J, typename T>
 void testing_sddmm(const Arguments& arg);

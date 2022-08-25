@@ -29,6 +29,7 @@
 
 template <typename I, typename T>
 void testing_rot_bad_arg(const Arguments& arg);
+void testing_rot_extra(const Arguments& arg);
 template <typename I, typename T>
 void testing_rot(const Arguments& arg);
 

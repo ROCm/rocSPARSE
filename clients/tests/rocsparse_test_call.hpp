@@ -33,5 +33,6 @@ namespace
         static void testing_bad_arg(const Arguments& arg);
         template <typename...>
         static void testing(const Arguments& arg);
+        static void testing_extra(const Arguments& arg);
     };
 }

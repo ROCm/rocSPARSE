@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_csrgeam_bad_arg(const Arguments& arg);
+void testing_csrgeam_extra(const Arguments& arg);
 template <typename T>
 void testing_csrgeam(const Arguments& arg);
 

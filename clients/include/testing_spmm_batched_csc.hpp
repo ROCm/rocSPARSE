@@ -29,6 +29,7 @@
 
 template <typename I, typename J, typename T>
 void testing_spmm_batched_csc_bad_arg(const Arguments& arg);
+void testing_spmm_batched_csc_extra(const Arguments& arg);
 template <typename I, typename J, typename T>
 void testing_spmm_batched_csc(const Arguments& arg);
 

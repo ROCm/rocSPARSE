@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_csr2dense_bad_arg(const Arguments& arg);
+void testing_csr2dense_extra(const Arguments& arg);
 template <typename T>
 void testing_csr2dense(const Arguments& arg);
 

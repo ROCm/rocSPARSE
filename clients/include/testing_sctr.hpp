@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_sctr_bad_arg(const Arguments& arg);
+void testing_sctr_extra(const Arguments& arg);
 template <typename T>
 void testing_sctr(const Arguments& arg);
 

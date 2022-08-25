@@ -29,6 +29,7 @@
 
 template <typename I, typename T>
 void testing_spvec_descr_bad_arg(const Arguments& arg);
+void testing_spvec_descr_extra(const Arguments& arg);
 template <typename I, typename T>
 void testing_spvec_descr(const Arguments& arg);
 

@@ -30,6 +30,7 @@
 
 template <typename I, typename J, typename T>
 void testing_spsv_csr_bad_arg(const Arguments& arg);
+void testing_spsv_csr_extra(const Arguments& arg);
 template <typename I, typename J, typename T>
 void testing_spsv_csr(const Arguments& arg);
 

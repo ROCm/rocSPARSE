@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_gthr_bad_arg(const Arguments& arg);
+void testing_gthr_extra(const Arguments& arg);
 template <typename T>
 void testing_gthr(const Arguments& arg);
 

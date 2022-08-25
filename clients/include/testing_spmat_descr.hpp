@@ -29,6 +29,7 @@
 
 template <typename I, typename J, typename T>
 void testing_spmat_descr_bad_arg(const Arguments& arg);
+void testing_spmat_descr_extra(const Arguments& arg);
 template <typename I, typename J, typename T>
 void testing_spmat_descr(const Arguments& arg);
 

@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_csrsort_bad_arg(const Arguments& arg);
+void testing_csrsort_extra(const Arguments& arg);
 template <typename T>
 void testing_csrsort(const Arguments& arg);
 

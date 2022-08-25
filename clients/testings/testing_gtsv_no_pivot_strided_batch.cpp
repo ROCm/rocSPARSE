@@ -227,3 +227,4 @@ INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
+void testing_gtsv_no_pivot_strided_batch_extra(const Arguments& arg) {}

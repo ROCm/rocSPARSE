@@ -29,6 +29,7 @@
 
 template <typename T>
 void testing_copy_info_bad_arg(const Arguments& arg);
+void testing_copy_info_extra(const Arguments& arg);
 template <typename T>
 void testing_copy_info(const Arguments& arg);
 

@@ -29,6 +29,7 @@
 
 template <typename I, typename T>
 void testing_scatter_bad_arg(const Arguments& arg);
+void testing_scatter_extra(const Arguments& arg);
 template <typename I, typename T>
 void testing_scatter(const Arguments& arg);
 

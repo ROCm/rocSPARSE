@@ -227,3 +227,4 @@ INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
 #undef INSTANTIATE
+void testing_coomv_extra(const Arguments& arg) {}

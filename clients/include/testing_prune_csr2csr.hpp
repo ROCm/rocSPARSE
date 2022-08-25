@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_prune_csr2csr_bad_arg(const Arguments& arg);
+void testing_prune_csr2csr_extra(const Arguments& arg);
 template <typename T>
 void testing_prune_csr2csr(const Arguments& arg);
 

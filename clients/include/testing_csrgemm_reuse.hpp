@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_csrgemm_reuse_bad_arg(const Arguments& arg);
+void testing_csrgemm_reuse_extra(const Arguments& arg);
 template <typename T>
 void testing_csrgemm_reuse(const Arguments& arg);
 

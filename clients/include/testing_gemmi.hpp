@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_gemmi_bad_arg(const Arguments& arg);
+void testing_gemmi_extra(const Arguments& arg);
 template <typename T>
 void testing_gemmi(const Arguments& arg);
 

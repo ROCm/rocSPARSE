@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_bsrilu0_bad_arg(const Arguments& arg);
+void testing_bsrilu0_extra(const Arguments& arg);
 template <typename T>
 void testing_bsrilu0(const Arguments& arg);
 

@@ -30,6 +30,7 @@
 
 template <typename T>
 void testing_csric0_bad_arg(const Arguments& arg);
+void testing_csric0_extra(const Arguments& arg);
 template <typename T>
 void testing_csric0(const Arguments& arg);
 

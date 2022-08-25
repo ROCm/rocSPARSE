@@ -475,3 +475,4 @@ INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
 #undef INSTANTIATE
+void testing_bsr2csr_extra(const Arguments& arg) {}
