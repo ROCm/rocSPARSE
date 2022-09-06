@@ -1523,13 +1523,13 @@ rocsparse_status rocsparse_coo_set_strided_batch(rocsparse_spmat_descr descr,
  *  \brief Set the batch count, row offset batch stride and the column indices batch stride in the sparse CSR matrix descriptor
  *
  *  @param[inout]
- *  descr                    the pointer to the sparse CSR matrix descriptor.
+ *  descr                       the pointer to the sparse CSR matrix descriptor.
  *  @param[in]
- *  batch_count              batch_count of the sparse CSR matrix.
+ *  batch_count                 batch_count of the sparse CSR matrix.
  *  @param[in]
- *  offsets_batch_stride row offset batch stride of the sparse CSR matrix.
+ *  offsets_batch_stride        row offset batch stride of the sparse CSR matrix.
  *  @param[in]
- *  offsets_batch_stride     column indices batch stride of the sparse CSR matrix.
+ *  columns_values_batch_stride column indices batch stride of the sparse CSR matrix.
  *
  *  \retval rocsparse_status_success the operation completed successfully.
  *  \retval rocsparse_status_invalid_pointer if \p descr is invalid.
@@ -1540,6 +1540,28 @@ rocsparse_status rocsparse_csr_set_strided_batch(rocsparse_spmat_descr descr,
                                                  int                   batch_count,
                                                  int64_t               offsets_batch_stride,
                                                  int64_t               columns_values_batch_stride);
+
+/*! \ingroup aux_module
+ *  \brief Set the batch count, column offset batch stride and the row indices batch stride in the sparse CSC matrix descriptor
+ *
+ *  @param[inout]
+ *  descr                       the pointer to the sparse CSC matrix descriptor.
+ *  @param[in]
+ *  batch_count                 batch_count of the sparse CSC matrix.
+ *  @param[in]
+ *  offsets_batch_stride        column offset batch stride of the sparse CSC matrix.
+ *  @param[in]
+ *  rows_values_batch_stride    row indices batch stride of the sparse CSC matrix.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer if \p descr is invalid.
+ *  \retval rocsparse_status_invalid_size if \p batch_count or \p offsets_batch_stride or \p rows_values_batch_stride is invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csc_set_strided_batch(rocsparse_spmat_descr descr,
+                                                 int                   batch_count,
+                                                 int64_t               offsets_batch_stride,
+                                                 int64_t               rows_values_batch_stride);
 
 /*! \ingroup aux_module
  *  \brief Get the requested attribute data from the sparse matrix descriptor
@@ -1559,12 +1581,6 @@ rocsparse_status rocsparse_csr_set_strided_batch(rocsparse_spmat_descr descr,
  *  \retval rocsparse_status_invalid_value if \p attribute is invalid.
  *  \retval rocsparse_status_invalid_size if \p data_size is invalid.
  */
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_csc_set_strided_batch(rocsparse_spmat_descr descr,
-                                                 int                   batch_count,
-                                                 int64_t               offsets_batch_stride,
-                                                 int64_t               rows_values_batch_stride);
-
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
                                                rocsparse_spmat_attribute attribute,

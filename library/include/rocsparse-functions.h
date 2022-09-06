@@ -73,15 +73,14 @@ extern "C" {
 *  uplo        \ref rocsparse_fill_mode_lower or \ref rocsparse_fill_mode_upper.
 *  @param[in]
 *  storage     \ref rocsparse_storage_mode_sorted or \ref rocsparse_storage_mode_sorted.
-*  @param[in]
+*  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
 *              rocsparse_scheck_matrix_csr(), rocsparse_dcheck_matrix_csr(),
 *              rocsparse_ccheck_matrix_csr() and rocsparse_zcheck_matrix_csr().
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p m \p n or \p nnz is invalid.
 *  \retval rocsparse_status_invalid_pointer \p csr_val, \p csr_row_ptr, \p csr_col_ind or \p buffer_size pointer
 *          is invalid.
@@ -182,8 +181,7 @@ rocsparse_status rocsparse_zcheck_matrix_csr_buffer_size(rocsparse_handle       
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p m \p n or \p nnz is invalid.
 *  \retval rocsparse_status_invalid_pointer \p csr_val, \p csr_row_ptr, \p csr_col_ind, \p temp_buffer or \p data_status pointer
 *          is invalid.
@@ -282,17 +280,16 @@ rocsparse_status rocsparse_zcheck_matrix_csr(rocsparse_handle                han
 *  uplo        \ref rocsparse_fill_mode_lower or \ref rocsparse_fill_mode_upper.
 *  @param[in]
 *  storage     \ref rocsparse_storage_mode_sorted or \ref rocsparse_storage_mode_sorted.
-*  @param[in]
+*  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
 *              rocsparse_scheck_matrix_coo(), rocsparse_dcheck_matrix_coo(),
 *              rocsparse_ccheck_matrix_coo() and rocsparse_zcheck_matrix_coo().
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p m \p n or \p nnz is invalid.
-*  \retval rocsparse_status_invalid_pointer \p coo_val, \p coo_row_ptr, \p coo_col_ind or \p buffer_size pointer
+*  \retval rocsparse_status_invalid_pointer \p coo_val, \p coo_row_ind, \p coo_col_ind or \p buffer_size pointer
 *          is invalid.
 */
 /**@{*/
@@ -302,7 +299,7 @@ rocsparse_status rocsparse_scheck_matrix_coo_buffer_size(rocsparse_handle       
                                                          rocsparse_int          n,
                                                          rocsparse_int          nnz,
                                                          const float*           coo_val,
-                                                         const rocsparse_int*   coo_row_ptr,
+                                                         const rocsparse_int*   coo_row_ind,
                                                          const rocsparse_int*   coo_col_ind,
                                                          rocsparse_index_base   idx_base,
                                                          rocsparse_matrix_type  matrix_type,
@@ -316,7 +313,7 @@ rocsparse_status rocsparse_dcheck_matrix_coo_buffer_size(rocsparse_handle       
                                                          rocsparse_int          n,
                                                          rocsparse_int          nnz,
                                                          const double*          coo_val,
-                                                         const rocsparse_int*   coo_row_ptr,
+                                                         const rocsparse_int*   coo_row_ind,
                                                          const rocsparse_int*   coo_col_ind,
                                                          rocsparse_index_base   idx_base,
                                                          rocsparse_matrix_type  matrix_type,
@@ -330,7 +327,7 @@ rocsparse_status rocsparse_ccheck_matrix_coo_buffer_size(rocsparse_handle       
                                                          rocsparse_int                  n,
                                                          rocsparse_int                  nnz,
                                                          const rocsparse_float_complex* coo_val,
-                                                         const rocsparse_int*           coo_row_ptr,
+                                                         const rocsparse_int*           coo_row_ind,
                                                          const rocsparse_int*           coo_col_ind,
                                                          rocsparse_index_base           idx_base,
                                                          rocsparse_matrix_type          matrix_type,
@@ -344,7 +341,7 @@ rocsparse_status rocsparse_zcheck_matrix_coo_buffer_size(rocsparse_handle       
                                                          rocsparse_int                   n,
                                                          rocsparse_int                   nnz,
                                                          const rocsparse_double_complex* coo_val,
-                                                         const rocsparse_int*   coo_row_ptr,
+                                                         const rocsparse_int*   coo_row_ind,
                                                          const rocsparse_int*   coo_col_ind,
                                                          rocsparse_index_base   idx_base,
                                                          rocsparse_matrix_type  matrix_type,
@@ -391,8 +388,7 @@ rocsparse_status rocsparse_zcheck_matrix_coo_buffer_size(rocsparse_handle       
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p m \p n or \p nnz is invalid.
 *  \retval rocsparse_status_invalid_pointer \p coo_val, \p coo_row_ind, \p coo_col_ind, \p temp_buffer or \p data_status  pointer
 *          is invalid.
@@ -497,16 +493,14 @@ rocsparse_status rocsparse_zcheck_matrix_coo(rocsparse_handle                han
 *  uplo        \ref rocsparse_fill_mode_lower or \ref rocsparse_fill_mode_upper.
 *  @param[in]
 *  storage     \ref rocsparse_storage_mode_sorted or \ref rocsparse_storage_mode_sorted.
-*  @param[in]
+*  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
 *              rocsparse_scheck_matrix_gebsr(), rocsparse_dcheck_matrix_gebsr(),
 *              rocsparse_ccheck_matrix_gebsr() and rocsparse_zcheck_matrix_gebsr().
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p dir is invalid.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p dir or \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p mb \p nb \p nnzb \p row_block_dim or \p col_block_dim is invalid.
 *  \retval rocsparse_status_invalid_pointer \p bsr_val, \p bsr_row_ptr, \p bsr_col_ind or \p buffer_size pointer
 *          is invalid.
@@ -625,9 +619,7 @@ rocsparse_status rocsparse_zcheck_matrix_gebsr_buffer_size(rocsparse_handle    h
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p dir is invalid.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p dir or \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p mb \p nb \p nnzb \p row_block_dim or \p col_block_dim is invalid.
 *  \retval rocsparse_status_invalid_pointer \p bsr_val, \p bsr_row_ptr, \p bsr_col_ind, \p temp_buffer or \p data_status pointer
 *          is invalid.
@@ -744,16 +736,14 @@ rocsparse_status rocsparse_zcheck_matrix_gebsr(rocsparse_handle                h
 *  uplo        \ref rocsparse_fill_mode_lower or \ref rocsparse_fill_mode_upper.
 *  @param[in]
 *  storage     \ref rocsparse_storage_mode_sorted or \ref rocsparse_storage_mode_sorted.
-*  @param[in]
+*  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
 *              rocsparse_scheck_matrix_gebsc(), rocsparse_dcheck_matrix_gebsc(),
 *              rocsparse_ccheck_matrix_gebsc() and rocsparse_zcheck_matrix_gebsc().
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p dir is invalid.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p dir or \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p mb \p nb \p nnzb \p row_block_dim or \p col_block_dim is invalid.
 *  \retval rocsparse_status_invalid_pointer \p bsc_val, \p bsc_col_ptr, \p bsc_row_ind or \p buffer_size pointer
 *          is invalid.
@@ -872,9 +862,7 @@ rocsparse_status rocsparse_zcheck_matrix_gebsc_buffer_size(rocsparse_handle    h
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p dir is invalid.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p dir or \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p mb \p nb \p nnzb \p row_block_dim or \p col_block_dim is invalid.
 *  \retval rocsparse_status_invalid_pointer \p bsc_val, \p bsc_col_ptr, \p bsc_row_ind, \p temp_buffer or \p data_status pointer
 *          is invalid.
@@ -985,15 +973,14 @@ rocsparse_status rocsparse_zcheck_matrix_gebsc(rocsparse_handle                h
 *  uplo        \ref rocsparse_fill_mode_lower or \ref rocsparse_fill_mode_upper.
 *  @param[in]
 *  storage     \ref rocsparse_storage_mode_sorted or \ref rocsparse_storage_mode_sorted.
-*  @param[in]
+*  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
 *              rocsparse_scheck_matrix_csc(), rocsparse_dcheck_matrix_csc(),
 *              rocsparse_ccheck_matrix_csc() and rocsparse_zcheck_matrix_csc().
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p m \p n or \p nnz is invalid.
 *  \retval rocsparse_status_invalid_pointer \p csc_val, \p csc_col_ptr, \p csc_row_ind or \p buffer_size pointer
 *          is invalid.
@@ -1094,8 +1081,7 @@ rocsparse_status rocsparse_zcheck_matrix_csc_buffer_size(rocsparse_handle       
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p m \p n or \p nnz is invalid.
 *  \retval rocsparse_status_invalid_pointer \p csc_val, \p csc_col_ptr, \p csc_row_ind, \p temp_buffer or \p data_status pointer
 *          is invalid.
@@ -1192,15 +1178,14 @@ rocsparse_status rocsparse_zcheck_matrix_csc(rocsparse_handle                han
 *  uplo        \ref rocsparse_fill_mode_lower or \ref rocsparse_fill_mode_upper.
 *  @param[in]
 *  storage     \ref rocsparse_storage_mode_sorted or \ref rocsparse_storage_mode_sorted.
-*  @param[in]
+*  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
 *              rocsparse_scheck_matrix_ell(), rocsparse_dcheck_matrix_ell(),
 *              rocsparse_ccheck_matrix_ell() and rocsparse_zcheck_matrix_ell().
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p m \p n or \p ell_width is invalid.
 *  \retval rocsparse_status_invalid_pointer \p ell_val, \p ell_col_ind or \p buffer_size pointer
 *          is invalid.
@@ -1289,13 +1274,14 @@ rocsparse_status rocsparse_zcheck_matrix_ell_buffer_size(rocsparse_handle       
 *  uplo        \ref rocsparse_fill_mode_lower or \ref rocsparse_fill_mode_upper.
 *  @param[in]
 *  storage     \ref rocsparse_storage_mode_sorted or \ref rocsparse_storage_mode_sorted.
+*  @param[out]
+*  data_status modified to indicate the status of the data
 *  @param[in]
 *  temp_buffer temporary storage buffer allocated by the user.
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_size \p m \p n or \p ell_width is invalid.
 *  \retval rocsparse_status_invalid_pointer \p ell_val, \p ell_col_ind, \p temp_buffer or \p data_status pointer
 *          is invalid.
@@ -1379,15 +1365,13 @@ rocsparse_status rocsparse_zcheck_matrix_ell(rocsparse_handle                han
 *  uplo        \ref rocsparse_fill_mode_lower or \ref rocsparse_fill_mode_upper.
 *  @param[in]
 *  storage     \ref rocsparse_storage_mode_sorted or \ref rocsparse_storage_mode_sorted.
-*  @param[in]
+*  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
-*              rocsparse_scheck_matrix_hyb(), rocsparse_dcheck_matrix_hyb(),
-*              rocsparse_ccheck_matrix_hyb() and rocsparse_zcheck_matrix_hyb().
+*              rocsparse_check_matrix_hyb().
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_pointer \p hyb or \p buffer_size pointer is invalid.
 */
 ROCSPARSE_EXPORT
@@ -1425,8 +1409,7 @@ rocsparse_status rocsparse_check_matrix_hyb_buffer_size(rocsparse_handle        
 *
 *  \retval rocsparse_status_success the operation completed successfully.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_value \p idx_base is invalid.
-*  \retval rocsparse_status_invalid_value \p matrix_type or \p uplo or \p storage is invalid.
+*  \retval rocsparse_status_invalid_value \p idx_base or \p matrix_type or \p uplo or \p storage is invalid.
 *  \retval rocsparse_status_invalid_pointer \p hyb or \p data_status pointer is invalid.
 */
 ROCSPARSE_EXPORT
@@ -2163,7 +2146,7 @@ rocsparse_status rocsparse_zbsrmv(rocsparse_handle                handle,
 *
 *  The \f$\text{mask}\f$ is defined as an array of block row indices.
 *  The input sparse matrix is defined with a modified BSR storage format where the beginning and the end of each row
-*  is defined with two arrays, \p bsr_row_ptr and \p bsr_end_ptr (both of size \p mb), rather the usual \p bsr_row_ptr of size \p mb + 1.
+*  is defined with two arrays, \p bsr_row_ptr and \p bsr_end_ptr (both of size \p mb), rather the usual \p bsr_row_ptr of size \p mb+1.
 *
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
@@ -2171,7 +2154,7 @@ rocsparse_status rocsparse_zbsrmv(rocsparse_handle                handle,
 *
 *  \note
 *  Currently, only \p trans == \ref rocsparse_operation_none is supported.
-*  Currently, \p block_dim == 1 is not supported.
+*  Currently, \p block_dim==1 is not supported.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -2227,7 +2210,7 @@ rocsparse_status rocsparse_zbsrmv(rocsparse_handle                handle,
 *              \p bsr_row_ind, \p bsr_col_ind, \p x, \p beta or \p y pointer is invalid.
 *  \retval     rocsparse_status_arch_mismatch the device is not supported.
 *  \retval     rocsparse_status_not_implemented
-*              \p block_dim == 1, \p trans != \ref rocsparse_operation_none or
+*              \p block_dim==1, \p trans != \ref rocsparse_operation_none or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
 /**@{*/
@@ -2382,7 +2365,7 @@ rocsparse_status rocsparse_bsrsv_zero_pivot(rocsparse_handle   handle,
 *  block_dim     block dimension of the sparse BSR matrix.
 *  @param[out]
 *  info        structure that holds the information collected during the analysis step.
-*  @param[in]
+*  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
 *              rocsparse_sbsrsv_analysis(), rocsparse_dbsrsv_analysis(),
 *              rocsparse_cbsrsv_analysis(), rocsparse_zbsrsv_analysis(),
@@ -3412,7 +3395,7 @@ rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle          handle,
 *              CSR matrix.
 *  @param[out]
 *  info        structure that holds the information collected during the analysis step.
-*  @param[in]
+*  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
 *              rocsparse_scsrsv_analysis(), rocsparse_dcsrsv_analysis(),
 *              rocsparse_ccsrsv_analysis(), rocsparse_zcsrsv_analysis(),
@@ -6593,7 +6576,7 @@ rocsparse_status rocsparse_zgemmi(rocsparse_handle                handle,
 *  \p rocsparse_csrgeam_nnz computes the total CSR non-zero elements and the CSR row
 *  offsets, that point to the start of every row of the sparse CSR matrix, of the
 *  resulting matrix C. It is assumed that \p csr_row_ptr_C has been allocated with
-*  size \p m + 1.
+*  size \p m+1.
 *
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
@@ -7094,7 +7077,7 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle                
 *  \p rocsparse_csrgemm_nnz computes the total CSR non-zero elements and the CSR row
 *  offsets, that point to the start of every row of the sparse CSR matrix, of the
 *  resulting multiplied matrix C. It is assumed that \p csr_row_ptr_C has been allocated
-*  with size \p m + 1.
+*  with size \p m+1.
 *  The required buffer size can be obtained by rocsparse_scsrgemm_buffer_size(),
 *  rocsparse_dcsrgemm_buffer_size(), rocsparse_ccsrgemm_buffer_size() and
 *  rocsparse_zcsrgemm_buffer_size(), respectively.
@@ -8406,7 +8389,7 @@ rocsparse_status rocsparse_bsric0_zero_pivot(rocsparse_handle   handle,
  *  block_dim   the block dimension of the BSR matrix. Between 1 and m where \p m=mb*block_dim.
  *  @param[out]
  *  info        structure that holds the information collected during the analysis step.
- *  @param[in]
+ *  @param[out]
  *  buffer_size number of bytes of the temporary storage buffer required by
  *              rocsparse_sbsric0_analysis(), rocsparse_dbsric0_analysis(),
  *              rocsparse_cbsric0_analysis(), rocsparse_zbsric0_analysis(),
@@ -9107,7 +9090,7 @@ rocsparse_status rocsparse_dcbsrilu0_numeric_boost(rocsparse_handle             
  *  block_dim   the block dimension of the BSR matrix. Between 1 and m where \p m=mb*block_dim.
  *  @param[out]
  *  info        structure that holds the information collected during the analysis step.
- *  @param[in]
+ *  @param[out]
  *  buffer_size number of bytes of the temporary storage buffer required by
  *              rocsparse_sbsrilu0_analysis(), rocsparse_dbsrilu0_analysis(),
  *              rocsparse_cbsrilu0_analysis(), rocsparse_zbsrilu0_analysis(),
@@ -9721,7 +9704,7 @@ rocsparse_status rocsparse_csric0_zero_pivot(rocsparse_handle   handle,
 *              CSR matrix.
 *  @param[out]
 *  info        structure that holds the information collected during the analysis step.
-*  @param[in]
+*  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
 *              rocsparse_scsric0_analysis(), rocsparse_dcsric0_analysis(),
 *              rocsparse_scsric0() and rocsparse_dcsric0().
@@ -10366,7 +10349,7 @@ rocsparse_status rocsparse_dccsrilu0_numeric_boost(rocsparse_handle             
 *              CSR matrix.
 *  @param[out]
 *  info        structure that holds the information collected during the analysis step.
-*  @param[in]
+*  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
 *              rocsparse_scsrilu0_analysis(), rocsparse_dcsrilu0_analysis(),
 *              rocsparse_ccsrilu0_analysis(), rocsparse_zcsrilu0_analysis(),
@@ -11588,7 +11571,7 @@ rocsparse_status rocsparse_zgtsv_interleaved_batch(rocsparse_handle             
 *  @param[in]
 *  batch_stride The number of elements that separate consecutive elements in a system.
 *               Must satisfy \p batch_stride >= batch_count.
-*  @param[in]
+*  @param[out]
 *  buffer_size  Number of bytes of the temporary storage buffer required.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
@@ -14145,6 +14128,47 @@ rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
                                     rocsparse_int*                  bsr_col_ind);
 /**@}*/
 
+/*! \ingroup conv_module
+*  \brief Pads a value to the diagonal of the last block (if the last block is a diagonal block) in the sparse BSR matrix
+*  when the matrix expands outside m x m
+*
+*  \details When converting from a CSR matrix to a BSR matrix the resulting BSR matrix will be larger when m < mb * block_dim.
+*  In these situations, the CSR to BSR conversion will expand the BSR matrix to have zeros when outside m x m. This routine
+*  converts the resulting BSR matrix to one that has a value on the last diagonal blocks diagonal if this last block is a diagonal
+*  block in the BSR matrix.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  m           number of rows of the sparse BSR matrix.
+*  @param[in]
+*  mb          number of block rows of the sparse BSR matrix.
+*  @param[in]
+*  nnzb        number of non-zero blocks of the sparse BSR matrix.
+*  @param[in]
+*  block_dim   block dimension of the sparse BSR matrix.
+*  @param[in]
+*  value       scalar value that is set on the diagonal of the last block when the matrix expands outside of \p m x \p m
+*  @param[in]
+*  bsr_descr   descriptor of the sparse BSR matrix. Currently, only
+*              \ref rocsparse_matrix_type_general is supported.
+*  @param[inout]
+*  bsr_val     array of \p nnzb blocks of the sparse BSR matrix.
+*  @param[in]
+*  bsr_row_ptr array of \p mb+1 elements that point to the start of every block row of
+*              the sparse BSR matrix.
+*  @param[in]
+*  bsr_col_ind array of \p nnzb elements containing the block column indices of the sparse
+*              BSR matrix.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_size \p m, \p mb, \p nnzb or \p block_dim is
+*              invalid.
+*  \retval     rocsparse_status_invalid_pointer \p bsr_descr, \p bsr_val,
+*              \p bsr_row_ind, \p bsr_col_ind, pointer is invalid.
+*/
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_sbsrpad_value(rocsparse_handle          handle,
                                          rocsparse_int             m,
@@ -14192,6 +14216,7 @@ rocsparse_status rocsparse_zbsrpad_value(rocsparse_handle          handle,
                                          rocsparse_double_complex* bsr_val,
                                          const rocsparse_int*      bsr_row_ptr,
                                          const rocsparse_int*      bsr_col_ind);
+/**@}*/
 
 /*! \ingroup conv_module
 *  \brief
@@ -15338,7 +15363,7 @@ rocsparse_status rocsparse_coo2csr(rocsparse_handle     handle,
 *  \p rocsparse_ell2csr_nnz computes the total CSR non-zero elements and the CSR
 *  row offsets, that point to the start of every row of the sparse CSR matrix, for
 *  a given ELL matrix. It is assumed that \p csr_row_ptr has been allocated with
-*  size \p m + 1.
+*  size \p m+1.
 *
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
@@ -18080,6 +18105,7 @@ rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
 *      rocsparse_destroy_dnmat_descr(mat_C);
 *  \endcode
 */
+/**@{*/
 [[deprecated("This function is deprecated and will be removed in a future release. Use "
              "rocsparse_spmm instead.")]] ROCSPARSE_EXPORT rocsparse_status
     rocsparse_spmm_ex(rocsparse_handle            handle,
@@ -18109,6 +18135,7 @@ rocsparse_status rocsparse_spmm(rocsparse_handle            handle,
                                 rocsparse_spmm_stage        stage,
                                 size_t*                     buffer_size,
                                 void*                       temp_buffer);
+/**@}*/
 
 /*! \ingroup generic_module
 *  \brief Sparse matrix sparse matrix multiplication

@@ -123,6 +123,9 @@ module rocsparse_enums
         enumerator :: rocsparse_status_invalid_value = 7
         enumerator :: rocsparse_status_arch_mismatch = 8
         enumerator :: rocsparse_status_zero_pivot = 9
+        enumerator :: rocsparse_status_not_initialized = 10
+        enumerator :: rocsparse_status_type_mismatch = 11
+        enumerator :: rocsparse_status_requires_sorted_storage = 12
     end enum
 
 end module rocsparse_enums

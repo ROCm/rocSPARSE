@@ -322,6 +322,40 @@ where
     \text{csr_col_ind}[8] & = \{1, 2, 4, 2, 3, 1, 4, 5\}
   \end{array}
 
+CSC storage format
+------------------
+The Compressed Sparse Column (CSC) storage format represents a :math:`m \times n` matrix by
+
+=========== =========================================================================
+m           number of rows (integer).
+n           number of columns (integer).
+nnz         number of non-zero elements (integer).
+csc_val     array of ``nnz`` elements containing the data (floating point).
+csc_col_ptr array of ``n+1`` elements that point to the start of every column (integer).
+csc_row_ind array of ``nnz`` elements containing the row indices (integer).
+=========== =========================================================================
+
+The CSC matrix is expected to be sorted by row indices within each column. Furthermore, each pair of indices should appear only once.
+Consider the following :math:`3 \times 5` matrix and the corresponding CSC structures, with :math:`m = 3, n = 5` and :math:`\text{nnz} = 8` using one based indexing:
+
+.. math::
+
+  A = \begin{pmatrix}
+        1.0 & 2.0 & 0.0 & 3.0 & 0.0 \\
+        0.0 & 4.0 & 5.0 & 0.0 & 0.0 \\
+        6.0 & 0.0 & 0.0 & 7.0 & 8.0 \\
+      \end{pmatrix}
+
+where
+
+.. math::
+
+  \begin{array}{ll}
+    \text{csc_val}[8] & = \{1.0, 6.0, 2.0, 4.0, 5.0, 3.0, 7.0, 8.0\} \\
+    \text{csc_col_ptr}[6] & = \{1, 3, 5, 6, 8, 9\} \\
+    \text{csc_row_ind}[8] & = \{1, 3, 1, 2, 2, 1, 3, 3\}
+  \end{array}
+
 BSR storage format
 ------------------
 The Block Compressed Sparse Row (BSR) storage format represents a :math:`(mb \cdot \text{bsr_dim}) \times (nb \cdot \text{bsr_dim})` matrix by
@@ -1099,6 +1133,7 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xprune_csr2csr_by_percentage_buffer_size() <rocsparse_sprune_csr2csr_by_percentage_buffer_size>`     x      x
 :cpp:func:`rocsparse_Xprune_csr2csr_nnz_by_percentage() <rocsparse_sprune_csr2csr_nnz_by_percentage>`                     x      x
 :cpp:func:`rocsparse_Xprune_csr2csr_by_percentage() <rocsparse_sprune_csr2csr_by_percentage>`                             x      x
+:cpp:func:`rocsparse_Xbsrpad_value() <rocsparse_sbsrpad_value>`                                                           x      x      x              x
 ========================================================================================================================= ====== ====== ============== ==============
 
 Reordering Functions
@@ -1128,31 +1163,34 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xcheck_matrix_gebsc() <rocsparse_scheck_matrix_gebsc>`                         x      x      x              x
 :cpp:func:`rocsparse_Xcheck_matrix_ell_buffer_size() <rocsparse_scheck_matrix_ell_buffer_size>`     x      x      x              x
 :cpp:func:`rocsparse_Xcheck_matrix_ell() <rocsparse_scheck_matrix_ell>`                             x      x      x              x
-:cpp:func:`rocsparse_Xcheck_matrix_hyb_buffer_size() <rocsparse_scheck_matrix_hyb_buffer_size>`     x      x      x              x
-:cpp:func:`rocsparse_Xcheck_matrix_hyb() <rocsparse_scheck_matrix_hyb>`                             x      x      x              x
+:cpp:func:`rocsparse_check_matrix_hyb_buffer_size() <rocsparse_check_matrix_hyb_buffer_size>`       x      x      x              x
+:cpp:func:`rocsparse_check_matrix_hyb() <rocsparse_check_matrix_hyb>`                               x      x      x              x
 =================================================================================================== ====== ====== ============== ==============
 
 Sparse Generic Functions
 ------------------------
 
-======================================= ====== ====== ============== ==============
-Function name                           single double single complex double complex
-======================================= ====== ====== ============== ==============
-:cpp:func:`rocsparse_axpby()`           x      x      x              x
-:cpp:func:`rocsparse_gather()`          x      x      x              x
-:cpp:func:`rocsparse_scatter()`         x      x      x              x
-:cpp:func:`rocsparse_rot()`             x      x      x              x
-:cpp:func:`rocsparse_spvv()`            x      x      x              x
-:cpp:func:`rocsparse_sparse_to_dense()` x      x      x              x
-:cpp:func:`rocsparse_dense_to_sparse()` x      x      x              x
-:cpp:func:`rocsparse_spmv()`            x      x      x              x
-:cpp:func:`rocsparse_spmv_ex()`         x      x      x              x
-:cpp:func:`rocsparse_spsv()`            x      x      x              x
-:cpp:func:`rocsparse_spmm()`            x      x      x              x
-:cpp:func:`rocsparse_spsm()`            x      x      x              x
-:cpp:func:`rocsparse_spgemm()`          x      x      x              x
-:cpp:func:`rocsparse_sddmm()`           x      x      x              x
-======================================= ====== ====== ============== ==============
+========================================= ====== ====== ============== ==============
+Function name                             single double single complex double complex
+========================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_axpby()`             x      x      x              x
+:cpp:func:`rocsparse_gather()`            x      x      x              x
+:cpp:func:`rocsparse_scatter()`           x      x      x              x
+:cpp:func:`rocsparse_rot()`               x      x      x              x
+:cpp:func:`rocsparse_spvv()`              x      x      x              x
+:cpp:func:`rocsparse_sparse_to_dense()`   x      x      x              x
+:cpp:func:`rocsparse_dense_to_sparse()`   x      x      x              x
+:cpp:func:`rocsparse_spmv()`              x      x      x              x
+:cpp:func:`rocsparse_spmv_ex()`           x      x      x              x
+:cpp:func:`rocsparse_spsv()`              x      x      x              x
+:cpp:func:`rocsparse_spmm()`              x      x      x              x
+:cpp:func:`rocsparse_spmm_ex()`           x      x      x              x
+:cpp:func:`rocsparse_spsm()`              x      x      x              x
+:cpp:func:`rocsparse_spgemm()`            x      x      x              x
+:cpp:func:`rocsparse_sddmm_buffer_size()` x      x      x              x
+:cpp:func:`rocsparse_sddmm_preprocess()`  x      x      x              x
+:cpp:func:`rocsparse_sddmm()`             x      x      x              x
+========================================= ====== ====== ============== ==============
 
 
 Storage schemes and indexing base
@@ -2016,8 +2054,6 @@ rocsparse_bsrsm_clear()
 
 .. doxygenfunction:: rocsparse_bsrsm_clear
 
-.. _rocsparse_extra_functions_:
-
 rocsparse_gemmi()
 -----------------
 
@@ -2028,6 +2064,8 @@ rocsparse_gemmi()
 .. doxygenfunction:: rocsparse_cgemmi
   :outline:
 .. doxygenfunction:: rocsparse_zgemmi
+
+.. _rocsparse_extra_functions_:
 
 Sparse Extra Functions
 ======================
@@ -2845,6 +2883,16 @@ rocsparse_prune_csr2csr_by_percentage()
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_by_percentage
 
+rocsparse_rocsparse_bsrpad_value()
+----------------------------------
+
+.. doxygenfunction:: rocsparse_sbsrpad_value
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrpad_value
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrpad_value
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrpad_value
 
 .. _rocsparse_reordering_functions_:
 
@@ -3008,24 +3056,12 @@ rocsparse_check_matrix_ell()
 rocsparse_check_matrix_hyb_buffer_size()
 ----------------------------------------
 
-.. doxygenfunction:: rocsparse_scheck_matrix_hyb_buffer_size
-  :outline:
-.. doxygenfunction:: rocsparse_dcheck_matrix_hyb_buffer_size
-  :outline:
-.. doxygenfunction:: rocsparse_ccheck_matrix_hyb_buffer_size
-  :outline:
-.. doxygenfunction:: rocsparse_zcheck_matrix_hyb_buffer_size
+.. doxygenfunction:: rocsparse_check_matrix_hyb_buffer_size
 
 rocsparse_check_matrix_hyb()
 ----------------------------
 
-.. doxygenfunction:: rocsparse_scheck_matrix_hyb
-  :outline:
-.. doxygenfunction:: rocsparse_dcheck_matrix_hyb
-  :outline:
-.. doxygenfunction:: rocsparse_ccheck_matrix_hyb
-  :outline:
-.. doxygenfunction:: rocsparse_zcheck_matrix_hyb
+.. doxygenfunction:: rocsparse_check_matrix_hyb
 
 Sparse Generic Functions
 ========================
@@ -3064,6 +3100,11 @@ rocsparse_spmv()
 
 .. doxygenfunction:: rocsparse_spmv
 
+rocsparse_spmv_ex()
+-------------------
+
+.. doxygenfunction:: rocsparse_spmv_ex
+
 rocsparse_spsv()
 ----------------
 
@@ -3079,12 +3120,37 @@ rocsparse_spmm()
 
 .. doxygenfunction:: rocsparse_spmm
 
+rocsparse_spmm_ex()
+-------------------
+
+.. doxygenfunction:: rocsparse_spmm_ex
+
 rocsparse_spgemm()
 ------------------
 
 .. doxygenfunction:: rocsparse_spgemm
 
+rocsparse_sddmm_buffer_size()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_sddmm_buffer_size
+
+rocsparse_sddmm_preprocess()
+----------------------------
+
+.. doxygenfunction:: rocsparse_sddmm_preprocess
+
 rocsparse_sddmm()
 -----------------
 
 .. doxygenfunction:: rocsparse_sddmm
+
+rocsparse_dense_to_sparse()
+---------------------------
+
+.. doxygenfunction:: rocsparse_dense_to_sparse
+
+rocsparse_sparse_to_dense()
+---------------------------
+
+.. doxygenfunction:: rocsparse_sparse_to_dense
