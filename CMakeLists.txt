@@ -190,26 +190,48 @@ if( BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
     string(TOLOWER "${CLIENTS_OS}" CLIENTS_OS)
     rocm_read_os_release(CLIENTS_OS_VERSION VERSION_ID)
   endif()
-  set(GFORTRAN_PKG "gcc-gfortran")
-  if(CLIENTS_OS STREQUAL "sles")
-    set(GFORTRAN_PKG "gcc-fortran")
-  elseif(CLIENTS_OS STREQUAL "centos" AND CLIENTS_OS_VERSION EQUAL 7)
-    set(GFORTRAN_PKG "devtoolset-7-gcc-gfortran")
+  find_package(OpenMP QUIET)
+  if(OPENMP_FOUND)
+    set(OPENMP_RPM "libgomp")
+    set(OPENMP_DEB "libomp-dev")
+  endif()
+  set(GFORTRAN_RPM "libgfortran4")
+  set(GFORTRAN_DEB "libgfortran4")
+  if(CLIENTS_OS STREQUAL "centos" OR CLIENTS_OS STREQUAL "rhel")
+    if(CLIENTS_OS_VERSION VERSION_GREATER_EQUAL "8")
+      set(GFORTRAN_RPM "libgfortran")
+    endif()
+  elseif(CLIENTS_OS STREQUAL "ubuntu" AND CLIENTS_OS_VERSION VERSION_GREATER_EQUAL "20.04")
+    set(GFORTRAN_DEB "libgfortran5")
+  elseif(CLIENTS_OS STREQUAL "sles" AND OPENMP_FOUND)
+    set(OPENMP_RPM "libgomp1")
   endif()
 
   rocm_package_setup_component(clients)
   rocm_package_setup_client_component(clients-common)
   if( BUILD_CLIENTS_TESTS )
-    rocm_package_setup_client_component(tests)
+    rocm_package_setup_client_component(
+      tests
+      DEPENDS
+        COMPONENT clients-common
+        DEB "${OPENMP_DEB}"
+        RPM "${OPENMP_RPM}"
+    )
   endif()
   if( BUILD_CLIENTS_BENCHMARKS )
-    rocm_package_setup_client_component(benchmarks)
+  rocm_package_setup_client_component(
+    benchmarks
+    DEPENDS
+      COMPONENT clients-common
+      DEB "${OPENMP_DEB}"
+      RPM "${OPENMP_RPM}"
+  )
   endif()
   if(BUILD_FORTRAN_CLIENTS)
-    rocm_package_add_rpm_dependencies(COMPONENT tests DEPENDS "${GFORTRAN_PKG}")
-    rocm_package_add_deb_dependencies(COMPONENT tests DEPENDS "gfortran")
-    rocm_package_add_rpm_dependencies(COMPONENT benchmarks DEPENDS "${GFORTRAN_PKG}")
-    rocm_package_add_deb_dependencies(COMPONENT benchmarks DEPENDS "gfortran")
+    rocm_package_add_rpm_dependencies(COMPONENT tests DEPENDS "${GFORTRAN_RPM}")
+    rocm_package_add_deb_dependencies(COMPONENT tests DEPENDS "${GFORTRAN_DEB}")
+    rocm_package_add_rpm_dependencies(COMPONENT benchmarks DEPENDS "${GFORTRAN_RPM}")
+    rocm_package_add_deb_dependencies(COMPONENT benchmarks DEPENDS "${GFORTRAN_DEB}")
   endif()
 endif()
 
