@@ -37,7 +37,7 @@ struct ell_matrix
     I                      m{};
     I                      n{};
     I                      width{};
-    I                      nnz{};
+    int64_t                nnz{};
     rocsparse_index_base   base{};
     rocsparse_storage_mode storage_mode{rocsparse_storage_mode_sorted};
     array_t<I>             ind{};
@@ -50,7 +50,7 @@ struct ell_matrix
         : m(m_)
         , n(n_)
         , width(width_)
-        , nnz(m_ * width_)
+        , nnz((int64_t)m_ * width_)
         , base(base_)
         , ind(nnz)
         , val(nnz){};
@@ -108,9 +108,9 @@ struct ell_matrix
             this->base = base_;
         }
 
-        if(this->m * this->width != this->nnz)
+        if((int64_t)this->m * this->width != this->nnz)
         {
-            this->nnz = this->m * this->width;
+            this->nnz = (int64_t)this->m * this->width;
             this->ind.resize(this->nnz);
             this->val.resize(this->nnz);
         }

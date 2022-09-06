@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -45,11 +45,19 @@ Definitions:
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
     - { alpha:  -1.0, beta: -0.5,  alphai:  0.0, betai:  0.0 }
 
+  - &alpha_beta_range_arch
+    - { alpha:   2.0, beta: -1.2, alphai:  0.0, betai: 0.0 }
+
 Tests:
 - name: ellmv_bad_arg
   category: pre_checkin
   function: ellmv_bad_arg
   precision: *single_double_precisions_complex_real
+
+- name: ellmv_extra
+  category: nightly
+  hardware: [gfx908, gfx90a]
+  function: ellmv_extra
 
 - name: ellmv
   category: quick

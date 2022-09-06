@@ -2203,8 +2203,8 @@ void host_ellmv(rocsparse_operation  trans,
             T sum = static_cast<T>(0);
             for(I p = 0; p < ell_width; ++p)
             {
-                I idx = p * M + i;
-                I col = ell_col_ind[idx] - base;
+                int64_t idx = (int64_t)p * M + i;
+                I       col = ell_col_ind[idx] - base;
 
                 if(col >= 0 && col < N)
                 {
@@ -2241,8 +2241,8 @@ void host_ellmv(rocsparse_operation  trans,
 
             for(I p = 0; p < ell_width; ++p)
             {
-                I idx = p * M + i;
-                I col = ell_col_ind[idx] - base;
+                int64_t idx = (int64_t)p * M + i;
+                I       col = ell_col_ind[idx] - base;
 
                 if(col >= 0 && col < N)
                 {

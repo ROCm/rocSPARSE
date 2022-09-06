@@ -223,4 +223,69 @@ INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
-void testing_ellmv_extra(const Arguments& arg) {}
+
+void testing_ellmv_extra_319051(const Arguments& arg)
+{
+    rocsparse_int        M     = 500000000;
+    rocsparse_int        N     = 500000000;
+    rocsparse_int        width = 5;
+    rocsparse_index_base base  = rocsparse_index_base_zero;
+    rocsparse_operation  trans = rocsparse_operation_none;
+    host_scalar<float>   h_alpha(1.0f);
+    host_scalar<float>   h_beta(2.0f);
+
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
+
+    // Create matrix descriptor
+    rocsparse_local_mat_descr descr;
+
+    // Set matrix index base
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
+
+    host_ell_matrix<float> hA;
+    hA.define(M, N, width, base);
+    for(rocsparse_int i = 0; i < width; i++)
+    {
+        hA.ind[M * i + M - 1] = i;
+        hA.val[M * i + M - 1] = i;
+    }
+
+    host_dense_matrix<float> hx(N, 1);
+    host_dense_matrix<float> hy(M, 1);
+
+    rocsparse_matrix_utils::init(hx);
+    rocsparse_matrix_utils::init(hy);
+
+    device_ell_matrix<float>   dA(hA);
+    device_dense_matrix<float> dx(hx), dy(hy);
+
+#define PARAMS(alpha_, A_, x_, beta_, y_) \
+    handle, trans, A_.m, A_.n, alpha_, descr, A_.val, A_.ind, A_.width, x_, beta_, y_
+
+    if(arg.unit_check)
+    {
+        // Pointer mode host
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<float>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
+
+        host_dense_matrix<float> hy_copy(hy);
+        // CPU ellmv
+        host_ellmv<rocsparse_int, float>(
+            trans, hA.m, hA.n, *h_alpha, hA.ind, hA.val, hA.width, hx, *h_beta, hy, hA.base);
+        hy.near_check(dy);
+        dy = hy_copy;
+
+        // Pointer mode device
+        device_scalar<float> d_alpha(h_alpha), d_beta(h_beta);
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+        CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<float>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
+        hy.near_check(dy);
+    }
+#undef PARAMS
+}
+
+void testing_ellmv_extra(const Arguments& arg)
+{
+    testing_ellmv_extra_319051(arg);
+}
