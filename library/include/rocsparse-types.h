@@ -99,11 +99,64 @@ typedef struct _rocsparse_hyb_mat* rocsparse_hyb_mat;
 typedef struct _rocsparse_mat_info* rocsparse_mat_info;
 
 // Generic API
+
+/*! \ingroup types_module
+ *  \brief Generic API descriptor of the sparse vector.
+ *
+ *  \details
+ *  The rocSPARSE sparse vector descriptor is a structure holding all properties of a sparse vector.
+ *  It must be initialized using rocsparse_create_spvec_descr() and the returned
+ *  descriptor must be passed to all subsequent generic API library calls that involve the sparse vector.
+ *  It should be destroyed at the end using rocsparse_destroy_spvec_descr().
+ */
 typedef struct _rocsparse_spvec_descr* rocsparse_spvec_descr;
+
+/*! \ingroup types_module
+ *  \brief Generic API descriptor of the sparse matrix.
+ *
+ *  \details
+ *  The rocSPARSE sparse matrix descriptor is a structure holding all properties of a sparse matrix.
+ *  It must be initialized using rocsparse_create_coo_descr(), rocsparse_create_coo_aos_descr(),
+ *  rocsparse_create_bsr_descr(), rocsparse_create_csr_descr(), rocsparse_create_csc_descr(),
+ *  rocsparse_create_ell_descr(), or rocsparse_create_bell_descr() and the returned
+ *  descriptor must be passed to all subsequent generic API library calls that involve the sparse matrix.
+ *  It should be destroyed at the end using rocsparse_destroy_spmat_descr().
+ */
 typedef struct _rocsparse_spmat_descr* rocsparse_spmat_descr;
+
+/*! \ingroup types_module
+ *  \brief Generic API descriptor of the dense vector.
+ *
+ *  \details
+ *  The rocSPARSE dense vector descriptor is a structure holding all properties of a dense vector.
+ *  It must be initialized using rocsparse_create_dnvec_descr() and the returned
+ *  descriptor must be passed to all subsequent generic API library calls that involve the dense vector.
+ *  It should be destroyed at the end using rocsparse_destroy_dnvec_descr().
+ */
 typedef struct _rocsparse_dnvec_descr* rocsparse_dnvec_descr;
+
+/*! \ingroup types_module
+ *  \brief Generic API descriptor of the dense matrix.
+ *
+ *  \details
+ *  The rocSPARSE dense matrix descriptor is a structure holding all properties of a dense matrix.
+ *  It must be initialized using rocsparse_create_dnmat_descr() and the returned
+ *  descriptor must be passed to all subsequent generic API library calls that involve the dense matrix.
+ *  It should be destroyed at the end using rocsparse_destroy_dnmat_descr().
+ */
 typedef struct _rocsparse_dnmat_descr* rocsparse_dnmat_descr;
 
+/*! \ingroup types_module
+ *  \brief Coloring info structure to hold data gathered during analysis and later used in
+ *  rocSPARSE sparse matrix coloring routines.
+ *
+ *  \details
+ *  The rocSPARSE color info is a structure holding coloring data that is
+ *  gathered during analysis routines. It must be initialized using
+ *  rocsparse_create_color_info() and the returned info structure must be passed to all
+ *  subsequent library calls that require coloring information. It should be
+ *  destroyed at the end using rocsparse_destroy_color_info().
+ */
 typedef struct _rocsparse_color_info* rocsparse_color_info;
 
 #ifdef __cplusplus

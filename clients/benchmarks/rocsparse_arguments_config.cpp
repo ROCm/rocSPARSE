@@ -305,7 +305,7 @@ void rocsparse_arguments_config::set_description(options_description& desc)
 
     ("direction",
      value<rocsparse_int>(&this->b_dir)->default_value(rocsparse_direction_row),
-     "Indicates whether a dense matrix should be parsed by rows or by columns, assuming column-major storage: row = 0, column = 1 (default: 0)")
+     "Indicates whether BSR blocks should be laid out in row-major storage or by column-major storage: row-major storage = 0, column-major storage = 1 (default: 0)")
 
     ("order",
      value<rocsparse_int>(&this->b_order)->default_value(rocsparse_order_column),
@@ -313,7 +313,7 @@ void rocsparse_arguments_config::set_description(options_description& desc)
 
     ("format",
      value<rocsparse_int>(&this->b_format)->default_value(rocsparse_format_coo),
-     "Indicates wther a sparse matrix is laid out in coo format: 0, coo_aos format: 1, csr format: 2, csc format: 3 or ell format: 4 (default:0)")
+     "Indicates whether a sparse matrix is laid out in coo format: 0, coo_aos format: 1, csr format: 2, csc format: 3 or ell format: 4 (default:0)")
 
     ("denseld",
      value<rocsparse_int>(&this->denseld)->default_value(128),
@@ -342,7 +342,7 @@ void rocsparse_arguments_config::set_description(options_description& desc)
 #ifdef ROCSPARSE_WITH_MEMSTAT
     ("memstat-report",
      value<std::string>(&this->b_memory_report_filename)->default_value("rocsparse_bench_memstat.json"),
-     "output filename for memory report.")
+     "Output filename for memory report.")
 #endif
 
     ("spmv_alg",
