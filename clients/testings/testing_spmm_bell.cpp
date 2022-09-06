@@ -441,14 +441,17 @@ void testing_spmm_bell(const Arguments& arg)
                                                  dbuffer));
         }
 
-        gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
-        double gflop_count
-            = spmm_gflop_count(N, dA.nnz, (I)dC.m * (I)dC.n, *h_beta != static_cast<T>(0));
+        gpu_time_used      = (get_time_us() - gpu_time_used) / number_hot_calls;
+        double gflop_count = spmm_gflop_count(
+            N, dA.nnz, (int64_t)dC.m * (int64_t)dC.n, *h_beta != static_cast<T>(0));
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
 
-        double gbyte_count = csrmm_gbyte_count<T>(
-            dA.m, dA.nnz, (I)dB.m * (I)dB.n, (I)dC.m * (I)dC.n, *h_beta != static_cast<T>(0));
-        double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
+        double gbyte_count = csrmm_gbyte_count<T>(dA.m,
+                                                  dA.nnz,
+                                                  (int64_t)dB.m * (int64_t)dB.n,
+                                                  (int64_t)dC.m * (int64_t)dC.n,
+                                                  *h_beta != static_cast<T>(0));
+        double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
         display_timing_info("M",
                             M,

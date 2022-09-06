@@ -133,7 +133,7 @@ constexpr double coosv_gbyte_count(I M, I nnz)
 }
 
 template <typename T, typename I>
-constexpr double ellmv_gbyte_count(I M, I N, I nnz, bool beta = false)
+constexpr double ellmv_gbyte_count(I M, I N, int64_t nnz, bool beta = false)
 {
     return (nnz * sizeof(I) + (M + N + nnz + (beta ? M : 0)) * sizeof(T)) / 1e9;
 }

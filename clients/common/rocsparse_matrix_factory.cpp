@@ -740,7 +740,7 @@ struct traits_init_ell<T, I, J, std::enable_if_t<std::is_same<I, J>{}>>
         that.define(hA.m, hA.n, 0, hA.base);
         host_csr_to_ell(
             hA.m, hA.ptr, hA.ind, hA.val, that.ind, that.val, that.width, hA.base, that.base);
-        that.nnz = that.width * that.m;
+        that.nnz = (int64_t)that.width * that.m;
     };
 };
 

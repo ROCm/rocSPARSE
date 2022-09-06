@@ -117,7 +117,20 @@ void host_csr_to_ell(J                     M,
     }
 
     // Compute ELL non-zeros
-    I ell_nnz = ell_width * M;
+    int64_t ell_nnz = (int64_t)ell_width * M;
+
+    size_t required_memory  = sizeof(J) * ell_nnz + sizeof(T) * ell_nnz;
+    size_t available_memory = 0;
+    hipDeviceGetLimit(&available_memory, hipLimit_t::hipLimitMallocHeapSize);
+
+    if(required_memory > available_memory)
+    {
+        std::cerr << "Error: Insufficient memory available for conversion from CSR to ELL format. "
+                     "Required: "
+                  << required_memory << " available: " << available_memory
+                  << ". (File: " << __FILE__ << " Line: " << __LINE__ << ")" << std::endl;
+        exit(1);
+    }
 
     ell_col_ind.resize(ell_nnz);
     ell_val.resize(ell_nnz);
@@ -136,7 +149,7 @@ void host_csr_to_ell(J                     M,
         // Fill ELL matrix with data
         for(I j = row_begin; j < row_end; ++j)
         {
-            I idx = p * M + i;
+            int64_t idx = (int64_t)p * M + i;
 
             ell_col_ind[idx] = csr_col_ind[j] - csr_base + ell_base;
             ell_val[idx]     = csr_val[j];
@@ -147,7 +160,7 @@ void host_csr_to_ell(J                     M,
         // Add padding to ELL structures
         for(J j = row_nnz; j < ell_width; ++j)
         {
-            I idx = p * M + i;
+            int64_t idx = (int64_t)p * M + i;
 
             ell_col_ind[idx] = -1;
             ell_val[idx]     = static_cast<T>(0);

@@ -49,8 +49,8 @@ static __device__ void ellmvn_device(I                    m,
     T sum = static_cast<T>(0);
     for(I p = 0; p < ell_width; ++p)
     {
-        I idx = ELL_IND(ai, p, m, ell_width);
-        I col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
+        int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
+        I       col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
 
         if(col >= 0 && col < n)
         {
@@ -112,8 +112,8 @@ static __device__ void ellmvt_device(rocsparse_operation  trans,
 
     for(I p = 0; p < ell_width; ++p)
     {
-        I idx = ELL_IND(ai, p, m, ell_width);
-        I col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
+        int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
+        I       col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
 
         if(col >= 0 && col < n)
         {
