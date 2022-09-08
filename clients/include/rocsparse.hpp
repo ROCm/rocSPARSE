@@ -311,8 +311,23 @@ REAL_COMPLEX_TEMPLATE(sctr,
  *    level 2 SPARSE
  * ===========================================================================
  */
-// bsrmv
-REAL_COMPLEX_TEMPLATE(bsrmv,
+// bsrmv_ex_analysis
+REAL_COMPLEX_TEMPLATE(bsrmv_ex_analysis,
+                      rocsparse_handle          handle,
+                      rocsparse_direction       dir,
+                      rocsparse_operation       trans,
+                      rocsparse_int             mb,
+                      rocsparse_int             nb,
+                      rocsparse_int             nnzb,
+                      const rocsparse_mat_descr descr,
+                      const T*                  bsr_val,
+                      const rocsparse_int*      bsr_row_ptr,
+                      const rocsparse_int*      bsr_col_ind,
+                      rocsparse_int             bsr_dim,
+                      rocsparse_mat_info        info);
+
+// bsrmv_ex
+REAL_COMPLEX_TEMPLATE(bsrmv_ex,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans,
@@ -325,6 +340,7 @@ REAL_COMPLEX_TEMPLATE(bsrmv,
                       const rocsparse_int*      bsr_row_ptr,
                       const rocsparse_int*      bsr_col_ind,
                       rocsparse_int             bsr_dim,
+                      rocsparse_mat_info        info,
                       const T*                  x,
                       const T*                  beta,
                       T*                        y);

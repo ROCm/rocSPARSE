@@ -23,7 +23,7 @@
 
 #include "rocsparse_gebsrmv.hpp"
 #include "rocsparse.h"
-#include "rocsparse_bsrmv.hpp"
+#include "rocsparse_bsrmv_ex.hpp"
 #include "rocsparse_csrmv.hpp"
 
 #include "definitions.h"

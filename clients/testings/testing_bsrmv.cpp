@@ -39,6 +39,9 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
     // Create matrix descriptor
     rocsparse_local_mat_descr local_descr;
 
+    // Create matrix info
+    rocsparse_local_mat_info local_info;
+
     rocsparse_handle          handle            = local_handle;
     rocsparse_direction       dir               = rocsparse_direction_column;
     rocsparse_operation       trans             = rocsparse_operation_none;
@@ -51,51 +54,91 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
     const rocsparse_int*      bsr_row_ptr       = (const rocsparse_int*)0x4;
     const rocsparse_int*      bsr_col_ind       = (const rocsparse_int*)0x4;
     rocsparse_int             block_dim         = safe_size;
+    rocsparse_mat_info        info              = local_info;
     const T*                  x                 = (const T*)0x4;
     const T*                  beta_device_host  = (const T*)&h_beta;
     T*                        y                 = (T*)0x4;
 
+#define PARAMS_ANALYSIS \
+    handle, dir, trans, mb, nb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info
+
+    auto_testing_bad_arg(rocsparse_bsrmv_ex_analysis<T>, PARAMS_ANALYSIS);
+
 #define PARAMS                                                                                     \
     handle, dir, trans, mb, nb, nnzb, alpha_device_host, descr, bsr_val, bsr_row_ptr, bsr_col_ind, \
-        block_dim, x, beta_device_host, y
-
-    auto_testing_bad_arg(rocsparse_bsrmv<T>, PARAMS);
+        block_dim, info, x, beta_device_host, y
 
     {
-        auto tmp = trans;
-        trans    = rocsparse_operation_transpose;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv<T>(PARAMS), rocsparse_status_not_implemented);
-        trans = tmp;
+        static constexpr int num_exclusions  = 1;
+        static constexpr int exclude_args[1] = {12};
+        auto_testing_bad_arg(rocsparse_bsrmv_ex<T>, num_exclusions, exclude_args, PARAMS);
     }
+
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex_clear(nullptr, info),
+                            rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex_clear(handle, nullptr),
+                            rocsparse_status_invalid_pointer);
 
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {
         if(matrix_type != rocsparse_matrix_type_general)
         {
             CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, matrix_type));
-            EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv<T>(PARAMS), rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex_analysis<T>(PARAMS_ANALYSIS),
+                                    rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex<T>(PARAMS),
+                                    rocsparse_status_not_implemented);
         }
     }
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
 
+    for(auto operation : rocsparse_operation_t::values)
+    {
+        if(operation != rocsparse_operation_none)
+        {
+            trans = operation;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex_analysis<T>(PARAMS_ANALYSIS),
+                                    rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex<T>(PARAMS),
+                                    rocsparse_status_not_implemented);
+        }
+    }
+    trans = rocsparse_operation_none;
+
+#undef PARAMS_ANALYSIS
 #undef PARAMS
 
     // Additional tests for invalid zero matrices
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv<T>(handle,
-                                               dir,
-                                               trans,
-                                               mb,
-                                               nb,
-                                               nnzb,
-                                               alpha_device_host,
-                                               descr,
-                                               nullptr,
-                                               bsr_row_ptr,
-                                               nullptr,
-                                               block_dim,
-                                               x,
-                                               beta_device_host,
-                                               y),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex_analysis<T>(handle,
+                                                           dir,
+                                                           trans,
+                                                           mb,
+                                                           nb,
+                                                           nnzb,
+                                                           descr,
+                                                           nullptr,
+                                                           bsr_row_ptr,
+                                                           nullptr,
+                                                           block_dim,
+                                                           info),
+                            rocsparse_status_invalid_pointer);
+
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex<T>(handle,
+                                                  dir,
+                                                  trans,
+                                                  mb,
+                                                  nb,
+                                                  nnzb,
+                                                  alpha_device_host,
+                                                  descr,
+                                                  nullptr,
+                                                  bsr_row_ptr,
+                                                  nullptr,
+                                                  block_dim,
+                                                  info,
+                                                  x,
+                                                  beta_device_host,
+                                                  y),
                             rocsparse_status_invalid_pointer);
 }
 
@@ -124,14 +167,19 @@ void testing_bsrmv(const Arguments& arg)
     // Set storage mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, storage));
 
-    // BSR dimensions
+    // Create matrix info
+    rocsparse_local_mat_info info;
 
+    // BSR dimensions
     rocsparse_int mb = (block_dim > 0) ? (M + block_dim - 1) / block_dim : 0;
     rocsparse_int nb = (block_dim > 0) ? (N + block_dim - 1) / block_dim : 0;
     // Argument sanity check before allocating invalid memory
+#define PARAMS_ANALYSIS(A_)                                                                  \
+    handle, A_.block_direction, trans, A_.mb, A_.nb, A_.nnzb, descr, A_.val, A_.ptr, A_.ind, \
+        A_.row_block_dim, info
 #define PARAMS(alpha_, A_, x_, beta_, y_)                                                    \
     handle, A_.block_direction, trans, A_.mb, A_.nb, A_.nnzb, alpha_, descr, A_.val, A_.ptr, \
-        A_.ind, A_.row_block_dim, x_, beta_, y_
+        A_.ind, A_.row_block_dim, info, x_, beta_, y_
 
     if(mb <= 0 || nb <= 0 || M <= 0 || N <= 0 || block_dim <= 0)
     {
@@ -147,7 +195,7 @@ void testing_bsrmv(const Arguments& arg)
         device_dense_matrix<T> dy;
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
                                 (mb < 0 || nb < 0 || block_dim < 0) ? rocsparse_status_invalid_size
                                                                     : rocsparse_status_success);
         return;
@@ -182,12 +230,14 @@ void testing_bsrmv(const Arguments& arg)
 
     device_dense_matrix<T> dx(hx), dy(hy);
 
+    // bsrmv_analysis (Optional)
+    CHECK_ROCSPARSE_ERROR(rocsparse_bsrmv_ex_analysis<T>(PARAMS_ANALYSIS(dA)));
+
     if(arg.unit_check)
     {
-
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_bsrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
+        CHECK_ROCSPARSE_ERROR(rocsparse_bsrmv_ex<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
 
         {
             host_dense_matrix<T> hy_copy(hy);
@@ -213,7 +263,7 @@ void testing_bsrmv(const Arguments& arg)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
-        CHECK_ROCSPARSE_ERROR(rocsparse_bsrmv<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
+        CHECK_ROCSPARSE_ERROR(rocsparse_bsrmv_ex<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
         hy.near_check(dy);
     }
 
@@ -227,7 +277,7 @@ void testing_bsrmv(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
+            CHECK_ROCSPARSE_ERROR(rocsparse_bsrmv_ex<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
         }
 
         double gpu_time_used = get_time_us();
@@ -235,7 +285,7 @@ void testing_bsrmv(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
+            CHECK_ROCSPARSE_ERROR(rocsparse_bsrmv_ex<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
@@ -268,6 +318,7 @@ void testing_bsrmv(const Arguments& arg)
                             get_gpu_time_msec(gpu_time_used));
     }
 
+#undef PARAMS_ANALYSIS
 #undef PARAMS
 }
 
