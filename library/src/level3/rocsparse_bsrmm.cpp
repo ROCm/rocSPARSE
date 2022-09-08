@@ -25,7 +25,7 @@
 #include "rocsparse_bsrmm.hpp"
 #include "rocsparse_csrmm.hpp"
 
-#include "../level2/rocsparse_bsrmv.hpp"
+#include "../level2/rocsparse_bsrmv_ex.hpp"
 
 #include "templates.h"
 #include "utility.h"

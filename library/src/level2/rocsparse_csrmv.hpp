@@ -54,6 +54,23 @@ rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          han
                                                    T*                        y,
                                                    bool                      force_conj);
 
+template <typename I, typename J, typename T, typename U>
+rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    handle,
+                                                            rocsparse_operation trans,
+                                                            J                   m,
+                                                            J                   n,
+                                                            I                   nnz,
+                                                            U                   alpha_device_host,
+                                                            const rocsparse_mat_descr descr,
+                                                            const T*                  csr_val,
+                                                            const I*                  csr_row_ptr,
+                                                            const J*                  csr_col_ind,
+                                                            rocsparse_csrmv_info      info,
+                                                            const T*                  x,
+                                                            U    beta_device_host,
+                                                            T*   y,
+                                                            bool force_conj);
+
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,

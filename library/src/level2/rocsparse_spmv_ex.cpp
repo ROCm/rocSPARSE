@@ -26,7 +26,7 @@
 #include "rocsparse.h"
 #include "utility.h"
 
-#include "rocsparse_bsrmv.hpp"
+#include "rocsparse_bsrmv_ex.hpp"
 #include "rocsparse_coomv.hpp"
 #include "rocsparse_coomv_aos.hpp"
 #include "rocsparse_cscmv.hpp"
@@ -365,7 +365,10 @@ rocsparse_status rocsparse_spmv_ex_template(rocsparse_handle            handle,
         case rocsparse_spmv_stage_buffer_size:
         {
             *buffer_size = 0;
-            // If atomic algorithm is selected and analysis step is required
+            return rocsparse_status_success;
+        }
+        case rocsparse_spmv_stage_preprocess:
+        {
             if(alg == rocsparse_spmv_alg_coo_atomic && mat->analysed == false)
             {
                 RETURN_IF_ROCSPARSE_ERROR(
@@ -382,10 +385,6 @@ rocsparse_status rocsparse_spmv_ex_template(rocsparse_handle            handle,
 
                 mat->analysed = true;
             }
-            return rocsparse_status_success;
-        }
-        case rocsparse_spmv_stage_preprocess:
-        {
             return rocsparse_status_success;
         }
         case rocsparse_spmv_stage_compute:
@@ -467,26 +466,53 @@ rocsparse_status rocsparse_spmv_ex_template(rocsparse_handle            handle,
 
         case rocsparse_spmv_stage_preprocess:
         {
-            return rocsparse_status_success;
+            rocsparse_status status = rocsparse_status_success;
+            //
+            // If algorithm 1 or default is selected and analysis step is required
+            //
+            if(alg == rocsparse_spmv_alg_default && mat->analysed == false)
+            {
+                status = rocsparse_bsrmv_ex_analysis_template<T>(handle,
+                                                                 mat->block_dir,
+                                                                 trans,
+                                                                 (J)mat->rows,
+                                                                 (J)mat->cols,
+                                                                 (I)mat->nnz,
+                                                                 mat->descr,
+                                                                 (const T*)mat->val_data,
+                                                                 (const I*)mat->row_data,
+                                                                 (const J*)mat->col_data,
+                                                                 (J)mat->block_dim,
+                                                                 mat->info);
+                if(status != rocsparse_status_success)
+                {
+                    return status;
+                }
+
+                mat->analysed = true;
+            }
+
+            return status;
         }
 
         case rocsparse_spmv_stage_compute:
         {
-            return rocsparse_bsrmv_template<T>(handle,
-                                               mat->block_dir,
-                                               trans,
-                                               (J)mat->rows,
-                                               (J)mat->cols,
-                                               (I)mat->nnz,
-                                               (const T*)alpha,
-                                               mat->descr,
-                                               (const T*)mat->val_data,
-                                               (const I*)mat->row_data,
-                                               (const J*)mat->col_data,
-                                               (J)mat->block_dim,
-                                               (const T*)x->values,
-                                               (const T*)beta,
-                                               (T*)y->values);
+            return rocsparse_bsrmv_ex_template<T>(handle,
+                                                  mat->block_dir,
+                                                  trans,
+                                                  (J)mat->rows,
+                                                  (J)mat->cols,
+                                                  (I)mat->nnz,
+                                                  (const T*)alpha,
+                                                  mat->descr,
+                                                  (const T*)mat->val_data,
+                                                  (const I*)mat->row_data,
+                                                  (const J*)mat->col_data,
+                                                  (J)mat->block_dim,
+                                                  mat->info,
+                                                  (const T*)x->values,
+                                                  (const T*)beta,
+                                                  (T*)y->values);
         }
 
         case rocsparse_spmv_stage_auto:

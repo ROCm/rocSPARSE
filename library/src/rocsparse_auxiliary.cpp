@@ -2147,9 +2147,7 @@ rocsparse_status rocsparse_create_bsr_descr(rocsparse_spmat_descr* descr,
         (*descr)->block_dir = block_dir;
 
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(*descr)->descr));
-        // Don't create mat_info.
-
-        // RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&(*descr)->info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&(*descr)->info));
 
         // Initialize descriptor
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base((*descr)->descr, idx_base));

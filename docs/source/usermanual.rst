@@ -975,6 +975,9 @@ Sparse Level 2 Functions
 ========================================================================= ====== ====== ============== ==============
 Function name                                                             single double single complex double complex
 ========================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xbsrmv_ex_analysis() <rocsparse_sbsrmv_ex_analysis>` x      x      x              x
+:cpp:func:`rocsparse_bsrmv_ex_clear`
+:cpp:func:`rocsparse_Xbsrmv_ex() <rocsparse_sbsrmv_ex>`                   x      x      x              x
 :cpp:func:`rocsparse_Xbsrmv() <rocsparse_sbsrmv>`                         x      x      x              x
 :cpp:func:`rocsparse_Xbsrxmv() <rocsparse_sbsrxmv>`                       x      x      x              x
 :cpp:func:`rocsparse_Xbsrsv_buffer_size() <rocsparse_sbsrsv_buffer_size>` x      x      x              x
@@ -1722,6 +1725,28 @@ Sparse Level 2 Functions
 This module holds all sparse level 2 routines.
 
 The sparse level 2 routines describe operations between a matrix in sparse format and a vector in dense format.
+
+rocsparse_bsrmv_ex_analysis()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_sbsrmv_ex_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrmv_ex_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrmv_ex_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrmv_ex_analysis
+
+rocsparse_bsrmv_ex()
+--------------------
+
+.. doxygenfunction:: rocsparse_sbsrmv_ex
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrmv_ex
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrmv_ex
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrmv_ex
 
 rocsparse_bsrmv()
 -----------------
