@@ -9741,7 +9741,7 @@ rocsparse_status rocsparse_bsrilu0_clear(rocsparse_handle handle, rocsparse_mat_
  *                                   &buffer_size_L);
  *      rocsparse_dbsrsv_buffer_size(handle,
  *                                   rocsparse_direction_row,
- *                                   rocsparse_operation_transpose,
+ *                                   rocsparse_operation_none,
  *                                   mb,
  *                                   nnzb,
  *                                   descr_U,
@@ -9789,7 +9789,7 @@ rocsparse_status rocsparse_bsrilu0_clear(rocsparse_handle handle, rocsparse_mat_
  *                                temp_buffer);
  *      rocsparse_dbsrsv_analysis(handle,
  *                                rocsparse_direction_row,
- *                                rocsparse_operation_transpose,
+ *                                rocsparse_operation_none,
  *                                mb,
  *                                nnzb,
  *                                descr_U,
@@ -9856,7 +9856,7 @@ rocsparse_status rocsparse_bsrilu0_clear(rocsparse_handle handle, rocsparse_mat_
  *      // Solve Uy = z
  *      rocsparse_dbsrsv_solve(handle,
  *                             rocsparse_direction_row,
- *                             rocsparse_operation_transpose,
+ *                             rocsparse_operation_none,
  *                             mb,
  *                             nnzb,
  *                             &alpha,
