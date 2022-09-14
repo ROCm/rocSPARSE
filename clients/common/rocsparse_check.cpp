@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,8 +73,8 @@
 #define ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, UNIT_ASSERT_EQ)  \
     do                                                              \
     {                                                               \
-        for(rocsparse_int j = 0; j < N; ++j)                        \
-            for(rocsparse_int i = 0; i < M; ++i)                    \
+        for(int64_t j = 0; j < N; ++j)                              \
+            for(int64_t i = 0; i < M; ++i)                          \
                 if(rocsparse_isnan(A[i + j * LDA]))                 \
                 {                                                   \
                     ASSERT_TRUE(rocsparse_isnan(B[i + j * LDB]));   \
@@ -162,18 +162,18 @@ void unit_check_enum(const rocsparse_direction a, const rocsparse_direction b)
 #define MAX_TOL_MULTIPLIER 4
 
 template <typename T>
-void near_check_general_template(rocsparse_int      M,
-                                 rocsparse_int      N,
+void near_check_general_template(int64_t            M,
+                                 int64_t            N,
                                  const T*           A,
-                                 rocsparse_int      LDA,
+                                 int64_t            LDA,
                                  const T*           B,
-                                 rocsparse_int      LDB,
+                                 int64_t            LDB,
                                  floating_data_t<T> tol = default_tolerance<T>::value)
 {
     int tolm = 1;
-    for(rocsparse_int j = 0; j < N; ++j)
+    for(int64_t j = 0; j < N; ++j)
     {
-        for(rocsparse_int i = 0; i < M; ++i)
+        for(int64_t i = 0; i < M; ++i)
         {
             T compare_val
                 = std::max(std::abs(A[i + j * LDA] * tol), 10 * std::numeric_limits<T>::epsilon());
@@ -236,18 +236,18 @@ void near_check_general_template(rocsparse_int      M,
 }
 
 template <>
-void near_check_general_template(rocsparse_int                  M,
-                                 rocsparse_int                  N,
+void near_check_general_template(int64_t                        M,
+                                 int64_t                        N,
                                  const rocsparse_float_complex* A,
-                                 rocsparse_int                  LDA,
+                                 int64_t                        LDA,
                                  const rocsparse_float_complex* B,
-                                 rocsparse_int                  LDB,
+                                 int64_t                        LDB,
                                  float                          tol)
 {
     int tolm = 1;
-    for(rocsparse_int j = 0; j < N; ++j)
+    for(int64_t j = 0; j < N; ++j)
     {
-        for(rocsparse_int i = 0; i < M; ++i)
+        for(int64_t i = 0; i < M; ++i)
         {
             rocsparse_float_complex compare_val
                 = rocsparse_float_complex(std::max(std::abs(std::real(A[i + j * LDA]) * tol),
@@ -324,18 +324,18 @@ void near_check_general_template(rocsparse_int                  M,
 }
 
 template <>
-void near_check_general_template(rocsparse_int                   M,
-                                 rocsparse_int                   N,
+void near_check_general_template(int64_t                         M,
+                                 int64_t                         N,
                                  const rocsparse_double_complex* A,
-                                 rocsparse_int                   LDA,
+                                 int64_t                         LDA,
                                  const rocsparse_double_complex* B,
-                                 rocsparse_int                   LDB,
+                                 int64_t                         LDB,
                                  double                          tol)
 {
     int tolm = 1;
-    for(rocsparse_int j = 0; j < N; ++j)
+    for(int64_t j = 0; j < N; ++j)
     {
-        for(rocsparse_int i = 0; i < M; ++i)
+        for(int64_t i = 0; i < M; ++i)
         {
             rocsparse_double_complex compare_val
                 = rocsparse_double_complex(std::max(std::abs(std::real(A[i + j * LDA]) * tol),
@@ -412,24 +412,19 @@ void near_check_general_template(rocsparse_int                   M,
 }
 
 template <typename T>
-void near_check_general(rocsparse_int      M,
-                        rocsparse_int      N,
-                        const T*           A,
-                        rocsparse_int      LDA,
-                        const T*           B,
-                        rocsparse_int      LDB,
-                        floating_data_t<T> tol)
+void near_check_general(
+    int64_t M, int64_t N, const T* A, int64_t LDA, const T* B, int64_t LDB, floating_data_t<T> tol)
 {
     near_check_general_template(M, N, A, LDA, B, LDB, tol);
 }
 
 #define INSTANTIATE(TYPE)                                       \
-    template void near_check_general(rocsparse_int         M,   \
-                                     rocsparse_int         N,   \
+    template void near_check_general(int64_t               M,   \
+                                     int64_t               N,   \
                                      const TYPE*           A,   \
-                                     rocsparse_int         LDA, \
+                                     int64_t               LDA, \
                                      const TYPE*           B,   \
-                                     rocsparse_int         LDB, \
+                                     int64_t               LDB, \
                                      floating_data_t<TYPE> tol)
 
 INSTANTIATE(float);
