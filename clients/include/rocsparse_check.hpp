@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,12 +77,12 @@ inline void unit_check_segments(size_t n, const T* a, const T* b)
 }
 
 template <typename T>
-void near_check_general(rocsparse_int      m,
-                        rocsparse_int      n,
+void near_check_general(int64_t            m,
+                        int64_t            n,
                         const T*           a,
-                        rocsparse_int      lda,
+                        int64_t            lda,
                         const T*           b,
-                        rocsparse_int      ldb,
+                        int64_t            ldb,
                         floating_data_t<T> tol = default_tolerance<T>::value);
 
 template <typename T>
@@ -93,7 +93,7 @@ inline void
 }
 
 template <typename T>
-inline void near_check_segments(rocsparse_int      n,
+inline void near_check_segments(int64_t            n,
                                 const T*           a,
                                 const T*           b,
                                 floating_data_t<T> tol = default_tolerance<T>::value)
