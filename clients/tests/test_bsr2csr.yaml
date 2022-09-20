@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,21 +35,9 @@ Tests:
   category: quick
   function: bsr2csr
   precision: *single_double_precisions_complex_real
-  M: [99]
-  N: [89]
-  block_dim: [3]
-  baseA: [rocsparse_index_base_zero]
-  baseB: [rocsparse_index_base_one]
-  direction: [rocsparse_direction_row, rocsparse_direction_column]
-  matrix: [rocsparse_matrix_zero]
-
-- name: bsr2csr
-  category: quick
-  function: bsr2csr
-  precision: *single_double_precisions_complex_real
   M: [1, 99, 872, 17034]
   N: [1, 89, 623, 17385]
-  block_dim: [-1, 0, 1, 2, 3, 7, 8, 64]
+  block_dim: [-1, 0, 1, 2, 3, 7, 8, 37, 64]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_one]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
@@ -61,9 +49,10 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  block_dim: [5, 9]
+  block_dim: [5, 9, 25]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_one]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mac_econ_fwd500,
              nos2,
@@ -92,6 +81,7 @@ Tests:
   block_dim: [2, 3, 16]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_one]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mac_econ_fwd500,
              nos2,
@@ -117,9 +107,10 @@ Tests:
   precision: *single_double_precisions_complex
   M: 1
   N: 1
-  block_dim: [3, 7]
+  block_dim: [3, 8]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_one]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron2,
              Chevron3,
@@ -131,9 +122,10 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  block_dim: [5, 7]
+  block_dim: [5, 7, 11]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [amazon0312,
              bmwcra_1,
