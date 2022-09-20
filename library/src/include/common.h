@@ -54,7 +54,7 @@
 #define GEBSR_IND_C(j, bi, bj) (row_block_dim * col_block_dim * (j) + (bi) + (bj) * row_block_dim)
 
 // find next power of 2
-__attribute__((unused)) static unsigned int fnp2(unsigned int x)
+__device__ __host__ __forceinline__ unsigned int fnp2(unsigned int x)
 {
     x--;
     x |= x >> 1;

@@ -372,7 +372,7 @@ void testing_csr2bsr(const Arguments& arg)
                             "blockdim",
                             block_dim,
                             "nnzb",
-                            hbsr_nnzb,
+                            *hbsr_nnzb,
                             s_timing_info_bandwidth,
                             gpu_gbyte,
                             s_timing_info_time,
