@@ -176,8 +176,16 @@ void rocsparse_matrix_factory_random<T, I, J>::init_coo(std::vector<I>&        c
         std::vector<I> col_ind;
         std::vector<T> val;
 
-        rocsparse_init_coo_random(
-            row_ind, col_ind, val, M, N, nnz, base, this->m_fullrank, this->m_to_int);
+        rocsparse_init_coo_random(row_ind,
+                                  col_ind,
+                                  val,
+                                  M,
+                                  N,
+                                  nnz,
+                                  base,
+                                  this->m_matrix_init_kind,
+                                  this->m_fullrank,
+                                  this->m_to_int);
 
         rocsparse_matrix_utils::host_cootri(row_ind.data(),
                                             col_ind.data(),
@@ -194,8 +202,16 @@ void rocsparse_matrix_factory_random<T, I, J>::init_coo(std::vector<I>&        c
     }
     case rocsparse_matrix_type_general:
     {
-        rocsparse_init_coo_random(
-            coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base, this->m_fullrank, this->m_to_int);
+        rocsparse_init_coo_random(coo_row_ind,
+                                  coo_col_ind,
+                                  coo_val,
+                                  M,
+                                  N,
+                                  nnz,
+                                  base,
+                                  this->m_matrix_init_kind,
+                                  this->m_fullrank,
+                                  this->m_to_int);
         break;
     }
     }

@@ -310,15 +310,16 @@ void rocsparse_init_csr_random(std::vector<I>&            row_ptr,
 /* ==================================================================================== */
 /*! \brief  Generate a random sparse matrix in COO format */
 template <typename I, typename T>
-void rocsparse_init_coo_random(std::vector<I>&      row_ind,
-                               std::vector<I>&      col_ind,
-                               std::vector<T>&      val,
-                               I                    M,
-                               I                    N,
-                               I&                   nnz,
-                               rocsparse_index_base base,
-                               bool                 full_rank = false,
-                               bool                 to_int    = false);
+void rocsparse_init_coo_random(std::vector<I>&            row_ind,
+                               std::vector<I>&            col_ind,
+                               std::vector<T>&            val,
+                               I                          M,
+                               I                          N,
+                               I&                         nnz,
+                               rocsparse_index_base       base,
+                               rocsparse_matrix_init_kind init_kind,
+                               bool                       full_rank = false,
+                               bool                       to_int    = false);
 
 /* ==================================================================================== */
 /*! \brief  Generate a random sparse matrix in GEBSR format */
