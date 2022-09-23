@@ -37,6 +37,7 @@ if(NOT EXISTS "${CMAKE_MATRICES_DIR}")
   # Download.
   #
   set(CMAKE_MATRICES_DIR ${PROJECT_BINARY_DIR}/matrices CACHE STRING "Matrices directory.")
+  file(MAKE_DIRECTORY ${CMAKE_MATRICES_DIR})
 
   if(NOT TARGET rocsparse)
     set(CONVERT_SOURCE ${CMAKE_SOURCE_DIR}/../deps/convert.cpp CACHE STRING "Convert tool mtx2csr.")
