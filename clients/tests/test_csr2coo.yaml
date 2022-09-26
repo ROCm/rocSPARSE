@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +55,15 @@ Tests:
   precision: *single_precision
   M: [-1, 0, 500, 1000]
   N: [-3, 0, 242, 1000]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+
+- name: csr2coo
+  category: pre_checkin
+  function: csr2coo
+  precision: *single_precision
+  M: [345, 653, 978, 1103]
+  N: [535, 875, 923, 2341]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
 

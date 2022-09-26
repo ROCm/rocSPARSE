@@ -32,15 +32,56 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csr2coo_kernel(J m, const I* csr_row_ptr, J* coo_row_ind, rocsparse_index_base idx_base)
 {
     J tid = hipThreadIdx_x;
-    J gid = hipBlockIdx_x * BLOCKSIZE + tid;
     J lid = tid & (WF_SIZE - 1);
-    J nwf = hipGridDim_x * BLOCKSIZE / WF_SIZE;
+    J wid = tid / WF_SIZE;
 
-    for(J row = gid / WF_SIZE; row < m; row += nwf)
+    __shared__ int all_short_rows;
+    __shared__ int short_rows[BLOCKSIZE / WF_SIZE];
+
+    all_short_rows = 1;
+
+    __syncthreads();
+
+    J row = (BLOCKSIZE / WF_SIZE) * hipBlockIdx_x + wid;
+
+    I start = (row < m) ? csr_row_ptr[row] - idx_base : static_cast<I>(0);
+    I end   = (row < m) ? csr_row_ptr[row + 1] - idx_base : static_cast<I>(0);
+
+    int short_row = (end - start <= 8 * WF_SIZE) ? 1 : 0;
+
+    if(short_row)
     {
-        for(I aj = csr_row_ptr[row] + lid; aj < csr_row_ptr[row + 1]; aj += WF_SIZE)
+        for(I j = start + lid; j < end; j += WF_SIZE)
         {
-            coo_row_ind[aj - idx_base] = row + idx_base;
+            coo_row_ind[j] = row + idx_base;
+        }
+    }
+    else
+    {
+        all_short_rows = 0;
+    }
+
+    short_rows[wid] = short_row;
+
+    __syncthreads();
+
+    // Process any long rows
+    if(all_short_rows == 0)
+    {
+        for(int i = 0; i < (BLOCKSIZE / WF_SIZE); i++)
+        {
+            if(short_rows[i] == 0)
+            {
+                J long_row = (BLOCKSIZE / WF_SIZE) * hipBlockIdx_x + i;
+
+                I start = (long_row < m) ? csr_row_ptr[long_row] - idx_base : static_cast<I>(0);
+                I end   = (long_row < m) ? csr_row_ptr[long_row + 1] - idx_base : static_cast<I>(0);
+
+                for(I j = start + tid; j < end; j += BLOCKSIZE)
+                {
+                    coo_row_ind[j] = long_row + idx_base;
+                }
+            }
         }
     }
 }

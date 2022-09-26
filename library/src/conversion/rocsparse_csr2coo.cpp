@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,153 +79,104 @@ rocsparse_status rocsparse_csr2coo_template(rocsparse_handle     handle,
     // Stream
     hipStream_t stream = handle->stream;
 
-#define CSR2COO_DIM 512
     I nnz_per_row = nnz / m;
 
-    dim3 csr2coo_blocks((m - 1) / CSR2COO_DIM + 1);
-    dim3 csr2coo_threads(CSR2COO_DIM);
-
-    if(handle->wavefront_size == 32)
+#define CSR2COO_DIM 256
+    if(nnz_per_row < 4)
     {
-        if(nnz_per_row < 4)
-        {
-            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 2>),
-                               csr2coo_blocks,
-                               csr2coo_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               coo_row_ind,
-                               idx_base);
-        }
-        else if(nnz_per_row < 8)
-        {
-            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 4>),
-                               csr2coo_blocks,
-                               csr2coo_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               coo_row_ind,
-                               idx_base);
-        }
-        else if(nnz_per_row < 16)
-        {
-            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 8>),
-                               csr2coo_blocks,
-                               csr2coo_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               coo_row_ind,
-                               idx_base);
-        }
-        else if(nnz_per_row < 32)
-        {
-            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 16>),
-                               csr2coo_blocks,
-                               csr2coo_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               coo_row_ind,
-                               idx_base);
-        }
-        else
-        {
-            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 32>),
-                               csr2coo_blocks,
-                               csr2coo_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               coo_row_ind,
-                               idx_base);
-        }
+        hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 2>),
+                           dim3(((int64_t)2 * m - 1) / CSR2COO_DIM + 1),
+                           dim3(CSR2COO_DIM),
+                           0,
+                           stream,
+                           m,
+                           csr_row_ptr,
+                           coo_row_ind,
+                           idx_base);
     }
-    else if(handle->wavefront_size == 64)
+    else if(nnz_per_row < 8)
     {
-        if(nnz_per_row < 4)
-        {
-            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 2>),
-                               csr2coo_blocks,
-                               csr2coo_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               coo_row_ind,
-                               idx_base);
-        }
-        else if(nnz_per_row < 8)
-        {
-            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 4>),
-                               csr2coo_blocks,
-                               csr2coo_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               coo_row_ind,
-                               idx_base);
-        }
-        else if(nnz_per_row < 16)
-        {
-            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 8>),
-                               csr2coo_blocks,
-                               csr2coo_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               coo_row_ind,
-                               idx_base);
-        }
-        else if(nnz_per_row < 32)
-        {
-            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 16>),
-                               csr2coo_blocks,
-                               csr2coo_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               coo_row_ind,
-                               idx_base);
-        }
-        else if(nnz_per_row < 64)
-        {
-            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 32>),
-                               csr2coo_blocks,
-                               csr2coo_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               coo_row_ind,
-                               idx_base);
-        }
-        else
-        {
-            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 64>),
-                               csr2coo_blocks,
-                               csr2coo_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               coo_row_ind,
-                               idx_base);
-        }
+        hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 4>),
+                           dim3(((int64_t)4 * m - 1) / CSR2COO_DIM + 1),
+                           dim3(CSR2COO_DIM),
+                           0,
+                           stream,
+                           m,
+                           csr_row_ptr,
+                           coo_row_ind,
+                           idx_base);
+    }
+    else if(nnz_per_row < 16)
+    {
+        hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 8>),
+                           dim3(((int64_t)8 * m - 1) / CSR2COO_DIM + 1),
+                           dim3(CSR2COO_DIM),
+                           0,
+                           stream,
+                           m,
+                           csr_row_ptr,
+                           coo_row_ind,
+                           idx_base);
+    }
+    else if(nnz_per_row < 32)
+    {
+        hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 16>),
+                           dim3(((int64_t)16 * m - 1) / CSR2COO_DIM + 1),
+                           dim3(CSR2COO_DIM),
+                           0,
+                           stream,
+                           m,
+                           csr_row_ptr,
+                           coo_row_ind,
+                           idx_base);
+    }
+    else if(nnz_per_row < 64)
+    {
+        hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 32>),
+                           dim3(((int64_t)32 * m - 1) / CSR2COO_DIM + 1),
+                           dim3(CSR2COO_DIM),
+                           0,
+                           stream,
+                           m,
+                           csr_row_ptr,
+                           coo_row_ind,
+                           idx_base);
+    }
+    else if(nnz_per_row < 128)
+    {
+        hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 64>),
+                           dim3(((int64_t)64 * m - 1) / CSR2COO_DIM + 1),
+                           dim3(CSR2COO_DIM),
+                           0,
+                           stream,
+                           m,
+                           csr_row_ptr,
+                           coo_row_ind,
+                           idx_base);
+    }
+    else if(nnz_per_row < 256)
+    {
+        hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 128>),
+                           dim3(((int64_t)128 * m - 1) / CSR2COO_DIM + 1),
+                           dim3(CSR2COO_DIM),
+                           0,
+                           stream,
+                           m,
+                           csr_row_ptr,
+                           coo_row_ind,
+                           idx_base);
     }
     else
     {
-        return rocsparse_status_arch_mismatch;
+        hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 256>),
+                           dim3(((int64_t)256 * m - 1) / CSR2COO_DIM + 1),
+                           dim3(CSR2COO_DIM),
+                           0,
+                           stream,
+                           m,
+                           csr_row_ptr,
+                           coo_row_ind,
+                           idx_base);
     }
 #undef CSR2COO_DIM
     return rocsparse_status_success;
