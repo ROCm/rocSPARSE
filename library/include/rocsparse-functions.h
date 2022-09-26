@@ -2319,8 +2319,8 @@ rocsparse_status rocsparse_zbsrmv_ex(rocsparse_handle                handle,
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
 /**@{*/
-[[deprecated("This function is deprecated and will be removed in a future release. Use "
-             "rocsparse_sbsrmv_ex instead.")]] ROCSPARSE_EXPORT rocsparse_status
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_sbsrmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
     rocsparse_sbsrmv(rocsparse_handle          handle,
                      rocsparse_direction       dir,
                      rocsparse_operation       trans,
@@ -2337,8 +2337,8 @@ rocsparse_status rocsparse_zbsrmv_ex(rocsparse_handle                handle,
                      const float*              beta,
                      float*                    y);
 
-[[deprecated("This function is deprecated and will be removed in a future release. Use "
-             "rocsparse_dbsrmv_ex instead.")]] ROCSPARSE_EXPORT rocsparse_status
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_dbsrmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
     rocsparse_dbsrmv(rocsparse_handle          handle,
                      rocsparse_direction       dir,
                      rocsparse_operation       trans,
@@ -2355,8 +2355,8 @@ rocsparse_status rocsparse_zbsrmv_ex(rocsparse_handle                handle,
                      const double*             beta,
                      double*                   y);
 
-[[deprecated("This function is deprecated and will be removed in a future release. Use "
-             "rocsparse_cbsrmv_ex instead.")]] ROCSPARSE_EXPORT rocsparse_status
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_cbsrmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
     rocsparse_cbsrmv(rocsparse_handle               handle,
                      rocsparse_direction            dir,
                      rocsparse_operation            trans,
@@ -2373,8 +2373,8 @@ rocsparse_status rocsparse_zbsrmv_ex(rocsparse_handle                handle,
                      const rocsparse_float_complex* beta,
                      rocsparse_float_complex*       y);
 
-[[deprecated("This function is deprecated and will be removed in a future release. Use "
-             "rocsparse_zbsrmv_ex instead.")]] ROCSPARSE_EXPORT rocsparse_status
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_zbsrmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
     rocsparse_zbsrmv(rocsparse_handle                handle,
                      rocsparse_direction             dir,
                      rocsparse_operation             trans,
@@ -17732,8 +17732,8 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *  \retval      rocsparse_status_not_implemented \p compute_type or \p alg is
 *               currently not supported.
 */
-[[deprecated("This function is deprecated and will be removed in a future release. Use "
-             "rocsparse_spmv_ex instead.")]] ROCSPARSE_EXPORT rocsparse_status
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_spmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
     rocsparse_spmv(rocsparse_handle            handle,
                    rocsparse_operation         trans,
                    const void*                 alpha,
@@ -18408,8 +18408,8 @@ rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
 *  \endcode
 */
 /**@{*/
-[[deprecated("This function is deprecated and will be removed in a future release. Use "
-             "rocsparse_spmm instead.")]] ROCSPARSE_EXPORT rocsparse_status
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_spmm_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
     rocsparse_spmm_ex(rocsparse_handle            handle,
                       rocsparse_operation         trans_A,
                       rocsparse_operation         trans_B,
