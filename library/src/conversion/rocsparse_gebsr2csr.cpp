@@ -24,9 +24,345 @@
 
 #include "rocsparse_gebsr2csr.hpp"
 #include "definitions.h"
+#include "rocsparse_bsr2csr.hpp"
 #include "utility.h"
 
 #include "gebsr2csr_device.h"
+
+#define launch_gebsr2csr_block_per_row_1_32_kernel(block_size, brow_block_dim, bcol_block_dim) \
+    hipLaunchKernelGGL(                                                                        \
+        (gebsr2csr_block_per_row_1_32_kernel<block_size, brow_block_dim, bcol_block_dim>),     \
+        dim3(mb),                                                                              \
+        dim3(block_size),                                                                      \
+        0,                                                                                     \
+        stream,                                                                                \
+        direction,                                                                             \
+        mb,                                                                                    \
+        nb,                                                                                    \
+        bsr_descr->base,                                                                       \
+        bsr_val,                                                                               \
+        bsr_row_ptr,                                                                           \
+        bsr_col_ind,                                                                           \
+        row_block_dim,                                                                         \
+        col_block_dim,                                                                         \
+        csr_descr->base,                                                                       \
+        csr_val,                                                                               \
+        csr_row_ptr,                                                                           \
+        csr_col_ind);
+
+#define launch_gebsr2csr_block_per_row_33_128_kernel(                                 \
+    block_size, brow_block_dim, bcol_block_dim, sub_row_block_dim, sub_col_block_dim) \
+    hipLaunchKernelGGL((gebsr2csr_block_per_row_33_128_kernel<block_size,             \
+                                                              brow_block_dim,         \
+                                                              bcol_block_dim,         \
+                                                              sub_row_block_dim,      \
+                                                              sub_col_block_dim>),    \
+                       dim3(mb),                                                      \
+                       dim3(block_size),                                              \
+                       0,                                                             \
+                       stream,                                                        \
+                       direction,                                                     \
+                       mb,                                                            \
+                       nb,                                                            \
+                       bsr_descr->base,                                               \
+                       bsr_val,                                                       \
+                       bsr_row_ptr,                                                   \
+                       bsr_col_ind,                                                   \
+                       row_block_dim,                                                 \
+                       col_block_dim,                                                 \
+                       csr_descr->base,                                               \
+                       csr_val,                                                       \
+                       csr_row_ptr,                                                   \
+                       csr_col_ind);
+
+template <typename T>
+rocsparse_status rocsparse_gebsr2csr_template_dispatch(rocsparse_handle          handle,
+                                                       rocsparse_direction       direction,
+                                                       rocsparse_int             mb,
+                                                       rocsparse_int             nb,
+                                                       const rocsparse_mat_descr bsr_descr,
+                                                       const T*                  bsr_val,
+                                                       const rocsparse_int*      bsr_row_ptr,
+                                                       const rocsparse_int*      bsr_col_ind,
+                                                       rocsparse_int             row_block_dim,
+                                                       rocsparse_int             col_block_dim,
+                                                       const rocsparse_mat_descr csr_descr,
+                                                       T*                        csr_val,
+                                                       rocsparse_int*            csr_row_ptr,
+                                                       rocsparse_int*            csr_col_ind)
+{
+    // Stream
+    hipStream_t stream = handle->stream;
+
+    if(row_block_dim == col_block_dim)
+    {
+        return rocsparse_bsr2csr_template_dispatch(handle,
+                                                   direction,
+                                                   mb,
+                                                   nb,
+                                                   bsr_descr,
+                                                   bsr_val,
+                                                   bsr_row_ptr,
+                                                   bsr_col_ind,
+                                                   row_block_dim,
+                                                   csr_descr,
+                                                   csr_val,
+                                                   csr_row_ptr,
+                                                   csr_col_ind);
+    }
+
+    if(row_block_dim <= 2)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(256, 2, 2);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(256, 2, 4);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(256, 2, 8);
+        }
+        else if(col_block_dim <= 16)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(256, 2, 16);
+        }
+        else if(col_block_dim <= 32)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(256, 2, 32);
+        }
+        else if(col_block_dim <= 64)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(256, 2, 64, 2, 32);
+        }
+        else if(col_block_dim <= 128)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(256, 2, 128, 2, 32);
+        }
+        else
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
+    else if(row_block_dim <= 4)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(256, 4, 2);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(256, 4, 4);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(256, 4, 8);
+        }
+        else if(col_block_dim <= 16)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 4, 16);
+        }
+        else if(col_block_dim <= 32)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 4, 32);
+        }
+        else if(col_block_dim <= 64)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 4, 64, 4, 32);
+        }
+        else if(col_block_dim <= 128)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 4, 128, 4, 32);
+        }
+        else
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
+    else if(row_block_dim <= 8)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 8, 2);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 8, 4);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 8, 8);
+        }
+        else if(col_block_dim <= 16)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 8, 16);
+        }
+        else if(col_block_dim <= 32)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 8, 32);
+        }
+        else if(col_block_dim <= 64)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 8, 64, 8, 32);
+        }
+        else if(col_block_dim <= 128)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 8, 128, 8, 32);
+        }
+        else
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
+    else if(row_block_dim <= 16)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 16, 2);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 16, 4);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 16, 8);
+        }
+        else if(col_block_dim <= 16)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 16, 16);
+        }
+        else if(col_block_dim <= 32)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 16, 32);
+        }
+        else if(col_block_dim <= 64)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 16, 64, 16, 32);
+        }
+        else if(col_block_dim <= 128)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 16, 128, 16, 32);
+        }
+        else
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
+    else if(row_block_dim <= 32)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 32, 2);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 32, 4);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 32, 8);
+        }
+        else if(col_block_dim <= 16)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 32, 16);
+        }
+        else if(col_block_dim <= 32)
+        {
+            launch_gebsr2csr_block_per_row_1_32_kernel(1024, 32, 32);
+        }
+        else if(col_block_dim <= 64)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 32, 64, 32, 32);
+        }
+        else if(col_block_dim <= 128)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 32, 128, 32, 32);
+        }
+        else
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
+    else if(row_block_dim <= 64)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 64, 2, 32, 2);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 64, 4, 32, 4);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 64, 8, 32, 8);
+        }
+        else if(col_block_dim <= 16)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 64, 16, 32, 16);
+        }
+        else if(col_block_dim <= 32)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 64, 32, 32, 32);
+        }
+        else if(col_block_dim <= 64)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 64, 64, 32, 32);
+        }
+        else if(col_block_dim <= 128)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 64, 128, 32, 32);
+        }
+        else
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
+    else if(row_block_dim <= 128)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 128, 2, 32, 2);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 128, 4, 32, 4);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 128, 8, 32, 8);
+        }
+        else if(col_block_dim <= 16)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 128, 16, 32, 16);
+        }
+        else if(col_block_dim <= 32)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 128, 32, 32, 32);
+        }
+        else if(col_block_dim <= 64)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 128, 64, 32, 32);
+        }
+        else if(col_block_dim <= 128)
+        {
+            launch_gebsr2csr_block_per_row_33_128_kernel(1024, 128, 128, 32, 32);
+        }
+        else
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
+    else
+    {
+        return rocsparse_status_not_implemented;
+    }
+
+    return rocsparse_status_success;
+}
 
 template <typename T>
 rocsparse_status rocsparse_gebsr2csr_template(rocsparse_handle          handle,
@@ -154,109 +490,20 @@ rocsparse_status rocsparse_gebsr2csr_template(rocsparse_handle          handle,
         return rocsparse_status_not_implemented;
     }
 
-    // Stream
-    hipStream_t stream = handle->stream;
-
-    constexpr rocsparse_int block_size     = 256;
-    rocsparse_int           wavefront_size = handle->wavefront_size;
-    rocsparse_int           grid_size      = mb * row_block_dim / (block_size / wavefront_size);
-    if(mb * row_block_dim % (block_size / wavefront_size) != 0)
-    {
-        grid_size++;
-    }
-
-    dim3 blocks(grid_size);
-    dim3 threads(block_size);
-
-    if(wavefront_size == 32)
-    {
-        if(direction == rocsparse_direction_row)
-        {
-            hipLaunchKernelGGL((gebsr2csr_kernel<rocsparse_direction_row, block_size, 32>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               mb,
-                               nb,
-                               bsr_descr->base,
-                               bsr_val,
-                               bsr_row_ptr,
-                               bsr_col_ind,
-                               row_block_dim,
-                               col_block_dim,
-                               csr_descr->base,
-                               csr_val,
-                               csr_row_ptr,
-                               csr_col_ind);
-        }
-        else
-        {
-            hipLaunchKernelGGL((gebsr2csr_kernel<rocsparse_direction_column, block_size, 32>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               mb,
-                               nb,
-                               bsr_descr->base,
-                               bsr_val,
-                               bsr_row_ptr,
-                               bsr_col_ind,
-                               row_block_dim,
-                               col_block_dim,
-                               csr_descr->base,
-                               csr_val,
-                               csr_row_ptr,
-                               csr_col_ind);
-        }
-    }
-    else
-    {
-        assert(wavefront_size == 64);
-        if(direction == rocsparse_direction_row)
-        {
-            hipLaunchKernelGGL((gebsr2csr_kernel<rocsparse_direction_row, block_size, 64>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               mb,
-                               nb,
-                               bsr_descr->base,
-                               bsr_val,
-                               bsr_row_ptr,
-                               bsr_col_ind,
-                               row_block_dim,
-                               col_block_dim,
-                               csr_descr->base,
-                               csr_val,
-                               csr_row_ptr,
-                               csr_col_ind);
-        }
-        else
-        {
-            hipLaunchKernelGGL((gebsr2csr_kernel<rocsparse_direction_column, block_size, 64>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               mb,
-                               nb,
-                               bsr_descr->base,
-                               bsr_val,
-                               bsr_row_ptr,
-                               bsr_col_ind,
-                               row_block_dim,
-                               col_block_dim,
-                               csr_descr->base,
-                               csr_val,
-                               csr_row_ptr,
-                               csr_col_ind);
-        }
-    }
-
-    return rocsparse_status_success;
+    return rocsparse_gebsr2csr_template_dispatch(handle,
+                                                 direction,
+                                                 mb,
+                                                 nb,
+                                                 bsr_descr,
+                                                 bsr_val,
+                                                 bsr_row_ptr,
+                                                 bsr_col_ind,
+                                                 row_block_dim,
+                                                 col_block_dim,
+                                                 csr_descr,
+                                                 csr_val,
+                                                 csr_row_ptr,
+                                                 csr_col_ind);
 }
 
 extern "C" {
