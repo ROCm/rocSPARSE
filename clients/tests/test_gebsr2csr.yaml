@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -95,6 +95,19 @@ Tests:
   N: [0, 242, 1000]
   row_block_dimA: [4]
   col_block_dimA: [4, 8, 10]
+  baseA: [rocsparse_index_base_one]
+  baseB: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
+  matrix: [rocsparse_matrix_random]
+
+- name: gebsr2csr
+  category: pre_checkin
+  function: gebsr2csr
+  precision: *single_double_precisions_complex_real
+  M: [1243, 4757, 8674]
+  N: [1534, 3485, 6845]
+  row_block_dimA: [33, 45]
+  col_block_dimA: [24, 38, 65]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row, rocsparse_direction_column]

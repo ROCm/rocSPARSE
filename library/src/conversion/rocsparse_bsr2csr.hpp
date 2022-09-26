@@ -27,6 +27,21 @@
 #include "handle.h"
 
 template <typename T>
+rocsparse_status rocsparse_bsr2csr_template_dispatch(rocsparse_handle          handle,
+                                                     rocsparse_direction       direction,
+                                                     rocsparse_int             mb,
+                                                     rocsparse_int             nb,
+                                                     const rocsparse_mat_descr bsr_descr,
+                                                     const T*                  bsr_val,
+                                                     const rocsparse_int*      bsr_row_ptr,
+                                                     const rocsparse_int*      bsr_col_ind,
+                                                     rocsparse_int             block_dim,
+                                                     const rocsparse_mat_descr csr_descr,
+                                                     T*                        csr_val,
+                                                     rocsparse_int*            csr_row_ptr,
+                                                     rocsparse_int*            csr_col_ind);
+
+template <typename T>
 rocsparse_status rocsparse_bsr2csr_template(rocsparse_handle          handle,
                                             rocsparse_direction       direction,
                                             rocsparse_int             mb,
