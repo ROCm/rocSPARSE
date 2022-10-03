@@ -159,7 +159,7 @@ void rocsparse_matrix_factory<T, I, J>::init_coo(std::vector<I>&      coo_row_in
                                                  std::vector<T>&      coo_val,
                                                  I&                   M,
                                                  I&                   N,
-                                                 I&                   nnz,
+                                                 int64_t&             nnz,
                                                  rocsparse_index_base base)
 {
     this->m_instance->init_coo(coo_row_ind,
@@ -193,12 +193,6 @@ void rocsparse_matrix_factory<T, I, J>::init_coo(host_coo_matrix<T, I>& that)
 }
 
 template <typename T, typename I, typename J>
-void rocsparse_matrix_factory<T, I, J>::init_coo(host_coo_matrix<T, I>& that, I& M, I& N)
-{
-    this->init_coo(that, M, N, this->m_arg.baseA);
-}
-
-template <typename T, typename I, typename J>
 void rocsparse_matrix_factory<T, I, J>::init_coo(host_coo_matrix<T, I>& that,
                                                  I&                     M,
                                                  I&                     N,
@@ -219,6 +213,12 @@ void rocsparse_matrix_factory<T, I, J>::init_coo(host_coo_matrix<T, I>& that,
                                this->m_arg.storage);
     M = that.m;
     N = that.n;
+}
+
+template <typename T, typename I, typename J>
+void rocsparse_matrix_factory<T, I, J>::init_coo(host_coo_matrix<T, I>& that, I& M, I& N)
+{
+    this->init_coo(that, M, N, this->m_arg.baseA);
 }
 
 //

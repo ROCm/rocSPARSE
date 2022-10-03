@@ -55,7 +55,7 @@ private:
 #endif
 public:
     template <typename I = rocsparse_int>
-    rocsparse_status import_sparse_coo(I* m, I* n, I* nnz, rocsparse_index_base* base);
+    rocsparse_status import_sparse_coo(I* m, I* n, int64_t* nnz, rocsparse_index_base* base);
 
 private:
 #ifdef ROCSPARSEIO

@@ -35,7 +35,7 @@ rocsparse_status rocsparse_coosm_buffer_size_template(rocsparse_handle          
                                                       rocsparse_operation       trans_B,
                                                       I                         m,
                                                       I                         nrhs,
-                                                      I                         nnz,
+                                                      int64_t                   nnz,
                                                       const T*                  alpha,
                                                       const rocsparse_mat_descr descr,
                                                       const T*                  coo_val,
@@ -170,30 +170,54 @@ rocsparse_status rocsparse_coosm_buffer_size_template(rocsparse_handle          
         return rocsparse_status_invalid_pointer;
     }
 
-    // Call CSR buffer size
-    //
-    // Trick since it is not used in csrsm_buffer_size, otherwise we need to create a proper ptr array for nothing.
-    //
-    const I* ptr = (coo_row_ind) ? coo_row_ind : (const I*)0x4;
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsm_buffer_size_template(handle,
-                                                                   trans_A,
-                                                                   trans_B,
-                                                                   m,
-                                                                   nrhs,
-                                                                   nnz,
-                                                                   alpha,
-                                                                   descr,
-                                                                   coo_val,
-                                                                   ptr,
-                                                                   coo_col_ind,
-                                                                   B,
-                                                                   ldb,
-                                                                   info,
-                                                                   policy,
-                                                                   buffer_size));
+    if(std::is_same<I, int32_t>() && nnz < std::numeric_limits<int32_t>::max())
+    {
+        // Trick since it is not used in csrsm_buffer_size, otherwise we need to create a proper ptr array for nothing.
+        const int32_t* ptr = (const int32_t*)0x4;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsm_buffer_size_template(handle,
+                                                                       trans_A,
+                                                                       trans_B,
+                                                                       m,
+                                                                       nrhs,
+                                                                       (int32_t)nnz,
+                                                                       alpha,
+                                                                       descr,
+                                                                       coo_val,
+                                                                       ptr,
+                                                                       coo_col_ind,
+                                                                       B,
+                                                                       ldb,
+                                                                       info,
+                                                                       policy,
+                                                                       buffer_size));
 
-    // For coosm we first convert from COO to CSR format.
-    *buffer_size += sizeof(I) * (m / 256 + 1) * 256;
+        // For coosm we first convert from COO to CSR format.
+        *buffer_size += sizeof(int32_t) * (m / 256 + 1) * 256;
+    }
+    else
+    {
+        // Trick since it is not used in csrsm_buffer_size, otherwise we need to create a proper ptr array for nothing.
+        const int64_t* ptr = (const int64_t*)0x4;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsm_buffer_size_template(handle,
+                                                                       trans_A,
+                                                                       trans_B,
+                                                                       m,
+                                                                       nrhs,
+                                                                       nnz,
+                                                                       alpha,
+                                                                       descr,
+                                                                       coo_val,
+                                                                       ptr,
+                                                                       coo_col_ind,
+                                                                       B,
+                                                                       ldb,
+                                                                       info,
+                                                                       policy,
+                                                                       buffer_size));
+
+        // For coosm we first convert from COO to CSR format.
+        *buffer_size += sizeof(int64_t) * (m / 256 + 1) * 256;
+    }
 
     return rocsparse_status_success;
 }
@@ -204,7 +228,7 @@ rocsparse_status rocsparse_coosm_analysis_template(rocsparse_handle          han
                                                    rocsparse_operation       trans_B,
                                                    I                         m,
                                                    I                         nrhs,
-                                                   I                         nnz,
+                                                   int64_t                   nnz,
                                                    const T*                  alpha,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  coo_val,
@@ -321,35 +345,70 @@ rocsparse_status rocsparse_coosm_analysis_template(rocsparse_handle          han
     // Buffer
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
-    // convert to csr
-    I* csr_row_ptr = reinterpret_cast<I*>(ptr);
-    ptr += sizeof(I) * (m / 256 + 1) * 256;
+    if(std::is_same<I, int32_t>() && nnz < std::numeric_limits<int32_t>::max())
+    {
+        // convert to csr
+        int32_t* csr_row_ptr = reinterpret_cast<int32_t*>(ptr);
+        ptr += sizeof(int32_t) * (m / 256 + 1) * 256;
 
-    const I* csr_col_ind = coo_col_ind;
-    const T* csr_val     = coo_val;
+        const I* csr_col_ind = coo_col_ind;
+        const T* csr_val     = coo_val;
 
-    // Create column pointers
-    RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
+        // Create column pointers
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2csr_template(
+            handle, coo_row_ind, (int32_t)nnz, m, csr_row_ptr, descr->base));
 
-    // Call CSR analysis
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsm_analysis_template(handle,
-                                                                trans_A,
-                                                                trans_B,
-                                                                m,
-                                                                nrhs,
-                                                                nnz,
-                                                                alpha,
-                                                                descr,
-                                                                csr_val,
-                                                                csr_row_ptr,
-                                                                csr_col_ind,
-                                                                B,
-                                                                ldb,
-                                                                info,
-                                                                analysis,
-                                                                solve,
-                                                                ptr));
+        // Call CSR analysis
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsm_analysis_template(handle,
+                                                                    trans_A,
+                                                                    trans_B,
+                                                                    m,
+                                                                    nrhs,
+                                                                    (int32_t)nnz,
+                                                                    alpha,
+                                                                    descr,
+                                                                    csr_val,
+                                                                    csr_row_ptr,
+                                                                    csr_col_ind,
+                                                                    B,
+                                                                    ldb,
+                                                                    info,
+                                                                    analysis,
+                                                                    solve,
+                                                                    ptr));
+    }
+    else
+    {
+        // convert to csr
+        int64_t* csr_row_ptr = reinterpret_cast<int64_t*>(ptr);
+        ptr += sizeof(int64_t) * (m / 256 + 1) * 256;
+
+        const I* csr_col_ind = coo_col_ind;
+        const T* csr_val     = coo_val;
+
+        // Create column pointers
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
+
+        // Call CSR analysis
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsm_analysis_template(handle,
+                                                                    trans_A,
+                                                                    trans_B,
+                                                                    m,
+                                                                    nrhs,
+                                                                    nnz,
+                                                                    alpha,
+                                                                    descr,
+                                                                    csr_val,
+                                                                    csr_row_ptr,
+                                                                    csr_col_ind,
+                                                                    B,
+                                                                    ldb,
+                                                                    info,
+                                                                    analysis,
+                                                                    solve,
+                                                                    ptr));
+    }
 
     return rocsparse_status_success;
 }
@@ -360,7 +419,7 @@ rocsparse_status rocsparse_coosm_solve_template(rocsparse_handle          handle
                                                 rocsparse_operation       trans_B,
                                                 I                         m,
                                                 I                         nrhs,
-                                                I                         nnz,
+                                                int64_t                   nnz,
                                                 const T*                  alpha_device_host,
                                                 const rocsparse_mat_descr descr,
                                                 const T*                  coo_val,
@@ -459,29 +518,56 @@ rocsparse_status rocsparse_coosm_solve_template(rocsparse_handle          handle
     // Buffer
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
-    // convert to csr
-    I* csr_row_ptr = reinterpret_cast<I*>(ptr);
-    ptr += sizeof(I) * (m / 256 + 1) * 256;
+    if(std::is_same<I, int32_t>() && nnz < std::numeric_limits<int32_t>::max())
+    {
+        int32_t* csr_row_ptr = reinterpret_cast<int32_t*>(ptr);
+        ptr += sizeof(int32_t) * (m / 256 + 1) * 256;
 
-    const I* csr_col_ind = coo_col_ind;
-    const T* csr_val     = coo_val;
+        const I* csr_col_ind = coo_col_ind;
+        const T* csr_val     = coo_val;
 
-    return rocsparse_csrsm_solve_template(handle,
-                                          trans_A,
-                                          trans_B,
-                                          m,
-                                          nrhs,
-                                          nnz,
-                                          alpha_device_host,
-                                          descr,
-                                          csr_val,
-                                          csr_row_ptr,
-                                          csr_col_ind,
-                                          B,
-                                          ldb,
-                                          info,
-                                          policy,
-                                          ptr);
+        return rocsparse_csrsm_solve_template(handle,
+                                              trans_A,
+                                              trans_B,
+                                              m,
+                                              nrhs,
+                                              (int32_t)nnz,
+                                              alpha_device_host,
+                                              descr,
+                                              csr_val,
+                                              csr_row_ptr,
+                                              csr_col_ind,
+                                              B,
+                                              ldb,
+                                              info,
+                                              policy,
+                                              ptr);
+    }
+    else
+    {
+        int64_t* csr_row_ptr = reinterpret_cast<int64_t*>(ptr);
+        ptr += sizeof(int64_t) * (m / 256 + 1) * 256;
+
+        const I* csr_col_ind = coo_col_ind;
+        const T* csr_val     = coo_val;
+
+        return rocsparse_csrsm_solve_template(handle,
+                                              trans_A,
+                                              trans_B,
+                                              m,
+                                              nrhs,
+                                              nnz,
+                                              alpha_device_host,
+                                              descr,
+                                              csr_val,
+                                              csr_row_ptr,
+                                              csr_col_ind,
+                                              B,
+                                              ldb,
+                                              info,
+                                              policy,
+                                              ptr);
+    }
 }
 
 #define INSTANTIATE(ITYPE, TTYPE)                                   \
@@ -491,7 +577,7 @@ rocsparse_status rocsparse_coosm_solve_template(rocsparse_handle          handle
         rocsparse_operation       trans_B,                          \
         ITYPE                     m,                                \
         ITYPE                     nrhs,                             \
-        ITYPE                     nnz,                              \
+        int64_t                   nnz,                              \
         const TTYPE*              alpha,                            \
         const rocsparse_mat_descr descr,                            \
         const TTYPE*              coo_val,                          \
@@ -520,7 +606,7 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
         rocsparse_operation       trans_B,                       \
         ITYPE                     m,                             \
         ITYPE                     nrhs,                          \
-        ITYPE                     nnz,                           \
+        int64_t                   nnz,                           \
         const TTYPE*              alpha,                         \
         const rocsparse_mat_descr descr,                         \
         const TTYPE*              coo_val,                       \
@@ -549,7 +635,7 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
                                                              rocsparse_operation       trans_B,     \
                                                              ITYPE                     m,           \
                                                              ITYPE                     nrhs,        \
-                                                             ITYPE                     nnz,         \
+                                                             int64_t                   nnz,         \
                                                              const TTYPE*              alpha,       \
                                                              const rocsparse_mat_descr descr,       \
                                                              const TTYPE*              coo_val,     \

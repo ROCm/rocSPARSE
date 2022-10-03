@@ -95,8 +95,10 @@ rocsparse_status rocsparse_importer_rocalution::import_sparse_gebsx(I* ptr, J* i
 }
 
 template <typename I>
-rocsparse_status
-    rocsparse_importer_rocalution::import_sparse_coo(I* m, I* n, I* nnz, rocsparse_index_base* base)
+rocsparse_status rocsparse_importer_rocalution::import_sparse_coo(I*                    m,
+                                                                  I*                    n,
+                                                                  int64_t*              nnz,
+                                                                  rocsparse_index_base* base)
 {
     return rocsparse_status_not_implemented;
 }
@@ -270,7 +272,7 @@ rocsparse_status rocsparse_importer_rocalution::import_sparse_csx(I* ptr, J* ind
 
 #define INSTANTIATE_I(I)                                                        \
     template rocsparse_status rocsparse_importer_rocalution::import_sparse_coo( \
-        I* m, I* n, I* nnz, rocsparse_index_base* base)
+        I* m, I* n, int64_t* nnz, rocsparse_index_base* base)
 
 #define INSTANTIATE_IJ(I, J)                                                      \
     template rocsparse_status rocsparse_importer_rocalution::import_sparse_csx(   \

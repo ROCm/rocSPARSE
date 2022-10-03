@@ -93,7 +93,7 @@ constexpr double bsrmv_gbyte_count(rocsparse_int mb,
 }
 
 template <typename T, typename I>
-constexpr double coomv_gbyte_count(I M, I N, I nnz, bool beta = false)
+constexpr double coomv_gbyte_count(I M, I N, int64_t nnz, bool beta = false)
 {
     return (2.0 * nnz * sizeof(I) + (M + N + nnz + (beta ? M : 0)) * sizeof(T)) / 1e9;
 }
@@ -127,7 +127,7 @@ constexpr double csrsv_gbyte_count(J M, I nnz)
 }
 
 template <typename T, typename I>
-constexpr double coosv_gbyte_count(I M, I nnz)
+constexpr double coosv_gbyte_count(I M, int64_t nnz)
 {
     return (2 * nnz * sizeof(I) + (M + M + nnz) * sizeof(T)) / 1e9;
 }
@@ -267,21 +267,21 @@ constexpr double cscmm_batched_gbyte_count(J    N,
 }
 
 template <typename T, typename I>
-constexpr double coomm_gbyte_count(I nnz_A, I nnz_B, I nnz_C, bool beta = false)
+constexpr double coomm_gbyte_count(int64_t nnz_A, int64_t nnz_B, int64_t nnz_C, bool beta = false)
 {
     return (2.0 * nnz_A * sizeof(I) + (nnz_A + nnz_B + nnz_C + (beta ? nnz_C : 0)) * sizeof(T))
            / 1e9;
 }
 
 template <typename T, typename I>
-constexpr double coomm_batched_gbyte_count(I    M,
-                                           I    nnz_A,
-                                           I    nnz_B,
-                                           I    nnz_C,
-                                           I    batch_count_A,
-                                           I    batch_count_B,
-                                           I    batch_count_C,
-                                           bool beta = false)
+constexpr double coomm_batched_gbyte_count(I       M,
+                                           int64_t nnz_A,
+                                           int64_t nnz_B,
+                                           int64_t nnz_C,
+                                           I       batch_count_A,
+                                           I       batch_count_B,
+                                           I       batch_count_C,
+                                           bool    beta = false)
 {
     // read A matrix
     size_t readA = batch_count_A * (nnz_A * sizeof(I) + nnz_A * sizeof(I) + nnz_A * sizeof(T));

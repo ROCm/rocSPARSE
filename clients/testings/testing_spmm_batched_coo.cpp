@@ -38,7 +38,7 @@ void testing_spmm_batched_coo_bad_arg(const Arguments& arg)
     I                    m           = safe_size;
     I                    n           = safe_size;
     I                    k           = safe_size;
-    I                    nnz         = safe_size;
+    int64_t              nnz         = safe_size;
     void*                coo_val     = (void*)0x4;
     void*                coo_row_ind = (void*)0x4;
     void*                coo_col_ind = (void*)0x4;
@@ -178,7 +178,7 @@ void testing_spmm_batched_coo(const Arguments& arg)
     host_vector<I> hcoo_col_ind_temp;
     host_vector<T> hcoo_val_temp;
 
-    I nnz_A;
+    int64_t nnz_A;
     matrix_factory.init_coo(hcoo_row_ind_temp,
                             hcoo_col_ind_temp,
                             hcoo_val_temp,
@@ -200,26 +200,26 @@ void testing_spmm_batched_coo(const Arguments& arg)
                 : ((trans_B == rocsparse_operation_none) ? (2 * N) : (2 * K));
     I ldc = (order == rocsparse_order_column) ? (2 * M) : (2 * N);
 
-    I nrowB = (order == rocsparse_order_column) ? ldb : B_m;
-    I ncolB = (order == rocsparse_order_column) ? B_n : ldb;
-    I nrowC = (order == rocsparse_order_column) ? ldc : C_m;
-    I ncolC = (order == rocsparse_order_column) ? C_n : ldc;
+    int64_t nrowB = (order == rocsparse_order_column) ? ldb : B_m;
+    int64_t ncolB = (order == rocsparse_order_column) ? B_n : ldb;
+    int64_t nrowC = (order == rocsparse_order_column) ? ldc : C_m;
+    int64_t ncolC = (order == rocsparse_order_column) ? C_n : ldc;
 
-    I nnz_B = nrowB * ncolB;
-    I nnz_C = nrowC * ncolC;
+    int64_t nnz_B = nrowB * ncolB;
+    int64_t nnz_C = nrowC * ncolC;
 
-    I batch_stride_A = (batch_count_A > 1) ? nnz_A : 0;
-    I batch_stride_B = (batch_count_B > 1) ? nnz_B : 0;
-    I batch_stride_C = (batch_count_C > 1) ? nnz_C : 0;
+    int64_t batch_stride_A = (batch_count_A > 1) ? nnz_A : 0;
+    int64_t batch_stride_B = (batch_count_B > 1) ? nnz_B : 0;
+    int64_t batch_stride_C = (batch_count_C > 1) ? nnz_C : 0;
 
     // Allocate host memory for all batches of A matrix
-    host_vector<I> hcoo_row_ind(batch_count_A * nnz_A);
-    host_vector<I> hcoo_col_ind(batch_count_A * nnz_A);
-    host_vector<T> hcoo_val(batch_count_A * nnz_A);
+    host_dense_vector<I> hcoo_row_ind(batch_count_A * nnz_A);
+    host_dense_vector<I> hcoo_col_ind(batch_count_A * nnz_A);
+    host_dense_vector<T> hcoo_val(batch_count_A * nnz_A);
 
     for(I i = 0; i < batch_count_A; i++)
     {
-        for(size_t j = 0; j < nnz_A; j++)
+        for(int64_t j = 0; j < nnz_A; j++)
         {
             hcoo_row_ind[nnz_A * i + j] = hcoo_row_ind_temp[j];
             hcoo_col_ind[nnz_A * i + j] = hcoo_col_ind_temp[j];
@@ -230,15 +230,13 @@ void testing_spmm_batched_coo(const Arguments& arg)
     // Allocate host memory for vectors
     host_vector<T> hB(batch_count_B * nnz_B);
     host_vector<T> hC_1(batch_count_C * nnz_C);
-    host_vector<T> hC_2(batch_count_C * nnz_C);
-    host_vector<T> hC_gold(batch_count_C * nnz_C);
 
     // Initialize data on CPU
     rocsparse_init<T>(hB, batch_count_B * nnz_B, 1, 1);
     rocsparse_init<T>(hC_1, batch_count_C * nnz_C, 1, 1);
 
-    hC_2    = hC_1;
-    hC_gold = hC_1;
+    host_vector<T> hC_2(hC_1);
+    host_vector<T> hC_gold(hC_1);
 
     // Allocate device memory
     device_vector<I> dcoo_row_ind(hcoo_row_ind);
@@ -415,13 +413,13 @@ void testing_spmm_batched_coo(const Arguments& arg)
 
         double gflop_count
             = batch_count_C
-              * spmm_gflop_count(N, nnz_A, (I)C_m * (I)C_n, hbeta != static_cast<T>(0));
+              * spmm_gflop_count(N, nnz_A, (int64_t)C_m * (int64_t)C_n, hbeta != static_cast<T>(0));
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
 
         double gbyte_count = coomm_batched_gbyte_count<T>(A_m,
                                                           nnz_A,
-                                                          (I)B_m * (I)B_n,
-                                                          (I)C_m * (I)C_n,
+                                                          (int64_t)B_m * (int64_t)B_n,
+                                                          (int64_t)C_m * (int64_t)C_n,
                                                           batch_count_A,
                                                           batch_count_B,
                                                           batch_count_C,

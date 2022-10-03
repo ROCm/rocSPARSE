@@ -86,8 +86,10 @@ void testing_check_matrix_coo(const Arguments& arg)
     host_vector<T>             hcoo_val;
 
     // Generate (or load from file) COO matrix
-    rocsparse_int nnz;
-    matrix_factory.init_coo(hcoo_row_ind, hcoo_col_ind, hcoo_val, m, n, nnz, base);
+    int64_t coo_nnz;
+    matrix_factory.init_coo(hcoo_row_ind, hcoo_col_ind, hcoo_val, m, n, coo_nnz, base);
+
+    rocsparse_int nnz = rocsparse_convert_to_int(coo_nnz);
 
     // COO matrix on device
     device_vector<rocsparse_int> dcoo_row_ind(hcoo_row_ind);

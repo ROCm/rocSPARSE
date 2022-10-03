@@ -35,7 +35,7 @@ template <typename T, typename I>
 rocsparse_status rocsparse_check_matrix_coo_buffer_size_template(rocsparse_handle       handle,
                                                                  I                      m,
                                                                  I                      n,
-                                                                 I                      nnz,
+                                                                 int64_t                nnz,
                                                                  const T*               coo_val,
                                                                  const I*               coo_row_ind,
                                                                  const I*               coo_col_ind,
@@ -135,7 +135,7 @@ template <typename T, typename I>
 rocsparse_status rocsparse_check_matrix_coo_template(rocsparse_handle       handle,
                                                      I                      m,
                                                      I                      n,
-                                                     I                      nnz,
+                                                     int64_t                nnz,
                                                      const T*               coo_val,
                                                      const I*               coo_row_ind,
                                                      const I*               coo_col_ind,
@@ -282,7 +282,7 @@ rocsparse_status rocsparse_check_matrix_coo_template(rocsparse_handle       hand
         rocsparse_handle       handle,                                                       \
         ITYPE                  m,                                                            \
         ITYPE                  n,                                                            \
-        ITYPE                  nnz,                                                          \
+        int64_t                nnz,                                                          \
         const TTYPE*           coo_val,                                                      \
         const ITYPE*           coo_row_ind,                                                  \
         const ITYPE*           coo_col_ind,                                                  \
@@ -307,7 +307,7 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
         rocsparse_handle       handle,                                           \
         ITYPE                  m,                                                \
         ITYPE                  n,                                                \
-        ITYPE                  nnz,                                              \
+        int64_t                nnz,                                              \
         const TTYPE*           coo_val,                                          \
         const ITYPE*           coo_row_ind,                                      \
         const ITYPE*           coo_col_ind,                                      \

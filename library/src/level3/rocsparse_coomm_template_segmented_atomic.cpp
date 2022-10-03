@@ -33,7 +33,7 @@ template <unsigned int WF_SIZE,
           typename I,
           typename T>
 static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation trans_B,
-                                                                 I                   nnz,
+                                                                 int64_t             nnz,
                                                                  I                   nstart,
                                                                  I                   batch_stride_A,
                                                                  T                   alpha,
@@ -58,8 +58,8 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
     __shared__ I shared_row[WF_SIZE];
     __shared__ T shared_val[COLS][WF_SIZE];
 
-    I col_offset = nstart + COLS * hipBlockIdx_y;
-    I offset     = hipBlockIdx_x * LOOPS * WF_SIZE;
+    I       col_offset = nstart + COLS * hipBlockIdx_y;
+    int64_t offset     = hipBlockIdx_x * LOOPS * WF_SIZE;
 
     if(offset >= nnz)
     {
@@ -67,7 +67,7 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
     }
 
     // Current threads index into COO structure
-    I idx = offset + lid;
+    int64_t idx = offset + lid;
 
     I row;
     T val[COLS];
@@ -252,7 +252,7 @@ template <unsigned int WF_SIZE,
           typename U>
 __launch_bounds__(WF_SIZE) ROCSPARSE_KERNEL
     void coommnn_segmented_atomic(rocsparse_operation trans_B,
-                                  I                   nnz,
+                                  int64_t             nnz,
                                   I                   n,
                                   I                   batch_stride_A,
                                   U                   alpha_device_host,
@@ -344,7 +344,7 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
                                                            I                   m,
                                                            I                   n,
                                                            I                   k,
-                                                           I                   nnz,
+                                                           int64_t             nnz,
                                                            I                   batch_count_A,
                                                            I                   batch_stride_A,
                                                            U                   alpha_device_host,
@@ -627,7 +627,7 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
         ITYPE                     m,                                                          \
         ITYPE                     n,                                                          \
         ITYPE                     k,                                                          \
-        ITYPE                     nnz,                                                        \
+        int64_t                   nnz,                                                        \
         ITYPE                     batch_count_A,                                              \
         ITYPE                     batch_stride_A,                                             \
         UTYPE                     alpha_device_host,                                          \

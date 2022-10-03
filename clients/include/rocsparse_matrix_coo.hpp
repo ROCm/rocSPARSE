@@ -36,7 +36,7 @@ struct coo_matrix
 
     I                      m{};
     I                      n{};
-    I                      nnz{};
+    int64_t                nnz{};
     rocsparse_index_base   base{};
     rocsparse_storage_mode storage_mode{rocsparse_storage_mode_sorted};
     array_t<I>             row_ind{};
@@ -46,7 +46,7 @@ struct coo_matrix
     coo_matrix(){};
     ~coo_matrix(){};
 
-    coo_matrix(I m_, I n_, I nnz_, rocsparse_index_base base_)
+    coo_matrix(I m_, I n_, int64_t nnz_, rocsparse_index_base base_)
         : m(m_)
         , n(n_)
         , nnz(nnz_)
@@ -87,7 +87,7 @@ struct coo_matrix
         this->val.transfer_from(that.val);
     };
 
-    void define(I m_, I n_, I nnz_, rocsparse_index_base base_)
+    void define(I m_, I n_, int64_t nnz_, rocsparse_index_base base_)
     {
         if(m_ != this->m)
         {
@@ -224,7 +224,7 @@ struct coo_matrix
             std::cout << "N:" << this->n << std::endl;
             std::cout << "NNZ:" << this->nnz << std::endl;
             std::cout << "BASE:" << this->base << std::endl;
-            for(I k = 0; k < this->nnz; ++k)
+            for(int64_t k = 0; k < this->nnz; ++k)
             {
                 I i = pi[k] - this->base;
                 I j = pj[k] - this->base;

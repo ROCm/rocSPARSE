@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
             return rocsparse_coosv_buffer_size_template(handle,
                                                         trans,
                                                         (I)mat->rows,
-                                                        (I)mat->nnz,
+                                                        mat->nnz,
                                                         mat->descr,
                                                         (const T*)mat->val_data,
                                                         (const I*)mat->row_data,
@@ -105,7 +105,7 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                     (rocsparse_coosv_analysis_template(handle,
                                                        trans,
                                                        (I)mat->rows,
-                                                       (I)mat->nnz,
+                                                       mat->nnz,
                                                        mat->descr,
                                                        (const T*)mat->val_data,
                                                        (const I*)mat->row_data,
@@ -151,7 +151,7 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
             return rocsparse_coosv_solve_template(handle,
                                                   trans,
                                                   (I)mat->rows,
-                                                  (I)mat->nnz,
+                                                  mat->nnz,
                                                   (const T*)alpha,
                                                   mat->descr,
                                                   (const T*)mat->val_data,

@@ -165,7 +165,7 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
     int asicRev = handle->asic_rev;
 
 #define CSRSV_DIM 1024
-    dim3 csrsv_blocks((handle->wavefront_size * m - 1) / CSRSV_DIM + 1);
+    dim3 csrsv_blocks(((int64_t)handle->wavefront_size * m - 1) / CSRSV_DIM + 1);
     dim3 csrsv_threads(CSRSV_DIM);
 
     // gfx908

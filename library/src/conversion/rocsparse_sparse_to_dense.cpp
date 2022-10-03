@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -103,7 +103,7 @@ rocsparse_status rocsparse_sparse_to_dense_template(rocsparse_handle            
         return rocsparse_coo2dense_template(handle,
                                             (I)mat_A->rows,
                                             (I)mat_A->cols,
-                                            (I)mat_A->nnz,
+                                            mat_A->nnz,
                                             mat_A->descr,
                                             (const T*)mat_A->val_data,
                                             (const I*)mat_A->row_data,

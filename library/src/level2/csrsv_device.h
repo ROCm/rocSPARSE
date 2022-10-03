@@ -44,7 +44,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     int wid = hipThreadIdx_x / WF_SIZE;
 
     // First row in this block
-    J first_row = hipBlockIdx_x * BLOCKSIZE / WF_SIZE;
+    J first_row = hipBlockIdx_x * (BLOCKSIZE / WF_SIZE);
 
     // Row that the wavefront will process
     J row = first_row + wid;
@@ -198,7 +198,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     int wid = hipThreadIdx_x / WF_SIZE;
 
     // Last row in this block
-    J last_row = m - 1 - hipBlockIdx_x * BLOCKSIZE / WF_SIZE;
+    J last_row = m - 1 - hipBlockIdx_x * (BLOCKSIZE / WF_SIZE);
 
     // Row that the wavefront will process
     J row = last_row - wid;
@@ -361,7 +361,7 @@ __device__ void csrsv_device(J m,
     int wid = hipThreadIdx_x / WF_SIZE;
 
     // Index into the row map
-    J idx = hipBlockIdx_x * BLOCKSIZE / WF_SIZE + wid;
+    J idx = hipBlockIdx_x * (BLOCKSIZE / WF_SIZE) + wid;
 
     // Shared memory to hold diagonal entry
     __shared__ T diagonal[BLOCKSIZE / WF_SIZE];

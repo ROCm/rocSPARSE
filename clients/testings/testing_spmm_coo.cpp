@@ -38,7 +38,7 @@ void testing_spmm_coo_bad_arg(const Arguments& arg)
     I                    m           = safe_size;
     I                    n           = safe_size;
     I                    k           = safe_size;
-    I                    nnz         = safe_size;
+    int64_t              nnz         = safe_size;
     const T*             alpha       = (const T*)0x4;
     const T*             beta        = (const T*)0x4;
     void*                coo_val     = (void*)0x4;
@@ -167,7 +167,7 @@ void testing_spmm_coo(const Arguments& arg)
             I ldc = 0;
 
             // Check structures
-            I nnz_A = 0;
+            int64_t nnz_A = 0;
 
             rocsparse_local_spmat A(
                 A_m, A_n, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
@@ -234,7 +234,7 @@ void testing_spmm_coo(const Arguments& arg)
     // Allocate host memory for matrix
     rocsparse_matrix_factory<T, I> matrix_factory(arg);
 
-    I nnz_A;
+    int64_t nnz_A;
     matrix_factory.init_coo(hcoo_row_ind,
                             hcoo_col_ind,
                             hcoo_val,
@@ -256,13 +256,13 @@ void testing_spmm_coo(const Arguments& arg)
                 : ((trans_B == rocsparse_operation_none) ? (2 * N) : (2 * K));
     I ldc = (order == rocsparse_order_column) ? (2 * M) : (2 * N);
 
-    I nrowB = (order == rocsparse_order_column) ? ldb : B_m;
-    I ncolB = (order == rocsparse_order_column) ? B_n : ldb;
-    I nrowC = (order == rocsparse_order_column) ? ldc : C_m;
-    I ncolC = (order == rocsparse_order_column) ? C_n : ldc;
+    int64_t nrowB = (order == rocsparse_order_column) ? ldb : B_m;
+    int64_t ncolB = (order == rocsparse_order_column) ? B_n : ldb;
+    int64_t nrowC = (order == rocsparse_order_column) ? ldc : C_m;
+    int64_t ncolC = (order == rocsparse_order_column) ? C_n : ldc;
 
-    I nnz_B = nrowB * ncolB;
-    I nnz_C = nrowC * ncolC;
+    int64_t nnz_B = nrowB * ncolB;
+    int64_t nnz_C = nrowC * ncolC;
 
     // Allocate host memory for vectors
     host_vector<T> hB(nnz_B);
@@ -451,7 +451,8 @@ void testing_spmm_coo(const Arguments& arg)
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
         double gflop_count = spmm_gflop_count(N, nnz_A, nnz_C, hbeta != static_cast<T>(0));
-        double gbyte_count = coomm_gbyte_count<T>(nnz_A, nnz_B, nnz_C, hbeta != static_cast<T>(0));
+        double gbyte_count
+            = coomm_gbyte_count<T, I>(nnz_A, nnz_B, nnz_C, hbeta != static_cast<T>(0));
 
         double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);

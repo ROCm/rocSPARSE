@@ -64,9 +64,9 @@
                        csr_row_ptr,                                                               \
                        csr_col_ind);
 
-#define launch_bsr2csr_block_per_row_33_128_kernel(                          \
+#define launch_bsr2csr_block_per_row_33_256_kernel(                          \
     direction, block_size, bsr_block_dim, sub_block_dim)                     \
-    hipLaunchKernelGGL((bsr2csr_block_per_row_33_128_kernel<direction,       \
+    hipLaunchKernelGGL((bsr2csr_block_per_row_33_256_kernel<direction,       \
                                                             block_size,      \
                                                             bsr_block_dim,   \
                                                             sub_block_dim>), \
@@ -165,11 +165,15 @@ rocsparse_status rocsparse_bsr2csr_template_dispatch(rocsparse_handle          h
         }
         else if(block_dim <= 64)
         {
-            launch_bsr2csr_block_per_row_33_128_kernel(rocsparse_direction_row, 1024, 64, 32);
+            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_row, 1024, 64, 32);
         }
         else if(block_dim <= 128)
         {
-            launch_bsr2csr_block_per_row_33_128_kernel(rocsparse_direction_row, 1024, 128, 32);
+            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_row, 1024, 128, 32);
+        }
+        else if(block_dim <= 256)
+        {
+            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_row, 1024, 256, 32);
         }
         else
         {
@@ -216,11 +220,15 @@ rocsparse_status rocsparse_bsr2csr_template_dispatch(rocsparse_handle          h
         }
         else if(block_dim <= 64)
         {
-            launch_bsr2csr_block_per_row_33_128_kernel(rocsparse_direction_column, 1024, 64, 32);
+            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_column, 1024, 64, 32);
         }
         else if(block_dim <= 128)
         {
-            launch_bsr2csr_block_per_row_33_128_kernel(rocsparse_direction_column, 1024, 128, 32);
+            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_column, 1024, 128, 32);
+        }
+        else if(block_dim <= 256)
+        {
+            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_column, 1024, 256, 32);
         }
         else
         {

@@ -112,7 +112,7 @@ public:
                           std::vector<T>&        coo_val,
                           I&                     m,
                           I&                     n,
-                          I&                     nnz,
+                          int64_t&               nnz,
                           rocsparse_index_base   base,
                           rocsparse_matrix_type  matrix_type,
                           rocsparse_fill_mode    uplo,
@@ -130,7 +130,7 @@ public:
                   std::vector<T>&      coo_val,
                   I&                   m,
                   I&                   n,
-                  I&                   nnz,
+                  int64_t&             nnz,
                   rocsparse_index_base base);
 
     void init_coo(host_coo_matrix<T, I>& that);

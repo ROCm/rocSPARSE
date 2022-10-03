@@ -29,7 +29,7 @@
 template <unsigned int BLOCKSIZE, typename I, typename T>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coo2dense_kernel(I                    m,
                                                                     I                    n,
-                                                                    I                    nnz,
+                                                                    int64_t              nnz,
                                                                     I                    lda,
                                                                     rocsparse_index_base base,
                                                                     const T*             coo_val,
@@ -38,7 +38,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coo2dense_kernel(I           
                                                                     T*              A,
                                                                     rocsparse_order order)
 {
-    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(gid >= nnz)
     {

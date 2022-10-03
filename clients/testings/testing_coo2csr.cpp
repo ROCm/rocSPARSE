@@ -82,8 +82,10 @@ void testing_coo2csr(const Arguments& arg)
     host_vector<T>             hcoo_val;
 
     // Sample matrix
-    rocsparse_int nnz;
-    matrix_factory.init_coo(hcoo_row_ind, hcoo_col_ind, hcoo_val, M, N, nnz, base);
+    int64_t coo_nnz;
+    matrix_factory.init_coo(hcoo_row_ind, hcoo_col_ind, hcoo_val, M, N, coo_nnz, base);
+
+    rocsparse_int nnz = rocsparse_convert_to_int(coo_nnz);
 
     // Allocate host memory for CSR matrix
     host_vector<rocsparse_int> hcsr_row_ptr(M + 1);

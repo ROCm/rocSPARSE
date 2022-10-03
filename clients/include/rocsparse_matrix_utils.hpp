@@ -803,7 +803,7 @@ struct rocsparse_matrix_utils
                             VEC3<T>&             coo_val,
                             I                    M,
                             I                    N,
-                            I&                   nnz,
+                            int64_t&             nnz,
                             rocsparse_index_base base,
                             rocsparse_fill_mode  uplo)
     {
@@ -814,11 +814,11 @@ struct rocsparse_matrix_utils
             return;
         }
 
-        I old_nnz = nnz;
-        I new_nnz = 0;
+        int64_t old_nnz = nnz;
+        int64_t new_nnz = 0;
         if(uplo == rocsparse_fill_mode_lower)
         {
-            I index = 0;
+            int64_t index = 0;
             for(I i = 0; i < M; i++)
             {
                 while(index < nnz && row_ind[index] - base == i)
@@ -834,7 +834,7 @@ struct rocsparse_matrix_utils
         }
         else
         {
-            I index = 0;
+            int64_t index = 0;
             for(I i = 0; i < M; i++)
             {
                 while(index < nnz && row_ind[index] - base == i)
@@ -856,7 +856,7 @@ struct rocsparse_matrix_utils
         nnz = 0;
         if(uplo == rocsparse_fill_mode_lower)
         {
-            I index = 0;
+            int64_t index = 0;
             for(I i = 0; i < M; i++)
             {
                 while(index < old_nnz && row_ind[index] - base == i)
@@ -875,7 +875,7 @@ struct rocsparse_matrix_utils
         }
         else
         {
-            I index = 0;
+            int64_t index = 0;
             for(I i = 0; i < M; i++)
             {
                 while(index < old_nnz && row_ind[index] - base == i)
@@ -912,19 +912,19 @@ struct rocsparse_matrix_utils
 
     // Shuffle matrix columns so that the matrix is unsorted
     template <typename T, typename I>
-    static void
-        host_coounsort(const I* coo_row_ind, I* coo_col_ind, I M, I nnz, rocsparse_index_base base)
+    static void host_coounsort(
+        const I* coo_row_ind, I* coo_col_ind, I M, int64_t nnz, rocsparse_index_base base)
     {
-        I index = 0;
+        int64_t index = 0;
 
         for(I i = 0; i < M; i++)
         {
-            I start = index;
+            int64_t start = index;
             while(index < nnz && coo_row_ind[index] - base == i)
             {
                 index++;
             }
-            I end = index;
+            int64_t end = index;
 
             if(start < end)
             {

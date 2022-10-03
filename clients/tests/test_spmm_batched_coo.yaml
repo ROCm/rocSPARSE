@@ -38,6 +38,9 @@ Definitions:
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
     - { alpha:  -1.0, beta: -0.5,  alphai:  0.0, betai:  0.0 }
 
+  - &alpha_beta_range_gfx90a
+    - { alpha:   1.0, beta:  0.0, alphai:  0.0, betai:  0.0 }
+
 Tests:
 - name: spmm_batched_coo_bad_arg
   category: pre_checkin
@@ -234,3 +237,23 @@ Tests:
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic]
   order: [rocsparse_order_row]
   filename: [Chevron2]
+
+- name: spmm_batched_coo
+  category: quick
+  hardware: [gfx90a]
+  function: spmm_batched_coo
+  indextype: *i32
+  precision: *single_only_precisions
+  M: [500000000]
+  N: [1]
+  K: [500000000]
+  batch_count_A: [1]
+  batch_count_B: [2]
+  batch_count_C: [2]
+  alpha_beta: *alpha_beta_range_gfx90a
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_pentadiagonal]
+  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
+  order: [rocsparse_order_row]

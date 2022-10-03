@@ -41,7 +41,7 @@ static ROCSPARSE_DEVICE_ILF void csrmvn_general_device(bool                 conj
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
 
     J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-    J nwf = hipGridDim_x * BLOCKSIZE / WF_SIZE;
+    J nwf = hipGridDim_x * (BLOCKSIZE / WF_SIZE);
 
     // Loop over rows
     for(J row = gid / WF_SIZE; row < m; row += nwf)
@@ -105,7 +105,7 @@ static ROCSPARSE_DEVICE_ILF void csrmvt_general_device(bool                 conj
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
 
     J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-    J inc = hipGridDim_x * BLOCKSIZE / WF_SIZE;
+    J inc = hipGridDim_x * (BLOCKSIZE / WF_SIZE);
 
     for(J row = gid / WF_SIZE; row < m; row += inc)
     {

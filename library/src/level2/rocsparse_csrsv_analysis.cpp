@@ -190,7 +190,7 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
 
 // Run analysis
 #define CSRSV_DIM 1024
-    dim3 csrsv_blocks((handle->wavefront_size * m - 1) / CSRSV_DIM + 1);
+    dim3 csrsv_blocks(((int64_t)handle->wavefront_size * m - 1) / CSRSV_DIM + 1);
     dim3 csrsv_threads(CSRSV_DIM);
 
     if(trans == rocsparse_operation_none)

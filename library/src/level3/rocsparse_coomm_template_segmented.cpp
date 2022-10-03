@@ -32,14 +32,14 @@ template <unsigned int BLOCKSIZE,
           bool         TRANSB,
           typename I,
           typename T>
-static ROCSPARSE_DEVICE_ILF void coommnn_segmented_main_device(bool conj_A,
-                                                               bool conj_B,
-                                                               I    M,
-                                                               I    N,
-                                                               I    K,
-                                                               I    nnz,
-                                                               I    batch_stride_A,
-                                                               T    alpha,
+static ROCSPARSE_DEVICE_ILF void coommnn_segmented_main_device(bool    conj_A,
+                                                               bool    conj_B,
+                                                               I       M,
+                                                               I       N,
+                                                               I       K,
+                                                               int64_t nnz,
+                                                               I       batch_stride_A,
+                                                               T       alpha,
                                                                I* __restrict__ row_block_red,
                                                                T* __restrict__ val_block_red,
                                                                const I* __restrict__ coo_row_ind,
@@ -67,8 +67,8 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_main_device(bool conj_A,
 
     I colB = WF_SIZE * hipBlockIdx_y;
 
-    I offset = bid * LOOPS * BLOCKSIZE;
-    I idx    = offset + tid;
+    int64_t offset = bid * LOOPS * BLOCKSIZE;
+    int64_t idx    = offset + tid;
 
     I row_ind;
     T valB[WF_SIZE];
@@ -225,15 +225,15 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename T>
 static ROCSPARSE_DEVICE_ILF void
-    coommnn_segmented_remainder_device(bool conj_A,
-                                       bool conj_B,
-                                       I    colB_offset,
-                                       I    M,
-                                       I    N,
-                                       I    K,
-                                       I    nnz,
-                                       I    batch_stride_A,
-                                       T    alpha,
+    coommnn_segmented_remainder_device(bool    conj_A,
+                                       bool    conj_B,
+                                       I       colB_offset,
+                                       I       M,
+                                       I       N,
+                                       I       K,
+                                       int64_t nnz,
+                                       I       batch_stride_A,
+                                       T       alpha,
                                        I* __restrict__ row_block_red,
                                        T* __restrict__ val_block_red,
                                        const I* __restrict__ coo_row_ind,
@@ -261,8 +261,8 @@ static ROCSPARSE_DEVICE_ILF void
 
     I colB = colB_offset;
 
-    I offset = bid * LOOPS * BLOCKSIZE;
-    I idx    = offset + tid;
+    int64_t offset = bid * LOOPS * BLOCKSIZE;
+    int64_t idx    = offset + tid;
 
     I row_ind;
     T valB[WF_SIZE];
@@ -523,14 +523,14 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void coommnn_segmented_main_kernel(bool conj_A,
-                                       bool conj_B,
-                                       I    M,
-                                       I    N,
-                                       I    K,
-                                       I    nnz,
-                                       I    batch_stride_A,
-                                       U    alpha_device_host,
+    void coommnn_segmented_main_kernel(bool    conj_A,
+                                       bool    conj_B,
+                                       I       M,
+                                       I       N,
+                                       I       K,
+                                       int64_t nnz,
+                                       I       batch_stride_A,
+                                       U       alpha_device_host,
                                        I* __restrict__ row_block_red,
                                        T* __restrict__ val_block_red,
                                        const I* __restrict__ coo_row_ind,
@@ -581,15 +581,15 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void coommnn_segmented_remainder_kernel(bool conj_A,
-                                            bool conj_B,
-                                            I    colB_offset,
-                                            I    M,
-                                            I    N,
-                                            I    K,
-                                            I    nnz,
-                                            I    batch_stride_A,
-                                            U    alpha_device_host,
+    void coommnn_segmented_remainder_kernel(bool    conj_A,
+                                            bool    conj_B,
+                                            I       colB_offset,
+                                            I       M,
+                                            I       N,
+                                            I       K,
+                                            int64_t nnz,
+                                            I       batch_stride_A,
+                                            U       alpha_device_host,
                                             I* __restrict__ row_block_red,
                                             T* __restrict__ val_block_red,
                                             const I* __restrict__ coo_row_ind,
@@ -639,7 +639,7 @@ rocsparse_status rocsparse_coomm_buffer_size_template_segmented(rocsparse_handle
                                                                 I                   m,
                                                                 I                   n,
                                                                 I                   k,
-                                                                I                   nnz,
+                                                                int64_t             nnz,
                                                                 I                   batch_count,
                                                                 const rocsparse_mat_descr descr,
                                                                 const T*                  coo_val,
@@ -724,7 +724,7 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
                                                     I                         m,
                                                     I                         n,
                                                     I                         k,
-                                                    I                         nnz,
+                                                    int64_t                   nnz,
                                                     I                         batch_count_A,
                                                     I                         batch_stride_A,
                                                     U                         alpha_device_host,
@@ -914,7 +914,7 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
         ITYPE                     m,                                                        \
         ITYPE                     n,                                                        \
         ITYPE                     k,                                                        \
-        ITYPE                     nnz,                                                      \
+        int64_t                   nnz,                                                      \
         ITYPE                     batch_count,                                              \
         const rocsparse_mat_descr descr,                                                    \
         const TTYPE*              coo_val,                                                  \
@@ -942,7 +942,7 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
         ITYPE                     m,                                                   \
         ITYPE                     n,                                                   \
         ITYPE                     k,                                                   \
-        ITYPE                     nnz,                                                 \
+        int64_t                   nnz,                                                 \
         ITYPE                     batch_count_A,                                       \
         ITYPE                     batch_stride_A,                                      \
         UTYPE                     alpha_device_host,                                   \

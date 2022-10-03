@@ -51,9 +51,9 @@ ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, T* __restrict__ dat
 // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
 // 'Segmented operations for sparse matrix computation on vector multiprocessors'
 template <unsigned int BLOCKSIZE, typename I, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(I nnz,
-                                                               I nloops,
-                                                               T alpha,
+static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
+                                                               I       nloops,
+                                                               T       alpha,
                                                                const I* __restrict__ coo_row_ind,
                                                                const I* __restrict__ coo_col_ind,
                                                                const T* __restrict__ coo_val,
@@ -70,7 +70,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(I nnz,
     __shared__ T shared_val[BLOCKSIZE];
 
     // Current threads index into COO structure
-    I idx = hipBlockIdx_x * nloops * BLOCKSIZE + tid;
+    int64_t idx = hipBlockIdx_x * nloops * BLOCKSIZE + tid;
 
     I row;
     T val;
@@ -259,9 +259,9 @@ static ROCSPARSE_DEVICE_ILF void
 // 'Segmented operations for sparse matrix computation on vector multiprocessors' for array
 // of structure format (AoS)
 template <unsigned int BLOCKSIZE, typename I, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(I nnz,
-                                                                   I nloops,
-                                                                   T alpha,
+static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
+                                                                   I       nloops,
+                                                                   T       alpha,
                                                                    const I* __restrict__ coo_ind,
                                                                    const T* __restrict__ coo_val,
                                                                    const T* __restrict__ x,
@@ -277,7 +277,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(I nnz,
     __shared__ T shared_val[BLOCKSIZE];
 
     // Current threads index into COO structure
-    I idx = hipBlockIdx_x * nloops * BLOCKSIZE + tid;
+    int64_t idx = hipBlockIdx_x * nloops * BLOCKSIZE + tid;
 
     I row;
     T val;
@@ -399,8 +399,8 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(I nnz,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int LOOPS, typename I, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(I nnz,
-                                                            T alpha,
+static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
+                                                            T       alpha,
                                                             const I* __restrict__ coo_row_ind,
                                                             const I* __restrict__ coo_col_ind,
                                                             const T* __restrict__ coo_val,
@@ -418,7 +418,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(I nnz,
     T val;
 
     // Current threads index into COO structure
-    I idx = hipBlockIdx_x * LOOPS * BLOCKSIZE + tid;
+    int64_t idx = hipBlockIdx_x * LOOPS * BLOCKSIZE + tid;
 
     if(idx < nnz)
     {
@@ -536,8 +536,8 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(I nnz,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int LOOPS, typename I, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(I nnz,
-                                                                T alpha,
+static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
+                                                                T       alpha,
                                                                 const I* __restrict__ coo_ind,
                                                                 const T* __restrict__ coo_val,
                                                                 const T* __restrict__ x,
@@ -554,7 +554,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(I nnz,
     T val;
 
     // Current threads index into COO structure
-    I idx = hipBlockIdx_x * LOOPS * BLOCKSIZE + tid;
+    int64_t idx = hipBlockIdx_x * LOOPS * BLOCKSIZE + tid;
 
     if(idx < nnz)
     {
@@ -670,7 +670,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(I nnz,
 
 template <typename I, typename T>
 static ROCSPARSE_DEVICE_ILF void coomvt_device(rocsparse_operation  trans,
-                                               I                    nnz,
+                                               int64_t              nnz,
                                                T                    alpha,
                                                const I*             coo_row_ind,
                                                const I*             coo_col_ind,
@@ -679,7 +679,7 @@ static ROCSPARSE_DEVICE_ILF void coomvt_device(rocsparse_operation  trans,
                                                T*                   y,
                                                rocsparse_index_base idx_base)
 {
-    int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    int64_t gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
     if(gid >= nnz)
     {
@@ -696,7 +696,7 @@ static ROCSPARSE_DEVICE_ILF void coomvt_device(rocsparse_operation  trans,
 
 template <typename I, typename T>
 static ROCSPARSE_DEVICE_ILF void coomvt_aos_device(rocsparse_operation  trans,
-                                                   I                    nnz,
+                                                   int64_t              nnz,
                                                    T                    alpha,
                                                    const I*             coo_ind,
                                                    const T*             coo_val,
@@ -704,7 +704,7 @@ static ROCSPARSE_DEVICE_ILF void coomvt_aos_device(rocsparse_operation  trans,
                                                    T*                   y,
                                                    rocsparse_index_base idx_base)
 {
-    int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    int64_t gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
     if(gid >= nnz)
     {
