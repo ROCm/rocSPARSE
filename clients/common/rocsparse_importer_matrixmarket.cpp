@@ -101,7 +101,7 @@ rocsparse_status rocsparse_importer_matrixmarket::import_sparse_gebsx(I* ptr, J*
 template <typename I>
 rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo(I*                    m,
                                                                     I*                    n,
-                                                                    I*                    nnz,
+                                                                    int64_t*              nnz,
                                                                     rocsparse_index_base* base)
 {
     char line[1024];
@@ -361,7 +361,7 @@ rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo(I* row_ind, 
 
 #define INSTANTIATE_I(I)                                                          \
     template rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo( \
-        I* m, I* n, I* nnz, rocsparse_index_base* base)
+        I* m, I* n, int64_t* nnz, rocsparse_index_base* base)
 
 #define INSTANTIATE_IJ(I, J)                                                        \
     template rocsparse_status rocsparse_importer_matrixmarket::import_sparse_csx(   \

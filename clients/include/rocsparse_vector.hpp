@@ -180,6 +180,12 @@ struct host_vector : std::vector<T>
     {
         return this->data();
     }
+
+    T& operator[](int64_t index)
+    {
+        return this->data()[index];
+    }
+
     template <memory_mode::value_t THAT_MODE>
     void transfer_from(const dense_vector_t<THAT_MODE, T>& that)
     {

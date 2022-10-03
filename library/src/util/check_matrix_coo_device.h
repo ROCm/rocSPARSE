@@ -37,9 +37,9 @@ ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_status,
 
 template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void check_matrix_coo_device(J m,
-                                 J n,
-                                 I nnz,
+    void check_matrix_coo_device(J       m,
+                                 J       n,
+                                 int64_t nnz,
                                  const T* __restrict__ coo_val,
                                  const I* __restrict__ coo_row_ind,
                                  const J* __restrict__ coo_col_ind,
@@ -49,7 +49,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                                  rocsparse_storage_mode storage,
                                  rocsparse_data_status* data_status)
 {
-    I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(gid >= nnz)
     {

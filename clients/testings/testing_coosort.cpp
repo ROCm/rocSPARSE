@@ -111,9 +111,11 @@ void testing_coosort(const Arguments& arg)
     host_vector<T>             hcoo_val_gold;
 
     // Sample matrix
-    rocsparse_int nnz;
+    int64_t coo_nnz;
     matrix_factory.init_coo(
-        hcoo_row_ind, hcoo_col_ind, hcoo_val, M, N, nnz, rocsparse_index_base_zero);
+        hcoo_row_ind, hcoo_col_ind, hcoo_val, M, N, coo_nnz, rocsparse_index_base_zero);
+
+    rocsparse_int nnz = rocsparse_convert_to_int(coo_nnz);
 
     // Unsort COO matrix
     host_vector<rocsparse_int> hperm(nnz);

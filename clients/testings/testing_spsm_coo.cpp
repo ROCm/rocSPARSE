@@ -28,11 +28,11 @@
 template <typename I, typename T>
 void testing_spsm_coo_bad_arg(const Arguments& arg)
 {
-    I m     = 100;
-    I n     = 100;
-    I k     = 16;
-    I nnz   = 100;
-    T alpha = 0.6;
+    I       m     = 100;
+    I       n     = 100;
+    I       k     = 16;
+    int64_t nnz   = 100;
+    T       alpha = 0.6;
 
     rocsparse_operation  trans_A = rocsparse_operation_none;
     rocsparse_operation  trans_B = rocsparse_operation_none;
@@ -140,7 +140,7 @@ void testing_spsm_coo(const Arguments& arg)
             I ldc = (trans_B == rocsparse_operation_none) ? M : K;
 
             // Check structures
-            I                     nnz_A = 0;
+            int64_t               nnz_A = 0;
             rocsparse_local_spmat A(
                 M, N, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
 
@@ -215,7 +215,7 @@ void testing_spsm_coo(const Arguments& arg)
     host_vector<T> hcoo_val;
 
     // Sample matrix
-    I nnz_A;
+    int64_t nnz_A;
     matrix_factory.init_coo(hcoo_row_ind, hcoo_col_ind, hcoo_val, M, N, nnz_A, base);
 
     I B_m = (trans_B == rocsparse_operation_none) ? M : K;

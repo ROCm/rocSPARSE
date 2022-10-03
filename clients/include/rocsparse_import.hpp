@@ -158,7 +158,7 @@ rocsparse_status rocsparse_import_sparse_coo(rocsparse_importer<IMPORTER>& impor
                                              VECTOR3<T>&                   val,
                                              I&                            M,
                                              I&                            N,
-                                             I&                            nnz,
+                                             int64_t&                      nnz,
                                              rocsparse_index_base          base)
 {
 

@@ -38,6 +38,9 @@ Definitions:
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
     - { alpha:  -1.0, beta: -0.5,  alphai:  0.0, betai:  0.0 }
 
+  - &alpha_beta_range_gfx90a
+    - { alpha:   1.0, beta:  0.0, alphai:  0.0, betai:  0.0 }
+
 Tests:
 - name: spmm_coo_bad_arg
   category: pre_checkin
@@ -343,3 +346,21 @@ Tests:
   order: [rocsparse_order_row]
   filename: [sme3Dc,
              bmwcra_1]
+
+- name: spmm_coo
+  category: quick
+  hardware: [gfx90a]
+  function: spmm_coo
+  indextype: *i32
+  precision: *single_only_precisions
+  M: [500000000]
+  N: [1]
+  K: [500000000]
+  alpha_beta: *alpha_beta_range_gfx90a
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_pentadiagonal]
+  storage: [rocsparse_storage_mode_sorted]
+  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
+  order: [rocsparse_order_column, rocsparse_order_row]

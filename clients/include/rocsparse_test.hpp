@@ -44,6 +44,17 @@ rocsparse_status rocsparse_record_timing(double msec, double gflops, double gbs)
 rocsparse_status rocsparse_record_output(const std::string&);
 rocsparse_status rocsparse_record_output_legend(const std::string&);
 
+inline rocsparse_int rocsparse_convert_to_int(int64_t integer)
+{
+    if(integer > std::numeric_limits<rocsparse_int>::max())
+    {
+        std::cerr << "Error: Integer is too large to convert to rocsparse_int" << std::endl;
+        exit(1);
+    }
+
+    return static_cast<rocsparse_int>(integer);
+}
+
 #ifdef GOOGLE_TEST
 #include <gtest/gtest.h>
 
@@ -200,6 +211,7 @@ inline void rocsparse_expect_data_status(rocsparse_data_status status, rocsparse
                           RocSPARSE_TestData::end()),                          \
         testclass::PrintToStringParamName());
 
+// Instantiate all test categories
 #define INSTANTIATE_TEST_CATEGORIES(testclass)        \
     INSTANTIATE_TEST_CATEGORY(testclass, quick)       \
     INSTANTIATE_TEST_CATEGORY(testclass, pre_checkin) \

@@ -163,7 +163,7 @@ template <rocsparse_direction DIRECTION,
           rocsparse_int       SUB_BLOCK_DIM,
           typename T>
 __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void bsr2csr_block_per_row_33_128_kernel(rocsparse_int        mb,
+    void bsr2csr_block_per_row_33_256_kernel(rocsparse_int        mb,
                                              rocsparse_int        nb,
                                              rocsparse_index_base bsr_base,
                                              const T* __restrict__ bsr_val,

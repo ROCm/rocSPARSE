@@ -772,12 +772,12 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void conjugate(I m, T* __restrict_
     array[idx] = rocsparse_conj(array[idx]);
 }
 
-template <unsigned int BLOCKSIZE, typename I>
+template <unsigned int BLOCKSIZE, typename I, typename J>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr_max_nnz_per_row(I m, const I* __restrict__ csr_row_ptr, I* __restrict__ max_nnz)
+    void csr_max_nnz_per_row(J m, const I* __restrict__ csr_row_ptr, J* __restrict__ max_nnz)
 {
     int tid = hipThreadIdx_x;
-    I   gid = tid + BLOCKSIZE * hipBlockIdx_x;
+    J   gid = tid + BLOCKSIZE * hipBlockIdx_x;
 
     __shared__ I shared[BLOCKSIZE];
 

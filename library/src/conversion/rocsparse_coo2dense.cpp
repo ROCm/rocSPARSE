@@ -34,7 +34,7 @@ template <typename I, typename T>
 rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle,
                                               I                         m,
                                               I                         n,
-                                              I                         nnz,
+                                              int64_t                   nnz,
                                               const rocsparse_mat_descr descr,
                                               const T*                  coo_val,
                                               const I*                  coo_row_ind,
@@ -142,7 +142,7 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle,
         rocsparse_handle          handle,                                 \
         ITYPE                     m,                                      \
         ITYPE                     n,                                      \
-        ITYPE                     nnz,                                    \
+        int64_t                   nnz,                                    \
         const rocsparse_mat_descr descr,                                  \
         const TTYPE*              coo_val,                                \
         const ITYPE*              coo_row_ind,                            \

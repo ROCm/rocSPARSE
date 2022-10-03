@@ -112,7 +112,7 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
                                std::vector<T>&      val,
                                I                    M,
                                I                    N,
-                               I                    nnz,
+                               int64_t              nnz,
                                rocsparse_index_base base,
                                bool                 full_rank = false,
                                bool                 to_int    = false);
@@ -140,7 +140,7 @@ void rocsparse_init_coo_laplace2d(std::vector<I>&      row_ind,
                                   int32_t              dim_y,
                                   I&                   M,
                                   I&                   N,
-                                  I&                   nnz,
+                                  int64_t&             nnz,
                                   rocsparse_index_base base);
 
 /* ==================================================================================== */
@@ -195,7 +195,7 @@ void rocsparse_init_coo_laplace3d(std::vector<I>&      row_ind,
                                   int32_t              dim_z,
                                   I&                   M,
                                   I&                   N,
-                                  I&                   nnz,
+                                  int64_t&             nnz,
                                   rocsparse_index_base base);
 
 /* ==================================================================================== */
@@ -235,7 +235,7 @@ void rocsparse_init_coo_mtx(const char*          filename,
                             std::vector<T>&      coo_val,
                             I&                   M,
                             I&                   N,
-                            I&                   nnz,
+                            int64_t&             nnz,
                             rocsparse_index_base base);
 
 /* ============================================================================================ */
@@ -262,8 +262,7 @@ void rocsparse_init_csr_rocalution(const char*          filename,
                                    J&                   M,
                                    J&                   N,
                                    I&                   nnz,
-                                   rocsparse_index_base base,
-                                   bool                 toint);
+                                   rocsparse_index_base base);
 
 /* ==================================================================================== */
 /*! \brief  Read matrix from binary file in rocALUTION format */
@@ -274,9 +273,8 @@ void rocsparse_init_coo_rocalution(const char*          filename,
                                    std::vector<T>&      val,
                                    I&                   M,
                                    I&                   N,
-                                   I&                   nnz,
-                                   rocsparse_index_base base,
-                                   bool                 toint);
+                                   int64_t&             nnz,
+                                   rocsparse_index_base base);
 
 /* ==================================================================================== */
 /*! \brief  Read matrix from binary file in rocALUTION format */
@@ -290,8 +288,46 @@ void rocsparse_init_gebsr_rocalution(const char*          filename,
                                      I&                   nnzb,
                                      J                    row_block_dim,
                                      J                    col_block_dim,
-                                     rocsparse_index_base base,
-                                     bool                 toint);
+                                     rocsparse_index_base base);
+
+/* ==================================================================================== */
+/*! \brief  Read matrix from binary file in rocSPARSEIO format */
+template <typename I, typename J, typename T>
+void rocsparse_init_csr_rocsparseio(const char*          filename,
+                                    std::vector<I>&      row_ptr,
+                                    std::vector<J>&      col_ind,
+                                    std::vector<T>&      val,
+                                    J&                   M,
+                                    J&                   N,
+                                    I&                   nnz,
+                                    rocsparse_index_base base);
+
+/* ==================================================================================== */
+/*! \brief  Read matrix from binary file in rocSPARSEIO format */
+template <typename I, typename T>
+void rocsparse_init_coo_rocsparseio(const char*          filename,
+                                    std::vector<I>&      row_ind,
+                                    std::vector<I>&      col_ind,
+                                    std::vector<T>&      val,
+                                    I&                   M,
+                                    I&                   N,
+                                    int64_t&             nnz,
+                                    rocsparse_index_base base);
+
+/* ==================================================================================== */
+/*! \brief  Read matrix from binary file in rocSPARSEIO format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_rocsparseio(const char*          filename,
+                                      std::vector<I>&      row_ptr,
+                                      std::vector<J>&      col_ind,
+                                      std::vector<T>&      val,
+                                      rocsparse_direction  dir,
+                                      J&                   Mb,
+                                      J&                   Nb,
+                                      I&                   nnzb,
+                                      J                    row_block_dim,
+                                      J                    col_block_dim,
+                                      rocsparse_index_base base);
 
 /* ==================================================================================== */
 /*! \brief  Generate a random sparse matrix in CSR format */
@@ -315,7 +351,7 @@ void rocsparse_init_coo_random(std::vector<I>&            row_ind,
                                std::vector<T>&            val,
                                I                          M,
                                I                          N,
-                               I&                         nnz,
+                               int64_t&                   nnz,
                                rocsparse_index_base       base,
                                rocsparse_matrix_init_kind init_kind,
                                bool                       full_rank = false,
@@ -345,7 +381,7 @@ void rocsparse_init_coo_tridiagonal(std::vector<I>&      row_ind,
                                     std::vector<T>&      val,
                                     I                    M,
                                     I                    N,
-                                    I&                   nnz,
+                                    int64_t&             nnz,
                                     rocsparse_index_base base,
                                     I                    l,
                                     I                    u);
@@ -386,7 +422,7 @@ void rocsparse_init_coo_pentadiagonal(std::vector<I>&      row_ind,
                                       std::vector<T>&      val,
                                       I                    M,
                                       I                    N,
-                                      I&                   nnz,
+                                      int64_t&             nnz,
                                       rocsparse_index_base base,
                                       I                    ll,
                                       I                    l,

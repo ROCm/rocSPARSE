@@ -35,7 +35,7 @@ void testing_sparse_to_dense_coo_bad_arg(const Arguments& arg)
     rocsparse_handle              handle      = local_handle;
     I                             m           = safe_size;
     I                             n           = safe_size;
-    I                             nnz         = safe_size;
+    int64_t                       nnz         = safe_size;
     I                             ld          = safe_size;
     void*                         coo_val     = (void*)0x4;
     void*                         coo_row_ind = (void*)0x4;
@@ -129,7 +129,7 @@ void testing_sparse_to_dense_coo(const Arguments& arg)
 
         if(m == 0 && n == 0 && ld >= mn)
         {
-            I nnz = 0;
+            int64_t nnz = 0;
 
             rocsparse_local_spmat mat_A(
                 m, n, nnz, d_coo_row_ind, d_coo_col_ind, d_coo_val, itype, base, ttype);

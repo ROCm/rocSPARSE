@@ -32,13 +32,13 @@ template <unsigned int BLOCKSIZE,
           bool         TRANSB,
           typename I,
           typename T>
-static ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool conj_A,
-                                                            bool conj_B,
-                                                            I    ncol,
-                                                            I    nnz,
-                                                            I    n,
-                                                            I    batch_stride_A,
-                                                            T    alpha,
+static ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
+                                                            bool    conj_B,
+                                                            I       ncol,
+                                                            int64_t nnz,
+                                                            I       n,
+                                                            I       batch_stride_A,
+                                                            T       alpha,
                                                             const I* __restrict__ coo_row_ind,
                                                             const I* __restrict__ coo_col_ind,
                                                             const T* __restrict__ coo_val,
@@ -51,9 +51,9 @@ static ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool conj_A,
                                                             rocsparse_order      order,
                                                             rocsparse_index_base idx_base)
 {
-    int tid = hipThreadIdx_x;
-    I   gid = hipBlockIdx_x * BLOCKSIZE + tid;
-    int lid = tid & (WF_SIZE - 1);
+    int     tid = hipThreadIdx_x;
+    int64_t gid = hipBlockIdx_x * BLOCKSIZE + tid;
+    int     lid = tid & (WF_SIZE - 1);
 
     int batch = hipBlockIdx_y;
 
@@ -152,13 +152,13 @@ static ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool conj_A,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool TRANSB, typename I, typename T>
-static ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool conj_A,
-                                                                 bool conj_B,
-                                                                 I    ncol_offset,
-                                                                 I    n,
-                                                                 I    nnz,
-                                                                 I    batch_stride_A,
-                                                                 T    alpha,
+static ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
+                                                                 bool    conj_B,
+                                                                 I       ncol_offset,
+                                                                 I       n,
+                                                                 int64_t nnz,
+                                                                 I       batch_stride_A,
+                                                                 T       alpha,
                                                                  const I* __restrict__ coo_row_ind,
                                                                  const I* __restrict__ coo_col_ind,
                                                                  const T* __restrict__ coo_val,
@@ -171,10 +171,10 @@ static ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool conj_A,
                                                                  rocsparse_order order,
                                                                  rocsparse_index_base idx_base)
 {
-    int tid = hipThreadIdx_x;
-    int lid = tid & (WF_SIZE - 1);
-    int wid = tid / WF_SIZE;
-    I   gid = BLOCKSIZE * hipBlockIdx_x + tid;
+    int     tid = hipThreadIdx_x;
+    int     lid = tid & (WF_SIZE - 1);
+    int     wid = tid / WF_SIZE;
+    int64_t gid = BLOCKSIZE * hipBlockIdx_x + tid;
 
     int batch = hipBlockIdx_y;
 
@@ -304,7 +304,7 @@ static ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool conj_A,
 template <unsigned int BLOCKSIZE, bool TRANSB, typename I, typename T>
 static __device__ void coommtn_atomic_device(bool                 conj_A,
                                              bool                 conj_B,
-                                             I                    nnz,
+                                             int64_t              nnz,
                                              I                    n,
                                              T                    alpha,
                                              const I*             coo_row_ind,
@@ -317,7 +317,7 @@ static __device__ void coommtn_atomic_device(bool                 conj_A,
                                              rocsparse_order      order,
                                              rocsparse_index_base idx_base)
 {
-    I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(gid >= nnz)
     {
@@ -357,13 +357,13 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void coommnn_atomic_main(bool conj_A,
-                             bool conj_B,
-                             I    ncol,
-                             I    nnz,
-                             I    n,
-                             I    batch_stride_A,
-                             U    alpha_device_host,
+    void coommnn_atomic_main(bool    conj_A,
+                             bool    conj_B,
+                             I       ncol,
+                             int64_t nnz,
+                             I       n,
+                             I       batch_stride_A,
+                             U       alpha_device_host,
                              const I* __restrict__ coo_row_ind,
                              const I* __restrict__ coo_col_ind,
                              const T* __restrict__ coo_val,
@@ -407,13 +407,13 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void coommnn_atomic_remainder(bool conj_A,
-                                  bool conj_B,
-                                  I    ncol_offset,
-                                  I    n,
-                                  I    nnz,
-                                  I    batch_stride_A,
-                                  U    alpha_device_host,
+    void coommnn_atomic_remainder(bool    conj_A,
+                                  bool    conj_B,
+                                  I       ncol_offset,
+                                  I       n,
+                                  int64_t nnz,
+                                  I       batch_stride_A,
+                                  U       alpha_device_host,
                                   const I* __restrict__ coo_row_ind,
                                   const I* __restrict__ coo_col_ind,
                                   const T* __restrict__ coo_val,
@@ -453,11 +453,11 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 template <unsigned int BLOCKSIZE, bool TRANSB, typename I, typename T, typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void coommtn_atomic_main(bool conj_A,
-                             bool conj_B,
-                             I    nnz,
-                             I    n,
-                             U    alpha_device_host,
+    void coommtn_atomic_main(bool    conj_A,
+                             bool    conj_B,
+                             int64_t nnz,
+                             I       n,
+                             U       alpha_device_host,
                              const I* __restrict__ coo_row_ind,
                              const I* __restrict__ coo_col_ind,
                              const T* __restrict__ coo_val,
@@ -551,7 +551,7 @@ rocsparse_status coommnn_atomic_dispatch(rocsparse_handle          handle,
                                          I                         m,
                                          I                         n,
                                          I                         k,
-                                         I                         nnz,
+                                         int64_t                   nnz,
                                          I                         batch_count_A,
                                          I                         batch_stride_A,
                                          U                         alpha_device_host,
@@ -640,7 +640,7 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                                  I                         m,
                                                  I                         n,
                                                  I                         k,
-                                                 I                         nnz,
+                                                 int64_t                   nnz,
                                                  I                         batch_count_A,
                                                  I                         batch_stride_A,
                                                  U                         alpha_device_host,
@@ -860,7 +860,7 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
         ITYPE                     m,                                                \
         ITYPE                     n,                                                \
         ITYPE                     k,                                                \
-        ITYPE                     nnz,                                              \
+        int64_t                   nnz,                                              \
         ITYPE                     batch_count_A,                                    \
         ITYPE                     batch_stride_A,                                   \
         UTYPE                     alpha_device_host,                                \

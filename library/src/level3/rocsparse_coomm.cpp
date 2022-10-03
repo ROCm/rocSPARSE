@@ -85,7 +85,7 @@ rocsparse_status rocsparse_coomm_buffer_size_template_segmented(rocsparse_handle
                                                                 I                   m,
                                                                 I                   n,
                                                                 I                   k,
-                                                                I                   nnz,
+                                                                int64_t             nnz,
                                                                 I                   batch_count,
                                                                 const rocsparse_mat_descr descr,
                                                                 const T*                  coo_val,
@@ -100,7 +100,7 @@ rocsparse_status rocsparse_coomm_buffer_size_template(rocsparse_handle          
                                                       I                         m,
                                                       I                         n,
                                                       I                         k,
-                                                      I                         nnz,
+                                                      int64_t                   nnz,
                                                       I                         batch_count,
                                                       const rocsparse_mat_descr descr,
                                                       const T*                  coo_val,
@@ -225,7 +225,7 @@ rocsparse_status rocsparse_coomm_analysis_template(rocsparse_handle          han
                                                    I                         m,
                                                    I                         n,
                                                    I                         k,
-                                                   I                         nnz,
+                                                   int64_t                   nnz,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  coo_val,
                                                    const I*                  coo_row_ind,
@@ -337,7 +337,7 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                                  I                         m,
                                                  I                         n,
                                                  I                         k,
-                                                 I                         nnz,
+                                                 int64_t                   nnz,
                                                  I                         batch_count_A,
                                                  I                         batch_stride_A,
                                                  U                         alpha_device_host,
@@ -363,7 +363,7 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
                                                            I                   m,
                                                            I                   n,
                                                            I                   k,
-                                                           I                   nnz,
+                                                           int64_t             nnz,
                                                            I                   batch_count_A,
                                                            I                   batch_stride_A,
                                                            U                   alpha_device_host,
@@ -389,7 +389,7 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
                                                     I                         m,
                                                     I                         n,
                                                     I                         k,
-                                                    I                         nnz,
+                                                    int64_t                   nnz,
                                                     I                         batch_count_A,
                                                     I                         batch_stride_A,
                                                     U                         alpha_device_host,
@@ -417,7 +417,7 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                    I                         m,
                                                    I                         n,
                                                    I                         k,
-                                                   I                         nnz,
+                                                   int64_t                   nnz,
                                                    I                         batch_count_A,
                                                    I                         batch_stride_A,
                                                    U                         alpha_device_host,
@@ -636,7 +636,7 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                           I                         m,
                                           I                         n,
                                           I                         k,
-                                          I                         nnz,
+                                          int64_t                   nnz,
                                           I                         batch_count_A,
                                           I                         batch_stride_A,
                                           const T*                  alpha_device_host,
@@ -926,7 +926,7 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
         ITYPE                     m,                                              \
         ITYPE                     n,                                              \
         ITYPE                     k,                                              \
-        ITYPE                     nnz,                                            \
+        int64_t                   nnz,                                            \
         ITYPE                     batch_count,                                    \
         const rocsparse_mat_descr descr,                                          \
         const TTYPE*              coo_val,                                        \
@@ -952,7 +952,7 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
         ITYPE                     m,                                           \
         ITYPE                     n,                                           \
         ITYPE                     k,                                           \
-        ITYPE                     nnz,                                         \
+        int64_t                   nnz,                                         \
         const rocsparse_mat_descr descr,                                       \
         const TTYPE*              coo_val,                                     \
         const ITYPE*              coo_row_ind,                                 \
@@ -980,7 +980,7 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
         ITYPE                     m,                                  \
         ITYPE                     n,                                  \
         ITYPE                     k,                                  \
-        ITYPE                     nnz,                                \
+        int64_t                   nnz,                                \
         ITYPE                     batch_count_A,                      \
         ITYPE                     batch_stride_A,                     \
         const TTYPE*              alpha_device_host,                  \

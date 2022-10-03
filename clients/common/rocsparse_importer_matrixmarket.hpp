@@ -61,7 +61,7 @@ public:
     rocsparse_status import_sparse_gebsx(I* ptr, J* ind, T* val);
 
     template <typename I = rocsparse_int>
-    rocsparse_status import_sparse_coo(I* m, I* n, I* nnz, rocsparse_index_base* base);
+    rocsparse_status import_sparse_coo(I* m, I* n, int64_t* nnz, rocsparse_index_base* base);
     template <typename T, typename I = rocsparse_int>
     rocsparse_status import_sparse_coo(I* row_ind, I* col_ind, T* val);
 };

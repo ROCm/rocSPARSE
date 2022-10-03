@@ -38,6 +38,9 @@ Definitions:
     - { alpha:   0.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
     - { alpha:   2.0, beta:  0.67, alphai:  0.0, betai:  1.5 }
 
+  - &alpha_beta_range_gfx90a
+    - { alpha:   1.0, beta:  0.0, alphai:  0.0, betai:  0.0 }
+
 Tests:
 - name: spmv_coo_bad_arg
   category: pre_checkin
@@ -208,3 +211,18 @@ Tests:
   storage: [rocsparse_storage_mode_unsorted]
   spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
   filename: [Chevron4]
+
+- name: spmv_coo
+  category: quick
+  hardware: [gfx90a]
+  function: spmv_coo
+  indextype: *i32
+  precision: *single_only_precisions
+  M: [500000000]
+  N: [500000000]
+  alpha_beta: *alpha_beta_range_gfx90a
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_pentadiagonal]
+  storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo]

@@ -57,9 +57,9 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void coomvn_segmented_loops(I nnz,
-                                I nloops,
-                                U alpha_device_host,
+    void coomvn_segmented_loops(int64_t nnz,
+                                I       nloops,
+                                U       alpha_device_host,
                                 const I* __restrict__ coo_row_ind,
                                 const I* __restrict__ coo_col_ind,
                                 const T* __restrict__ coo_val,
@@ -103,8 +103,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 template <unsigned int BLOCKSIZE, unsigned int LOOPS, typename I, typename T, typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void coomvn_atomic_loops(I nnz,
-                             U alpha_device_host,
+    void coomvn_atomic_loops(int64_t nnz,
+                             U       alpha_device_host,
                              const I* __restrict__ coo_row_ind,
                              const I* __restrict__ coo_col_ind,
                              const T* __restrict__ coo_val,
@@ -122,7 +122,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvt_kernel(rocsparse_operation trans,
-                                                                 I                   nnz,
+                                                                 int64_t             nnz,
                                                                  U alpha_device_host,
                                                                  const I* __restrict__ coo_row_ind,
                                                                  const I* __restrict__ coo_col_ind,
@@ -144,7 +144,7 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
                                                    rocsparse_coomv_alg       alg,
                                                    I                         m,
                                                    I                         n,
-                                                   I                         nnz,
+                                                   int64_t                   nnz,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  coo_val,
                                                    const I*                  coo_row_ind,
@@ -218,30 +218,68 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
     {
     case rocsparse_operation_none:
     {
-        I* max_nnz     = nullptr;
-        I* csr_row_ptr = nullptr;
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&max_nnz, sizeof(I)));
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&csr_row_ptr, sizeof(I) * (m + 1)));
-        RETURN_IF_HIP_ERROR(hipMemsetAsync(max_nnz, 0, sizeof(I), handle->stream));
+        if(std::is_same<I, int32_t>() && nnz < std::numeric_limits<int32_t>::max())
+        {
+            I* max_nnz     = nullptr;
+            I* csr_row_ptr = nullptr;
+            RETURN_IF_HIP_ERROR(hipMalloc((void**)&max_nnz, sizeof(I)));
+            RETURN_IF_HIP_ERROR(hipMalloc((void**)&csr_row_ptr, sizeof(I) * (m + 1)));
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(max_nnz, 0, sizeof(I), handle->stream));
 
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2csr_template(
+                handle, coo_row_ind, (I)nnz, m, csr_row_ptr, descr->base));
 
-        hipLaunchKernelGGL((csr_max_nnz_per_row<256>),
-                           dim3((m - 1) / 256 + 1),
-                           dim3(256),
-                           0,
-                           handle->stream,
-                           m,
-                           csr_row_ptr,
-                           max_nnz);
+            hipLaunchKernelGGL((csr_max_nnz_per_row<256>),
+                               dim3((m - 1) / 256 + 1),
+                               dim3(256),
+                               0,
+                               handle->stream,
+                               m,
+                               csr_row_ptr,
+                               max_nnz);
 
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &descr->max_nnz_per_row, max_nnz, sizeof(I), hipMemcpyDeviceToHost, handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&descr->max_nnz_per_row,
+                                               max_nnz,
+                                               sizeof(I),
+                                               hipMemcpyDeviceToHost,
+                                               handle->stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-        RETURN_IF_HIP_ERROR(hipFree(max_nnz));
-        RETURN_IF_HIP_ERROR(hipFree(csr_row_ptr));
+            RETURN_IF_HIP_ERROR(hipFree(max_nnz));
+            RETURN_IF_HIP_ERROR(hipFree(csr_row_ptr));
+        }
+        else
+        {
+            I*       max_nnz     = nullptr;
+            int64_t* csr_row_ptr = nullptr;
+            RETURN_IF_HIP_ERROR(hipMalloc((void**)&max_nnz, sizeof(I)));
+
+            RETURN_IF_HIP_ERROR(hipMalloc((void**)&csr_row_ptr, sizeof(int64_t) * (m + 1)));
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(max_nnz, 0, sizeof(I), handle->stream));
+
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
+
+            hipLaunchKernelGGL((csr_max_nnz_per_row<256>),
+                               dim3((m - 1) / 256 + 1),
+                               dim3(256),
+                               0,
+                               handle->stream,
+                               m,
+                               csr_row_ptr,
+                               max_nnz);
+
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&descr->max_nnz_per_row,
+                                               max_nnz,
+                                               sizeof(I),
+                                               hipMemcpyDeviceToHost,
+                                               handle->stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+
+            RETURN_IF_HIP_ERROR(hipFree(max_nnz));
+            RETURN_IF_HIP_ERROR(hipFree(csr_row_ptr));
+        }
+
         break;
     }
     case rocsparse_operation_transpose:
@@ -259,7 +297,7 @@ rocsparse_status rocsparse_coomv_atomic_dispatch(rocsparse_handle          handl
                                                  rocsparse_operation       trans,
                                                  I                         m,
                                                  I                         n,
-                                                 I                         nnz,
+                                                 int64_t                   nnz,
                                                  U                         alpha_device_host,
                                                  const rocsparse_mat_descr descr,
                                                  const T*                  coo_val,
@@ -363,7 +401,7 @@ rocsparse_status rocsparse_coomv_segmented_dispatch(rocsparse_handle          ha
                                                     rocsparse_operation       trans,
                                                     I                         m,
                                                     I                         n,
-                                                    I                         nnz,
+                                                    int64_t                   nnz,
                                                     U                         alpha_device_host,
                                                     const rocsparse_mat_descr descr,
                                                     const T*                  coo_val,
@@ -485,7 +523,7 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
                                           rocsparse_coomv_alg       alg,
                                           I                         m,
                                           I                         n,
-                                          I                         nnz,
+                                          int64_t                   nnz,
                                           U                         alpha_device_host,
                                           const rocsparse_mat_descr descr,
                                           const T*                  coo_val,
@@ -541,7 +579,7 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
                                           rocsparse_coomv_alg       alg,
                                           I                         m,
                                           I                         n,
-                                          I                         nnz,
+                                          int64_t                   nnz,
                                           const T*                  alpha_device_host,
                                           const rocsparse_mat_descr descr,
                                           const T*                  coo_val,
@@ -691,7 +729,7 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
         rocsparse_coomv_alg       coomv_alg,                                   \
         ITYPE                     m,                                           \
         ITYPE                     n,                                           \
-        ITYPE                     nnz,                                         \
+        int64_t                   nnz,                                         \
         const rocsparse_mat_descr descr,                                       \
         const TTYPE*              coo_val,                                     \
         const ITYPE*              coo_row_ind,                                 \
@@ -714,7 +752,7 @@ INSTANTIATE(int64_t, rocsparse_double_complex)
         rocsparse_coomv_alg       coomv_alg,                          \
         ITYPE                     m,                                  \
         ITYPE                     n,                                  \
-        ITYPE                     nnz,                                \
+        int64_t                   nnz,                                \
         const TTYPE*              alpha_device_host,                  \
         const rocsparse_mat_descr descr,                              \
         const TTYPE*              coo_val,                            \

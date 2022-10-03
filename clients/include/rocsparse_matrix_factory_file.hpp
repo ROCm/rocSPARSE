@@ -72,7 +72,7 @@ public:
                           std::vector<T>&        coo_val,
                           I&                     M,
                           I&                     N,
-                          I&                     nnz,
+                          int64_t&               nnz,
                           rocsparse_index_base   base,
                           rocsparse_matrix_type  matrix_type,
                           rocsparse_fill_mode    uplo,

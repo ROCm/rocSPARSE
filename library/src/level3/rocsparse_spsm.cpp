@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,7 +74,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 trans_B,
                 (I)matA->rows,
                 (trans_B == rocsparse_operation_none ? (I)matB->cols : (I)matB->rows),
-                (I)matA->nnz,
+                matA->nnz,
                 (const T*)alpha,
                 matA->descr,
                 (const T*)matA->val_data,
@@ -127,7 +127,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                     trans_B,
                     (I)matA->rows,
                     (trans_B == rocsparse_operation_none ? (I)matB->cols : (I)matB->rows),
-                    (I)matA->nnz,
+                    matA->nnz,
                     (const T*)alpha,
                     matA->descr,
                     (const T*)matA->val_data,
@@ -194,7 +194,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 trans_B,
                 (I)matA->rows,
                 (trans_B == rocsparse_operation_none ? (I)matB->cols : (I)matB->rows),
-                (I)matA->nnz,
+                matA->nnz,
                 (const T*)alpha,
                 matA->descr,
                 (const T*)matA->val_data,

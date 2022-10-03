@@ -171,7 +171,7 @@ rocsparse_importer_rocsparseio::rocsparse_importer_rocsparseio(const std::string
 template <typename I>
 rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I*                    m,
                                                                    I*                    n,
-                                                                   I*                    nnz,
+                                                                   int64_t*              nnz,
                                                                    rocsparse_index_base* base)
 {
 #ifdef ROCSPARSEIO
@@ -783,7 +783,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_csx(I* ptr, J* in
 
 #define INSTANTIATE_I(I)                                                         \
     template rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo( \
-        I* m, I* n, I* nnz, rocsparse_index_base* base)
+        I* m, I* n, int64_t* nnz, rocsparse_index_base* base)
 
 #define INSTANTIATE_IJ(I, J)                                                       \
     template rocsparse_status rocsparse_importer_rocsparseio::import_sparse_csx(   \

@@ -1280,7 +1280,7 @@ template <typename I, typename T>
 void host_coomv(rocsparse_operation  trans,
                 I                    M,
                 I                    N,
-                I                    nnz,
+                int64_t              nnz,
                 T                    alpha,
                 const I*             coo_row_ind,
                 const I*             coo_col_ind,
@@ -1300,7 +1300,7 @@ void host_coomv(rocsparse_operation  trans,
             y[i] *= beta;
         }
 
-        for(I i = 0; i < nnz; ++i)
+        for(int64_t i = 0; i < nnz; ++i)
         {
             y[coo_row_ind[i] - base]
                 = std::fma(alpha * coo_val[i], x[coo_col_ind[i] - base], y[coo_row_ind[i] - base]);
@@ -1316,7 +1316,7 @@ void host_coomv(rocsparse_operation  trans,
             y[i] *= beta;
         }
 
-        for(I i = 0; i < nnz; ++i)
+        for(int64_t i = 0; i < nnz; ++i)
         {
             I row = coo_row_ind[i] - base;
             I col = coo_col_ind[i] - base;
@@ -1332,7 +1332,7 @@ template <typename I, typename T>
 void host_coomv_aos(rocsparse_operation  trans,
                     I                    M,
                     I                    N,
-                    I                    nnz,
+                    int64_t              nnz,
                     T                    alpha,
                     const I*             coo_ind,
                     const T*             coo_val,
@@ -1353,7 +1353,7 @@ void host_coomv_aos(rocsparse_operation  trans,
             y[i] *= beta;
         }
 
-        for(I i = 0; i < nnz; ++i)
+        for(int64_t i = 0; i < nnz; ++i)
         {
             y[coo_ind[2 * i] - base] = std::fma(
                 alpha * coo_val[i], x[coo_ind[2 * i + 1] - base], y[coo_ind[2 * i] - base]);
@@ -1372,7 +1372,7 @@ void host_coomv_aos(rocsparse_operation  trans,
             y[i] *= beta;
         }
 
-        for(I i = 0; i < nnz; ++i)
+        for(int64_t i = 0; i < nnz; ++i)
         {
             I row = coo_ind[2 * i] - base;
             I col = coo_ind[2 * i + 1] - base;
@@ -2147,7 +2147,7 @@ void host_csrsv(rocsparse_operation  trans,
 template <typename I, typename T>
 void host_coosv(rocsparse_operation   trans,
                 I                     M,
-                I                     nnz,
+                int64_t               nnz,
                 T                     alpha,
                 const std::vector<I>& coo_row_ind,
                 const std::vector<I>& coo_col_ind,
@@ -2160,24 +2160,48 @@ void host_coosv(rocsparse_operation   trans,
                 I*                    struct_pivot,
                 I*                    numeric_pivot)
 {
-    std::vector<I> csr_row_ptr(M + 1);
+    if(std::is_same<I, int32_t>() && nnz < std::numeric_limits<int32_t>::max())
+    {
+        std::vector<int32_t> csr_row_ptr(M + 1);
 
-    host_coo_to_csr(M, nnz, coo_row_ind.data(), csr_row_ptr, base);
+        host_coo_to_csr<int32_t, I>(M, nnz, coo_row_ind.data(), csr_row_ptr, base);
 
-    host_csrsv(trans,
-               M,
-               nnz,
-               alpha,
-               csr_row_ptr.data(),
-               coo_col_ind.data(),
-               coo_val.data(),
-               x.data(),
-               y.data(),
-               diag_type,
-               fill_mode,
-               base,
-               struct_pivot,
-               numeric_pivot);
+        host_csrsv<int32_t, I>(trans,
+                               M,
+                               nnz,
+                               alpha,
+                               csr_row_ptr.data(),
+                               coo_col_ind.data(),
+                               coo_val.data(),
+                               x.data(),
+                               y.data(),
+                               diag_type,
+                               fill_mode,
+                               base,
+                               struct_pivot,
+                               numeric_pivot);
+    }
+    else
+    {
+        std::vector<int64_t> csr_row_ptr(M + 1);
+
+        host_coo_to_csr(M, nnz, coo_row_ind.data(), csr_row_ptr, base);
+
+        host_csrsv(trans,
+                   M,
+                   nnz,
+                   alpha,
+                   csr_row_ptr.data(),
+                   coo_col_ind.data(),
+                   coo_val.data(),
+                   x.data(),
+                   y.data(),
+                   diag_type,
+                   fill_mode,
+                   base,
+                   struct_pivot,
+                   numeric_pivot);
+    }
 }
 
 template <typename I, typename T>
@@ -2693,7 +2717,7 @@ template <typename T, typename I>
 void host_coomm(I                    M,
                 I                    N,
                 I                    K,
-                I                    nnz,
+                int64_t              nnz,
                 rocsparse_operation  transA,
                 rocsparse_operation  transB,
                 T                    alpha,
@@ -2720,7 +2744,8 @@ void host_coomm(I                    M,
 #endif
             for(I i = 0; i < M; ++i)
             {
-                I idx_C = (order == rocsparse_order_column) ? i + j * ldc : i * ldc + j;
+                int64_t idx_C = (order == rocsparse_order_column) ? i + j * (int64_t)ldc
+                                                                  : i * (int64_t)ldc + j;
                 C[idx_C] *= beta;
             }
         }
@@ -2730,23 +2755,24 @@ void host_coomm(I                    M,
 #endif
         for(I j = 0; j < N; j++)
         {
-            for(I i = 0; i < nnz; ++i)
+            for(int64_t i = 0; i < nnz; ++i)
             {
                 I row = coo_row_ind_A[i] - base;
                 I col = coo_col_ind_A[i] - base;
                 T val = alpha * coo_val_A[i];
 
-                I idx_C = (order == rocsparse_order_column) ? row + j * ldc : row * ldc + j;
+                int64_t idx_C = (order == rocsparse_order_column) ? row + j * (int64_t)ldc
+                                                                  : row * (int64_t)ldc + j;
 
-                I idx_B = 0;
+                int64_t idx_B = 0;
                 if((transB == rocsparse_operation_none && order == rocsparse_order_column)
                    || (transB != rocsparse_operation_none && order != rocsparse_order_column))
                 {
-                    idx_B = (col + j * ldb);
+                    idx_B = (col + j * (int64_t)ldb);
                 }
                 else
                 {
-                    idx_B = (j + col * ldb);
+                    idx_B = (j + col * (int64_t)ldb);
                 }
 
                 C[idx_C] = std::fma(val, conj_val(B[idx_B], conj_B), C[idx_C]);
@@ -2762,7 +2788,8 @@ void host_coomm(I                    M,
 #endif
             for(I i = 0; i < K; ++i)
             {
-                I idx_C = (order == rocsparse_order_column) ? i + j * ldc : i * ldc + j;
+                int64_t idx_C = (order == rocsparse_order_column) ? i + j * (int64_t)ldc
+                                                                  : i * (int64_t)ldc + j;
                 C[idx_C] *= beta;
             }
         }
@@ -2772,23 +2799,24 @@ void host_coomm(I                    M,
 #endif
         for(I j = 0; j < N; j++)
         {
-            for(I i = 0; i < nnz; ++i)
+            for(int64_t i = 0; i < nnz; ++i)
             {
                 I row = coo_row_ind_A[i] - base;
                 I col = coo_col_ind_A[i] - base;
                 T val = alpha * conj_val(coo_val_A[i], conj_A);
 
-                I idx_C = (order == rocsparse_order_column) ? col + j * ldc : col * ldc + j;
+                int64_t idx_C = (order == rocsparse_order_column) ? col + j * (int64_t)ldc
+                                                                  : col * (int64_t)ldc + j;
 
-                I idx_B = 0;
+                int64_t idx_B = 0;
                 if((transB == rocsparse_operation_none && order == rocsparse_order_column)
                    || (transB != rocsparse_operation_none && order != rocsparse_order_column))
                 {
-                    idx_B = (row + j * ldb);
+                    idx_B = (row + j * (int64_t)ldb);
                 }
                 else
                 {
-                    idx_B = (j + row * ldb);
+                    idx_B = (j + row * (int64_t)ldb);
                 }
 
                 C[idx_C] = std::fma(val, conj_val(B[idx_B], conj_B), C[idx_C]);
@@ -2801,9 +2829,9 @@ template <typename T, typename I>
 void host_coomm_batched(I                    M,
                         I                    N,
                         I                    K,
-                        I                    nnz,
+                        int64_t              nnz,
                         I                    batch_count_A,
-                        I                    batch_stride_A,
+                        int64_t              batch_stride_A,
                         rocsparse_operation  transA,
                         rocsparse_operation  transB,
                         T                    alpha,
@@ -2813,12 +2841,12 @@ void host_coomm_batched(I                    M,
                         const T*             B,
                         I                    ldb,
                         I                    batch_count_B,
-                        I                    batch_stride_B,
+                        int64_t              batch_stride_B,
                         T                    beta,
                         T*                   C,
                         I                    ldc,
                         I                    batch_count_C,
-                        I                    batch_stride_C,
+                        int64_t              batch_stride_C,
                         rocsparse_order      order,
                         rocsparse_index_base base)
 {
@@ -3432,7 +3460,7 @@ void host_csrsm(J                    M,
 template <typename I, typename T>
 void host_coosm(I                    M,
                 I                    nrhs,
-                I                    nnz,
+                int64_t              nnz,
                 rocsparse_operation  transA,
                 rocsparse_operation  transB,
                 T                    alpha,
@@ -3447,26 +3475,52 @@ void host_coosm(I                    M,
                 I*                   struct_pivot,
                 I*                   numeric_pivot)
 {
-    std::vector<I> csr_row_ptr(M + 1);
+    if(std::is_same<I, int32_t>() && nnz < std::numeric_limits<int32_t>::max())
+    {
+        std::vector<int32_t> csr_row_ptr(M + 1);
 
-    host_coo_to_csr(M, nnz, coo_row_ind, csr_row_ptr, base);
+        host_coo_to_csr<int32_t, I>(M, nnz, coo_row_ind, csr_row_ptr, base);
 
-    host_csrsm(M,
-               nrhs,
-               nnz,
-               transA,
-               transB,
-               alpha,
-               csr_row_ptr.data(),
-               coo_col_ind,
-               coo_val,
-               B,
-               ldb,
-               diag_type,
-               fill_mode,
-               base,
-               struct_pivot,
-               numeric_pivot);
+        host_csrsm<int32_t, I>(M,
+                               nrhs,
+                               nnz,
+                               transA,
+                               transB,
+                               alpha,
+                               csr_row_ptr.data(),
+                               coo_col_ind,
+                               coo_val,
+                               B,
+                               ldb,
+                               diag_type,
+                               fill_mode,
+                               base,
+                               struct_pivot,
+                               numeric_pivot);
+    }
+    else
+    {
+        std::vector<int64_t> csr_row_ptr(M + 1);
+
+        host_coo_to_csr(M, nnz, coo_row_ind, csr_row_ptr, base);
+
+        host_csrsm(M,
+                   nrhs,
+                   nnz,
+                   transA,
+                   transB,
+                   alpha,
+                   csr_row_ptr.data(),
+                   coo_col_ind,
+                   coo_val,
+                   B,
+                   ldb,
+                   diag_type,
+                   fill_mode,
+                   base,
+                   struct_pivot,
+                   numeric_pivot);
+    }
 }
 
 template <typename T>
@@ -9122,7 +9176,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
     template void host_coomv<ITYPE, TTYPE>(rocsparse_operation  trans,                           \
                                            ITYPE                M,                               \
                                            ITYPE                N,                               \
-                                           ITYPE                nnz,                             \
+                                           int64_t              nnz,                             \
                                            TTYPE                alpha,                           \
                                            const ITYPE*         coo_row_ind,                     \
                                            const ITYPE*         coo_col_ind,                     \
@@ -9134,7 +9188,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
     template void host_coomv_aos<ITYPE, TTYPE>(rocsparse_operation  trans,                       \
                                                ITYPE                M,                           \
                                                ITYPE                N,                           \
-                                               ITYPE                nnz,                         \
+                                               int64_t              nnz,                         \
                                                TTYPE                alpha,                       \
                                                const ITYPE*         coo_ind,                     \
                                                const TTYPE*         coo_val,                     \
@@ -9155,7 +9209,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                            rocsparse_index_base base);                           \
     template void host_coosv<ITYPE, TTYPE>(rocsparse_operation       trans,                      \
                                            ITYPE                     M,                          \
-                                           ITYPE                     nnz,                        \
+                                           int64_t                   nnz,                        \
                                            TTYPE                     alpha,                      \
                                            const std::vector<ITYPE>& coo_row_ind,                \
                                            const std::vector<ITYPE>& coo_col_ind,                \
@@ -9170,7 +9224,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
     template void host_coomm<TTYPE, ITYPE>(ITYPE                M,                               \
                                            ITYPE                N,                               \
                                            ITYPE                K,                               \
-                                           ITYPE                NNZ,                             \
+                                           int64_t              NNZ,                             \
                                            rocsparse_operation  transA,                          \
                                            rocsparse_operation  transB,                          \
                                            TTYPE                alpha,                           \
@@ -9187,9 +9241,9 @@ template void host_coosort_by_column(rocsparse_int                         M,
     template void host_coomm_batched<TTYPE, ITYPE>(ITYPE                M,                       \
                                                    ITYPE                N,                       \
                                                    ITYPE                K,                       \
-                                                   ITYPE                NNZ,                     \
+                                                   int64_t              NNZ,                     \
                                                    ITYPE                batch_count_A,           \
-                                                   ITYPE                batch_stride_A,          \
+                                                   int64_t              batch_stride_A,          \
                                                    rocsparse_operation  transA,                  \
                                                    rocsparse_operation  transB,                  \
                                                    TTYPE                alpha,                   \
@@ -9199,17 +9253,17 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                    const TTYPE*         B,                       \
                                                    ITYPE                ldb,                     \
                                                    ITYPE                batch_count_B,           \
-                                                   ITYPE                batch_stride_B,          \
+                                                   int64_t              batch_stride_B,          \
                                                    TTYPE                beta,                    \
                                                    TTYPE*               C,                       \
                                                    ITYPE                ldc,                     \
                                                    ITYPE                batch_count_C,           \
-                                                   ITYPE                batch_stride_C,          \
+                                                   int64_t              batch_stride_C,          \
                                                    rocsparse_order      order,                   \
                                                    rocsparse_index_base base);                   \
     template void host_coosm<ITYPE, TTYPE>(ITYPE                M,                               \
                                            ITYPE                nrhs,                            \
-                                           ITYPE                nnz,                             \
+                                           int64_t              nnz,                             \
                                            rocsparse_operation  transA,                          \
                                            rocsparse_operation  transB,                          \
                                            TTYPE                alpha,                           \

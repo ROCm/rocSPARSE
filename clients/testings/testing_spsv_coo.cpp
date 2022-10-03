@@ -28,10 +28,10 @@
 template <typename I, typename T>
 void testing_spsv_coo_bad_arg(const Arguments& arg)
 {
-    I m     = 100;
-    I n     = 100;
-    I nnz   = 100;
-    T alpha = 0.6;
+    I       m     = 100;
+    I       n     = 100;
+    int64_t nnz   = 100;
+    T       alpha = 0.6;
 
     rocsparse_operation  trans_A = rocsparse_operation_none;
     rocsparse_index_base base    = rocsparse_index_base_zero;
@@ -122,7 +122,7 @@ void testing_spsv_coo(const Arguments& arg)
         // Check SpSV when structures can be created
         if(M == 0 && M == N)
         {
-            I nnz_A = 0;
+            int64_t nnz_A = 0;
 
             // Pointer mode
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
@@ -182,7 +182,7 @@ void testing_spsv_coo(const Arguments& arg)
     host_vector<T> hcoo_val;
 
     // Sample matrix
-    I nnz_A;
+    int64_t nnz_A;
     matrix_factory.init_coo(hcoo_row_ind, hcoo_col_ind, hcoo_val, M, N, nnz_A, base);
 
     // Non-squared matrices are not supported
