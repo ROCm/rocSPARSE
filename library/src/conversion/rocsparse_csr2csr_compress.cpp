@@ -29,39 +29,6 @@
 #include "csr2csr_compress_device.h"
 #include <rocprim/rocprim.hpp>
 
-template <rocsparse_int BLOCK_SIZE,
-          rocsparse_int SEGMENTS_PER_BLOCK,
-          rocsparse_int SEGMENT_SIZE,
-          rocsparse_int WF_SIZE,
-          typename T>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void csr2csr_compress_kernel(rocsparse_int        m,
-                                 rocsparse_int        n,
-                                 rocsparse_index_base idx_base_A,
-                                 const T* __restrict__ csr_val_A,
-                                 const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                 const rocsparse_int* __restrict__ csr_col_ind_A,
-                                 rocsparse_int        nnz_A,
-                                 rocsparse_index_base idx_base_C,
-                                 T* __restrict__ csr_val_C,
-                                 const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                 rocsparse_int* __restrict__ csr_col_ind_C,
-                                 T threshold)
-{
-    csr2csr_compress_device<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>(m,
-                                                                                   n,
-                                                                                   idx_base_A,
-                                                                                   csr_val_A,
-                                                                                   csr_row_ptr_A,
-                                                                                   csr_col_ind_A,
-                                                                                   nnz_A,
-                                                                                   idx_base_C,
-                                                                                   csr_val_C,
-                                                                                   csr_row_ptr_C,
-                                                                                   csr_col_ind_C,
-                                                                                   threshold);
-}
-
 template <typename T>
 rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          handle,
                                                      rocsparse_int             m,
@@ -160,25 +127,33 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
     // Stream
     hipStream_t stream = handle->stream;
 
-    constexpr rocsparse_int block_size = 1024;
-    rocsparse_int           grid_size  = (m + block_size - 1) / block_size;
+    // Compute required temporary storage buffer size
+    size_t nwarps                   = (nnz_A - 1) / handle->wavefront_size + 1;
+    size_t temp_storage_size_bytes1 = sizeof(int) * (nwarps / 256 + 1) * 256;
 
-    // Copy nnz_per_row to csr_row_ptr_C array
-    hipLaunchKernelGGL((fill_row_ptr_device<block_size>),
-                       dim3(grid_size),
-                       dim3(block_size),
-                       0,
-                       stream,
-                       m,
-                       descr_A->base,
-                       nnz_per_row,
-                       csr_row_ptr_C);
-
-    // Perform inclusive scan on csr row pointer array
     auto   op = rocprim::plus<rocsparse_int>();
-    size_t temp_storage_size_bytes;
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
-        nullptr, temp_storage_size_bytes, csr_row_ptr_C, csr_row_ptr_C, m + 1, op, stream));
+    size_t temp_storage_size_bytes2;
+    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
+                                                temp_storage_size_bytes2,
+                                                (rocsparse_int*)nullptr,
+                                                (rocsparse_int*)nullptr,
+                                                m + 1,
+                                                op,
+                                                stream));
+    temp_storage_size_bytes2 = ((temp_storage_size_bytes2 - 1) / 256 + 1) * 256;
+
+    size_t temp_storage_size_bytes3;
+    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
+                                                temp_storage_size_bytes3,
+                                                (rocsparse_int*)nullptr,
+                                                (rocsparse_int*)nullptr,
+                                                nwarps + 1,
+                                                op,
+                                                stream));
+    temp_storage_size_bytes3 = ((temp_storage_size_bytes3 - 1) / 256 + 1) * 256;
+
+    size_t temp_storage_size_bytes
+        = temp_storage_size_bytes1 + temp_storage_size_bytes2 + temp_storage_size_bytes3;
 
     bool  temp_alloc       = false;
     void* temp_storage_ptr = nullptr;
@@ -193,18 +168,33 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
         temp_alloc = true;
     }
 
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(temp_storage_ptr,
-                                                temp_storage_size_bytes,
+    char* ptr        = reinterpret_cast<char*>(temp_storage_ptr);
+    int*  warp_start = reinterpret_cast<int*>(ptr);
+    ptr += temp_storage_size_bytes1;
+    void* temp_storage_buffer2 = ptr;
+    ptr += temp_storage_size_bytes2;
+    void* temp_storage_buffer3 = ptr;
+    ptr += temp_storage_size_bytes3;
+
+    // Copy nnz_per_row to csr_row_ptr_C array
+    hipLaunchKernelGGL((fill_row_ptr_device<1024>),
+                       dim3((m - 1) / 1024 + 1),
+                       dim3(1024),
+                       0,
+                       stream,
+                       m,
+                       descr_A->base,
+                       nnz_per_row,
+                       csr_row_ptr_C);
+
+    // Perform inclusive scan on csr row pointer array
+    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(temp_storage_buffer2,
+                                                temp_storage_size_bytes2,
                                                 csr_row_ptr_C,
                                                 csr_row_ptr_C,
                                                 m + 1,
                                                 op,
                                                 stream));
-
-    if(temp_alloc)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
-    }
 
     if(csr_val_C == nullptr && csr_col_ind_C == nullptr)
     {
@@ -228,274 +218,80 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
         }
     }
 
-    // Mean number of elements per row in the input CSR matrix
-    rocsparse_int mean_nnz_per_row = nnz_A / m;
-
-    // A wavefront is divided into segments of size 2, 4, 8, 16, or 32 threads (or 64 in the case of 64
-    // thread wavefronts) depending on the mean number of elements per CSR matrix row. Each row in the
-    // matrix is then handled by a single segment.
+#define LOOPS 2
     if(handle->wavefront_size == 32)
     {
-        if(mean_nnz_per_row < 4)
-        {
-            constexpr rocsparse_int segments_per_block = block_size / 2;
-            grid_size = (m + segments_per_block - 1) / segments_per_block;
-
-            hipLaunchKernelGGL((csr2csr_compress_kernel<block_size, segments_per_block, 2, 32>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               n,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               nnz_A,
-                               descr_A->base,
-                               csr_val_C,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               tol);
-        }
-        else if(mean_nnz_per_row < 8)
-        {
-            constexpr rocsparse_int segments_per_block = block_size / 4;
-            grid_size = (m + segments_per_block - 1) / segments_per_block;
-
-            hipLaunchKernelGGL((csr2csr_compress_kernel<block_size, segments_per_block, 4, 32>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               n,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               nnz_A,
-                               descr_A->base,
-                               csr_val_C,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               tol);
-        }
-        else if(mean_nnz_per_row < 16)
-        {
-            constexpr rocsparse_int segments_per_block = block_size / 8;
-            grid_size = (m + segments_per_block - 1) / segments_per_block;
-
-            hipLaunchKernelGGL((csr2csr_compress_kernel<block_size, segments_per_block, 8, 32>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               n,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               nnz_A,
-                               descr_A->base,
-                               csr_val_C,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               tol);
-        }
-        else if(mean_nnz_per_row < 32)
-        {
-            constexpr rocsparse_int segments_per_block = block_size / 16;
-            grid_size = (m + segments_per_block - 1) / segments_per_block;
-
-            hipLaunchKernelGGL((csr2csr_compress_kernel<block_size, segments_per_block, 16, 32>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               n,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               nnz_A,
-                               descr_A->base,
-                               csr_val_C,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               tol);
-        }
-        else
-        {
-            constexpr rocsparse_int segments_per_block = block_size / 32;
-            grid_size = (m + segments_per_block - 1) / segments_per_block;
-
-            hipLaunchKernelGGL((csr2csr_compress_kernel<block_size, segments_per_block, 32, 32>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               n,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               nnz_A,
-                               descr_A->base,
-                               csr_val_C,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               tol);
-        }
+        hipLaunchKernelGGL((csr2csr_compress_fill_warp_start_device<256, 32, LOOPS>),
+                           dim3((nnz_A - 1) / (256 * LOOPS) + 1),
+                           dim3(256),
+                           0,
+                           stream,
+                           nnz_A,
+                           csr_val_A,
+                           warp_start,
+                           tol);
     }
     else if(handle->wavefront_size == 64)
     {
-        if(mean_nnz_per_row < 4)
-        {
-            constexpr rocsparse_int segments_per_block = block_size / 2;
-            grid_size = (m + segments_per_block - 1) / segments_per_block;
-
-            hipLaunchKernelGGL((csr2csr_compress_kernel<block_size, segments_per_block, 2, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               n,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               nnz_A,
-                               descr_A->base,
-                               csr_val_C,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               tol);
-        }
-        else if(mean_nnz_per_row < 8)
-        {
-            constexpr rocsparse_int segments_per_block = block_size / 4;
-            grid_size = (m + segments_per_block - 1) / segments_per_block;
-
-            hipLaunchKernelGGL((csr2csr_compress_kernel<block_size, segments_per_block, 4, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               n,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               nnz_A,
-                               descr_A->base,
-                               csr_val_C,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               tol);
-        }
-        else if(mean_nnz_per_row < 16)
-        {
-            constexpr rocsparse_int segments_per_block = block_size / 8;
-            grid_size = (m + segments_per_block - 1) / segments_per_block;
-
-            hipLaunchKernelGGL((csr2csr_compress_kernel<block_size, segments_per_block, 8, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               n,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               nnz_A,
-                               descr_A->base,
-                               csr_val_C,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               tol);
-        }
-        else if(mean_nnz_per_row < 32)
-        {
-            constexpr rocsparse_int segments_per_block = block_size / 16;
-            grid_size = (m + segments_per_block - 1) / segments_per_block;
-
-            hipLaunchKernelGGL((csr2csr_compress_kernel<block_size, segments_per_block, 16, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               n,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               nnz_A,
-                               descr_A->base,
-                               csr_val_C,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               tol);
-        }
-        else if(mean_nnz_per_row < 64)
-        {
-            constexpr rocsparse_int segments_per_block = block_size / 32;
-            grid_size = (m + segments_per_block - 1) / segments_per_block;
-
-            hipLaunchKernelGGL((csr2csr_compress_kernel<block_size, segments_per_block, 32, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               n,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               nnz_A,
-                               descr_A->base,
-                               csr_val_C,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               tol);
-        }
-        else
-        {
-            constexpr rocsparse_int segments_per_block = block_size / 64;
-            grid_size = (m + segments_per_block - 1) / segments_per_block;
-
-            hipLaunchKernelGGL((csr2csr_compress_kernel<block_size, segments_per_block, 64, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               n,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               nnz_A,
-                               descr_A->base,
-                               csr_val_C,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               tol);
-        }
+        hipLaunchKernelGGL((csr2csr_compress_fill_warp_start_device<256, 64, LOOPS>),
+                           dim3((nnz_A - 1) / (256 * LOOPS) + 1),
+                           dim3(256),
+                           0,
+                           stream,
+                           nnz_A,
+                           csr_val_A,
+                           warp_start,
+                           tol);
     }
-    else
+
+    // Perform inclusive scan on warp start array
+    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(temp_storage_buffer3,
+                                                temp_storage_size_bytes3,
+                                                warp_start,
+                                                warp_start,
+                                                nwarps + 1,
+                                                op,
+                                                stream));
+
+    if(handle->wavefront_size == 32)
     {
-        return rocsparse_status_arch_mismatch;
+        hipLaunchKernelGGL((csr2csr_compress_use_warp_start_device<256, 32, LOOPS>),
+                           dim3((nnz_A - 1) / (256 * LOOPS) + 1),
+                           dim3(256),
+                           0,
+                           stream,
+                           nnz_A,
+                           descr_A->base,
+                           csr_val_A,
+                           csr_col_ind_A,
+                           descr_A->base,
+                           csr_val_C,
+                           csr_col_ind_C,
+                           warp_start,
+                           tol);
+    }
+    else if(handle->wavefront_size == 64)
+    {
+        hipLaunchKernelGGL((csr2csr_compress_use_warp_start_device<256, 64, LOOPS>),
+                           dim3((nnz_A - 1) / (256 * LOOPS) + 1),
+                           dim3(256),
+                           0,
+                           stream,
+                           nnz_A,
+                           descr_A->base,
+                           csr_val_A,
+                           csr_col_ind_A,
+                           descr_A->base,
+                           csr_val_C,
+                           csr_col_ind_C,
+                           warp_start,
+                           tol);
+    }
+#undef LOOPS
+
+    if(temp_alloc)
+    {
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
     }
 
     return rocsparse_status_success;
