@@ -63,7 +63,7 @@ def simple_histogram(out,ofilename,title,indices,ifilename,x_range,y_label,col_i
 
 
 
-def histogram(out,ofilename,title,indices,ifilename,x_range,y_label,col_index,col_index_low,col_index_high, titles):
+def histogram(out,ofilename,title,indices,ifilename,x_range,y_label,col_index,col_index_low,col_index_high, titles, linear):
     nplots = len(indices)
     out.write("reset\n")
     out.write("set grid\n")
@@ -82,8 +82,8 @@ def histogram(out,ofilename,title,indices,ifilename,x_range,y_label,col_index,co
 
     out.write("set ylabel \"" + y_label + "\"\n")
     out.write("set xrange [" + str(x_range[0]) + ":" + str(x_range[1]) + "]\n")
-#    out.write("set yrange [1e-3:*]\n")
-    out.write("set logscale y\n")
+    if not linear:
+        out.write("set logscale y\n")
     out.write("set offsets 0.25, 0.25, 0, 0\n")
     out.write("set xtics rotate by -45\n")
     out.write("set boxwidth 0.5\n")

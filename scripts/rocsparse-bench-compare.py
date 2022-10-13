@@ -33,7 +33,7 @@ import json
 import xml.etree.ElementTree as ET
 import rocsparse_bench_gnuplot_helper
 
-def export_gnuplot(obasename,xargs, yargs, case_results,case_titles,verbose = False,debug = False):
+def export_gnuplot(obasename,xargs, yargs, case_results,case_titles,verbose = False,debug = False,linear=False):
     num_cases = len(case_results)
     datafile = open(obasename + ".dat", "w+")
     len_xargs = len(xargs)
@@ -44,19 +44,47 @@ def export_gnuplot(obasename,xargs, yargs, case_results,case_titles,verbose = Fa
                 isample = iplot * len_xargs + ixarg
                 tg = samples[isample]["timing"]
                 tg0 = case_results[0][isample]["timing"]
+
+                min_allowed_yvalue = 0.0
+                if not linear:
+                    min_allowed_yvalue = 1.0
+
+                time0 = max(float(tg["time"][0]), min_allowed_yvalue)
+                time1 = max(float(tg["time"][1]), min_allowed_yvalue)
+                time2 = max(float(tg["time"][2]), min_allowed_yvalue)
+                flops0 = max(float(tg["flops"][0]), min_allowed_yvalue)
+                flops1 = max(float(tg["flops"][1]), min_allowed_yvalue)
+                flops2 = max(float(tg["flops"][2]), min_allowed_yvalue)
+                bandwidth0 = max(float(tg["bandwidth"][0]), min_allowed_yvalue)
+                bandwidth1 = max(float(tg["bandwidth"][1]), min_allowed_yvalue)
+                bandwidth2 = max(float(tg["bandwidth"][2]), min_allowed_yvalue)
+
+                time_ratio = 0.0
+                flops_ratio = 0.0
+                bandwidth_ratio = 0.0
+
+                if float(tg["time"][0]) != 0:
+                    time_ratio = float(tg0["time"][0]) / float(tg["time"][0])
+
+                if float(tg["flops"][0]) != 0:
+                    flops_ratio = float(tg0["flops"][0]) / float(tg["flops"][0])
+
+                if float(tg["bandwidth"][0]) != 0:
+                    bandwidth_ratio = float(tg0["bandwidth"][0]) / float(tg["bandwidth"][0])
+
                 datafile.write(os.path.basename(os.path.splitext(xargs[ixarg])[0]) + " " +
-                               tg["time"][0] + " " +
-                               tg["time"][1] + " " +
-                               tg["time"][2] + " " +
-                               str(float(tg0["time"][0]) / float(tg["time"][0]))  + " " +
-                               tg["flops"][0] + " " +
-                               tg["flops"][1] + " " +
-                               tg["flops"][2] + " " +
-                               str(float(tg["flops"][0]) / float(tg0["flops"][0]))  + " " +
-                               tg["bandwidth"][0] + " " +
-                               tg["bandwidth"][1] + " "+
-                               tg["bandwidth"][2] + " " +
-                               str(float(tg["bandwidth"][0]) / float(tg0["bandwidth"][0]))  + " " +
+                               str(time0) + " " +
+                               str(time1) + " " +
+                               str(time2) + " " +
+                               str(time_ratio)  + " " +
+                               str(flops0) + " " +
+                               str(flops1) + " " +
+                               str(flops2) + " " +
+                               str(flops_ratio)  + " " +
+                               str(bandwidth0) + " " +
+                               str(bandwidth1) + " "+
+                               str(bandwidth2) + " " +
+                               str(bandwidth_ratio)  + " " +
                                "\n")
             datafile.write("\n")
             datafile.write("\n")
@@ -130,7 +158,8 @@ def export_gnuplot(obasename,xargs, yargs, case_results,case_titles,verbose = Fa
                                                  [-0.5,len_xargs + 0.5],
                                                  "milliseconds",
                                                  2,3,4,
-                                                 case_titles)
+                                                 case_titles,
+                                                 linear)
 
         rocsparse_bench_gnuplot_helper.histogram(cmdfile,
                                                  obasename + "_gflops"+ filename_extension,
@@ -140,7 +169,8 @@ def export_gnuplot(obasename,xargs, yargs, case_results,case_titles,verbose = Fa
                                                  [-0.5,len_xargs + 0.5],
                                                  "GFlops",
                                                  6,7,8,
-                                                 case_titles)
+                                                 case_titles,
+                                                 linear)
 
         rocsparse_bench_gnuplot_helper.histogram(cmdfile,
                                                  obasename + "_bandwitdh"+ filename_extension,
@@ -150,7 +180,8 @@ def export_gnuplot(obasename,xargs, yargs, case_results,case_titles,verbose = Fa
                                                  [-0.5,len_xargs + 0.5],
                                                  "GBytes/s",
                                                  10,11,12,
-                                                 case_titles)
+                                                 case_titles,
+                                                 linear)
     cmdfile.close();
 
     rocsparse_bench_gnuplot_helper.call(obasename + ".gnuplot")
@@ -172,6 +203,7 @@ def main():
     parser.add_argument('-o', '--obasename',    required=False, default = 'a')
     parser.add_argument('-v', '--verbose',         required=False, default = False, action = "store_true")
     parser.add_argument('-d', '--debug',         required=False, default = False, action = "store_true")
+    parser.add_argument('-l', '--linear',         required=False, default = False, action = "store_true")
     user_args, case_names = parser.parse_known_args()
     if len(case_names) < 2:
         print('//rocsparse-bench-compare.error number of filenames provided is < 2, (num_cases = '+str(len(case_names))+')')
@@ -180,6 +212,7 @@ def main():
     verbose=user_args.verbose
     debug=user_args.debug
     obasename = user_args.obasename
+    linear = user_args.linear
 
     cases = []
     num_cases = len(case_names)
@@ -261,7 +294,8 @@ def main():
                    case_results,
                    case_titles,
                    verbose,
-                   debug)
+                   debug,
+                   linear)
 
 if __name__ == "__main__":
     main()
