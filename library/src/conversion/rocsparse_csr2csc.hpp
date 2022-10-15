@@ -27,6 +27,22 @@
 #include "handle.h"
 
 template <typename T>
+rocsparse_status rocsparse_csr2csc_core(rocsparse_handle     handle,
+                                        rocsparse_int        m,
+                                        rocsparse_int        n,
+                                        rocsparse_int        nnz,
+                                        const T*             csr_val,
+                                        const rocsparse_int* csr_row_ptr_begin,
+                                        const rocsparse_int* csr_row_ptr_end,
+                                        const rocsparse_int* csr_col_ind,
+                                        T*                   csc_val,
+                                        rocsparse_int*       csc_row_ind,
+                                        rocsparse_int*       csc_col_ptr,
+                                        rocsparse_action     copy_values,
+                                        rocsparse_index_base idx_base,
+                                        void*                temp_buffer);
+
+template <typename T>
 rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
                                             rocsparse_int        m,
                                             rocsparse_int        n,
@@ -40,3 +56,37 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
                                             rocsparse_action     copy_values,
                                             rocsparse_index_base idx_base,
                                             void*                temp_buffer);
+
+template <typename T>
+rocsparse_status rocsparse_csr2csc_impl(rocsparse_handle     handle,
+                                        rocsparse_int        m,
+                                        rocsparse_int        n,
+                                        rocsparse_int        nnz,
+                                        const T*             csr_val,
+                                        const rocsparse_int* csr_row_ptr,
+                                        const rocsparse_int* csr_col_ind,
+                                        T*                   csc_val,
+                                        rocsparse_int*       csc_row_ind,
+                                        rocsparse_int*       csc_col_ptr,
+                                        rocsparse_action     copy_values,
+                                        rocsparse_index_base idx_base,
+                                        void*                temp_buffer);
+
+rocsparse_status rocsparse_csr2csc_buffer_size_template(rocsparse_handle     handle,
+                                                        rocsparse_int        m,
+                                                        rocsparse_int        n,
+                                                        rocsparse_int        nnz,
+                                                        const rocsparse_int* csr_row_ptr,
+                                                        const rocsparse_int* csr_col_ind,
+                                                        rocsparse_action     copy_values,
+                                                        size_t*              buffer_size);
+
+rocsparse_status rocsparse_csr2csc_buffer_size_core(rocsparse_handle     handle,
+                                                    rocsparse_int        m,
+                                                    rocsparse_int        n,
+                                                    rocsparse_int        nnz,
+                                                    const rocsparse_int* csr_row_ptr_begin,
+                                                    const rocsparse_int* csr_row_ptr_end,
+                                                    const rocsparse_int* csr_col_ind,
+                                                    rocsparse_action     copy_values,
+                                                    size_t*              buffer_size);

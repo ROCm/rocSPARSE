@@ -243,7 +243,120 @@ __device__ __forceinline__ void rocsparse_blockreduce_min(int i, T* data)
     if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = min(data[i], data[i +   1]); } __syncthreads(); }
 }
 
+
 #if ROCSPARSE_USE_MOVE_DPP
+
+template <unsigned int WFSIZE>
+static __device__ __forceinline__ void rocsparse_wfreduce_max(float* maximum)
+{
+    typedef union flt_b32
+    {
+        float    val;
+        uint32_t b32[1];
+    } flt_b32_t;
+
+    flt_b32_t upper_max;
+    flt_b32_t temp_max;
+    temp_max.val = *maximum;
+
+    if(WFSIZE > 1)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x111, 0xf, 0xf, false);
+        temp_max.val     = max(temp_max.val, upper_max.val);
+    }
+
+    if(WFSIZE > 2)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x112, 0xf, 0xf, false);
+        temp_max.val     = max(temp_max.val, upper_max.val);
+    }
+
+    if(WFSIZE > 4)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x114, 0xf, 0xe, false);
+        temp_max.val     = max(temp_max.val, upper_max.val);
+    }
+
+    if(WFSIZE > 8)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x118, 0xf, 0xc, false);
+        temp_max.val     = max(temp_max.val, upper_max.val);
+    }
+
+    if(WFSIZE > 16)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x142, 0xa, 0xf, false);
+        temp_max.val     = max(temp_max.val, upper_max.val);
+    }
+
+    if(WFSIZE > 32)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x143, 0xc, 0xf, false);
+        temp_max.val     = max(temp_max.val, upper_max.val);
+    }
+
+    *maximum = temp_max.val;
+}
+
+// DPP-based wavefront reduction maximum
+template <unsigned int WFSIZE>
+static __device__ __forceinline__ void rocsparse_wfreduce_max(double* maximum)
+{
+    typedef union i64_b32
+    {
+        double   i64;
+        uint32_t b32[2];
+    } i64_b32_t;
+
+    i64_b32_t upper_max;
+    i64_b32_t temp_max;
+    temp_max.i64 = *maximum;
+
+    if(WFSIZE > 1)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x111, 0xf, 0xf, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x111, 0xf, 0xf, false);
+        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+    }
+
+    if(WFSIZE > 2)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x112, 0xf, 0xf, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x112, 0xf, 0xf, false);
+        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+    }
+
+    if(WFSIZE > 4)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x114, 0xf, 0xe, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x114, 0xf, 0xe, false);
+        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+    }
+
+    if(WFSIZE > 8)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x118, 0xf, 0xc, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x118, 0xf, 0xc, false);
+        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+    }
+
+    if(WFSIZE > 16)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x142, 0xa, 0xf, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x142, 0xa, 0xf, false);
+        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+    }
+
+    if(WFSIZE > 32)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x143, 0xc, 0xf, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x143, 0xc, 0xf, false);
+        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+    }
+
+    *maximum = temp_max.i64;
+}
+
 // DPP-based wavefront reduction maximum
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
@@ -510,6 +623,25 @@ __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
     return sum;
 }
 #else /* ROCSPARSE_USE_MOVE_DPP */
+
+
+template <unsigned int WFSIZE>
+static __device__ __forceinline__ void rocsparse_wfreduce_max(double* maximum)
+{
+    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
+    {
+        *maximum = max(*maximum, __shfl_xor(*maximum, i));
+    }
+}
+template <unsigned int WFSIZE>
+static __device__ __forceinline__ void rocsparse_wfreduce_max(float* maximum)
+{
+    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
+    {
+        *maximum = max(*maximum, __shfl_xor(*maximum, i));
+    }
+}
+
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
 {

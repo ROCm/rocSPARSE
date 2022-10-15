@@ -34,6 +34,68 @@
 #include <hip/hip_runtime_api.h>
 #include <vector>
 
+struct rocsparse_itilu0_alg_t
+{
+    using value_t                                 = rocsparse_itilu0_alg;
+    static constexpr unsigned int nvalues         = 5;
+    static constexpr value_t      values[nvalues] = {rocsparse_itilu0_alg_default,
+                                                rocsparse_itilu0_alg_async_inplace,
+                                                rocsparse_itilu0_alg_async_split,
+                                                rocsparse_itilu0_alg_sync_split,
+                                                rocsparse_itilu0_alg_sync_split_fusion};
+
+    static void info(std::ostream& out_)
+    {
+        for(int i = 0; i < nvalues; ++i)
+        {
+            if(i > 0)
+                out_ << ", ";
+            const value_t v = values[i];
+            switch(v)
+            {
+#define LOCAL_CASE(TOKEN)                 \
+    case TOKEN:                           \
+    {                                     \
+        out_ << TOKEN << " : " << #TOKEN; \
+        break;                            \
+    }
+
+            case rocsparse_itilu0_alg_default:
+            {
+                out_ << rocsparse_itilu0_alg_default << " : "
+                     << "rocsparse_itilu0_alg_default";
+            }
+                LOCAL_CASE(rocsparse_itilu0_alg_async_inplace);
+                LOCAL_CASE(rocsparse_itilu0_alg_async_split);
+                LOCAL_CASE(rocsparse_itilu0_alg_sync_split);
+                LOCAL_CASE(rocsparse_itilu0_alg_sync_split_fusion);
+#undef LOCAL_CASE
+            }
+        }
+    };
+
+    static constexpr bool is_invalid(rocsparse_int value_)
+    {
+        return is_invalid((value_t)value_);
+    };
+
+    static constexpr bool is_invalid(value_t value_)
+    {
+        switch(value_)
+        {
+        case rocsparse_itilu0_alg_default:
+        case rocsparse_itilu0_alg_async_inplace:
+        case rocsparse_itilu0_alg_async_split:
+        case rocsparse_itilu0_alg_sync_split:
+        case rocsparse_itilu0_alg_sync_split_fusion:
+        {
+            return false;
+        }
+        }
+        return true;
+    }
+};
+
 struct rocsparse_matrix_type_t
 {
     using value_t                                 = rocsparse_matrix_type;
@@ -63,5 +125,35 @@ struct rocsparse_storage_mode_t
 
 std::ostream& operator<<(std::ostream& out, const rocsparse_operation& v);
 std::ostream& operator<<(std::ostream& out, const rocsparse_direction& v);
+
+struct rocsparse_datatype_t
+{
+    using value_t = rocsparse_datatype;
+    template <typename T>
+    static inline rocsparse_datatype get();
+};
+
+template <>
+inline rocsparse_datatype rocsparse_datatype_t::get<float>()
+{
+    return rocsparse_datatype_f32_r;
+}
+template <>
+inline rocsparse_datatype rocsparse_datatype_t::get<double>()
+{
+    return rocsparse_datatype_f64_r;
+}
+
+template <>
+inline rocsparse_datatype rocsparse_datatype_t::get<rocsparse_float_complex>()
+{
+    return rocsparse_datatype_f32_c;
+}
+
+template <>
+inline rocsparse_datatype rocsparse_datatype_t::get<rocsparse_double_complex>()
+{
+    return rocsparse_datatype_f64_c;
+}
 
 #endif // ROCSPARSE_ENUM_HPP

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +29,56 @@
 #include "coo2csr_device.h"
 
 template <typename I, typename J>
+rocsparse_status rocsparse_coo2csr_core(rocsparse_handle     handle,
+                                        const J*             coo_row_ind,
+                                        I                    nnz,
+                                        J                    m,
+                                        I*                   csr_row_ptr,
+                                        rocsparse_index_base idx_base)
+{
+    // Stream
+    hipStream_t stream = handle->stream;
+
+#define COO2CSR_DIM 512
+    dim3 coo2csr_blocks((m - 1) / COO2CSR_DIM + 1);
+    dim3 coo2csr_threads(COO2CSR_DIM);
+
+    hipLaunchKernelGGL((coo2csr_kernel<COO2CSR_DIM>),
+                       coo2csr_blocks,
+                       coo2csr_threads,
+                       0,
+                       stream,
+                       m,
+                       nnz,
+                       coo_row_ind,
+                       csr_row_ptr,
+                       idx_base);
+#undef COO2CSR_DIM
+    return rocsparse_status_success;
+}
+
+template <typename I, typename J>
 rocsparse_status rocsparse_coo2csr_template(rocsparse_handle     handle,
                                             const J*             coo_row_ind,
                                             I                    nnz,
                                             J                    m,
                                             I*                   csr_row_ptr,
                                             rocsparse_index_base idx_base)
+{
+    if(m == 0)
+    {
+        return rocsparse_status_success;
+    }
+    return rocsparse_coo2csr_core(handle, coo_row_ind, nnz, m, csr_row_ptr, idx_base);
+}
+
+template <typename I, typename J>
+rocsparse_status rocsparse_coo2csr_impl(rocsparse_handle     handle,
+                                        const J*             coo_row_ind,
+                                        I                    nnz,
+                                        J                    m,
+                                        I*                   csr_row_ptr,
+                                        rocsparse_index_base idx_base)
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -65,12 +109,8 @@ rocsparse_status rocsparse_coo2csr_template(rocsparse_handle     handle,
     }
 
     // Quick return if possible
-    if(m == 0)
-    {
-        return rocsparse_status_success;
-    }
 
-    if(csr_row_ptr == nullptr)
+    if(m > 0 && csr_row_ptr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -80,35 +120,23 @@ rocsparse_status rocsparse_coo2csr_template(rocsparse_handle     handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Stream
-    hipStream_t stream = handle->stream;
-
-#define COO2CSR_DIM 512
-    dim3 coo2csr_blocks((m - 1) / COO2CSR_DIM + 1);
-    dim3 coo2csr_threads(COO2CSR_DIM);
-
-    hipLaunchKernelGGL((coo2csr_kernel<COO2CSR_DIM>),
-                       coo2csr_blocks,
-                       coo2csr_threads,
-                       0,
-                       stream,
-                       m,
-                       nnz,
-                       coo_row_ind,
-                       csr_row_ptr,
-                       idx_base);
-#undef COO2CSR_DIM
-    return rocsparse_status_success;
+    return rocsparse_coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, idx_base);
 }
 
-#define INSTANTIATE(ITYPE, JTYPE)                                       \
-    template rocsparse_status rocsparse_coo2csr_template<ITYPE, JTYPE>( \
-        rocsparse_handle     handle,                                    \
-        const JTYPE*         coo_row_ind,                               \
-        ITYPE                nnz,                                       \
-        JTYPE                m,                                         \
-        ITYPE*               csr_row_ptr,                               \
-        rocsparse_index_base idx_base);
+#define INSTANTIATE(ITYPE, JTYPE)                                                                    \
+    template rocsparse_status rocsparse_coo2csr_impl<ITYPE, JTYPE>(rocsparse_handle     handle,      \
+                                                                   const JTYPE*         coo_row_ind, \
+                                                                   ITYPE                nnz,         \
+                                                                   JTYPE                m,           \
+                                                                   ITYPE*               csr_row_ptr, \
+                                                                   rocsparse_index_base idx_base);   \
+    template rocsparse_status rocsparse_coo2csr_template<ITYPE, JTYPE>(                              \
+        rocsparse_handle     handle,                                                                 \
+        const JTYPE*         coo_row_ind,                                                            \
+        ITYPE                nnz,                                                                    \
+        JTYPE                m,                                                                      \
+        ITYPE*               csr_row_ptr,                                                            \
+        rocsparse_index_base idx_base)
 
 INSTANTIATE(int32_t, int32_t);
 INSTANTIATE(int64_t, int32_t);
@@ -128,5 +156,5 @@ extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle     handle,
                                               rocsparse_int*       csr_row_ptr,
                                               rocsparse_index_base idx_base)
 {
-    return rocsparse_coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, idx_base);
+    return rocsparse_coo2csr_impl(handle, coo_row_ind, nnz, m, csr_row_ptr, idx_base);
 }

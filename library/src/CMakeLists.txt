@@ -148,9 +148,28 @@ set(rocsparse_source
   src/precond/rocsparse_gtsv_no_pivot_strided_batch.cpp
   src/precond/rocsparse_gtsv_interleaved_batch.cpp
   src/precond/rocsparse_gpsv_interleaved_batch.cpp
+  src/precond/itilu0/common.cpp
+  src/precond/itilu0/rocsparse_csritilu0x_buffer_size.cpp
+  src/precond/itilu0/rocsparse_csritilu0x_preprocess.cpp
+  src/precond/itilu0/rocsparse_csritilu0x_compute.cpp
+  src/precond/itilu0/rocsparse_csritilu0x_history.cpp
+  src/precond/itilu0/rocsparse_csritilu0x_sync_fusion.cpp
+  src/precond/itilu0/rocsparse_csritilu0x_sync.cpp
+  src/precond/itilu0/rocsparse_csritilu0x_async.cpp
+  src/precond/itilu0/rocsparse_csritilu0_buffer_size.cpp
+  src/precond/itilu0/rocsparse_csritilu0_preprocess.cpp
+  src/precond/itilu0/rocsparse_csritilu0_compute.cpp
+  src/precond/itilu0/rocsparse_csritilu0_history.cpp
+  src/precond/itilu0/rocsparse_csritilu0_async_inplace.cpp
+  src/precond/itilu0/rocsparse_csritilu0_async_split.cpp
+  src/precond/itilu0/rocsparse_csritilu0_sync_split.cpp
+  src/precond/itilu0/rocsparse_csritilu0_sync_split_fusion.cpp
 
 # Conversion
   src/conversion/rocsparse_nnz.cpp
+  src/conversion/rocsparse_csxsldu_buffer_size.cpp
+  src/conversion/rocsparse_csxsldu_preprocess.cpp
+  src/conversion/rocsparse_csxsldu_compute.cpp
   src/conversion/rocsparse_dense2csr.cpp
   src/conversion/rocsparse_dense2coo.cpp
   src/conversion/rocsparse_prune_dense2csr.cpp

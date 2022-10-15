@@ -464,6 +464,43 @@ typedef enum rocsparse_spmat_attribute_
 } rocsparse_spmat_attribute;
 
 /*! \ingroup types_module
+ *  \brief List of Iterative ILU0 algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_itilu0_alg types that are used to perform
+ *  the iterative ILU0 algorithm.
+ */
+typedef enum rocsparse_itilu0_alg_
+{
+    rocsparse_itilu0_alg_default = 0, /**< ASynchronous ITILU0 algorithm with in-place storage */
+    rocsparse_itilu0_alg_async_inplace
+    = 1, /**< ASynchronous ITILU0 algorithm with in-place storage */
+    rocsparse_itilu0_alg_async_split
+    = 2, /**< ASynchronous ITILU0 algorithm with explicit storage splitting */
+    rocsparse_itilu0_alg_sync_split
+    = 3, /**< Synchronous ITILU0 algorithm with explicit storage splitting */
+    rocsparse_itilu0_alg_sync_split_fusion
+    = 4 /**< Semi-synchronous ITILU0 algorithm with explicit storage splitting */
+} rocsparse_itilu0_alg;
+
+/*! \ingroup types_module
+ *  \brief List of Iterative ILU0 options.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_itilu0_option options that are used to perform
+ *  the iterative ILU0 algorithm.
+ */
+typedef enum rocsparse_itilu0_option_
+{
+    rocsparse_itilu0_option_verbose                = 1, /**< Compute a stopping criteria. */
+    rocsparse_itilu0_option_stopping_criteria      = 2, /**< Compute a stopping criteria. */
+    rocsparse_itilu0_option_compute_nrm_correction = 4, /**< Compute correction */
+    rocsparse_itilu0_option_compute_nrm_residual   = 8, /**< Compute residual */
+    rocsparse_itilu0_option_convergence_history    = 16, /**< Log convergence history */
+    rocsparse_itilu0_option_coo_format             = 32 /**< Use internal coordinate format. */
+} rocsparse_itilu0_option;
+
+/*! \ingroup types_module
  *  \brief List of interleaved gtsv algorithms.
  *
  *  \details

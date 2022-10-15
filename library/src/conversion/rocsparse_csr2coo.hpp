@@ -27,9 +27,26 @@
 #include "handle.h"
 
 template <typename I, typename J>
+rocsparse_status rocsparse_csr2coo_core(rocsparse_handle     handle,
+                                        const I*             csr_row_ptr_begin,
+                                        const I*             csr_row_ptr_end,
+                                        I                    nnz,
+                                        J                    m,
+                                        J*                   coo_row_ind,
+                                        rocsparse_index_base idx_base);
+
+template <typename I, typename J>
 rocsparse_status rocsparse_csr2coo_template(rocsparse_handle     handle,
                                             const I*             csr_row_ptr,
                                             I                    nnz,
                                             J                    m,
                                             J*                   coo_row_ind,
                                             rocsparse_index_base idx_base);
+
+template <typename I, typename J>
+rocsparse_status rocsparse_csr2coo_impl(rocsparse_handle     handle,
+                                        const I*             csr_row_ptr,
+                                        I                    nnz,
+                                        J                    m,
+                                        J*                   coo_row_ind,
+                                        rocsparse_index_base idx_base);

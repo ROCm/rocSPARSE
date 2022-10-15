@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,36 @@
 #include "identity_device.h"
 
 template <typename I>
+rocsparse_status rocsparse_create_identity_permutation_core(rocsparse_handle handle, I n, I* p)
+{
+    // Stream
+    hipStream_t stream = handle->stream;
+
+#define IDENTITY_DIM 512
+    dim3 identity_blocks((n - 1) / IDENTITY_DIM + 1);
+    dim3 identity_threads(IDENTITY_DIM);
+
+    hipLaunchKernelGGL(
+        (identity_kernel<IDENTITY_DIM>), identity_blocks, identity_threads, 0, stream, n, p);
+#undef IDENTITY_DIM
+
+    return rocsparse_status_success;
+}
+
+template <typename I>
 rocsparse_status rocsparse_create_identity_permutation_template(rocsparse_handle handle, I n, I* p)
+{
+    // Quick return if possible
+    if(n == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    return rocsparse_create_identity_permutation_core(handle, n, p);
+}
+
+template <typename I>
+rocsparse_status rocsparse_create_identity_permutation_impl(rocsparse_handle handle, I n, I* p)
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -45,34 +74,19 @@ rocsparse_status rocsparse_create_identity_permutation_template(rocsparse_handle
         return rocsparse_status_invalid_size;
     }
 
-    // Quick return if possible
-    if(n == 0)
-    {
-        return rocsparse_status_success;
-    }
-
     // Check pointer arguments
-    if(p == nullptr)
+    if(n > 0 && p == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
-    // Stream
-    hipStream_t stream = handle->stream;
-
-#define IDENTITY_DIM 512
-    dim3 identity_blocks((n - 1) / IDENTITY_DIM + 1);
-    dim3 identity_threads(IDENTITY_DIM);
-
-    hipLaunchKernelGGL(
-        (identity_kernel<IDENTITY_DIM>), identity_blocks, identity_threads, 0, stream, n, p);
-#undef IDENTITY_DIM
-
-    return rocsparse_status_success;
+    return rocsparse_create_identity_permutation_template(handle, n, p);
 }
 
-#define INSTANTIATE(ITYPE)                                                           \
-    template rocsparse_status rocsparse_create_identity_permutation_template<ITYPE>( \
+#define INSTANTIATE(ITYPE)                                                       \
+    template rocsparse_status rocsparse_create_identity_permutation_template(    \
+        rocsparse_handle handle, ITYPE n, ITYPE* p);                             \
+    template rocsparse_status rocsparse_create_identity_permutation_impl<ITYPE>( \
         rocsparse_handle handle, ITYPE n, ITYPE * p);
 
 INSTANTIATE(int32_t);
@@ -89,5 +103,5 @@ extern "C" rocsparse_status rocsparse_create_identity_permutation(rocsparse_hand
                                                                   rocsparse_int    n,
                                                                   rocsparse_int*   p)
 {
-    return rocsparse_create_identity_permutation_template(handle, n, p);
+    return rocsparse_create_identity_permutation_impl(handle, n, p);
 }

@@ -55,6 +55,11 @@ inline void auto_testing_bad_arg_set_invalid(int32_t& p)
 }
 
 template <>
+inline void auto_testing_bad_arg_set_invalid(size_t& p)
+{
+}
+
+template <>
 inline void auto_testing_bad_arg_set_invalid(int64_t& p)
 {
     p = -1;
@@ -128,6 +133,12 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_dnvec_descr& p
 
 template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(int32_t& p)
+{
+    return rocsparse_status_invalid_size;
+}
+
+template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(size_t& p)
 {
     return rocsparse_status_invalid_size;
 }
@@ -230,6 +241,12 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsm_alg& p)
 
 template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spgemm_alg& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_itilu0_alg& p)
 {
     return rocsparse_status_invalid_value;
 }
@@ -394,6 +411,12 @@ template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_spgemm_alg& p)
 {
     p = (rocsparse_spgemm_alg)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_itilu0_alg& p)
+{
+    p = (rocsparse_itilu0_alg)-1;
 }
 
 template <>

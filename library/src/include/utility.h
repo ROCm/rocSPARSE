@@ -276,6 +276,23 @@ struct rocsparse_enum_utils
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_itilu0_alg value)
+{
+    switch(value)
+    {
+    case rocsparse_itilu0_alg_default:
+    case rocsparse_itilu0_alg_async_inplace:
+    case rocsparse_itilu0_alg_async_split:
+    case rocsparse_itilu0_alg_sync_split:
+    case rocsparse_itilu0_alg_sync_split_fusion:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_diag_type value)
 {
     switch(value)

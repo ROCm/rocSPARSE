@@ -247,6 +247,14 @@ Functions:
   rocsparse_dcsrilu0: { function: csrilu0, <<: *double_precision }
   rocsparse_ccsrilu0: { function: csrilu0, <<: *single_precision_complex }
   rocsparse_zcsrilu0: { function: csrilu0, <<: *double_precision_complex }
+  rocsparse_scsritilu0: { function: csritilu0, <<: *single_precision }
+  rocsparse_dcsritilu0: { function: csritilu0, <<: *double_precision }
+  rocsparse_ccsritilu0: { function: csritilu0, <<: *single_precision_complex }
+  rocsparse_zcsritilu0: { function: csritilu0, <<: *double_precision_complex }
+  rocsparse_scsrsldu: { function: csrsldu, <<: *single_precision }
+  rocsparse_dcsrsldu: { function: csrsldu, <<: *double_precision }
+  rocsparse_ccsrsldu: { function: csrsldu, <<: *single_precision_complex }
+  rocsparse_zcsrsldu: { function: csrsldu, <<: *double_precision_complex }
   rocsparse_csrilu0_zero_pivot: { function: csrilu0 }
   rocsparse_csrilu0_clear: { function: csrilu0 }
   rocsparse_sgtsv_buffer_size: { function: gtsv, <<: *single_precision }

@@ -55,6 +55,7 @@ void rocsparse_bench::parse(int& argc, char**& argv, rocsparse_arguments_config&
     config.betai               = 0.0;
     config.threshold           = 0.0;
     config.percentage          = 0.0;
+    config.itilu0_alg          = rocsparse_itilu0_alg_default;
     config.sddmm_alg           = rocsparse_sddmm_alg_default;
     config.spmv_alg            = rocsparse_spmv_alg_default;
     config.spsv_alg            = rocsparse_spsv_alg_default;
