@@ -27,4 +27,8 @@
 #include "rocsparse.h"
 
 template <typename I>
+rocsparse_status rocsparse_create_identity_permutation_core(rocsparse_handle handle, I n, I* p);
+template <typename I>
+rocsparse_status rocsparse_create_identity_permutation_impl(rocsparse_handle handle, I n, I* p);
+template <typename I>
 rocsparse_status rocsparse_create_identity_permutation_template(rocsparse_handle handle, I n, I* p);

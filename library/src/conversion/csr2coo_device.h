@@ -28,8 +28,11 @@
 
 // CSR to COO matrix conversion kernel
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr2coo_kernel(J m, const I* csr_row_ptr, J* coo_row_ind, rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csr2coo_kernel(J        m,
+                                                                  const I* csr_row_ptr_begin,
+                                                                  const I* csr_row_ptr_end,
+                                                                  J*       coo_row_ind,
+                                                                  rocsparse_index_base idx_base)
 {
     J tid = hipThreadIdx_x;
     J lid = tid & (WF_SIZE - 1);
@@ -44,8 +47,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
     J row = (BLOCKSIZE / WF_SIZE) * hipBlockIdx_x + wid;
 
-    I start = (row < m) ? csr_row_ptr[row] - idx_base : static_cast<I>(0);
-    I end   = (row < m) ? csr_row_ptr[row + 1] - idx_base : static_cast<I>(0);
+    I start = (row < m) ? csr_row_ptr_begin[row] - idx_base : static_cast<I>(0);
+    I end   = (row < m) ? csr_row_ptr_end[row] - idx_base : static_cast<I>(0);
 
     int short_row = (end - start <= 8 * WF_SIZE) ? 1 : 0;
 
@@ -74,8 +77,9 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
             {
                 J long_row = (BLOCKSIZE / WF_SIZE) * hipBlockIdx_x + i;
 
-                I start = (long_row < m) ? csr_row_ptr[long_row] - idx_base : static_cast<I>(0);
-                I end   = (long_row < m) ? csr_row_ptr[long_row + 1] - idx_base : static_cast<I>(0);
+                I start
+                    = (long_row < m) ? csr_row_ptr_begin[long_row] - idx_base : static_cast<I>(0);
+                I end = (long_row < m) ? csr_row_ptr_end[long_row] - idx_base : static_cast<I>(0);
 
                 for(I j = start + tid; j < end; j += BLOCKSIZE)
                 {

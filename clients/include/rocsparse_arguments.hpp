@@ -88,6 +88,7 @@ struct Arguments
     rocsparse_direction            direction;
     rocsparse_order                order;
     rocsparse_format               format;
+    rocsparse_itilu0_alg           itilu0_alg;
     rocsparse_sddmm_alg            sddmm_alg;
     rocsparse_spmv_alg             spmv_alg;
     rocsparse_spsv_alg             spsv_alg;
@@ -207,6 +208,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(direction);
         ROCSPARSE_FORMAT_CHECK(order);
         ROCSPARSE_FORMAT_CHECK(format);
+        ROCSPARSE_FORMAT_CHECK(itilu0_alg);
         ROCSPARSE_FORMAT_CHECK(sddmm_alg);
         ROCSPARSE_FORMAT_CHECK(spmv_alg);
         ROCSPARSE_FORMAT_CHECK(spsv_alg);
@@ -405,6 +407,7 @@ private:
         print("direction", rocsparse_direction2string(arg.direction));
         print("order", rocsparse_order2string(arg.order));
         print("format", rocsparse_format2string(arg.format));
+        print("itilu0_alg", rocsparse_itilu0alg2string(arg.itilu0_alg));
         print("sddmm_alg", rocsparse_sddmmalg2string(arg.sddmm_alg));
         print("spmv_alg", rocsparse_spmvalg2string(arg.spmv_alg));
         print("spsv_alg", rocsparse_spsvalg2string(arg.spsv_alg));

@@ -1066,6 +1066,10 @@ Function name                                                                   
 :cpp:func:`rocsparse_csrilu0_zero_pivot`
 :cpp:func:`rocsparse_csrilu0_clear`
 :cpp:func:`rocsparse_Xcsrilu0() <rocsparse_scsrilu0>`                                                                 x      x      x              x
+:cpp:func:`rocsparse_csritilu0_buffer_size`
+:cpp:func:`rocsparse_csritilu0_preprocess`
+:cpp:func:`rocsparse_Xcsritilu0_compute() <rocsparse_scsritilu0_compute>`                                             x      x      x              x
+:cpp:func:`rocsparse_Xcsritilu0_history() <rocsparse_scsritilu0_history>`                                             x      x      x              x
 :cpp:func:`rocsparse_Xgtsv_buffer_size() <rocsparse_sgtsv_buffer_size>`                                               x      x      x              x
 :cpp:func:`rocsparse_Xgtsv() <rocsparse_sgtsv>`                                                                       x      x      x              x
 :cpp:func:`rocsparse_Xgtsv_no_pivot_buffer_size() <rocsparse_sgtsv_no_pivot_buffer_size>`                             x      x      x              x
@@ -2306,6 +2310,40 @@ rocsparse_csric0_clear()
 ------------------------
 
 .. doxygenfunction:: rocsparse_csric0_clear
+
+rocsparse_csritilu0_buffer_size()
+---------------------------------
+
+.. doxygenfunction:: rocsparse_csritilu0_buffer_size
+
+rocsparse_csritilu0_preprocess()
+--------------------------------
+
+.. doxygenfunction:: rocsparse_csritilu0_preprocess
+
+rocsparse_csritilu0_history()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_scsritilu0_history
+  :outline:
+.. doxygenfunction:: rocsparse_dcsritilu0_history
+  :outline:
+.. doxygenfunction:: rocsparse_ccsritilu0_history
+  :outline:
+.. doxygenfunction:: rocsparse_zcsritilu0_history
+
+
+rocsparse_csritilu0_compute()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_scsritilu0_compute
+  :outline:
+.. doxygenfunction:: rocsparse_dcsritilu0_compute
+  :outline:
+.. doxygenfunction:: rocsparse_ccsritilu0_compute
+  :outline:
+.. doxygenfunction:: rocsparse_zcsritilu0_compute
+
 
 rocsparse_csrilu0_zero_pivot()
 ------------------------------
