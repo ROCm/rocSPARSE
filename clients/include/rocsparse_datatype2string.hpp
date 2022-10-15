@@ -300,6 +300,31 @@ constexpr auto rocsparse_sddmmalg2string(rocsparse_sddmm_alg alg)
     return "invalid";
 }
 
+constexpr auto rocsparse_itilu0alg2string(rocsparse_itilu0_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_itilu0_alg_default:
+    case rocsparse_itilu0_alg_async_inplace:
+    {
+        return "async_inplace";
+    }
+    case rocsparse_itilu0_alg_async_split:
+    {
+        return "async_split";
+    }
+    case rocsparse_itilu0_alg_sync_split:
+    {
+        return "sync_split";
+    }
+    case rocsparse_itilu0_alg_sync_split_fusion:
+    {
+        return "sync_split_fusion";
+    }
+    }
+    return "invalid";
+}
+
 constexpr auto rocsparse_spmvalg2string(rocsparse_spmv_alg alg)
 {
     switch(alg)
