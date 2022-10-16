@@ -58,6 +58,7 @@ ROCSPARSE_DO_ROUTINE(csc2dense)					\
 ROCSPARSE_DO_ROUTINE(csrcolor)					\
 ROCSPARSE_DO_ROUTINE(csric0)					\
 ROCSPARSE_DO_ROUTINE(csrilu0)					\
+ROCSPARSE_DO_ROUTINE(csritilu0)					\
 ROCSPARSE_DO_ROUTINE(csrgeam)					\
 ROCSPARSE_DO_ROUTINE(csrgemm)					\
 ROCSPARSE_DO_ROUTINE(csrgemm_reuse)				\

@@ -55,6 +55,7 @@ include: test_bsric0.yaml
 include: test_bsrilu0.yaml
 include: test_csric0.yaml
 include: test_csrilu0.yaml
+include: test_csritilu0.yaml
 include: test_gtsv.yaml
 include: test_gtsv_no_pivot.yaml
 include: test_gtsv_no_pivot_strided_batch.yaml

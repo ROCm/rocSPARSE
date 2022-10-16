@@ -23,7 +23,7 @@
 * ************************************************************************ */
 
 #include "rocsparse_arguments_config.hpp"
-
+#include "rocsparse_enum.hpp"
 rocsparse_arguments_config::rocsparse_arguments_config()
 {
     //
@@ -73,6 +73,7 @@ rocsparse_arguments_config::rocsparse_arguments_config()
         this->order          = static_cast<rocsparse_order>(0);
         this->format         = static_cast<rocsparse_format>(0);
 
+        this->itilu0_alg          = rocsparse_itilu0_alg_default;
         this->sddmm_alg           = rocsparse_sddmm_alg_default;
         this->spmv_alg            = rocsparse_spmv_alg_default;
         this->spsv_alg            = rocsparse_spsv_alg_default;
@@ -275,7 +276,7 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      "  Level2: bsrmv, bsrxmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, coosv, ellmv, hybmv, gebsrmv, gemvi\n"
      "  Level3: bsrmm, bsrsm, gebsrmm, csrmm, csrmm_batched, coomm, coomm_batched, cscmm, cscmm_batched, csrsm, coosm, gemmi, sddmm\n"
      "  Extra: csrgeam, csrgemm, csrgemm_reuse\n"
-     "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, gtsv, gtsv_no_pivot, gtsv_no_pivot_strided_batch, gtsv_interleaved_batch, gpsv_interleaved_batch\n"
+     "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, csritilu0, gtsv, gtsv_no_pivot, gtsv_no_pivot_strided_batch, gtsv_interleaved_batch, gpsv_interleaved_batch\n"
      "  Conversion: csr2coo, csr2csc, gebsr2gebsc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
      "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2coo, prune_dense2csr, prune_dense2csr_by_percentage, dense2csc\n"
      "              csr2dense, csc2dense, coo2dense, bsr2csr, gebsr2csr, gebsr2gebsr, csr2csr_compress, prune_csr2csr, prune_csr2csr_by_percentage\n"
@@ -349,6 +350,10 @@ void rocsparse_arguments_config::set_description(options_description& desc)
       value<rocsparse_int>(&this->b_spmv_alg)->default_value(rocsparse_spmv_alg_default),
       "Indicates what algorithm to use when running SpMV. Possibly choices are default: 0, COO: 1, CSR adaptive: 2, CSR stream: 3, ELL: 4, COO atomic: 5 (default:0)")
 
+    ("itilu0_alg",
+      value<rocsparse_int>(&this->b_itilu0_alg)->default_value(rocsparse_itilu0_alg_default),
+      "Indicates what algorithm to use when running Iterative ILU0. see documentation.")
+
     ("spmm_alg",
       value<rocsparse_int>(&this->b_spmm_alg)->default_value(rocsparse_spmm_alg_default),
       "Indicates what algorithm to use when running SpMM. Possibly choices are default: 0, CSR: 1, COO segmented: 2, COO atomic: 3, CSR row split: 4, CSR merge: 5, COO segmented atomic: 6, BELL: 7 (default:0)")
@@ -389,6 +394,16 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
     std::cerr << "Invalid value for --format" << std::endl;
     return -1;
   }
+
+  if (rocsparse_itilu0_alg_t::is_invalid(this->b_itilu0_alg))
+    {
+      std::cerr << "Invalid value '"
+		<< this->b_itilu0_alg
+		<< "' for --itilu0_alg, valid values are : (";
+      rocsparse_itilu0_alg_t::info(std::cerr);
+      std::cerr << ")" << std::endl;
+      return -1;
+    }
 
   if(this->b_spmv_alg != rocsparse_spmv_alg_default
        && this->b_spmv_alg != rocsparse_spmv_alg_coo
@@ -472,6 +487,7 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   this->order  = (this->b_order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
   this->format = (rocsparse_format)this->b_format;
   this->spmv_alg = (rocsparse_spmv_alg)this->b_spmv_alg;
+  this->itilu0_alg = (rocsparse_itilu0_alg)this->b_itilu0_alg;
   this->spmm_alg = (rocsparse_spmm_alg)this->b_spmm_alg;
   this->gtsv_interleaved_alg = (rocsparse_gtsv_interleaved_alg)this->b_gtsv_interleaved_alg;
 
