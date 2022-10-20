@@ -36,26 +36,146 @@ template <unsigned int BLOCKSIZE,
           unsigned int HASHVAL,
           typename I,
           typename J,
-          typename T>
+          typename T,
+          typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_fill_wf_per_row_host_pointer(J m,
-                                              J nk,
+    void csrgemm_fill_wf_per_row(J m,
+                                 J nk,
+                                 const J* __restrict__ offset,
+                                 const J* __restrict__ perm,
+                                 U alpha_device_host,
+                                 const I* __restrict__ csr_row_ptr_A,
+                                 const J* __restrict__ csr_col_ind_A,
+                                 const T* __restrict__ csr_val_A,
+                                 const I* __restrict__ csr_row_ptr_B,
+                                 const J* __restrict__ csr_col_ind_B,
+                                 const T* __restrict__ csr_val_B,
+                                 U beta_device_host,
+                                 const I* __restrict__ csr_row_ptr_D,
+                                 const J* __restrict__ csr_col_ind_D,
+                                 const T* __restrict__ csr_val_D,
+                                 const I* __restrict__ csr_row_ptr_C,
+                                 J* __restrict__ csr_col_ind_C,
+                                 T* __restrict__ csr_val_C,
+                                 rocsparse_index_base idx_base_A,
+                                 rocsparse_index_base idx_base_B,
+                                 rocsparse_index_base idx_base_C,
+                                 rocsparse_index_base idx_base_D,
+                                 bool                 mul,
+                                 bool                 add)
+{
+    csrgemm_fill_wf_per_row_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
+        m,
+        nk,
+        offset,
+        perm,
+        (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
+        csr_row_ptr_A,
+        csr_col_ind_A,
+        csr_val_A,
+        csr_row_ptr_B,
+        csr_col_ind_B,
+        csr_val_B,
+        (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
+        csr_row_ptr_D,
+        csr_col_ind_D,
+        csr_val_D,
+        csr_row_ptr_C,
+        csr_col_ind_C,
+        csr_val_C,
+        idx_base_A,
+        idx_base_B,
+        idx_base_C,
+        idx_base_D,
+        mul,
+        add);
+}
+
+template <unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int HASHSIZE,
+          unsigned int HASHVAL,
+          typename I,
+          typename J,
+          typename T,
+          typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrgemm_fill_block_per_row(J nk,
+                                    const J* __restrict__ offset,
+                                    const J* __restrict__ perm,
+                                    U alpha_device_host,
+                                    const I* __restrict__ csr_row_ptr_A,
+                                    const J* __restrict__ csr_col_ind_A,
+                                    const T* __restrict__ csr_val_A,
+                                    const I* __restrict__ csr_row_ptr_B,
+                                    const J* __restrict__ csr_col_ind_B,
+                                    const T* __restrict__ csr_val_B,
+                                    U beta_device_host,
+                                    const I* __restrict__ csr_row_ptr_D,
+                                    const J* __restrict__ csr_col_ind_D,
+                                    const T* __restrict__ csr_val_D,
+                                    const I* __restrict__ csr_row_ptr_C,
+                                    J* __restrict__ csr_col_ind_C,
+                                    T* __restrict__ csr_val_C,
+                                    rocsparse_index_base idx_base_A,
+                                    rocsparse_index_base idx_base_B,
+                                    rocsparse_index_base idx_base_C,
+                                    rocsparse_index_base idx_base_D,
+                                    bool                 mul,
+                                    bool                 add)
+{
+    csrgemm_fill_block_per_row_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
+        nk,
+        offset,
+        perm,
+        (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
+        csr_row_ptr_A,
+        csr_col_ind_A,
+        csr_val_A,
+        csr_row_ptr_B,
+        csr_col_ind_B,
+        csr_val_B,
+        (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
+        csr_row_ptr_D,
+        csr_col_ind_D,
+        csr_val_D,
+        csr_row_ptr_C,
+        csr_col_ind_C,
+        csr_val_C,
+        idx_base_A,
+        idx_base_B,
+        idx_base_C,
+        idx_base_D,
+        mul,
+        add);
+}
+
+template <unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int CHUNKSIZE,
+          typename I,
+          typename J,
+          typename T,
+          typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrgemm_fill_block_per_row_multipass(J n,
                                               const J* __restrict__ offset,
                                               const J* __restrict__ perm,
-                                              T alpha,
+                                              U alpha_device_host,
                                               const I* __restrict__ csr_row_ptr_A,
                                               const J* __restrict__ csr_col_ind_A,
                                               const T* __restrict__ csr_val_A,
                                               const I* __restrict__ csr_row_ptr_B,
                                               const J* __restrict__ csr_col_ind_B,
                                               const T* __restrict__ csr_val_B,
-                                              T beta,
+                                              U beta_device_host,
                                               const I* __restrict__ csr_row_ptr_D,
                                               const J* __restrict__ csr_col_ind_D,
                                               const T* __restrict__ csr_val_D,
                                               const I* __restrict__ csr_row_ptr_C,
                                               J* __restrict__ csr_col_ind_C,
                                               T* __restrict__ csr_val_C,
+                                              I* __restrict__ workspace_B,
                                               rocsparse_index_base idx_base_A,
                                               rocsparse_index_base idx_base_B,
                                               rocsparse_index_base idx_base_C,
@@ -63,309 +183,18 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                                               bool                 mul,
                                               bool                 add)
 {
-    csrgemm_fill_wf_per_row_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(m,
-                                                                         nk,
-                                                                         offset,
-                                                                         perm,
-                                                                         alpha,
-                                                                         csr_row_ptr_A,
-                                                                         csr_col_ind_A,
-                                                                         csr_val_A,
-                                                                         csr_row_ptr_B,
-                                                                         csr_col_ind_B,
-                                                                         csr_val_B,
-                                                                         beta,
-                                                                         csr_row_ptr_D,
-                                                                         csr_col_ind_D,
-                                                                         csr_val_D,
-                                                                         csr_row_ptr_C,
-                                                                         csr_col_ind_C,
-                                                                         csr_val_C,
-                                                                         idx_base_A,
-                                                                         idx_base_B,
-                                                                         idx_base_C,
-                                                                         idx_base_D,
-                                                                         mul,
-                                                                         add);
-}
-
-template <unsigned int BLOCKSIZE,
-          unsigned int WFSIZE,
-          unsigned int HASHSIZE,
-          unsigned int HASHVAL,
-          typename I,
-          typename J,
-          typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_fill_wf_per_row_device_pointer(J m,
-                                                J nk,
-                                                const J* __restrict__ offset,
-                                                const J* __restrict__ perm,
-                                                const T* __restrict__ alpha,
-                                                const I* __restrict__ csr_row_ptr_A,
-                                                const J* __restrict__ csr_col_ind_A,
-                                                const T* __restrict__ csr_val_A,
-                                                const I* __restrict__ csr_row_ptr_B,
-                                                const J* __restrict__ csr_col_ind_B,
-                                                const T* __restrict__ csr_val_B,
-                                                const T* __restrict__ beta,
-                                                const I* __restrict__ csr_row_ptr_D,
-                                                const J* __restrict__ csr_col_ind_D,
-                                                const T* __restrict__ csr_val_D,
-                                                const I* __restrict__ csr_row_ptr_C,
-                                                J* __restrict__ csr_col_ind_C,
-                                                T* __restrict__ csr_val_C,
-                                                rocsparse_index_base idx_base_A,
-                                                rocsparse_index_base idx_base_B,
-                                                rocsparse_index_base idx_base_C,
-                                                rocsparse_index_base idx_base_D,
-                                                bool                 mul,
-                                                bool                 add)
-{
-    csrgemm_fill_wf_per_row_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
-        m,
-        nk,
-        offset,
-        perm,
-        (mul == true) ? *alpha : static_cast<T>(0),
-        csr_row_ptr_A,
-        csr_col_ind_A,
-        csr_val_A,
-        csr_row_ptr_B,
-        csr_col_ind_B,
-        csr_val_B,
-        (add == true) ? *beta : static_cast<T>(0),
-        csr_row_ptr_D,
-        csr_col_ind_D,
-        csr_val_D,
-        csr_row_ptr_C,
-        csr_col_ind_C,
-        csr_val_C,
-        idx_base_A,
-        idx_base_B,
-        idx_base_C,
-        idx_base_D,
-        mul,
-        add);
-}
-
-template <unsigned int BLOCKSIZE,
-          unsigned int WFSIZE,
-          unsigned int HASHSIZE,
-          unsigned int HASHVAL,
-          typename I,
-          typename J,
-          typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_fill_block_per_row_host_pointer(J nk,
-                                                 const J* __restrict__ offset,
-                                                 const J* __restrict__ perm,
-                                                 T alpha,
-                                                 const I* __restrict__ csr_row_ptr_A,
-                                                 const J* __restrict__ csr_col_ind_A,
-                                                 const T* __restrict__ csr_val_A,
-                                                 const I* __restrict__ csr_row_ptr_B,
-                                                 const J* __restrict__ csr_col_ind_B,
-                                                 const T* __restrict__ csr_val_B,
-                                                 T beta,
-                                                 const I* __restrict__ csr_row_ptr_D,
-                                                 const J* __restrict__ csr_col_ind_D,
-                                                 const T* __restrict__ csr_val_D,
-                                                 const I* __restrict__ csr_row_ptr_C,
-                                                 J* __restrict__ csr_col_ind_C,
-                                                 T* __restrict__ csr_val_C,
-                                                 rocsparse_index_base idx_base_A,
-                                                 rocsparse_index_base idx_base_B,
-                                                 rocsparse_index_base idx_base_C,
-                                                 rocsparse_index_base idx_base_D,
-                                                 bool                 mul,
-                                                 bool                 add)
-{
-    csrgemm_fill_block_per_row_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(nk,
-                                                                            offset,
-                                                                            perm,
-                                                                            alpha,
-                                                                            csr_row_ptr_A,
-                                                                            csr_col_ind_A,
-                                                                            csr_val_A,
-                                                                            csr_row_ptr_B,
-                                                                            csr_col_ind_B,
-                                                                            csr_val_B,
-                                                                            beta,
-                                                                            csr_row_ptr_D,
-                                                                            csr_col_ind_D,
-                                                                            csr_val_D,
-                                                                            csr_row_ptr_C,
-                                                                            csr_col_ind_C,
-                                                                            csr_val_C,
-                                                                            idx_base_A,
-                                                                            idx_base_B,
-                                                                            idx_base_C,
-                                                                            idx_base_D,
-                                                                            mul,
-                                                                            add);
-}
-
-template <unsigned int BLOCKSIZE,
-          unsigned int WFSIZE,
-          unsigned int HASHSIZE,
-          unsigned int HASHVAL,
-          typename I,
-          typename J,
-          typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_fill_block_per_row_device_pointer(J nk,
-                                                   const J* __restrict__ offset,
-                                                   const J* __restrict__ perm,
-                                                   const T* __restrict__ alpha,
-                                                   const I* __restrict__ csr_row_ptr_A,
-                                                   const J* __restrict__ csr_col_ind_A,
-                                                   const T* __restrict__ csr_val_A,
-                                                   const I* __restrict__ csr_row_ptr_B,
-                                                   const J* __restrict__ csr_col_ind_B,
-                                                   const T* __restrict__ csr_val_B,
-                                                   const T* __restrict__ beta,
-                                                   const I* __restrict__ csr_row_ptr_D,
-                                                   const J* __restrict__ csr_col_ind_D,
-                                                   const T* __restrict__ csr_val_D,
-                                                   const I* __restrict__ csr_row_ptr_C,
-                                                   J* __restrict__ csr_col_ind_C,
-                                                   T* __restrict__ csr_val_C,
-                                                   rocsparse_index_base idx_base_A,
-                                                   rocsparse_index_base idx_base_B,
-                                                   rocsparse_index_base idx_base_C,
-                                                   rocsparse_index_base idx_base_D,
-                                                   bool                 mul,
-                                                   bool                 add)
-{
-    csrgemm_fill_block_per_row_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
-        nk,
-        offset,
-        perm,
-        (mul == true) ? *alpha : static_cast<T>(0),
-        csr_row_ptr_A,
-        csr_col_ind_A,
-        csr_val_A,
-        csr_row_ptr_B,
-        csr_col_ind_B,
-        csr_val_B,
-        (add == true) ? *beta : static_cast<T>(0),
-        csr_row_ptr_D,
-        csr_col_ind_D,
-        csr_val_D,
-        csr_row_ptr_C,
-        csr_col_ind_C,
-        csr_val_C,
-        idx_base_A,
-        idx_base_B,
-        idx_base_C,
-        idx_base_D,
-        mul,
-        add);
-}
-
-template <unsigned int BLOCKSIZE,
-          unsigned int WFSIZE,
-          unsigned int CHUNKSIZE,
-          typename I,
-          typename J,
-          typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_fill_block_per_row_multipass_host_pointer(J n,
-                                                           const J* __restrict__ offset,
-                                                           const J* __restrict__ perm,
-                                                           T alpha,
-                                                           const I* __restrict__ csr_row_ptr_A,
-                                                           const J* __restrict__ csr_col_ind_A,
-                                                           const T* __restrict__ csr_val_A,
-                                                           const I* __restrict__ csr_row_ptr_B,
-                                                           const J* __restrict__ csr_col_ind_B,
-                                                           const T* __restrict__ csr_val_B,
-                                                           T beta,
-                                                           const I* __restrict__ csr_row_ptr_D,
-                                                           const J* __restrict__ csr_col_ind_D,
-                                                           const T* __restrict__ csr_val_D,
-                                                           const I* __restrict__ csr_row_ptr_C,
-                                                           J* __restrict__ csr_col_ind_C,
-                                                           T* __restrict__ csr_val_C,
-                                                           I* __restrict__ workspace_B,
-                                                           rocsparse_index_base idx_base_A,
-                                                           rocsparse_index_base idx_base_B,
-                                                           rocsparse_index_base idx_base_C,
-                                                           rocsparse_index_base idx_base_D,
-                                                           bool                 mul,
-                                                           bool                 add)
-{
-    csrgemm_fill_block_per_row_multipass_device<BLOCKSIZE, WFSIZE, CHUNKSIZE>(n,
-                                                                              offset,
-                                                                              perm,
-                                                                              alpha,
-                                                                              csr_row_ptr_A,
-                                                                              csr_col_ind_A,
-                                                                              csr_val_A,
-                                                                              csr_row_ptr_B,
-                                                                              csr_col_ind_B,
-                                                                              csr_val_B,
-                                                                              beta,
-                                                                              csr_row_ptr_D,
-                                                                              csr_col_ind_D,
-                                                                              csr_val_D,
-                                                                              csr_row_ptr_C,
-                                                                              csr_col_ind_C,
-                                                                              csr_val_C,
-                                                                              workspace_B,
-                                                                              idx_base_A,
-                                                                              idx_base_B,
-                                                                              idx_base_C,
-                                                                              idx_base_D,
-                                                                              mul,
-                                                                              add);
-}
-
-template <unsigned int BLOCKSIZE,
-          unsigned int WFSIZE,
-          unsigned int CHUNKSIZE,
-          typename I,
-          typename J,
-          typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_fill_block_per_row_multipass_device_pointer(J n,
-                                                             const J* __restrict__ offset,
-                                                             const J* __restrict__ perm,
-                                                             const T* __restrict__ alpha,
-                                                             const I* __restrict__ csr_row_ptr_A,
-                                                             const J* __restrict__ csr_col_ind_A,
-                                                             const T* __restrict__ csr_val_A,
-                                                             const I* __restrict__ csr_row_ptr_B,
-                                                             const J* __restrict__ csr_col_ind_B,
-                                                             const T* __restrict__ csr_val_B,
-                                                             const T* __restrict__ beta,
-                                                             const I* __restrict__ csr_row_ptr_D,
-                                                             const J* __restrict__ csr_col_ind_D,
-                                                             const T* __restrict__ csr_val_D,
-                                                             const I* __restrict__ csr_row_ptr_C,
-                                                             J* __restrict__ csr_col_ind_C,
-                                                             T* __restrict__ csr_val_C,
-                                                             I* __restrict__ workspace_B,
-                                                             rocsparse_index_base idx_base_A,
-                                                             rocsparse_index_base idx_base_B,
-                                                             rocsparse_index_base idx_base_C,
-                                                             rocsparse_index_base idx_base_D,
-                                                             bool                 mul,
-                                                             bool                 add)
-{
     csrgemm_fill_block_per_row_multipass_device<BLOCKSIZE, WFSIZE, CHUNKSIZE>(
         n,
         offset,
         perm,
-        (mul == true) ? *alpha : static_cast<T>(0),
+        (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
         csr_row_ptr_A,
         csr_col_ind_A,
         csr_val_A,
         csr_row_ptr_B,
         csr_col_ind_B,
         csr_val_B,
-        (add == true) ? *beta : static_cast<T>(0),
+        (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
         csr_row_ptr_D,
         csr_col_ind_D,
         csr_val_D,
@@ -386,6 +215,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 template <typename I,
           typename J,
           typename T,
+          typename U,
           typename std::enable_if<
               std::is_same<T, rocsparse_double_complex>::value
                   || (std::is_same<T, double>::value && std::is_same<I, int64_t>::value
@@ -401,14 +231,14 @@ static inline rocsparse_status csrgemm_launcher(rocsparse_handle     handle,
                                                 J                    m,
                                                 J                    n,
                                                 J                    k,
-                                                const T*             alpha,
+                                                U                    alpha_device_host,
                                                 const I*             csr_row_ptr_A,
                                                 const J*             csr_col_ind_A,
                                                 const T*             csr_val_A,
                                                 const I*             csr_row_ptr_B,
                                                 const J*             csr_col_ind_B,
                                                 const T*             csr_val_B,
-                                                const T*             beta,
+                                                U                    beta_device_host,
                                                 const I*             csr_row_ptr_D,
                                                 const J*             csr_col_ind_D,
                                                 const T*             csr_val_D,
@@ -428,6 +258,7 @@ static inline rocsparse_status csrgemm_launcher(rocsparse_handle     handle,
 template <typename I,
           typename J,
           typename T,
+          typename U,
           typename std::enable_if<
               std::is_same<T, float>::value
                   || (std::is_same<T, double>::value
@@ -443,14 +274,14 @@ static inline rocsparse_status csrgemm_launcher(rocsparse_handle     handle,
                                                 J                    m,
                                                 J                    n,
                                                 J                    k,
-                                                const T*             alpha,
+                                                U                    alpha_device_host,
                                                 const I*             csr_row_ptr_A,
                                                 const J*             csr_col_ind_A,
                                                 const T*             csr_val_A,
                                                 const I*             csr_row_ptr_B,
                                                 const J*             csr_col_ind_B,
                                                 const T*             csr_val_B,
-                                                const T*             beta,
+                                                U                    beta_device_host,
                                                 const I*             csr_row_ptr_D,
                                                 const J*             csr_col_ind_D,
                                                 const T*             csr_val_D,
@@ -467,74 +298,35 @@ static inline rocsparse_status csrgemm_launcher(rocsparse_handle     handle,
 #define CSRGEMM_DIM 1024
 #define CSRGEMM_SUB 64
 #define CSRGEMM_HASHSIZE 4096
-    if(handle->pointer_mode == rocsparse_pointer_mode_device)
-    {
-        hipLaunchKernelGGL((csrgemm_fill_block_per_row_device_pointer<CSRGEMM_DIM,
-                                                                      CSRGEMM_SUB,
-                                                                      CSRGEMM_HASHSIZE,
-                                                                      CSRGEMM_FLL_HASH>),
-                           dim3(group_size),
-                           dim3(CSRGEMM_DIM),
-                           0,
-                           handle->stream,
-                           std::max(k, n),
-                           group_offset,
-                           perm,
-                           alpha,
-                           csr_row_ptr_A,
-                           csr_col_ind_A,
-                           csr_val_A,
-                           csr_row_ptr_B,
-                           csr_col_ind_B,
-                           csr_val_B,
-                           beta,
-                           csr_row_ptr_D,
-                           csr_col_ind_D,
-                           csr_val_D,
-                           csr_row_ptr_C,
-                           csr_col_ind_C,
-                           csr_val_C,
-                           base_A,
-                           base_B,
-                           base_C,
-                           base_D,
-                           mul,
-                           add);
-    }
-    else
-    {
-        hipLaunchKernelGGL((csrgemm_fill_block_per_row_host_pointer<CSRGEMM_DIM,
-                                                                    CSRGEMM_SUB,
-                                                                    CSRGEMM_HASHSIZE,
-                                                                    CSRGEMM_FLL_HASH>),
-                           dim3(group_size),
-                           dim3(CSRGEMM_DIM),
-                           0,
-                           handle->stream,
-                           std::max(k, n),
-                           group_offset,
-                           perm,
-                           mul ? *alpha : static_cast<T>(0),
-                           csr_row_ptr_A,
-                           csr_col_ind_A,
-                           csr_val_A,
-                           csr_row_ptr_B,
-                           csr_col_ind_B,
-                           csr_val_B,
-                           add ? *beta : static_cast<T>(0),
-                           csr_row_ptr_D,
-                           csr_col_ind_D,
-                           csr_val_D,
-                           csr_row_ptr_C,
-                           csr_col_ind_C,
-                           csr_val_C,
-                           base_A,
-                           base_B,
-                           base_C,
-                           base_D,
-                           mul,
-                           add);
-    }
+    hipLaunchKernelGGL(
+        (csrgemm_fill_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_FLL_HASH>),
+        dim3(group_size),
+        dim3(CSRGEMM_DIM),
+        0,
+        handle->stream,
+        std::max(k, n),
+        group_offset,
+        perm,
+        alpha_device_host,
+        csr_row_ptr_A,
+        csr_col_ind_A,
+        csr_val_A,
+        csr_row_ptr_B,
+        csr_col_ind_B,
+        csr_val_B,
+        beta_device_host,
+        csr_row_ptr_D,
+        csr_col_ind_D,
+        csr_val_D,
+        csr_row_ptr_C,
+        csr_col_ind_C,
+        csr_val_C,
+        base_A,
+        base_B,
+        base_C,
+        base_D,
+        mul,
+        add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -542,14 +334,14 @@ static inline rocsparse_status csrgemm_launcher(rocsparse_handle     handle,
     return rocsparse_status_success;
 }
 
-template <typename I, typename J, typename T>
-static inline rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handle,
-                                                               rocsparse_operation       trans_A,
-                                                               rocsparse_operation       trans_B,
-                                                               J                         m,
-                                                               J                         n,
-                                                               J                         k,
-                                                               const T*                  alpha,
+template <typename I, typename J, typename T, typename U>
+static inline rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle    handle,
+                                                               rocsparse_operation trans_A,
+                                                               rocsparse_operation trans_B,
+                                                               J                   m,
+                                                               J                   n,
+                                                               J                   k,
+                                                               U alpha_device_host,
                                                                const rocsparse_mat_descr descr_A,
                                                                I                         nnz_A,
                                                                const T*                  csr_val_A,
@@ -560,7 +352,7 @@ static inline rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle 
                                                                const T*                  csr_val_B,
                                                                const I* csr_row_ptr_B,
                                                                const J* csr_col_ind_B,
-                                                               const T* beta,
+                                                               U        beta_device_host,
                                                                const rocsparse_mat_descr descr_D,
                                                                I                         nnz_D,
                                                                const T*                  csr_val_D,
@@ -737,717 +529,350 @@ static inline rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle 
     }
 
     // Compute columns and accumulate values for each group
-
-    // pointer mode device
-    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    // Group 0: 0 - 16 non-zeros per row
+    if(h_group_size[0] > 0)
     {
-        // Group 0: 0 - 16 non-zeros per row
-        if(h_group_size[0] > 0)
-        {
 #define CSRGEMM_DIM 256
 #define CSRGEMM_SUB 8
 #define CSRGEMM_HASHSIZE 16
-            hipLaunchKernelGGL((csrgemm_fill_wf_per_row_device_pointer<CSRGEMM_DIM,
-                                                                       CSRGEMM_SUB,
-                                                                       CSRGEMM_HASHSIZE,
-                                                                       CSRGEMM_FLL_HASH>),
-                               dim3((h_group_size[0] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               h_group_size[0],
-                               std::max(k, n),
-                               &d_group_offset[0],
-                               d_perm,
-                               alpha,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               beta,
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
+        hipLaunchKernelGGL(
+            (csrgemm_fill_wf_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_FLL_HASH>),
+            dim3((h_group_size[0] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
+            dim3(CSRGEMM_DIM),
+            0,
+            stream,
+            h_group_size[0],
+            std::max(k, n),
+            &d_group_offset[0],
+            d_perm,
+            alpha_device_host,
+            csr_row_ptr_A,
+            csr_col_ind_A,
+            csr_val_A,
+            csr_row_ptr_B,
+            csr_col_ind_B,
+            csr_val_B,
+            beta_device_host,
+            csr_row_ptr_D,
+            csr_col_ind_D,
+            csr_val_D,
+            csr_row_ptr_C,
+            csr_col_ind_C,
+            csr_val_C,
+            base_A,
+            base_B,
+            descr_C->base,
+            base_D,
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
-        }
-
-        // Group 1: 17 - 32 non-zeros per row
-        if(h_group_size[1] > 0)
-        {
-#define CSRGEMM_DIM 256
-#define CSRGEMM_SUB 16
-#define CSRGEMM_HASHSIZE 32
-            hipLaunchKernelGGL((csrgemm_fill_wf_per_row_device_pointer<CSRGEMM_DIM,
-                                                                       CSRGEMM_SUB,
-                                                                       CSRGEMM_HASHSIZE,
-                                                                       CSRGEMM_FLL_HASH>),
-                               dim3((h_group_size[1] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               h_group_size[1],
-                               std::max(k, n),
-                               &d_group_offset[1],
-                               d_perm,
-                               alpha,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               beta,
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
-#undef CSRGEMM_HASHSIZE
-#undef CSRGEMM_SUB
-#undef CSRGEMM_DIM
-        }
-
-        // Group 2: 33 - 256 non-zeros per row
-        if(h_group_size[2] > 0)
-        {
-#define CSRGEMM_DIM 128
-#define CSRGEMM_SUB 16
-#define CSRGEMM_HASHSIZE 256
-            hipLaunchKernelGGL((csrgemm_fill_block_per_row_device_pointer<CSRGEMM_DIM,
-                                                                          CSRGEMM_SUB,
-                                                                          CSRGEMM_HASHSIZE,
-                                                                          CSRGEMM_FLL_HASH>),
-                               dim3(h_group_size[2]),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               std::max(k, n),
-                               &d_group_offset[2],
-                               d_perm,
-                               alpha,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               beta,
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
-#undef CSRGEMM_HASHSIZE
-#undef CSRGEMM_SUB
-#undef CSRGEMM_DIM
-        }
-
-        // Group 3: 257 - 512 non-zeros per row
-        if(h_group_size[3] > 0)
-        {
-#define CSRGEMM_DIM 256
-#define CSRGEMM_SUB 32
-#define CSRGEMM_HASHSIZE 512
-            hipLaunchKernelGGL((csrgemm_fill_block_per_row_device_pointer<CSRGEMM_DIM,
-                                                                          CSRGEMM_SUB,
-                                                                          CSRGEMM_HASHSIZE,
-                                                                          CSRGEMM_FLL_HASH>),
-                               dim3(h_group_size[3]),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               std::max(k, n),
-                               &d_group_offset[3],
-                               d_perm,
-                               alpha,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               beta,
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
-#undef CSRGEMM_HASHSIZE
-#undef CSRGEMM_SUB
-#undef CSRGEMM_DIM
-        }
-
-        // Group 4: 513 - 1024 non-zeros per row
-        if(h_group_size[4] > 0)
-        {
-#define CSRGEMM_DIM 512
-#define CSRGEMM_SUB 32
-#define CSRGEMM_HASHSIZE 1024
-            hipLaunchKernelGGL((csrgemm_fill_block_per_row_device_pointer<CSRGEMM_DIM,
-                                                                          CSRGEMM_SUB,
-                                                                          CSRGEMM_HASHSIZE,
-                                                                          CSRGEMM_FLL_HASH>),
-                               dim3(h_group_size[4]),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               std::max(k, n),
-                               &d_group_offset[4],
-                               d_perm,
-                               alpha,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               beta,
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
-#undef CSRGEMM_HASHSIZE
-#undef CSRGEMM_SUB
-#undef CSRGEMM_DIM
-        }
-
-        // Group 5: 1025 - 2048 non-zeros per row
-        if(h_group_size[5] > 0)
-        {
-#define CSRGEMM_DIM 1024
-#define CSRGEMM_SUB 32
-#define CSRGEMM_HASHSIZE 2048
-            hipLaunchKernelGGL((csrgemm_fill_block_per_row_device_pointer<CSRGEMM_DIM,
-                                                                          CSRGEMM_SUB,
-                                                                          CSRGEMM_HASHSIZE,
-                                                                          CSRGEMM_FLL_HASH>),
-                               dim3(h_group_size[5]),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               std::max(k, n),
-                               &d_group_offset[5],
-                               d_perm,
-                               alpha,
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               beta,
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
-#undef CSRGEMM_HASHSIZE
-#undef CSRGEMM_SUB
-#undef CSRGEMM_DIM
-        }
-
-#ifndef rocsparse_ILP64
-        // Group 6: 2049 - 4096 non-zeros per row
-        if(h_group_size[6] > 0 && !exceeding_smem)
-        {
-            RETURN_IF_ROCSPARSE_ERROR(csrgemm_launcher(handle,
-                                                       h_group_size[6],
-                                                       &d_group_offset[6],
-                                                       d_perm,
-                                                       m,
-                                                       n,
-                                                       k,
-                                                       alpha,
-                                                       csr_row_ptr_A,
-                                                       csr_col_ind_A,
-                                                       csr_val_A,
-                                                       csr_row_ptr_B,
-                                                       csr_col_ind_B,
-                                                       csr_val_B,
-                                                       beta,
-                                                       csr_row_ptr_D,
-                                                       csr_col_ind_D,
-                                                       csr_val_D,
-                                                       csr_row_ptr_C,
-                                                       csr_col_ind_C,
-                                                       csr_val_C,
-                                                       base_A,
-                                                       base_B,
-                                                       descr_C->base,
-                                                       base_D,
-                                                       info_C->csrgemm_info->mul,
-                                                       info_C->csrgemm_info->add));
-        }
-#endif
-
-        // Group 7: more than 4096 non-zeros per row
-        if(h_group_size[7] > 0)
-        {
-            // Matrices B and D must be sorted in order to run this path
-            if(descr_B->storage_mode == rocsparse_storage_mode_unsorted
-               || (info_C->csrgemm_info->add
-                       ? descr_D->storage_mode == rocsparse_storage_mode_unsorted
-                       : false))
-            {
-                return rocsparse_status_requires_sorted_storage;
-            }
-
-#define CSRGEMM_DIM 512
-#define CSRGEMM_SUB 16
-#define CSRGEMM_CHUNKSIZE 2048
-            I* workspace_B = nullptr;
-
-            if(info_C->csrgemm_info->mul == true)
-            {
-                // Allocate additional buffer for C = alpha * A * B
-                RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&workspace_B, sizeof(I) * nnz_A));
-            }
-
-            hipLaunchKernelGGL(
-                (csrgemm_fill_block_per_row_multipass_device_pointer<CSRGEMM_DIM,
-                                                                     CSRGEMM_SUB,
-                                                                     CSRGEMM_CHUNKSIZE>),
-                dim3(h_group_size[7]),
-                dim3(CSRGEMM_DIM),
-                0,
-                stream,
-                n,
-                &d_group_offset[7],
-                d_perm,
-                alpha,
-                csr_row_ptr_A,
-                csr_col_ind_A,
-                csr_val_A,
-                csr_row_ptr_B,
-                csr_col_ind_B,
-                csr_val_B,
-                beta,
-                csr_row_ptr_D,
-                csr_col_ind_D,
-                csr_val_D,
-                csr_row_ptr_C,
-                csr_col_ind_C,
-                csr_val_C,
-                workspace_B,
-                base_A,
-                base_B,
-                descr_C->base,
-                base_D,
-                info_C->csrgemm_info->mul,
-                info_C->csrgemm_info->add);
-
-            if(info_C->csrgemm_info->mul == true)
-            {
-                RETURN_IF_HIP_ERROR(rocsparse_hipFree(workspace_B));
-            }
-#undef CSRGEMM_CHUNKSIZE
-#undef CSRGEMM_SUB
-#undef CSRGEMM_DIM
-        }
     }
-    else
-    {
-        // Group 0: 0 - 16 non-zeros per row
-        if(h_group_size[0] > 0)
-        {
-#define CSRGEMM_DIM 256
-#define CSRGEMM_SUB 8
-#define CSRGEMM_HASHSIZE 16
-            hipLaunchKernelGGL((csrgemm_fill_wf_per_row_host_pointer<CSRGEMM_DIM,
-                                                                     CSRGEMM_SUB,
-                                                                     CSRGEMM_HASHSIZE,
-                                                                     CSRGEMM_FLL_HASH>),
-                               dim3((h_group_size[0] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               h_group_size[0],
-                               std::max(k, n),
-                               &d_group_offset[0],
-                               d_perm,
-                               (info_C->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               (info_C->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
-#undef CSRGEMM_HASHSIZE
-#undef CSRGEMM_SUB
-#undef CSRGEMM_DIM
-        }
 
-        // Group 1: 17 - 32 non-zeros per row
-        if(h_group_size[1] > 0)
-        {
+    // Group 1: 17 - 32 non-zeros per row
+    if(h_group_size[1] > 0)
+    {
 #define CSRGEMM_DIM 256
 #define CSRGEMM_SUB 16
 #define CSRGEMM_HASHSIZE 32
-            hipLaunchKernelGGL((csrgemm_fill_wf_per_row_host_pointer<CSRGEMM_DIM,
-                                                                     CSRGEMM_SUB,
-                                                                     CSRGEMM_HASHSIZE,
-                                                                     CSRGEMM_FLL_HASH>),
-                               dim3((h_group_size[1] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               h_group_size[1],
-                               std::max(k, n),
-                               &d_group_offset[1],
-                               d_perm,
-                               (info_C->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               (info_C->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
+        hipLaunchKernelGGL(
+            (csrgemm_fill_wf_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_FLL_HASH>),
+            dim3((h_group_size[1] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
+            dim3(CSRGEMM_DIM),
+            0,
+            stream,
+            h_group_size[1],
+            std::max(k, n),
+            &d_group_offset[1],
+            d_perm,
+            alpha_device_host,
+            csr_row_ptr_A,
+            csr_col_ind_A,
+            csr_val_A,
+            csr_row_ptr_B,
+            csr_col_ind_B,
+            csr_val_B,
+            beta_device_host,
+            csr_row_ptr_D,
+            csr_col_ind_D,
+            csr_val_D,
+            csr_row_ptr_C,
+            csr_col_ind_C,
+            csr_val_C,
+            base_A,
+            base_B,
+            descr_C->base,
+            base_D,
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
-        }
+    }
 
-        // Group 2: 33 - 256 non-zeros per row
-        if(h_group_size[2] > 0)
-        {
+    // Group 2: 33 - 256 non-zeros per row
+    if(h_group_size[2] > 0)
+    {
 #define CSRGEMM_DIM 128
 #define CSRGEMM_SUB 16
 #define CSRGEMM_HASHSIZE 256
-            hipLaunchKernelGGL((csrgemm_fill_block_per_row_host_pointer<CSRGEMM_DIM,
-                                                                        CSRGEMM_SUB,
-                                                                        CSRGEMM_HASHSIZE,
-                                                                        CSRGEMM_FLL_HASH>),
-                               dim3(h_group_size[2]),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               std::max(k, n),
-                               &d_group_offset[2],
-                               d_perm,
-                               (info_C->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               (info_C->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
+        hipLaunchKernelGGL((csrgemm_fill_block_per_row<CSRGEMM_DIM,
+                                                       CSRGEMM_SUB,
+                                                       CSRGEMM_HASHSIZE,
+                                                       CSRGEMM_FLL_HASH>),
+                           dim3(h_group_size[2]),
+                           dim3(CSRGEMM_DIM),
+                           0,
+                           stream,
+                           std::max(k, n),
+                           &d_group_offset[2],
+                           d_perm,
+                           alpha_device_host,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_val_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_val_B,
+                           beta_device_host,
+                           csr_row_ptr_D,
+                           csr_col_ind_D,
+                           csr_val_D,
+                           csr_row_ptr_C,
+                           csr_col_ind_C,
+                           csr_val_C,
+                           base_A,
+                           base_B,
+                           descr_C->base,
+                           base_D,
+                           info_C->csrgemm_info->mul,
+                           info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
-        }
+    }
 
-        // Group 3: 257 - 512 non-zeros per row
-        if(h_group_size[3] > 0)
-        {
+    // Group 3: 257 - 512 non-zeros per row
+    if(h_group_size[3] > 0)
+    {
 #define CSRGEMM_DIM 256
 #define CSRGEMM_SUB 32
 #define CSRGEMM_HASHSIZE 512
-            hipLaunchKernelGGL((csrgemm_fill_block_per_row_host_pointer<CSRGEMM_DIM,
-                                                                        CSRGEMM_SUB,
-                                                                        CSRGEMM_HASHSIZE,
-                                                                        CSRGEMM_FLL_HASH>),
-                               dim3(h_group_size[3]),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               std::max(k, n),
-                               &d_group_offset[3],
-                               d_perm,
-                               (info_C->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               (info_C->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
+        hipLaunchKernelGGL((csrgemm_fill_block_per_row<CSRGEMM_DIM,
+                                                       CSRGEMM_SUB,
+                                                       CSRGEMM_HASHSIZE,
+                                                       CSRGEMM_FLL_HASH>),
+                           dim3(h_group_size[3]),
+                           dim3(CSRGEMM_DIM),
+                           0,
+                           stream,
+                           std::max(k, n),
+                           &d_group_offset[3],
+                           d_perm,
+                           alpha_device_host,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_val_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_val_B,
+                           beta_device_host,
+                           csr_row_ptr_D,
+                           csr_col_ind_D,
+                           csr_val_D,
+                           csr_row_ptr_C,
+                           csr_col_ind_C,
+                           csr_val_C,
+                           base_A,
+                           base_B,
+                           descr_C->base,
+                           base_D,
+                           info_C->csrgemm_info->mul,
+                           info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
-        }
+    }
 
-        // Group 4: 513 - 1024 non-zeros per row
-        if(h_group_size[4] > 0)
-        {
+    // Group 4: 513 - 1024 non-zeros per row
+    if(h_group_size[4] > 0)
+    {
 #define CSRGEMM_DIM 512
 #define CSRGEMM_SUB 32
 #define CSRGEMM_HASHSIZE 1024
-            hipLaunchKernelGGL((csrgemm_fill_block_per_row_host_pointer<CSRGEMM_DIM,
-                                                                        CSRGEMM_SUB,
-                                                                        CSRGEMM_HASHSIZE,
-                                                                        CSRGEMM_FLL_HASH>),
-                               dim3(h_group_size[4]),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               std::max(k, n),
-                               &d_group_offset[4],
-                               d_perm,
-                               (info_C->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               (info_C->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
+        hipLaunchKernelGGL((csrgemm_fill_block_per_row<CSRGEMM_DIM,
+                                                       CSRGEMM_SUB,
+                                                       CSRGEMM_HASHSIZE,
+                                                       CSRGEMM_FLL_HASH>),
+                           dim3(h_group_size[4]),
+                           dim3(CSRGEMM_DIM),
+                           0,
+                           stream,
+                           std::max(k, n),
+                           &d_group_offset[4],
+                           d_perm,
+                           alpha_device_host,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_val_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_val_B,
+                           beta_device_host,
+                           csr_row_ptr_D,
+                           csr_col_ind_D,
+                           csr_val_D,
+                           csr_row_ptr_C,
+                           csr_col_ind_C,
+                           csr_val_C,
+                           base_A,
+                           base_B,
+                           descr_C->base,
+                           base_D,
+                           info_C->csrgemm_info->mul,
+                           info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
-        }
+    }
 
-        // Group 5: 1025 - 2048 non-zeros per row
-        if(h_group_size[5] > 0)
-        {
+    // Group 5: 1025 - 2048 non-zeros per row
+    if(h_group_size[5] > 0)
+    {
 #define CSRGEMM_DIM 1024
 #define CSRGEMM_SUB 32
 #define CSRGEMM_HASHSIZE 2048
-            hipLaunchKernelGGL((csrgemm_fill_block_per_row_host_pointer<CSRGEMM_DIM,
-                                                                        CSRGEMM_SUB,
-                                                                        CSRGEMM_HASHSIZE,
-                                                                        CSRGEMM_FLL_HASH>),
-                               dim3(h_group_size[5]),
-                               dim3(CSRGEMM_DIM),
-                               0,
-                               stream,
-                               std::max(k, n),
-                               &d_group_offset[5],
-                               d_perm,
-                               (info_C->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
-                               csr_row_ptr_A,
-                               csr_col_ind_A,
-                               csr_val_A,
-                               csr_row_ptr_B,
-                               csr_col_ind_B,
-                               csr_val_B,
-                               (info_C->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
-                               csr_row_ptr_D,
-                               csr_col_ind_D,
-                               csr_val_D,
-                               csr_row_ptr_C,
-                               csr_col_ind_C,
-                               csr_val_C,
-                               base_A,
-                               base_B,
-                               descr_C->base,
-                               base_D,
-                               info_C->csrgemm_info->mul,
-                               info_C->csrgemm_info->add);
+        hipLaunchKernelGGL((csrgemm_fill_block_per_row<CSRGEMM_DIM,
+                                                       CSRGEMM_SUB,
+                                                       CSRGEMM_HASHSIZE,
+                                                       CSRGEMM_FLL_HASH>),
+                           dim3(h_group_size[5]),
+                           dim3(CSRGEMM_DIM),
+                           0,
+                           stream,
+                           std::max(k, n),
+                           &d_group_offset[5],
+                           d_perm,
+                           alpha_device_host,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_val_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_val_B,
+                           beta_device_host,
+                           csr_row_ptr_D,
+                           csr_col_ind_D,
+                           csr_val_D,
+                           csr_row_ptr_C,
+                           csr_col_ind_C,
+                           csr_val_C,
+                           base_A,
+                           base_B,
+                           descr_C->base,
+                           base_D,
+                           info_C->csrgemm_info->mul,
+                           info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
-        }
+    }
 
 #ifndef rocsparse_ILP64
-        // Group 6: 2049 - 4096 non-zeros per row
-        if(h_group_size[6] > 0 && !exceeding_smem)
-        {
-            RETURN_IF_ROCSPARSE_ERROR(csrgemm_launcher(handle,
-                                                       h_group_size[6],
-                                                       &d_group_offset[6],
-                                                       d_perm,
-                                                       m,
-                                                       n,
-                                                       k,
-                                                       alpha,
-                                                       csr_row_ptr_A,
-                                                       csr_col_ind_A,
-                                                       csr_val_A,
-                                                       csr_row_ptr_B,
-                                                       csr_col_ind_B,
-                                                       csr_val_B,
-                                                       beta,
-                                                       csr_row_ptr_D,
-                                                       csr_col_ind_D,
-                                                       csr_val_D,
-                                                       csr_row_ptr_C,
-                                                       csr_col_ind_C,
-                                                       csr_val_C,
-                                                       base_A,
-                                                       base_B,
-                                                       descr_C->base,
-                                                       base_D,
-                                                       info_C->csrgemm_info->mul,
-                                                       info_C->csrgemm_info->add));
-        }
+    // Group 6: 2049 - 4096 non-zeros per row
+    if(h_group_size[6] > 0 && !exceeding_smem)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(csrgemm_launcher(handle,
+                                                   h_group_size[6],
+                                                   &d_group_offset[6],
+                                                   d_perm,
+                                                   m,
+                                                   n,
+                                                   k,
+                                                   alpha_device_host,
+                                                   csr_row_ptr_A,
+                                                   csr_col_ind_A,
+                                                   csr_val_A,
+                                                   csr_row_ptr_B,
+                                                   csr_col_ind_B,
+                                                   csr_val_B,
+                                                   beta_device_host,
+                                                   csr_row_ptr_D,
+                                                   csr_col_ind_D,
+                                                   csr_val_D,
+                                                   csr_row_ptr_C,
+                                                   csr_col_ind_C,
+                                                   csr_val_C,
+                                                   base_A,
+                                                   base_B,
+                                                   descr_C->base,
+                                                   base_D,
+                                                   info_C->csrgemm_info->mul,
+                                                   info_C->csrgemm_info->add));
+    }
 #endif
 
-        // Group 7: more than 4096 non-zeros per row
-        if(h_group_size[7] > 0)
+    // Group 7: more than 4096 non-zeros per row
+    if(h_group_size[7] > 0)
+    {
+        // Matrices B and D must be sorted in order to run this path
+        if(descr_B->storage_mode == rocsparse_storage_mode_unsorted
+           || (info_C->csrgemm_info->add ? descr_D->storage_mode == rocsparse_storage_mode_unsorted
+                                         : false))
         {
-            // Matrices B and D must be sorted in order to run this path
-            if(descr_B->storage_mode == rocsparse_storage_mode_unsorted
-               || (info_C->csrgemm_info->add
-                       ? descr_D->storage_mode == rocsparse_storage_mode_unsorted
-                       : false))
-            {
-                return rocsparse_status_requires_sorted_storage;
-            }
+            return rocsparse_status_requires_sorted_storage;
+        }
 
 #define CSRGEMM_DIM 512
 #define CSRGEMM_SUB 16
 #define CSRGEMM_CHUNKSIZE 2048
-            I* workspace_B = nullptr;
+        I* workspace_B = nullptr;
 
-            if(info_C->csrgemm_info->mul == true)
-            {
-                // Allocate additional buffer for C = alpha * A * B
-                RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&workspace_B, sizeof(I) * nnz_A));
-            }
+        if(info_C->csrgemm_info->mul == true)
+        {
+            // Allocate additional buffer for C = alpha * A * B
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&workspace_B, sizeof(I) * nnz_A));
+        }
 
-            hipLaunchKernelGGL(
-                (csrgemm_fill_block_per_row_multipass_host_pointer<CSRGEMM_DIM,
-                                                                   CSRGEMM_SUB,
-                                                                   CSRGEMM_CHUNKSIZE>),
-                dim3(h_group_size[7]),
-                dim3(CSRGEMM_DIM),
-                0,
-                stream,
-                n,
-                &d_group_offset[7],
-                d_perm,
-                (info_C->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
-                csr_row_ptr_A,
-                csr_col_ind_A,
-                csr_val_A,
-                csr_row_ptr_B,
-                csr_col_ind_B,
-                csr_val_B,
-                (info_C->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
-                csr_row_ptr_D,
-                csr_col_ind_D,
-                csr_val_D,
-                csr_row_ptr_C,
-                csr_col_ind_C,
-                csr_val_C,
-                workspace_B,
-                base_A,
-                base_B,
-                descr_C->base,
-                base_D,
-                info_C->csrgemm_info->mul,
-                info_C->csrgemm_info->add);
+        hipLaunchKernelGGL(
+            (csrgemm_fill_block_per_row_multipass<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_CHUNKSIZE>),
+            dim3(h_group_size[7]),
+            dim3(CSRGEMM_DIM),
+            0,
+            stream,
+            n,
+            &d_group_offset[7],
+            d_perm,
+            alpha_device_host,
+            csr_row_ptr_A,
+            csr_col_ind_A,
+            csr_val_A,
+            csr_row_ptr_B,
+            csr_col_ind_B,
+            csr_val_B,
+            beta_device_host,
+            csr_row_ptr_D,
+            csr_col_ind_D,
+            csr_val_D,
+            csr_row_ptr_C,
+            csr_col_ind_C,
+            csr_val_C,
+            workspace_B,
+            base_A,
+            base_B,
+            descr_C->base,
+            base_D,
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 
-            if(info_C->csrgemm_info->mul == true)
-            {
-                RETURN_IF_HIP_ERROR(rocsparse_hipFree(workspace_B));
-            }
+        if(info_C->csrgemm_info->mul == true)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(workspace_B));
+        }
 #undef CSRGEMM_CHUNKSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
-        }
     }
 
     return rocsparse_status_success;
@@ -1641,35 +1066,70 @@ static inline rocsparse_status rocsparse_csrgemm_multadd_template(rocsparse_hand
     }
 
     // Perform gemm calculation
-    return rocsparse_csrgemm_calc_template(handle,
-                                           trans_A,
-                                           trans_B,
-                                           m,
-                                           n,
-                                           k,
-                                           alpha,
-                                           descr_A,
-                                           nnz_A,
-                                           csr_val_A,
-                                           csr_row_ptr_A,
-                                           csr_col_ind_A,
-                                           descr_B,
-                                           nnz_B,
-                                           csr_val_B,
-                                           csr_row_ptr_B,
-                                           csr_col_ind_B,
-                                           beta,
-                                           descr_D,
-                                           nnz_D,
-                                           csr_val_D,
-                                           csr_row_ptr_D,
-                                           csr_col_ind_D,
-                                           descr_C,
-                                           csr_val_C,
-                                           csr_row_ptr_C,
-                                           csr_col_ind_C,
-                                           info_C,
-                                           temp_buffer);
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        return rocsparse_csrgemm_calc_template(handle,
+                                               trans_A,
+                                               trans_B,
+                                               m,
+                                               n,
+                                               k,
+                                               alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               csr_val_A,
+                                               csr_row_ptr_A,
+                                               csr_col_ind_A,
+                                               descr_B,
+                                               nnz_B,
+                                               csr_val_B,
+                                               csr_row_ptr_B,
+                                               csr_col_ind_B,
+                                               beta,
+                                               descr_D,
+                                               nnz_D,
+                                               csr_val_D,
+                                               csr_row_ptr_D,
+                                               csr_col_ind_D,
+                                               descr_C,
+                                               csr_val_C,
+                                               csr_row_ptr_C,
+                                               csr_col_ind_C,
+                                               info_C,
+                                               temp_buffer);
+    }
+    else
+    {
+        return rocsparse_csrgemm_calc_template(handle,
+                                               trans_A,
+                                               trans_B,
+                                               m,
+                                               n,
+                                               k,
+                                               *alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               csr_val_A,
+                                               csr_row_ptr_A,
+                                               csr_col_ind_A,
+                                               descr_B,
+                                               nnz_B,
+                                               csr_val_B,
+                                               csr_row_ptr_B,
+                                               csr_col_ind_B,
+                                               *beta,
+                                               descr_D,
+                                               nnz_D,
+                                               csr_val_D,
+                                               csr_row_ptr_D,
+                                               csr_col_ind_D,
+                                               descr_C,
+                                               csr_val_C,
+                                               csr_row_ptr_C,
+                                               csr_col_ind_C,
+                                               info_C,
+                                               temp_buffer);
+    }
 }
 
 template <typename I, typename J, typename T>
@@ -1790,49 +1250,80 @@ static inline rocsparse_status rocsparse_csrgemm_mult_template(rocsparse_handle 
     }
 
     // Perform gemm calculation
-    return rocsparse_csrgemm_calc_template(handle,
-                                           trans_A,
-                                           trans_B,
-                                           m,
-                                           n,
-                                           k,
-                                           alpha,
-                                           descr_A,
-                                           nnz_A,
-                                           csr_val_A,
-                                           csr_row_ptr_A,
-                                           csr_col_ind_A,
-                                           descr_B,
-                                           nnz_B,
-                                           csr_val_B,
-                                           csr_row_ptr_B,
-                                           csr_col_ind_B,
-                                           (const T*)nullptr,
-                                           nullptr,
-                                           (I)0,
-                                           (const T*)nullptr,
-                                           (const I*)nullptr,
-                                           (const J*)nullptr,
-                                           descr_C,
-                                           csr_val_C,
-                                           csr_row_ptr_C,
-                                           csr_col_ind_C,
-                                           info_C,
-                                           temp_buffer);
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        return rocsparse_csrgemm_calc_template(handle,
+                                               trans_A,
+                                               trans_B,
+                                               m,
+                                               n,
+                                               k,
+                                               alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               csr_val_A,
+                                               csr_row_ptr_A,
+                                               csr_col_ind_A,
+                                               descr_B,
+                                               nnz_B,
+                                               csr_val_B,
+                                               csr_row_ptr_B,
+                                               csr_col_ind_B,
+                                               (const T*)nullptr,
+                                               nullptr,
+                                               (I)0,
+                                               (const T*)nullptr,
+                                               (const I*)nullptr,
+                                               (const J*)nullptr,
+                                               descr_C,
+                                               csr_val_C,
+                                               csr_row_ptr_C,
+                                               csr_col_ind_C,
+                                               info_C,
+                                               temp_buffer);
+    }
+    else
+    {
+        return rocsparse_csrgemm_calc_template(handle,
+                                               trans_A,
+                                               trans_B,
+                                               m,
+                                               n,
+                                               k,
+                                               *alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               csr_val_A,
+                                               csr_row_ptr_A,
+                                               csr_col_ind_A,
+                                               descr_B,
+                                               nnz_B,
+                                               csr_val_B,
+                                               csr_row_ptr_B,
+                                               csr_col_ind_B,
+                                               static_cast<const T>(0),
+                                               nullptr,
+                                               (I)0,
+                                               (const T*)nullptr,
+                                               (const I*)nullptr,
+                                               (const J*)nullptr,
+                                               descr_C,
+                                               csr_val_C,
+                                               csr_row_ptr_C,
+                                               csr_col_ind_C,
+                                               info_C,
+                                               temp_buffer);
+    }
 }
 
-template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgemm_copy_scale_host_pointer(
-    I size, T alpha, const T* __restrict__ in, T* __restrict__ out)
+template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgemm_copy_scale(I size,
+                                                                      U alpha_device_host,
+                                                                      const T* __restrict__ in,
+                                                                      T* __restrict__ out)
 {
+    auto alpha = load_scalar_device_host(alpha_device_host);
     csrgemm_copy_scale_device<BLOCKSIZE>(size, alpha, in, out);
-}
-
-template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgemm_copy_scale_device_pointer(
-    I size, const T* __restrict__ alpha, const T* __restrict__ in, T* __restrict__ out)
-{
-    csrgemm_copy_scale_device<BLOCKSIZE>(size, *alpha, in, out);
 }
 
 template <typename I, typename J, typename T>
@@ -1950,7 +1441,7 @@ static inline rocsparse_status rocsparse_csrgemm_scal_template(rocsparse_handle 
     // Scale the matrix
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((csrgemm_copy_scale_device_pointer<CSRGEMM_DIM>),
+        hipLaunchKernelGGL((csrgemm_copy_scale<CSRGEMM_DIM>),
                            csrgemm_blocks,
                            csrgemm_threads,
                            0,
@@ -1962,7 +1453,7 @@ static inline rocsparse_status rocsparse_csrgemm_scal_template(rocsparse_handle 
     }
     else
     {
-        hipLaunchKernelGGL((csrgemm_copy_scale_host_pointer<CSRGEMM_DIM>),
+        hipLaunchKernelGGL((csrgemm_copy_scale<CSRGEMM_DIM>),
                            csrgemm_blocks,
                            csrgemm_threads,
                            0,
