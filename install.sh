@@ -429,11 +429,6 @@ if [[ "${build_relocatable}" == true ]]; then
     if ! [ -z ${ROCM_PATH+x} ]; then
         rocm_path=${ROCM_PATH}
     fi
-
-    rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,/opt/rocm/lib:/opt/rocm/lib64"
-    if ! [ -z ${ROCM_RPATH+x} ]; then
-        rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,${ROCM_RPATH}"
-    fi
 fi
 
 # We append customary rocm path; if user provides custom rocm path in ${path}, our
@@ -520,7 +515,8 @@ pushd .
     FC=gfortran CXX=${compiler} CC=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF \
       -DCMAKE_INSTALL_PREFIX=${install_prefix} \
       -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} \
-      -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" \
+      -DCMAKE_SHARED_LINKER_FLAGS="" \
+      -DCMAKE_EXE_LINKER_FLAGS=" -Wl,--disable-new-dtags " \
       -DCMAKE_PREFIX_PATH="${rocm_path} ${rocm_path}/hcc ${rocm_path}/hip" \
       -DCMAKE_MODULE_PATH="${rocm_path}/lib/cmake/hip ${rocm_path}/hip/cmake" \
       -DROCM_DISABLE_LDCONFIG=ON \
