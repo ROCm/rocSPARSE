@@ -24,8 +24,6 @@
 #include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
-#include "auto_testing_bad_arg.hpp"
-
 template <typename T>
 inline void rocsparse_init_csr_and_bsr_matrix(const Arguments&            arg,
                                               std::vector<rocsparse_int>& csr_row_ptr,

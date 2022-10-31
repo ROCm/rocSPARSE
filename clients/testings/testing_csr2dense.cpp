@@ -21,6 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "testing.hpp"
 
 #include "testing_csx2dense.hpp"
 

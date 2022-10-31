@@ -25,7 +25,6 @@
 #include "utility.hpp"
 #include <rocsparse.hpp>
 
-#include "auto_testing_bad_arg.hpp"
 #include "rocsparse_enum.hpp"
 
 template <typename T>
@@ -466,35 +465,35 @@ void testing_bsrmm(const Arguments& arg)
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
         double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "K",
+                            display_key_t::K,
                             K,
-                            "dir",
+                            display_key_t::dir,
                             direction,
-                            "transA",
+                            display_key_t::trans_A,
                             transA,
-                            "transB",
+                            display_key_t::trans_B,
                             transB,
-                            "nnzb",
+                            display_key_t::nnzb,
                             dA.nnzb,
-                            "bloc_dim",
+                            display_key_t::bdim,
                             block_dim,
-                            "nnz_B",
+                            display_key_t::nnz_B,
                             dB.m * dB.n,
-                            "nnz_C",
+                            display_key_t::nnz_C,
                             dC.m * dC.n,
-                            "alpha",
+                            display_key_t::alpha,
                             *h_alpha,
-                            "beta",
+                            display_key_t::beta,
                             *h_beta,
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 }

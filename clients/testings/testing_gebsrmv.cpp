@@ -25,8 +25,6 @@
 
 #include "rocsparse_enum.hpp"
 
-#include "auto_testing_bad_arg.hpp"
-
 template <typename T>
 void testing_gebsrmv_bad_arg(const Arguments& arg)
 {

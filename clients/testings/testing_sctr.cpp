@@ -22,7 +22,6 @@
  *
  * ************************************************************************ */
 
-#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename T>

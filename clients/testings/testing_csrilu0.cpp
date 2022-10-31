@@ -26,8 +26,6 @@
 
 #include "testing_csrilu0.hpp"
 
-#include "auto_testing_bad_arg.hpp"
-
 template <typename T>
 void testing_csrilu0_bad_arg(const Arguments& arg)
 {

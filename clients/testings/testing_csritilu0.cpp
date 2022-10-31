@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include "testing_csritilu0.hpp"
-#include "auto_testing_bad_arg.hpp"
+
 #include "rocsparse.hpp"
 #include "rocsparse_enum.hpp"
 #include "testing.hpp"

@@ -23,8 +23,6 @@
 
 #include "testing.hpp"
 
-#include "auto_testing_bad_arg.hpp"
-
 template <typename I, typename T>
 void testing_spsv_coo_bad_arg(const Arguments& arg)
 {

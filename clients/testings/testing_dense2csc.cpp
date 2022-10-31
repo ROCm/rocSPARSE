@@ -22,6 +22,8 @@
  *
  * ************************************************************************ */
 
+#include "testing.hpp"
+
 #include "testing_dense2csx.hpp"
 
 template <typename T>
