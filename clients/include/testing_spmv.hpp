@@ -129,12 +129,20 @@ struct testing_spmv_dispatch_traits<rocsparse_format_csr, I, J, T>
 
     template <typename... Ts>
     static void display_info(const Arguments&         arg,
-                             const char*              trans,
+                             display_key_t::key_t     trans,
                              const char*              trans_value,
                              device_sparse_matrix<T>& dA,
                              Ts&&... ts)
     {
-        display_timing_info(trans, trans_value, "M", dA.m, "N", dA.n, "nnz", dA.nnz, ts...);
+        display_timing_info(trans,
+                            trans_value,
+                            display_key_t::M,
+                            dA.m,
+                            display_key_t::N,
+                            dA.n,
+                            display_key_t::nnz,
+                            dA.nnz,
+                            ts...);
     }
 
     static void host_calculation(rocsparse_operation    trans,
@@ -198,12 +206,20 @@ struct testing_spmv_dispatch_traits<rocsparse_format_csc, I, J, T>
 
     template <typename... Ts>
     static void display_info(const Arguments&         arg,
-                             const char*              trans,
+                             display_key_t::key_t     trans,
                              const char*              trans_value,
                              device_sparse_matrix<T>& dA,
                              Ts&&... ts)
     {
-        display_timing_info(trans, trans_value, "M", dA.m, "N", dA.n, "nnz", dA.nnz, ts...);
+        display_timing_info(trans,
+                            trans_value,
+                            display_key_t::M,
+                            dA.m,
+                            display_key_t::N,
+                            dA.n,
+                            display_key_t::nnz,
+                            dA.nnz,
+                            ts...);
     }
 
     static void host_calculation(rocsparse_operation    trans,
@@ -269,22 +285,22 @@ struct testing_spmv_dispatch_traits<rocsparse_format_bsr, I, J, T>
 
     template <typename... Ts>
     static void display_info(const Arguments&         arg,
-                             const char*              trans,
+                             display_key_t::key_t     trans,
                              const char*              trans_value,
                              device_sparse_matrix<T>& dA,
                              Ts&&... ts)
     {
         display_timing_info(trans,
                             trans_value,
-                            "M",
+                            display_key_t::M,
                             dA.mb * dA.row_block_dim,
-                            "N",
+                            display_key_t::N,
                             dA.nb * dA.col_block_dim,
-                            "nnz",
+                            display_key_t::nnz,
                             dA.nnzb * dA.row_block_dim * dA.col_block_dim,
-                            "bdim",
+                            display_key_t::bdim,
                             dA.row_block_dim,
-                            "bdir",
+                            display_key_t::bdir,
                             rocsparse_direction2string(dA.block_direction),
                             ts...);
     }
@@ -350,12 +366,20 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo, I, I, T>
 
     template <typename... Ts>
     static void display_info(const Arguments&         arg,
-                             const char*              trans,
+                             display_key_t::key_t     trans,
                              const char*              trans_value,
                              device_sparse_matrix<T>& dA,
                              Ts&&... ts)
     {
-        display_timing_info(trans, trans_value, "M", dA.m, "N", dA.n, "nnz", dA.nnz, ts...);
+        display_timing_info(trans,
+                            trans_value,
+                            display_key_t::M,
+                            dA.m,
+                            display_key_t::N,
+                            dA.n,
+                            display_key_t::nnz,
+                            dA.nnz,
+                            ts...);
     }
 
     static void host_calculation(rocsparse_operation    trans,
@@ -416,12 +440,20 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo_aos, I, I, T>
 
     template <typename... Ts>
     static void display_info(const Arguments&         arg,
-                             const char*              trans,
+                             display_key_t::key_t     trans,
                              const char*              trans_value,
                              device_sparse_matrix<T>& dA,
                              Ts&&... ts)
     {
-        display_timing_info(trans, trans_value, "M", dA.m, "N", dA.n, "nnz", dA.nnz, ts...);
+        display_timing_info(trans,
+                            trans_value,
+                            display_key_t::M,
+                            dA.m,
+                            display_key_t::N,
+                            dA.n,
+                            display_key_t::nnz,
+                            dA.nnz,
+                            ts...);
     }
 
     static void host_calculation(rocsparse_operation    trans,
@@ -471,12 +503,20 @@ struct testing_spmv_dispatch_traits<rocsparse_format_ell, I, I, T>
 
     template <typename... Ts>
     static void display_info(const Arguments&         arg,
-                             const char*              trans,
+                             display_key_t::key_t     trans,
                              const char*              trans_value,
                              device_sparse_matrix<T>& dA,
                              Ts&&... ts)
     {
-        display_timing_info(trans, trans_value, "M", dA.m, "N", dA.n, "nnz", dA.nnz, ts...);
+        display_timing_info(trans,
+                            trans_value,
+                            display_key_t::M,
+                            dA.m,
+                            display_key_t::N,
+                            dA.n,
+                            display_key_t::nnz,
+                            dA.nnz,
+                            ts...);
     }
 
     static void host_calculation(rocsparse_operation    trans,
@@ -844,20 +884,20 @@ public:
             const double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
             traits::display_info(arg,
-                                 "trans",
+                                 display_key_t::trans_A,
                                  rocsparse_operation2string(trans),
                                  dA,
-                                 "alpha",
+                                 display_key_t::alpha,
                                  *h_alpha,
-                                 "beta",
+                                 display_key_t::beta,
                                  *h_beta,
-                                 "Algorithm",
+                                 display_key_t::algorithm,
                                  rocsparse_spmvalg2string(alg),
-                                 s_timing_info_perf,
+                                 display_key_t::gflops,
                                  gpu_gflops,
-                                 s_timing_info_bandwidth,
+                                 display_key_t::bandwidth,
                                  gpu_gbyte,
-                                 s_timing_info_time,
+                                 display_key_t::time_ms,
                                  get_gpu_time_msec(gpu_time_used));
         }
 

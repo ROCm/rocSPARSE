@@ -24,8 +24,6 @@
 
 #include "testing.hpp"
 
-#include "auto_testing_bad_arg.hpp"
-
 template <typename T>
 void testing_csrsort_bad_arg(const Arguments& arg)
 {
@@ -278,18 +276,17 @@ void testing_csrsort(const Arguments& arg)
 
         double gbyte_count = csrsort_gbyte_count<T>(M, nnz, permute);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
-
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "nnz",
+                            display_key_t::nnz,
                             nnz,
-                            "permute",
+                            display_key_t::permute,
                             (permute ? "yes" : "no"),
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

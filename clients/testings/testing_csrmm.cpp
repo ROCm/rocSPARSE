@@ -24,8 +24,6 @@
 
 #include "testing.hpp"
 
-#include "auto_testing_bad_arg.hpp"
-
 template <typename T>
 void testing_csrmm_bad_arg(const Arguments& arg)
 {
@@ -405,31 +403,31 @@ void testing_csrmm(const Arguments& arg)
             dA.m, dA.nnz, dB.m * dB.n, dC.m * dC.n, *h_beta != static_cast<T>(0));
         double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "K",
+                            display_key_t::K,
                             K,
-                            "transA",
+                            display_key_t::trans_A,
                             rocsparse_operation2string(transA),
-                            "transB",
+                            display_key_t::trans_B,
                             rocsparse_operation2string(transB),
-                            "nnz_A",
+                            display_key_t::nnz_A,
                             dA.nnz,
-                            "nnz_B",
+                            display_key_t::nnz_B,
                             dB.m * dB.n,
-                            "nnz_C",
+                            display_key_t::nnz_C,
                             dC.m * dC.n,
-                            "alpha",
+                            display_key_t::alpha,
                             *h_alpha,
-                            "beta",
+                            display_key_t::beta,
                             *h_beta,
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

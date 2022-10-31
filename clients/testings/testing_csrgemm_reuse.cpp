@@ -22,7 +22,6 @@
  *
  * ************************************************************************ */
 
-#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename T>
@@ -800,33 +799,33 @@ void testing_csrgemm_reuse(const Arguments& arg)
             sprintf(beta, "%s", ss.str().c_str());
         }
 
-        display_timing_info("opA",
+        display_timing_info(display_key_t::trans_A,
                             rocsparse_operation2string(transA),
-                            "opB",
+                            display_key_t::trans_B,
                             rocsparse_operation2string(transB),
-                            "M",
+                            display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "K",
+                            display_key_t::K,
                             K,
-                            "nnz_A",
+                            display_key_t::nnz_A,
                             d_A.nnz,
-                            "nnz_B",
+                            display_key_t::nnz_B,
                             d_B.nnz,
-                            "nnz_C",
+                            display_key_t::nnz_C,
                             d_C.nnz,
-                            "nnz_D",
+                            display_key_t::nnz_D,
                             d_D.nnz,
-                            "alpha",
+                            display_key_t::alpha,
                             alpha,
-                            "beta",
+                            display_key_t::beta,
                             beta,
-                            "GFlop/s",
+                            display_key_t::gflops,
                             gpu_gflops,
-                            "GB/s",
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            "msec",
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_num_time_used));
     }
 

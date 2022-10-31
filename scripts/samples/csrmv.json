@@ -1,3 +1,3 @@
 {
-    "cmdlines":["-f csrmv --bench-x --rocalution ${ROCSPARSE_BENCH_DATA_DIR}/* --bench-o csrmv_results.json --iters 40 --bench-n 200" ]
+    "cmdlines":["-f csrmv --bench-x --rocalution ${ROCSPARSE_BENCH_DATA_DIR}/* --bench-o csrmv_results.json --iters 400 --bench-n 10" ]
 }

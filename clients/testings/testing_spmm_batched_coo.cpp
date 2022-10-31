@@ -23,7 +23,6 @@
 
 #include "testing.hpp"
 
-#include "auto_testing_bad_arg.hpp"
 #include <tuple>
 
 template <typename I, typename T>

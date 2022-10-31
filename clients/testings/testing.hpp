@@ -22,13 +22,14 @@
  *
  * ************************************************************************ */
 #pragma once
+#include "auto_testing_bad_arg.hpp"
+#include "display.hpp"
 #include "flops.hpp"
 #include "gbyte.hpp"
 #include "rocsparse_check.hpp"
 #include "rocsparse_matrix_factory.hpp"
 #include "utility.hpp"
 #include <rocsparse.hpp>
-
 template <typename T>
 inline T* rocsparse_fake_pointer()
 {
@@ -79,4 +80,38 @@ template <typename T>
 floating_data_t<T> get_near_check_tol(const Arguments& arg)
 {
     return static_cast<floating_data_t<T>>(arg.tolm) * default_tolerance<T>::value;
+}
+
+//
+// Compute gflops
+//
+
+inline double get_gpu_gflops(double gpu_time_used, double gflop_count)
+{
+    return gflop_count / gpu_time_used * 1e6;
+}
+
+template <typename F, typename... Ts>
+inline double get_gpu_gflops(double gpu_time_used, F count, Ts... ts)
+{
+    return get_gpu_gflops(gpu_time_used, count(ts...));
+}
+
+//
+// Compute gbyte
+//
+inline double get_gpu_gbyte(double gpu_time_used, double gbyte_count)
+{
+    return gbyte_count / gpu_time_used * 1e6;
+}
+
+template <typename F, typename... Ts>
+inline double get_gpu_gbyte(double gpu_time_used, F count, Ts... ts)
+{
+    return get_gpu_gbyte(gpu_time_used, count(ts...));
+}
+
+inline double get_gpu_time_msec(double gpu_time_used)
+{
+    return gpu_time_used / 1e3;
 }
