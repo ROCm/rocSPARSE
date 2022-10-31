@@ -30,45 +30,96 @@
 
 #include <rocprim/rocprim.hpp>
 
-#define launch_csr2bsr_2_32_kernel(T, direction, block_size, segment_size)         \
-    hipLaunchKernelGGL((csr2bsr_2_32_kernel<direction, block_size, segment_size>), \
-                       grid_size,                                                  \
-                       block_size,                                                 \
-                       0,                                                          \
-                       stream,                                                     \
-                       m,                                                          \
-                       n,                                                          \
-                       mb,                                                         \
-                       nb,                                                         \
-                       block_dim,                                                  \
-                       csr_descr->base,                                            \
-                       csr_val,                                                    \
-                       csr_row_ptr,                                                \
-                       csr_col_ind,                                                \
-                       bsr_descr->base,                                            \
-                       bsr_val,                                                    \
-                       bsr_row_ptr,                                                \
+#define launch_csr2bsr_wavefront_per_row_multipass_kernel(blocksize, blockdim)            \
+    hipLaunchKernelGGL((csr2bsr_wavefront_per_row_multipass_kernel<blocksize, blockdim>), \
+                       dim3((mb - 1) / (blocksize / (blockdim * blockdim)) + 1),          \
+                       dim3(blocksize),                                                   \
+                       0,                                                                 \
+                       stream,                                                            \
+                       direction,                                                         \
+                       m,                                                                 \
+                       n,                                                                 \
+                       mb,                                                                \
+                       nb,                                                                \
+                       block_dim,                                                         \
+                       csr_descr->base,                                                   \
+                       csr_val,                                                           \
+                       csr_row_ptr,                                                       \
+                       csr_col_ind,                                                       \
+                       bsr_descr->base,                                                   \
+                       bsr_val,                                                           \
+                       bsr_row_ptr,                                                       \
                        bsr_col_ind);
 
-#define launch_csr2bsr_33_64_kernel(T, direction, block_size, rows_per_segment)         \
-    hipLaunchKernelGGL((csr2bsr_33_64_kernel<direction, block_size, rows_per_segment>), \
-                       grid_size,                                                       \
-                       block_size,                                                      \
-                       0,                                                               \
-                       stream,                                                          \
-                       m,                                                               \
-                       n,                                                               \
-                       mb,                                                              \
-                       nb,                                                              \
-                       block_dim,                                                       \
-                       csr_descr->base,                                                 \
-                       csr_val,                                                         \
-                       csr_row_ptr,                                                     \
-                       csr_col_ind,                                                     \
-                       bsr_descr->base,                                                 \
-                       bsr_val,                                                         \
-                       bsr_row_ptr,                                                     \
+#define launch_csr2bsr_block_per_row_multipass_kernel(blocksize, blockdim)            \
+    hipLaunchKernelGGL((csr2bsr_block_per_row_multipass_kernel<blocksize, blockdim>), \
+                       dim3(mb),                                                      \
+                       dim3(blocksize),                                               \
+                       0,                                                             \
+                       stream,                                                        \
+                       direction,                                                     \
+                       m,                                                             \
+                       n,                                                             \
+                       mb,                                                            \
+                       nb,                                                            \
+                       block_dim,                                                     \
+                       csr_descr->base,                                               \
+                       csr_val,                                                       \
+                       csr_row_ptr,                                                   \
+                       csr_col_ind,                                                   \
+                       bsr_descr->base,                                               \
+                       bsr_val,                                                       \
+                       bsr_row_ptr,                                                   \
                        bsr_col_ind);
+
+template <typename T,
+          typename std::enable_if<std::is_same<T, rocsparse_double_complex>::value, int>::type = 0>
+static inline rocsparse_status csr2bsr_64_launcher(rocsparse_handle          handle,
+                                                   rocsparse_direction       direction,
+                                                   rocsparse_int             m,
+                                                   rocsparse_int             n,
+                                                   rocsparse_int             mb,
+                                                   rocsparse_int             nb,
+                                                   const rocsparse_mat_descr csr_descr,
+                                                   const T*                  csr_val,
+                                                   const rocsparse_int*      csr_row_ptr,
+                                                   const rocsparse_int*      csr_col_ind,
+                                                   rocsparse_int             block_dim,
+                                                   const rocsparse_mat_descr bsr_descr,
+                                                   T*                        bsr_val,
+                                                   rocsparse_int*            bsr_row_ptr,
+                                                   rocsparse_int*            bsr_col_ind)
+{
+    return rocsparse_status_internal_error;
+}
+
+template <typename T,
+          typename std::enable_if<std::is_same<T, float>::value || std::is_same<T, double>::value
+                                      || std::is_same<T, rocsparse_float_complex>::value,
+                                  int>::type
+          = 0>
+static inline rocsparse_status csr2bsr_64_launcher(rocsparse_handle          handle,
+                                                   rocsparse_direction       direction,
+                                                   rocsparse_int             m,
+                                                   rocsparse_int             n,
+                                                   rocsparse_int             mb,
+                                                   rocsparse_int             nb,
+                                                   const rocsparse_mat_descr csr_descr,
+                                                   const T*                  csr_val,
+                                                   const rocsparse_int*      csr_row_ptr,
+                                                   const rocsparse_int*      csr_col_ind,
+                                                   rocsparse_int             block_dim,
+                                                   const rocsparse_mat_descr bsr_descr,
+                                                   T*                        bsr_val,
+                                                   rocsparse_int*            bsr_row_ptr,
+                                                   rocsparse_int*            bsr_col_ind)
+{
+    hipStream_t stream = handle->stream;
+
+    launch_csr2bsr_block_per_row_multipass_kernel(256, 64);
+
+    return rocsparse_status_success;
+}
 
 template <typename T>
 rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
@@ -215,19 +266,9 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
 
     if(block_dim == 1)
     {
-        constexpr rocsparse_int block_size = 256;
-        rocsparse_int           grid_size  = mb / block_size;
-        if(mb % block_size != 0)
-        {
-            grid_size++;
-        }
-
-        dim3 blocks(grid_size);
-        dim3 threads(block_size);
-
-        hipLaunchKernelGGL((csr2bsr_block_dim_equals_one_kernel<block_size>),
-                           blocks,
-                           threads,
+        hipLaunchKernelGGL((csr2bsr_block_dim_equals_one_kernel<256>),
+                           dim3((mb - 1) / 256 + 1),
+                           dim3(256),
                            0,
                            stream,
                            m,
@@ -246,94 +287,46 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
         return rocsparse_status_success;
     }
 
-    // Common case where BSR block dimension is small
-    if(block_dim <= 64)
+    if(block_dim <= 4)
     {
-        // A 32 thread wavefront is decomposed as:
-        //      |    bank 0        bank 1       bank 2         bank 3
-        // row 0|  0  1  2  3 |  4  5  6  7 |  8  9 10 11 | 12 13 14 15 |
-        // row 1| 16 17 18 19 | 20 21 22 23 | 24 25 26 27 | 28 29 30 31 |
-        //
-        // Segments can be of size 4 (quarter row), 8 (half row), 16 (full row),
-        // or 32 (wavefront). We assign one segment per BSR block row where the
-        // segment size matches the block dimension as closely as possible while
-        // still being greater than or equal to the block dimension.
-        rocsparse_int block_size   = block_dim > 16 ? 32 : 16;
-        rocsparse_int segment_size = block_dim == 1 ? 2 : block_dim;
-
-        // round segment_size up to next power of 2
-        segment_size--;
-        segment_size |= segment_size >> 1;
-        segment_size |= segment_size >> 2;
-        segment_size |= segment_size >> 4;
-        segment_size |= segment_size >> 8;
-        segment_size |= segment_size >> 16;
-        segment_size++;
-
-        if(block_dim > 32)
+        launch_csr2bsr_wavefront_per_row_multipass_kernel(256, 4);
+    }
+    else if(block_dim <= 8)
+    {
+        if(handle->wavefront_size == 64)
         {
-            segment_size = block_size;
-        }
-
-        rocsparse_int segments_per_block = block_size / segment_size;
-        rocsparse_int grid_size          = (mb + segments_per_block - 1) / segments_per_block;
-
-        if(direction == rocsparse_direction_row)
-        {
-            if(block_dim <= 2)
-            {
-                launch_csr2bsr_2_32_kernel(T, rocsparse_direction_row, 16, 2);
-            }
-            else if(block_dim <= 4)
-            {
-                launch_csr2bsr_2_32_kernel(T, rocsparse_direction_row, 16, 4);
-            }
-            else if(block_dim <= 8)
-            {
-                launch_csr2bsr_2_32_kernel(T, rocsparse_direction_row, 16, 8);
-            }
-            else if(block_dim <= 16)
-            {
-                launch_csr2bsr_2_32_kernel(T, rocsparse_direction_row, 16, 16);
-            }
-            else if(block_dim <= 32)
-            {
-                launch_csr2bsr_2_32_kernel(T, rocsparse_direction_row, 32, 32);
-            }
-            else
-            {
-                // (block_dim <= 64)
-                launch_csr2bsr_33_64_kernel(T, rocsparse_direction_row, 32, 2);
-            }
+            launch_csr2bsr_wavefront_per_row_multipass_kernel(256, 8);
         }
         else
         {
-            if(block_dim <= 2)
-            {
-                launch_csr2bsr_2_32_kernel(T, rocsparse_direction_column, 16, 2);
-            }
-            else if(block_dim <= 4)
-            {
-                launch_csr2bsr_2_32_kernel(T, rocsparse_direction_column, 16, 4);
-            }
-            else if(block_dim <= 8)
-            {
-                launch_csr2bsr_2_32_kernel(T, rocsparse_direction_column, 16, 8);
-            }
-            else if(block_dim <= 16)
-            {
-                launch_csr2bsr_2_32_kernel(T, rocsparse_direction_column, 16, 16);
-            }
-            else if(block_dim <= 32)
-            {
-                launch_csr2bsr_2_32_kernel(T, rocsparse_direction_column, 32, 32);
-            }
-            else
-            {
-                // (block_dim <= 64)
-                launch_csr2bsr_33_64_kernel(T, rocsparse_direction_column, 32, 2);
-            }
+            launch_csr2bsr_block_per_row_multipass_kernel(64, 8);
         }
+    }
+    else if(block_dim <= 16)
+    {
+        launch_csr2bsr_block_per_row_multipass_kernel(256, 16);
+    }
+    else if(block_dim <= 32)
+    {
+        launch_csr2bsr_block_per_row_multipass_kernel(256, 32);
+    }
+    else if(block_dim <= 64 && !std::is_same<T, rocsparse_double_complex>())
+    {
+        csr2bsr_64_launcher(handle,
+                            direction,
+                            m,
+                            n,
+                            mb,
+                            nb,
+                            csr_descr,
+                            csr_val,
+                            csr_row_ptr,
+                            csr_col_ind,
+                            block_dim,
+                            bsr_descr,
+                            bsr_val,
+                            bsr_row_ptr,
+                            bsr_col_ind);
     }
     else
     {
@@ -404,38 +397,38 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
  * ===========================================================================
  */
 
-#define launch_csr2bsr_nnz_2_32_kernel(block_size, segment_size)            \
-    hipLaunchKernelGGL((csr2bsr_nnz_2_32_kernel<block_size, segment_size>), \
-                       dim3(grid_size),                                     \
-                       dim3(block_size),                                    \
-                       0,                                                   \
-                       handle->stream,                                      \
-                       m,                                                   \
-                       n,                                                   \
-                       mb,                                                  \
-                       nb,                                                  \
-                       block_dim,                                           \
-                       csr_descr->base,                                     \
-                       csr_row_ptr,                                         \
-                       csr_col_ind,                                         \
-                       bsr_descr->base,                                     \
+#define launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(blocksize, blockdim)            \
+    hipLaunchKernelGGL((csr2bsr_nnz_wavefront_per_row_multipass_kernel<blocksize, blockdim>), \
+                       dim3((mb - 1) / (blocksize / (blockdim * blockdim)) + 1),              \
+                       dim3(blocksize),                                                       \
+                       0,                                                                     \
+                       handle->stream,                                                        \
+                       m,                                                                     \
+                       n,                                                                     \
+                       mb,                                                                    \
+                       nb,                                                                    \
+                       block_dim,                                                             \
+                       csr_descr->base,                                                       \
+                       csr_row_ptr,                                                           \
+                       csr_col_ind,                                                           \
+                       bsr_descr->base,                                                       \
                        bsr_row_ptr);
 
-#define launch_csr2bsr_nnz_33_64_kernel(block_size, rows_per_segment)            \
-    hipLaunchKernelGGL((csr2bsr_nnz_33_64_kernel<block_size, rows_per_segment>), \
-                       dim3(grid_size),                                          \
-                       dim3(block_size),                                         \
-                       0,                                                        \
-                       handle->stream,                                           \
-                       m,                                                        \
-                       n,                                                        \
-                       mb,                                                       \
-                       nb,                                                       \
-                       block_dim,                                                \
-                       csr_descr->base,                                          \
-                       csr_row_ptr,                                              \
-                       csr_col_ind,                                              \
-                       bsr_descr->base,                                          \
+#define launch_csr2bsr_nnz_block_per_row_multipass_kernel(blocksize, blockdim)            \
+    hipLaunchKernelGGL((csr2bsr_nnz_block_per_row_multipass_kernel<blocksize, blockdim>), \
+                       dim3(mb),                                                          \
+                       dim3(blocksize),                                                   \
+                       0,                                                                 \
+                       handle->stream,                                                    \
+                       m,                                                                 \
+                       n,                                                                 \
+                       mb,                                                                \
+                       nb,                                                                \
+                       block_dim,                                                         \
+                       csr_descr->base,                                                   \
+                       csr_row_ptr,                                                       \
+                       csr_col_ind,                                                       \
+                       bsr_descr->base,                                                   \
                        bsr_row_ptr);
 
 extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          handle,
@@ -550,13 +543,11 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
     // If block dimension is one then BSR is equal to CSR
     if(block_dim == 1)
     {
-        constexpr rocsparse_int block_size = 256;
-        rocsparse_int           grid_size  = ((m + 1) + block_size - 1) / block_size;
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            hipLaunchKernelGGL(csr2bsr_nnz_block_dim_equals_one_kernel<block_size>,
-                               dim3(grid_size),
-                               dim3(block_size),
+            hipLaunchKernelGGL(csr2bsr_nnz_block_dim_equals_one_kernel<256>,
+                               dim3(m / 256 + 1),
+                               dim3(256),
                                0,
                                handle->stream,
                                m,
@@ -568,9 +559,9 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
         }
         else
         {
-            hipLaunchKernelGGL(csr2bsr_nnz_block_dim_equals_one_kernel<block_size>,
-                               dim3(grid_size),
-                               dim3(block_size),
+            hipLaunchKernelGGL(csr2bsr_nnz_block_dim_equals_one_kernel<256>,
+                               dim3(m / 256 + 1),
+                               dim3(256),
                                0,
                                handle->stream,
                                m,
@@ -599,63 +590,32 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
         return rocsparse_status_success;
     }
 
-    // Common case where BSR block dimension is small
-    if(block_dim <= 64)
+    if(block_dim <= 4)
     {
-        // A 32 thread wavefront is decomposed as:
-        //      |    bank 0        bank 1       bank 2         bank 3
-        // row 0|  0  1  2  3 |  4  5  6  7 |  8  9 10 11 | 12 13 14 15 |
-        // row 1| 16 17 18 19 | 20 21 22 23 | 24 25 26 27 | 28 29 30 31 |
-        //
-        // Segments can be of size 4 (quarter row), 8 (half row), 16 (full row),
-        // or 32 (wavefront). We assign one segment per BSR block row where the
-        // segment size matches the block dimension as closely as possible while
-        // still being greater than or equal to the block dimension.
-        rocsparse_int block_size   = block_dim > 16 ? 32 : 16;
-        rocsparse_int segment_size = block_dim == 1 ? 2 : block_dim;
-
-        // round segment_size up to next power of 2
-        segment_size--;
-        segment_size |= segment_size >> 1;
-        segment_size |= segment_size >> 2;
-        segment_size |= segment_size >> 4;
-        segment_size |= segment_size >> 8;
-        segment_size |= segment_size >> 16;
-        segment_size++;
-
-        if(block_dim > 32)
+        launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(256, 4);
+    }
+    else if(block_dim <= 8)
+    {
+        if(handle->wavefront_size == 64)
         {
-            segment_size = block_size;
-        }
-
-        rocsparse_int segments_per_block = block_size / segment_size;
-        rocsparse_int grid_size          = (mb + segments_per_block - 1) / segments_per_block;
-
-        if(block_dim <= 2)
-        {
-            launch_csr2bsr_nnz_2_32_kernel(16, 2);
-        }
-        else if(block_dim <= 4)
-        {
-            launch_csr2bsr_nnz_2_32_kernel(16, 4);
-        }
-        else if(block_dim <= 8)
-        {
-            launch_csr2bsr_nnz_2_32_kernel(16, 8);
-        }
-        else if(block_dim <= 16)
-        {
-            launch_csr2bsr_nnz_2_32_kernel(16, 16);
-        }
-        else if(block_dim <= 32)
-        {
-            launch_csr2bsr_nnz_2_32_kernel(32, 32);
+            launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(256, 8);
         }
         else
         {
-            // (block_dim <= 64)
-            launch_csr2bsr_nnz_33_64_kernel(32, 2);
+            launch_csr2bsr_nnz_block_per_row_multipass_kernel(64, 8);
         }
+    }
+    else if(block_dim <= 16)
+    {
+        launch_csr2bsr_nnz_block_per_row_multipass_kernel(256, 16);
+    }
+    else if(block_dim <= 32)
+    {
+        launch_csr2bsr_nnz_block_per_row_multipass_kernel(256, 32);
+    }
+    else if(block_dim <= 64)
+    {
+        launch_csr2bsr_nnz_block_per_row_multipass_kernel(256, 64);
     }
     else
     {
