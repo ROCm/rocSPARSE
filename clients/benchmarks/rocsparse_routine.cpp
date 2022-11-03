@@ -237,6 +237,7 @@ constexpr const char* rocsparse_routine::to_string() const
 #include "testing_spsm_csr.hpp"
 
 // Extra
+#include "testing_bsrgeam.hpp"
 #include "testing_csrgeam.hpp"
 #include "testing_csrgemm.hpp"
 #include "testing_csrgemm_reuse.hpp"
@@ -427,6 +428,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_T(axpyi);
         DEFINE_CASE_IT_X(bellmm, testing_spmm_bell);
         DEFINE_CASE_IT_X(bellmm_batched, testing_spmm_batched_bell);
+        DEFINE_CASE_T(bsrgeam);
         DEFINE_CASE_T(bsric0);
         DEFINE_CASE_T(bsrilu0);
         DEFINE_CASE_T(bsrmm);

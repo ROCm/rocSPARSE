@@ -781,6 +781,30 @@ REAL_COMPLEX_TEMPLATE(gemmi,
  *    extra SPARSE
  * ===========================================================================
  */
+// bsrgeam
+REAL_COMPLEX_TEMPLATE(bsrgeam,
+                      rocsparse_handle          handle,
+                      rocsparse_direction       dir,
+                      rocsparse_int             mb,
+                      rocsparse_int             nb,
+                      rocsparse_int             block_dim,
+                      const T*                  alpha,
+                      const rocsparse_mat_descr descr_A,
+                      rocsparse_int             nnzb_A,
+                      const T*                  bsr_val_A,
+                      const rocsparse_int*      bsr_row_ptr_A,
+                      const rocsparse_int*      bsr_col_ind_A,
+                      const T*                  beta,
+                      const rocsparse_mat_descr descr_B,
+                      rocsparse_int             nnzb_B,
+                      const T*                  bsr_val_B,
+                      const rocsparse_int*      bsr_row_ptr_B,
+                      const rocsparse_int*      bsr_col_ind_B,
+                      const rocsparse_mat_descr descr_C,
+                      T*                        bsr_val_C,
+                      const rocsparse_int*      bsr_row_ptr_C,
+                      rocsparse_int*            bsr_col_ind_C);
+
 // csrgeam
 REAL_COMPLEX_TEMPLATE(csrgeam,
                       rocsparse_handle          handle,

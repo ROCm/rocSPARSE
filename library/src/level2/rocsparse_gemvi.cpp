@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -175,42 +175,21 @@ rocsparse_status rocsparse_gemvi_template(rocsparse_handle     handle,
     }
 
     // Logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xgemvi"),
-                  trans,
-                  m,
-                  n,
-                  *alpha_device_host,
-                  (const void*&)A,
-                  lda,
-                  nnz,
-                  (const void*&)x_val,
-                  (const void*&)x_ind,
-                  *beta_device_host,
-                  (const void*&)y,
-                  idx_base,
-                  (const void*&)temp_buffer);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xgemvi"),
-                  trans,
-                  m,
-                  n,
-                  (const void*&)alpha_device_host,
-                  (const void*&)A,
-                  lda,
-                  nnz,
-                  (const void*&)x_val,
-                  (const void*&)x_ind,
-                  (const void*&)beta_device_host,
-                  (const void*&)y,
-                  idx_base,
-                  (const void*&)temp_buffer);
-    }
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xgemvi"),
+              trans,
+              m,
+              n,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+              (const void*&)A,
+              lda,
+              nnz,
+              (const void*&)x_val,
+              (const void*&)x_ind,
+              LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+              (const void*&)y,
+              idx_base,
+              (const void*&)temp_buffer);
 
     // Check operation mode
     if(rocsparse_enum_utils::is_invalid(trans))

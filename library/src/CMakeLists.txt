@@ -130,6 +130,7 @@ set(rocsparse_source
   src/level3/rocsparse_spsm.cpp
 
 # Extra
+  src/extra/rocsparse_bsrgeam.cpp
   src/extra/rocsparse_csrgeam.cpp
   src/extra/rocsparse_csrgemm.cpp
   src/extra/rocsparse_csrgemm_symbolic.cpp

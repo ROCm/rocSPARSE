@@ -191,6 +191,43 @@ struct rocsparse_gflop_count<rocsparse_format_ell>
  * ===========================================================================
  */
 template <typename T>
+constexpr double bsrgeam_gflop_count(rocsparse_int block_dim,
+                                     rocsparse_int nnzb_A,
+                                     rocsparse_int nnzb_B,
+                                     rocsparse_int nnzb_C,
+                                     const T*      alpha,
+                                     const T*      beta)
+{
+    // Flop counter
+    double flops = 0.0;
+
+    if(alpha && beta)
+    {
+        // Count alpha * A
+        flops += static_cast<double>(nnzb_A) * block_dim * block_dim;
+
+        // Count beta * B
+        flops += static_cast<double>(nnzb_B) * block_dim * block_dim;
+
+        // Count A + B
+        flops += static_cast<double>(nnzb_C) * block_dim * block_dim;
+        ;
+    }
+    else if(!alpha)
+    {
+        // Count beta * B
+        flops += static_cast<double>(nnzb_B) * block_dim * block_dim;
+    }
+    else
+    {
+        // Count alpha * A
+        flops += static_cast<double>(nnzb_A) * block_dim * block_dim;
+    }
+
+    return flops / 1e9;
+}
+
+template <typename T>
 constexpr double csrgeam_gflop_count(
     rocsparse_int nnz_A, rocsparse_int nnz_B, rocsparse_int nnz_C, const T* alpha, const T* beta)
 {

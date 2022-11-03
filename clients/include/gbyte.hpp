@@ -371,6 +371,27 @@ struct rocsparse_gbyte_count<rocsparse_format_ell>
  * ===========================================================================
  */
 template <typename T>
+constexpr double bsrgeam_gbyte_count(rocsparse_int Mb,
+                                     rocsparse_int block_dim,
+                                     rocsparse_int nnzb_A,
+                                     rocsparse_int nnzb_B,
+                                     rocsparse_int nnzb_C,
+                                     const T*      alpha,
+                                     const T*      beta)
+{
+    double size_A = alpha ? sizeof(rocsparse_int) * (Mb + 1.0 + nnzb_A)
+                                + sizeof(T) * block_dim * block_dim * nnzb_A
+                          : 0.0;
+    double size_B = beta ? sizeof(rocsparse_int) * (Mb + 1.0 + nnzb_B)
+                               + sizeof(T) * block_dim * block_dim * nnzb_B
+                         : 0.0;
+    double size_C
+        = sizeof(rocsparse_int) * (Mb + 1.0 + nnzb_C) + sizeof(T) * nnzb_C * block_dim * block_dim;
+
+    return (size_A + size_B + size_C) / 1e9;
+}
+
+template <typename T>
 constexpr double csrgeam_gbyte_count(rocsparse_int M,
                                      rocsparse_int nnz_A,
                                      rocsparse_int nnz_B,
@@ -379,7 +400,7 @@ constexpr double csrgeam_gbyte_count(rocsparse_int M,
                                      const T*      beta)
 {
     double size_A = alpha ? (M + 1.0 + nnz_A) * sizeof(rocsparse_int) + nnz_A * sizeof(T) : 0.0;
-    double size_B = alpha ? (M + 1.0 + nnz_B) * sizeof(rocsparse_int) + nnz_B * sizeof(T) : 0.0;
+    double size_B = beta ? (M + 1.0 + nnz_B) * sizeof(rocsparse_int) + nnz_B * sizeof(T) : 0.0;
     double size_C = (M + 1.0 + nnz_C) * sizeof(rocsparse_int) + nnz_C * sizeof(T);
 
     return (size_A + size_B + size_C) / 1e9;

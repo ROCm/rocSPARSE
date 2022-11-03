@@ -28,6 +28,8 @@ template <typename T>
 void testing_csrgeam_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
+    T                   h_alpha   = 0.6;
+    T                   h_beta    = 0.2;
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
@@ -40,13 +42,13 @@ void testing_csrgeam_bad_arg(const Arguments& arg)
     rocsparse_handle          handle        = local_handle;
     rocsparse_int             m             = safe_size;
     rocsparse_int             n             = safe_size;
-    const T*                  alpha         = (const T*)0x4;
+    const T*                  alpha         = &h_alpha;
     const rocsparse_mat_descr descr_A       = local_descr_A;
     rocsparse_int             nnz_A         = safe_size;
     const T*                  csr_val_A     = (const T*)0x4;
     const rocsparse_int*      csr_row_ptr_A = (const rocsparse_int*)0x4;
     const rocsparse_int*      csr_col_ind_A = (const rocsparse_int*)0x4;
-    const T*                  beta          = (const T*)0x4;
+    const T*                  beta          = &h_beta;
     const rocsparse_mat_descr descr_B       = local_descr_B;
     rocsparse_int             nnz_B         = safe_size;
     const T*                  csr_val_B     = (const T*)0x4;
@@ -104,8 +106,9 @@ void testing_csrgeam(const Arguments& arg)
     static constexpr bool              full_rank = false;
     rocsparse_matrix_factory<T>        matrix_factory(arg, arg.timing ? false : true, full_rank);
     rocsparse_matrix_factory_random<T> matrix_factory_random(full_rank);
-    T                                  h_alpha = arg.get_alpha<T>();
-    T                                  h_beta  = arg.get_beta<T>();
+
+    host_scalar<T> h_alpha(arg.get_alpha<T>());
+    host_scalar<T> h_beta(arg.get_beta<T>());
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -126,15 +129,15 @@ void testing_csrgeam(const Arguments& arg)
         static const size_t safe_size = 100;
 
         // Allocate memory on device
-        device_vector<rocsparse_int> dcsr_row_ptr_A(safe_size);
-        device_vector<rocsparse_int> dcsr_col_ind_A(safe_size);
-        device_vector<T>             dcsr_val_A(safe_size);
-        device_vector<rocsparse_int> dcsr_row_ptr_B(safe_size);
-        device_vector<rocsparse_int> dcsr_col_ind_B(safe_size);
-        device_vector<T>             dcsr_val_B(safe_size);
-        device_vector<rocsparse_int> dcsr_row_ptr_C(safe_size);
-        device_vector<rocsparse_int> dcsr_col_ind_C(safe_size);
-        device_vector<T>             dcsr_val_C(safe_size);
+        device_vector<rocsparse_int> dcsr_row_ptr_A;
+        device_vector<rocsparse_int> dcsr_col_ind_A;
+        device_vector<T>             dcsr_val_A;
+        device_vector<rocsparse_int> dcsr_row_ptr_B;
+        device_vector<rocsparse_int> dcsr_col_ind_B;
+        device_vector<T>             dcsr_val_B;
+        device_vector<rocsparse_int> dcsr_row_ptr_C;
+        device_vector<rocsparse_int> dcsr_col_ind_C;
+        device_vector<T>             dcsr_val_C;
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
@@ -157,13 +160,13 @@ void testing_csrgeam(const Arguments& arg)
         rocsparse_status status_2 = rocsparse_csrgeam<T>(handle,
                                                          M,
                                                          N,
-                                                         &h_alpha,
+                                                         h_alpha,
                                                          descrA,
                                                          safe_size,
                                                          dcsr_val_A,
                                                          dcsr_row_ptr_A,
                                                          dcsr_col_ind_A,
-                                                         &h_beta,
+                                                         h_beta,
                                                          descrB,
                                                          safe_size,
                                                          dcsr_val_B,
@@ -220,25 +223,19 @@ void testing_csrgeam(const Arguments& arg)
     device_vector<rocsparse_int> dcsr_row_ptr_B(M + 1);
     device_vector<rocsparse_int> dcsr_col_ind_B(nnz_B);
     device_vector<T>             dcsr_val_B(nnz_B);
-    device_vector<T>             d_alpha(1);
-    device_vector<T>             d_beta(1);
+    device_scalar<T>             d_alpha(h_alpha);
+    device_scalar<T>             d_beta(h_beta);
     device_vector<rocsparse_int> dcsr_row_ptr_C_1(M + 1);
     device_vector<rocsparse_int> dcsr_row_ptr_C_2(M + 1);
     device_vector<rocsparse_int> dnnz_C_2(1);
 
     // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_row_ptr_A, hcsr_row_ptr_A, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_col_ind_A, hcsr_col_ind_A, sizeof(rocsparse_int) * nnz_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_val_A, hcsr_val_A, sizeof(T) * nnz_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_row_ptr_B, hcsr_row_ptr_B, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_col_ind_B, hcsr_col_ind_B, sizeof(rocsparse_int) * nnz_B, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_val_B, hcsr_val_B, sizeof(T) * nnz_B, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(d_beta, &h_beta, sizeof(T), hipMemcpyHostToDevice));
+    dcsr_row_ptr_A.transfer_from(hcsr_row_ptr_A);
+    dcsr_col_ind_A.transfer_from(hcsr_col_ind_A);
+    dcsr_val_A.transfer_from(hcsr_val_A);
+    dcsr_row_ptr_B.transfer_from(hcsr_row_ptr_B);
+    dcsr_col_ind_B.transfer_from(hcsr_col_ind_B);
+    dcsr_val_B.transfer_from(hcsr_val_B);
 
     if(arg.unit_check)
     {
@@ -281,25 +278,21 @@ void testing_csrgeam(const Arguments& arg)
         // Copy output to host
         host_vector<rocsparse_int> hcsr_row_ptr_C_1(M + 1);
         host_vector<rocsparse_int> hcsr_row_ptr_C_2(M + 1);
+
         CHECK_HIP_ERROR(
             hipMemcpy(&hnnz_C_2, dnnz_C_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hcsr_row_ptr_C_1,
-                                  dcsr_row_ptr_C_1,
-                                  sizeof(rocsparse_int) * (M + 1),
-                                  hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hcsr_row_ptr_C_2,
-                                  dcsr_row_ptr_C_2,
-                                  sizeof(rocsparse_int) * (M + 1),
-                                  hipMemcpyDeviceToHost));
+
+        hcsr_row_ptr_C_1.transfer_from(dcsr_row_ptr_C_1);
+        hcsr_row_ptr_C_2.transfer_from(dcsr_row_ptr_C_2);
 
         // CPU csrgemm_nnz
         host_vector<rocsparse_int> hcsr_row_ptr_C_gold(M + 1);
         host_csrgeam_nnz<T>(M,
                             N,
-                            h_alpha,
+                            *h_alpha,
                             hcsr_row_ptr_A,
                             hcsr_col_ind_A,
-                            h_beta,
+                            *h_beta,
                             hcsr_row_ptr_B,
                             hcsr_col_ind_B,
                             hcsr_row_ptr_C_gold,
@@ -309,14 +302,12 @@ void testing_csrgeam(const Arguments& arg)
                             baseC);
 
         // Check nnz of C
-
         unit_check_scalar(hnnz_C_gold, hnnz_C_1);
         unit_check_scalar(hnnz_C_gold, hnnz_C_2);
 
         // Check row pointers of C
-
-        unit_check_segments<rocsparse_int>(M + 1, hcsr_row_ptr_C_gold, hcsr_row_ptr_C_1);
-        unit_check_segments<rocsparse_int>(M + 1, hcsr_row_ptr_C_gold, hcsr_row_ptr_C_2);
+        hcsr_row_ptr_C_gold.unit_check(hcsr_row_ptr_C_1);
+        hcsr_row_ptr_C_gold.unit_check(hcsr_row_ptr_C_2);
 
         // Allocate device memory for C
         device_vector<rocsparse_int> dcsr_col_ind_C_1(hnnz_C_1);
@@ -331,13 +322,13 @@ void testing_csrgeam(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_csrgeam<T>(handle,
                                                    M,
                                                    N,
-                                                   &h_alpha,
+                                                   h_alpha,
                                                    descrA,
                                                    nnz_A,
                                                    dcsr_val_A,
                                                    dcsr_row_ptr_A,
                                                    dcsr_col_ind_A,
-                                                   &h_beta,
+                                                   h_beta,
                                                    descrB,
                                                    nnz_B,
                                                    dcsr_val_B,
@@ -376,29 +367,21 @@ void testing_csrgeam(const Arguments& arg)
         host_vector<T>             hcsr_val_C_1(hnnz_C_1);
         host_vector<T>             hcsr_val_C_2(hnnz_C_2);
 
-        CHECK_HIP_ERROR(hipMemcpy(hcsr_col_ind_C_1,
-                                  dcsr_col_ind_C_1,
-                                  sizeof(rocsparse_int) * hnnz_C_1,
-                                  hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hcsr_col_ind_C_2,
-                                  dcsr_col_ind_C_2,
-                                  sizeof(rocsparse_int) * hnnz_C_2,
-                                  hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(hcsr_val_C_1, dcsr_val_C_1, sizeof(T) * hnnz_C_1, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(hcsr_val_C_2, dcsr_val_C_2, sizeof(T) * hnnz_C_2, hipMemcpyDeviceToHost));
+        hcsr_col_ind_C_1.transfer_from(dcsr_col_ind_C_1);
+        hcsr_col_ind_C_2.transfer_from(dcsr_col_ind_C_2);
+        hcsr_val_C_1.transfer_from(dcsr_val_C_1);
+        hcsr_val_C_2.transfer_from(dcsr_val_C_2);
 
         // CPU csrgemm
         host_vector<rocsparse_int> hcsr_col_ind_C_gold(hnnz_C_gold);
         host_vector<T>             hcsr_val_C_gold(hnnz_C_gold);
         host_csrgeam<T>(M,
                         N,
-                        h_alpha,
+                        *h_alpha,
                         hcsr_row_ptr_A,
                         hcsr_col_ind_A,
                         hcsr_val_A,
-                        h_beta,
+                        *h_beta,
                         hcsr_row_ptr_B,
                         hcsr_col_ind_B,
                         hcsr_val_B,
@@ -410,11 +393,11 @@ void testing_csrgeam(const Arguments& arg)
                         baseC);
 
         // Check C
-        unit_check_segments<rocsparse_int>(hnnz_C_gold, hcsr_col_ind_C_gold, hcsr_col_ind_C_1);
-        unit_check_segments<rocsparse_int>(hnnz_C_gold, hcsr_col_ind_C_gold, hcsr_col_ind_C_2);
+        hcsr_col_ind_C_gold.unit_check(hcsr_col_ind_C_1);
+        hcsr_col_ind_C_gold.unit_check(hcsr_col_ind_C_2);
 
-        near_check_segments<T>(hnnz_C_gold, hcsr_val_C_gold, hcsr_val_C_1);
-        near_check_segments<T>(hnnz_C_gold, hcsr_val_C_gold, hcsr_val_C_2);
+        hcsr_val_C_gold.near_check(hcsr_val_C_1);
+        hcsr_val_C_gold.near_check(hcsr_val_C_2);
     }
 
     if(arg.timing)
@@ -422,9 +405,26 @@ void testing_csrgeam(const Arguments& arg)
         int number_cold_calls = 2;
         int number_hot_calls  = arg.iters;
 
-        rocsparse_int nnz_C;
-
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
+        rocsparse_int nnz_C;
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrgeam_nnz(handle,
+                                                    M,
+                                                    N,
+                                                    descrA,
+                                                    nnz_A,
+                                                    dcsr_row_ptr_A,
+                                                    dcsr_col_ind_A,
+                                                    descrB,
+                                                    nnz_B,
+                                                    dcsr_row_ptr_B,
+                                                    dcsr_col_ind_B,
+                                                    descrC,
+                                                    dcsr_row_ptr_C_1,
+                                                    &nnz_C));
+
+        device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
+        device_vector<T>             dcsr_val_C(nnz_C);
 
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
@@ -443,20 +443,44 @@ void testing_csrgeam(const Arguments& arg)
                                                         descrC,
                                                         dcsr_row_ptr_C_1,
                                                         &nnz_C));
+        }
 
-            device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
-            device_vector<T>             dcsr_val_C(nnz_C);
+        double gpu_analysis_time_used = get_time_us();
 
+        // Performance run
+        for(int iter = 0; iter < number_hot_calls; ++iter)
+        {
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrgeam_nnz(handle,
+                                                        M,
+                                                        N,
+                                                        descrA,
+                                                        nnz_A,
+                                                        dcsr_row_ptr_A,
+                                                        dcsr_col_ind_A,
+                                                        descrB,
+                                                        nnz_B,
+                                                        dcsr_row_ptr_B,
+                                                        dcsr_col_ind_B,
+                                                        descrC,
+                                                        dcsr_row_ptr_C_1,
+                                                        &nnz_C));
+        }
+
+        gpu_analysis_time_used = get_time_us() - gpu_analysis_time_used;
+
+        // Warm up
+        for(int iter = 0; iter < number_cold_calls; ++iter)
+        {
             CHECK_ROCSPARSE_ERROR(rocsparse_csrgeam<T>(handle,
                                                        M,
                                                        N,
-                                                       &h_alpha,
+                                                       h_alpha,
                                                        descrA,
                                                        nnz_A,
                                                        dcsr_val_A,
                                                        dcsr_row_ptr_A,
                                                        dcsr_col_ind_A,
-                                                       &h_beta,
+                                                       h_beta,
                                                        descrB,
                                                        nnz_B,
                                                        dcsr_val_B,
@@ -468,28 +492,6 @@ void testing_csrgeam(const Arguments& arg)
                                                        dcsr_col_ind_C));
         }
 
-        double gpu_analysis_time_used = get_time_us();
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrgeam_nnz(handle,
-                                                    M,
-                                                    N,
-                                                    descrA,
-                                                    nnz_A,
-                                                    dcsr_row_ptr_A,
-                                                    dcsr_col_ind_A,
-                                                    descrB,
-                                                    nnz_B,
-                                                    dcsr_row_ptr_B,
-                                                    dcsr_col_ind_B,
-                                                    descrC,
-                                                    dcsr_row_ptr_C_1,
-                                                    &nnz_C));
-
-        gpu_analysis_time_used = get_time_us() - gpu_analysis_time_used;
-
-        device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
-        device_vector<T>             dcsr_val_C(nnz_C);
-
         double gpu_solve_time_used = get_time_us();
 
         // Performance run
@@ -498,13 +500,13 @@ void testing_csrgeam(const Arguments& arg)
             CHECK_ROCSPARSE_ERROR(rocsparse_csrgeam<T>(handle,
                                                        M,
                                                        N,
-                                                       &h_alpha,
+                                                       h_alpha,
                                                        descrA,
                                                        nnz_A,
                                                        dcsr_val_A,
                                                        dcsr_row_ptr_A,
                                                        dcsr_col_ind_A,
-                                                       &h_beta,
+                                                       h_beta,
                                                        descrB,
                                                        nnz_B,
                                                        dcsr_val_B,
@@ -518,8 +520,8 @@ void testing_csrgeam(const Arguments& arg)
 
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
 
-        double gflop_count = csrgeam_gflop_count<T>(nnz_A, nnz_B, nnz_C, &h_alpha, &h_beta);
-        double gbyte_count = csrgeam_gbyte_count<T>(M, nnz_A, nnz_B, nnz_C, &h_alpha, &h_beta);
+        double gflop_count = csrgeam_gflop_count<T>(nnz_A, nnz_B, nnz_C, h_alpha, h_beta);
+        double gbyte_count = csrgeam_gbyte_count<T>(M, nnz_A, nnz_B, nnz_C, h_alpha, h_beta);
 
         double gpu_gflops = get_gpu_gflops(gpu_solve_time_used, gflop_count);
         double gpu_gbyte  = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
@@ -535,9 +537,9 @@ void testing_csrgeam(const Arguments& arg)
                             "nnz_C",
                             nnz_C,
                             "alpha",
-                            h_alpha,
+                            *h_alpha,
                             "beta",
-                            h_beta,
+                            *h_beta,
                             s_timing_info_perf,
                             gpu_gflops,
                             s_timing_info_bandwidth,

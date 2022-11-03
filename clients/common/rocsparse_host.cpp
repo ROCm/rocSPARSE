@@ -3737,19 +3737,250 @@ void host_gemmi(rocsparse_int        M,
  * ===========================================================================
  */
 template <typename T>
-void host_csrgeam_nnz(rocsparse_int                     M,
-                      rocsparse_int                     N,
-                      T                                 alpha,
-                      const std::vector<rocsparse_int>& csr_row_ptr_A,
-                      const std::vector<rocsparse_int>& csr_col_ind_A,
-                      T                                 beta,
-                      const std::vector<rocsparse_int>& csr_row_ptr_B,
-                      const std::vector<rocsparse_int>& csr_col_ind_B,
-                      std::vector<rocsparse_int>&       csr_row_ptr_C,
-                      rocsparse_int*                    nnz_C,
-                      rocsparse_index_base              base_A,
-                      rocsparse_index_base              base_B,
-                      rocsparse_index_base              base_C)
+void host_bsrgeam_nnzb(rocsparse_direction  dir,
+                       rocsparse_int        Mb,
+                       rocsparse_int        Nb,
+                       rocsparse_int        block_dim,
+                       T                    alpha,
+                       const rocsparse_int* bsr_row_ptr_A,
+                       const rocsparse_int* bsr_col_ind_A,
+                       T                    beta,
+                       const rocsparse_int* bsr_row_ptr_B,
+                       const rocsparse_int* bsr_col_ind_B,
+                       rocsparse_int*       bsr_row_ptr_C,
+                       rocsparse_int*       nnzb_C,
+                       rocsparse_index_base base_A,
+                       rocsparse_index_base base_B,
+                       rocsparse_index_base base_C)
+{
+    return host_csrgeam_nnz(Mb,
+                            Nb,
+                            alpha,
+                            bsr_row_ptr_A,
+                            bsr_col_ind_A,
+                            beta,
+                            bsr_row_ptr_B,
+                            bsr_col_ind_B,
+                            bsr_row_ptr_C,
+                            nnzb_C,
+                            base_A,
+                            base_B,
+                            base_C);
+}
+
+template <typename T>
+void host_bsrgeam(rocsparse_direction  dir,
+                  rocsparse_int        Mb,
+                  rocsparse_int        Nb,
+                  rocsparse_int        block_dim,
+                  T                    alpha,
+                  const rocsparse_int* bsr_row_ptr_A,
+                  const rocsparse_int* bsr_col_ind_A,
+                  const T*             bsr_val_A,
+                  T                    beta,
+                  const rocsparse_int* bsr_row_ptr_B,
+                  const rocsparse_int* bsr_col_ind_B,
+                  const T*             bsr_val_B,
+                  const rocsparse_int* bsr_row_ptr_C,
+                  rocsparse_int*       bsr_col_ind_C,
+                  T*                   bsr_val_C,
+                  rocsparse_index_base base_A,
+                  rocsparse_index_base base_B,
+                  rocsparse_index_base base_C)
+{
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    {
+        std::vector<rocsparse_int> nnzb(Nb, -1);
+
+#ifdef _OPENMP
+        rocsparse_int nthreads = omp_get_num_threads();
+        rocsparse_int tid      = omp_get_thread_num();
+#else
+        rocsparse_int nthreads = 1;
+        rocsparse_int tid      = 0;
+#endif
+
+        rocsparse_int rows_per_thread = (Mb + nthreads - 1) / nthreads;
+        rocsparse_int chunk_begin     = rows_per_thread * tid;
+        rocsparse_int chunk_end       = std::min(chunk_begin + rows_per_thread, Mb);
+
+        // Loop over rows
+        for(rocsparse_int i = chunk_begin; i < chunk_end; ++i)
+        {
+            rocsparse_int row_begin_C = bsr_row_ptr_C[i] - base_C;
+            rocsparse_int row_end_C   = row_begin_C;
+
+            rocsparse_int row_begin_A = bsr_row_ptr_A[i] - base_A;
+            rocsparse_int row_end_A   = bsr_row_ptr_A[i + 1] - base_A;
+
+            // Copy A into C
+            for(rocsparse_int j = row_begin_A; j < row_end_A; ++j)
+            {
+                // Current column of A
+                rocsparse_int col_A = bsr_col_ind_A[j] - base_A;
+
+                nnzb[col_A] = row_end_C;
+
+                bsr_col_ind_C[row_end_C] = col_A + base_C;
+
+                for(rocsparse_int r = 0; r < block_dim; r++)
+                {
+                    for(rocsparse_int c = 0; c < block_dim; c++)
+                    {
+                        if(dir == rocsparse_direction_row)
+                        {
+                            bsr_val_C[block_dim * block_dim * row_end_C + block_dim * r + c]
+                                = alpha * bsr_val_A[block_dim * block_dim * j + block_dim * r + c];
+                        }
+                        else
+                        {
+                            bsr_val_C[block_dim * block_dim * row_end_C + block_dim * c + r]
+                                = alpha * bsr_val_A[block_dim * block_dim * j + block_dim * c + r];
+                        }
+                    }
+                }
+
+                ++row_end_C;
+            }
+
+            rocsparse_int row_begin_B = bsr_row_ptr_B[i] - base_B;
+            rocsparse_int row_end_B   = bsr_row_ptr_B[i + 1] - base_B;
+
+            // Loop over columns of B
+            for(rocsparse_int j = row_begin_B; j < row_end_B; ++j)
+            {
+                // Current column of B
+                rocsparse_int col_B = bsr_col_ind_B[j] - base_B;
+
+                // Check if a new nnz is generated or if the value is added
+                if(nnzb[col_B] < row_begin_C)
+                {
+                    nnzb[col_B] = row_end_C;
+
+                    bsr_col_ind_C[row_end_C] = col_B + base_C;
+
+                    for(rocsparse_int r = 0; r < block_dim; r++)
+                    {
+                        for(rocsparse_int c = 0; c < block_dim; c++)
+                        {
+                            if(dir == rocsparse_direction_row)
+                            {
+                                bsr_val_C[block_dim * block_dim * row_end_C + block_dim * r + c]
+                                    = beta
+                                      * bsr_val_B[block_dim * block_dim * j + block_dim * r + c];
+                            }
+                            else
+                            {
+                                bsr_val_C[block_dim * block_dim * row_end_C + block_dim * c + r]
+                                    = beta
+                                      * bsr_val_B[block_dim * block_dim * j + block_dim * c + r];
+                            }
+                        }
+                    }
+
+                    ++row_end_C;
+                }
+                else
+                {
+                    for(rocsparse_int r = 0; r < block_dim; r++)
+                    {
+                        for(rocsparse_int c = 0; c < block_dim; c++)
+                        {
+                            if(dir == rocsparse_direction_row)
+                            {
+                                bsr_val_C[block_dim * block_dim * nnzb[col_B] + block_dim * r + c]
+                                    = std::fma(
+                                        beta,
+                                        bsr_val_B[block_dim * block_dim * j + block_dim * r + c],
+                                        bsr_val_C[block_dim * block_dim * nnzb[col_B]
+                                                  + block_dim * r + c]);
+                            }
+                            else
+                            {
+                                bsr_val_C[block_dim * block_dim * nnzb[col_B] + block_dim * c + r]
+                                    = std::fma(
+                                        beta,
+                                        bsr_val_B[block_dim * block_dim * j + block_dim * c + r],
+                                        bsr_val_C[block_dim * block_dim * nnzb[col_B]
+                                                  + block_dim * c + r]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    rocsparse_int nnzb = bsr_row_ptr_C[Mb] - base_C;
+
+    std::vector<rocsparse_int> col(nnzb);
+    std::vector<T>             val(block_dim * block_dim * nnzb);
+
+    std::copy(bsr_col_ind_C, bsr_col_ind_C + nnzb, col.begin());
+    std::copy(bsr_val_C, bsr_val_C + block_dim * block_dim * nnzb, val.begin());
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int i = 0; i < Mb; ++i)
+    {
+        rocsparse_int row_begin = bsr_row_ptr_C[i] - base_C;
+        rocsparse_int row_end   = bsr_row_ptr_C[i + 1] - base_C;
+        rocsparse_int row_nnzb  = row_end - row_begin;
+
+        std::vector<rocsparse_int> perm(row_nnzb);
+        for(rocsparse_int j = 0; j < row_nnzb; ++j)
+        {
+            perm[j] = j;
+        }
+
+        rocsparse_int* col_entry = &col[row_begin];
+        T*             val_entry = &val[block_dim * block_dim * row_begin];
+
+        std::sort(perm.begin(), perm.end(), [&](const rocsparse_int& a, const rocsparse_int& b) {
+            return col_entry[a] <= col_entry[b];
+        });
+
+        for(rocsparse_int j = 0; j < row_nnzb; ++j)
+        {
+            bsr_col_ind_C[row_begin + j] = col_entry[perm[j]];
+
+            for(rocsparse_int r = 0; r < block_dim; r++)
+            {
+                for(rocsparse_int c = 0; c < block_dim; c++)
+                {
+                    if(dir == rocsparse_direction_row)
+                    {
+                        bsr_val_C[block_dim * block_dim * (row_begin + j) + block_dim * r + c]
+                            = val_entry[block_dim * block_dim * perm[j] + block_dim * r + c];
+                    }
+                    else
+                    {
+                        bsr_val_C[block_dim * block_dim * (row_begin + j) + block_dim * c + r]
+                            = val_entry[block_dim * block_dim * perm[j] + block_dim * c + r];
+                    }
+                }
+            }
+        }
+    }
+}
+
+template <typename T>
+void host_csrgeam_nnz(rocsparse_int        M,
+                      rocsparse_int        N,
+                      T                    alpha,
+                      const rocsparse_int* csr_row_ptr_A,
+                      const rocsparse_int* csr_col_ind_A,
+                      T                    beta,
+                      const rocsparse_int* csr_row_ptr_B,
+                      const rocsparse_int* csr_col_ind_B,
+                      rocsparse_int*       csr_row_ptr_C,
+                      rocsparse_int*       nnz_C,
+                      rocsparse_index_base base_A,
+                      rocsparse_index_base base_B,
+                      rocsparse_index_base base_C)
 {
 #ifdef _OPENMP
 #pragma omp parallel
@@ -3818,22 +4049,22 @@ void host_csrgeam_nnz(rocsparse_int                     M,
 }
 
 template <typename T>
-void host_csrgeam(rocsparse_int                     M,
-                  rocsparse_int                     N,
-                  T                                 alpha,
-                  const std::vector<rocsparse_int>& csr_row_ptr_A,
-                  const std::vector<rocsparse_int>& csr_col_ind_A,
-                  const std::vector<T>&             csr_val_A,
-                  T                                 beta,
-                  const std::vector<rocsparse_int>& csr_row_ptr_B,
-                  const std::vector<rocsparse_int>& csr_col_ind_B,
-                  const std::vector<T>&             csr_val_B,
-                  const std::vector<rocsparse_int>& csr_row_ptr_C,
-                  std::vector<rocsparse_int>&       csr_col_ind_C,
-                  std::vector<T>&                   csr_val_C,
-                  rocsparse_index_base              base_A,
-                  rocsparse_index_base              base_B,
-                  rocsparse_index_base              base_C)
+void host_csrgeam(rocsparse_int        M,
+                  rocsparse_int        N,
+                  T                    alpha,
+                  const rocsparse_int* csr_row_ptr_A,
+                  const rocsparse_int* csr_col_ind_A,
+                  const T*             csr_val_A,
+                  T                    beta,
+                  const rocsparse_int* csr_row_ptr_B,
+                  const rocsparse_int* csr_col_ind_B,
+                  const T*             csr_val_B,
+                  const rocsparse_int* csr_row_ptr_C,
+                  rocsparse_int*       csr_col_ind_C,
+                  T*                   csr_val_C,
+                  rocsparse_index_base base_A,
+                  rocsparse_index_base base_B,
+                  rocsparse_index_base base_C)
 {
 #ifdef _OPENMP
 #pragma omp parallel
@@ -3912,8 +4143,8 @@ void host_csrgeam(rocsparse_int                     M,
     std::vector<rocsparse_int> col(nnz);
     std::vector<T>             val(nnz);
 
-    col = csr_col_ind_C;
-    val = csr_val_C;
+    std::copy(csr_col_ind_C, csr_col_ind_C + nnz, col.begin());
+    std::copy(csr_val_C, csr_val_C + nnz, val.begin());
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
@@ -7586,36 +7817,71 @@ template void host_gemmi(rocsparse_int        M,
  *    extra SPARSE
  * ===========================================================================
  */
-template void host_csrgeam_nnz(rocsparse_int                     M,
-                               rocsparse_int                     N,
-                               float                             alpha,
-                               const std::vector<rocsparse_int>& csr_row_ptr_A,
-                               const std::vector<rocsparse_int>& csr_col_ind_A,
-                               float                             beta,
-                               const std::vector<rocsparse_int>& csr_row_ptr_B,
-                               const std::vector<rocsparse_int>& csr_col_ind_B,
-                               std::vector<rocsparse_int>&       csr_row_ptr_C,
-                               rocsparse_int*                    nnz_C,
-                               rocsparse_index_base              base_A,
-                               rocsparse_index_base              base_B,
-                               rocsparse_index_base              base_C);
+template void host_bsrgeam_nnzb(rocsparse_direction  dir,
+                                rocsparse_int        Mb,
+                                rocsparse_int        Nb,
+                                rocsparse_int        block_dim,
+                                float                alpha,
+                                const rocsparse_int* bsr_row_ptr_A,
+                                const rocsparse_int* bsr_col_ind_A,
+                                float                beta,
+                                const rocsparse_int* bsr_row_ptr_B,
+                                const rocsparse_int* bsr_col_ind_B,
+                                rocsparse_int*       bsr_row_ptr_C,
+                                rocsparse_int*       nnzb_C,
+                                rocsparse_index_base base_A,
+                                rocsparse_index_base base_B,
+                                rocsparse_index_base base_C);
 
-template void host_csrgeam(rocsparse_int                     M,
-                           rocsparse_int                     N,
-                           float                             alpha,
-                           const std::vector<rocsparse_int>& csr_row_ptr_A,
-                           const std::vector<rocsparse_int>& csr_col_ind_A,
-                           const std::vector<float>&         csr_val_A,
-                           float                             beta,
-                           const std::vector<rocsparse_int>& csr_row_ptr_B,
-                           const std::vector<rocsparse_int>& csr_col_ind_B,
-                           const std::vector<float>&         csr_val_B,
-                           const std::vector<rocsparse_int>& csr_row_ptr_C,
-                           std::vector<rocsparse_int>&       csr_col_ind_C,
-                           std::vector<float>&               csr_val_C,
-                           rocsparse_index_base              base_A,
-                           rocsparse_index_base              base_B,
-                           rocsparse_index_base              base_C);
+template void host_bsrgeam(rocsparse_direction  dir,
+                           rocsparse_int        Mb,
+                           rocsparse_int        Nb,
+                           rocsparse_int        block_dim,
+                           float                alpha,
+                           const rocsparse_int* bsr_row_ptr_A,
+                           const rocsparse_int* bsr_col_ind_A,
+                           const float*         bsr_val_A,
+                           float                beta,
+                           const rocsparse_int* bsr_row_ptr_B,
+                           const rocsparse_int* bsr_col_ind_B,
+                           const float*         bsr_val_B,
+                           const rocsparse_int* bsr_row_ptr_C,
+                           rocsparse_int*       bsr_col_ind_C,
+                           float*               bsr_val_C,
+                           rocsparse_index_base base_A,
+                           rocsparse_index_base base_B,
+                           rocsparse_index_base base_C);
+
+template void host_csrgeam_nnz(rocsparse_int        M,
+                               rocsparse_int        N,
+                               float                alpha,
+                               const rocsparse_int* csr_row_ptr_A,
+                               const rocsparse_int* csr_col_ind_A,
+                               float                beta,
+                               const rocsparse_int* csr_row_ptr_B,
+                               const rocsparse_int* csr_col_ind_B,
+                               rocsparse_int*       csr_row_ptr_C,
+                               rocsparse_int*       nnz_C,
+                               rocsparse_index_base base_A,
+                               rocsparse_index_base base_B,
+                               rocsparse_index_base base_C);
+
+template void host_csrgeam(rocsparse_int        M,
+                           rocsparse_int        N,
+                           float                alpha,
+                           const rocsparse_int* csr_row_ptr_A,
+                           const rocsparse_int* csr_col_ind_A,
+                           const float*         csr_val_A,
+                           float                beta,
+                           const rocsparse_int* csr_row_ptr_B,
+                           const rocsparse_int* csr_col_ind_B,
+                           const float*         csr_val_B,
+                           const rocsparse_int* csr_row_ptr_C,
+                           rocsparse_int*       csr_col_ind_C,
+                           float*               csr_val_C,
+                           rocsparse_index_base base_A,
+                           rocsparse_index_base base_B,
+                           rocsparse_index_base base_C);
 
 /*
  * ===========================================================================
@@ -8034,36 +8300,71 @@ template void host_gemmi(rocsparse_int        M,
  *    extra SPARSE
  * ===========================================================================
  */
-template void host_csrgeam_nnz(rocsparse_int                     M,
-                               rocsparse_int                     N,
-                               double                            alpha,
-                               const std::vector<rocsparse_int>& csr_row_ptr_A,
-                               const std::vector<rocsparse_int>& csr_col_ind_A,
-                               double                            beta,
-                               const std::vector<rocsparse_int>& csr_row_ptr_B,
-                               const std::vector<rocsparse_int>& csr_col_ind_B,
-                               std::vector<rocsparse_int>&       csr_row_ptr_C,
-                               rocsparse_int*                    nnz_C,
-                               rocsparse_index_base              base_A,
-                               rocsparse_index_base              base_B,
-                               rocsparse_index_base              base_C);
+template void host_bsrgeam_nnzb(rocsparse_direction  dir,
+                                rocsparse_int        Mb,
+                                rocsparse_int        Nb,
+                                rocsparse_int        block_dim,
+                                double               alpha,
+                                const rocsparse_int* bsr_row_ptr_A,
+                                const rocsparse_int* bsr_col_ind_A,
+                                double               beta,
+                                const rocsparse_int* bsr_row_ptr_B,
+                                const rocsparse_int* bsr_col_ind_B,
+                                rocsparse_int*       bsr_row_ptr_C,
+                                rocsparse_int*       nnzb_C,
+                                rocsparse_index_base base_A,
+                                rocsparse_index_base base_B,
+                                rocsparse_index_base base_C);
 
-template void host_csrgeam(rocsparse_int                     M,
-                           rocsparse_int                     N,
-                           double                            alpha,
-                           const std::vector<rocsparse_int>& csr_row_ptr_A,
-                           const std::vector<rocsparse_int>& csr_col_ind_A,
-                           const std::vector<double>&        csr_val_A,
-                           double                            beta,
-                           const std::vector<rocsparse_int>& csr_row_ptr_B,
-                           const std::vector<rocsparse_int>& csr_col_ind_B,
-                           const std::vector<double>&        csr_val_B,
-                           const std::vector<rocsparse_int>& csr_row_ptr_C,
-                           std::vector<rocsparse_int>&       csr_col_ind_C,
-                           std::vector<double>&              csr_val_C,
-                           rocsparse_index_base              base_A,
-                           rocsparse_index_base              base_B,
-                           rocsparse_index_base              base_C);
+template void host_bsrgeam(rocsparse_direction  dir,
+                           rocsparse_int        Mb,
+                           rocsparse_int        Nb,
+                           rocsparse_int        block_dim,
+                           double               alpha,
+                           const rocsparse_int* bsr_row_ptr_A,
+                           const rocsparse_int* bsr_col_ind_A,
+                           const double*        bsr_val_A,
+                           double               beta,
+                           const rocsparse_int* bsr_row_ptr_B,
+                           const rocsparse_int* bsr_col_ind_B,
+                           const double*        bsr_val_B,
+                           const rocsparse_int* bsr_row_ptr_C,
+                           rocsparse_int*       bsr_col_ind_C,
+                           double*              bsr_val_C,
+                           rocsparse_index_base base_A,
+                           rocsparse_index_base base_B,
+                           rocsparse_index_base base_C);
+
+template void host_csrgeam_nnz(rocsparse_int        M,
+                               rocsparse_int        N,
+                               double               alpha,
+                               const rocsparse_int* csr_row_ptr_A,
+                               const rocsparse_int* csr_col_ind_A,
+                               double               beta,
+                               const rocsparse_int* csr_row_ptr_B,
+                               const rocsparse_int* csr_col_ind_B,
+                               rocsparse_int*       csr_row_ptr_C,
+                               rocsparse_int*       nnz_C,
+                               rocsparse_index_base base_A,
+                               rocsparse_index_base base_B,
+                               rocsparse_index_base base_C);
+
+template void host_csrgeam(rocsparse_int        M,
+                           rocsparse_int        N,
+                           double               alpha,
+                           const rocsparse_int* csr_row_ptr_A,
+                           const rocsparse_int* csr_col_ind_A,
+                           const double*        csr_val_A,
+                           double               beta,
+                           const rocsparse_int* csr_row_ptr_B,
+                           const rocsparse_int* csr_col_ind_B,
+                           const double*        csr_val_B,
+                           const rocsparse_int* csr_row_ptr_C,
+                           rocsparse_int*       csr_col_ind_C,
+                           double*              csr_val_C,
+                           rocsparse_index_base base_A,
+                           rocsparse_index_base base_B,
+                           rocsparse_index_base base_C);
 
 /*
  * ===========================================================================
@@ -8483,36 +8784,71 @@ template void host_gemmi(rocsparse_int                   M,
  *    extra SPARSE
  * ===========================================================================
  */
-template void host_csrgeam_nnz(rocsparse_int                     M,
-                               rocsparse_int                     N,
-                               rocsparse_double_complex          alpha,
-                               const std::vector<rocsparse_int>& csr_row_ptr_A,
-                               const std::vector<rocsparse_int>& csr_col_ind_A,
-                               rocsparse_double_complex          beta,
-                               const std::vector<rocsparse_int>& csr_row_ptr_B,
-                               const std::vector<rocsparse_int>& csr_col_ind_B,
-                               std::vector<rocsparse_int>&       csr_row_ptr_C,
-                               rocsparse_int*                    nnz_C,
-                               rocsparse_index_base              base_A,
-                               rocsparse_index_base              base_B,
-                               rocsparse_index_base              base_C);
+template void host_bsrgeam_nnzb(rocsparse_direction      dir,
+                                rocsparse_int            Mb,
+                                rocsparse_int            Nb,
+                                rocsparse_int            block_dim,
+                                rocsparse_double_complex alpha,
+                                const rocsparse_int*     bsr_row_ptr_A,
+                                const rocsparse_int*     bsr_col_ind_A,
+                                rocsparse_double_complex beta,
+                                const rocsparse_int*     bsr_row_ptr_B,
+                                const rocsparse_int*     bsr_col_ind_B,
+                                rocsparse_int*           bsr_row_ptr_C,
+                                rocsparse_int*           nnzb_C,
+                                rocsparse_index_base     base_A,
+                                rocsparse_index_base     base_B,
+                                rocsparse_index_base     base_C);
 
-template void host_csrgeam(rocsparse_int                                M,
-                           rocsparse_int                                N,
-                           rocsparse_double_complex                     alpha,
-                           const std::vector<rocsparse_int>&            csr_row_ptr_A,
-                           const std::vector<rocsparse_int>&            csr_col_ind_A,
-                           const std::vector<rocsparse_double_complex>& csr_val_A,
-                           rocsparse_double_complex                     beta,
-                           const std::vector<rocsparse_int>&            csr_row_ptr_B,
-                           const std::vector<rocsparse_int>&            csr_col_ind_B,
-                           const std::vector<rocsparse_double_complex>& csr_val_B,
-                           const std::vector<rocsparse_int>&            csr_row_ptr_C,
-                           std::vector<rocsparse_int>&                  csr_col_ind_C,
-                           std::vector<rocsparse_double_complex>&       csr_val_C,
-                           rocsparse_index_base                         base_A,
-                           rocsparse_index_base                         base_B,
-                           rocsparse_index_base                         base_C);
+template void host_bsrgeam(rocsparse_direction             dir,
+                           rocsparse_int                   Mb,
+                           rocsparse_int                   Nb,
+                           rocsparse_int                   block_dim,
+                           rocsparse_double_complex        alpha,
+                           const rocsparse_int*            bsr_row_ptr_A,
+                           const rocsparse_int*            bsr_col_ind_A,
+                           const rocsparse_double_complex* bsr_val_A,
+                           rocsparse_double_complex        beta,
+                           const rocsparse_int*            bsr_row_ptr_B,
+                           const rocsparse_int*            bsr_col_ind_B,
+                           const rocsparse_double_complex* bsr_val_B,
+                           const rocsparse_int*            bsr_row_ptr_C,
+                           rocsparse_int*                  bsr_col_ind_C,
+                           rocsparse_double_complex*       bsr_val_C,
+                           rocsparse_index_base            base_A,
+                           rocsparse_index_base            base_B,
+                           rocsparse_index_base            base_C);
+
+template void host_csrgeam_nnz(rocsparse_int            M,
+                               rocsparse_int            N,
+                               rocsparse_double_complex alpha,
+                               const rocsparse_int*     csr_row_ptr_A,
+                               const rocsparse_int*     csr_col_ind_A,
+                               rocsparse_double_complex beta,
+                               const rocsparse_int*     csr_row_ptr_B,
+                               const rocsparse_int*     csr_col_ind_B,
+                               rocsparse_int*           csr_row_ptr_C,
+                               rocsparse_int*           nnz_C,
+                               rocsparse_index_base     base_A,
+                               rocsparse_index_base     base_B,
+                               rocsparse_index_base     base_C);
+
+template void host_csrgeam(rocsparse_int                   M,
+                           rocsparse_int                   N,
+                           rocsparse_double_complex        alpha,
+                           const rocsparse_int*            csr_row_ptr_A,
+                           const rocsparse_int*            csr_col_ind_A,
+                           const rocsparse_double_complex* csr_val_A,
+                           rocsparse_double_complex        beta,
+                           const rocsparse_int*            csr_row_ptr_B,
+                           const rocsparse_int*            csr_col_ind_B,
+                           const rocsparse_double_complex* csr_val_B,
+                           const rocsparse_int*            csr_row_ptr_C,
+                           rocsparse_int*                  csr_col_ind_C,
+                           rocsparse_double_complex*       csr_val_C,
+                           rocsparse_index_base            base_A,
+                           rocsparse_index_base            base_B,
+                           rocsparse_index_base            base_C);
 
 /*
  * ===========================================================================
@@ -8883,36 +9219,71 @@ template void host_gemmi(rocsparse_int                  M,
  *    extra SPARSE
  * ===========================================================================
  */
-template void host_csrgeam_nnz(rocsparse_int                     M,
-                               rocsparse_int                     N,
-                               rocsparse_float_complex           alpha,
-                               const std::vector<rocsparse_int>& csr_row_ptr_A,
-                               const std::vector<rocsparse_int>& csr_col_ind_A,
-                               rocsparse_float_complex           beta,
-                               const std::vector<rocsparse_int>& csr_row_ptr_B,
-                               const std::vector<rocsparse_int>& csr_col_ind_B,
-                               std::vector<rocsparse_int>&       csr_row_ptr_C,
-                               rocsparse_int*                    nnz_C,
-                               rocsparse_index_base              base_A,
-                               rocsparse_index_base              base_B,
-                               rocsparse_index_base              base_C);
+template void host_bsrgeam_nnzb(rocsparse_direction     dir,
+                                rocsparse_int           Mb,
+                                rocsparse_int           Nb,
+                                rocsparse_int           block_dim,
+                                rocsparse_float_complex alpha,
+                                const rocsparse_int*    bsr_row_ptr_A,
+                                const rocsparse_int*    bsr_col_ind_A,
+                                rocsparse_float_complex beta,
+                                const rocsparse_int*    bsr_row_ptr_B,
+                                const rocsparse_int*    bsr_col_ind_B,
+                                rocsparse_int*          bsr_row_ptr_C,
+                                rocsparse_int*          nnzb_C,
+                                rocsparse_index_base    base_A,
+                                rocsparse_index_base    base_B,
+                                rocsparse_index_base    base_C);
 
-template void host_csrgeam(rocsparse_int                               M,
-                           rocsparse_int                               N,
-                           rocsparse_float_complex                     alpha,
-                           const std::vector<rocsparse_int>&           csr_row_ptr_A,
-                           const std::vector<rocsparse_int>&           csr_col_ind_A,
-                           const std::vector<rocsparse_float_complex>& csr_val_A,
-                           rocsparse_float_complex                     beta,
-                           const std::vector<rocsparse_int>&           csr_row_ptr_B,
-                           const std::vector<rocsparse_int>&           csr_col_ind_B,
-                           const std::vector<rocsparse_float_complex>& csr_val_B,
-                           const std::vector<rocsparse_int>&           csr_row_ptr_C,
-                           std::vector<rocsparse_int>&                 csr_col_ind_C,
-                           std::vector<rocsparse_float_complex>&       csr_val_C,
-                           rocsparse_index_base                        base_A,
-                           rocsparse_index_base                        base_B,
-                           rocsparse_index_base                        base_C);
+template void host_bsrgeam(rocsparse_direction            dir,
+                           rocsparse_int                  Mb,
+                           rocsparse_int                  Nb,
+                           rocsparse_int                  block_dim,
+                           rocsparse_float_complex        alpha,
+                           const rocsparse_int*           bsr_row_ptr_A,
+                           const rocsparse_int*           bsr_col_ind_A,
+                           const rocsparse_float_complex* bsr_val_A,
+                           rocsparse_float_complex        beta,
+                           const rocsparse_int*           bsr_row_ptr_B,
+                           const rocsparse_int*           bsr_col_ind_B,
+                           const rocsparse_float_complex* bsr_val_B,
+                           const rocsparse_int*           bsr_row_ptr_C,
+                           rocsparse_int*                 bsr_col_ind_C,
+                           rocsparse_float_complex*       bsr_val_C,
+                           rocsparse_index_base           base_A,
+                           rocsparse_index_base           base_B,
+                           rocsparse_index_base           base_C);
+
+template void host_csrgeam_nnz(rocsparse_int           M,
+                               rocsparse_int           N,
+                               rocsparse_float_complex alpha,
+                               const rocsparse_int*    csr_row_ptr_A,
+                               const rocsparse_int*    csr_col_ind_A,
+                               rocsparse_float_complex beta,
+                               const rocsparse_int*    csr_row_ptr_B,
+                               const rocsparse_int*    csr_col_ind_B,
+                               rocsparse_int*          csr_row_ptr_C,
+                               rocsparse_int*          nnz_C,
+                               rocsparse_index_base    base_A,
+                               rocsparse_index_base    base_B,
+                               rocsparse_index_base    base_C);
+
+template void host_csrgeam(rocsparse_int                  M,
+                           rocsparse_int                  N,
+                           rocsparse_float_complex        alpha,
+                           const rocsparse_int*           csr_row_ptr_A,
+                           const rocsparse_int*           csr_col_ind_A,
+                           const rocsparse_float_complex* csr_val_A,
+                           rocsparse_float_complex        beta,
+                           const rocsparse_int*           csr_row_ptr_B,
+                           const rocsparse_int*           csr_col_ind_B,
+                           const rocsparse_float_complex* csr_val_B,
+                           const rocsparse_int*           csr_row_ptr_C,
+                           rocsparse_int*                 csr_col_ind_C,
+                           rocsparse_float_complex*       csr_val_C,
+                           rocsparse_index_base           base_A,
+                           rocsparse_index_base           base_B,
+                           rocsparse_index_base           base_C);
 
 /*
  * ===========================================================================
