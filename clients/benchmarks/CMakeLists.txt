@@ -94,6 +94,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_csrsm.cpp
 ../testings/testing_bsrsm.cpp
 ../testings/testing_gemmi.cpp
+../testings/testing_bsrgeam.cpp
 ../testings/testing_csrgeam.cpp
 ../testings/testing_csrgemm.cpp
 ../testings/testing_csrgemm_reuse.cpp

@@ -26,6 +26,27 @@
 
 #include "handle.h"
 
+template <typename T, typename U>
+rocsparse_status rocsparse_csrgeam_dispatch(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             n,
+                                            U                         alpha_device_host,
+                                            const rocsparse_mat_descr descr_A,
+                                            rocsparse_int             nnz_A,
+                                            const T*                  csr_val_A,
+                                            const rocsparse_int*      csr_row_ptr_A,
+                                            const rocsparse_int*      csr_col_ind_A,
+                                            U                         beta_device_host,
+                                            const rocsparse_mat_descr descr_B,
+                                            rocsparse_int             nnz_B,
+                                            const T*                  csr_val_B,
+                                            const rocsparse_int*      csr_row_ptr_B,
+                                            const rocsparse_int*      csr_col_ind_B,
+                                            const rocsparse_mat_descr descr_C,
+                                            T*                        csr_val_C,
+                                            const rocsparse_int*      csr_row_ptr_C,
+                                            rocsparse_int*            csr_col_ind_C);
+
 template <typename T>
 rocsparse_status rocsparse_csrgeam_template(rocsparse_handle          handle,
                                             rocsparse_int             m,

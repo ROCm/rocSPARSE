@@ -48,6 +48,7 @@ include: test_csrmm.yaml
 include: test_csrsm.yaml
 include: test_bsrsm.yaml
 include: test_gemmi.yaml
+include: test_bsrgeam.yaml
 include: test_csrgeam.yaml
 include: test_csrgemm.yaml
 include: test_csrgemm_reuse.yaml

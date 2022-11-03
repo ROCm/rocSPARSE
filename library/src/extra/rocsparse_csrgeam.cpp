@@ -174,59 +174,34 @@ rocsparse_status rocsparse_csrgeam_template(rocsparse_handle          handle,
     {
         return rocsparse_status_invalid_handle;
     }
-    else if(alpha == nullptr || beta == nullptr || descr_A == nullptr || descr_B == nullptr
-            || descr_C == nullptr)
+
+    if(alpha == nullptr || beta == nullptr || descr_A == nullptr || descr_B == nullptr
+       || descr_C == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
     // Logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrgeam"),
-                  m,
-                  n,
-                  *alpha,
-                  (const void*&)descr_A,
-                  nnz_A,
-                  (const void*&)csr_val_A,
-                  (const void*&)csr_row_ptr_A,
-                  (const void*&)csr_col_ind_A,
-                  *beta,
-                  (const void*&)descr_B,
-                  nnz_B,
-                  (const void*&)csr_val_B,
-                  (const void*&)csr_row_ptr_B,
-                  (const void*&)csr_col_ind_B,
-                  (const void*&)descr_C,
-                  (const void*&)csr_val_C,
-                  (const void*&)csr_row_ptr_C,
-                  (const void*&)csr_col_ind_C);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrgeam"),
-                  m,
-                  n,
-                  (const void*&)alpha,
-                  (const void*&)descr_A,
-                  nnz_A,
-                  (const void*&)csr_val_A,
-                  (const void*&)csr_row_ptr_A,
-                  (const void*&)csr_col_ind_A,
-                  (const void*&)beta,
-                  (const void*&)descr_B,
-                  nnz_B,
-                  (const void*&)csr_val_B,
-                  (const void*&)csr_row_ptr_B,
-                  (const void*&)csr_col_ind_B,
-                  (const void*&)descr_C,
-                  (const void*&)csr_val_C,
-                  (const void*&)csr_row_ptr_C,
-                  (const void*&)csr_col_ind_C);
-    }
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xcsrgeam"),
+              m,
+              n,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha),
+              (const void*&)descr_A,
+              nnz_A,
+              (const void*&)csr_val_A,
+              (const void*&)csr_row_ptr_A,
+              (const void*&)csr_col_ind_A,
+              LOG_TRACE_SCALAR_VALUE(handle, beta),
+              (const void*&)descr_B,
+              nnz_B,
+              (const void*&)csr_val_B,
+              (const void*&)csr_row_ptr_B,
+              (const void*&)csr_col_ind_B,
+              (const void*&)descr_C,
+              (const void*&)csr_val_C,
+              (const void*&)csr_row_ptr_C,
+              (const void*&)csr_col_ind_C);
 
     // Check matrix type
     if(descr_A->type != rocsparse_matrix_type_general
@@ -390,7 +365,8 @@ extern "C" rocsparse_status rocsparse_csrgeam_nnz(rocsparse_handle          hand
     {
         return rocsparse_status_invalid_handle;
     }
-    else if(descr_A == nullptr || descr_B == nullptr || descr_C == nullptr)
+
+    if(descr_A == nullptr || descr_B == nullptr || descr_C == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -450,6 +426,25 @@ extern "C" rocsparse_status rocsparse_csrgeam_nnz(rocsparse_handle          hand
         else
         {
             RETURN_IF_HIP_ERROR(hipMemsetAsync(nnz_C, 0, sizeof(rocsparse_int), handle->stream));
+        }
+
+        if(nnz_A == 0 && nnz_B == 0)
+        {
+            if(csr_row_ptr_C == nullptr)
+            {
+                return rocsparse_status_invalid_pointer;
+            }
+            else
+            {
+                hipLaunchKernelGGL((set_array_to_value<256>),
+                                   dim3(m / 256 + 1),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   m + 1,
+                                   csr_row_ptr_C,
+                                   static_cast<rocsparse_int>(descr_C->base));
+            }
         }
 
         return rocsparse_status_success;

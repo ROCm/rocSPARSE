@@ -167,6 +167,11 @@ Functions:
   rocsparse_cgemmi: { function: gemmi, <<: *single_precision_complex }
   rocsparse_zgemmi: { function: gemmi, <<: *double_precision_complex }
 
+  rocsparse_bsrgeam_nnzb: { function: bsrgeam }
+  rocsparse_sbsrgeam: { function: bsrgeam, <<: *single_precision }
+  rocsparse_dbsrgeam: { function: bsrgeam, <<: *double_precision }
+  rocsparse_cbsrgeam: { function: bsrgeam, <<: *single_precision_complex }
+  rocsparse_zbsrgeam: { function: bsrgeam, <<: *double_precision_complex }
   rocsparse_csrgeam_nnz: { function: csrgeam }
   rocsparse_scsrgeam: { function: csrgeam, <<: *single_precision }
   rocsparse_dcsrgeam: { function: csrgeam, <<: *double_precision }

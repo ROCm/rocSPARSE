@@ -91,6 +91,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_csrsm.cpp
   test_bsrsm.cpp
   test_gemmi.cpp
+  test_bsrgeam.cpp
   test_csrgeam.cpp
   test_csrgemm.cpp
   test_csrgemm_reuse.cpp
@@ -207,6 +208,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_csrsm.cpp
 ../testings/testing_bsrsm.cpp
 ../testings/testing_gemmi.cpp
+../testings/testing_bsrgeam.cpp
 ../testings/testing_csrgeam.cpp
 ../testings/testing_csrgemm.cpp
 ../testings/testing_csrgemm_reuse.cpp

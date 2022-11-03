@@ -288,6 +288,8 @@ __device__ void csrgeam_fill_multipass_device(rocsparse_int m,
             }
         }
 
+        __threadfence_block();
+
         // Loop over all columns of B, starting with the first entry that did not fit
         // into the previous chunk
         for(; row_begin_B < row_end_B; row_begin_B += WFSIZE)

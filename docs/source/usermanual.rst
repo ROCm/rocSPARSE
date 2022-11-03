@@ -1029,6 +1029,8 @@ Sparse Extra Functions
 ============================================================================= ====== ====== ============== ==============
 Function name                                                                 single double single complex double complex
 ============================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_bsrgeam_nnzb`
+:cpp:func:`rocsparse_Xbsrgeam() <rocsparse_sbsrgeam>`                         x      x      x              x
 :cpp:func:`rocsparse_csrgeam_nnz`
 :cpp:func:`rocsparse_Xcsrgeam() <rocsparse_scsrgeam>`                         x      x      x              x
 :cpp:func:`rocsparse_Xcsrgemm_buffer_size() <rocsparse_scsrgemm_buffer_size>` x      x      x              x
@@ -2102,6 +2104,22 @@ Sparse Extra Functions
 This module holds all sparse extra routines.
 
 The sparse extra routines describe operations that manipulate sparse matrices.
+
+rocsparse_bsrgeam_nnzb()
+------------------------
+
+.. doxygenfunction:: rocsparse_bsrgeam_nnzb
+
+rocsparse_bsrgeam()
+-------------------
+
+.. doxygenfunction:: rocsparse_sbsrgeam
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrgeam
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrgeam
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrgeam
 
 rocsparse_csrgeam_nnz()
 -----------------------
