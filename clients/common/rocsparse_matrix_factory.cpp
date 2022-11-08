@@ -627,20 +627,51 @@ struct traits_init_bsr<
         rocsparse_int            M         = mb_ * block_dim;
         rocsparse_int            N         = nb_ * block_dim;
         host_csr_matrix<T, I, J> hA_uncompressed;
-        factory.init_csr(hA_uncompressed, M, N, base_);
+
+        // Always generate sorted CSR matrix as convert routine requires CSR matrix to be sorted
+        hA_uncompressed.define(M, N, 0, base_);
+        factory.init_csr(hA_uncompressed.ptr,
+                         hA_uncompressed.ind,
+                         hA_uncompressed.val,
+                         hA_uncompressed.m,
+                         hA_uncompressed.n,
+                         hA_uncompressed.nnz,
+                         hA_uncompressed.base,
+                         rocsparse_matrix_type_general,
+                         rocsparse_fill_mode_lower,
+                         rocsparse_storage_mode_sorted);
 
         {
             device_csr_matrix<T, I, J> dA_uncompressed(hA_uncompressed);
             device_csr_matrix<T, I, J> dA_compressed;
             rocsparse_matrix_utils::compress(dA_compressed, dA_uncompressed, base_);
-            rocsparse_matrix_utils::convert(
-                dA_compressed, factory.m_arg.direction, block_dim, base_, that_on_device);
+            rocsparse_matrix_utils::convert(dA_compressed,
+                                            factory.m_arg.direction,
+                                            block_dim,
+                                            base_,
+                                            rocsparse_storage_mode_sorted,
+                                            that_on_device);
         }
 
         that(that_on_device);
 
         mb_ = that.mb;
         nb_ = that.nb;
+
+        switch(factory.m_arg.storage)
+        {
+        case rocsparse_storage_mode_unsorted:
+        {
+            rocsparse_matrix_utils::host_gebsrunsort<T>(
+                that.ptr.data(), that.ind.data(), that.mb, that.base);
+            that_on_device(that);
+            break;
+        }
+        case rocsparse_storage_mode_sorted:
+        {
+            break;
+        }
+        }
     };
 };
 

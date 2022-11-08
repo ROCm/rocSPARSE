@@ -134,12 +134,40 @@ void testing_bsrpad_value(const Arguments& arg)
     {
         host_csr_matrix<T> hcsrA;
 
-        // Generate a temporary csr matrix to get the correct dimensions
-        matrix_factory.init_csr(hcsrA, M, M);
+        // Generate a temporary sorted csr matrix to get the correct dimensions
+        hcsrA.define(M, M, 0, base);
+        matrix_factory.init_csr(hcsrA.ptr,
+                                hcsrA.ind,
+                                hcsrA.val,
+                                hcsrA.m,
+                                hcsrA.n,
+                                hcsrA.nnz,
+                                hcsrA.base,
+                                rocsparse_matrix_type_general,
+                                rocsparse_fill_mode_lower,
+                                rocsparse_storage_mode_sorted);
+        M = hcsrA.m;
 
         device_csr_matrix<T> dcsrA(hcsrA);
 
-        rocsparse_matrix_utils::convert(dcsrA, direction, block_dim, base, dbsr);
+        rocsparse_matrix_utils::convert(
+            dcsrA, direction, block_dim, base, rocsparse_storage_mode_sorted, dbsr);
+
+        switch(storage)
+        {
+        case rocsparse_storage_mode_unsorted:
+        {
+            host_gebsr_matrix<T> hbsr(dbsr);
+            rocsparse_matrix_utils::host_gebsrunsort<T>(
+                hbsr.ptr.data(), hbsr.ind.data(), hbsr.mb, hbsr.base);
+            dbsr(hbsr);
+            break;
+        }
+        case rocsparse_storage_mode_sorted:
+        {
+            break;
+        }
+        }
 
         Mb = dbsr.mb;
     }
