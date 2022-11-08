@@ -35,7 +35,7 @@ import json
 #
 #
 #
-def export_ptsdata(obasename,xargs, yargs, results,verbose = False):
+def export_ptsdata(ibasename, obasename,xargs, yargs, results,verbose = False):
 
     len_xargs = len(xargs)
     for iplot in range(len(yargs)):
@@ -57,8 +57,8 @@ def export_ptsdata(obasename,xargs, yargs, results,verbose = False):
                 print('//rocsparse-bench-ptsdata  -  write pts data file : \'' + obasename + '.csv\'')
             if one_only:
                 one_only = False
-                datafile.write(tg_raw_legend + ",time, time_low, time_high, flops, flops_low, flops_high, bandwidth, bandwidth_low, bandwidth_high\n")
-            datafile.write(tg_raw + ", " +
+                datafile.write("test_name , " + tg_raw_legend + ",time, time_low, time_high, flops, flops_low, flops_high, bandwidth, bandwidth_low, bandwidth_high\n")
+            datafile.write(ibasename + ", " + tg_raw + ", " +
                            tg["time"][0] + ", " +
                            tg["time"][1] + ", " +
                            tg["time"][2] + ", " +
@@ -80,6 +80,7 @@ def main():
     obasename = user_args.obasename
     if len(unknown_args) > 1:
         print('expecting only one input file.')
+    ibasename = os.path.basename(os.path.splitext(unknown_args[0])[0])
     with open(unknown_args[0],"r") as f:
         case=json.load(f)
 
@@ -94,7 +95,7 @@ def main():
         print('//rocsparse-bench-ptsdata')
         print('//rocsparse-bench-ptsdata  - file : \'' + unknown_args[0] + '\'')
 
-    export_ptsdata( obasename, xargs,yargs, results, verbose)
+    export_ptsdata( ibasename, obasename, xargs,yargs, results, verbose)
 
 if __name__ == "__main__":
     main()
