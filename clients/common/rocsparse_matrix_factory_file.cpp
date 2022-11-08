@@ -186,13 +186,34 @@ struct spec<T, rocsparse_int, rocsparse_int>
                          hA_uncompressed.base,
                          matrix_type,
                          uplo,
-                         storage);
+                         rocsparse_storage_mode_sorted);
 
         device_gebsr_matrix<T, rocsparse_int, rocsparse_int> that_on_device;
         {
             device_csr_matrix<T, rocsparse_int, rocsparse_int> dA_uncompressed(hA_uncompressed);
-            rocsparse_matrix_utils::convert(
-                dA_uncompressed, dirb, row_block_dim, col_block_dim, base, that_on_device);
+            rocsparse_matrix_utils::convert(dA_uncompressed,
+                                            dirb,
+                                            row_block_dim,
+                                            col_block_dim,
+                                            base,
+                                            rocsparse_storage_mode_sorted,
+                                            that_on_device);
+
+            switch(storage)
+            {
+            case rocsparse_storage_mode_unsorted:
+            {
+                host_gebsr_matrix<T, rocsparse_int, rocsparse_int> that(that_on_device);
+                rocsparse_matrix_utils::host_gebsrunsort<T>(
+                    that.ptr.data(), that.ind.data(), that.mb, that.base);
+                that_on_device(that);
+                break;
+            }
+            case rocsparse_storage_mode_sorted:
+            {
+                break;
+            }
+            }
         }
 
         Mb            = that_on_device.mb;

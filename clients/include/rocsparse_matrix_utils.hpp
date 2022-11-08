@@ -161,8 +161,17 @@ struct rocsparse_matrix_utils
                         rocsparse_int               row_block_dim,
                         rocsparse_int               col_block_dim,
                         rocsparse_index_base        base,
+                        rocsparse_storage_mode      storage,
                         device_gebsr_matrix<T>&     result)
     {
+        // Currently this routine only works on sorted input and output matrices
+        if(storage == rocsparse_storage_mode_unsorted)
+        {
+            std::cerr << "Error: rocsparse_matrix_utils::convert only works with sorted matrices"
+                      << std::endl;
+            throw rocsparse_status_internal_error;
+        }
+
         rocsparse_int mb = (that.m + row_block_dim - 1) / row_block_dim;
         rocsparse_int nb = (that.n + col_block_dim - 1) / col_block_dim;
 
@@ -232,7 +241,7 @@ struct rocsparse_matrix_utils
                                                            result.col_block_dim,
                                                            buffer));
 
-        rocsparse_hipFree(buffer);
+        CHECK_HIP_THROW_ERROR(rocsparse_hipFree(buffer));
 
         CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_mat_descr(result_descr));
         CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_mat_descr(that_descr));
@@ -249,8 +258,17 @@ struct rocsparse_matrix_utils
                         rocsparse_direction         dirb,
                         rocsparse_int               block_dim,
                         rocsparse_index_base        base,
+                        rocsparse_storage_mode      storage,
                         device_gebsr_matrix<T>&     c)
     {
+        // Currently this routine only works on sorted input and output matrices
+        if(storage == rocsparse_storage_mode_unsorted)
+        {
+            std::cerr << "Error: rocsparse_matrix_utils::convert only works with sorted matrices"
+                      << std::endl;
+            throw rocsparse_status_internal_error;
+        }
+
         rocsparse_int mb   = (that.m + block_dim - 1) / block_dim;
         rocsparse_int nb   = (that.n + block_dim - 1) / block_dim;
         rocsparse_int nnzb = 0;
