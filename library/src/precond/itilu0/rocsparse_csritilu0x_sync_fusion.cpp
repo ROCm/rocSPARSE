@@ -1098,7 +1098,7 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                         else
                         {
 
-                            if((nrm_indicator <= tol_))
+                            if((nrm_indicator <= tol_) && (iter > 0))
                             {
                                 nmaxiter_[0] = iter + 1;
                                 converged    = true;
