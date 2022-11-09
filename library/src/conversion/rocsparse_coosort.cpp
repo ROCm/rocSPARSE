@@ -386,6 +386,9 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
 
         rocsparse_int avg_row_nnz = nnz / nsegm;
 
+        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys(
+            nullptr, size, vals, nnz, nsegm, work4, work4 + 1, startbit, endbit, stream));
+
         if(avg_row_nnz < 64)
         {
             using config
