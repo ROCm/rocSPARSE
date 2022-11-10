@@ -11533,7 +11533,6 @@ rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
 *  \retval     rocsparse_status_zero_pivot if nnz is zero.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 */
-/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csritilu0_buffer_size(rocsparse_handle     handle,
                                                  rocsparse_itilu0_alg alg,
@@ -11543,17 +11542,17 @@ rocsparse_status rocsparse_csritilu0_buffer_size(rocsparse_handle     handle,
                                                  rocsparse_int        nnz,
                                                  const rocsparse_int* csr_row_ptr,
                                                  const rocsparse_int* csr_col_ind,
-                                                 rocsparse_index_base base,
+                                                 rocsparse_index_base idx_base,
                                                  rocsparse_datatype   datatype,
                                                  size_t*              buffer_size);
-/**@}*/
 
 /*! \ingroup precond_module
 *  \brief Iterative Incomplete LU factorization with 0 fill-ins and no pivoting using CSR
 *  storage format.
 *
 *  \details
-*  \p rocsparse_csritilu0_preprocess computes the information required to run \ref rocsparse_csritilu0_compute
+*  \p rocsparse_csritilu0_preprocess computes the information required to run \ref rocsparse_scsritilu0_compute,
+*  \ref rocsparse_dcsritilu0_compute, \ref rocsparse_ccsritilu0_compute, or \ref rocsparse_zcsritilu0_compute,
 *  and stores it in the buffer.
 *
 *  \note
@@ -11597,7 +11596,6 @@ rocsparse_status rocsparse_csritilu0_buffer_size(rocsparse_handle     handle,
 *  \retval     rocsparse_status_zero_pivot if missing diagonal element is detected.
 *
 */
-
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csritilu0_preprocess(rocsparse_handle     handle,
                                                 rocsparse_itilu0_alg alg,
@@ -11607,7 +11605,7 @@ rocsparse_status rocsparse_csritilu0_preprocess(rocsparse_handle     handle,
                                                 rocsparse_int        nnz,
                                                 const rocsparse_int* csr_row_ptr,
                                                 const rocsparse_int* csr_col_ind,
-                                                rocsparse_index_base base,
+                                                rocsparse_index_base idx_base,
                                                 rocsparse_datatype   datatype,
                                                 size_t               buffer_size,
                                                 void*                buffer);
@@ -11655,21 +11653,19 @@ rocsparse_status rocsparse_csritilu0_preprocess(rocsparse_handle     handle,
 *  @param[in]
 *  csr_col_ind array of \p nnz elements containing the column indices of the sparse
 *              CSR matrix.
-*  @param[ino]
+*  @param[inout]
 *  csr_val     array of \p nnz elements of the sparse CSR matrix.
 *  @param[out]
 *  ilu0        incomplete factorization.
 *  @param[in]
 *  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
 *  @param[in]
-*  datatype    Type of numerical values, \ref rocsparse_datatype.
-*  @param[in]
 *  buffer_size size of the storage buffer allocated by the user.
 *  @param[in]
 *  buffer      storage buffer allocated by the user.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
-*  \retval     rocsparse_status_invalid_value \p alg, \p base or datatype is invalid.
+*  \retval     rocsparse_status_invalid_value \p alg or \p base is invalid.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval     rocsparse_status_invalid_size \p m or \p nnz is invalid.
 *  \retval     rocsparse_status_invalid_pointer \p csr_row_ptr
@@ -11678,7 +11674,6 @@ rocsparse_status rocsparse_csritilu0_preprocess(rocsparse_handle     handle,
 *
 */
 /**@{*/
-
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsritilu0_compute(rocsparse_handle     handle,
                                               rocsparse_itilu0_alg alg,
@@ -11691,7 +11686,7 @@ rocsparse_status rocsparse_scsritilu0_compute(rocsparse_handle     handle,
                                               const rocsparse_int* csr_col_ind,
                                               const float*         csr_val,
                                               float*               ilu0,
-                                              rocsparse_index_base base,
+                                              rocsparse_index_base idx_base,
                                               size_t               buffer_size,
                                               void*                buffer);
 
@@ -11703,11 +11698,11 @@ rocsparse_status rocsparse_dcsritilu0_compute(rocsparse_handle     handle,
                                               double               tol,
                                               rocsparse_int        m,
                                               rocsparse_int        nnz,
-                                              const rocsparse_int* ptr,
-                                              const rocsparse_int* ind,
-                                              const double*        val,
+                                              const rocsparse_int* csr_row_ptr,
+                                              const rocsparse_int* csr_col_ind,
+                                              const double*        csr_val,
                                               double*              ilu0,
-                                              rocsparse_index_base base,
+                                              rocsparse_index_base idx_base,
                                               size_t               buffer_size,
                                               void*                buffer);
 
@@ -11719,11 +11714,11 @@ rocsparse_status rocsparse_ccsritilu0_compute(rocsparse_handle               han
                                               float                          tol,
                                               rocsparse_int                  m,
                                               rocsparse_int                  nnz,
-                                              const rocsparse_int*           ptr,
-                                              const rocsparse_int*           ind,
-                                              const rocsparse_float_complex* val,
+                                              const rocsparse_int*           csr_row_ptr,
+                                              const rocsparse_int*           csr_col_ind,
+                                              const rocsparse_float_complex* csr_val,
                                               rocsparse_float_complex*       ilu0,
-                                              rocsparse_index_base           base,
+                                              rocsparse_index_base           idx_base,
                                               size_t                         buffer_size,
                                               void*                          buffer);
 
@@ -11735,14 +11730,13 @@ rocsparse_status rocsparse_zcsritilu0_compute(rocsparse_handle                ha
                                               double                          tol,
                                               rocsparse_int                   m,
                                               rocsparse_int                   nnz,
-                                              const rocsparse_int*            ptr,
-                                              const rocsparse_int*            ind,
-                                              const rocsparse_double_complex* val,
+                                              const rocsparse_int*            csr_row_ptr,
+                                              const rocsparse_int*            csr_col_ind,
+                                              const rocsparse_double_complex* csr_val,
                                               rocsparse_double_complex*       ilu0,
-                                              rocsparse_index_base            base,
+                                              rocsparse_index_base            idx_base,
                                               size_t                          buffer_size,
                                               void*                           buffer);
-
 /**@}*/
 
 /*! \ingroup precond_module

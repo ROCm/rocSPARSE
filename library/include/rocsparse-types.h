@@ -33,6 +33,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/// \cond DO_NOT_DOCUMENT
 #ifdef WIN32
 #define ROCSPARSE_KERNEL __global__ static
 #define ROCSPARSE_DEVICE_ILF __device__ __forceinline__
@@ -40,6 +41,7 @@
 #define ROCSPARSE_KERNEL __global__
 #define ROCSPARSE_DEVICE_ILF __device__
 #endif
+/// \endcond
 
 /*! \ingroup types_module
  *  \brief Specifies whether int32 or int64 is used.
@@ -50,8 +52,10 @@ typedef int64_t rocsparse_int;
 typedef int32_t rocsparse_int;
 #endif
 
+/// \cond DO_NOT_DOCUMENT
 /* Forward declaration of hipStream_t */
 typedef struct ihipStream_t* hipStream_t;
+/// \endcond
 
 /*! \ingroup types_module
  *  \brief Handle to the rocSPARSE library context queue.

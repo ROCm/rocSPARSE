@@ -1615,7 +1615,7 @@ rocsparse_status rocsparse_spmat_set_attribute(rocsparse_spmat_descr     descr,
  *  \brief Create a dense vector descriptor
  *  \details
  *  \p rocsparse_create_dnvec_descr creates a dense vector descriptor. It should be
- *  destroyed at the end using rocsparse_create_dnvec_descr().
+ *  destroyed at the end using rocsparse_destroy_dnvec_descr().
  *
  *  @param[out]
  *  descr   the pointer to the dense vector descriptor.
@@ -1712,7 +1712,7 @@ rocsparse_status rocsparse_dnvec_set_values(rocsparse_dnvec_descr descr, void* v
  *  \brief Create a dense matrix descriptor
  *  \details
  *  \p rocsparse_create_dnmat_descr creates a dense matrix descriptor. It should be
- *  destroyed at the end using rocsparse_create_dnmat_descr().
+ *  destroyed at the end using rocsparse_destroy_dnmat_descr().
  *
  *  @param[out]
  *  descr     the pointer to the dense matrix descriptor.
