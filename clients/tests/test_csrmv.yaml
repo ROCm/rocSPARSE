@@ -317,7 +317,20 @@ Tests:
   precision: *single_double_precisions_complex_real
   M_N: *M_N_range_checkin
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
+  uplo: [rocsparse_fill_mode_upper]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
+
+- name: csrmv
+  category: pre_checkin
+  function: csrmv
+  precision: *double_only_precisions_complex
+  M_N: *M_N_range_checkin
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
