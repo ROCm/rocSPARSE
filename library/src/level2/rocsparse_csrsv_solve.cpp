@@ -44,7 +44,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrsv_kernel(J m,
                                                                 const T* __restrict__ csr_val,
                                                                 const T* __restrict__ x,
                                                                 T* __restrict__ y,
-                                                                int* __restrict__ done_array,
+                                                                unsigned int* __restrict__ done_array,
                                                                 J* __restrict__ map,
                                                                 int offset,
                                                                 J* __restrict__ zero_pivot,
@@ -94,11 +94,13 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
     ptr += 256;
 
     // done array
-    int* done_array = reinterpret_cast<int*>(ptr);
+    unsigned int* done_array = reinterpret_cast<unsigned int*>(ptr);
     ptr += sizeof(int) * ((m - 1) / 256 + 1) * 256;
 
     // Initialize buffers
-    RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * m, stream));
+    // Each value contains "done" flags for 32 rows
+    constexpr unsigned int done_bits = CHAR_BIT * sizeof(unsigned int);
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(unsigned int) * (m + done_bits - 1) / done_bits, stream));
 
     rocsparse_trm_info csrsv
         = (descr->fill_mode == rocsparse_fill_mode_upper)

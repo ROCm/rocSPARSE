@@ -349,7 +349,7 @@ __device__ void csrsv_device(J m,
                              const T* __restrict__ csr_val,
                              const T* __restrict__ x,
                              T* __restrict__ y,
-                             int* __restrict__ done_array,
+                             unsigned int* __restrict__ done_array,
                              J* __restrict__ map,
                              int offset,
                              J* __restrict__ zero_pivot,
@@ -357,6 +357,9 @@ __device__ void csrsv_device(J m,
                              rocsparse_fill_mode  fill_mode,
                              rocsparse_diag_type  diag_type)
 {
+    // Each value contains "done" flags for 32 rows
+    constexpr unsigned int done_bits = CHAR_BIT * sizeof(unsigned int);
+
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
     int wid = hipThreadIdx_x / WF_SIZE;
     if(WF_SIZE == warpSize)
@@ -461,9 +464,10 @@ __device__ void csrsv_device(J m,
         }
 
         // Spin loop until dependency has been resolved
-        int          local_done    = atomicOr(&done_array[local_col], 0);
+        // atomicOr(.., 0) is optimized to coherent load so there are no atomic conflicts
+        unsigned int local_done    = atomicOr(&done_array[local_col / done_bits], 0);
         unsigned int times_through = 0;
-        while(!local_done)
+        while((local_done & (1 << (local_col % done_bits))) == 0)
         {
             if(SLEEP)
             {
@@ -478,7 +482,7 @@ __device__ void csrsv_device(J m,
                 }
             }
 
-            local_done = atomicOr(&done_array[local_col], 0);
+            local_done = atomicOr(&done_array[local_col / done_bits], 0);
         }
 
         // Wait for y to be visible globally
@@ -509,6 +513,6 @@ __device__ void csrsv_device(J m,
         __threadfence();
 
         // Mark row as done
-        atomicOr(&done_array[row], 1);
+        atomicOr(&done_array[row / done_bits], 1 << (row % done_bits));
     }
 }
