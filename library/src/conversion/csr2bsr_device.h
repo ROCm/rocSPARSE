@@ -26,7 +26,7 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BLOCKDIM>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csr2bsr_nnz_wavefront_per_row_multipass_kernel(
     rocsparse_int        m,
     rocsparse_int        n,
@@ -43,17 +43,17 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csr2bsr_nnz_wavefront_per_row
     int tid = hipThreadIdx_x;
 
     // Lane id
-    int lid = tid & (BLOCKDIM * BLOCKDIM - 1);
+    int lid = tid & (WFSIZE - 1);
     // Wavefront id
-    int wid = tid / (BLOCKDIM * BLOCKDIM);
+    int wid = tid / WFSIZE;
 
-    int c = lid & (BLOCKDIM - 1);
-    int r = lid / BLOCKDIM;
+    int c = lid & (WFSIZE / BLOCKDIM - 1);
+    int r = lid / (WFSIZE / BLOCKDIM);
 
-    rocsparse_int row = (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)) * block_dim * bid + block_dim * wid + r;
+    rocsparse_int row = (BLOCKSIZE / WFSIZE) * block_dim * bid + block_dim * wid + r;
 
-    __shared__ bool          found[BLOCKSIZE / (BLOCKDIM * BLOCKDIM)];
-    __shared__ rocsparse_int nnzb_per_row[BLOCKSIZE / (BLOCKDIM * BLOCKDIM)];
+    __shared__ bool          found[BLOCKSIZE / WFSIZE];
+    __shared__ rocsparse_int nnzb_per_row[BLOCKSIZE / WFSIZE];
 
     nnzb_per_row[wid] = 0;
 
@@ -82,7 +82,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csr2bsr_nnz_wavefront_per_row
 
         rocsparse_int index_k = row_end;
 
-        for(rocsparse_int k = next_k + c; k < row_end; k += BLOCKDIM)
+        for(rocsparse_int k = next_k + c; k < row_end; k += (WFSIZE / BLOCKDIM))
         {
             rocsparse_int block_col = (csr_col_ind[k] - csr_base) / block_dim;
 
@@ -100,16 +100,16 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csr2bsr_nnz_wavefront_per_row
 
         __threadfence_block();
 
-        rocsparse_wfreduce_min<BLOCKDIM>(&index_k);
-        next_k = __shfl(index_k, BLOCKDIM - 1, BLOCKDIM);
+        rocsparse_wfreduce_min<(WFSIZE / BLOCKDIM)>(&index_k);
+        next_k = __shfl(index_k, (WFSIZE / BLOCKDIM) - 1, (WFSIZE / BLOCKDIM));
 
         if(found[wid] && lid == 0)
         {
             nnzb_per_row[wid]++;
         }
 
-        rocsparse_wfreduce_min<BLOCKDIM * BLOCKDIM>(&min_block_col);
-        chunk_begin = __shfl(min_block_col, BLOCKDIM * BLOCKDIM - 1, BLOCKDIM * BLOCKDIM);
+        rocsparse_wfreduce_min<WFSIZE>(&min_block_col);
+        chunk_begin = __shfl(min_block_col, WFSIZE - 1, WFSIZE);
 
         __threadfence_block();
     }
@@ -117,9 +117,9 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csr2bsr_nnz_wavefront_per_row
     if(lid == 0)
     {
         bsr_row_ptr[0] = bsr_base;
-        if(((BLOCKSIZE / (BLOCKDIM * BLOCKDIM)) * bid + wid) < mb)
+        if(((BLOCKSIZE / WFSIZE) * bid + wid) < mb)
         {
-            bsr_row_ptr[(BLOCKSIZE / (BLOCKDIM * BLOCKDIM)) * bid + wid + 1] = nnzb_per_row[wid];
+            bsr_row_ptr[(BLOCKSIZE / WFSIZE) * bid + wid + 1] = nnzb_per_row[wid];
         }
     }
 }
@@ -218,7 +218,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     }
 }
 
-template <rocsparse_int BLOCKSIZE, rocsparse_int BLOCKDIM, typename T>
+template <rocsparse_int BLOCKSIZE, rocsparse_int WFSIZE, rocsparse_int BLOCKDIM, typename T>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csr2bsr_wavefront_per_row_multipass_kernel(rocsparse_direction        dir,
                                                     rocsparse_int              m,
@@ -239,18 +239,18 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     int tid = hipThreadIdx_x;
 
     // Lane id
-    int lid = tid & (BLOCKDIM * BLOCKDIM - 1);
+    int lid = tid & (WFSIZE - 1);
     // Wavefront id
-    int wid = tid / (BLOCKDIM * BLOCKDIM);
+    int wid = tid / (WFSIZE);
 
-    int c = lid & (BLOCKDIM - 1);
-    int r = lid / BLOCKDIM;
+    int c = lid & (WFSIZE / BLOCKDIM - 1);
+    int r = lid / (WFSIZE / BLOCKDIM);
 
-    rocsparse_int block_row = (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)) * bid + wid;
-    rocsparse_int row = (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)) * block_dim * bid + block_dim * wid + r;
+    rocsparse_int block_row = (BLOCKSIZE / WFSIZE) * bid + wid;
+    rocsparse_int row       = (BLOCKSIZE / WFSIZE) * block_dim * bid + block_dim * wid + r;
 
-    __shared__ bool table[BLOCKSIZE / (BLOCKDIM * BLOCKDIM)];
-    __shared__ T    data[BLOCKSIZE];
+    __shared__ bool table[BLOCKSIZE / WFSIZE];
+    __shared__ T    data[(BLOCKSIZE / WFSIZE) * BLOCKDIM * BLOCKDIM];
 
     rocsparse_int row_begin = (row < m && r < block_dim) ? csr_row_ptr[row] - csr_base : 0;
     rocsparse_int row_end   = (row < m && r < block_dim) ? csr_row_ptr[row + 1] - csr_base : 0;
@@ -268,7 +268,10 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     {
         // Initialize row nnz table and accumulator
         table[wid] = 0;
-        data[tid]  = static_cast<T>(0);
+        for(unsigned int i = 0; i < BLOCKDIM; i += (WFSIZE / BLOCKDIM))
+        {
+            data[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * r + i + c] = static_cast<T>(0);
+        }
 
         // Wait for all threads to finish initialization
         __threadfence_block();
@@ -278,7 +281,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
         rocsparse_int index_k = row_end;
 
-        for(rocsparse_int k = next_k + c; k < row_end; k += BLOCKDIM)
+        for(rocsparse_int k = next_k + c; k < row_end; k += (WFSIZE / BLOCKDIM))
         {
             rocsparse_int col       = (csr_col_ind[k] - csr_base);
             rocsparse_int block_col = col / block_dim;
@@ -298,25 +301,28 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
         __threadfence_block();
 
-        rocsparse_wfreduce_min<BLOCKDIM>(&index_k);
-        next_k = __shfl(index_k, BLOCKDIM - 1, BLOCKDIM);
+        rocsparse_wfreduce_min<(WFSIZE / BLOCKDIM)>(&index_k);
+        next_k = __shfl(index_k, (WFSIZE / BLOCKDIM) - 1, (WFSIZE / BLOCKDIM));
 
         int offset = 0;
         if(table[wid])
         {
             bsr_col_ind[block_row_begin] = chunk_begin + bsr_base;
 
-            if(r < block_dim && c < block_dim)
+            for(unsigned int i = 0; i < BLOCKDIM; i += (WFSIZE / BLOCKDIM))
             {
-                if(dir == rocsparse_direction_row)
+                if(r < block_dim && (c + i) < block_dim)
                 {
-                    bsr_val[block_dim * block_dim * block_row_begin + block_dim * r + c]
-                        = data[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * r + c];
-                }
-                else
-                {
-                    bsr_val[block_dim * block_dim * block_row_begin + block_dim * c + r]
-                        = data[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * r + c];
+                    if(dir == rocsparse_direction_row)
+                    {
+                        bsr_val[block_dim * block_dim * block_row_begin + block_dim * r + (c + i)]
+                            = data[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * r + (c + i)];
+                    }
+                    else
+                    {
+                        bsr_val[block_dim * block_dim * block_row_begin + block_dim * (c + i) + r]
+                            = data[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * r + (c + i)];
+                    }
                 }
             }
 
@@ -327,8 +333,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
         block_row_begin += offset;
 
-        rocsparse_wfreduce_min<BLOCKDIM * BLOCKDIM>(&min_block_col);
-        chunk_begin = __shfl(min_block_col, BLOCKDIM * BLOCKDIM - 1, BLOCKDIM * BLOCKDIM);
+        rocsparse_wfreduce_min<WFSIZE>(&min_block_col);
+        chunk_begin = __shfl(min_block_col, WFSIZE - 1, WFSIZE);
 
         __threadfence_block();
     }

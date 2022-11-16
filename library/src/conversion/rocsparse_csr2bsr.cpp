@@ -30,25 +30,25 @@
 
 #include <rocprim/rocprim.hpp>
 
-#define launch_csr2bsr_wavefront_per_row_multipass_kernel(blocksize, blockdim)            \
-    hipLaunchKernelGGL((csr2bsr_wavefront_per_row_multipass_kernel<blocksize, blockdim>), \
-                       dim3((mb - 1) / (blocksize / (blockdim * blockdim)) + 1),          \
-                       dim3(blocksize),                                                   \
-                       0,                                                                 \
-                       stream,                                                            \
-                       direction,                                                         \
-                       m,                                                                 \
-                       n,                                                                 \
-                       mb,                                                                \
-                       nb,                                                                \
-                       block_dim,                                                         \
-                       csr_descr->base,                                                   \
-                       csr_val,                                                           \
-                       csr_row_ptr,                                                       \
-                       csr_col_ind,                                                       \
-                       bsr_descr->base,                                                   \
-                       bsr_val,                                                           \
-                       bsr_row_ptr,                                                       \
+#define launch_csr2bsr_wavefront_per_row_multipass_kernel(blocksize, wfsize, blockdim)            \
+    hipLaunchKernelGGL((csr2bsr_wavefront_per_row_multipass_kernel<blocksize, wfsize, blockdim>), \
+                       dim3((mb - 1) / (blocksize / wfsize) + 1),                                 \
+                       dim3(blocksize),                                                           \
+                       0,                                                                         \
+                       stream,                                                                    \
+                       direction,                                                                 \
+                       m,                                                                         \
+                       n,                                                                         \
+                       mb,                                                                        \
+                       nb,                                                                        \
+                       block_dim,                                                                 \
+                       csr_descr->base,                                                           \
+                       csr_val,                                                                   \
+                       csr_row_ptr,                                                               \
+                       csr_col_ind,                                                               \
+                       bsr_descr->base,                                                           \
+                       bsr_val,                                                                   \
+                       bsr_row_ptr,                                                               \
                        bsr_col_ind);
 
 #define launch_csr2bsr_block_per_row_multipass_kernel(blocksize, blockdim)            \
@@ -289,22 +289,29 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
 
     if(block_dim <= 4)
     {
-        launch_csr2bsr_wavefront_per_row_multipass_kernel(256, 4);
+        launch_csr2bsr_wavefront_per_row_multipass_kernel(256, 16, 4);
     }
     else if(block_dim <= 8)
     {
         if(handle->wavefront_size == 64)
         {
-            launch_csr2bsr_wavefront_per_row_multipass_kernel(256, 8);
+            launch_csr2bsr_wavefront_per_row_multipass_kernel(256, 64, 8);
         }
         else
         {
-            launch_csr2bsr_block_per_row_multipass_kernel(64, 8);
+            launch_csr2bsr_wavefront_per_row_multipass_kernel(256, 32, 8);
         }
     }
     else if(block_dim <= 16)
     {
-        launch_csr2bsr_block_per_row_multipass_kernel(256, 16);
+        if(handle->wavefront_size == 64)
+        {
+            launch_csr2bsr_wavefront_per_row_multipass_kernel(256, 64, 16);
+        }
+        else
+        {
+            launch_csr2bsr_wavefront_per_row_multipass_kernel(256, 32, 16);
+        }
     }
     else if(block_dim <= 32)
     {
@@ -396,23 +403,23 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
  *    C wrapper
  * ===========================================================================
  */
-
-#define launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(blocksize, blockdim)            \
-    hipLaunchKernelGGL((csr2bsr_nnz_wavefront_per_row_multipass_kernel<blocksize, blockdim>), \
-                       dim3((mb - 1) / (blocksize / (blockdim * blockdim)) + 1),              \
-                       dim3(blocksize),                                                       \
-                       0,                                                                     \
-                       handle->stream,                                                        \
-                       m,                                                                     \
-                       n,                                                                     \
-                       mb,                                                                    \
-                       nb,                                                                    \
-                       block_dim,                                                             \
-                       csr_descr->base,                                                       \
-                       csr_row_ptr,                                                           \
-                       csr_col_ind,                                                           \
-                       bsr_descr->base,                                                       \
-                       bsr_row_ptr);
+#define launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(blocksize, wfsize, blockdim) \
+    hipLaunchKernelGGL(                                                                    \
+        (csr2bsr_nnz_wavefront_per_row_multipass_kernel<blocksize, wfsize, blockdim>),     \
+        dim3((mb - 1) / (blocksize / wfsize) + 1),                                         \
+        dim3(blocksize),                                                                   \
+        0,                                                                                 \
+        handle->stream,                                                                    \
+        m,                                                                                 \
+        n,                                                                                 \
+        mb,                                                                                \
+        nb,                                                                                \
+        block_dim,                                                                         \
+        csr_descr->base,                                                                   \
+        csr_row_ptr,                                                                       \
+        csr_col_ind,                                                                       \
+        bsr_descr->base,                                                                   \
+        bsr_row_ptr);
 
 #define launch_csr2bsr_nnz_block_per_row_multipass_kernel(blocksize, blockdim)            \
     hipLaunchKernelGGL((csr2bsr_nnz_block_per_row_multipass_kernel<blocksize, blockdim>), \
@@ -592,22 +599,29 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
 
     if(block_dim <= 4)
     {
-        launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(256, 4);
+        launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(256, 16, 4);
     }
     else if(block_dim <= 8)
     {
         if(handle->wavefront_size == 64)
         {
-            launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(256, 8);
+            launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(256, 64, 8);
         }
         else
         {
-            launch_csr2bsr_nnz_block_per_row_multipass_kernel(64, 8);
+            launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(256, 32, 8);
         }
     }
     else if(block_dim <= 16)
     {
-        launch_csr2bsr_nnz_block_per_row_multipass_kernel(256, 16);
+        if(handle->wavefront_size == 64)
+        {
+            launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(256, 64, 16);
+        }
+        else
+        {
+            launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(256, 32, 16);
+        }
     }
     else if(block_dim <= 32)
     {
