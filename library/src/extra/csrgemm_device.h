@@ -111,7 +111,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         }
 
         // Gather nprod
-        rocsparse_wfreduce_sum<WFSIZE>(&nprod);
+        nprod = rocsparse_wfreduce_sum<WFSIZE>(nprod);
     }
 
     // Last lane writes result
@@ -498,7 +498,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
     // Accumulate all row nnz within each (sub)wavefront to obtain the total row nnz
     // of the current row
-    rocsparse_wfreduce_sum<WFSIZE>(&nnz);
+    nnz = rocsparse_wfreduce_sum<WFSIZE>(nnz);
 
     // Write result to global memory
     if(lid == WFSIZE - 1)
@@ -598,7 +598,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
     // Accumulate all row nnz within each (sub)wavefront to obtain the total row nnz
     // of the current row
-    rocsparse_wfreduce_sum<WFSIZE>(&nnz);
+    nnz = rocsparse_wfreduce_sum<WFSIZE>(nnz);
 
     // Write result to shared memory for final reduction by first wavefront
     if(lid == WFSIZE - 1)
@@ -613,7 +613,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     nnz = (hipThreadIdx_x < BLOCKSIZE / WFSIZE) ? table[hipThreadIdx_x] : 0;
 
     // First wavefront computes final sum
-    rocsparse_wfreduce_sum<BLOCKSIZE / WFSIZE>(&nnz);
+    nnz = rocsparse_wfreduce_sum<BLOCKSIZE / WFSIZE>(nnz);
 
     // Write result to global memory
     if(hipThreadIdx_x == BLOCKSIZE / WFSIZE - 1)
@@ -806,7 +806,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         }
 
         // Gather wavefront-wide nnz for the current chunk
-        rocsparse_wfreduce_sum<WFSIZE>(&chunk_nnz);
+        chunk_nnz = rocsparse_wfreduce_sum<WFSIZE>(chunk_nnz);
 
         // Last thread in each wavefront accumulates block-wide nnz atomically
         if(lid == WFSIZE - 1)
