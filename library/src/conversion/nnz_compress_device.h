@@ -78,7 +78,7 @@ __device__ void nnz_compress_device(rocsparse_int        m,
         }
 
         // last thread in segment will contain the total count after this call
-        rocsparse_wfreduce_sum<SEGMENT_SIZE>(&count);
+        count = rocsparse_wfreduce_sum<SEGMENT_SIZE>(count);
 
         // broadcast count from last thread in segment to all threads in segment
         count = __shfl(count, SEGMENT_SIZE - 1, SEGMENT_SIZE);

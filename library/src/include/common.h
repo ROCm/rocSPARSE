@@ -439,20 +439,21 @@ __device__ __forceinline__ void rocsparse_wfreduce_min(int64_t* minimum)
     *minimum = temp_min.i64;
 }
 
-// DPP-based wavefront reduction sum
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_sum(int* sum)
+__device__ __forceinline__ int32_t rocsparse_wfreduce_sum(int32_t sum)
 {
-    if(WFSIZE >  1) *sum += __hip_move_dpp(*sum, 0x111, 0xf, 0xf, 0);
-    if(WFSIZE >  2) *sum += __hip_move_dpp(*sum, 0x112, 0xf, 0xf, 0);
-    if(WFSIZE >  4) *sum += __hip_move_dpp(*sum, 0x114, 0xf, 0xe, 0);
-    if(WFSIZE >  8) *sum += __hip_move_dpp(*sum, 0x118, 0xf, 0xc, 0);
-    if(WFSIZE > 16) *sum += __hip_move_dpp(*sum, 0x142, 0xa, 0xf, 0);
-    if(WFSIZE > 32) *sum += __hip_move_dpp(*sum, 0x143, 0xc, 0xf, 0);
+    if(WFSIZE >  1) sum += __hip_move_dpp(sum, 0x111, 0xf, 0xf, 0);
+    if(WFSIZE >  2) sum += __hip_move_dpp(sum, 0x112, 0xf, 0xf, 0);
+    if(WFSIZE >  4) sum += __hip_move_dpp(sum, 0x114, 0xf, 0xe, 0);
+    if(WFSIZE >  8) sum += __hip_move_dpp(sum, 0x118, 0xf, 0xc, 0);
+    if(WFSIZE > 16) sum += __hip_move_dpp(sum, 0x142, 0xa, 0xf, 0);
+    if(WFSIZE > 32) sum += __hip_move_dpp(sum, 0x143, 0xc, 0xf, 0);
+
+    return sum;
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_sum(int64_t* sum)
+__device__ __forceinline__ int64_t rocsparse_wfreduce_sum(int64_t sum)
 {
     typedef union i64_b32
     {
@@ -462,7 +463,7 @@ __device__ __forceinline__ void rocsparse_wfreduce_sum(int64_t* sum)
 
     i64_b32_t upper_sum;
     i64_b32_t temp_sum;
-    temp_sum.i64 = *sum;
+    temp_sum.i64 = sum;
 
     if(WFSIZE > 1)
     {
@@ -506,7 +507,8 @@ __device__ __forceinline__ void rocsparse_wfreduce_sum(int64_t* sum)
         temp_sum.i64 += upper_sum.i64;
     }
 
-    *sum = temp_sum.i64;
+    sum = temp_sum.i64;
+    return sum;
 }
 
 // DPP-based float wavefront reduction sum
@@ -670,21 +672,23 @@ __device__ __forceinline__ void rocsparse_wfreduce_min(int64_t* minimum)
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_sum(int* sum)
+__device__ __forceinline__ int32_t rocsparse_wfreduce_sum(int32_t sum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
-        *sum += __shfl_xor(*sum, i);
+        sum += __shfl_xor(sum, i);
     }
+    return sum;
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_sum(int64_t* sum)
+__device__ __forceinline__ int64_t rocsparse_wfreduce_sum(int64_t sum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
-        *sum += __shfl_xor(*sum, i);
+        sum += __shfl_xor(sum, i);
     }
+    return sum;
 }
 
 template <unsigned int WFSIZE>
