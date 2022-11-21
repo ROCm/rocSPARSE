@@ -2,6 +2,16 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
+## (Unreleased) rocSPARSE 2.5.0
+### Added
+- Added bsrgeam
+### Improved
+- Optimization to csr2bsr
+- Optimization to csr2csr_compress
+- Optimization to csr2coo
+- Optimization to gebsr2csr
+- Fixes to documentation
+- Fixes to SpMV and SpMM COO routined to allow larger matrices
 
 ## rocSPARSE 2.4.0 for ROCm 5.4.0
 ### Added
