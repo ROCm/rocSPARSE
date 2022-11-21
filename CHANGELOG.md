@@ -2,11 +2,26 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## rocSPARSE 2.3.2
+
+## rocSPARSE 2.4.0 for ROCm 5.4.0
+### Added
+- Added rocsparse_spmv_ex routine
+- Added rocsparse_bsrmv_ex_analysis and rocsparse_bsrmv_ex routines
+- Added csritilu0 routine
+- Added build support for Navi31 and Navi 33
+### Improved
+- Optimization to segmented algorithm for COO SpMV by performing analysis
+- Improve performance when generating random matrices.
+- Fixed bug in ellmv
+- Optimized bsr2csr routine
+- Fixed integer overflow bugs
+
+## rocSPARSE 2.3.2 for ROCm 5.3.0
 ### Added
 - Transpose A for SpMM COO format
 - Added matrix checker routines for verifying matrix data
 - Added atomic algorithm for COO SpMV
+- Added bsrpad routine
 ### Improved
 - Fixed a bug in csrilu0 which could cause a deadlock
 - Fixed a bug where asynchronous memcpy would use wrong stream
