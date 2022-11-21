@@ -88,7 +88,6 @@ include: test_csr2csr_compress.yaml
 include: test_prune_csr2csr.yaml
 include: test_prune_csr2csr_by_percentage.yaml
 include: test_identity.yaml
-include: test_inverse_permutation.yaml
 include: test_csrsort.yaml
 include: test_cscsort.yaml
 include: test_coosort.yaml

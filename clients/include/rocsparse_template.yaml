@@ -391,7 +391,6 @@ Functions:
   rocsparse_sprune_csr2csr_by_percentage: { function: prune_csr2csr_by_percentage, <<: *single_precision }
   rocsparse_dprune_csr2csr_by_percentage: { function: prune_csr2csr_by_percentage, <<: *double_precision }
   rocsparse_create_identity_permutation: { function: rocsparse_create_identity_permutation }
-  rocsparse_inverse_permutation: { function: rocsparse_inverse_permutation }
   rocsparse_csrsort: { function: csrsort }
   rocsparse_cscsort: { function: cscsort }
   rocsparse_coosort_by_row: { function: coosort }
