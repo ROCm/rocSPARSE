@@ -125,6 +125,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_prune_csr2csr.cpp
 ../testings/testing_prune_csr2csr_by_percentage.cpp
 ../testings/testing_identity.cpp
+../testings/testing_inverse_permutation.cpp
 ../testings/testing_csrsort.cpp
 ../testings/testing_cscsort.cpp
 ../testings/testing_coosort.cpp
