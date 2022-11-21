@@ -1115,6 +1115,7 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xgebsr2gebsr() <rocsparse_sgebsr2gebsr>`                                                             x      x      x              x
 :cpp:func:`rocsparse_Xcsr2csr_compress() <rocsparse_scsr2csr_compress>`                                                   x      x      x              x
 :cpp:func:`rocsparse_create_identity_permutation`
+:cpp:func:`rocsparse_create_inverse_permutation`
 :cpp:func:`rocsparse_cscsort_buffer_size`
 :cpp:func:`rocsparse_cscsort`
 :cpp:func:`rocsparse_csrsort_buffer_size`
@@ -2746,6 +2747,11 @@ rocsparse_csr2csr_compress()
 .. doxygenfunction:: rocsparse_ccsr2csr_compress
   :outline:
 .. doxygenfunction:: rocsparse_zcsr2csr_compress
+
+rocsparse_inverse_permutation()
+---------------------------------------
+
+.. doxygenfunction:: rocsparse_inverse_permutation
 
 rocsparse_create_identity_permutation()
 ---------------------------------------
