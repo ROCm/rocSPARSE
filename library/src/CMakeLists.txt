@@ -197,7 +197,6 @@ set(rocsparse_source
   src/conversion/rocsparse_gebsr2csr.cpp
   src/conversion/rocsparse_gebsr2gebsr.cpp
   src/conversion/rocsparse_identity.cpp
-  src/conversion/rocsparse_inverse_permutation.cpp
   src/conversion/rocsparse_csrsort.cpp
   src/conversion/rocsparse_cscsort.cpp
   src/conversion/rocsparse_coosort.cpp

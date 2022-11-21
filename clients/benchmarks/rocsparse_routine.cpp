@@ -283,7 +283,6 @@ constexpr const char* rocsparse_routine::to_string() const
 #include "testing_gebsr2gebsr.hpp"
 #include "testing_hyb2csr.hpp"
 #include "testing_identity.hpp"
-#include "testing_inverse_permutation.hpp"
 #include "testing_nnz.hpp"
 #include "testing_prune_csr2csr.hpp"
 #include "testing_prune_csr2csr_by_percentage.hpp"
@@ -508,7 +507,6 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_T(hybmv);
         DEFINE_CASE_T(hyb2csr);
         DEFINE_CASE_T_FLOAT_ONLY(identity);
-        DEFINE_CASE_T_FLOAT_ONLY(inverse_permutation);
         DEFINE_CASE_T(nnz);
         DEFINE_CASE_T_REAL_ONLY(prune_csr2csr);
         DEFINE_CASE_T_REAL_ONLY(prune_csr2csr_by_percentage);

@@ -108,7 +108,6 @@ ROCSPARSE_DO_ROUTINE(gtsv_interleaved_batch)		\
 ROCSPARSE_DO_ROUTINE(hybmv)					\
 ROCSPARSE_DO_ROUTINE(hyb2csr)					\
 ROCSPARSE_DO_ROUTINE(identity)					\
-ROCSPARSE_DO_ROUTINE(inverse_permutation)			\
 ROCSPARSE_DO_ROUTINE(nnz)					\
 ROCSPARSE_DO_ROUTINE(prune_csr2csr)				\
 ROCSPARSE_DO_ROUTINE(prune_csr2csr_by_percentage)		\
