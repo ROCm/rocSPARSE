@@ -189,6 +189,18 @@ __device__ __forceinline__ bool rocsparse_is_nan(double val){ return (val != val
 __device__ __forceinline__ bool rocsparse_is_nan(rocsparse_float_complex val){ return (std::real(val) != std::real(val) || std::imag(val) != std::imag(val)); }
 __device__ __forceinline__ bool rocsparse_is_nan(rocsparse_double_complex val){ return (std::real(val) != std::real(val) || std::imag(val) != std::imag(val)); }
 
+template<typename T>
+__device__ __forceinline__ T* load_pointer(T* p, int batch, int stride)
+{
+    return p + batch * stride;
+}
+
+template<typename T>
+__device__ __forceinline__ const T* load_pointer(const T* p, int batch, int stride)
+{
+    return p + batch * stride;
+}
+
 template <typename T>
 __device__ __forceinline__ T conj_val(T val, bool conj)
 {

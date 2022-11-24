@@ -60,7 +60,7 @@ Tests:
   batch_count_B: [2, 7]
   batch_count_C: [2, 7]
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
@@ -79,7 +79,7 @@ Tests:
   batch_count_B: [24, 78]
   batch_count_C: [23, 75]
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
@@ -98,7 +98,7 @@ Tests:
   batch_count_B: [243, 312, 782]
   batch_count_C: [235, 364, 752]
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
