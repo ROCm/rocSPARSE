@@ -84,6 +84,8 @@ rocsparse_status rocsparse_create_identity_permutation_impl(rocsparse_handle han
 }
 
 #define INSTANTIATE(ITYPE)                                                       \
+    template rocsparse_status rocsparse_create_identity_permutation_core(        \
+        rocsparse_handle handle, ITYPE n, ITYPE* p);                             \
     template rocsparse_status rocsparse_create_identity_permutation_template(    \
         rocsparse_handle handle, ITYPE n, ITYPE* p);                             \
     template rocsparse_status rocsparse_create_identity_permutation_impl<ITYPE>( \

@@ -124,6 +124,12 @@ rocsparse_status rocsparse_coo2csr_impl(rocsparse_handle     handle,
 }
 
 #define INSTANTIATE(ITYPE, JTYPE)                                                                    \
+    template rocsparse_status rocsparse_coo2csr_core<ITYPE, JTYPE>(rocsparse_handle     handle,      \
+                                                                   const JTYPE*         coo_row_ind, \
+                                                                   ITYPE                nnz,         \
+                                                                   JTYPE                m,           \
+                                                                   ITYPE*               csr_row_ptr, \
+                                                                   rocsparse_index_base idx_base);   \
     template rocsparse_status rocsparse_coo2csr_impl<ITYPE, JTYPE>(rocsparse_handle     handle,      \
                                                                    const JTYPE*         coo_row_ind, \
                                                                    ITYPE                nnz,         \
