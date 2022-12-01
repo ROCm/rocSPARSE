@@ -2,7 +2,7 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## (Unreleased) rocSPARSE 2.5.0
+## rocSPARSE 2.5.0
 ### Added
 - Added bsrgeam
 - Added build support for Navi32
