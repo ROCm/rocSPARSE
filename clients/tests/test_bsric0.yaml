@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@ Definitions:
     - { M: 187, N: 187 }
 
   - &M_N_range_checkin
-    - { M:  -1, N:  -1 }
     - { M:   0, N:   0 }
     - { M:  79, N:  79 }
     - { M: 430, N: 430 }

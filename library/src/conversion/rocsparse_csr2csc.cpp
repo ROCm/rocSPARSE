@@ -454,8 +454,13 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle     h
         return rocsparse_status_invalid_pointer;
     }
 
-    return rocsparse_csr2csc_buffer_size_template(
+    rocsparse_status status = rocsparse_csr2csc_buffer_size_template(
         handle, m, n, nnz, csr_row_ptr, csr_col_ind, copy_values, buffer_size);
+
+    if(status != rocsparse_status_success)
+    {
+        return status;
+    }
 
     hipStream_t stream = handle->stream;
 

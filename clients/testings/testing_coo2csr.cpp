@@ -56,24 +56,6 @@ void testing_coo2csr(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle;
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
-        device_vector<rocsparse_int> dcoo_row_ind(safe_size);
-
-        rocsparse_int nnz = (M > 0 && N > 0) ? 0 : -1;
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_coo2csr(handle, dcoo_row_ind, nnz, M, dcsr_row_ptr, base),
-                                (M < 0 || nnz < 0) ? rocsparse_status_invalid_size
-                                                   : rocsparse_status_success);
-
-        return;
-    }
-
     // Allocate host memory for COO matrix
     host_vector<rocsparse_int> hcoo_row_ind;
     host_vector<rocsparse_int> hcoo_col_ind;

@@ -66,40 +66,6 @@ void testing_coosort(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle;
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dcoo_row_ind(safe_size);
-        device_vector<rocsparse_int> dcoo_col_ind(safe_size);
-        device_vector<rocsparse_int> dbuffer(safe_size);
-
-        size_t buffer_size;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_coosort_buffer_size(
-                                    handle, M, N, 0, dcoo_row_ind, dcoo_col_ind, &buffer_size),
-                                (M < 0 || N < 0) ? rocsparse_status_invalid_size
-                                                 : rocsparse_status_success);
-
-        if(by_row)
-        {
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_coosort_by_row(
-                    handle, M, N, 0, dcoo_row_ind, dcoo_col_ind, nullptr, dbuffer),
-                (M < 0 || N < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
-        }
-        else
-        {
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_coosort_by_column(
-                    handle, M, N, 0, dcoo_row_ind, dcoo_col_ind, nullptr, dbuffer),
-                (M < 0 || N < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
-        }
-
-        return;
-    }
-
     // Allocate host memory for COO matrix
     host_vector<rocsparse_int> hcoo_row_ind;
     host_vector<rocsparse_int> hcoo_col_ind;
