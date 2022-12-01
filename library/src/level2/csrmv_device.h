@@ -27,15 +27,16 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
-static ROCSPARSE_DEVICE_ILF void csrmvn_general_device(bool                 conj,
-                                                       J                    m,
-                                                       T                    alpha,
-                                                       const I*             row_offset,
-                                                       const J*             csr_col_ind,
-                                                       const T*             csr_val,
-                                                       const T*             x,
-                                                       T                    beta,
-                                                       T*                   y,
+static ROCSPARSE_DEVICE_ILF void csrmvn_general_device(bool     conj,
+                                                       J        m,
+                                                       T        alpha,
+                                                       const I* row_offset_begin,
+                                                       const I* row_offset_end,
+                                                       const J* __restrict__ csr_col_ind,
+                                                       const T* __restrict__ csr_val,
+                                                       const T* __restrict__ x,
+                                                       T beta,
+                                                       T* __restrict__ y,
                                                        rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
@@ -47,8 +48,8 @@ static ROCSPARSE_DEVICE_ILF void csrmvn_general_device(bool                 conj
     for(J row = gid / WF_SIZE; row < m; row += nwf)
     {
         // Each wavefront processes one row
-        I row_start = row_offset[row] - idx_base;
-        I row_end   = row_offset[row + 1] - idx_base;
+        I row_start = row_offset_begin[row] - idx_base;
+        I row_end   = row_offset_end[row] - idx_base;
 
         T sum = static_cast<T>(0);
 
@@ -79,7 +80,7 @@ static ROCSPARSE_DEVICE_ILF void csrmvn_general_device(bool                 conj
 }
 
 template <typename J, typename T>
-static ROCSPARSE_DEVICE_ILF void csrmvt_scale_device(J size, T scalar, T* data)
+static ROCSPARSE_DEVICE_ILF void csrmvt_scale_device(J size, T scalar, T* __restrict__ data)
 {
     J idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -92,14 +93,15 @@ static ROCSPARSE_DEVICE_ILF void csrmvt_scale_device(J size, T scalar, T* data)
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
-static ROCSPARSE_DEVICE_ILF void csrmvt_general_device(bool                 conj,
-                                                       J                    m,
-                                                       T                    alpha,
-                                                       const I*             csr_row_ptr,
-                                                       const J*             csr_col_ind,
-                                                       const T*             csr_val,
-                                                       const T*             x,
-                                                       T*                   y,
+static ROCSPARSE_DEVICE_ILF void csrmvt_general_device(bool     conj,
+                                                       J        m,
+                                                       T        alpha,
+                                                       const I* csr_row_ptr_begin,
+                                                       const I* csr_row_ptr_end,
+                                                       const J* __restrict__ csr_col_ind,
+                                                       const T* __restrict__ csr_val,
+                                                       const T* __restrict__ x,
+                                                       T* __restrict__ y,
                                                        rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
@@ -109,8 +111,8 @@ static ROCSPARSE_DEVICE_ILF void csrmvt_general_device(bool                 conj
 
     for(J row = gid / WF_SIZE; row < m; row += inc)
     {
-        I row_begin = csr_row_ptr[row] - idx_base;
-        I row_end   = csr_row_ptr[row + 1] - idx_base;
+        I row_begin = csr_row_ptr_begin[row] - idx_base;
+        I row_end   = csr_row_ptr_end[row] - idx_base;
         T row_val   = alpha * x[row];
 
         for(I j = row_begin + lid; j < row_end; j += WF_SIZE)
@@ -143,18 +145,18 @@ template <rocsparse_int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-static ROCSPARSE_DEVICE_ILF void csrmvn_adaptive_device(bool                 conj,
-                                                        I                    nnz,
-                                                        const I*             row_blocks,
-                                                        unsigned int*        wg_flags,
-                                                        const J*             wg_ids,
-                                                        T                    alpha,
-                                                        const I*             csr_row_ptr,
-                                                        const J*             csr_col_ind,
-                                                        const T*             csr_val,
-                                                        const T*             x,
-                                                        T                    beta,
-                                                        T*                   y,
+static ROCSPARSE_DEVICE_ILF void csrmvn_adaptive_device(bool conj,
+                                                        I    nnz,
+                                                        const I* __restrict__ row_blocks,
+                                                        unsigned int* __restrict__ wg_flags,
+                                                        const J* __restrict__ wg_ids,
+                                                        T alpha,
+                                                        const I* __restrict__ csr_row_ptr,
+                                                        const J* __restrict__ csr_col_ind,
+                                                        const T* __restrict__ csr_val,
+                                                        const T* __restrict__ x,
+                                                        T beta,
+                                                        T* __restrict__ y,
                                                         rocsparse_index_base idx_base)
 {
     __shared__ T partialSums[BLOCKSIZE];

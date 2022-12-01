@@ -40,7 +40,8 @@
         <<<csrmvn_blocks, csrmvn_threads, 0, stream>>>(conj,              \
                                                        m,                 \
                                                        alpha_device_host, \
-                                                       csr_row_ptr,       \
+                                                       csr_row_ptr_begin, \
+                                                       csr_row_ptr_end,   \
                                                        csr_col_ind,       \
                                                        csr_val,           \
                                                        x,                 \
@@ -48,16 +49,26 @@
                                                        y,                 \
                                                        descr->base)
 
-#define LAUNCH_CSRMVT(wfsize)                                                                \
-    csrmvt_general_kernel<CSRMVT_DIM, wfsize><<<csrmvt_blocks, csrmvt_threads, 0, stream>>>( \
-        conj, m, alpha_device_host, csr_row_ptr, csr_col_ind, csr_val, x, y, descr->base)
+#define LAUNCH_CSRMVT(wfsize)                                             \
+    csrmvt_general_kernel<CSRMVT_DIM, wfsize>                             \
+        <<<csrmvt_blocks, csrmvt_threads, 0, stream>>>(conj,              \
+                                                       m,                 \
+                                                       alpha_device_host, \
+                                                       csr_row_ptr_begin, \
+                                                       csr_row_ptr_end,   \
+                                                       csr_col_ind,       \
+                                                       csr_val,           \
+                                                       x,                 \
+                                                       y,                 \
+                                                       descr->base)
 
 #define LAUNCH_CSRMVN_SYMM_GENERAL(wfsize)                                \
     csrmvn_symm_general_kernel<CSRMV_SYMM_DIM, wfsize>                    \
         <<<csrmvn_blocks, csrmvn_threads, 0, stream>>>(conj,              \
                                                        m,                 \
                                                        alpha_device_host, \
-                                                       csr_row_ptr,       \
+                                                       csr_row_ptr_begin, \
+                                                       csr_row_ptr_end,   \
                                                        csr_col_ind,       \
                                                        csr_val,           \
                                                        x,                 \
@@ -65,10 +76,18 @@
                                                        y,                 \
                                                        descr->base)
 
-#define LAUNCH_CSRMVT_SYMM(wfsize)                      \
-    csrmvt_symm_general_kernel<CSRMV_SYMM_DIM, wfsize>  \
-        <<<csrmvt_blocks, csrmvt_threads, 0, stream>>>( \
-            conj, m, alpha_device_host, csr_row_ptr, csr_col_ind, csr_val, x, y, descr->base)
+#define LAUNCH_CSRMVT_SYMM(wfsize)                                        \
+    csrmvt_symm_general_kernel<CSRMV_SYMM_DIM, wfsize>                    \
+        <<<csrmvt_blocks, csrmvt_threads, 0, stream>>>(conj,              \
+                                                       m,                 \
+                                                       alpha_device_host, \
+                                                       csr_row_ptr_begin, \
+                                                       csr_row_ptr_end,   \
+                                                       csr_col_ind,       \
+                                                       csr_val,           \
+                                                       x,                 \
+                                                       y,                 \
+                                                       descr->base)
 
 __attribute__((unused)) static unsigned int flp2(unsigned int x)
 {
@@ -547,10 +566,11 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmvn_general_kernel(bool conj,
-                               J    m,
-                               U    alpha_device_host,
-                               const I* __restrict__ csr_row_ptr,
+    void csrmvn_general_kernel(bool     conj,
+                               J        m,
+                               U        alpha_device_host,
+                               const I* csr_row_ptr_begin,
+                               const I* csr_row_ptr_end,
                                const J* __restrict__ csr_col_ind,
                                const T* __restrict__ csr_val,
                                const T* __restrict__ x,
@@ -562,8 +582,17 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     auto beta  = load_scalar_device_host(beta_device_host);
     if(alpha != static_cast<T>(0) || beta != static_cast<T>(1))
     {
-        csrmvn_general_device<BLOCKSIZE, WF_SIZE>(
-            conj, m, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y, idx_base);
+        csrmvn_general_device<BLOCKSIZE, WF_SIZE>(conj,
+                                                  m,
+                                                  alpha,
+                                                  csr_row_ptr_begin,
+                                                  csr_row_ptr_end,
+                                                  csr_col_ind,
+                                                  csr_val,
+                                                  x,
+                                                  beta,
+                                                  y,
+                                                  idx_base);
     }
 }
 
@@ -582,10 +611,11 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmvt_general_kernel(bool conj,
-                               J    m,
-                               U    alpha_device_host,
-                               const I* __restrict__ csr_row_ptr,
+    void csrmvt_general_kernel(bool     conj,
+                               J        m,
+                               U        alpha_device_host,
+                               const I* csr_row_ptr_begin,
+                               const I* csr_row_ptr_end,
                                const J* __restrict__ csr_col_ind,
                                const T* __restrict__ csr_val,
                                const T* __restrict__ x,
@@ -595,8 +625,16 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != static_cast<T>(0))
     {
-        csrmvt_general_device<BLOCKSIZE, WF_SIZE>(
-            conj, m, alpha, csr_row_ptr, csr_col_ind, csr_val, x, y, idx_base);
+        csrmvt_general_device<BLOCKSIZE, WF_SIZE>(conj,
+                                                  m,
+                                                  alpha,
+                                                  csr_row_ptr_begin,
+                                                  csr_row_ptr_end,
+                                                  csr_col_ind,
+                                                  csr_val,
+                                                  x,
+                                                  y,
+                                                  idx_base);
     }
 }
 
@@ -607,10 +645,11 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmvn_symm_general_kernel(bool conj,
-                                    J    m,
-                                    U    alpha_device_host,
-                                    const I* __restrict__ csr_row_ptr,
+    void csrmvn_symm_general_kernel(bool     conj,
+                                    J        m,
+                                    U        alpha_device_host,
+                                    const I* csr_row_ptr_begin,
+                                    const I* csr_row_ptr_end,
                                     const J* __restrict__ csr_col_ind,
                                     const T* __restrict__ csr_val,
                                     const T* __restrict__ x,
@@ -622,8 +661,17 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     auto beta  = load_scalar_device_host(beta_device_host);
     if(alpha != static_cast<T>(0) || beta != static_cast<T>(1))
     {
-        csrmvn_symm_general_device<BLOCKSIZE, WF_SIZE>(
-            conj, m, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y, idx_base);
+        csrmvn_symm_general_device<BLOCKSIZE, WF_SIZE>(conj,
+                                                       m,
+                                                       alpha,
+                                                       csr_row_ptr_begin,
+                                                       csr_row_ptr_end,
+                                                       csr_col_ind,
+                                                       csr_val,
+                                                       x,
+                                                       beta,
+                                                       y,
+                                                       idx_base);
     }
 }
 
@@ -634,10 +682,11 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmvt_symm_general_kernel(bool conj,
-                                    J    m,
-                                    U    alpha_device_host,
-                                    const I* __restrict__ csr_row_ptr,
+    void csrmvt_symm_general_kernel(bool     conj,
+                                    J        m,
+                                    U        alpha_device_host,
+                                    const I* csr_row_ptr_begin,
+                                    const I* csr_row_ptr_end,
                                     const J* __restrict__ csr_col_ind,
                                     const T* __restrict__ csr_val,
                                     const T* __restrict__ x,
@@ -647,8 +696,16 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != static_cast<T>(0))
     {
-        csrmvt_symm_general_device<BLOCKSIZE, WF_SIZE>(
-            conj, m, alpha, csr_row_ptr, csr_col_ind, csr_val, x, y, idx_base);
+        csrmvt_symm_general_device<BLOCKSIZE, WF_SIZE>(conj,
+                                                       m,
+                                                       alpha,
+                                                       csr_row_ptr_begin,
+                                                       csr_row_ptr_end,
+                                                       csr_col_ind,
+                                                       csr_val,
+                                                       x,
+                                                       y,
+                                                       idx_base);
     }
 }
 
@@ -731,7 +788,8 @@ rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          han
                                                    U                         alpha_device_host,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  csr_val,
-                                                   const I*                  csr_row_ptr,
+                                                   const I*                  csr_row_ptr_begin,
+                                                   const I*                  csr_row_ptr_end,
                                                    const J*                  csr_col_ind,
                                                    const T*                  x,
                                                    U                         beta_device_host,
@@ -1116,7 +1174,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                           const T*                  alpha_device_host,
                                           const rocsparse_mat_descr descr,
                                           const T*                  csr_val,
-                                          const I*                  csr_row_ptr,
+                                          const I*                  csr_row_ptr_begin,
+                                          const I*                  csr_row_ptr_end,
                                           const J*                  csr_col_ind,
                                           rocsparse_mat_info        info,
                                           const T*                  x,
@@ -1145,7 +1204,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
               LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
               (const void*&)descr,
               (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
+              (const void*&)csr_row_ptr_begin,
+              (const void*&)csr_row_ptr_end,
               (const void*&)csr_col_ind,
               (const void*&)x,
               LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
@@ -1261,7 +1321,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
     }
 
     // Check the rest of pointer arguments
-    if(csr_row_ptr == nullptr || x == nullptr || y == nullptr)
+    if(csr_row_ptr_begin == nullptr || csr_row_ptr_end == nullptr || x == nullptr || y == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -1291,7 +1351,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                                      alpha_device_host,
                                                      descr,
                                                      csr_val,
-                                                     csr_row_ptr,
+                                                     csr_row_ptr_begin,
+                                                     csr_row_ptr_end,
                                                      csr_col_ind,
                                                      x,
                                                      beta_device_host,
@@ -1308,7 +1369,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                                      *alpha_device_host,
                                                      descr,
                                                      csr_val,
-                                                     csr_row_ptr,
+                                                     csr_row_ptr_begin,
+                                                     csr_row_ptr_end,
                                                      csr_col_ind,
                                                      x,
                                                      *beta_device_host,
@@ -1319,6 +1381,15 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
     else
     {
         // If csrmv info is available, call csrmv adaptive
+
+        //
+        // Rows must be stored contiguously.
+        //
+        if((csr_row_ptr_begin + 1) != csr_row_ptr_end)
+        {
+            return rocsparse_status_internal_error;
+        }
+
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
             return rocsparse_csrmv_adaptive_template_dispatch(handle,
@@ -1329,7 +1400,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                                               alpha_device_host,
                                                               descr,
                                                               csr_val,
-                                                              csr_row_ptr,
+                                                              csr_row_ptr_begin,
                                                               csr_col_ind,
                                                               info->csrmv_info,
                                                               x,
@@ -1347,7 +1418,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                                               *alpha_device_host,
                                                               descr,
                                                               csr_val,
-                                                              csr_row_ptr,
+                                                              csr_row_ptr_begin,
                                                               csr_col_ind,
                                                               info->csrmv_info,
                                                               x,
@@ -1379,7 +1450,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
         const TTYPE*              alpha_device_host,                                  \
         const rocsparse_mat_descr descr,                                              \
         const TTYPE*              csr_val,                                            \
-        const ITYPE*              csr_row_ptr,                                        \
+        const ITYPE*              csr_row_ptr_begin,                                  \
+        const ITYPE*              csr_row_ptr_end,                                    \
         const JTYPE*              csr_col_ind,                                        \
         rocsparse_mat_info        info,                                               \
         const TTYPE*              x,                                                  \
@@ -1461,6 +1533,7 @@ C_IMPL(rocsparse_zcsrmv_analysis, rocsparse_double_complex);
                                         descr,                              \
                                         csr_val,                            \
                                         csr_row_ptr,                        \
+                                        csr_row_ptr + 1,                    \
                                         csr_col_ind,                        \
                                         info,                               \
                                         x,                                  \
