@@ -102,25 +102,6 @@ void testing_coomv(const Arguments& arg)
 #define PARAMS(alpha_, A_, x_, beta_, y_) \
     handle, trans, A_.m, A_.n, A_.nnz, alpha_, descr, A_.val, A_.row_ind, A_.col_ind, x_, beta_, y_
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        device_coo_matrix<T> dA;
-        device_vector<T>     dx, dy;
-
-        dA.m   = M;
-        dA.n   = N;
-        dA.nnz = safe_size;
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_coomv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
-                                (M < 0 || N < 0) ? rocsparse_status_invalid_size
-                                                 : rocsparse_status_success);
-
-        return;
-    }
-
     rocsparse_matrix_factory<T> matrix_factory(arg, arg.timing ? false : true, false);
 
     host_coo_matrix<T> hA;

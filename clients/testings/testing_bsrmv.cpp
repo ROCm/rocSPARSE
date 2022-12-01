@@ -179,7 +179,7 @@ void testing_bsrmv(const Arguments& arg)
     handle, A_.block_direction, trans, A_.mb, A_.nb, A_.nnzb, alpha_, descr, A_.val, A_.ptr, \
         A_.ind, A_.row_block_dim, info, x_, beta_, y_
 
-    if(mb <= 0 || nb <= 0 || M <= 0 || N <= 0 || block_dim <= 0)
+    if(mb == 0 || nb == 0 || M == 0 || N == 0 || block_dim == 0)
     {
         device_gebsr_matrix<T> dA;
         dA.block_direction = dir;
@@ -194,8 +194,7 @@ void testing_bsrmv(const Arguments& arg)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
-                                (mb < 0 || nb < 0 || block_dim < 0) ? rocsparse_status_invalid_size
-                                                                    : rocsparse_status_success);
+                                rocsparse_status_success);
         return;
     }
 

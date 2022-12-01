@@ -646,8 +646,6 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
         // found to be re-used.
 
         // Clear csrsv info
-
-        // Clear csrsv info
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info((trans == rocsparse_operation_none)
                                                                  ? info->csrsv_upper_info
                                                                  : info->csrsvt_upper_info));

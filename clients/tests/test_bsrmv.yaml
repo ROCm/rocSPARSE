@@ -56,7 +56,7 @@ Tests:
   precision: *single_double_precisions
   M: [0, 16, 852]
   N: [0, 16, 942]
-  block_dim: [-1, 1, 2, 5, 81]
+  block_dim: [1, 2, 5, 81]
   alpha_beta: *alpha_beta_range_checkin
   direction: [rocsparse_direction_row, rocsparse_direction_column]
   transA: [rocsparse_operation_none]
@@ -168,7 +168,7 @@ Tests:
   precision: *single_double_precisions_complex
   M: 1
   N: 1
-  block_dim: [-1, 7, 18]
+  block_dim: [7, 18]
   alpha_beta: *alpha_beta_range_checkin
   direction: [rocsparse_direction_row]
   transA: [rocsparse_operation_none]

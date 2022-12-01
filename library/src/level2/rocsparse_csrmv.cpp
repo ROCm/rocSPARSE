@@ -430,20 +430,6 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
         return rocsparse_status_invalid_size;
     }
 
-    if(m == 0 || n == 0)
-    {
-        if(nnz != 0)
-        {
-            return rocsparse_status_invalid_size;
-        }
-    }
-
-    // Quick return if possible
-    if(m == 0 && n == 0 && nnz == 0)
-    {
-        return rocsparse_status_success;
-    }
-
     // Another quick return.
     if(m == 0 || n == 0 || nnz == 0)
     {
@@ -1252,20 +1238,6 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
     if(m < 0 || n < 0 || nnz < 0)
     {
         return rocsparse_status_invalid_size;
-    }
-
-    if(m == 0 || n == 0)
-    {
-        if(nnz != 0)
-        {
-            return rocsparse_status_invalid_size;
-        }
-    }
-
-    // Quick return if possible
-    if(m == 0 && n == 0 && nnz == 0)
-    {
-        return rocsparse_status_success;
     }
 
     // Another quick return.

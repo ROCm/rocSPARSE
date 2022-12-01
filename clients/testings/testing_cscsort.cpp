@@ -76,28 +76,6 @@ void testing_cscsort(const Arguments& arg)
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dcsc_row_ind(safe_size);
-        device_vector<rocsparse_int> dcsc_col_ptr(safe_size);
-        device_vector<rocsparse_int> dbuffer(safe_size);
-
-        size_t buffer_size;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_cscsort_buffer_size(
-                                    handle, M, N, 0, dcsc_col_ptr, dcsc_row_ind, &buffer_size),
-                                (M < 0 || N < 0) ? rocsparse_status_invalid_size
-                                                 : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_cscsort(handle, M, N, 0, descr, dcsc_col_ptr, dcsc_row_ind, nullptr, dbuffer),
-            (M < 0 || N < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
-
-        return;
-    }
-
     // Allocate host memory for CSR matrix
     host_vector<rocsparse_int> hcsc_row_ind;
     host_vector<rocsparse_int> hcsc_col_ptr;

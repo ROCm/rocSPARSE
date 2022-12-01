@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "common.h"
 #include "utility.h"
 
 #include "rocsparse_coo2csr.hpp"
@@ -67,6 +68,17 @@ rocsparse_status rocsparse_coo2csr_template(rocsparse_handle     handle,
 {
     if(m == 0)
     {
+        if(csr_row_ptr != nullptr)
+        {
+            hipLaunchKernelGGL((set_array_to_value<1>),
+                               dim3(1),
+                               dim3(1),
+                               0,
+                               handle->stream,
+                               m + 1,
+                               csr_row_ptr,
+                               static_cast<I>(idx_base));
+        }
         return rocsparse_status_success;
     }
     return rocsparse_coo2csr_core(handle, coo_row_ind, nnz, m, csr_row_ptr, idx_base);
@@ -109,7 +121,6 @@ rocsparse_status rocsparse_coo2csr_impl(rocsparse_handle     handle,
     }
 
     // Quick return if possible
-
     if(m > 0 && csr_row_ptr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
