@@ -30,7 +30,8 @@ template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, 
 static ROCSPARSE_DEVICE_ILF void csrmvn_symm_general_device(bool                 conj,
                                                             J                    m,
                                                             T                    alpha,
-                                                            const I*             csr_row_ptr,
+                                                            const I*             csr_row_ptr_begin,
+                                                            const I*             csr_row_ptr_end,
                                                             const J*             csr_col_ind,
                                                             const T*             csr_val,
                                                             const T*             x,
@@ -47,8 +48,8 @@ static ROCSPARSE_DEVICE_ILF void csrmvn_symm_general_device(bool                
     for(J row = gid / WF_SIZE; row < m; row += nwf)
     {
         // Each wavefront processes one row
-        I row_start = csr_row_ptr[row] - idx_base;
-        I row_end   = csr_row_ptr[row + 1] - idx_base;
+        I row_start = csr_row_ptr_begin[row] - idx_base;
+        I row_end   = csr_row_ptr_end[row] - idx_base;
 
         T sum = static_cast<T>(0);
 
@@ -81,7 +82,8 @@ template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, 
 static ROCSPARSE_DEVICE_ILF void csrmvt_symm_general_device(bool                 conj,
                                                             J                    m,
                                                             T                    alpha,
-                                                            const I*             csr_row_ptr,
+                                                            const I*             csr_row_ptr_begin,
+                                                            const I*             csr_row_ptr_end,
                                                             const J*             csr_col_ind,
                                                             const T*             csr_val,
                                                             const T*             x,
@@ -95,8 +97,8 @@ static ROCSPARSE_DEVICE_ILF void csrmvt_symm_general_device(bool                
 
     for(J row = gid / WF_SIZE; row < m; row += inc)
     {
-        I row_begin = csr_row_ptr[row] - idx_base;
-        I row_end   = csr_row_ptr[row + 1] - idx_base;
+        I row_begin = csr_row_ptr_begin[row] - idx_base;
+        I row_end   = csr_row_ptr_end[row] - idx_base;
         T row_val   = alpha * x[row];
 
         for(I j = row_begin + lid; j < row_end; j += WF_SIZE)

@@ -166,6 +166,7 @@ rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          han
                                                  descr,
                                                  bsr_val,
                                                  bsr_row_ptr,
+                                                 bsr_row_ptr + 1,
                                                  bsr_col_ind,
                                                  x,
                                                  beta_device_host,
