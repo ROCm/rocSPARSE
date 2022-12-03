@@ -96,7 +96,7 @@
 // followed by M^T * xi = yi. The determination of whether we should use Pd as 1x1 or 2x2
 // is based off the Bunch-Kaufmann pivoting criteria. See cited sources above.
 //
-// Let us now return to our factoization of the the original tridiagonal linear system,
+// Let us now return to our factoization of the original tridiagonal linear system,
 // A * x = D * S * x = rhs. We broke up finding the solution into the two phases. First
 // solving D * y = rhs and then secondly solving S * x = y. We now know how to solve
 // the first phase which is also the phase that performs the pivoting. We therefore focus on

@@ -144,7 +144,7 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
     string(REGEX MATCH ".mcode\-object\-version" TARGET_ID_SUPPORT ${CXX_OUTPUT})
 endif()
 
-#Set the AMDGPU_TARGETS with backward compatiblity
+#Set the AMDGPU_TARGETS with backward compatibility
  if(COMMAND rocm_check_target_ids)
     rocm_check_target_ids(DEFAULT_AMDGPU_TARGETS
         TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx1030;gfx1100;gfx1101;gfx1102"
