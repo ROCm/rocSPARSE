@@ -49,7 +49,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Clients benchmarking for performance tracking.
 ### Changed
 - Test adjustments due to roundoff errors.
-- Fixing API calls compatiblity with rocPRIM.
+- Fixing API calls compatibility with rocPRIM.
 ### Known Issues
 - none
 

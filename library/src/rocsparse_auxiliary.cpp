@@ -195,7 +195,7 @@ rocsparse_status rocsparse_get_git_rev(rocsparse_handle handle, char* rev)
 /********************************************************************************
  * \brief rocsparse_create_mat_descr_t is a structure holding the rocsparse matrix
  * descriptor. It must be initialized using rocsparse_create_mat_descr()
- * and the retured handle must be passed to all subsequent library function
+ * and the returned handle must be passed to all subsequent library function
  * calls that involve the matrix.
  * It should be destroyed at the end using rocsparse_destroy_mat_descr().
  *******************************************************************************/

@@ -160,7 +160,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     for(rocsparse_int k = 1; k < m; k++)
     {
         rocsparse_int ind_k = batch_stride * k + gid;
-        if(p[batch_count * k + gid] <= k) // no pivoting occured, sum up result
+        if(p[batch_count * k + gid] <= k) // no pivoting occurred, sum up result
         {
             T temp = static_cast<T>(0);
             for(rocsparse_int s = start; s < k; s++)

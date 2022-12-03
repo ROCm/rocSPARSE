@@ -175,7 +175,7 @@ static ROCSPARSE_DEVICE_ILF void csrmvn_adaptive_device(bool conj,
     // part of the row to operate on.
     // Alternately, on short row blocks, wg_ids are used to communicate
     // the number of threads that should be used for the reduction. Pre-calculating
-    // this on the CPU-side results in a noticable performance uplift on many matrices.
+    // this on the CPU-side results in a noticeable performance uplift on many matrices.
     // wg_flags contains the flag bit used so that the multiple WGs calculating a long row can
     // know when the first workgroup for that row has finished initializing the output
     // value. While this bit is the same as the first workgroup's flag bit, this

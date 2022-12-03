@@ -311,7 +311,7 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
                 }
 
                 // For the lower triangular, the matrix value is already in partial_sums.
-                // Calculate the mat*x for thie lower triangular and place it into
+                // Calculate the mat*x for the lower triangular and place it into
                 // partial_sums.
                 partial_sums[lid + i] *= x[myCol];
             }

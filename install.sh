@@ -515,7 +515,7 @@ pushd .
     cmake_client_options=""
   fi
 
-  # Build library with AMD toolchain because of existense of device kernels
+  # Build library with AMD toolchain because of existence of device kernels
   if [[ "${build_relocatable}" == true ]]; then
     FC=gfortran CXX=${compiler} CC=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF \
       -DCMAKE_INSTALL_PREFIX=${install_prefix} \
