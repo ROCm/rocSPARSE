@@ -763,7 +763,7 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
     const char * p = b_file.c_str();
     const char * q = nullptr;
     while(*p!='\0') { if (*p=='.') q = p; ++p;}
-    if (q!=nullptr)
+    if (q==nullptr)
       {
 	std::cerr << "extension is not detected in filename '"<< b_file <<"' " << std::endl;
 	return -1;
