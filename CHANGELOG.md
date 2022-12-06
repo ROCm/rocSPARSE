@@ -13,6 +13,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Optimization to gebsr2csr
 - Fixes to documentation
 - Fixes to SpMV and SpMM COO routined to allow larger matrices
+- Fixes a bug in COO SpMV gridsize
 
 ## rocSPARSE 2.4.0 for ROCm 5.4.0
 ### Added
