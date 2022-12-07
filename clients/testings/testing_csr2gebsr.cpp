@@ -216,9 +216,7 @@ void testing_csr2gebsr(const Arguments& arg)
     // Allocate device memory for BSR row ptr array
     device_vector<rocsparse_int> dbsr_row_ptr(Mb + 1);
 
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
     size_t buffer_size;
-
     CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_buffer_size<T>(handle,
                                                              direction,
                                                              M,
@@ -231,29 +229,8 @@ void testing_csr2gebsr(const Arguments& arg)
                                                              col_block_dim,
                                                              &buffer_size));
 
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-    device_vector<size_t> dbuffer_size(1);
-    CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_buffer_size<T>(handle,
-                                                             direction,
-                                                             M,
-                                                             N,
-                                                             csr_descr,
-                                                             dcsr_val_C,
-                                                             dcsr_row_ptr_C,
-                                                             dcsr_col_ind_C,
-                                                             row_block_dim,
-                                                             col_block_dim,
-                                                             dbuffer_size));
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-    size_t buffer_size_copied_from_device = 0;
-    CHECK_HIP_ERROR(hipMemcpy(
-        &buffer_size_copied_from_device, dbuffer_size, sizeof(size_t), hipMemcpyDeviceToHost));
-
-    // Confirm that nnzb is the same regardless of whether we use host or device pointers
-    unit_check_scalar<size_t>(buffer_size, buffer_size_copied_from_device);
-
-    device_vector<T> dbuffer(buffer_size);
+    void* dbuffer;
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
     if(arg.unit_check)
     {
@@ -273,7 +250,7 @@ void testing_csr2gebsr(const Arguments& arg)
                                                       row_block_dim,
                                                       col_block_dim,
                                                       &hbsr_nnzb,
-                                                      (void*)dbuffer));
+                                                      dbuffer));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
 
@@ -290,7 +267,7 @@ void testing_csr2gebsr(const Arguments& arg)
                                                       row_block_dim,
                                                       col_block_dim,
                                                       dbsr_nnzb,
-                                                      (void*)dbuffer));
+                                                      dbuffer));
 
         rocsparse_int hbsr_nnzb_copied_from_device = 0;
         CHECK_HIP_ERROR(hipMemcpy(&hbsr_nnzb_copied_from_device,
@@ -321,7 +298,7 @@ void testing_csr2gebsr(const Arguments& arg)
                                                      dbsr_col_ind,
                                                      row_block_dim,
                                                      col_block_dim,
-                                                     (void*)dbuffer));
+                                                     dbuffer));
 
         // Allocate host memory for BSR col indices and values array
         host_vector<rocsparse_int> hbsr_col_ind(hbsr_nnzb);
@@ -539,6 +516,9 @@ void testing_csr2gebsr(const Arguments& arg)
                             s_timing_info_time,
                             get_gpu_time_msec(gpu_time_used));
     }
+
+    // Free buffer
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(TYPE)                                                \

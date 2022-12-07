@@ -15169,13 +15169,12 @@ rocsparse_status rocsparse_zbsrpad_value(rocsparse_handle          handle,
 
 /*! \ingroup conv_module
 *  \brief
- *  \details
- *  \p rocsparse_csr2gebsr_buffer_size returns the size of the temporary buffer that
- *  is required by \p rocsparse_csr2gebcsr_nnz,
- *   \p rocsparse_scsr2gebcsr, \p rocsparse_dcsr2gebsr, \p rocsparse_ccsr2gebsr and \p rocsparse_zcsr2gebsr.
- *  The temporary storage
- *  buffer must be allocated by the user.
- *
+*  \details
+*  \p rocsparse_csr2gebsr_buffer_size returns the size of the temporary buffer that
+*  is required by \p rocsparse_csr2gebcsr_nnz, \p rocsparse_scsr2gebcsr, \p rocsparse_dcsr2gebsr,
+*  \p rocsparse_ccsr2gebsr and \p rocsparse_zcsr2gebsr. The temporary storage buffer must be
+*  allocated by the user.
+*
 *  This function computes the number of nonzero block columns per row and the total number of nonzero blocks in a sparse
 *  GEneral BSR matrix given a sparse CSR matrix as input.
 *
@@ -15215,12 +15214,12 @@ rocsparse_status rocsparse_zbsrpad_value(rocsparse_handle          handle,
 *  col_block_dim   the col block dimension of the GEneral BSR matrix. Between 1 and \p n
 *
 *  @param[out]
-*  p_buffer_size  (host/device) number of bytes of the temporary storage buffer required by \p rocsparse_csr2gebsr_nnz and \p rocsparse_scsr2gebsr.
+*  buffer_size  number of bytes of the temporary storage buffer required by \p rocsparse_csr2gebsr_nnz and \p rocsparse_Xcsr2gebsr.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval     rocsparse_status_invalid_size \p m or \p n or \p row_block_dim  \p col_block_dim is invalid.
-*  \retval     rocsparse_status_invalid_pointer \p csr_val or \p csr_row_ptr or \p csr_col_ind or \p bsr_row_ptr or \p p_buffer_size
+*  \retval     rocsparse_status_invalid_pointer \p csr_val or \p csr_row_ptr or \p csr_col_ind or \p bsr_row_ptr or \p buffer_size
 *              pointer is invalid.
 */
 /**@{*/
@@ -15235,7 +15234,7 @@ rocsparse_status rocsparse_scsr2gebsr_buffer_size(rocsparse_handle          hand
                                                   const rocsparse_int*      csr_col_ind,
                                                   rocsparse_int             row_block_dim,
                                                   rocsparse_int             col_block_dim,
-                                                  size_t*                   p_buffer_size);
+                                                  size_t*                   buffer_size);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dcsr2gebsr_buffer_size(rocsparse_handle          handle,
                                                   rocsparse_direction       dir,
@@ -15247,7 +15246,7 @@ rocsparse_status rocsparse_dcsr2gebsr_buffer_size(rocsparse_handle          hand
                                                   const rocsparse_int*      csr_col_ind,
                                                   rocsparse_int             row_block_dim,
                                                   rocsparse_int             col_block_dim,
-                                                  size_t*                   p_buffer_size);
+                                                  size_t*                   buffer_size);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsr2gebsr_buffer_size(rocsparse_handle               handle,
                                                   rocsparse_direction            dir,
@@ -15259,7 +15258,7 @@ rocsparse_status rocsparse_ccsr2gebsr_buffer_size(rocsparse_handle              
                                                   const rocsparse_int*           csr_col_ind,
                                                   rocsparse_int                  row_block_dim,
                                                   rocsparse_int                  col_block_dim,
-                                                  size_t*                        p_buffer_size);
+                                                  size_t*                        buffer_size);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_zcsr2gebsr_buffer_size(rocsparse_handle                handle,
                                                   rocsparse_direction             dir,
@@ -15271,7 +15270,7 @@ rocsparse_status rocsparse_zcsr2gebsr_buffer_size(rocsparse_handle              
                                                   const rocsparse_int*            csr_col_ind,
                                                   rocsparse_int                   row_block_dim,
                                                   rocsparse_int                   col_block_dim,
-                                                  size_t*                         p_buffer_size);
+                                                  size_t*                         buffer_size);
 /**@}*/
 
 /*! \ingroup conv_module
@@ -15320,7 +15319,7 @@ rocsparse_status rocsparse_zcsr2gebsr_buffer_size(rocsparse_handle              
 *  bsr_nnz_devhost  total number of nonzero elements in device or host memory.
 *
 *  @param[in]
-*  p_buffer    buffer allocated by the user whose size is determined by calling \p rocsparse_xcsr2gebsr_buffer_size.
+*  temp_buffer    buffer allocated by the user whose size is determined by calling \p rocsparse_xcsr2gebsr_buffer_size.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -15343,7 +15342,7 @@ rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          handle,
                                          rocsparse_int             row_block_dim,
                                          rocsparse_int             col_block_dim,
                                          rocsparse_int*            bsr_nnz_devhost,
-                                         void*                     p_buffer);
+                                         void*                     temp_buffer);
 /**@}*/
 
 /*! \ingroup conv_module
@@ -15378,7 +15377,7 @@ rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          handle,
 *  bsr_descr    descriptor of the sparse BSR matrix. Currently, only
 *               \ref rocsparse_matrix_type_general is supported.
 *  @param[out]
-*  bsr_val      array of \p nnzb* \p row_block_dim*\p col_block_dim containing the values of the sparse BSR matrix.
+*  bsr_val      array of \p nnzb* \p row_block_dim* \p col_block_dim containing the values of the sparse BSR matrix.
 *  @param[out]
 *  bsr_row_ptr  array of \p mb+1 elements that point to the start of every block row of the
 *               sparse BSR matrix.
@@ -15389,7 +15388,7 @@ rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          handle,
 *  @param[in]
 *  col_block_dim    col size of the blocks in the sparse GEneral BSR matrix.
 *  @param[in]
-*  p_buffer    buffer allocated by the user whose size is determined by calling \p rocsparse_xcsr2gebsr_buffer_size.
+*  temp_buffer    buffer allocated by the user whose size is determined by calling \p rocsparse_xcsr2gebsr_buffer_size.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -15433,7 +15432,7 @@ rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          handle,
 *                  bsr_descr,
 *                  bsr_row_ptr,
 *                  nnzTotalHostPtr);
-*      nnzb = *nnzTotalDevHostPtr;
+*      nnzb = *nnzTotalHostPtr;
 *      hipMalloc(&bsr_col_ind, sizeof(int)*nnzb);
 *      hipMalloc(&bsr_val, sizeof(float)*(row_block_dim * col_block_dim) * nnzb);
 *      scsr2gebsr(handle,
@@ -15468,7 +15467,7 @@ rocsparse_status rocsparse_scsr2gebsr(rocsparse_handle          handle,
                                       rocsparse_int*            bsr_col_ind,
                                       rocsparse_int             row_block_dim,
                                       rocsparse_int             col_block_dim,
-                                      void*                     p_buffer);
+                                      void*                     temp_buffer);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dcsr2gebsr(rocsparse_handle          handle,
                                       rocsparse_direction       dir,
@@ -15484,7 +15483,7 @@ rocsparse_status rocsparse_dcsr2gebsr(rocsparse_handle          handle,
                                       rocsparse_int*            bsr_col_ind,
                                       rocsparse_int             row_block_dim,
                                       rocsparse_int             col_block_dim,
-                                      void*                     p_buffer);
+                                      void*                     temp_buffer);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsr2gebsr(rocsparse_handle               handle,
                                       rocsparse_direction            dir,
@@ -15500,7 +15499,7 @@ rocsparse_status rocsparse_ccsr2gebsr(rocsparse_handle               handle,
                                       rocsparse_int*                 bsr_col_ind,
                                       rocsparse_int                  row_block_dim,
                                       rocsparse_int                  col_block_dim,
-                                      void*                          p_buffer);
+                                      void*                          temp_buffer);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_zcsr2gebsr(rocsparse_handle                handle,
                                       rocsparse_direction             dir,
@@ -15516,7 +15515,7 @@ rocsparse_status rocsparse_zcsr2gebsr(rocsparse_handle                handle,
                                       rocsparse_int*                  bsr_col_ind,
                                       rocsparse_int                   row_block_dim,
                                       rocsparse_int                   col_block_dim,
-                                      void*                           p_buffer);
+                                      void*                           temp_buffer);
 
 /**@}*/
 

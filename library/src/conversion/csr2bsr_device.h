@@ -315,12 +315,14 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                 {
                     if(dir == rocsparse_direction_row)
                     {
-                        bsr_val[block_dim * block_dim * block_row_begin + block_dim * r + (c + i)]
+                        bsr_val[int64_t(block_dim) * block_dim * block_row_begin + block_dim * r
+                                + (c + i)]
                             = data[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * r + (c + i)];
                     }
                     else
                     {
-                        bsr_val[block_dim * block_dim * block_row_begin + block_dim * (c + i) + r]
+                        bsr_val[int64_t(block_dim) * block_dim * block_row_begin
+                                + block_dim * (c + i) + r]
                             = data[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * r + (c + i)];
                     }
                 }
@@ -433,13 +435,14 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                 {
                     if(dir == rocsparse_direction_row)
                     {
-                        bsr_val[block_dim * block_dim * block_row_begin + block_dim * wid + i + lid]
+                        bsr_val[int64_t(block_dim) * block_dim * block_row_begin + block_dim * wid
+                                + i + lid]
                             = data[BLOCKDIM * wid + i + lid];
                     }
                     else
                     {
-                        bsr_val[block_dim * block_dim * block_row_begin + block_dim * (i + lid)
-                                + wid]
+                        bsr_val[int64_t(block_dim) * block_dim * block_row_begin
+                                + block_dim * (i + lid) + wid]
                             = data[BLOCKDIM * wid + i + lid];
                     }
                 }

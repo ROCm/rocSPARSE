@@ -24,31 +24,111 @@
 
 #include "rocsparse_csr2gebsr.hpp"
 #include "definitions.h"
+#include "rocsparse_csr2bsr.hpp"
 #include "utility.h"
 
 #include "csr2gebsr_device.h"
 #include <rocprim/rocprim.hpp>
 
-#define launch_csr2gebsr_fast_kernel(direction, block_size, segment_size, wf_size)            \
-    hipLaunchKernelGGL((csr2gebsr_fast_kernel<direction, block_size, segment_size, wf_size>), \
-                       grid_size,                                                             \
-                       block_size,                                                            \
-                       0,                                                                     \
-                       stream,                                                                \
-                       m,                                                                     \
-                       n,                                                                     \
-                       mb,                                                                    \
-                       nb,                                                                    \
-                       row_block_dim,                                                         \
-                       col_block_dim,                                                         \
-                       csr_descr->base,                                                       \
-                       csr_val,                                                               \
-                       csr_row_ptr,                                                           \
-                       csr_col_ind,                                                           \
-                       bsr_descr->base,                                                       \
-                       bsr_val,                                                               \
-                       bsr_row_ptr,                                                           \
+#define launch_csr2gebsr_block_per_row_multipass_kernel(block_size, row_blockdim, col_blockdim) \
+    hipLaunchKernelGGL(                                                                         \
+        (csr2gebsr_block_per_row_multipass_kernel<block_size, row_blockdim, col_blockdim>),     \
+        mb,                                                                                     \
+        block_size,                                                                             \
+        0,                                                                                      \
+        stream,                                                                                 \
+        direction,                                                                              \
+        m,                                                                                      \
+        n,                                                                                      \
+        mb,                                                                                     \
+        nb,                                                                                     \
+        row_block_dim,                                                                          \
+        col_block_dim,                                                                          \
+        csr_descr->base,                                                                        \
+        csr_val,                                                                                \
+        csr_row_ptr,                                                                            \
+        csr_col_ind,                                                                            \
+        bsr_descr->base,                                                                        \
+        bsr_val,                                                                                \
+        bsr_row_ptr,                                                                            \
+        bsr_col_ind);
+
+#define launch_csr2gebsr_wavefront_per_row_multipass_kernel(                       \
+    block_size, row_blockdim, col_blockdim, wf_size)                               \
+    hipLaunchKernelGGL((csr2gebsr_wavefront_per_row_multipass_kernel<block_size,   \
+                                                                     row_blockdim, \
+                                                                     col_blockdim, \
+                                                                     wf_size>),    \
+                       dim3((mb - 1) / (block_size / wf_size) + 1),                \
+                       block_size,                                                 \
+                       0,                                                          \
+                       stream,                                                     \
+                       direction,                                                  \
+                       m,                                                          \
+                       n,                                                          \
+                       mb,                                                         \
+                       nb,                                                         \
+                       row_block_dim,                                              \
+                       col_block_dim,                                              \
+                       csr_descr->base,                                            \
+                       csr_val,                                                    \
+                       csr_row_ptr,                                                \
+                       csr_col_ind,                                                \
+                       bsr_descr->base,                                            \
+                       bsr_val,                                                    \
+                       bsr_row_ptr,                                                \
                        bsr_col_ind);
+
+template <typename T,
+          typename std::enable_if<std::is_same<T, rocsparse_double_complex>::value, int>::type = 0>
+static inline rocsparse_status csr2gebsr_64_64_launcher(rocsparse_handle          handle,
+                                                        rocsparse_direction       direction,
+                                                        rocsparse_int             m,
+                                                        rocsparse_int             n,
+                                                        rocsparse_int             mb,
+                                                        rocsparse_int             nb,
+                                                        const rocsparse_mat_descr csr_descr,
+                                                        const T*                  csr_val,
+                                                        const rocsparse_int*      csr_row_ptr,
+                                                        const rocsparse_int*      csr_col_ind,
+                                                        const rocsparse_mat_descr bsr_descr,
+                                                        T*                        bsr_val,
+                                                        rocsparse_int*            bsr_row_ptr,
+                                                        rocsparse_int*            bsr_col_ind,
+                                                        rocsparse_int             row_block_dim,
+                                                        rocsparse_int             col_block_dim)
+{
+    return rocsparse_status_internal_error;
+}
+
+template <typename T,
+          typename std::enable_if<std::is_same<T, float>::value || std::is_same<T, double>::value
+                                      || std::is_same<T, rocsparse_float_complex>::value,
+                                  int>::type
+          = 0>
+static inline rocsparse_status csr2gebsr_64_64_launcher(rocsparse_handle          handle,
+                                                        rocsparse_direction       direction,
+                                                        rocsparse_int             m,
+                                                        rocsparse_int             n,
+                                                        rocsparse_int             mb,
+                                                        rocsparse_int             nb,
+                                                        const rocsparse_mat_descr csr_descr,
+                                                        const T*                  csr_val,
+                                                        const rocsparse_int*      csr_row_ptr,
+                                                        const rocsparse_int*      csr_col_ind,
+                                                        const rocsparse_mat_descr bsr_descr,
+                                                        T*                        bsr_val,
+                                                        rocsparse_int*            bsr_row_ptr,
+                                                        rocsparse_int*            bsr_col_ind,
+                                                        rocsparse_int             row_block_dim,
+                                                        rocsparse_int             col_block_dim)
+{
+    hipStream_t stream = handle->stream;
+
+    launch_csr2gebsr_block_per_row_multipass_kernel(256, 64, 64);
+
+    return rocsparse_status_success;
+}
 
 template <typename T>
 rocsparse_status rocsparse_csr2gebsr_buffer_size_template(rocsparse_handle          handle,
@@ -61,7 +141,7 @@ rocsparse_status rocsparse_csr2gebsr_buffer_size_template(rocsparse_handle      
                                                           const rocsparse_int*      csr_col_ind,
                                                           rocsparse_int             row_block_dim,
                                                           rocsparse_int             col_block_dim,
-                                                          size_t*                   p_buffer_size)
+                                                          size_t*                   buffer_size)
 {
     //
     // Check for valid handle
@@ -93,7 +173,7 @@ rocsparse_status rocsparse_csr2gebsr_buffer_size_template(rocsparse_handle      
               (const void*&)csr_col_ind,
               row_block_dim,
               col_block_dim,
-              (const void*&)p_buffer_size);
+              (const void*&)buffer_size);
 
     log_bench(handle,
               "./rocsparse-bench -f csr2gebsr_buffer_size -r",
@@ -125,35 +205,16 @@ rocsparse_status rocsparse_csr2gebsr_buffer_size_template(rocsparse_handle      
     //
     // Check buffer size argument
     //
-    if(p_buffer_size == nullptr)
+    if(buffer_size == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    rocsparse_pointer_mode mode;
-    rocsparse_get_pointer_mode(handle, &mode);
 
     //
     // Quick return if possible
     //
     if(m == 0 || n == 0 || row_block_dim == 0 || col_block_dim == 0)
     {
-        //
-        // Do not return 0 as buffer size
-        //
-        static constexpr size_t host_buffer_size = sizeof(rocsparse_int) * 4;
-        if(mode == rocsparse_pointer_mode_host)
-        {
-            p_buffer_size[0] = host_buffer_size;
-        }
-        else
-        {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(p_buffer_size,
-                                               &host_buffer_size,
-                                               sizeof(size_t),
-                                               hipMemcpyHostToDevice,
-                                               handle->stream));
-            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-        }
         return rocsparse_status_success;
     }
 
@@ -172,22 +233,7 @@ rocsparse_status rocsparse_csr2gebsr_buffer_size_template(rocsparse_handle      
         return rocsparse_status_invalid_pointer;
     }
 
-    {
-        size_t host_buffer_size = sizeof(rocsparse_int) * 512;
-        if(mode == rocsparse_pointer_mode_host)
-        {
-            p_buffer_size[0] = host_buffer_size;
-        }
-        else
-        {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(p_buffer_size,
-                                               &host_buffer_size,
-                                               sizeof(size_t),
-                                               hipMemcpyHostToDevice,
-                                               handle->stream));
-            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-        }
-    }
+    *buffer_size = sizeof(rocsparse_int) * 4;
 
     return rocsparse_status_success;
 }
@@ -207,7 +253,7 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
                                               rocsparse_int*            bsr_col_ind,
                                               rocsparse_int             row_block_dim,
                                               rocsparse_int             col_block_dim,
-                                              void*                     p_buffer)
+                                              void*                     temp_buffer)
 {
     //
     // Check for valid handle
@@ -243,7 +289,7 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
               (const void*&)bsr_col_ind,
               row_block_dim,
               col_block_dim,
-              (const void*&)p_buffer);
+              (const void*&)temp_buffer);
 
     log_bench(handle, "./rocsparse-bench -f csr2gebsr -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
@@ -281,7 +327,7 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
     //
     // Check pointer arguments
     //
-    if(csr_row_ptr == nullptr || bsr_row_ptr == nullptr || p_buffer == nullptr)
+    if(csr_row_ptr == nullptr || bsr_row_ptr == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -300,13 +346,27 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_pointer;
     }
 
+    if(row_block_dim == col_block_dim)
+    {
+        return rocsparse_csr2bsr_template(handle,
+                                          direction,
+                                          m,
+                                          n,
+                                          csr_descr,
+                                          csr_val,
+                                          csr_row_ptr,
+                                          csr_col_ind,
+                                          row_block_dim,
+                                          bsr_descr,
+                                          bsr_val,
+                                          bsr_row_ptr,
+                                          bsr_col_ind);
+    }
+
     hipStream_t   stream = handle->stream;
     rocsparse_int mb     = (m + row_block_dim - 1) / row_block_dim;
     rocsparse_int nb     = (n + col_block_dim - 1) / col_block_dim;
 
-    //
-    // Stream
-    //
     rocsparse_int start = 0;
     rocsparse_int end   = 0;
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
@@ -327,21 +387,12 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
     //
     RETURN_IF_HIP_ERROR(hipMemsetAsync(
         bsr_val, 0, sizeof(T) * nnzb * row_block_dim * col_block_dim, handle->stream));
-    if(row_block_dim == 1 && col_block_dim == 1)
+
+    if(row_block_dim == 1)
     {
-        constexpr rocsparse_int block_size = 256;
-        rocsparse_int           grid_size  = mb / block_size;
-        if(mb % block_size != 0)
-        {
-            grid_size++;
-        }
-
-        dim3 blocks(grid_size);
-        dim3 threads(block_size);
-
-        hipLaunchKernelGGL((csr2gebsr_kernel_bm1_bn1<block_size>),
-                           blocks,
-                           threads,
+        hipLaunchKernelGGL((csr2gebsr_kernel_bm1<256>),
+                           dim3(m / 256 + 1),
+                           dim3(256),
                            0,
                            stream,
                            m,
@@ -352,34 +403,6 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
                            csr_val,
                            csr_row_ptr,
                            csr_col_ind,
-                           bsr_descr->base,
-                           bsr_val,
-                           bsr_row_ptr,
-                           bsr_col_ind);
-
-        return rocsparse_status_success;
-    }
-    else if(row_block_dim == 1)
-    {
-
-        constexpr rocsparse_int block_size = 256;
-        rocsparse_int           grid_size  = ((m + 1) + block_size - 1) / block_size;
-        dim3                    blocks(grid_size);
-        dim3                    threads(block_size);
-        hipLaunchKernelGGL((csr2gebsr_kernel_bm1<block_size>),
-                           blocks,
-                           threads,
-                           0,
-                           stream,
-                           m,
-                           n,
-                           mb,
-                           nb,
-                           csr_descr->base,
-                           csr_val,
-                           csr_row_ptr,
-                           csr_col_ind,
-
                            direction,
                            bsr_descr->base,
                            bsr_val,
@@ -392,177 +415,301 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
     }
 
     // Common case where BSR block dimension is small
-    if(row_block_dim <= 32)
+    // row_block_dim <= 64 && col_block_dim <= 64
+    if(row_block_dim <= 2 && col_block_dim <= 64)
     {
-        // A 64 thread wavefront is decomposed as:
-        //      |    bank 0        bank 1       bank 2         bank 3
-        // row 0|  0  1  2  3 |  4  5  6  7 |  8  9 10 11 | 12 13 14 15 |
-        // row 1| 16 17 18 19 | 20 21 22 23 | 24 25 26 27 | 28 29 30 31 |
-        // row 2| 32 33 34 35 | 36 37 38 39 | 40 41 42 43 | 44 45 46 47 |
-        // row 3| 48 49 50 51 | 52 53 54 55 | 56 57 58 59 | 60 61 62 63 |
-        //
-        // Segments can be of size 4 (quarter row), 8 (half row), 16 (full row),
-        // 32 (half wavefront), or 64 (full wavefront). We assign one segment per
-        // BSR block row where the segment size matches the block dimension as
-        // closely as possible while still being greater than or equal to the
-        // block dimension.
-
-        rocsparse_int block_size   = row_block_dim > 16 ? 32 : 16;
-        rocsparse_int segment_size = row_block_dim;
-
-        // round segment_size up to next power of 2
-        segment_size--;
-        segment_size |= segment_size >> 1;
-        segment_size |= segment_size >> 2;
-        segment_size |= segment_size >> 4;
-        segment_size |= segment_size >> 8;
-        segment_size |= segment_size >> 16;
-        segment_size++;
-
-        if(handle->wavefront_size == 32)
+        if(col_block_dim <= 2)
         {
-            constexpr rocsparse_int wf_size = 32;
-
-            rocsparse_int segments_per_wf              = wf_size / segment_size;
-            rocsparse_int number_of_wf_segments_needed = (m + row_block_dim - 1) / row_block_dim;
-            rocsparse_int number_of_wfs_needed
-                = (number_of_wf_segments_needed + segments_per_wf - 1) / segments_per_wf;
-            rocsparse_int grid_size
-                = (wf_size * number_of_wfs_needed + block_size - 1) / block_size;
-
-            if(direction == rocsparse_direction_row)
-            {
-                if(row_block_dim <= 2)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 16, 2, wf_size);
-                }
-                else if(row_block_dim <= 4)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 16, 4, wf_size);
-                }
-                else if(row_block_dim <= 8)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 16, 8, wf_size);
-                }
-                else if(row_block_dim <= 16)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 16, 16, wf_size);
-                }
-                else
-                {
-                    // (row_block_dim <= 32)
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 32, 32, wf_size);
-                }
-            }
-            else
-            {
-                if(row_block_dim <= 2)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 16, 2, wf_size);
-                }
-                else if(row_block_dim <= 4)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 16, 4, wf_size);
-                }
-                else if(row_block_dim <= 8)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 16, 8, wf_size);
-                }
-                else if(row_block_dim <= 16)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 16, 16, wf_size);
-                }
-                else
-                {
-                    //(row_block_dim <= 32)
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 32, 32, wf_size);
-                }
-            }
+            launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 2, 2, 4);
         }
-        else if(handle->wavefront_size == 64)
+        else if(col_block_dim <= 4)
         {
-            constexpr rocsparse_int wf_size = 64;
-
-            rocsparse_int segments_per_wf              = wf_size / segment_size;
-            rocsparse_int number_of_wf_segments_needed = (m + row_block_dim - 1) / row_block_dim;
-            rocsparse_int number_of_wfs_needed
-                = (number_of_wf_segments_needed + segments_per_wf - 1) / segments_per_wf;
-            rocsparse_int grid_size
-                = (wf_size * number_of_wfs_needed + block_size - 1) / block_size;
-
-            if(direction == rocsparse_direction_row)
+            launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 2, 4, 8);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 2, 8, 16);
+        }
+        else if(col_block_dim <= 16)
+        {
+            launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 2, 16, 32);
+        }
+        else if(col_block_dim <= 32)
+        {
+            if(handle->wavefront_size == 64)
             {
-                if(row_block_dim <= 2)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 16, 2, wf_size);
-                }
-                else if(row_block_dim <= 4)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 16, 4, wf_size);
-                }
-                else if(row_block_dim <= 8)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 16, 8, wf_size);
-                }
-                else if(row_block_dim <= 16)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 16, 16, wf_size);
-                }
-                else
-                {
-                    // (row_block_dim <= 32)
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 32, 32, wf_size);
-                }
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 2, 32, 64);
             }
             else
             {
-                if(row_block_dim <= 2)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 16, 2, wf_size);
-                }
-                else if(row_block_dim <= 4)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 16, 4, wf_size);
-                }
-                else if(row_block_dim <= 8)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 16, 8, wf_size);
-                }
-                else if(row_block_dim <= 16)
-                {
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 16, 16, wf_size);
-                }
-                else
-                {
-                    // (row_block_dim <= 32)
-                    launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 32, 32, wf_size);
-                }
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 2, 32, 32);
             }
         }
         else
         {
-            return rocsparse_status_arch_mismatch;
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 2, 64, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 2, 64, 32);
+            }
         }
     }
-    // Uncommon (exceptional) case where BSR block dimension is large
+    else if(row_block_dim <= 4 && col_block_dim <= 64)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 4, 2, 8);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 4, 4, 16);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 4, 8, 32);
+        }
+        else if(col_block_dim <= 16)
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 4, 16, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 4, 16, 32);
+            }
+        }
+        else if(col_block_dim <= 32)
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 4, 32, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 4, 32, 32);
+            }
+        }
+        else
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 4, 64, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 4, 64, 32);
+            }
+        }
+    }
+    else if(row_block_dim <= 8 && col_block_dim <= 64)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 8, 2, 16);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 8, 4, 32);
+        }
+        else if(col_block_dim <= 8)
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 8, 8, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 8, 8, 32);
+            }
+        }
+        else if(col_block_dim <= 16)
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 8, 16, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 8, 16, 32);
+            }
+        }
+        else if(col_block_dim <= 32)
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 8, 32, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 8, 32, 32);
+            }
+        }
+        else
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 8, 64, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(128, 8, 64, 32);
+            }
+        }
+    }
+    else if(row_block_dim <= 16 && col_block_dim <= 64)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 16, 2, 32);
+        }
+        else if(col_block_dim <= 4)
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 16, 4, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 16, 4, 32);
+            }
+        }
+        else if(col_block_dim <= 8)
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 16, 8, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 16, 8, 32);
+            }
+        }
+        else if(col_block_dim <= 16)
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 16, 16, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 16, 16, 32);
+            }
+        }
+        else if(col_block_dim <= 32)
+        {
+            launch_csr2gebsr_block_per_row_multipass_kernel(128, 16, 32);
+        }
+        else
+        {
+            launch_csr2gebsr_block_per_row_multipass_kernel(128, 16, 64);
+        }
+    }
+    else if(row_block_dim <= 32 && col_block_dim <= 64)
+    {
+        if(col_block_dim <= 2)
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 32, 2, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 32, 2, 32);
+            }
+        }
+        else if(col_block_dim <= 4)
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 32, 4, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 32, 4, 32);
+            }
+        }
+        else if(col_block_dim <= 8)
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 32, 8, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_wavefront_per_row_multipass_kernel(256, 32, 8, 32);
+            }
+        }
+        else if(col_block_dim <= 16)
+        {
+            launch_csr2gebsr_block_per_row_multipass_kernel(256, 32, 16);
+        }
+        else if(col_block_dim <= 32)
+        {
+            launch_csr2gebsr_block_per_row_multipass_kernel(256, 32, 32);
+        }
+        else
+        {
+            launch_csr2gebsr_block_per_row_multipass_kernel(256, 32, 64);
+        }
+    }
+    else if(row_block_dim <= 64 && col_block_dim <= 32)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_csr2gebsr_block_per_row_multipass_kernel(128, 64, 2);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_csr2gebsr_block_per_row_multipass_kernel(256, 64, 4);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_csr2gebsr_block_per_row_multipass_kernel(256, 64, 8);
+        }
+        else if(col_block_dim <= 16)
+        {
+            launch_csr2gebsr_block_per_row_multipass_kernel(256, 64, 16);
+        }
+        else
+        {
+            launch_csr2gebsr_block_per_row_multipass_kernel(256, 64, 32);
+        }
+    }
+    else if(row_block_dim <= 64 && col_block_dim <= 64
+            && !std::is_same<T, rocsparse_double_complex>())
+    {
+        csr2gebsr_64_64_launcher(handle,
+                                 direction,
+                                 m,
+                                 n,
+                                 mb,
+                                 nb,
+                                 csr_descr,
+                                 csr_val,
+                                 csr_row_ptr,
+                                 csr_col_ind,
+                                 bsr_descr,
+                                 bsr_val,
+                                 bsr_row_ptr,
+                                 bsr_col_ind,
+                                 row_block_dim,
+                                 col_block_dim);
+    }
     else
     {
-        // Each segment handles a block row where each thread in the segment
-        // can work on multiple rows in the block row (row_block_dim > segment_size)
-        constexpr rocsparse_int block_size   = 32;
-        constexpr rocsparse_int segment_size = 32;
-        constexpr rocsparse_int wf_size      = 32;
+        // Use a blocksize of 32 to handle each block row
+        constexpr rocsparse_int block_size       = 32;
+        rocsparse_int           rows_per_segment = (row_block_dim + block_size - 1) / block_size;
 
-        rocsparse_int rows_per_segment = (row_block_dim + segment_size - 1) / segment_size;
-        rocsparse_int segments_per_wf  = wf_size / segment_size;
-        rocsparse_int number_of_wf_segments_needed = (m + row_block_dim - 1) / row_block_dim;
-        rocsparse_int number_of_wfs_needed
-            = (number_of_wf_segments_needed + segments_per_wf - 1) / segments_per_wf;
-        rocsparse_int grid_size = (wf_size * number_of_wfs_needed + block_size - 1) / block_size;
-
-        size_t buffer_size
-            = size_t(grid_size) * block_size
-              * (sizeof(rocsparse_int) * 3 * rows_per_segment + sizeof(T) * rows_per_segment);
+        size_t buffer_size = 0;
+        buffer_size += sizeof(rocsparse_int)
+                       * ((size_t(mb) * block_size * 3 * rows_per_segment - 1) / 256 + 1) * 256;
+        buffer_size
+            += sizeof(T) * ((size_t(mb) * block_size * rows_per_segment - 1) / 256 + 1) * 256;
 
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;
@@ -577,14 +724,14 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
             temp_alloc = true;
         }
 
-        char* temp = reinterpret_cast<char*>(temp_storage_ptr);
+        char*          ptr   = reinterpret_cast<char*>(temp_storage_ptr);
+        rocsparse_int* temp1 = reinterpret_cast<rocsparse_int*>(ptr);
+        ptr += sizeof(rocsparse_int)
+               * ((size_t(mb) * block_size * 3 * rows_per_segment - 1) / 256 + 1) * 256;
+        T* temp2 = reinterpret_cast<T*>(ptr);
 
-        rocsparse_int* temp1 = reinterpret_cast<rocsparse_int*>(temp);
-        T*             temp2 = reinterpret_cast<T*>(
-            temp + sizeof(rocsparse_int) * grid_size * block_size * 3 * rows_per_segment);
-
-        hipLaunchKernelGGL((csr2gebsr_general_kernel<block_size, segment_size, wf_size>),
-                           dim3(grid_size),
+        hipLaunchKernelGGL((csr2gebsr_65_inf_kernel<block_size>),
+                           dim3(mb),
                            dim3(block_size),
                            0,
                            handle->stream,
@@ -616,23 +763,42 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
     return rocsparse_status_success;
 }
 
-#define launch_csr2gebsr_nnz_fast_kernel(block_size, segment_size, wf_size)            \
-    hipLaunchKernelGGL((csr2gebsr_nnz_fast_kernel<block_size, segment_size, wf_size>), \
-                       dim3(grid_size),                                                \
-                       dim3(block_size),                                               \
-                       0,                                                              \
-                       handle->stream,                                                 \
-                       m,                                                              \
-                       n,                                                              \
-                       mb,                                                             \
-                       nb,                                                             \
-                       row_block_dim,                                                  \
-                       col_block_dim,                                                  \
-                       csr_descr->base,                                                \
-                       csr_row_ptr,                                                    \
-                       csr_col_ind,                                                    \
-                       bsr_descr->base,                                                \
+#define launch_csr2gebsr_nnz_block_per_row_multipass_kernel(block_size, blockdim)            \
+    hipLaunchKernelGGL((csr2gebsr_nnz_block_per_row_multipass_kernel<block_size, blockdim>), \
+                       dim3(mb),                                                             \
+                       dim3(block_size),                                                     \
+                       0,                                                                    \
+                       handle->stream,                                                       \
+                       m,                                                                    \
+                       n,                                                                    \
+                       mb,                                                                   \
+                       nb,                                                                   \
+                       row_block_dim,                                                        \
+                       col_block_dim,                                                        \
+                       csr_descr->base,                                                      \
+                       csr_row_ptr,                                                          \
+                       csr_col_ind,                                                          \
+                       bsr_descr->base,                                                      \
                        bsr_row_ptr);
+
+#define launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(block_size, row_blockdim, wf_size) \
+    hipLaunchKernelGGL(                                                                            \
+        (csr2gebsr_nnz_wavefront_per_row_multipass_kernel<block_size, row_blockdim, wf_size>),     \
+        dim3((mb - 1) / (block_size / wf_size) + 1),                                               \
+        dim3(block_size),                                                                          \
+        0,                                                                                         \
+        handle->stream,                                                                            \
+        m,                                                                                         \
+        n,                                                                                         \
+        mb,                                                                                        \
+        nb,                                                                                        \
+        row_block_dim,                                                                             \
+        col_block_dim,                                                                             \
+        csr_descr->base,                                                                           \
+        csr_row_ptr,                                                                               \
+        csr_col_ind,                                                                               \
+        bsr_descr->base,                                                                           \
+        bsr_row_ptr);
 
 extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          handle,
                                                     rocsparse_direction       direction,
@@ -646,7 +812,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
                                                     rocsparse_int             row_block_dim,
                                                     rocsparse_int             col_block_dim,
                                                     rocsparse_int*            bsr_nnz_devhost,
-                                                    void*                     p_buffer)
+                                                    void*                     temp_buffer)
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -674,7 +840,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
               row_block_dim,
               col_block_dim,
               (const void*&)bsr_nnz_devhost,
-              (const void*&)p_buffer);
+              (const void*&)temp_buffer);
 
     log_bench(handle, "./rocsparse-bench -f csr2gebsr_nnz", "--mtx <matrix.mtx>");
 
@@ -729,7 +895,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
     // Check pointer arguments
     //
     if(csr_row_ptr == nullptr || bsr_row_ptr == nullptr || bsr_nnz_devhost == nullptr
-       || p_buffer == nullptr)
+       || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -753,68 +919,29 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
         }
     }
 
+    if(row_block_dim == col_block_dim)
+    {
+        return rocsparse_csr2bsr_nnz(handle,
+                                     direction,
+                                     m,
+                                     n,
+                                     csr_descr,
+                                     csr_row_ptr,
+                                     csr_col_ind,
+                                     row_block_dim,
+                                     bsr_descr,
+                                     bsr_row_ptr,
+                                     bsr_nnz_devhost);
+    }
+
     rocsparse_int mb = (m + row_block_dim - 1) / row_block_dim;
     rocsparse_int nb = (n + col_block_dim - 1) / col_block_dim;
 
-    // If block dimension is one then BSR is equal to CSR
-    if(row_block_dim == 1 && col_block_dim == 1)
+    if(row_block_dim == 1)
     {
-        constexpr rocsparse_int block_size = 256;
-        rocsparse_int           grid_size  = ((m + 1) + block_size - 1) / block_size;
-        if(handle->pointer_mode == rocsparse_pointer_mode_device)
-        {
-            hipLaunchKernelGGL(csr2gebsr_nnz_kernel_bm1_bn1<block_size>,
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               handle->stream,
-                               m,
-                               csr_descr->base,
-                               csr_row_ptr,
-                               bsr_descr->base,
-                               bsr_row_ptr,
-                               bsr_nnz_devhost);
-        }
-        else
-        {
-            hipLaunchKernelGGL(csr2gebsr_nnz_kernel_bm1_bn1<block_size>,
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               handle->stream,
-                               m,
-                               csr_descr->base,
-                               csr_row_ptr,
-                               bsr_descr->base,
-                               bsr_row_ptr);
-
-            rocsparse_int hstart = 0;
-            rocsparse_int hend   = 0;
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&hend,
-                                               &bsr_row_ptr[mb],
-                                               sizeof(rocsparse_int),
-                                               hipMemcpyDeviceToHost,
-                                               handle->stream));
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&hstart,
-                                               &bsr_row_ptr[0],
-                                               sizeof(rocsparse_int),
-                                               hipMemcpyDeviceToHost,
-                                               handle->stream));
-            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-
-            *bsr_nnz_devhost = hend - hstart;
-        }
-
-        return rocsparse_status_success;
-    }
-    else if(row_block_dim == 1)
-    {
-
-        constexpr rocsparse_int block_size = 256;
-        rocsparse_int           grid_size  = ((m + 1) + block_size - 1) / block_size;
-        hipLaunchKernelGGL(csr2gebsr_nnz_kernel_bm1<block_size>,
-                           dim3(grid_size),
-                           dim3(block_size),
+        hipLaunchKernelGGL(csr2gebsr_nnz_kernel_bm1<256>,
+                           dim3((m / 256 + 1)),
+                           dim3(256),
                            0,
                            handle->stream,
                            m,
@@ -894,121 +1021,105 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
         return rocsparse_status_success;
     }
 
-    // Common case where BSR block dimension is small
-    if(row_block_dim <= 32)
+    if(row_block_dim <= 2)
     {
-        // A 64 thread wavefront is decomposed as:
-        //      |    bank 0        bank 1       bank 2         bank 3
-        // row 0|  0  1  2  3 |  4  5  6  7 |  8  9 10 11 | 12 13 14 15 |
-        // row 1| 16 17 18 19 | 20 21 22 23 | 24 25 26 27 | 28 29 30 31 |
-        // row 2| 32 33 34 35 | 36 37 38 39 | 40 41 42 43 | 44 45 46 47 |
-        // row 3| 48 49 50 51 | 52 53 54 55 | 56 57 58 59 | 60 61 62 63 |
-        //
-        // Segments can be of size 4 (quarter row), 8 (half row), 16 (full row),
-        // or 32 (half wavefront). We assign one segment per BSR block row where
-        // the segment size matches the block dimension as closely as possible
-        // while still being greater than or equal to the block dimension.
-
-        rocsparse_int block_size   = row_block_dim > 16 ? 32 : 16;
-        rocsparse_int segment_size = row_block_dim;
-
-        // round segment_size up to next power of 2
-        segment_size--;
-        segment_size |= segment_size >> 1;
-        segment_size |= segment_size >> 2;
-        segment_size |= segment_size >> 4;
-        segment_size |= segment_size >> 8;
-        segment_size |= segment_size >> 16;
-        segment_size++;
-
-        if(handle->wavefront_size == 32)
+        if(col_block_dim <= 2)
         {
-            constexpr rocsparse_int wf_size = 32;
-
-            rocsparse_int segments_per_wf              = wf_size / segment_size;
-            rocsparse_int number_of_wf_segments_needed = (m + row_block_dim - 1) / row_block_dim;
-            rocsparse_int number_of_wfs_needed
-                = (number_of_wf_segments_needed + segments_per_wf - 1) / segments_per_wf;
-            rocsparse_int grid_size
-                = (wf_size * number_of_wfs_needed + block_size - 1) / block_size;
-
-            if(row_block_dim <= 2)
-            {
-                launch_csr2gebsr_nnz_fast_kernel(16, 2, wf_size);
-            }
-            else if(row_block_dim <= 4)
-            {
-                launch_csr2gebsr_nnz_fast_kernel(16, 4, wf_size);
-            }
-            else if(row_block_dim <= 8)
-            {
-                launch_csr2gebsr_nnz_fast_kernel(16, 8, wf_size);
-            }
-            else if(row_block_dim <= 16)
-            {
-                launch_csr2gebsr_nnz_fast_kernel(16, 16, wf_size);
-            }
-            else
-            {
-                // (row_block_dim <= 32)
-                launch_csr2gebsr_nnz_fast_kernel(32, 32, wf_size);
-            }
+            launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 2, 4);
         }
-        else if(handle->wavefront_size == 64)
+        else if(col_block_dim <= 4)
         {
-            constexpr rocsparse_int wf_size = 64;
-
-            rocsparse_int segments_per_wf              = wf_size / segment_size;
-            rocsparse_int number_of_wf_segments_needed = (m + row_block_dim - 1) / row_block_dim;
-            rocsparse_int number_of_wfs_needed
-                = (number_of_wf_segments_needed + segments_per_wf - 1) / segments_per_wf;
-            rocsparse_int grid_size
-                = (wf_size * number_of_wfs_needed + block_size - 1) / block_size;
-
-            if(row_block_dim <= 2)
-            {
-                launch_csr2gebsr_nnz_fast_kernel(16, 2, wf_size);
-            }
-            else if(row_block_dim <= 4)
-            {
-                launch_csr2gebsr_nnz_fast_kernel(16, 4, wf_size);
-            }
-            else if(row_block_dim <= 8)
-            {
-                launch_csr2gebsr_nnz_fast_kernel(16, 8, wf_size);
-            }
-            else if(row_block_dim <= 16)
-            {
-                launch_csr2gebsr_nnz_fast_kernel(16, 16, wf_size);
-            }
-            else
-            {
-                // (row_block_dim <= 32)
-                launch_csr2gebsr_nnz_fast_kernel(32, 32, wf_size);
-            }
+            launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 2, 8);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 2, 16);
+        }
+        else if(col_block_dim <= 16)
+        {
+            launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 2, 32);
         }
         else
         {
-            return rocsparse_status_arch_mismatch;
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 2, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 2, 32);
+            }
         }
     }
-    // Uncommon (exceptional) case where BSR block dimension is large
+    else if(row_block_dim <= 4)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 4, 8);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 4, 16);
+        }
+        else if(col_block_dim <= 8)
+        {
+            launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 4, 32);
+        }
+        else
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 4, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 4, 32);
+            }
+        }
+    }
+    else if(row_block_dim <= 8)
+    {
+        if(col_block_dim <= 2)
+        {
+            launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 8, 16);
+        }
+        else if(col_block_dim <= 4)
+        {
+            launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 8, 32);
+        }
+        else
+        {
+            if(handle->wavefront_size == 64)
+            {
+                launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 8, 64);
+            }
+            else
+            {
+                launch_csr2gebsr_nnz_wavefront_per_row_multipass_kernel(256, 8, 32);
+            }
+        }
+    }
+    else if(row_block_dim <= 16)
+    {
+        launch_csr2gebsr_nnz_block_per_row_multipass_kernel(256, 16);
+    }
+    else if(row_block_dim <= 32)
+    {
+        launch_csr2gebsr_nnz_block_per_row_multipass_kernel(256, 32);
+    }
+    else if(row_block_dim <= 64)
+    {
+        launch_csr2gebsr_nnz_block_per_row_multipass_kernel(256, 64);
+    }
     else
     {
-        // Each segment handles a block row where each thread in the segment
-        // can work on multiple rows in the block row (row_block_dim > segment_size)
-        constexpr rocsparse_int block_size   = 32;
-        constexpr rocsparse_int segment_size = 32;
-        constexpr rocsparse_int wf_size      = 32;
+        // Use a blocksize of 32 to handle each block row
+        constexpr rocsparse_int block_size       = 32;
+        rocsparse_int           rows_per_segment = (row_block_dim + block_size - 1) / block_size;
 
-        rocsparse_int rows_per_segment = (row_block_dim + segment_size - 1) / segment_size;
-        rocsparse_int segments_per_wf  = wf_size / segment_size;
-        rocsparse_int number_of_wf_segments_needed = (m + row_block_dim - 1) / row_block_dim;
-        rocsparse_int number_of_wfs_needed
-            = (number_of_wf_segments_needed + segments_per_wf - 1) / segments_per_wf;
-        rocsparse_int grid_size = (wf_size * number_of_wfs_needed + block_size - 1) / block_size;
-
-        size_t buffer_size = sizeof(rocsparse_int) * grid_size * block_size * 2 * rows_per_segment;
+        size_t buffer_size = sizeof(rocsparse_int)
+                             * ((size_t(mb) * block_size * 2 * rows_per_segment - 1) / 256 + 1)
+                             * 256;
 
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;
@@ -1023,10 +1134,10 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
             temp_alloc = true;
         }
 
-        rocsparse_int* temp1 = (rocsparse_int*)temp_storage_ptr;
+        rocsparse_int* temp1 = reinterpret_cast<rocsparse_int*>(temp_storage_ptr);
 
-        hipLaunchKernelGGL((csr2gebsr_nnz_general_kernel<block_size, segment_size, wf_size>),
-                           dim3(grid_size),
+        hipLaunchKernelGGL((csr2gebsr_nnz_65_inf_kernel<block_size>),
+                           dim3(mb),
                            dim3(block_size),
                            0,
                            handle->stream,
@@ -1127,7 +1238,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
                                         const rocsparse_int*      csr_col_ind,   \
                                         rocsparse_int             row_block_dim, \
                                         rocsparse_int             col_block_dim, \
-                                        size_t*                   p_buffer_size) \
+                                        size_t*                   buffer_size)   \
     {                                                                            \
         return rocsparse_csr2gebsr_buffer_size_template(handle,                  \
                                                         direction,               \
@@ -1139,7 +1250,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
                                                         csr_col_ind,             \
                                                         row_block_dim,           \
                                                         col_block_dim,           \
-                                                        p_buffer_size);          \
+                                                        buffer_size);            \
     }                                                                            \
                                                                                  \
     extern "C" rocsparse_status NAME(rocsparse_handle          handle,           \
@@ -1156,7 +1267,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
                                      rocsparse_int*            bsr_col_ind,      \
                                      rocsparse_int             row_block_dim,    \
                                      rocsparse_int             col_block_dim,    \
-                                     void*                     p_buffer)         \
+                                     void*                     temp_buffer)      \
                                                                                  \
     {                                                                            \
         return rocsparse_csr2gebsr_template(handle,                              \
@@ -1173,7 +1284,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
                                             bsr_col_ind,                         \
                                             row_block_dim,                       \
                                             col_block_dim,                       \
-                                            p_buffer);                           \
+                                            temp_buffer);                        \
     }
 
 C_IMPL(rocsparse_scsr2gebsr, float);

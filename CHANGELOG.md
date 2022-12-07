@@ -11,6 +11,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Optimization to csr2csr_compress
 - Optimization to csr2coo
 - Optimization to gebsr2csr
+- Optimization to csr2gebsr
 - Fixes to documentation
 - Fixes to SpMV and SpMM COO routined to allow larger matrices
 - Fixes a bug in COO SpMV gridsize

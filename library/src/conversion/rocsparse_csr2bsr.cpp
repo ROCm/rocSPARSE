@@ -341,11 +341,11 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
         constexpr rocsparse_int block_size       = 32;
         rocsparse_int           rows_per_segment = (block_dim + block_size - 1) / block_size;
 
-        rocsparse_int grid_size = mb;
-
-        size_t buffer_size
-            = size_t(grid_size) * block_size
-              * (sizeof(rocsparse_int) * 3 * rows_per_segment + sizeof(T) * rows_per_segment);
+        size_t buffer_size = 0;
+        buffer_size += sizeof(rocsparse_int)
+                       * ((size_t(mb) * block_size * 3 * rows_per_segment - 1) / 256 + 1) * 256;
+        buffer_size
+            += sizeof(T) * ((size_t(mb) * block_size * rows_per_segment - 1) / 256 + 1) * 256;
 
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;
@@ -360,14 +360,14 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
             temp_alloc = true;
         }
 
-        char* temp = reinterpret_cast<char*>(temp_storage_ptr);
-
-        rocsparse_int* temp1 = reinterpret_cast<rocsparse_int*>(temp);
-        T*             temp2 = reinterpret_cast<T*>(
-            temp + sizeof(rocsparse_int) * grid_size * block_size * 3 * rows_per_segment);
+        char*          ptr   = reinterpret_cast<char*>(temp_storage_ptr);
+        rocsparse_int* temp1 = reinterpret_cast<rocsparse_int*>(ptr);
+        ptr += sizeof(rocsparse_int)
+               * ((size_t(mb) * block_size * 3 * rows_per_segment - 1) / 256 + 1) * 256;
+        T* temp2 = reinterpret_cast<T*>(ptr);
 
         hipLaunchKernelGGL((csr2bsr_65_inf_kernel<block_size>),
-                           dim3(grid_size),
+                           dim3(mb),
                            dim3(block_size),
                            0,
                            handle->stream,
@@ -637,9 +637,9 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
         constexpr rocsparse_int block_size       = 32;
         rocsparse_int           rows_per_segment = (block_dim + block_size - 1) / block_size;
 
-        rocsparse_int grid_size = mb;
-
-        size_t buffer_size = sizeof(rocsparse_int) * grid_size * block_size * 2 * rows_per_segment;
+        size_t buffer_size = sizeof(rocsparse_int)
+                             * ((size_t(mb) * block_size * 2 * rows_per_segment - 1) / 256 + 1)
+                             * 256;
 
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;
@@ -654,10 +654,10 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
             temp_alloc = true;
         }
 
-        rocsparse_int* temp1 = (rocsparse_int*)temp_storage_ptr;
+        rocsparse_int* temp1 = reinterpret_cast<rocsparse_int*>(temp_storage_ptr);
 
         hipLaunchKernelGGL((csr2bsr_nnz_65_inf_kernel<block_size>),
-                           dim3(grid_size),
+                           dim3(mb),
                            dim3(block_size),
                            0,
                            handle->stream,
