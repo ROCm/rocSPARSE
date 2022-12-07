@@ -37,7 +37,7 @@ rocsparse_status rocsparse_csr2gebsr_buffer_size_template(rocsparse_handle      
                                                           const rocsparse_int*      csr_col_ind,
                                                           rocsparse_int             row_block_dim,
                                                           rocsparse_int             col_block_dim,
-                                                          size_t*                   p_buffer_size);
+                                                          size_t*                   buffer_size);
 
 template <typename T>
 rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
@@ -54,4 +54,4 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
                                               rocsparse_int*            bsr_col_ind,
                                               rocsparse_int             row_block_dim,
                                               rocsparse_int             col_block_dim,
-                                              void*                     p_buffer);
+                                              void*                     temp_buffer);
