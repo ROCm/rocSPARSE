@@ -150,6 +150,73 @@ struct gebsx_matrix
         }
     }
 
+    template <memory_mode::value_t THAT_MODE>
+    void near_check(const gebsx_matrix<THAT_MODE, direction_, T, I, J>& that_,
+                    floating_data_t<T> tol = default_tolerance<T>::value) const
+    {
+        switch(MODE)
+        {
+        case memory_mode::device:
+        {
+            gebsx_matrix<memory_mode::host, direction_, T, I, J> on_host(*this);
+            on_host.near_check(that_, tol);
+            break;
+        }
+
+        case memory_mode::managed:
+        case memory_mode::host:
+        {
+            switch(THAT_MODE)
+            {
+            case memory_mode::managed:
+            case memory_mode::host:
+            {
+                unit_check_enum(this->block_direction, that_.block_direction);
+                unit_check_scalar<J>(this->mb, that_.mb);
+                unit_check_scalar<J>(this->nb, that_.nb);
+                unit_check_scalar<I>(this->nnzb, that_.nnzb);
+                unit_check_scalar<J>(this->row_block_dim, that_.row_block_dim);
+                unit_check_scalar<J>(this->col_block_dim, that_.col_block_dim);
+
+                switch(direction_)
+                {
+                case rocsparse_direction_row:
+                {
+                    if(this->mb > 0)
+                    {
+                        this->ptr.unit_check(that_.ptr);
+                    }
+                    break;
+                }
+                case rocsparse_direction_column:
+                {
+                    if(this->nb > 0)
+                    {
+                        this->ptr.unit_check(that_.ptr);
+                    }
+                    break;
+                }
+                }
+                if(this->nnzb > 0)
+                {
+                    this->ind.unit_check(that_.ind);
+                    this->val.near_check(that_.val, tol);
+                }
+
+                break;
+            }
+            case memory_mode::device:
+            {
+                gebsx_matrix<memory_mode::host, direction_, T, I, J> that(that_);
+                this->near_check(that, tol);
+                break;
+            }
+            }
+            break;
+        }
+        }
+    }
+
     void info() const
     {
         std::cout << "INFO GEBSX " << std::endl;

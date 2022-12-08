@@ -2667,6 +2667,42 @@ rocsparse_status
 }
 
 /********************************************************************************
+ * \brief rocsparse_bsr_set_pointers sets the sparse BSR matrix data pointers.
+ *******************************************************************************/
+rocsparse_status rocsparse_bsr_set_pointers(rocsparse_spmat_descr descr,
+                                            void*                 bsr_row_ptr,
+                                            void*                 bsr_col_ind,
+                                            void*                 bsr_val)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for valid pointers
+    if(bsr_row_ptr == nullptr || bsr_col_ind == nullptr || bsr_val == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    // Sparsity structure might have changed, analysis is required before calling SpMV
+    descr->analysed = false;
+
+    descr->row_data = bsr_row_ptr;
+    descr->col_data = bsr_col_ind;
+    descr->val_data = bsr_val;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
  * \brief rocsparse_spmat_get_size returns the sparse matrix sizes.
  *******************************************************************************/
 rocsparse_status rocsparse_spmat_get_size(rocsparse_spmat_descr descr,

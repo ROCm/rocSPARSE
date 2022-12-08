@@ -32,6 +32,7 @@ ROCSPARSE_DO_ROUTINE(bellmm_batched)					\
 ROCSPARSE_DO_ROUTINE(bsrgeam)					\
 ROCSPARSE_DO_ROUTINE(bsric0)					\
 ROCSPARSE_DO_ROUTINE(bsrilu0)					\
+ROCSPARSE_DO_ROUTINE(bsrgemm)					\
 ROCSPARSE_DO_ROUTINE(bsrmm)					\
 ROCSPARSE_DO_ROUTINE(bsrmv)					\
 ROCSPARSE_DO_ROUTINE(bsrsm)					\

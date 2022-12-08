@@ -172,6 +172,15 @@ Functions:
   rocsparse_dbsrgeam: { function: bsrgeam, <<: *double_precision }
   rocsparse_cbsrgeam: { function: bsrgeam, <<: *single_precision_complex }
   rocsparse_zbsrgeam: { function: bsrgeam, <<: *double_precision_complex }
+  rocsparse_sbsrgemm_buffer_size: { function: bsrgemm, <<: *single_precision }
+  rocsparse_dbsrgemm_buffer_size: { function: bsrgemm, <<: *double_precision }
+  rocsparse_cbsrgemm_buffer_size: { function: bsrgemm, <<: *single_precision_complex }
+  rocsparse_zbsrgemm_buffer_size: { function: bsrgemm, <<: *double_precision_complex }
+  rocsparse_bsrgemm_nnz: { function: bsrgemm }
+  rocsparse_sbsrgemm: { function: bsrgemm, <<: *single_precision }
+  rocsparse_dbsrgemm: { function: bsrgemm, <<: *double_precision }
+  rocsparse_cbsrgemm: { function: bsrgemm, <<: *single_precision_complex }
+  rocsparse_zbsrgemm: { function: bsrgemm, <<: *double_precision_complex }
   rocsparse_csrgeam_nnz: { function: csrgeam }
   rocsparse_scsrgeam: { function: csrgeam, <<: *single_precision }
   rocsparse_dcsrgeam: { function: csrgeam, <<: *double_precision }
@@ -186,6 +195,7 @@ Functions:
   rocsparse_dcsrgemm: { function: csrgemm, <<: *double_precision }
   rocsparse_ccsrgemm: { function: csrgemm, <<: *single_precision_complex }
   rocsparse_zcsrgemm: { function: csrgemm, <<: *double_precision_complex }
+
   rocsparse_sbsric0_buffer_size: { function: bsric0, <<: *single_precision }
   rocsparse_dbsric0_buffer_size: { function: bsric0, <<: *double_precision }
   rocsparse_cbsric0_buffer_size: { function: bsric0, <<: *single_precision_complex }

@@ -1387,6 +1387,27 @@ rocsparse_status
     rocsparse_ell_set_pointers(rocsparse_spmat_descr descr, void* ell_col_ind, void* ell_val);
 
 /*! \ingroup aux_module
+ *  \brief Set the row offsets, column indices and values array in the sparse BSR matrix descriptor
+ *
+ *  @param[inout]
+ *  descr   the pointer to the sparse vector descriptor.
+ *  @param[in]
+ *  bsr_row_ptr  row offsets of the BSR matrix (must be array of length \p rows+1 ).
+ *  @param[in]
+ *  bsr_col_ind  column indices of the BSR matrix (must be array of length \p nnzb ).
+ *  @param[in]
+ *  bsr_val      values of the BSR matrix (must be array of length \p nnzb*block_dim*block_dim ).
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer if \p descr or \p bsr_row_ptr or \p bsr_col_ind or \p bsr_val is invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_bsr_set_pointers(rocsparse_spmat_descr descr,
+                                            void*                 bsr_row_ptr,
+                                            void*                 bsr_col_ind,
+                                            void*                 bsr_val);
+
+/*! \ingroup aux_module
  *  \brief Get the number of rows, columns and non-zeros from the sparse matrix descriptor
  *
  *  @param[in]

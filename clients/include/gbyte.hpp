@@ -418,6 +418,33 @@ constexpr double csrgemm_gbyte_count(
     return (size_A + size_B + size_C + size_D) / 1e9;
 }
 
+template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
+constexpr double bsrgemm_gbyte_count(J        Mb,
+                                     J        Nb,
+                                     J        Kb,
+                                     J        block_dim,
+                                     I        nnzb_A,
+                                     I        nnzb_B,
+                                     I        nnzb_C,
+                                     I        nnzb_D,
+                                     const T* alpha,
+                                     const T* beta)
+{
+    double size_A = alpha ? sizeof(I) * (Mb + 1.0) + sizeof(J) * nnzb_A
+                                + sizeof(T) * block_dim * block_dim * nnzb_A
+                          : 0.0;
+    double size_B = alpha ? sizeof(I) * (Kb + 1.0) + sizeof(J) * nnzb_B
+                                + sizeof(T) * block_dim * block_dim * nnzb_B
+                          : 0.0;
+    double size_C
+        = sizeof(I) * (Mb + 1.0) + sizeof(J) * nnzb_C + sizeof(T) * block_dim * block_dim * nnzb_C;
+    double size_D = beta ? sizeof(I) * (Mb + 1.0) + sizeof(J) * nnzb_D
+                               + sizeof(T) * block_dim * block_dim * nnzb_D
+                         : 0.0;
+
+    return (size_A + size_B + size_C + size_D) / 1e9;
+}
+
 /*
  * ===========================================================================
  *    precond SPARSE

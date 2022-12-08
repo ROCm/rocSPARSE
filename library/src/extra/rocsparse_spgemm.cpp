@@ -24,6 +24,7 @@
 #include "definitions.h"
 #include "utility.h"
 
+#include "rocsparse_bsrgemm.hpp"
 #include "rocsparse_csrgemm.hpp"
 
 template <typename I, typename J, typename T>
@@ -228,15 +229,6 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
     {
         switch(A->format)
         {
-        case rocsparse_format_coo:
-        case rocsparse_format_coo_aos:
-        case rocsparse_format_csc:
-        case rocsparse_format_ell:
-        case rocsparse_format_bell:
-        case rocsparse_format_bsr:
-        {
-            return rocsparse_status_not_implemented;
-        }
         case rocsparse_format_csr:
         {
             return rocsparse_csrgemm_buffer_size_template(handle,
@@ -262,6 +254,41 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
                                                           C->info,
                                                           buffer_size);
         }
+        case rocsparse_format_bsr:
+        {
+            return rocsparse_bsrgemm_buffer_size_template(handle,
+                                                          A->block_dir,
+                                                          trans_A,
+                                                          trans_B,
+                                                          (J)A->rows,
+                                                          (J)B->cols,
+                                                          (J)A->cols,
+                                                          (J)A->block_dim,
+                                                          (const T*)alpha,
+                                                          A->descr,
+                                                          (I)A->nnz,
+                                                          (const I*)A->row_data,
+                                                          (const J*)A->col_data,
+                                                          B->descr,
+                                                          (I)B->nnz,
+                                                          (const I*)B->row_data,
+                                                          (const J*)B->col_data,
+                                                          (const T*)beta,
+                                                          D->descr,
+                                                          (I)D->nnz,
+                                                          (const I*)D->row_data,
+                                                          (const J*)D->col_data,
+                                                          C->info,
+                                                          buffer_size);
+        }
+        case rocsparse_format_coo:
+        case rocsparse_format_coo_aos:
+        case rocsparse_format_csc:
+        case rocsparse_format_ell:
+        case rocsparse_format_bell:
+        {
+            return rocsparse_status_not_implemented;
+        }
         }
     }
 
@@ -269,15 +296,6 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
     {
         switch(A->format)
         {
-        case rocsparse_format_coo:
-        case rocsparse_format_coo_aos:
-        case rocsparse_format_csc:
-        case rocsparse_format_ell:
-        case rocsparse_format_bell:
-        case rocsparse_format_bsr:
-        {
-            return rocsparse_status_not_implemented;
-        }
         case rocsparse_format_csr:
         {
             I nnz_C;
@@ -316,6 +334,54 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
 
             return status;
         }
+        case rocsparse_format_bsr:
+        {
+            I nnzb_C;
+            // non-zeros blocks of C need to be on host
+            rocsparse_pointer_mode ptr_mode;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_get_pointer_mode(handle, &ptr_mode));
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+            rocsparse_status status = rocsparse_bsrgemm_nnzb_template(handle,
+                                                                      A->block_dir,
+                                                                      trans_A,
+                                                                      trans_B,
+                                                                      (J)A->rows,
+                                                                      (J)B->cols,
+                                                                      (J)A->cols,
+                                                                      (J)A->block_dim,
+                                                                      A->descr,
+                                                                      (I)A->nnz,
+                                                                      (const I*)A->row_data,
+                                                                      (const J*)A->col_data,
+                                                                      B->descr,
+                                                                      (I)B->nnz,
+                                                                      (const I*)B->row_data,
+                                                                      (const J*)B->col_data,
+                                                                      D->descr,
+                                                                      (I)D->nnz,
+                                                                      (const I*)D->row_data,
+                                                                      (const J*)D->col_data,
+                                                                      C->descr,
+                                                                      (I*)C->row_data,
+                                                                      &nnzb_C,
+                                                                      C->info,
+                                                                      temp_buffer);
+
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, ptr_mode));
+
+            C->nnz = nnzb_C;
+
+            return status;
+        }
+        case rocsparse_format_coo:
+        case rocsparse_format_coo_aos:
+        case rocsparse_format_csc:
+        case rocsparse_format_ell:
+        case rocsparse_format_bell:
+        {
+            return rocsparse_status_not_implemented;
+        }
         }
     }
 
@@ -323,15 +389,6 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
     {
         switch(A->format)
         {
-        case rocsparse_format_coo:
-        case rocsparse_format_coo_aos:
-        case rocsparse_format_csc:
-        case rocsparse_format_ell:
-        case rocsparse_format_bell:
-        case rocsparse_format_bsr:
-        {
-            return rocsparse_status_not_implemented;
-        }
         case rocsparse_format_csr:
         {
             // CSR format
@@ -364,6 +421,48 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
                                               (J*)C->col_data,
                                               C->info,
                                               temp_buffer);
+        }
+        case rocsparse_format_bsr:
+        {
+            return rocsparse_bsrgemm_template(handle,
+                                              A->block_dir,
+                                              trans_A,
+                                              trans_B,
+                                              (J)A->rows,
+                                              (J)B->cols,
+                                              (J)A->cols,
+                                              (J)A->block_dim,
+                                              (const T*)alpha,
+                                              A->descr,
+                                              (I)A->nnz,
+                                              (const T*)A->val_data,
+                                              (const I*)A->row_data,
+                                              (const J*)A->col_data,
+                                              B->descr,
+                                              (I)B->nnz,
+                                              (const T*)B->val_data,
+                                              (const I*)B->row_data,
+                                              (const J*)B->col_data,
+                                              (const T*)beta,
+                                              D->descr,
+                                              (I)D->nnz,
+                                              (const T*)D->val_data,
+                                              (const I*)D->row_data,
+                                              (const J*)D->col_data,
+                                              C->descr,
+                                              (T*)C->val_data,
+                                              (const I*)C->row_data,
+                                              (J*)C->col_data,
+                                              C->info,
+                                              temp_buffer);
+        }
+        case rocsparse_format_coo:
+        case rocsparse_format_coo_aos:
+        case rocsparse_format_csc:
+        case rocsparse_format_ell:
+        case rocsparse_format_bell:
+        {
+            return rocsparse_status_not_implemented;
         }
         }
     }
@@ -454,7 +553,7 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
                                                       (I)C->nnz,
                                                       (T*)C->val_data,
                                                       (const I*)C->row_data,
-                                                      (J*)C->col_data,
+                                                      (const J*)C->col_data,
                                                       C->info,
                                                       temp_buffer);
         }

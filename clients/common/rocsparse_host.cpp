@@ -3736,6 +3736,356 @@ void host_gemmi(rocsparse_int        M,
  *    extra SPARSE
  * ===========================================================================
  */
+template <typename T, typename I, typename J>
+void host_bsrgemm_nnzb(J                    Mb,
+                       J                    Nb,
+                       J                    Kb,
+                       J                    block_dim,
+                       const T*             alpha,
+                       const I*             bsr_row_ptr_A,
+                       const J*             bsr_col_ind_A,
+                       const I*             bsr_row_ptr_B,
+                       const J*             bsr_col_ind_B,
+                       const T*             beta,
+                       const I*             bsr_row_ptr_D,
+                       const J*             bsr_col_ind_D,
+                       I*                   bsr_row_ptr_C,
+                       I*                   nnzb_C,
+                       rocsparse_index_base base_A,
+                       rocsparse_index_base base_B,
+                       rocsparse_index_base base_C,
+                       rocsparse_index_base base_D)
+{
+    return host_csrgemm_nnz(Mb,
+                            Nb,
+                            Kb,
+                            alpha,
+                            bsr_row_ptr_A,
+                            bsr_col_ind_A,
+                            bsr_row_ptr_B,
+                            bsr_col_ind_B,
+                            beta,
+                            bsr_row_ptr_D,
+                            bsr_col_ind_D,
+                            bsr_row_ptr_C,
+                            nnzb_C,
+                            base_A,
+                            base_B,
+                            base_C,
+                            base_D);
+}
+
+template <typename T, typename I, typename J>
+void host_bsrgemm(rocsparse_direction  dir,
+                  J                    Mb,
+                  J                    Nb,
+                  J                    Kb,
+                  J                    block_dim,
+                  const T*             alpha,
+                  const I*             bsr_row_ptr_A,
+                  const J*             bsr_col_ind_A,
+                  const T*             bsr_val_A,
+                  const I*             bsr_row_ptr_B,
+                  const J*             bsr_col_ind_B,
+                  const T*             bsr_val_B,
+                  const T*             beta,
+                  const I*             bsr_row_ptr_D,
+                  const J*             bsr_col_ind_D,
+                  const T*             bsr_val_D,
+                  const I*             bsr_row_ptr_C,
+                  J*                   bsr_col_ind_C,
+                  T*                   bsr_val_C,
+                  rocsparse_index_base base_A,
+                  rocsparse_index_base base_B,
+                  rocsparse_index_base base_C,
+                  rocsparse_index_base base_D)
+{
+    if(Mb == 0 || Nb == 0)
+    {
+        return;
+    }
+    else if(alpha && !beta && (Kb == 0))
+    {
+        return;
+    }
+    else if(!alpha && !beta)
+    {
+        return;
+    }
+
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    {
+        std::vector<I> nnzb(Nb, -1);
+
+        int nthreads = 1;
+        int tid      = 0;
+
+#ifdef _OPENMP
+        nthreads = omp_get_num_threads();
+        tid      = omp_get_thread_num();
+#endif
+
+        J rows_per_thread = (Mb + nthreads - 1) / nthreads;
+        J chunk_begin     = rows_per_thread * tid;
+        J chunk_end       = std::min(chunk_begin + rows_per_thread, Mb);
+
+        // Loop over rows of A
+        for(J i = chunk_begin; i < chunk_end; ++i)
+        {
+            I row_begin_C = bsr_row_ptr_C[i] - base_C;
+            I row_end_C   = row_begin_C;
+
+            if(alpha)
+            {
+                I row_begin_A = bsr_row_ptr_A[i] - base_A;
+                I row_end_A   = bsr_row_ptr_A[i + 1] - base_A;
+
+                // Loop over columns of A
+                for(I j = row_begin_A; j < row_end_A; ++j)
+                {
+                    // Current column of A
+                    J col_A = bsr_col_ind_A[j] - base_A;
+
+                    I row_begin_B = bsr_row_ptr_B[col_A] - base_B;
+                    I row_end_B   = bsr_row_ptr_B[col_A + 1] - base_B;
+
+                    // Loop over columns of B in row col_A
+                    for(I k = row_begin_B; k < row_end_B; ++k)
+                    {
+                        // Current column of B
+                        J col_B = bsr_col_ind_B[k] - base_B;
+
+                        // Check if a new nnzb is generated or if the product is appended
+                        if(nnzb[col_B] < row_begin_C)
+                        {
+                            nnzb[col_B]              = row_end_C;
+                            bsr_col_ind_C[row_end_C] = col_B + base_C;
+
+                            for(J r = 0; r < block_dim; r++)
+                            {
+                                for(J c = 0; c < block_dim; c++)
+                                {
+                                    T val_C = static_cast<T>(0);
+
+                                    if(dir == rocsparse_direction_row)
+                                    {
+                                        for(J a = 0; a < block_dim; a++)
+                                        {
+                                            val_C = std::fma(bsr_val_A[block_dim * block_dim * j
+                                                                       + block_dim * r + a],
+                                                             bsr_val_B[block_dim * block_dim * k
+                                                                       + block_dim * a + c],
+                                                             val_C);
+                                        }
+
+                                        bsr_val_C[block_dim * block_dim * row_end_C + block_dim * r
+                                                  + c]
+                                            = *alpha * val_C;
+                                    }
+                                    else
+                                    {
+                                        for(J a = 0; a < block_dim; a++)
+                                        {
+                                            val_C = std::fma(bsr_val_A[block_dim * block_dim * j
+                                                                       + block_dim * a + r],
+                                                             bsr_val_B[block_dim * block_dim * k
+                                                                       + block_dim * c + a],
+                                                             val_C);
+                                        }
+
+                                        bsr_val_C[block_dim * block_dim * row_end_C + block_dim * c
+                                                  + r]
+                                            = *alpha * val_C;
+                                    }
+                                }
+                            }
+
+                            ++row_end_C;
+                        }
+                        else
+                        {
+                            for(J r = 0; r < block_dim; r++)
+                            {
+                                for(J c = 0; c < block_dim; c++)
+                                {
+                                    T val_C = static_cast<T>(0);
+
+                                    if(dir == rocsparse_direction_row)
+                                    {
+                                        for(J a = 0; a < block_dim; a++)
+                                        {
+                                            val_C = std::fma(bsr_val_A[block_dim * block_dim * j
+                                                                       + block_dim * r + a],
+                                                             bsr_val_B[block_dim * block_dim * k
+                                                                       + block_dim * a + c],
+                                                             val_C);
+                                        }
+
+                                        bsr_val_C[block_dim * block_dim * nnzb[col_B]
+                                                  + block_dim * r + c]
+                                            = std::fma(*alpha,
+                                                       val_C,
+                                                       bsr_val_C[block_dim * block_dim * nnzb[col_B]
+                                                                 + block_dim * r + c]);
+                                    }
+                                    else
+                                    {
+                                        for(J a = 0; a < block_dim; a++)
+                                        {
+                                            val_C = std::fma(bsr_val_A[block_dim * block_dim * j
+                                                                       + block_dim * a + r],
+                                                             bsr_val_B[block_dim * block_dim * k
+                                                                       + block_dim * c + a],
+                                                             val_C);
+                                        }
+
+                                        bsr_val_C[block_dim * block_dim * nnzb[col_B]
+                                                  + block_dim * c + r]
+                                            = std::fma(*alpha,
+                                                       val_C,
+                                                       bsr_val_C[block_dim * block_dim * nnzb[col_B]
+                                                                 + block_dim * c + r]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Add nnzb of D if beta != 0
+            if(beta)
+            {
+                I row_begin_D = bsr_row_ptr_D[i] - base_D;
+                I row_end_D   = bsr_row_ptr_D[i + 1] - base_D;
+
+                // Loop over columns of D
+                for(I j = row_begin_D; j < row_end_D; ++j)
+                {
+                    // Current column of D
+                    J col_D = bsr_col_ind_D[j] - base_D;
+                    // Current value of D
+
+                    // Check if a new nnzb is generated or if the value is added
+                    if(nnzb[col_D] < row_begin_C)
+                    {
+                        nnzb[col_D] = row_end_C;
+
+                        bsr_col_ind_C[row_end_C] = col_D + base_C;
+
+                        for(J r = 0; r < block_dim; r++)
+                        {
+                            for(J c = 0; c < block_dim; c++)
+                            {
+                                if(dir == rocsparse_direction_row)
+                                {
+                                    bsr_val_C[block_dim * block_dim * row_end_C + block_dim * r + c]
+                                        = *beta
+                                          * bsr_val_D[block_dim * block_dim * j + block_dim * r
+                                                      + c];
+                                }
+                                else
+                                {
+                                    bsr_val_C[block_dim * block_dim * row_end_C + block_dim * c + r]
+                                        = *beta
+                                          * bsr_val_D[block_dim * block_dim * j + block_dim * c
+                                                      + r];
+                                }
+                            }
+                        }
+
+                        ++row_end_C;
+                    }
+                    else
+                    {
+                        for(J r = 0; r < block_dim; r++)
+                        {
+                            for(J c = 0; c < block_dim; c++)
+                            {
+                                if(dir == rocsparse_direction_row)
+                                {
+                                    bsr_val_C[block_dim * block_dim * nnzb[col_D] + block_dim * r
+                                              + c]
+                                        = std::fma(*beta,
+                                                   bsr_val_D[block_dim * block_dim * j
+                                                             + block_dim * r + c],
+                                                   bsr_val_C[block_dim * block_dim * nnzb[col_D]
+                                                             + block_dim * r + c]);
+                                }
+                                else
+                                {
+                                    bsr_val_C[block_dim * block_dim * nnzb[col_D] + block_dim * c
+                                              + r]
+                                        = std::fma(*beta,
+                                                   bsr_val_D[block_dim * block_dim * j
+                                                             + block_dim * c + r],
+                                                   bsr_val_C[block_dim * block_dim * nnzb[col_D]
+                                                             + block_dim * c + r]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    I nnzb = bsr_row_ptr_C[Mb] - base_C;
+
+    std::vector<J> col(nnzb);
+    std::vector<T> val(block_dim * block_dim * nnzb);
+
+    memcpy(col.data(), bsr_col_ind_C, sizeof(J) * nnzb);
+    memcpy(val.data(), bsr_val_C, sizeof(T) * block_dim * block_dim * nnzb);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(J i = 0; i < Mb; ++i)
+    {
+        I row_begin = bsr_row_ptr_C[i] - base_C;
+        I row_end   = bsr_row_ptr_C[i + 1] - base_C;
+        J row_nnzb  = row_end - row_begin;
+
+        std::vector<J> perm(row_nnzb);
+        for(J j = 0; j < row_nnzb; ++j)
+        {
+            perm[j] = j;
+        }
+
+        J* col_entry = &col[row_begin];
+        T* val_entry = &val[block_dim * block_dim * row_begin];
+
+        std::sort(perm.begin(), perm.end(), [&](const J& a, const J& b) {
+            return col_entry[a] <= col_entry[b];
+        });
+
+        for(J j = 0; j < row_nnzb; ++j)
+        {
+            bsr_col_ind_C[row_begin + j] = col_entry[perm[j]];
+
+            for(J r = 0; r < block_dim; r++)
+            {
+                for(J c = 0; c < block_dim; c++)
+                {
+                    if(dir == rocsparse_direction_row)
+                    {
+                        bsr_val_C[block_dim * block_dim * (row_begin + j) + block_dim * r + c]
+                            = val_entry[block_dim * block_dim * perm[j] + block_dim * r + c];
+                    }
+                    else
+                    {
+                        bsr_val_C[block_dim * block_dim * (row_begin + j) + block_dim * c + r]
+                            = val_entry[block_dim * block_dim * perm[j] + block_dim * c + r];
+                    }
+                }
+            }
+        }
+    }
+}
+
 template <typename T>
 void host_bsrgeam_nnzb(rocsparse_direction  dir,
                        rocsparse_int        Mb,
@@ -9845,6 +10195,47 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                   rocsparse_index_base base,                   \
                                                   JTYPE*               struct_pivot,           \
                                                   JTYPE*               numeric_pivot);                       \
+    template void host_bsrgemm_nnzb<TTYPE, ITYPE, JTYPE>(JTYPE                Mb,              \
+                                                         JTYPE                Nb,              \
+                                                         JTYPE                Kb,              \
+                                                         JTYPE                block_dim,       \
+                                                         const TTYPE*         alpha,           \
+                                                         const ITYPE*         bsr_row_ptr_A,   \
+                                                         const JTYPE*         bsr_col_ind_A,   \
+                                                         const ITYPE*         bsr_row_ptr_B,   \
+                                                         const JTYPE*         bsr_col_ind_B,   \
+                                                         const TTYPE*         beta,            \
+                                                         const ITYPE*         bsr_row_ptr_D,   \
+                                                         const JTYPE*         bsr_col_ind_D,   \
+                                                         ITYPE*               bsr_row_ptr_C,   \
+                                                         ITYPE*               nnzb_C,          \
+                                                         rocsparse_index_base base_A,          \
+                                                         rocsparse_index_base base_B,          \
+                                                         rocsparse_index_base base_C,          \
+                                                         rocsparse_index_base base_D);         \
+    template void host_bsrgemm<TTYPE, ITYPE, JTYPE>(rocsparse_direction  dir,                  \
+                                                    JTYPE                Mb,                   \
+                                                    JTYPE                Nb,                   \
+                                                    JTYPE                Kb,                   \
+                                                    JTYPE                block_dim,            \
+                                                    const TTYPE*         alpha,                \
+                                                    const ITYPE*         bsr_row_ptr_A,        \
+                                                    const JTYPE*         bsr_col_ind_A,        \
+                                                    const TTYPE*         bsr_val_A,            \
+                                                    const ITYPE*         bsr_row_ptr_B,        \
+                                                    const JTYPE*         bsr_col_ind_B,        \
+                                                    const TTYPE*         bsr_val_B,            \
+                                                    const TTYPE*         beta,                 \
+                                                    const ITYPE*         bsr_row_ptr_D,        \
+                                                    const JTYPE*         bsr_col_ind_D,        \
+                                                    const TTYPE*         bsr_val_D,            \
+                                                    const ITYPE*         bsr_row_ptr_C,        \
+                                                    JTYPE*               bsr_col_ind_C,        \
+                                                    TTYPE*               bsr_val_C,            \
+                                                    rocsparse_index_base base_A,               \
+                                                    rocsparse_index_base base_B,               \
+                                                    rocsparse_index_base base_C,               \
+                                                    rocsparse_index_base base_D);              \
     template void host_csrgemm_nnz<TTYPE, ITYPE, JTYPE>(JTYPE                M,                \
                                                         JTYPE                N,                \
                                                         JTYPE                K,                \
