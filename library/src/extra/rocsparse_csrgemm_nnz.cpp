@@ -1687,7 +1687,6 @@ rocsparse_status rocsparse_csrgemm_nnz_template(rocsparse_handle          handle
     // Either mult, add or multadd need to be performed
     if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == true)
     {
-
         // C = alpha * A * B + beta * D
         return rocsparse_csrgemm_nnz_multadd(handle,
                                              trans_A,
@@ -1715,7 +1714,6 @@ rocsparse_status rocsparse_csrgemm_nnz_template(rocsparse_handle          handle
     }
     else if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == false)
     {
-
         // C = alpha * A * B
         return rocsparse_csrgemm_nnz_mult(handle,
                                           trans_A,

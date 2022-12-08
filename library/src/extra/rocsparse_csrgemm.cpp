@@ -1667,8 +1667,6 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle          handle,
         // C = 0
         return rocsparse_status_success;
     }
-
-    return rocsparse_status_success;
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                       \

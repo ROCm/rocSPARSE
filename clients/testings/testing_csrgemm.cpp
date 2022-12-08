@@ -677,7 +677,7 @@ void testing_csrgemm(const Arguments& arg)
         }
         {
             //
-            // GPU with pointer mode host
+            // GPU with pointer mode device
             //
             device_scalar<rocsparse_int> d_out_nnz;
             CHECK_ROCSPARSE_ERROR(
@@ -727,7 +727,7 @@ void testing_csrgemm(const Arguments& arg)
         hipDeviceSynchronize();
 
 #undef PARAMS
-#undef PARAM_NNZ
+#undef PARAMS_NNZ
 #undef PARAMS_BUFFER_SIZE
 
         double gflop_count = csrgemm_gflop_count<T, rocsparse_int, rocsparse_int>(

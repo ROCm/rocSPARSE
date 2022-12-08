@@ -905,6 +905,8 @@ Auxiliary Functions
 +---------------------------------------------+
 |:cpp:func:`rocsparse_ell_set_pointers`       |
 +---------------------------------------------+
+|:cpp:func:`rocsparse_bsr_set_pointers`       |
++---------------------------------------------+
 |:cpp:func:`rocsparse_spmat_get_size`         |
 +---------------------------------------------+
 |:cpp:func:`rocsparse_spmat_get_format`       |
@@ -1031,6 +1033,9 @@ Function name                                                                 si
 ============================================================================= ====== ====== ============== ==============
 :cpp:func:`rocsparse_bsrgeam_nnzb`
 :cpp:func:`rocsparse_Xbsrgeam() <rocsparse_sbsrgeam>`                         x      x      x              x
+:cpp:func:`rocsparse_Xbsrgemm_buffer_size() <rocsparse_sbsrgemm_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_bsrgemm_nnz`
+:cpp:func:`rocsparse_Xbsrgemm() <rocsparse_sbsrgemm>`                         x      x      x              x
 :cpp:func:`rocsparse_csrgeam_nnz`
 :cpp:func:`rocsparse_Xcsrgeam() <rocsparse_scsrgeam>`                         x      x      x              x
 :cpp:func:`rocsparse_Xcsrgemm_buffer_size() <rocsparse_scsrgemm_buffer_size>` x      x      x              x
@@ -1526,6 +1531,11 @@ rocsparse_ell_set_pointers
 --------------------------
 
 .. doxygenfunction:: rocsparse_ell_set_pointers
+
+rocsparse_bsr_set_pointers
+--------------------------
+
+.. doxygenfunction:: rocsparse_bsr_set_pointers
 
 rocsparse_spmat_get_size
 ------------------------
@@ -2120,6 +2130,33 @@ rocsparse_bsrgeam()
 .. doxygenfunction:: rocsparse_cbsrgeam
   :outline:
 .. doxygenfunction:: rocsparse_zbsrgeam
+
+rocsparse_bsrgemm_buffer_size()
+-------------------------------
+
+.. doxygenfunction:: rocsparse_sbsrgemm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrgemm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrgemm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrgemm_buffer_size
+
+rocsparse_bsrgemm_nnz()
+-----------------------
+
+.. doxygenfunction:: rocsparse_bsrgemm_nnz
+
+rocsparse_bsrgemm()
+-------------------
+
+.. doxygenfunction:: rocsparse_sbsrgemm
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrgemm
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrgemm
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrgemm
 
 rocsparse_csrgeam_nnz()
 -----------------------

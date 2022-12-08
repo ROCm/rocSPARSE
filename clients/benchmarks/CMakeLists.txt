@@ -94,6 +94,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_csrsm.cpp
 ../testings/testing_bsrsm.cpp
 ../testings/testing_gemmi.cpp
+../testings/testing_bsrgemm.cpp
 ../testings/testing_bsrgeam.cpp
 ../testings/testing_csrgeam.cpp
 ../testings/testing_csrgemm.cpp
@@ -155,6 +156,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_dense_to_sparse_coo.cpp
 ../testings/testing_dense_to_sparse_csr.cpp
 ../testings/testing_dense_to_sparse_csc.cpp
+../testings/testing_spgemm_bsr.cpp
 ../testings/testing_spgemm_csr.cpp
 ../testings/testing_gemvi.cpp
 ../testings/testing_sddmm.cpp

@@ -49,6 +49,7 @@ include: test_csrsm.yaml
 include: test_bsrsm.yaml
 include: test_gemmi.yaml
 include: test_bsrgeam.yaml
+include: test_bsrgemm.yaml
 include: test_csrgeam.yaml
 include: test_csrgemm.yaml
 include: test_csrgemm_reuse.yaml
@@ -122,6 +123,7 @@ include: test_sparse_to_dense_csc.yaml
 include: test_dense_to_sparse_coo.yaml
 include: test_dense_to_sparse_csr.yaml
 include: test_dense_to_sparse_csc.yaml
+include: test_spgemm_bsr.yaml
 include: test_spgemm_csr.yaml
 include: test_gemvi.yaml
 include: test_sddmm.yaml

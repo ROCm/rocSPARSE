@@ -285,7 +285,7 @@ void testing_spgemm_csr(const Arguments& arg)
 
 #define PARAMS(alpha_, A_, B_, D_, beta_, C_, buffer_)                                        \
     handle, trans_A, trans_B, alpha_, A_, B_, beta_, D_, C_, ttype, alg, stage, &buffer_size, \
-        dbuffer
+        buffer_
 
     // Argument sanity check before allocating invalid memory
     if((M <= 0 || N <= 0 || K <= 0) && (M <= 0 || N <= 0 || K != 0 || h_beta_ptr == nullptr))

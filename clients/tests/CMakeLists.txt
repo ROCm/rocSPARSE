@@ -92,6 +92,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_bsrsm.cpp
   test_gemmi.cpp
   test_bsrgeam.cpp
+  test_bsrgemm.cpp
   test_csrgeam.cpp
   test_csrgemm.cpp
   test_csrgemm_reuse.cpp
@@ -164,6 +165,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_dense_to_sparse_coo.cpp
   test_dense_to_sparse_csr.cpp
   test_dense_to_sparse_csc.cpp
+  test_spgemm_bsr.cpp
   test_spgemm_csr.cpp
   test_gtsv.cpp
   test_gemvi.cpp
@@ -209,6 +211,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_bsrsm.cpp
 ../testings/testing_gemmi.cpp
 ../testings/testing_bsrgeam.cpp
+../testings/testing_bsrgemm.cpp
 ../testings/testing_csrgeam.cpp
 ../testings/testing_csrgemm.cpp
 ../testings/testing_csrgemm_reuse.cpp
@@ -281,6 +284,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_dense_to_sparse_coo.cpp
 ../testings/testing_dense_to_sparse_csr.cpp
 ../testings/testing_dense_to_sparse_csc.cpp
+../testings/testing_spgemm_bsr.cpp
 ../testings/testing_spgemm_csr.cpp
 ../testings/testing_gtsv.cpp
 ../testings/testing_gemvi.cpp
