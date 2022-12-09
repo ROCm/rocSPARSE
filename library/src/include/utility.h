@@ -143,15 +143,19 @@ T log_trace_scalar_value(const T* value)
 template <typename T>
 T log_trace_scalar_value(rocsparse_handle handle, const T* value)
 {
-    T host;
-    if(value && handle->pointer_mode == rocsparse_pointer_mode_device)
+    if(handle->layer_mode & rocsparse_layer_mode_log_trace)
     {
-        RETURN_IF_HIP_ERROR(
-            hipMemcpyAsync(&host, value, sizeof(host), hipMemcpyDeviceToHost, handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-        value = &host;
+        T host;
+        if(value && handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_HIP_ERROR(
+                hipMemcpyAsync(&host, value, sizeof(host), hipMemcpyDeviceToHost, handle->stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+            value = &host;
+        }
+        return log_trace_scalar_value(value);
     }
-    return log_trace_scalar_value(value);
+    return T{};
 }
 
 #define LOG_TRACE_SCALAR_VALUE(handle, value) log_trace_scalar_value(handle, value)
@@ -166,15 +170,19 @@ T log_bench_scalar_value(const T* value)
 template <typename T>
 T log_bench_scalar_value(rocsparse_handle handle, const T* value)
 {
-    T host;
-    if(value && handle->pointer_mode == rocsparse_pointer_mode_device)
+    if(handle->layer_mode & rocsparse_layer_mode_log_bench)
     {
-        RETURN_IF_HIP_ERROR(
-            hipMemcpyAsync(&host, value, sizeof(host), hipMemcpyDeviceToHost, handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-        value = &host;
+        T host;
+        if(value && handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_HIP_ERROR(
+                hipMemcpyAsync(&host, value, sizeof(host), hipMemcpyDeviceToHost, handle->stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+            value = &host;
+        }
+        return log_bench_scalar_value(value);
     }
-    return log_bench_scalar_value(value);
+    return T{};
 }
 
 #define LOG_BENCH_SCALAR_VALUE(handle, name) log_bench_scalar_value(handle, name)
