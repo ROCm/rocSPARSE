@@ -196,7 +196,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 #define LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(CSRMMNT_DIM, WF_SIZE, LOOPS)            \
     hipLaunchKernelGGL((csrmmnt_row_split_main_kernel<CSRMMNT_DIM, WF_SIZE, LOOPS>), \
-                       dim3((WF_SIZE * m - 1) / CSRMMNT_DIM + 1),                    \
+                       dim3((m - 1) / (CSRMMNT_DIM / WF_SIZE) + 1),                  \
                        dim3(CSRMMNT_DIM),                                            \
                        0,                                                            \
                        handle->stream,                                               \
@@ -222,7 +222,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 #define LAUNCH_CSRMMNT_ROW_SPLIT_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE)            \
     hipLaunchKernelGGL((csrmmnt_row_split_remainder_kernel<CSRMMNT_DIM, WF_SIZE>), \
-                       dim3((WF_SIZE * m - 1) / CSRMMNT_DIM + 1),                  \
+                       dim3((m - 1) / (CSRMMNT_DIM / WF_SIZE) + 1),                \
                        dim3(CSRMMNT_DIM),                                          \
                        0,                                                          \
                        handle->stream,                                             \
@@ -273,7 +273,7 @@ rocsparse_status rocsparse_csrmmnn_template_row_split(rocsparse_handle          
 
     if(main > 0)
     {
-        dim3 csrmmnn_blocks((SUB_WF_SIZE * m - 1) / CSRMMNN_DIM + 1, (main - 1) / 8 + 1);
+        dim3 csrmmnn_blocks((m - 1) / (CSRMMNN_DIM / SUB_WF_SIZE) + 1, (main - 1) / 8 + 1);
         dim3 csrmmnn_threads(CSRMMNN_DIM);
         hipLaunchKernelGGL((csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 8>),
                            csrmmnn_blocks,
@@ -302,7 +302,7 @@ rocsparse_status rocsparse_csrmmnn_template_row_split(rocsparse_handle          
 
     if(remainder > 0)
     {
-        dim3 csrmmnn_blocks((SUB_WF_SIZE * m - 1) / CSRMMNN_DIM + 1, (remainder - 1) / 1 + 1);
+        dim3 csrmmnn_blocks((m - 1) / (CSRMMNN_DIM / SUB_WF_SIZE) + 1, (remainder - 1) / 1 + 1);
         dim3 csrmmnn_threads(CSRMMNN_DIM);
         hipLaunchKernelGGL((csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 1>),
                            csrmmnn_blocks,

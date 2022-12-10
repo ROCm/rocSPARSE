@@ -213,7 +213,7 @@ Tests:
   filename: [Chevron4]
 
 - name: spmv_coo
-  category: quick
+  category: stress
   hardware: [gfx90a]
   function: spmv_coo
   indextype: *i32

@@ -257,8 +257,11 @@ Tests:
   order: [rocsparse_order_row]
   filename: [Chevron2]
 
+##############################
+# Stress
+##############################
 - name: spmm_batched_coo
-  category: quick
+  category: stress
   hardware: [gfx90a]
   function: spmm_batched_coo
   indextype: *i32

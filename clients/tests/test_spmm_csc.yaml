@@ -38,6 +38,9 @@ Definitions:
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
     - { alpha:  -1.0, beta: -0.5,  alphai:  0.0, betai:  0.0 }
 
+  - &alpha_beta_range_gfx90a
+    - { alpha:   1.0, beta:  0.0, alphai:  0.0, betai:  0.0 }
+
 Tests:
 - name: spmm_csc_bad_arg
   category: pre_checkin
@@ -449,3 +452,23 @@ Tests:
   spmm_alg: [rocsparse_spmm_alg_csr_row_split]
   order: [rocsparse_order_row]
   filename: [shipsec1]
+
+##############################
+# STRESS
+##############################
+- name: spmm_csc
+  category: stress
+  hardware: [gfx90a]
+  function: spmm_csc
+  indextype: *i32
+  precision: *single_only_precisions
+  M: [300000000]
+  N: [2]
+  K: [300000000]
+  alpha_beta: *alpha_beta_range_gfx90a
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_tridiagonal]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  order: [rocsparse_order_column]

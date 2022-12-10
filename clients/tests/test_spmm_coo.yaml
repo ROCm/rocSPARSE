@@ -48,6 +48,10 @@ Tests:
   indextype: *i32_i64
   precision: *single_double_precisions
 
+# ##############################
+# # Quick
+# ##############################
+
 - name: spmm_coo
   category: quick
   function: spmm_coo
@@ -79,70 +83,6 @@ Tests:
   matrix: [rocsparse_matrix_random]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
   order: [rocsparse_order_column]
-
-- name: spmm_coo
-  category: pre_checkin
-  function: spmm_coo
-  indextype: *i32_i64
-  precision: *single_double_precisions
-  M: [5111]
-  N: [21, 82]
-  K: [4441]
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_random]
-  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_column, rocsparse_order_row]
-
-- name: spmm_coo
-  category: pre_checkin
-  function: spmm_coo
-  indextype: *i32_i64
-  precision: *single_double_precisions
-  M: [5111]
-  N: [21, 82]
-  K: [4441]
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_random]
-  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_column, rocsparse_order_row]
-
-- name: spmm_coo
-  category: nightly
-  function: spmm_coo
-  indextype: *i32_i64
-  precision: *single_double_precisions_complex_real
-  M: [4391]
-  N: [4, 93]
-  K: [293]
-  alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
-  transB: [rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_random]
-  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_row]
-
-- name: spmm_coo
-  category: nightly
-  function: spmm_coo
-  indextype: *i32_i64
-  precision: *single_double_precisions_complex_real
-  M: [4391]
-  N: [4, 93]
-  K: [293]
-  alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_random]
-  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_row]
 
 - name: spmm_coo_file
   category: quick
@@ -159,70 +99,27 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic, rocsparse_spmm_alg_coo_segmented_atomic]
   order: [rocsparse_order_row]
-  filename: [mac_econ_fwd500,
+  filename: [nos1,
              nos2,
              nos4,
              nos6]
 
 - name: spmm_coo_file
-  category: pre_checkin
+  category: quick
   function: spmm_coo
   indextype: *i32_i64
-  precision: *single_double_precisions
+  precision: *double_only_precisions
   M: 1
-  N: [7]
+  N: [4]
   K: 1
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
-  transB: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_row]
-  filename: [ASIC_320k,
-             nos1,
-             nos5,
-             nos7]
-
-- name: spmm_coo_file
-  category: pre_checkin
-  function: spmm_coo
-  indextype: *i32_i64
-  precision: *single_double_precisions
-  M: 1
-  N: [7]
-  K: 1
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_row]
-  filename: [ASIC_320k,
-             nos1,
-             nos5,
-             nos7]
-
-- name: spmm_coo_file
-  category: nightly
-  function: spmm_coo
-  indextype: *i32_i64
-  precision: *single_double_precisions
-  M: 1
-  N: [11]
-  K: 1
-  tolm: 4.0
-  alpha_beta: *alpha_beta_range_nightly
+  alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic, rocsparse_spmm_alg_coo_segmented_atomic]
   order: [rocsparse_order_row]
-  filename: [bibd_22_8,
-             amazon0312,
-             scircuit]
+  filename: [mac_econ_fwd500]
 
 - name: spmm_coo_file
   category: quick
@@ -259,6 +156,115 @@ Tests:
   order: [rocsparse_order_column]
   filename: [Chevron2,
              qc2534]
+
+##############################
+# Precheckin
+##############################
+- name: spmm_coo
+  category: pre_checkin
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *single_double_precisions
+  M: [5111]
+  N: [21, 82]
+  K: [4441]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
+  order: [rocsparse_order_column, rocsparse_order_row]
+
+- name: spmm_coo
+  category: pre_checkin
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *single_double_precisions
+  M: [5111]
+  N: [21, 82]
+  K: [4441]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
+  order: [rocsparse_order_column, rocsparse_order_row]
+
+- name: spmm_coo_file
+  category: pre_checkin
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *single_double_precisions
+  M: 1
+  N: [7]
+  K: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
+  order: [rocsparse_order_row]
+  filename: [ASIC_320k,
+             nos1,
+             nos5]
+
+- name: spmm_coo_file
+  category: pre_checkin
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *double_only_precisions
+  M: 1
+  N: [7]
+  K: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
+  order: [rocsparse_order_row]
+  filename: [nos7]
+
+- name: spmm_coo_file
+  category: pre_checkin
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *single_double_precisions
+  M: 1
+  N: [7]
+  K: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
+  order: [rocsparse_order_row]
+  filename: [ASIC_320k,
+             nos1,
+             nos5]
+
+- name: spmm_coo_file
+  category: pre_checkin
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *double_only_precisions
+  M: 1
+  N: [7]
+  K: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
+  order: [rocsparse_order_row]
+  filename: [nos2,
+             nos6,
+             nos7]
 
 - name: spmm_coo_file
   category: pre_checkin
@@ -293,6 +299,79 @@ Tests:
   spmm_alg: [rocsparse_spmm_alg_coo_segmented]
   order: [rocsparse_order_column]
   filename: [Chevron3]
+
+##############################
+# Nightly
+##############################
+
+- name: spmm_coo
+  category: nightly
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *single_double_precisions_complex_real
+  M: [4391]
+  N: [4, 93]
+  K: [293]
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
+  order: [rocsparse_order_row]
+
+- name: spmm_coo
+  category: nightly
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *single_double_precisions_complex_real
+  M: [4391]
+  N: [4, 93]
+  K: [293]
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
+  order: [rocsparse_order_row]
+
+- name: spmm_coo_file
+  category: nightly
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *single_double_precisions
+  M: 1
+  N: [11]
+  K: 1
+  tolm: 4.0
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic, rocsparse_spmm_alg_coo_segmented_atomic]
+  order: [rocsparse_order_row]
+  filename: [bibd_22_8,
+             amazon0312]
+
+- name: spmm_coo_file
+  category: nightly
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *double_only_precisions
+  M: 1
+  N: [11]
+  K: 1
+  tolm: 4.0
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic, rocsparse_spmm_alg_coo_segmented_atomic]
+  order: [rocsparse_order_row]
+  filename: [scircuit]
 
 - name: spmm_coo_file
   category: nightly
@@ -347,8 +426,11 @@ Tests:
   filename: [sme3Dc,
              bmwcra_1]
 
+##############################
+# STRESS
+##############################
 - name: spmm_coo
-  category: quick
+  category: stress
   hardware: [gfx90a]
   function: spmm_coo
   indextype: *i32
@@ -364,3 +446,20 @@ Tests:
   storage: [rocsparse_storage_mode_sorted]
   spmm_alg: [rocsparse_spmm_alg_coo_atomic]
   order: [rocsparse_order_column, rocsparse_order_row]
+
+- name: spmm_coo
+  category: stress
+  hardware: [gfx90a]
+  function: spmm_coo
+  indextype: *i32
+  precision: *single_only_precisions
+  M: [300000000]
+  N: [2]
+  K: [300000000]
+  alpha_beta: *alpha_beta_range_gfx90a
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_tridiagonal]
+  spmm_alg: [rocsparse_spmm_alg_coo_atomic]
+  order: [rocsparse_order_row]

@@ -181,24 +181,50 @@ template <typename T>
 void rocsparse_init_exact(
     T* A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count, int a, int b)
 {
+    constexpr size_t RANDOM_CACHE_SIZE = 1024;
+
+    std::vector<T> random(RANDOM_CACHE_SIZE);
+    for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
+    {
+        random[i] = random_generator_exact<T>(a, b);
+    }
+
     for(size_t i_batch = 0; i_batch < batch_count; i_batch++)
+    {
         for(size_t j = 0; j < N; ++j)
+        {
             for(size_t i = 0; i < M; ++i)
             {
-                A[i + j * lda + i_batch * stride] = random_generator_exact<T>(a, b);
+                A[i + j * lda + i_batch * stride]
+                    = random[(i * 17 + j * lda * 59 + i_batch * stride * 83) % RANDOM_CACHE_SIZE];
             }
+        }
+    }
 }
 
 template <typename T>
 void rocsparse_init(
     T* A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count, T a, T b)
 {
+    constexpr size_t RANDOM_CACHE_SIZE = 1024;
+
+    std::vector<T> random(RANDOM_CACHE_SIZE);
+    for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
+    {
+        random[i] = random_generator<T>(a, b);
+    }
+
     for(size_t i_batch = 0; i_batch < batch_count; i_batch++)
+    {
         for(size_t j = 0; j < N; ++j)
+        {
             for(size_t i = 0; i < M; ++i)
             {
-                A[i + j * lda + i_batch * stride] = random_generator<T>(a, b);
+                A[i + j * lda + i_batch * stride]
+                    = random[(i * 17 + j * lda * 59 + i_batch * stride * 83) % RANDOM_CACHE_SIZE];
             }
+        }
+    }
 }
 
 template <typename T>
