@@ -49,15 +49,18 @@ Definitions:
     - { alpha:   3.0, beta:  1.0,  alphai:  1.5, betai:  0.0 }
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
 
+  - &alpha_beta_range_gfx90a
+    - { alpha:   1.0, beta:  0.0, alphai:  0.0, betai:  0.0 }
+
 
 Tests:
-# ########################################################################
+# ##############################
 # PRECHECKIN
 # PRE_CHECKIN CATEGORY IS TESTING
 # - ALL EDGE CASES
 # - FEW NORMAL EXAMPLES
 # - TARGETTED FROM THE CODE COVERAGE
-# ########################################################################
+# ##############################
 
 - name: csrmm_bad_arg
   category: pre_checkin
@@ -167,9 +170,9 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mplate]
 
-# ########################################################################
+# ##############################
 # QUICK
-# ########################################################################
+# ##############################
 
 - name: csrmm
   category: quick
@@ -246,9 +249,9 @@ Tests:
   filename: [Chevron2,
              qc2534]
 
-# ########################################################################
+# ##############################
 # NIGHTLY
-# ########################################################################
+# ##############################
 
 - name: csrmm
   category: nightly
@@ -341,3 +344,21 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron4]
+
+
+# ##############################
+# STRESS
+# ##############################
+- name: csrmm
+  category: stress
+  hardware: [gfx90a]
+  function: csrmm
+  precision: *single_only_precisions
+  M: [300000000]
+  N: [2]
+  K: [300000000]
+  alpha_beta: *alpha_beta_range_gfx90a
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_tridiagonal]

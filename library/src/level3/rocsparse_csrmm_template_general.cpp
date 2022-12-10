@@ -329,7 +329,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 #define LAUNCH_CSRMMNT_GENERAL_MAIN_KERNEL(CSRMMNT_DIM, WF_SIZE, LOOPS)            \
     hipLaunchKernelGGL((csrmmnt_general_main_kernel<CSRMMNT_DIM, WF_SIZE, LOOPS>), \
-                       dim3((WF_SIZE * m - 1) / CSRMMNT_DIM + 1, batch_count_C),   \
+                       dim3((m - 1) / (CSRMMNT_DIM / WF_SIZE) + 1, batch_count_C), \
                        dim3(CSRMMNT_DIM),                                          \
                        0,                                                          \
                        handle->stream,                                             \
@@ -357,34 +357,34 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
                        order,                                                      \
                        descr->base);
 
-#define LAUNCH_CSRMMNT_GENERAL_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE)            \
-    hipLaunchKernelGGL((csrmmnt_general_remainder_kernel<CSRMMNT_DIM, WF_SIZE>), \
-                       dim3((WF_SIZE * m - 1) / CSRMMNT_DIM + 1, batch_count_C), \
-                       dim3(CSRMMNT_DIM),                                        \
-                       0,                                                        \
-                       handle->stream,                                           \
-                       conj_A,                                                   \
-                       conj_B,                                                   \
-                       main,                                                     \
-                       n,                                                        \
-                       m,                                                        \
-                       n,                                                        \
-                       k,                                                        \
-                       nnz,                                                      \
-                       offsets_batch_stride_A,                                   \
-                       columns_values_batch_stride_A,                            \
-                       alpha_device_host,                                        \
-                       csr_row_ptr,                                              \
-                       csr_col_ind,                                              \
-                       csr_val,                                                  \
-                       B,                                                        \
-                       ldb,                                                      \
-                       batch_stride_B,                                           \
-                       beta_device_host,                                         \
-                       C,                                                        \
-                       ldc,                                                      \
-                       batch_stride_C,                                           \
-                       order,                                                    \
+#define LAUNCH_CSRMMNT_GENERAL_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE)              \
+    hipLaunchKernelGGL((csrmmnt_general_remainder_kernel<CSRMMNT_DIM, WF_SIZE>),   \
+                       dim3((m - 1) / (CSRMMNT_DIM / WF_SIZE) + 1, batch_count_C), \
+                       dim3(CSRMMNT_DIM),                                          \
+                       0,                                                          \
+                       handle->stream,                                             \
+                       conj_A,                                                     \
+                       conj_B,                                                     \
+                       main,                                                       \
+                       n,                                                          \
+                       m,                                                          \
+                       n,                                                          \
+                       k,                                                          \
+                       nnz,                                                        \
+                       offsets_batch_stride_A,                                     \
+                       columns_values_batch_stride_A,                              \
+                       alpha_device_host,                                          \
+                       csr_row_ptr,                                                \
+                       csr_col_ind,                                                \
+                       csr_val,                                                    \
+                       B,                                                          \
+                       ldb,                                                        \
+                       batch_stride_B,                                             \
+                       beta_device_host,                                           \
+                       C,                                                          \
+                       ldc,                                                        \
+                       batch_stride_C,                                             \
+                       order,                                                      \
                        descr->base);
 
 template <typename I, typename J, typename T, typename U>
@@ -418,7 +418,7 @@ rocsparse_status rocsparse_csrmmnn_template_general(rocsparse_handle handle,
 #define WF_SIZE 8
     hipLaunchKernelGGL(
         (csrmmnn_general_kernel<CSRMMNN_DIM, WF_SIZE>),
-        dim3((WF_SIZE * m - 1) / CSRMMNN_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
+        dim3((m - 1) / (CSRMMNN_DIM / WF_SIZE) + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
         dim3(CSRMMNN_DIM),
         0,
         handle->stream,
@@ -723,7 +723,7 @@ rocsparse_status rocsparse_csrmmtn_template_general(rocsparse_handle handle,
 
     hipLaunchKernelGGL(
         (csrmmtn_general_kernel<CSRMMTN_DIM, WF_SIZE>),
-        dim3((WF_SIZE * m - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
+        dim3((m - 1) / (CSRMMTN_DIM / WF_SIZE) + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
         dim3(CSRMMTN_DIM),
         0,
         handle->stream,
@@ -800,7 +800,7 @@ rocsparse_status rocsparse_csrmmtt_template_general(rocsparse_handle handle,
 
     hipLaunchKernelGGL(
         (csrmmtt_general_kernel<CSRMMTT_DIM, WF_SIZE>),
-        dim3((WF_SIZE * m - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
+        dim3((m - 1) / (CSRMMTT_DIM / WF_SIZE) + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
         dim3(CSRMMTT_DIM),
         0,
         handle->stream,

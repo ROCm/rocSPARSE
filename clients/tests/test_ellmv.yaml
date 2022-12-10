@@ -116,8 +116,19 @@ Tests:
   filename: [mac_econ_fwd500,
              nos2,
              nos4,
-             nos6,
-             scircuit]
+             nos6]
+
+- name: ellmv_file
+  category: quick
+  function: ellmv
+  precision: *double_only_precisions
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [scircuit]
 
 - name: ellmv_file
   category: pre_checkin

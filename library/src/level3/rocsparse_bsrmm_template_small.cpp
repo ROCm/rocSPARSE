@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -121,7 +121,7 @@ rocsparse_status rocsparse_bsrmm_template_small(rocsparse_handle          handle
         constexpr rocsparse_int BSRMMNN_DIM = 64;
         constexpr rocsparse_int SUB_WF_SIZE = 8;
 
-        dim3 bsrmm_blocks((SUB_WF_SIZE * m - 1) / BSRMMNN_DIM + 1, (n - 1) / SUB_WF_SIZE + 1);
+        dim3 bsrmm_blocks((m - 1) / (BSRMMNN_DIM / SUB_WF_SIZE) + 1, (n - 1) / SUB_WF_SIZE + 1);
         dim3 bsrmm_threads(BSRMMNN_DIM);
         hipLaunchKernelGGL((bsrmmnn_small_blockdim_kernel<BSRMMNN_DIM, SUB_WF_SIZE, 2>),
                            bsrmm_blocks,
@@ -147,7 +147,7 @@ rocsparse_status rocsparse_bsrmm_template_small(rocsparse_handle          handle
         constexpr rocsparse_int BSRMMNT_DIM = 64;
 
 #define UNROLL_SMALL_TRANSPOSE_KERNEL(M_)                                   \
-    dim3 bsrmm_blocks((M_ * m - 1) / BSRMMNT_DIM + 1);                      \
+    dim3 bsrmm_blocks((m - 1) / (BSRMMNT_DIM / M_) + 1);                    \
     dim3 bsrmm_threads(BSRMMNT_DIM);                                        \
     hipLaunchKernelGGL((bsrmmnt_small_blockdim_kernel<BSRMMNT_DIM, M_, 2>), \
                        bsrmm_blocks,                                        \
