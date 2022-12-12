@@ -33,15 +33,19 @@ static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
                                                         J    N,
                                                         J    K,
                                                         I    nnz,
+                                                        I    offsets_batch_stride_A,
+                                                        I    columns_values_batch_stride_A,
                                                         T    alpha,
                                                         const I* __restrict__ csr_row_ptr,
                                                         const J* __restrict__ csr_col_ind,
                                                         const T* __restrict__ csr_val,
                                                         const T* __restrict__ B,
                                                         J ldb,
+                                                        I batch_stride_B,
                                                         T beta,
                                                         T* __restrict__ C,
                                                         J                    ldc,
+                                                        I                    batch_stride_C,
                                                         rocsparse_order      order,
                                                         rocsparse_index_base idx_base)
 {
@@ -51,6 +55,8 @@ static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
     int wid = tid / WF_SIZE;
     J   row = gid / WF_SIZE;
     J   col = lid + hipBlockIdx_y * WF_SIZE;
+
+    J batch = hipBlockIdx_z;
 
     if(row >= M)
     {
@@ -62,8 +68,8 @@ static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
     __shared__ J shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
     __shared__ T shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
-    I row_start = csr_row_ptr[row] - idx_base;
-    I row_end   = csr_row_ptr[row + 1] - idx_base;
+    I row_start = csr_row_ptr[row + offsets_batch_stride_A * batch] - idx_base;
+    I row_end   = csr_row_ptr[row + 1 + offsets_batch_stride_A * batch] - idx_base;
 
     T sum = static_cast<T>(0);
 
@@ -75,8 +81,10 @@ static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
 
         if(k < row_end)
         {
-            shared_col[wid][lid] = csr_col_ind[k] - idx_base;
-            shared_val[wid][lid] = conj_val(csr_val[k], conj_A);
+            shared_col[wid][lid]
+                = csr_col_ind[k + columns_values_batch_stride_A * batch] - idx_base;
+            shared_val[wid][lid]
+                = conj_val(csr_val[k + columns_values_batch_stride_A * batch], conj_A);
         }
         else
         {
@@ -91,7 +99,9 @@ static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
             for(J i = 0; i < WF_SIZE; ++i)
             {
                 sum = rocsparse_fma(
-                    shared_val[wid][i], conj_val(B[shared_col[wid][i] + colB], conj_B), sum);
+                    shared_val[wid][i],
+                    conj_val(B[shared_col[wid][i] + colB + batch_stride_B * batch], conj_B),
+                    sum);
             }
         }
     }
@@ -102,22 +112,24 @@ static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
         {
             if(order == rocsparse_order_column)
             {
-                C[row + col * ldc] = alpha * sum;
+                C[row + col * ldc + batch_stride_C * batch] = alpha * sum;
             }
             else
             {
-                C[row * ldc + col] = alpha * sum;
+                C[row * ldc + col + batch_stride_C * batch] = alpha * sum;
             }
         }
         else
         {
             if(order == rocsparse_order_column)
             {
-                C[row + col * ldc] = rocsparse_fma(beta, C[row + col * ldc], alpha * sum);
+                C[row + col * ldc + batch_stride_C * batch]
+                    = rocsparse_fma(beta, C[row + col * ldc + batch_stride_C * batch], alpha * sum);
             }
             else
             {
-                C[row * ldc + col] = rocsparse_fma(beta, C[row * ldc + col], alpha * sum);
+                C[row * ldc + col + batch_stride_C * batch]
+                    = rocsparse_fma(beta, C[row * ldc + col + batch_stride_C * batch], alpha * sum);
             }
         }
     }
@@ -137,15 +149,19 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
                                                              J    N,
                                                              J    K,
                                                              I    nnz,
+                                                             I    offsets_batch_stride_A,
+                                                             I    columns_values_batch_stride_A,
                                                              T    alpha,
                                                              const I* __restrict__ csr_row_ptr,
                                                              const J* __restrict__ csr_col_ind,
                                                              const T* __restrict__ csr_val,
                                                              const T* __restrict__ B,
                                                              J ldb,
+                                                             I batch_stride_B,
                                                              T beta,
                                                              T* __restrict__ C,
                                                              J                    ldc,
+                                                             I                    batch_stride_C,
                                                              rocsparse_order      order,
                                                              rocsparse_index_base idx_base)
 {
@@ -155,6 +171,8 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
     int lid = tid & (WF_SIZE - 1);
     int wid = tid / WF_SIZE;
 
+    J batch = hipBlockIdx_y;
+
     if(row >= M)
     {
         return;
@@ -163,8 +181,10 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
     __shared__ J shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
     __shared__ T shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
-    I row_start = rocsparse_nontemporal_load(csr_row_ptr + row) - idx_base;
-    I row_end   = rocsparse_nontemporal_load(csr_row_ptr + row + 1) - idx_base;
+    I row_start
+        = rocsparse_nontemporal_load(csr_row_ptr + row + offsets_batch_stride_A * batch) - idx_base;
+    I row_end = rocsparse_nontemporal_load(csr_row_ptr + row + 1 + offsets_batch_stride_A * batch)
+                - idx_base;
 
     for(J l = 0; l < ncol; l += WF_SIZE * LOOPS)
     {
@@ -186,8 +206,13 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
             if(k < row_end)
             {
                 shared_col[wid][lid]
-                    = ldb * (rocsparse_nontemporal_load(csr_col_ind + k) - idx_base);
-                shared_val[wid][lid] = conj_val(rocsparse_nontemporal_load(csr_val + k), conj_A);
+                    = ldb
+                      * (rocsparse_nontemporal_load(csr_col_ind + k
+                                                    + columns_values_batch_stride_A * batch)
+                         - idx_base);
+                shared_val[wid][lid] = conj_val(
+                    rocsparse_nontemporal_load(csr_val + k + columns_values_batch_stride_A * batch),
+                    conj_A);
             }
             else
             {
@@ -205,7 +230,10 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
                 for(J p = 0; p < LOOPS; p++)
                 {
                     sum[p] = rocsparse_fma(
-                        sv, conj_val(rocsparse_ldg(B + col + p * WF_SIZE + sc), conj_B), sum[p]);
+                        sv,
+                        conj_val(rocsparse_ldg(B + col + p * WF_SIZE + sc + batch_stride_B * batch),
+                                 conj_B),
+                        sum[p]);
                 }
             }
         }
@@ -216,14 +244,14 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
-                    C[row + (col + p * WF_SIZE) * ldc] = alpha * sum[p];
+                    C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch] = alpha * sum[p];
                 }
             }
             else
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
-                    C[row * ldc + col + p * WF_SIZE] = alpha * sum[p];
+                    C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch] = alpha * sum[p];
                 }
             }
         }
@@ -233,16 +261,20 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
-                    C[row + (col + p * WF_SIZE) * ldc]
-                        = rocsparse_fma(beta, C[row + (col + p * WF_SIZE) * ldc], alpha * sum[p]);
+                    C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch]
+                        = rocsparse_fma(beta,
+                                        C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch],
+                                        alpha * sum[p]);
                 }
             }
             else
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
-                    C[row * ldc + col + p * WF_SIZE]
-                        = rocsparse_fma(beta, C[row * ldc + col + p * WF_SIZE], alpha * sum[p]);
+                    C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch]
+                        = rocsparse_fma(beta,
+                                        C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch],
+                                        alpha * sum[p]);
                 }
             }
         }
@@ -258,16 +290,20 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
                                                                   J    N,
                                                                   J    K,
                                                                   I    nnz,
-                                                                  T    alpha,
+                                                                  I    offsets_batch_stride_A,
+                                                                  I columns_values_batch_stride_A,
+                                                                  T alpha,
                                                                   const I* __restrict__ csr_row_ptr,
                                                                   const J* __restrict__ csr_col_ind,
                                                                   const T* __restrict__ csr_val,
                                                                   const T* __restrict__ B,
                                                                   J ldb,
+                                                                  I batch_stride_B,
                                                                   T beta,
                                                                   T* __restrict__ C,
-                                                                  J                    ldc,
-                                                                  rocsparse_order      order,
+                                                                  J               ldc,
+                                                                  I               batch_stride_C,
+                                                                  rocsparse_order order,
                                                                   rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -275,6 +311,8 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
     J   row = gid / WF_SIZE;
     int lid = tid & (WF_SIZE - 1);
     int wid = tid / WF_SIZE;
+
+    J batch = hipBlockIdx_y;
 
     if(row >= M)
     {
@@ -284,8 +322,10 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
     __shared__ J shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
     __shared__ T shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
-    I row_start = rocsparse_nontemporal_load(csr_row_ptr + row) - idx_base;
-    I row_end   = rocsparse_nontemporal_load(csr_row_ptr + row + 1) - idx_base;
+    I row_start
+        = rocsparse_nontemporal_load(csr_row_ptr + row + offsets_batch_stride_A * batch) - idx_base;
+    I row_end = rocsparse_nontemporal_load(csr_row_ptr + row + 1 + offsets_batch_stride_A * batch)
+                - idx_base;
 
     for(J l = offset; l < ncol; l += WF_SIZE)
     {
@@ -301,8 +341,13 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
             if(k < row_end)
             {
                 shared_col[wid][lid]
-                    = ldb * (rocsparse_nontemporal_load(csr_col_ind + k) - idx_base);
-                shared_val[wid][lid] = conj_val(rocsparse_nontemporal_load(csr_val + k), conj_A);
+                    = ldb
+                      * (rocsparse_nontemporal_load(csr_col_ind + k
+                                                    + columns_values_batch_stride_A * batch)
+                         - idx_base);
+                shared_val[wid][lid] = conj_val(
+                    rocsparse_nontemporal_load(csr_val + k + columns_values_batch_stride_A * batch),
+                    conj_A);
             }
             else
             {
@@ -316,10 +361,11 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
             {
                 for(J i = 0; i < WF_SIZE; ++i)
                 {
-                    sum = rocsparse_fma(
-                        shared_val[wid][i],
-                        conj_val(rocsparse_ldg(B + col + shared_col[wid][i]), conj_B),
-                        sum);
+                    sum = rocsparse_fma(shared_val[wid][i],
+                                        conj_val(rocsparse_ldg(B + col + shared_col[wid][i]
+                                                               + batch_stride_B * batch),
+                                                 conj_B),
+                                        sum);
                 }
             }
         }
@@ -330,22 +376,24 @@ static ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
             {
                 if(order == rocsparse_order_column)
                 {
-                    C[row + col * ldc] = alpha * sum;
+                    C[row + col * ldc + batch_stride_C * batch] = alpha * sum;
                 }
                 else
                 {
-                    C[row * ldc + col] = alpha * sum;
+                    C[row * ldc + col + batch_stride_C * batch] = alpha * sum;
                 }
             }
             else
             {
                 if(order == rocsparse_order_column)
                 {
-                    C[row + col * ldc] = rocsparse_fma(beta, C[row + col * ldc], alpha * sum);
+                    C[row + col * ldc + batch_stride_C * batch] = rocsparse_fma(
+                        beta, C[row + col * ldc + batch_stride_C * batch], alpha * sum);
                 }
                 else
                 {
-                    C[row * ldc + col] = rocsparse_fma(beta, C[row * ldc + col], alpha * sum);
+                    C[row * ldc + col + batch_stride_C * batch] = rocsparse_fma(
+                        beta, C[row * ldc + col + batch_stride_C * batch], alpha * sum);
                 }
             }
         }
@@ -387,15 +435,19 @@ static ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
                                                         J    N,
                                                         J    K,
                                                         I    nnz,
+                                                        I    offsets_batch_stride_A,
+                                                        I    columns_values_batch_stride_A,
                                                         T    alpha,
                                                         const I* __restrict__ csr_row_ptr,
                                                         const J* __restrict__ csr_col_ind,
                                                         const T* __restrict__ csr_val,
                                                         const T* __restrict__ B,
                                                         J ldb,
+                                                        I batch_stride_B,
                                                         T beta,
                                                         T* __restrict__ C,
                                                         J                    ldc,
+                                                        I                    batch_stride_C,
                                                         rocsparse_order      order,
                                                         rocsparse_index_base idx_base)
 {
@@ -406,6 +458,8 @@ static ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
 
     J row = gid / WF_SIZE;
 
+    J batch = hipBlockIdx_z;
+
     if(row >= M)
     {
         return;
@@ -415,29 +469,32 @@ static ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
     J colB = cid * ldb;
 
     __shared__ T shared_B[BLOCKSIZE / WF_SIZE][WF_SIZE];
-    shared_B[wid][lid] = (cid < N) ? conj_val(B[row + colB], conj_B) : static_cast<T>(0);
+    shared_B[wid][lid]
+        = (cid < N) ? conj_val(B[row + colB + batch_stride_B * batch], conj_B) : static_cast<T>(0);
 
     __threadfence_block();
-    I row_start = csr_row_ptr[row] - idx_base;
-    I row_end   = csr_row_ptr[row + 1] - idx_base;
+    I row_start = csr_row_ptr[row + offsets_batch_stride_A * batch] - idx_base;
+    I row_end   = csr_row_ptr[row + 1 + offsets_batch_stride_A * batch] - idx_base;
 
     for(I j = row_start + lid; j < row_end; j += WF_SIZE)
     {
-        J col = csr_col_ind[j] - idx_base;
-        T val = alpha * conj_val(csr_val[j], conj_A);
+        J col = csr_col_ind[j + columns_values_batch_stride_A * batch] - idx_base;
+        T val = alpha * conj_val(csr_val[j + columns_values_batch_stride_A * batch], conj_A);
 
         if(order == rocsparse_order_column)
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(&C[col + (i + hipBlockIdx_y * WF_SIZE) * ldc], val * shared_B[wid][i]);
+                atomicAdd(&C[col + (i + hipBlockIdx_y * WF_SIZE) * ldc + batch_stride_C * batch],
+                          val * shared_B[wid][i]);
             }
         }
         else
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(&C[col * ldc + (i + hipBlockIdx_y * WF_SIZE)], val * shared_B[wid][i]);
+                atomicAdd(&C[col * ldc + (i + hipBlockIdx_y * WF_SIZE) + batch_stride_C * batch],
+                          val * shared_B[wid][i]);
             }
         }
     }
@@ -453,15 +510,19 @@ static ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
                                                         J    N,
                                                         J    K,
                                                         I    nnz,
+                                                        I    offsets_batch_stride_A,
+                                                        I    columns_values_batch_stride_A,
                                                         T    alpha,
                                                         const I* __restrict__ csr_row_ptr,
                                                         const J* __restrict__ csr_col_ind,
                                                         const T* __restrict__ csr_val,
                                                         const T* __restrict__ B,
                                                         J ldb,
+                                                        I batch_stride_B,
                                                         T beta,
                                                         T* __restrict__ C,
                                                         J                    ldc,
+                                                        I                    batch_stride_C,
                                                         rocsparse_order      order,
                                                         rocsparse_index_base idx_base)
 {
@@ -473,6 +534,8 @@ static ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
     J row = gid / WF_SIZE;
     J cid = lid + hipBlockIdx_y * WF_SIZE;
 
+    J batch = hipBlockIdx_z;
+
     if(row >= M)
     {
         return;
@@ -480,29 +543,32 @@ static ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
 
     __shared__ T shared_B[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
-    shared_B[wid][lid] = (cid < N) ? conj_val(B[ldb * row + cid], conj_B) : static_cast<T>(0);
+    shared_B[wid][lid] = (cid < N) ? conj_val(B[ldb * row + cid + batch_stride_B * batch], conj_B)
+                                   : static_cast<T>(0);
 
     __threadfence_block();
-    I row_start = csr_row_ptr[row] - idx_base;
-    I row_end   = csr_row_ptr[row + 1] - idx_base;
+    I row_start = csr_row_ptr[row + offsets_batch_stride_A * batch] - idx_base;
+    I row_end   = csr_row_ptr[row + 1 + offsets_batch_stride_A * batch] - idx_base;
 
     for(I j = row_start + lid; j < row_end; j += WF_SIZE)
     {
-        J col = csr_col_ind[j] - idx_base;
-        T val = alpha * conj_val(csr_val[j], conj_A);
+        J col = csr_col_ind[j + columns_values_batch_stride_A * batch] - idx_base;
+        T val = alpha * conj_val(csr_val[j + columns_values_batch_stride_A * batch], conj_A);
 
         if(order == rocsparse_order_column)
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(&C[col + (i + hipBlockIdx_y * WF_SIZE) * ldc], val * shared_B[wid][i]);
+                atomicAdd(&C[col + (i + hipBlockIdx_y * WF_SIZE) * ldc + batch_stride_C * batch],
+                          val * shared_B[wid][i]);
             }
         }
         else
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(&C[col * ldc + (i + hipBlockIdx_y * WF_SIZE)], val * shared_B[wid][i]);
+                atomicAdd(&C[col * ldc + (i + hipBlockIdx_y * WF_SIZE) + batch_stride_C * batch],
+                          val * shared_B[wid][i]);
             }
         }
     }
