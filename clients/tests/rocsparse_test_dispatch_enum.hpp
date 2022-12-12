@@ -29,6 +29,8 @@ struct rocsparse_test_dispatch_enum
     {
         t,
         it,
-        ijt
+        ijt,
+        iaxyt,
+        ijaxyt
     } value_type;
 };

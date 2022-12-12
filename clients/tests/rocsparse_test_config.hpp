@@ -87,3 +87,15 @@ struct rocsparse_test_config_ijt_complex_only
                                      rocsparse_test_numeric_types_enum::complex_only>
 {
 };
+
+struct rocsparse_test_config_iaxyt
+    : rocsparse_test_config_template<rocsparse_test_dispatch_enum::iaxyt,
+                                     rocsparse_test_numeric_types_enum::all>
+{
+};
+
+struct rocsparse_test_config_ijaxyt
+    : rocsparse_test_config_template<rocsparse_test_dispatch_enum::ijaxyt,
+                                     rocsparse_test_numeric_types_enum::all>
+{
+};

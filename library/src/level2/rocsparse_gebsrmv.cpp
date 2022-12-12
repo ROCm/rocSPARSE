@@ -238,21 +238,21 @@ rocsparse_status rocsparse_gebsrmv_template_dispatch(rocsparse_handle          h
     // row_block_dim == col_block_dim is the BSR case
     if(row_block_dim == col_block_dim)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrmv_template_dispatch(handle,
-                                                                    dir,
-                                                                    trans,
-                                                                    mb,
-                                                                    nb,
-                                                                    nnzb,
-                                                                    alpha,
-                                                                    descr,
-                                                                    bsr_val,
-                                                                    bsr_row_ptr,
-                                                                    bsr_col_ind,
-                                                                    row_block_dim,
-                                                                    x,
-                                                                    beta,
-                                                                    y));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrmv_template_dispatch<T>(handle,
+                                                                       dir,
+                                                                       trans,
+                                                                       mb,
+                                                                       nb,
+                                                                       nnzb,
+                                                                       alpha,
+                                                                       descr,
+                                                                       bsr_val,
+                                                                       bsr_row_ptr,
+                                                                       bsr_col_ind,
+                                                                       row_block_dim,
+                                                                       x,
+                                                                       beta,
+                                                                       y));
 
         return rocsparse_status_success;
     }

@@ -33,7 +33,7 @@ typedef enum rocsparse_coomv_alg_
     rocsparse_coomv_alg_atomic
 } rocsparse_coomv_alg;
 
-template <typename I, typename T>
+template <typename I, typename A>
 rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans,
                                                    rocsparse_coomv_alg       alg,
@@ -41,11 +41,11 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
                                                    I                         n,
                                                    int64_t                   nnz,
                                                    const rocsparse_mat_descr descr,
-                                                   const T*                  coo_val,
+                                                   const A*                  coo_val,
                                                    const I*                  coo_row_ind,
                                                    const I*                  coo_col_ind);
 
-template <typename I, typename T>
+template <typename T, typename I, typename A, typename X, typename Y>
 rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
                                           rocsparse_coomv_alg       alg,
@@ -54,9 +54,9 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
                                           int64_t                   nnz,
                                           const T*                  alpha_device_host,
                                           const rocsparse_mat_descr descr,
-                                          const T*                  coo_val,
+                                          const A*                  coo_val,
                                           const I*                  coo_row_ind,
                                           const I*                  coo_col_ind,
-                                          const T*                  x,
+                                          const X*                  x,
                                           const T*                  beta_device_host,
-                                          T*                        y);
+                                          Y*                        y);

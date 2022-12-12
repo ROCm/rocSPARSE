@@ -879,6 +879,10 @@ void rocsparse_matrix_factory<T, I, J>::init_hyb(
 //
 // INSTANTIATE.
 //
+template struct rocsparse_matrix_factory<int8_t, int32_t, int32_t>;
+template struct rocsparse_matrix_factory<int8_t, int64_t, int32_t>;
+template struct rocsparse_matrix_factory<int8_t, int64_t, int64_t>;
+
 template struct rocsparse_matrix_factory<float, int32_t, int32_t>;
 template struct rocsparse_matrix_factory<float, int64_t, int32_t>;
 template struct rocsparse_matrix_factory<float, int64_t, int64_t>;

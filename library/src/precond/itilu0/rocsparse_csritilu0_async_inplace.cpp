@@ -1253,6 +1253,13 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
                     = rocsparse_itilu0x_convergence_info_t<double, J>::size(nmaxiter_, options_);
                 break;
             }
+            case rocsparse_datatype_i8_r:
+            case rocsparse_datatype_u8_r:
+            case rocsparse_datatype_i32_r:
+            case rocsparse_datatype_u32_r:
+            {
+                return rocsparse_status_not_implemented;
+            }
             }
             buffer_size += size_convergence_info;
             *buffer_size_ = buffer_size;

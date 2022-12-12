@@ -27,7 +27,7 @@
 
 TEST_ROUTINE_WITH_CONFIG(spmv_csr,
                          level2,
-                         rocsparse_test_config_ijt,
+                         rocsparse_test_config_ijaxyt,
                          arg.M,
                          arg.N,
                          arg.alpha,

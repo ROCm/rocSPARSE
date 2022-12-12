@@ -230,6 +230,18 @@ rocsparse_status rocsparse_spsv_dynamic_dispatch(rocsparse_indextype itype,
         DATATYPE_CASE(rocsparse_datatype_f64_r, double);
         DATATYPE_CASE(rocsparse_datatype_f32_c, rocsparse_float_complex);
         DATATYPE_CASE(rocsparse_datatype_f64_c, rocsparse_double_complex);
+        //DATATYPE_CASE(rocsparse_datatype_i8_r, int8_t);
+        //DATATYPE_CASE(rocsparse_datatype_u8_r, uint8_t);
+        //DATATYPE_CASE(rocsparse_datatype_i32_r, int32_t);
+        //DATATYPE_CASE(rocsparse_datatype_u32_r, uint32_t);
+
+    case rocsparse_datatype_i8_r:
+    case rocsparse_datatype_u8_r:
+    case rocsparse_datatype_i32_r:
+    case rocsparse_datatype_u32_r:
+    {
+        return rocsparse_status_not_implemented;
+    }
 
 #undef DATATYPE_CASE
     }

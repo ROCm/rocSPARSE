@@ -229,6 +229,10 @@ void rocsparse_matrix_factory_pentadiagonal<T, I, J>::init_gebsr(std::vector<I>&
     }
 }
 
+template struct rocsparse_matrix_factory_pentadiagonal<int8_t, int32_t, int32_t>;
+template struct rocsparse_matrix_factory_pentadiagonal<int8_t, int64_t, int32_t>;
+template struct rocsparse_matrix_factory_pentadiagonal<int8_t, int64_t, int64_t>;
+
 template struct rocsparse_matrix_factory_pentadiagonal<float, int32_t, int32_t>;
 template struct rocsparse_matrix_factory_pentadiagonal<float, int64_t, int32_t>;
 template struct rocsparse_matrix_factory_pentadiagonal<float, int64_t, int64_t>;

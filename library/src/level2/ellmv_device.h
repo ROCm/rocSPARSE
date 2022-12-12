@@ -27,16 +27,16 @@
 #include "common.h"
 
 // ELL SpMV for general, non-transposed matrices
-template <unsigned int BLOCKSIZE, typename I, typename T>
+template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
 static __device__ void ellmvn_device(I                    m,
                                      I                    n,
                                      I                    ell_width,
                                      T                    alpha,
                                      const I*             ell_col_ind,
-                                     const T*             ell_val,
-                                     const T*             x,
+                                     const A*             ell_val,
+                                     const X*             x,
                                      T                    beta,
-                                     T*                   y,
+                                     Y*                   y,
                                      rocsparse_index_base idx_base)
 {
     I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
@@ -54,7 +54,7 @@ static __device__ void ellmvn_device(I                    m,
 
         if(col >= 0 && col < n)
         {
-            sum = rocsparse_fma(
+            sum = rocsparse_fma<T>(
                 rocsparse_nontemporal_load(ell_val + idx), rocsparse_ldg(x + col), sum);
         }
         else
@@ -65,8 +65,8 @@ static __device__ void ellmvn_device(I                    m,
 
     if(beta != static_cast<T>(0))
     {
-        T yv = rocsparse_nontemporal_load(y + ai);
-        rocsparse_nontemporal_store(rocsparse_fma(beta, yv, alpha * sum), y + ai);
+        Y yv = rocsparse_nontemporal_load(y + ai);
+        rocsparse_nontemporal_store(rocsparse_fma<T>(beta, yv, alpha * sum), y + ai);
     }
     else
     {
@@ -75,8 +75,8 @@ static __device__ void ellmvn_device(I                    m,
 }
 
 // Scale
-template <typename I, typename T>
-static __device__ void ellmvt_scale_device(I size, T scalar, T* data)
+template <typename I, typename Y, typename T>
+static __device__ void ellmvt_scale_device(I size, T scalar, Y* data)
 {
     I idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -89,16 +89,16 @@ static __device__ void ellmvt_scale_device(I size, T scalar, T* data)
 }
 
 // ELL SpMV for general, (conjugate) transposed matrices
-template <unsigned int BLOCKSIZE, typename I, typename T>
+template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
 static __device__ void ellmvt_device(rocsparse_operation  trans,
                                      I                    m,
                                      I                    n,
                                      I                    ell_width,
                                      T                    alpha,
                                      const I*             ell_col_ind,
-                                     const T*             ell_val,
-                                     const T*             x,
-                                     T*                   y,
+                                     const A*             ell_val,
+                                     const X*             x,
+                                     Y*                   y,
                                      rocsparse_index_base idx_base)
 {
     I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
@@ -117,14 +117,14 @@ static __device__ void ellmvt_device(rocsparse_operation  trans,
 
         if(col >= 0 && col < n)
         {
-            T val = rocsparse_nontemporal_load(ell_val + idx);
+            A val = rocsparse_nontemporal_load(ell_val + idx);
 
             if(trans == rocsparse_operation_conjugate_transpose)
             {
                 val = rocsparse_conj(val);
             }
 
-            atomicAdd(&y[col], val * row_val);
+            atomicAdd(&y[col], row_val * val);
         }
         else
         {

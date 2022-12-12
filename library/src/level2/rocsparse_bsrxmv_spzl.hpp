@@ -30,7 +30,7 @@
 
 #include "common.h"
 
-template <typename T, typename I, typename J, typename U>
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 void bsrxmvn_2x2(rocsparse_handle     handle,
                  rocsparse_direction  dir,
                  J                    mb,
@@ -41,13 +41,13 @@ void bsrxmvn_2x2(rocsparse_handle     handle,
                  const I*             bsr_row_ptr,
                  const I*             bsr_end_ptr,
                  const J*             bsr_col_ind,
-                 const T*             bsr_val,
-                 const T*             x,
+                 const A*             bsr_val,
+                 const X*             x,
                  U                    beta_device_host,
-                 T*                   y,
+                 Y*                   y,
                  rocsparse_index_base base);
 
-template <typename T, typename I, typename J, typename U>
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 void bsrxmvn_3x3(rocsparse_handle     handle,
                  rocsparse_direction  dir,
                  J                    mb,
@@ -58,13 +58,13 @@ void bsrxmvn_3x3(rocsparse_handle     handle,
                  const I*             bsr_row_ptr,
                  const I*             bsr_end_ptr,
                  const J*             bsr_col_ind,
-                 const T*             bsr_val,
-                 const T*             x,
+                 const A*             bsr_val,
+                 const X*             x,
                  U                    beta_device_host,
-                 T*                   y,
+                 Y*                   y,
                  rocsparse_index_base base);
 
-template <typename T, typename I, typename J, typename U>
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 void bsrxmvn_4x4(rocsparse_handle     handle,
                  rocsparse_direction  dir,
                  J                    mb,
@@ -75,13 +75,13 @@ void bsrxmvn_4x4(rocsparse_handle     handle,
                  const I*             bsr_row_ptr,
                  const I*             bsr_end_ptr,
                  const J*             bsr_col_ind,
-                 const T*             bsr_val,
-                 const T*             x,
+                 const A*             bsr_val,
+                 const X*             x,
                  U                    beta_device_host,
-                 T*                   y,
+                 Y*                   y,
                  rocsparse_index_base base);
 
-template <typename T, typename I, typename J, typename U>
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 void bsrxmvn_5x5(rocsparse_handle     handle,
                  rocsparse_direction  dir,
                  J                    mb,
@@ -92,13 +92,13 @@ void bsrxmvn_5x5(rocsparse_handle     handle,
                  const I*             bsr_row_ptr,
                  const I*             bsr_end_ptr,
                  const J*             bsr_col_ind,
-                 const T*             bsr_val,
-                 const T*             x,
+                 const A*             bsr_val,
+                 const X*             x,
                  U                    beta_device_host,
-                 T*                   y,
+                 Y*                   y,
                  rocsparse_index_base base);
 
-template <typename T, typename I, typename J, typename U>
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 void bsrxmvn_8x8(rocsparse_handle     handle,
                  rocsparse_direction  dir,
                  J                    mb,
@@ -109,13 +109,13 @@ void bsrxmvn_8x8(rocsparse_handle     handle,
                  const I*             bsr_row_ptr,
                  const I*             bsr_end_ptr,
                  const J*             bsr_col_ind,
-                 const T*             bsr_val,
-                 const T*             x,
+                 const A*             bsr_val,
+                 const X*             x,
                  U                    beta_device_host,
-                 T*                   y,
+                 Y*                   y,
                  rocsparse_index_base base);
 
-template <typename T, typename I, typename J, typename U>
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 void bsrxmvn_16x16(rocsparse_handle     handle,
                    rocsparse_direction  dir,
                    J                    mb,
@@ -126,13 +126,13 @@ void bsrxmvn_16x16(rocsparse_handle     handle,
                    const I*             bsr_row_ptr,
                    const I*             bsr_end_ptr,
                    const J*             bsr_col_ind,
-                   const T*             bsr_val,
-                   const T*             x,
+                   const A*             bsr_val,
+                   const X*             x,
                    U                    beta_device_host,
-                   T*                   y,
+                   Y*                   y,
                    rocsparse_index_base base);
 
-template <typename T, typename I, typename J, typename U>
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 void bsrxmvn_17_32(rocsparse_handle     handle,
                    rocsparse_direction  dir,
                    J                    mb,
@@ -143,14 +143,14 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
                    const I*             bsr_row_ptr,
                    const I*             bsr_end_ptr,
                    const J*             bsr_col_ind,
-                   const T*             bsr_val,
+                   const A*             bsr_val,
                    J                    bsr_dim,
-                   const T*             x,
+                   const X*             x,
                    U                    beta_device_host,
-                   T*                   y,
+                   Y*                   y,
                    rocsparse_index_base base);
 
-template <typename T, typename I, typename J, typename U>
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 void bsrxmvn_general(rocsparse_handle     handle,
                      rocsparse_direction  dir,
                      J                    mb,
@@ -160,9 +160,9 @@ void bsrxmvn_general(rocsparse_handle     handle,
                      const I*             bsr_row_ptr,
                      const I*             bsr_end_ptr,
                      const J*             bsr_col_ind,
-                     const T*             bsr_val,
+                     const A*             bsr_val,
                      J                    bsr_dim,
-                     const T*             x,
+                     const X*             x,
                      U                    beta_device_host,
-                     T*                   y,
+                     Y*                   y,
                      rocsparse_index_base base);

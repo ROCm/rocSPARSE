@@ -129,7 +129,7 @@ void host_sctr(I nnz, const T* x_val, const I* x_ind, T* y, rocsparse_index_base
  *    level 2 SPARSE
  * ===========================================================================
  */
-template <typename T, typename I, typename J>
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
 void host_bsrmv(rocsparse_direction  dir,
                 rocsparse_operation  trans,
                 J                    mb,
@@ -138,11 +138,11 @@ void host_bsrmv(rocsparse_direction  dir,
                 T                    alpha,
                 const I*             bsr_row_ptr,
                 const J*             bsr_col_ind,
-                const T*             bsr_val,
+                const A*             bsr_val,
                 J                    bsr_dim,
-                const T*             x,
+                const X*             x,
                 T                    beta,
-                T*                   y,
+                Y*                   y,
                 rocsparse_index_base base)
 {
     // Quick return
@@ -222,33 +222,41 @@ void host_bsrmv(rocsparse_direction  dir,
 
                         if(dir == rocsparse_direction_column)
                         {
-                            sum0[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 0],
-                                               x[col * bsr_dim + 0],
-                                               sum0[k]);
-                            sum1[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 1],
-                                               x[col * bsr_dim + 0],
-                                               sum1[k]);
-                            sum0[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 2],
-                                               x[col * bsr_dim + 1],
-                                               sum0[k]);
-                            sum1[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 3],
-                                               x[col * bsr_dim + 1],
-                                               sum1[k]);
+                            sum0[k]
+                                = std::fma(static_cast<T>(bsr_val[bsr_dim * bsr_dim * (j + k) + 0]),
+                                           static_cast<T>(x[col * bsr_dim + 0]),
+                                           static_cast<T>(sum0[k]));
+                            sum1[k]
+                                = std::fma(static_cast<T>(bsr_val[bsr_dim * bsr_dim * (j + k) + 1]),
+                                           static_cast<T>(x[col * bsr_dim + 0]),
+                                           static_cast<T>(sum1[k]));
+                            sum0[k]
+                                = std::fma(static_cast<T>(bsr_val[bsr_dim * bsr_dim * (j + k) + 2]),
+                                           static_cast<T>(x[col * bsr_dim + 1]),
+                                           static_cast<T>(sum0[k]));
+                            sum1[k]
+                                = std::fma(static_cast<T>(bsr_val[bsr_dim * bsr_dim * (j + k) + 3]),
+                                           static_cast<T>(x[col * bsr_dim + 1]),
+                                           static_cast<T>(sum1[k]));
                         }
                         else
                         {
-                            sum0[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 0],
-                                               x[col * bsr_dim + 0],
-                                               sum0[k]);
-                            sum0[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 1],
-                                               x[col * bsr_dim + 1],
-                                               sum0[k]);
-                            sum1[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 2],
-                                               x[col * bsr_dim + 0],
-                                               sum1[k]);
-                            sum1[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 3],
-                                               x[col * bsr_dim + 1],
-                                               sum1[k]);
+                            sum0[k]
+                                = std::fma(static_cast<T>(bsr_val[bsr_dim * bsr_dim * (j + k) + 0]),
+                                           static_cast<T>(x[col * bsr_dim + 0]),
+                                           static_cast<T>(sum0[k]));
+                            sum0[k]
+                                = std::fma(static_cast<T>(bsr_val[bsr_dim * bsr_dim * (j + k) + 1]),
+                                           static_cast<T>(x[col * bsr_dim + 1]),
+                                           static_cast<T>(sum0[k]));
+                            sum1[k]
+                                = std::fma(static_cast<T>(bsr_val[bsr_dim * bsr_dim * (j + k) + 2]),
+                                           static_cast<T>(x[col * bsr_dim + 0]),
+                                           static_cast<T>(sum1[k]));
+                            sum1[k]
+                                = std::fma(static_cast<T>(bsr_val[bsr_dim * bsr_dim * (j + k) + 3]),
+                                           static_cast<T>(x[col * bsr_dim + 1]),
+                                           static_cast<T>(sum1[k]));
                         }
                     }
                 }
@@ -265,8 +273,12 @@ void host_bsrmv(rocsparse_direction  dir,
 
             if(beta != static_cast<T>(0))
             {
-                y[row * bsr_dim + 0] = std::fma(beta, y[row * bsr_dim + 0], alpha * sum0[0]);
-                y[row * bsr_dim + 1] = std::fma(beta, y[row * bsr_dim + 1], alpha * sum1[0]);
+                y[row * bsr_dim + 0] = std::fma(static_cast<T>(beta),
+                                                static_cast<T>(y[row * bsr_dim + 0]),
+                                                static_cast<T>(alpha * sum0[0]));
+                y[row * bsr_dim + 1] = std::fma(static_cast<T>(beta),
+                                                static_cast<T>(y[row * bsr_dim + 1]),
+                                                static_cast<T>(alpha * sum1[0]));
             }
             else
             {
@@ -293,16 +305,18 @@ void host_bsrmv(rocsparse_direction  dir,
                                 if(dir == rocsparse_direction_column)
                                 {
                                     sum[k] = std::fma(
-                                        bsr_val[bsr_dim * bsr_dim * j + bsr_dim * (bj + k) + bi],
-                                        x[bsr_dim * col + (bj + k)],
-                                        sum[k]);
+                                        static_cast<T>(bsr_val[bsr_dim * bsr_dim * j
+                                                               + bsr_dim * (bj + k) + bi]),
+                                        static_cast<T>(x[bsr_dim * col + (bj + k)]),
+                                        static_cast<T>(sum[k]));
                                 }
                                 else
                                 {
                                     sum[k] = std::fma(
-                                        bsr_val[bsr_dim * bsr_dim * j + bsr_dim * bi + (bj + k)],
-                                        x[bsr_dim * col + (bj + k)],
-                                        sum[k]);
+                                        static_cast<T>(bsr_val[bsr_dim * bsr_dim * j + bsr_dim * bi
+                                                               + (bj + k)]),
+                                        static_cast<T>(x[bsr_dim * col + (bj + k)]),
+                                        static_cast<T>(sum[k]));
                                 }
                             }
                         }
@@ -319,7 +333,9 @@ void host_bsrmv(rocsparse_direction  dir,
 
                 if(beta != static_cast<T>(0))
                 {
-                    y[row * bsr_dim + bi] = std::fma(beta, y[row * bsr_dim + bi], alpha * sum[0]);
+                    y[row * bsr_dim + bi] = std::fma(static_cast<T>(beta),
+                                                     static_cast<T>(y[row * bsr_dim + bi]),
+                                                     static_cast<T>(alpha * sum[0]));
                 }
                 else
                 {
@@ -1276,7 +1292,7 @@ void host_bsrsv(rocsparse_operation  trans,
     *numeric_pivot = (*numeric_pivot == mb + 1) ? -1 : *numeric_pivot;
 }
 
-template <typename I, typename T>
+template <typename T, typename I, typename A, typename X, typename Y>
 void host_coomv(rocsparse_operation  trans,
                 I                    M,
                 I                    N,
@@ -1284,10 +1300,10 @@ void host_coomv(rocsparse_operation  trans,
                 T                    alpha,
                 const I*             coo_row_ind,
                 const I*             coo_col_ind,
-                const T*             coo_val,
-                const T*             x,
+                const A*             coo_val,
+                const X*             x,
                 T                    beta,
-                T*                   y,
+                Y*                   y,
                 rocsparse_index_base base)
 {
     if(trans == rocsparse_operation_none)
@@ -1328,17 +1344,17 @@ void host_coomv(rocsparse_operation  trans,
     }
 }
 
-template <typename I, typename T>
+template <typename T, typename I, typename A, typename X, typename Y>
 void host_coomv_aos(rocsparse_operation  trans,
                     I                    M,
                     I                    N,
                     int64_t              nnz,
                     T                    alpha,
                     const I*             coo_ind,
-                    const T*             coo_val,
-                    const T*             x,
+                    const A*             coo_val,
+                    const X*             x,
                     T                    beta,
-                    T*                   y,
+                    Y*                   y,
                     rocsparse_index_base base)
 {
     switch(trans)
@@ -1387,13 +1403,13 @@ void host_coomv_aos(rocsparse_operation  trans,
     }
 }
 
-template <typename T>
-inline T conj_val(T val, bool conj)
+template <typename A>
+inline A conj_val(A val, bool conj)
 {
     return conj ? rocsparse_conj(val) : val;
 }
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
 static void host_csrmv_general(rocsparse_operation  trans,
                                J                    M,
                                J                    N,
@@ -1401,10 +1417,10 @@ static void host_csrmv_general(rocsparse_operation  trans,
                                T                    alpha,
                                const I*             csr_row_ptr,
                                const J*             csr_col_ind,
-                               const T*             csr_val,
-                               const T*             x,
+                               const A*             csr_val,
+                               const X*             x,
                                T                    beta,
-                               T*                   y,
+                               Y*                   y,
                                rocsparse_index_base base,
                                rocsparse_spmv_alg   algo,
                                bool                 force_conj)
@@ -1530,14 +1546,15 @@ static void host_csrmv_general(rocsparse_operation  trans,
             for(I j = row_begin; j < row_end; ++j)
             {
                 J col  = csr_col_ind[j] - base;
-                T val  = conj_val(csr_val[j], conj);
-                y[col] = std::fma(val, row_val, y[col]);
+                A val  = conj_val(csr_val[j], conj);
+                y[col] = std::fma(
+                    static_cast<T>(val), static_cast<T>(row_val), static_cast<T>(y[col]));
             }
         }
     }
 }
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
 static void host_csrmv_symmetric(rocsparse_operation  trans,
                                  J                    M,
                                  J                    N,
@@ -1545,10 +1562,10 @@ static void host_csrmv_symmetric(rocsparse_operation  trans,
                                  T                    alpha,
                                  const I*             csr_row_ptr,
                                  const J*             csr_col_ind,
-                                 const T*             csr_val,
-                                 const T*             x,
+                                 const A*             csr_val,
+                                 const X*             x,
                                  T                    beta,
-                                 T*                   y,
+                                 Y*                   y,
                                  rocsparse_index_base base,
                                  rocsparse_spmv_alg   algo,
                                  bool                 force_conj)
@@ -1596,7 +1613,7 @@ static void host_csrmv_symmetric(rocsparse_operation  trans,
                 {
                     if(j + k < row_end)
                     {
-                        T val  = conj_val(csr_val[j + k], conj);
+                        A val  = conj_val(csr_val[j + k], conj);
                         sum[k] = std::fma(alpha * val, x[csr_col_ind[j + k] - base], sum[k]);
                     }
                 }
@@ -1630,7 +1647,9 @@ static void host_csrmv_symmetric(rocsparse_operation  trans,
             {
                 if((csr_col_ind[j] - base) != i)
                 {
-                    y[csr_col_ind[j] - base] += conj_val(csr_val[j], conj) * x_val;
+                    y[csr_col_ind[j] - base] = std::fma(static_cast<T>(conj_val(csr_val[j], conj)),
+                                                        static_cast<T>(x_val),
+                                                        static_cast<T>(y[csr_col_ind[j] - base]));
                 }
             }
         }
@@ -1679,14 +1698,16 @@ static void host_csrmv_symmetric(rocsparse_operation  trans,
             {
                 if((csr_col_ind[j] - base) != i)
                 {
-                    y[csr_col_ind[j] - base] += conj_val(csr_val[j], conj) * x_val;
+                    y[csr_col_ind[j] - base] = std::fma(static_cast<T>(conj_val(csr_val[j], conj)),
+                                                        static_cast<T>(x_val),
+                                                        static_cast<T>(y[csr_col_ind[j] - base]));
                 }
             }
         }
     }
 }
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
 void host_csrmv(rocsparse_operation   trans,
                 J                     M,
                 J                     N,
@@ -1694,10 +1715,10 @@ void host_csrmv(rocsparse_operation   trans,
                 T                     alpha,
                 const I*              csr_row_ptr,
                 const J*              csr_col_ind,
-                const T*              csr_val,
-                const T*              x,
+                const A*              csr_val,
+                const X*              x,
                 T                     beta,
-                T*                    y,
+                Y*                    y,
                 rocsparse_index_base  base,
                 rocsparse_matrix_type matrix_type,
                 rocsparse_spmv_alg    algo,
@@ -1744,7 +1765,7 @@ void host_csrmv(rocsparse_operation   trans,
     }
 }
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
 void host_cscmv(rocsparse_operation trans,
                 J                   M,
                 J                   N,
@@ -1752,10 +1773,10 @@ void host_cscmv(rocsparse_operation trans,
                 T                   alpha,
                 const I* __restrict csc_col_ptr,
                 const J* __restrict csc_row_ind,
-                const T* __restrict csc_val,
-                const T* __restrict x,
+                const A* __restrict csc_val,
+                const X* __restrict x,
                 T beta,
-                T* __restrict y,
+                Y* __restrict y,
                 rocsparse_index_base  base,
                 rocsparse_matrix_type matrix_type,
                 rocsparse_spmv_alg    algo)
@@ -2204,17 +2225,17 @@ void host_coosv(rocsparse_operation   trans,
     }
 }
 
-template <typename I, typename T>
+template <typename T, typename I, typename A, typename X, typename Y>
 void host_ellmv(rocsparse_operation  trans,
                 I                    M,
                 I                    N,
                 T                    alpha,
                 const I*             ell_col_ind,
-                const T*             ell_val,
+                const A*             ell_val,
                 I                    ell_width,
-                const T*             x,
+                const X*             x,
                 T                    beta,
-                T*                   y,
+                Y*                   y,
                 rocsparse_index_base base)
 {
     if(trans == rocsparse_operation_none)
@@ -2232,7 +2253,8 @@ void host_ellmv(rocsparse_operation  trans,
 
                 if(col >= 0 && col < N)
                 {
-                    sum = std::fma(ell_val[idx], x[col], sum);
+                    sum = std::fma(
+                        static_cast<T>(ell_val[idx]), static_cast<T>(x[col]), static_cast<T>(sum));
                 }
                 else
                 {
@@ -2242,7 +2264,8 @@ void host_ellmv(rocsparse_operation  trans,
 
             if(beta != static_cast<T>(0))
             {
-                y[i] = std::fma(beta, y[i], alpha * sum);
+                y[i] = std::fma(
+                    static_cast<T>(beta), static_cast<T>(y[i]), static_cast<T>(alpha * sum));
             }
             else
             {
@@ -2274,7 +2297,8 @@ void host_ellmv(rocsparse_operation  trans,
                                 ? rocsparse_conj(ell_val[idx])
                                 : ell_val[idx];
 
-                    y[col] = std::fma(val, row_val, y[col]);
+                    y[col] = std::fma(
+                        static_cast<T>(val), static_cast<T>(row_val), static_cast<T>(y[col]));
                 }
                 else
                 {
@@ -9894,40 +9918,6 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                   std::vector<TTYPE>&       coo_val,             \
                                                   std::vector<ITYPE>&       coo_row_ind,         \
                                                   std::vector<ITYPE>&       coo_col_ind);              \
-    template void host_coomv<ITYPE, TTYPE>(rocsparse_operation  trans,                           \
-                                           ITYPE                M,                               \
-                                           ITYPE                N,                               \
-                                           int64_t              nnz,                             \
-                                           TTYPE                alpha,                           \
-                                           const ITYPE*         coo_row_ind,                     \
-                                           const ITYPE*         coo_col_ind,                     \
-                                           const TTYPE*         coo_val,                         \
-                                           const TTYPE*         x,                               \
-                                           TTYPE                beta,                            \
-                                           TTYPE*               y,                               \
-                                           rocsparse_index_base base);                           \
-    template void host_coomv_aos<ITYPE, TTYPE>(rocsparse_operation  trans,                       \
-                                               ITYPE                M,                           \
-                                               ITYPE                N,                           \
-                                               int64_t              nnz,                         \
-                                               TTYPE                alpha,                       \
-                                               const ITYPE*         coo_ind,                     \
-                                               const TTYPE*         coo_val,                     \
-                                               const TTYPE*         x,                           \
-                                               TTYPE                beta,                        \
-                                               TTYPE*               y,                           \
-                                               rocsparse_index_base base);                       \
-    template void host_ellmv<ITYPE, TTYPE>(rocsparse_operation  trans,                           \
-                                           ITYPE                M,                               \
-                                           ITYPE                N,                               \
-                                           TTYPE                alpha,                           \
-                                           const ITYPE*         ell_col_ind,                     \
-                                           const TTYPE*         ell_val,                         \
-                                           ITYPE                ell_width,                       \
-                                           const TTYPE*         x,                               \
-                                           TTYPE                beta,                            \
-                                           TTYPE*               y,                               \
-                                           rocsparse_index_base base);                           \
     template void host_coosv<ITYPE, TTYPE>(rocsparse_operation       trans,                      \
                                            ITYPE                     M,                          \
                                            int64_t                   nnz,                        \
@@ -10056,49 +10046,6 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                   rocsparse_index_base base,                   \
                                                   JTYPE*               struct_pivot,           \
                                                   JTYPE*               numeric_pivot);                       \
-    template void host_bsrmv(rocsparse_direction  dir,                                         \
-                             rocsparse_operation  trans,                                       \
-                             JTYPE                mb,                                          \
-                             JTYPE                nb,                                          \
-                             ITYPE                nnzb,                                        \
-                             TTYPE                alpha,                                       \
-                             const ITYPE*         bsr_row_ptr,                                 \
-                             const JTYPE*         bsr_col_ind,                                 \
-                             const TTYPE*         bsr_val,                                     \
-                             JTYPE                bsr_dim,                                     \
-                             const TTYPE*         x,                                           \
-                             TTYPE                beta,                                        \
-                             TTYPE*               y,                                           \
-                             rocsparse_index_base base);                                       \
-    template void host_csrmv<ITYPE, JTYPE, TTYPE>(rocsparse_operation   trans,                 \
-                                                  JTYPE                 M,                     \
-                                                  JTYPE                 N,                     \
-                                                  ITYPE                 nnz,                   \
-                                                  TTYPE                 alpha,                 \
-                                                  const ITYPE*          csr_row_ptr,           \
-                                                  const JTYPE*          csr_col_ind,           \
-                                                  const TTYPE*          csr_val,               \
-                                                  const TTYPE*          x,                     \
-                                                  TTYPE                 beta,                  \
-                                                  TTYPE*                y,                     \
-                                                  rocsparse_index_base  base,                  \
-                                                  rocsparse_matrix_type matrix_type,           \
-                                                  rocsparse_spmv_alg    algo,                  \
-                                                  bool                  force_conj);                            \
-    template void host_cscmv<ITYPE, JTYPE, TTYPE>(rocsparse_operation   trans,                 \
-                                                  JTYPE                 M,                     \
-                                                  JTYPE                 N,                     \
-                                                  ITYPE                 nnz,                   \
-                                                  TTYPE                 alpha,                 \
-                                                  const ITYPE*          csc_col_ptr,           \
-                                                  const JTYPE*          csc_row_ind,           \
-                                                  const TTYPE*          csc_val,               \
-                                                  const TTYPE*          x,                     \
-                                                  TTYPE                 beta,                  \
-                                                  TTYPE*                y,                     \
-                                                  rocsparse_index_base  base,                  \
-                                                  rocsparse_matrix_type matrix_type,           \
-                                                  rocsparse_spmv_alg    algo);                    \
     template void host_csrmm<TTYPE, ITYPE, JTYPE>(JTYPE                M,                      \
                                                   JTYPE                N,                      \
                                                   JTYPE                K,                      \
@@ -10296,6 +10243,87 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                            TTYPE*               A,                   \
                                                            ITYPE                ld);
 
+#define INSTANTIATE5(ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE)  \
+    template void host_bsrmv(rocsparse_direction  dir,          \
+                             rocsparse_operation  trans,        \
+                             JTYPE                mb,           \
+                             JTYPE                nb,           \
+                             ITYPE                nnzb,         \
+                             TTYPE                alpha,        \
+                             const ITYPE*         bsr_row_ptr,  \
+                             const JTYPE*         bsr_col_ind,  \
+                             const ATYPE*         bsr_val,      \
+                             JTYPE                bsr_dim,      \
+                             const XTYPE*         x,            \
+                             TTYPE                beta,         \
+                             YTYPE*               y,            \
+                             rocsparse_index_base base);        \
+    template void host_cscmv(rocsparse_operation   trans,       \
+                             JTYPE                 M,           \
+                             JTYPE                 N,           \
+                             ITYPE                 nnz,         \
+                             TTYPE                 alpha,       \
+                             const ITYPE*          csc_col_ptr, \
+                             const JTYPE*          csc_row_ind, \
+                             const ATYPE*          csc_val,     \
+                             const XTYPE*          x,           \
+                             TTYPE                 beta,        \
+                             YTYPE*                y,           \
+                             rocsparse_index_base  base,        \
+                             rocsparse_matrix_type matrix_type, \
+                             rocsparse_spmv_alg    algo);          \
+    template void host_csrmv(rocsparse_operation   trans,       \
+                             JTYPE                 M,           \
+                             JTYPE                 N,           \
+                             ITYPE                 nnz,         \
+                             TTYPE                 alpha,       \
+                             const ITYPE*          csr_row_ptr, \
+                             const JTYPE*          csr_col_ind, \
+                             const ATYPE*          csr_val,     \
+                             const XTYPE*          x,           \
+                             TTYPE                 beta,        \
+                             YTYPE*                y,           \
+                             rocsparse_index_base  base,        \
+                             rocsparse_matrix_type matrix_type, \
+                             rocsparse_spmv_alg    algo,        \
+                             bool                  force_conj);
+
+#define INSTANTIATE6(ITYPE, ATYPE, XTYPE, YTYPE, TTYPE)        \
+    template void host_coomv(rocsparse_operation  trans,       \
+                             ITYPE                M,           \
+                             ITYPE                N,           \
+                             int64_t              nnz,         \
+                             TTYPE                alpha,       \
+                             const ITYPE*         coo_row_ind, \
+                             const ITYPE*         coo_col_ind, \
+                             const ATYPE*         coo_val,     \
+                             const XTYPE*         x,           \
+                             TTYPE                beta,        \
+                             YTYPE*               y,           \
+                             rocsparse_index_base base);       \
+    template void host_coomv_aos(rocsparse_operation  trans,   \
+                                 ITYPE                M,       \
+                                 ITYPE                N,       \
+                                 int64_t              nnz,     \
+                                 TTYPE                alpha,   \
+                                 const ITYPE*         coo_ind, \
+                                 const ATYPE*         coo_val, \
+                                 const XTYPE*         x,       \
+                                 TTYPE                beta,    \
+                                 YTYPE*               y,       \
+                                 rocsparse_index_base base);   \
+    template void host_ellmv(rocsparse_operation  trans,       \
+                             ITYPE                M,           \
+                             ITYPE                N,           \
+                             TTYPE                alpha,       \
+                             const ITYPE*         ell_col_ind, \
+                             const ATYPE*         ell_val,     \
+                             ITYPE                ell_width,   \
+                             const XTYPE*         x,           \
+                             TTYPE                beta,        \
+                             YTYPE*               y,           \
+                             rocsparse_index_base base);
+
 INSTANTIATE1(float);
 INSTANTIATE1(double);
 INSTANTIATE1(rocsparse_float_complex);
@@ -10347,3 +10375,125 @@ INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, float);
 INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, double);
 INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, rocsparse_double_complex);
+
+INSTANTIATE5(int32_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE5(int64_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE5(int64_t, int64_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE5(int32_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE5(int64_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE5(int64_t, int64_t, int8_t, int8_t, float, float);
+INSTANTIATE5(int32_t,
+             int32_t,
+             float,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex);
+INSTANTIATE5(int64_t,
+             int32_t,
+             float,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex);
+INSTANTIATE5(int64_t,
+             int64_t,
+             float,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex);
+INSTANTIATE5(int32_t,
+             int32_t,
+             double,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex);
+INSTANTIATE5(int64_t,
+             int32_t,
+             double,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex);
+INSTANTIATE5(int64_t,
+             int64_t,
+             double,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex);
+INSTANTIATE5(int32_t, int32_t, float, float, float, float);
+INSTANTIATE5(int64_t, int32_t, float, float, float, float);
+INSTANTIATE5(int64_t, int64_t, float, float, float, float);
+INSTANTIATE5(int32_t, int32_t, double, double, double, double);
+INSTANTIATE5(int64_t, int32_t, double, double, double, double);
+INSTANTIATE5(int64_t, int64_t, double, double, double, double);
+INSTANTIATE5(int32_t,
+             int32_t,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex);
+INSTANTIATE5(int64_t,
+             int32_t,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex);
+INSTANTIATE5(int64_t,
+             int64_t,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex);
+INSTANTIATE5(int32_t,
+             int32_t,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex);
+INSTANTIATE5(int64_t,
+             int32_t,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex);
+INSTANTIATE5(int64_t,
+             int64_t,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex);
+
+INSTANTIATE6(int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE6(int64_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE6(int32_t, int8_t, int8_t, float, float);
+INSTANTIATE6(int64_t, int8_t, int8_t, float, float);
+INSTANTIATE6(
+    int32_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
+INSTANTIATE6(
+    int64_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
+INSTANTIATE6(
+    int32_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
+INSTANTIATE6(
+    int64_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
+INSTANTIATE6(int32_t, float, float, float, float);
+INSTANTIATE6(int64_t, float, float, float, float);
+INSTANTIATE6(int32_t, double, double, double, double);
+INSTANTIATE6(int64_t, double, double, double, double);
+INSTANTIATE6(int32_t,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex);
+INSTANTIATE6(int64_t,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex,
+             rocsparse_float_complex);
+INSTANTIATE6(int32_t,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex);
+INSTANTIATE6(int64_t,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex,
+             rocsparse_double_complex);

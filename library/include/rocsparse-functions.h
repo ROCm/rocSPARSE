@@ -19081,6 +19081,51 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *    \right.
 *  \f]
 *
+*  \details
+*  \ref rocsparse_spmv supports multiple combinations of data types and compute types. The tables below indicate the currently
+*  supported different data types that can be used for for the sparse matrix A and the dense vectors X and Y and the compute
+*  type for \f$\alpha\f$ and \f$\beta\f$. The advantage of using different data types is to save on memory bandwidth and storage
+*  when a user application allows while performing the actual computation in a higher precision.
+*
+*  Uniform Precisions:
+*  \verbatim
+*  |----------------------------------------------------|
+*  |             A / X / Y / compute_type               |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f32_r               |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f64_r               |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f32_c               |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f64_c               |
+*  |----------------------------------------------------|
+*  \endverbatim
+*
+*  Mixed precisions:
+*  \verbatim
+*  |-------------------------|--------------------------|--------------------------|
+*  |         A / X           |             Y            |       compute_type       |
+*  |-------------------------|--------------------------|--------------------------|
+*  | rocsparse_datatype_i8_r | rocsparse_datatype_i32_r | rocsparse_datatype_i32_r |
+*  |-------------------------|--------------------------|--------------------------|
+*  | rocsparse_datatype_i8_r | rocsparse_datatype_f32_r | rocsparse_datatype_f32_r |
+*  |-------------------------|--------------------------|--------------------------|
+*  | rocsparse_datatype_i8_r | rocsparse_datatype_i32_r | rocsparse_datatype_i32_r |
+*  |-------------------------|--------------------------|--------------------------|
+*  \endverbatim
+*
+*  Mixed-regular Complex precisions
+*  \verbatim
+*  |----------------------------|----------------------------|
+*  |              A             |    X / Y / compute_type    |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f32_r  |  rocsparse_datatype_f32_c  |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f64_r  |  rocsparse_datatype_f64_c  |
+*  |----------------------------|----------------------------|
+*  \endverbatim
+*
 *  \note
 *  This function writes the required allocation size (in bytes) to \p buffer_size and
 *  returns without performing the SpMV operation, when a nullptr is passed for
@@ -19091,7 +19136,8 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *  It may return before the actual computation has finished.
 *
 *  \note
-*  The sparse matrix formats currently supported are: rocsparse_format_bsr, rocsparse_format_coo, rocsparse_format_coo_aos, rocsparse_format_csr, rocsparse_format_csc and rocsparse_format_ell.
+*  The sparse matrix formats currently supported are: rocsparse_format_bsr, rocsparse_format_coo,
+*  rocsparse_format_coo_aos, rocsparse_format_csr, rocsparse_format_csc and rocsparse_format_ell.
 *
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
@@ -19162,6 +19208,51 @@ __attribute__((deprecated("This function is deprecated and will be removed in a 
 *    \right.
 *  \f]
 *
+*  \details
+*  \ref rocsparse_spmv supports multiple combinations of data types and compute types. The tables below indicate the currently
+*  supported different data types that can be used for for the sparse matrix A and the dense vectors X and Y and the compute
+*  type for \f$\alpha\f$ and \f$\beta\f$. The advantage of using different data types is to save on memory bandwidth and storage
+*  when a user application allows while performing the actual computation in a higher precision.
+*
+*  Uniform Precisions:
+*  \verbatim
+*  |----------------------------------------------------|
+*  |             A / X / Y / compute_type               |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f32_r               |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f64_r               |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f32_c               |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f64_c               |
+*  |----------------------------------------------------|
+*  \endverbatim
+*
+*  Mixed precisions:
+*  \verbatim
+*  |-------------------------|--------------------------|--------------------------|
+*  |         A / X           |             Y            |       compute_type       |
+*  |-------------------------|--------------------------|--------------------------|
+*  | rocsparse_datatype_i8_r | rocsparse_datatype_i32_r | rocsparse_datatype_i32_r |
+*  |-------------------------|--------------------------|--------------------------|
+*  | rocsparse_datatype_i8_r | rocsparse_datatype_f32_r | rocsparse_datatype_f32_r |
+*  |-------------------------|--------------------------|--------------------------|
+*  | rocsparse_datatype_i8_r | rocsparse_datatype_i32_r | rocsparse_datatype_i32_r |
+*  |-------------------------|--------------------------|--------------------------|
+*  \endverbatim
+*
+*  Mixed-regular Complex precisions
+*  \verbatim
+*  |----------------------------|----------------------------|
+*  |              A             |    X / Y / compute_type    |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f32_r  |  rocsparse_datatype_f32_c  |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f64_r  |  rocsparse_datatype_f64_c  |
+*  |----------------------------|----------------------------|
+*  \endverbatim
+*
 *  \note
 *  This function writes the required allocation size (in bytes) to \p buffer_size and
 *  returns without performing the SpMV operation, when a nullptr is passed for
@@ -19170,6 +19261,10 @@ __attribute__((deprecated("This function is deprecated and will be removed in a 
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
+*
+*  \note
+*  The sparse matrix formats currently supported are: rocsparse_format_bsr, rocsparse_format_coo,
+*  rocsparse_format_coo_aos, rocsparse_format_csr, rocsparse_format_csc and rocsparse_format_ell.
 *
 *  \note SpMV_ex requires three stages to complete. The first stage
 *  \ref rocsparse_spmv_stage_buffer_size will return the size of the temporary storage buffer

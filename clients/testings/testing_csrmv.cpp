@@ -184,21 +184,21 @@ void testing_csrmv(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
 
         host_dense_matrix<T> hy_copy(hy);
-        host_csrmv<rocsparse_int, rocsparse_int, T>(trans,
-                                                    M,
-                                                    N,
-                                                    hA.nnz,
-                                                    *h_alpha,
-                                                    hA.ptr,
-                                                    hA.ind,
-                                                    hA.val,
-                                                    hx,
-                                                    *h_beta,
-                                                    hy,
-                                                    base,
-                                                    matrix_type,
-                                                    alg,
-                                                    false);
+        host_csrmv<T, rocsparse_int, rocsparse_int, T, T, T>(trans,
+                                                             M,
+                                                             N,
+                                                             hA.nnz,
+                                                             *h_alpha,
+                                                             hA.ptr,
+                                                             hA.ind,
+                                                             hA.val,
+                                                             hx,
+                                                             *h_beta,
+                                                             hy,
+                                                             base,
+                                                             matrix_type,
+                                                             alg,
+                                                             false);
 
         hy.near_check(dy, tol);
         dy = hy_copy;

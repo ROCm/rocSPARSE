@@ -216,6 +216,10 @@ void rocsparse_matrix_factory_laplace3d<T, I, J>::init_gebsr(std::vector<I>&    
     }
 }
 
+template struct rocsparse_matrix_factory_laplace3d<int8_t, int32_t, int32_t>;
+template struct rocsparse_matrix_factory_laplace3d<int8_t, int64_t, int32_t>;
+template struct rocsparse_matrix_factory_laplace3d<int8_t, int64_t, int64_t>;
+
 template struct rocsparse_matrix_factory_laplace3d<float, int32_t, int32_t>;
 template struct rocsparse_matrix_factory_laplace3d<float, int64_t, int32_t>;
 template struct rocsparse_matrix_factory_laplace3d<float, int64_t, int64_t>;

@@ -156,4 +156,238 @@ auto rocsparse_ijt_dispatch(const Arguments& arg)
     return TEST<void>{}(arg);
 }
 
+template <template <typename...> class TEST>
+auto rocsparse_iaxyt_dispatch(const Arguments& arg)
+{
+    const auto I = arg.index_type_I;
+
+    const auto A = arg.a_type;
+    const auto X = arg.x_type;
+    const auto Y = arg.y_type;
+
+    const auto T = arg.compute_type;
+
+    bool f32r_case = (A == rocsparse_datatype_f32_r && A == X && A == Y && A == T);
+    bool f64r_case = (A == rocsparse_datatype_f64_r && A == X && A == Y && A == T);
+    bool f32c_case = (A == rocsparse_datatype_f32_c && A == X && A == Y && A == T);
+    bool f64c_case = (A == rocsparse_datatype_f64_c && A == X && A == Y && A == T);
+
+    bool i8r_i8r_i32r_i32r_case
+        = (A == rocsparse_datatype_i8_r && X == rocsparse_datatype_i8_r
+           && Y == rocsparse_datatype_i32_r && T == rocsparse_datatype_i32_r);
+
+    bool i8r_i8r_f32r_f32r_case
+        = (A == rocsparse_datatype_i8_r && X == rocsparse_datatype_i8_r
+           && Y == rocsparse_datatype_f32_r && T == rocsparse_datatype_f32_r);
+
+    bool f32r_f32c_f32c_f32c_case
+        = (A == rocsparse_datatype_f32_r && X == rocsparse_datatype_f32_c
+           && Y == rocsparse_datatype_f32_c && T == rocsparse_datatype_f32_c);
+
+    bool f64r_f64c_f64c_f64c_case
+        = (A == rocsparse_datatype_f64_r && X == rocsparse_datatype_f64_c
+           && Y == rocsparse_datatype_f64_c && T == rocsparse_datatype_f64_c);
+
+#define INSTANTIATE_TEST(ITYPE)                                      \
+    if(f32r_case)                                                    \
+    {                                                                \
+        return TEST<ITYPE, float, float, float, float>{}(arg);       \
+    }                                                                \
+    else if(f64r_case)                                               \
+    {                                                                \
+        return TEST<ITYPE, double, double, double, double>{}(arg);   \
+    }                                                                \
+    else if(f32c_case)                                               \
+    {                                                                \
+        return TEST<ITYPE,                                           \
+                    rocsparse_float_complex,                         \
+                    rocsparse_float_complex,                         \
+                    rocsparse_float_complex,                         \
+                    rocsparse_float_complex>{}(arg);                 \
+    }                                                                \
+    else if(f64c_case)                                               \
+    {                                                                \
+        return TEST<ITYPE,                                           \
+                    rocsparse_double_complex,                        \
+                    rocsparse_double_complex,                        \
+                    rocsparse_double_complex,                        \
+                    rocsparse_double_complex>{}(arg);                \
+    }                                                                \
+    else if(i8r_i8r_i32r_i32r_case)                                  \
+    {                                                                \
+        return TEST<ITYPE, int8_t, int8_t, int32_t, int32_t>{}(arg); \
+    }                                                                \
+    else if(i8r_i8r_f32r_f32r_case)                                  \
+    {                                                                \
+        return TEST<ITYPE, int8_t, int8_t, float, float>{}(arg);     \
+    }                                                                \
+    else if(f32r_f32c_f32c_f32c_case)                                \
+    {                                                                \
+        return TEST<ITYPE,                                           \
+                    float,                                           \
+                    rocsparse_float_complex,                         \
+                    rocsparse_float_complex,                         \
+                    rocsparse_float_complex>{}(arg);                 \
+    }                                                                \
+    else if(f64r_f64c_f64c_f64c_case)                                \
+    {                                                                \
+        return TEST<ITYPE,                                           \
+                    double,                                          \
+                    rocsparse_double_complex,                        \
+                    rocsparse_double_complex,                        \
+                    rocsparse_double_complex>{}(arg);                \
+    }
+
+    switch(I)
+    {
+    case rocsparse_indextype_u16:
+    {
+        return TEST<void, void, void, void, void, void>{}(arg);
+    }
+    case rocsparse_indextype_i32:
+    {
+        INSTANTIATE_TEST(int32_t);
+    }
+    case rocsparse_indextype_i64:
+    {
+        INSTANTIATE_TEST(int64_t);
+    }
+    }
+#undef INSTANTIATE_TEST
+
+    return TEST<void, void, void, void, void>{}(arg);
+}
+
+template <template <typename...> class TEST>
+auto rocsparse_ijaxyt_dispatch(const Arguments& arg)
+{
+    const auto I = arg.index_type_I;
+    const auto J = arg.index_type_J;
+
+    const auto A = arg.a_type;
+    const auto X = arg.x_type;
+    const auto Y = arg.y_type;
+
+    const auto T = arg.compute_type;
+
+    bool f32r_case = (A == rocsparse_datatype_f32_r && A == X && A == Y && A == T);
+    bool f64r_case = (A == rocsparse_datatype_f64_r && A == X && A == Y && A == T);
+    bool f32c_case = (A == rocsparse_datatype_f32_c && A == X && A == Y && A == T);
+    bool f64c_case = (A == rocsparse_datatype_f64_c && A == X && A == Y && A == T);
+
+    bool i8r_i8r_i32r_i32r_case
+        = (A == rocsparse_datatype_i8_r && X == rocsparse_datatype_i8_r
+           && Y == rocsparse_datatype_i32_r && T == rocsparse_datatype_i32_r);
+
+    bool i8r_i8r_f32r_f32r_case
+        = (A == rocsparse_datatype_i8_r && X == rocsparse_datatype_i8_r
+           && Y == rocsparse_datatype_f32_r && T == rocsparse_datatype_f32_r);
+
+    bool f32r_f32c_f32c_f32c_case
+        = (A == rocsparse_datatype_f32_r && X == rocsparse_datatype_f32_c
+           && Y == rocsparse_datatype_f32_c && T == rocsparse_datatype_f32_c);
+
+    bool f64r_f64c_f64c_f64c_case
+        = (A == rocsparse_datatype_f64_r && X == rocsparse_datatype_f64_c
+           && Y == rocsparse_datatype_f64_c && T == rocsparse_datatype_f64_c);
+
+#define INSTANTIATE_TEST(ITYPE, JTYPE)                                      \
+    if(f32r_case)                                                           \
+    {                                                                       \
+        return TEST<ITYPE, JTYPE, float, float, float, float>{}(arg);       \
+    }                                                                       \
+    else if(f64r_case)                                                      \
+    {                                                                       \
+        return TEST<ITYPE, JTYPE, double, double, double, double>{}(arg);   \
+    }                                                                       \
+    else if(f32c_case)                                                      \
+    {                                                                       \
+        return TEST<ITYPE,                                                  \
+                    JTYPE,                                                  \
+                    rocsparse_float_complex,                                \
+                    rocsparse_float_complex,                                \
+                    rocsparse_float_complex,                                \
+                    rocsparse_float_complex>{}(arg);                        \
+    }                                                                       \
+    else if(f64c_case)                                                      \
+    {                                                                       \
+        return TEST<ITYPE,                                                  \
+                    JTYPE,                                                  \
+                    rocsparse_double_complex,                               \
+                    rocsparse_double_complex,                               \
+                    rocsparse_double_complex,                               \
+                    rocsparse_double_complex>{}(arg);                       \
+    }                                                                       \
+    else if(i8r_i8r_i32r_i32r_case)                                         \
+    {                                                                       \
+        return TEST<ITYPE, JTYPE, int8_t, int8_t, int32_t, int32_t>{}(arg); \
+    }                                                                       \
+    else if(i8r_i8r_f32r_f32r_case)                                         \
+    {                                                                       \
+        return TEST<ITYPE, JTYPE, int8_t, int8_t, float, float>{}(arg);     \
+    }                                                                       \
+    else if(f32r_f32c_f32c_f32c_case)                                       \
+    {                                                                       \
+        return TEST<ITYPE,                                                  \
+                    JTYPE,                                                  \
+                    float,                                                  \
+                    rocsparse_float_complex,                                \
+                    rocsparse_float_complex,                                \
+                    rocsparse_float_complex>{}(arg);                        \
+    }                                                                       \
+    else if(f64r_f64c_f64c_f64c_case)                                       \
+    {                                                                       \
+        return TEST<ITYPE,                                                  \
+                    JTYPE,                                                  \
+                    double,                                                 \
+                    rocsparse_double_complex,                               \
+                    rocsparse_double_complex,                               \
+                    rocsparse_double_complex>{}(arg);                       \
+    }
+
+    switch(I)
+    {
+    case rocsparse_indextype_u16:
+    {
+        return TEST<void, void, void, void, void, void>{}(arg);
+    }
+    case rocsparse_indextype_i32:
+    {
+        switch(J)
+        {
+        case rocsparse_indextype_u16:
+        case rocsparse_indextype_i64:
+        {
+            return TEST<void, void, void, void, void, void>{}(arg);
+        }
+        case rocsparse_indextype_i32:
+        {
+            INSTANTIATE_TEST(int32_t, int32_t);
+        }
+        }
+    }
+    case rocsparse_indextype_i64:
+    {
+        switch(J)
+        {
+        case rocsparse_indextype_u16:
+        {
+            return TEST<void, void, void, void, void, void>{}(arg);
+        }
+        case rocsparse_indextype_i32:
+        {
+            INSTANTIATE_TEST(int64_t, int32_t);
+        }
+        case rocsparse_indextype_i64:
+        {
+            INSTANTIATE_TEST(int64_t, int64_t);
+        }
+        }
+    }
+    }
+#undef INSTANTIATE_TEST
+
+    return TEST<void, void, void, void, void, void>{}(arg);
+}
+
 #endif // TYPE_DISPATCH_HPP

@@ -185,3 +185,60 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron4]
+
+#
+# mixed precision
+#
+
+- name: spmv_ell_file
+  category: quick
+  function: spmv_ell
+  indextype: *i32_i64
+  precision: *int8_int8_int32_int32_precision
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [bmwcra_1,
+             amazon0312,
+             sme3Dc]
+
+- name: spmv_ell
+  category: pre_checkin
+  function: spmv_ell
+  indextype: *i32_i64
+  precision: *int8_int8_float32_float32_precision
+  M: [34, 104, 343, 5196]
+  N: [57, 109, 458, 3425]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+
+- name: spmv_ell
+  category: pre_checkin
+  function: spmv_ell
+  indextype: *i32_i64
+  precision: *float32_cmplx32_cmplx32_cmplx32_precision
+  M: [16, 78, 294, 482, 68302]
+  N: [16, 93, 297, 657, 46342]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+
+- name: spmv_ell_file
+  category: nightly
+  function: spmv_ell
+  indextype: *i32_i64
+  precision: *float64_cmplx64_cmplx64_cmplx64_precision
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [shipsec1,
+             scircuit]

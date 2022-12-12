@@ -231,6 +231,10 @@ void rocsparse_matrix_factory_random<T, I, J>::init_coo(std::vector<I>&        c
     }
 };
 
+template struct rocsparse_matrix_factory_random<int8_t, int32_t, int32_t>;
+template struct rocsparse_matrix_factory_random<int8_t, int64_t, int32_t>;
+template struct rocsparse_matrix_factory_random<int8_t, int64_t, int64_t>;
+
 template struct rocsparse_matrix_factory_random<float, int32_t, int32_t>;
 template struct rocsparse_matrix_factory_random<float, int64_t, int32_t>;
 template struct rocsparse_matrix_factory_random<float, int64_t, int64_t>;

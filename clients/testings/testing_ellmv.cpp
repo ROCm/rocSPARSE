@@ -151,7 +151,7 @@ void testing_ellmv(const Arguments& arg)
         {
             host_dense_matrix<T> hy_copy(hy);
             // CPU ellmv
-            host_ellmv<rocsparse_int, T>(
+            host_ellmv<T, rocsparse_int, T, T, T>(
                 trans, hA.m, hA.n, *h_alpha, hA.ind, hA.val, hA.width, hx, *h_beta, hy, hA.base);
             hy.near_check(dy);
             dy = hy_copy;
@@ -269,7 +269,7 @@ void testing_ellmv_extra_319051(const Arguments& arg)
 
         host_dense_matrix<float> hy_copy(hy);
         // CPU ellmv
-        host_ellmv<rocsparse_int, float>(
+        host_ellmv<float, rocsparse_int, float, float, float>(
             trans, hA.m, hA.n, *h_alpha, hA.ind, hA.val, hA.width, hx, *h_beta, hy, hA.base);
         hy.near_check(dy);
         dy = hy_copy;

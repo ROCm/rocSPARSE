@@ -27,10 +27,10 @@
 
 #include "rocsparse_arguments.hpp"
 
-template <typename I, typename J, typename T>
+template <typename I, typename J, typename A, typename X, typename Y, typename T>
 void testing_spmv_csr_bad_arg(const Arguments& arg);
 void testing_spmv_csr_extra(const Arguments& arg);
-template <typename I, typename J, typename T>
+template <typename I, typename J, typename A, typename X, typename Y, typename T>
 void testing_spmv_csr(const Arguments& arg);
 
 #endif // TESTING_SPMV_CSR_HPP

@@ -425,6 +425,10 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_datatype value_)
     case rocsparse_datatype_f64_r:
     case rocsparse_datatype_f32_c:
     case rocsparse_datatype_f64_c:
+    case rocsparse_datatype_i8_r:
+    case rocsparse_datatype_u8_r:
+    case rocsparse_datatype_i32_r:
+    case rocsparse_datatype_u32_r:
     {
         return false;
     }

@@ -501,6 +501,26 @@ rocsparse_status rocsparse_copy_hyb_mat(rocsparse_hyb_mat dest, const rocsparse_
         T_size = sizeof(rocsparse_double_complex);
         break;
     }
+    case rocsparse_datatype_i8_r:
+    {
+        T_size = sizeof(int8_t);
+        break;
+    }
+    case rocsparse_datatype_u8_r:
+    {
+        T_size = sizeof(uint8_t);
+        break;
+    }
+    case rocsparse_datatype_i32_r:
+    {
+        T_size = sizeof(int32_t);
+        break;
+    }
+    case rocsparse_datatype_u32_r:
+    {
+        T_size = sizeof(uint32_t);
+        break;
+    }
     }
 
     if(src->ell_col_ind != nullptr)

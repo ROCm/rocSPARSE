@@ -121,21 +121,21 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
     {
         if(trans_B == rocsparse_operation_none)
         {
-            return rocsparse_bsrmv_template_dispatch(handle,
-                                                     dir,
-                                                     trans_A,
-                                                     mb,
-                                                     kb,
-                                                     nnzb,
-                                                     alpha,
-                                                     descr,
-                                                     bsr_val,
-                                                     bsr_row_ptr,
-                                                     bsr_col_ind,
-                                                     block_dim,
-                                                     B,
-                                                     beta,
-                                                     C);
+            return rocsparse_bsrmv_template_dispatch<T>(handle,
+                                                        dir,
+                                                        trans_A,
+                                                        mb,
+                                                        kb,
+                                                        nnzb,
+                                                        alpha,
+                                                        descr,
+                                                        bsr_val,
+                                                        bsr_row_ptr,
+                                                        bsr_col_ind,
+                                                        block_dim,
+                                                        B,
+                                                        beta,
+                                                        C);
         }
     }
 

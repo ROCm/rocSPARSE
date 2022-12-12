@@ -798,6 +798,10 @@ INSTANTIATE_IJ(int32_t, int32_t);
 INSTANTIATE_IJ(int64_t, int32_t);
 INSTANTIATE_IJ(int64_t, int64_t);
 
+INSTANTIATE_TIJ(int8_t, int32_t, int32_t);
+INSTANTIATE_TIJ(int8_t, int64_t, int32_t);
+INSTANTIATE_TIJ(int8_t, int64_t, int64_t);
+
 INSTANTIATE_TIJ(float, int32_t, int32_t);
 INSTANTIATE_TIJ(float, int64_t, int32_t);
 INSTANTIATE_TIJ(float, int64_t, int64_t);
@@ -813,6 +817,9 @@ INSTANTIATE_TIJ(rocsparse_float_complex, int64_t, int64_t);
 INSTANTIATE_TIJ(rocsparse_double_complex, int32_t, int32_t);
 INSTANTIATE_TIJ(rocsparse_double_complex, int64_t, int32_t);
 INSTANTIATE_TIJ(rocsparse_double_complex, int64_t, int64_t);
+
+INSTANTIATE_TI(int8_t, int32_t);
+INSTANTIATE_TI(int8_t, int64_t);
 
 INSTANTIATE_TI(float, int32_t);
 INSTANTIATE_TI(float, int64_t);

@@ -62,7 +62,13 @@ struct Arguments
 
     rocsparse_indextype index_type_I;
     rocsparse_indextype index_type_J;
-    rocsparse_datatype  compute_type;
+
+    rocsparse_datatype a_type;
+    rocsparse_datatype b_type;
+    rocsparse_datatype c_type;
+    rocsparse_datatype x_type;
+    rocsparse_datatype y_type;
+    rocsparse_datatype compute_type;
 
     double alpha;
     double alphai;
@@ -184,6 +190,11 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(uu);
         ROCSPARSE_FORMAT_CHECK(index_type_I);
         ROCSPARSE_FORMAT_CHECK(index_type_J);
+        ROCSPARSE_FORMAT_CHECK(a_type);
+        ROCSPARSE_FORMAT_CHECK(b_type);
+        ROCSPARSE_FORMAT_CHECK(c_type);
+        ROCSPARSE_FORMAT_CHECK(x_type);
+        ROCSPARSE_FORMAT_CHECK(y_type);
         ROCSPARSE_FORMAT_CHECK(compute_type);
         ROCSPARSE_FORMAT_CHECK(alpha);
         ROCSPARSE_FORMAT_CHECK(alphai);
@@ -367,6 +378,11 @@ private:
         print("function", arg.function);
         print("index_type_I", rocsparse_indextype2string(arg.index_type_I));
         print("index_type_J", rocsparse_indextype2string(arg.index_type_J));
+        print("a_type", rocsparse_datatype2string(arg.a_type));
+        print("b_type", rocsparse_datatype2string(arg.b_type));
+        print("c_type", rocsparse_datatype2string(arg.c_type));
+        print("x_type", rocsparse_datatype2string(arg.x_type));
+        print("y_type", rocsparse_datatype2string(arg.y_type));
         print("compute_type", rocsparse_datatype2string(arg.compute_type));
         print("transA", rocsparse_operation2string(arg.transA));
         print("transB", rocsparse_operation2string(arg.transB));

@@ -59,3 +59,23 @@ struct rocsparse_test_dispatch<rocsparse_test_dispatch_enum::ijt>
         return rocsparse_ijt_dispatch<TEST>(arg);
     }
 };
+
+template <>
+struct rocsparse_test_dispatch<rocsparse_test_dispatch_enum::iaxyt>
+{
+    template <template <typename...> class TEST>
+    static auto dispatch(const Arguments& arg)
+    {
+        return rocsparse_iaxyt_dispatch<TEST>(arg);
+    }
+};
+
+template <>
+struct rocsparse_test_dispatch<rocsparse_test_dispatch_enum::ijaxyt>
+{
+    template <template <typename...> class TEST>
+    static auto dispatch(const Arguments& arg)
+    {
+        return rocsparse_ijaxyt_dispatch<TEST>(arg);
+    }
+};

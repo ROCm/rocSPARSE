@@ -178,6 +178,25 @@ namespace
                       << rocsparse_datatype2string(arg.compute_type);
                     break;
                 }
+                case rocsparse_test_dispatch_enum::iaxyt:
+                {
+                    s << rocsparse_indextype2string(arg.index_type_I) << '_'
+                      << rocsparse_datatype2string(arg.a_type) << '_'
+                      << rocsparse_datatype2string(arg.x_type) << '_'
+                      << rocsparse_datatype2string(arg.y_type) << '_'
+                      << rocsparse_datatype2string(arg.compute_type);
+                    break;
+                }
+                case rocsparse_test_dispatch_enum::ijaxyt:
+                {
+                    s << rocsparse_indextype2string(arg.index_type_I) << '_'
+                      << rocsparse_indextype2string(arg.index_type_J) << '_'
+                      << rocsparse_datatype2string(arg.a_type) << '_'
+                      << rocsparse_datatype2string(arg.x_type) << '_'
+                      << rocsparse_datatype2string(arg.y_type) << '_'
+                      << rocsparse_datatype2string(arg.compute_type);
+                    break;
+                }
                 }
 
                 //
@@ -208,6 +227,56 @@ namespace
 
                 return RocSPARSE_TestName<PROXY>{} << s.str();
             }
+        };
+    };
+
+    template <rocsparse_test_enum::value_type ROUTINE>
+    struct rocsparse_test_iaxyt_template
+    {
+        template <typename A, typename X, typename Y, typename T, typename I, typename = void>
+        struct test_call : rocsparse_test_invalid
+        {
+        };
+
+        template <typename I, typename A, typename X, typename Y, typename T>
+        struct test_call<I, A, X, Y, T, typename std::enable_if<std::is_integral<I>::value>::type>
+            : rocsparse_test_template<ROUTINE>::template test_call_proxy<I, A, X, Y, T>
+        {
+        };
+
+        struct test : rocsparse_test_template<ROUTINE>::template test_proxy<test, test_call>
+        {
+        };
+    };
+
+    template <rocsparse_test_enum::value_type ROUTINE>
+    struct rocsparse_test_ijaxyt_template
+    {
+        template <typename A,
+                  typename X,
+                  typename Y,
+                  typename T,
+                  typename I,
+                  typename J,
+                  typename = void>
+        struct test_call : rocsparse_test_invalid
+        {
+        };
+
+        template <typename I, typename J, typename A, typename X, typename Y, typename T>
+        struct test_call<I,
+                         J,
+                         A,
+                         X,
+                         Y,
+                         T,
+                         typename std::enable_if<std::is_integral<I>::value>::type>
+            : rocsparse_test_template<ROUTINE>::template test_call_proxy<I, J, A, X, Y, T>
+        {
+        };
+
+        struct test : rocsparse_test_template<ROUTINE>::template test_proxy<test, test_call>
+        {
         };
     };
 

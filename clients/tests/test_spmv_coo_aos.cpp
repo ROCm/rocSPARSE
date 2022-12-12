@@ -28,7 +28,7 @@
 
 TEST_ROUTINE_WITH_CONFIG(spmv_coo_aos,
                          level2,
-                         rocsparse_test_config_it,
+                         rocsparse_test_config_iaxyt,
                          arg.M,
                          arg.N,
                          arg.alpha,
