@@ -298,10 +298,6 @@ void rocsparse_init_nan(T* A, size_t N)
         A[i] = T(rocsparse_nan_rng());
 }
 
-template void rocsparse_init_nan<int32_t>(int32_t* A, size_t N);
-template void rocsparse_init_nan<int64_t>(int64_t* A, size_t N);
-template void rocsparse_init_nan<size_t>(size_t* A, size_t N);
-
 template <typename T>
 void rocsparse_init_nan(
     std::vector<T>& A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count)
@@ -1882,6 +1878,10 @@ void rocsparse_init_gebsr_pentadiagonal(std::vector<I>&      row_ptr,
 INSTANTIATEI(int32_t);
 INSTANTIATEI(int64_t);
 
+INSTANTIATE(int8_t);
+INSTANTIATE(int32_t);
+INSTANTIATE(int64_t);
+INSTANTIATE(size_t);
 INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
@@ -1891,15 +1891,20 @@ INSTANTIATE1(int32_t, int32_t);
 INSTANTIATE1(int64_t, int32_t);
 INSTANTIATE1(int64_t, int64_t);
 
+INSTANTIATE2(int32_t, int8_t);
+INSTANTIATE2(int64_t, int8_t);
 INSTANTIATE2(int32_t, float);
-INSTANTIATE2(int32_t, double);
-INSTANTIATE2(int32_t, rocsparse_float_complex);
-INSTANTIATE2(int32_t, rocsparse_double_complex);
 INSTANTIATE2(int64_t, float);
+INSTANTIATE2(int32_t, double);
 INSTANTIATE2(int64_t, double);
+INSTANTIATE2(int32_t, rocsparse_float_complex);
 INSTANTIATE2(int64_t, rocsparse_float_complex);
+INSTANTIATE2(int32_t, rocsparse_double_complex);
 INSTANTIATE2(int64_t, rocsparse_double_complex);
 
+INSTANTIATE3(int32_t, int32_t, int8_t);
+INSTANTIATE3(int64_t, int32_t, int8_t);
+INSTANTIATE3(int64_t, int64_t, int8_t);
 INSTANTIATE3(int32_t, int32_t, float);
 INSTANTIATE3(int64_t, int32_t, float);
 INSTANTIATE3(int64_t, int64_t, float);

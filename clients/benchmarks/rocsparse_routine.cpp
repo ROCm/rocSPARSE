@@ -143,6 +143,11 @@ rocsparse_status rocsparse_routine::dispatch_precision(const char       precisio
         return dispatch_indextype<FNAME, rocsparse_float_complex>(indextype, arg);
     case rocsparse_datatype_f64_c:
         return dispatch_indextype<FNAME, rocsparse_double_complex>(indextype, arg);
+    case rocsparse_datatype_i8_r:
+    case rocsparse_datatype_u8_r:
+    case rocsparse_datatype_i32_r:
+    case rocsparse_datatype_u32_r:
+        return rocsparse_status_invalid_value;
     }
     return rocsparse_status_invalid_value;
 }
@@ -337,8 +342,38 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         }                                     \
     }
 
+#define DEFINE_CASE_IAXYT_X(value, testingf)  \
+    case value:                               \
+    {                                         \
+        try                                   \
+        {                                     \
+            testingf<I, T, T, T, T>(arg);     \
+            return rocsparse_status_success;  \
+        }                                     \
+        catch(const rocsparse_status& status) \
+        {                                     \
+            return status;                    \
+        }                                     \
+    }
+
+#define DEFINE_CASE_IJAXYT_X(value, testingf) \
+    case value:                               \
+    {                                         \
+        try                                   \
+        {                                     \
+            testingf<I, J, T, T, T, T>(arg);  \
+            return rocsparse_status_success;  \
+        }                                     \
+        catch(const rocsparse_status& status) \
+        {                                     \
+            return status;                    \
+        }                                     \
+    }
+
 #define DEFINE_CASE_IT(value) DEFINE_CASE_IT_X(value, testing_##value)
 #define DEFINE_CASE_IJT(value) DEFINE_CASE_IJT_X(value, testing_##value)
+#define DEFINE_CASE_IAXYT(value) DEFINE_CASE_IAXYT_X(value, testing_##value)
+#define DEFINE_CASE_IJAXYT(value) DEFINE_CASE_IJAXYT_X(value, testing_##value)
 #define IS_T_REAL (std::is_same<T, double>() || std::is_same<T, float>())
 #define IS_T_COMPLEX \
     (std::is_same<T, rocsparse_double_complex>() || std::is_same<T, rocsparse_float_complex>())
@@ -447,10 +482,10 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_T(check_matrix_hyb);
         DEFINE_CASE_IT_X(coomm, testing_spmm_coo);
         DEFINE_CASE_IT_X(coomm_batched, testing_spmm_batched_coo);
-        DEFINE_CASE_IT_X(coomv, testing_spmv_coo);
+        DEFINE_CASE_IAXYT_X(coomv, testing_spmv_coo);
         DEFINE_CASE_T_FLOAT_ONLY(coosort);
         DEFINE_CASE_IT_X(coosv, testing_spsv_coo);
-        DEFINE_CASE_IT_X(coomv_aos, testing_spmv_coo_aos);
+        DEFINE_CASE_IAXYT_X(coomv_aos, testing_spmv_coo_aos);
         DEFINE_CASE_IT_X(coosm, testing_spsm_coo);
         DEFINE_CASE_T_FLOAT_ONLY(coo2csr);
         DEFINE_CASE_T(coo2dense);
@@ -464,10 +499,10 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_IJT_X(bsrgemm, testing_spgemm_bsr);
         DEFINE_CASE_IJT_X(csrgemm, testing_spgemm_csr);
         DEFINE_CASE_T(csrgemm_reuse);
-        DEFINE_CASE_IJT_X(bsrmv, testing_spmv_bsr);
-        DEFINE_CASE_IJT_X(csrmv, testing_spmv_csr);
+        DEFINE_CASE_IJAXYT_X(bsrmv, testing_spmv_bsr);
+        DEFINE_CASE_IJAXYT_X(csrmv, testing_spmv_csr);
         DEFINE_CASE_T(csrmv_managed);
-        DEFINE_CASE_IJT_X(cscmv, testing_spmv_csc);
+        DEFINE_CASE_IJAXYT_X(cscmv, testing_spmv_csc);
         DEFINE_CASE_IJT_X(csrmm, testing_spmm_csr);
         DEFINE_CASE_IJT_X(csrmm_batched, testing_spmm_batched_csr);
         DEFINE_CASE_IJT_X(cscmm, testing_spmm_csc);
@@ -491,7 +526,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_IJT(dense_to_sparse_csr);
         DEFINE_CASE_T(doti);
         DEFINE_CASE_T_REAL_VS_COMPLEX(dotci, testing_doti, testing_dotci);
-        DEFINE_CASE_IT_X(ellmv, testing_spmv_ell);
+        DEFINE_CASE_IAXYT_X(ellmv, testing_spmv_ell);
         DEFINE_CASE_T(ell2csr);
         DEFINE_CASE_T(gebsr2csr);
         DEFINE_CASE_T(gebsr2gebsr);

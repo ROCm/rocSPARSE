@@ -26,7 +26,7 @@
 
 #include "handle.h"
 
-template <typename T, typename I, typename J>
+template <typename I, typename J, typename A>
 rocsparse_status rocsparse_bsrmv_ex_analysis_template(rocsparse_handle          handle,
                                                       rocsparse_direction       dir,
                                                       rocsparse_operation       trans,
@@ -34,13 +34,13 @@ rocsparse_status rocsparse_bsrmv_ex_analysis_template(rocsparse_handle          
                                                       J                         nb,
                                                       I                         nnzb,
                                                       const rocsparse_mat_descr descr,
-                                                      const T*                  bsr_val,
+                                                      const A*                  bsr_val,
                                                       const I*                  bsr_row_ptr,
                                                       const J*                  bsr_col_ind,
                                                       J                         block_dim,
                                                       rocsparse_mat_info        info);
 
-template <typename T, typename I, typename J, typename U>
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          handle,
                                                    rocsparse_direction       dir,
                                                    rocsparse_operation       trans,
@@ -49,15 +49,15 @@ rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          han
                                                    I                         nnzb,
                                                    U                         alpha_device_host,
                                                    const rocsparse_mat_descr descr,
-                                                   const T*                  bsr_val,
+                                                   const A*                  bsr_val,
                                                    const I*                  bsr_row_ptr,
                                                    const J*                  bsr_col_ind,
                                                    J                         block_dim,
-                                                   const T*                  x,
+                                                   const X*                  x,
                                                    U                         beta_device_host,
-                                                   T*                        y);
+                                                   Y*                        y);
 
-template <typename T, typename I, typename J, typename U>
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 rocsparse_status rocsparse_bsrmv_adaptive_template_dispatch(rocsparse_handle    handle,
                                                             rocsparse_direction dir,
                                                             rocsparse_operation trans,
@@ -66,16 +66,16 @@ rocsparse_status rocsparse_bsrmv_adaptive_template_dispatch(rocsparse_handle    
                                                             I                   nnzb,
                                                             U                   alpha_device_host,
                                                             const rocsparse_mat_descr descr,
-                                                            const T*                  bsr_val,
+                                                            const A*                  bsr_val,
                                                             const I*                  bsr_row_ptr,
                                                             const J*                  bsr_col_ind,
                                                             J                         block_dim,
                                                             rocsparse_csrmv_info      info,
-                                                            const T*                  x,
+                                                            const X*                  x,
                                                             U  beta_device_host,
-                                                            T* y);
+                                                            Y* y);
 
-template <typename T, typename I, typename J>
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
 rocsparse_status rocsparse_bsrmv_ex_template(rocsparse_handle          handle,
                                              rocsparse_direction       dir,
                                              rocsparse_operation       trans,
@@ -84,11 +84,11 @@ rocsparse_status rocsparse_bsrmv_ex_template(rocsparse_handle          handle,
                                              I                         nnzb,
                                              const T*                  alpha_device_host,
                                              const rocsparse_mat_descr descr,
-                                             const T*                  bsr_val,
+                                             const A*                  bsr_val,
                                              const I*                  bsr_row_ptr,
                                              const J*                  bsr_col_ind,
                                              J                         block_dim,
                                              rocsparse_mat_info        info,
-                                             const T*                  x,
+                                             const X*                  x,
                                              const T*                  beta_device_host,
-                                             T*                        y);
+                                             Y*                        y);

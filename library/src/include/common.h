@@ -67,13 +67,15 @@ __device__ __host__ __forceinline__ unsigned int fnp2(unsigned int x)
     return x;
 }
 
+__device__ __forceinline__ int8_t rocsparse_ldg(const int8_t* ptr) { return __ldg(ptr); }
+__device__ __forceinline__ int32_t rocsparse_ldg(const int32_t* ptr) { return __ldg(ptr); }
+__device__ __forceinline__ int64_t rocsparse_ldg(const int64_t* ptr) { return __ldg(ptr); }
 __device__ __forceinline__ float rocsparse_ldg(const float* ptr) { return __ldg(ptr); }
 __device__ __forceinline__ double rocsparse_ldg(const double* ptr) { return __ldg(ptr); }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_ldg(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__ldg((const float*)ptr), __ldg((const float*)ptr + 1)); }
 __device__ __forceinline__ rocsparse_double_complex rocsparse_ldg(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__ldg((const double*)ptr), __ldg((const double*)ptr + 1)); }
-__device__ __forceinline__ int32_t rocsparse_ldg(const int32_t* ptr) { return __ldg(ptr); }
-__device__ __forceinline__ int64_t rocsparse_ldg(const int64_t* ptr) { return __ldg(ptr); }
 
+__device__ __forceinline__ int32_t rocsparse_fma(int32_t p, int32_t q, int32_t r) { return fma(p, q, r); }
 __device__ __forceinline__ float rocsparse_fma(float p, float q, float r) { return fma(p, q, r); }
 __device__ __forceinline__ double rocsparse_fma(double p, double q, double r) { return fma(p, q, r); }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_fma(rocsparse_float_complex p, rocsparse_float_complex q, rocsparse_float_complex r) { return std::fma(p, q, r); }
@@ -107,6 +109,7 @@ __device__ __forceinline__ rocsparse_double_complex rocsparse_sqrt(rocsparse_dou
     return rocsparse_double_complex(sqrt((absz + x) * 0.5), sgnp * sqrt((absz - x) * 0.5));
 }
 
+__device__ __forceinline__ int32_t rocsparse_conj(const int32_t& x) { return x; }
 __device__ __forceinline__ float rocsparse_conj(const float& x) { return x; }
 __device__ __forceinline__ double rocsparse_conj(const double& x) { return x; }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_conj(const rocsparse_float_complex& x) { return std::conj(x); }
@@ -146,6 +149,7 @@ __device__ __forceinline__ float rocsparse_nontemporal_load(const float* ptr) { 
 __device__ __forceinline__ double rocsparse_nontemporal_load(const double* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_nontemporal_load(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__builtin_nontemporal_load((const float*)ptr), __builtin_nontemporal_load((const float*)ptr + 1)); }
 __device__ __forceinline__ rocsparse_double_complex rocsparse_nontemporal_load(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__builtin_nontemporal_load((const double*)ptr), __builtin_nontemporal_load((const double*)ptr + 1)); }
+__device__ __forceinline__ int8_t rocsparse_nontemporal_load(const int8_t* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ int32_t rocsparse_nontemporal_load(const int32_t* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ int64_t rocsparse_nontemporal_load(const int64_t* ptr) { return __builtin_nontemporal_load(ptr); }
 
@@ -153,6 +157,7 @@ __device__ __forceinline__ void rocsparse_nontemporal_store(float val, float* pt
 __device__ __forceinline__ void rocsparse_nontemporal_store(double val, double* ptr) { __builtin_nontemporal_store(val, ptr); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_float_complex val, rocsparse_float_complex* ptr) { __builtin_nontemporal_store(std::real(val), (float*)ptr); __builtin_nontemporal_store(std::imag(val), (float*)ptr + 1); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_double_complex val, rocsparse_double_complex* ptr) { __builtin_nontemporal_store(std::real(val), (double*)ptr); __builtin_nontemporal_store(std::imag(val), (double*)ptr + 1); }
+__device__ __forceinline__ void rocsparse_nontemporal_store(int8_t val, int8_t* ptr) { __builtin_nontemporal_store(val, ptr); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(int32_t val, int32_t* ptr) { __builtin_nontemporal_store(val, ptr); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(int64_t val, int64_t* ptr) { __builtin_nontemporal_store(val, ptr); }
 
@@ -205,6 +210,12 @@ template <typename T>
 __device__ __forceinline__ T conj_val(T val, bool conj)
 {
     return conj ? rocsparse_conj(val) : val;
+}
+
+template <typename T>
+__device__ __forceinline__ T rocsparse_fma(T p, T q, T r)
+{
+    return rocsparse_fma(p, q, r);
 }
 
 // Block reduce kernel computing block sum

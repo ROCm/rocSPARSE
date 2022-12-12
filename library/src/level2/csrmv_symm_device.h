@@ -26,17 +26,24 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          typename I,
+          typename J,
+          typename A,
+          typename X,
+          typename Y,
+          typename T>
 static ROCSPARSE_DEVICE_ILF void csrmvn_symm_general_device(bool                 conj,
                                                             J                    m,
                                                             T                    alpha,
                                                             const I*             csr_row_ptr_begin,
                                                             const I*             csr_row_ptr_end,
                                                             const J*             csr_col_ind,
-                                                            const T*             csr_val,
-                                                            const T*             x,
+                                                            const A*             csr_val,
+                                                            const X*             x,
                                                             T                    beta,
-                                                            T*                   y,
+                                                            Y*                   y,
                                                             rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
@@ -56,8 +63,8 @@ static ROCSPARSE_DEVICE_ILF void csrmvn_symm_general_device(bool                
         // Loop over non-zero elements
         for(I j = row_start + lid; j < row_end; j += WF_SIZE)
         {
-            T val = conj_val(csr_val[j], conj);
-            sum   = rocsparse_fma(alpha * val, rocsparse_ldg(x + csr_col_ind[j] - idx_base), sum);
+            A val = conj_val(csr_val[j], conj);
+            sum = rocsparse_fma<T>(alpha * val, rocsparse_ldg(x + csr_col_ind[j] - idx_base), sum);
         }
 
         // Obtain row sum using parallel reduction
@@ -72,22 +79,29 @@ static ROCSPARSE_DEVICE_ILF void csrmvn_symm_general_device(bool                
             }
             else
             {
-                y[row] = rocsparse_fma(beta, y[row], sum);
+                y[row] = rocsparse_fma<T>(beta, y[row], sum);
             }
         }
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          typename I,
+          typename J,
+          typename A,
+          typename X,
+          typename Y,
+          typename T>
 static ROCSPARSE_DEVICE_ILF void csrmvt_symm_general_device(bool                 conj,
                                                             J                    m,
                                                             T                    alpha,
                                                             const I*             csr_row_ptr_begin,
                                                             const I*             csr_row_ptr_end,
                                                             const J*             csr_col_ind,
-                                                            const T*             csr_val,
-                                                            const T*             x,
-                                                            T*                   y,
+                                                            const A*             csr_val,
+                                                            const X*             x,
+                                                            Y*                   y,
                                                             rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
@@ -107,8 +121,8 @@ static ROCSPARSE_DEVICE_ILF void csrmvt_symm_general_device(bool                
 
             if(col != row)
             {
-                T val = conj_val(csr_val[j], conj);
-                atomicAdd(&y[col], val * row_val);
+                A val = conj_val(csr_val[j], conj);
+                atomicAdd(&y[col], row_val * val);
             }
         }
     }
@@ -172,6 +186,9 @@ template <rocsparse_int BLOCKSIZE,
           rocsparse_int WG_SIZE,
           typename I,
           typename J,
+          typename A,
+          typename X,
+          typename Y,
           typename T>
 ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
                                                       I                    nnz,
@@ -180,10 +197,10 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
                                                       T                    alpha,
                                                       const I*             csr_row_ptr,
                                                       const J*             csr_col_ind,
-                                                      const T*             csr_val,
-                                                      const T*             x,
+                                                      const A*             csr_val,
+                                                      const X*             x,
                                                       T                    beta,
-                                                      T*                   y,
+                                                      Y*                   y,
                                                       rocsparse_index_base idx_base)
 {
     __shared__ T partial_sums[BLOCKSIZE];
@@ -452,7 +469,7 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
             for(I j = vecStart + t; j < vecEnd; j += WG_SIZE)
             {
                 J col = csr_col_ind[j] - idx_base;
-                mySum += conj_val(csr_val[j], conj) * x[col];
+                mySum = rocsparse_fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
             }
 
             partial_sums[t] = mySum;

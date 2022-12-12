@@ -427,6 +427,7 @@ void near_check_general(
                                      int64_t               LDB, \
                                      floating_data_t<TYPE> tol)
 
+INSTANTIATE(int32_t);
 INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);

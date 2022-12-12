@@ -88,6 +88,10 @@ void rocsparse_matrix_factory_zero<T, I, J>::init_coo(std::vector<I>&        coo
     nnz = 0;
 }
 
+template struct rocsparse_matrix_factory_zero<int8_t, int32_t, int32_t>;
+template struct rocsparse_matrix_factory_zero<int8_t, int64_t, int32_t>;
+template struct rocsparse_matrix_factory_zero<int8_t, int64_t, int64_t>;
+
 template struct rocsparse_matrix_factory_zero<float, int32_t, int32_t>;
 template struct rocsparse_matrix_factory_zero<float, int64_t, int32_t>;
 template struct rocsparse_matrix_factory_zero<float, int64_t, int64_t>;

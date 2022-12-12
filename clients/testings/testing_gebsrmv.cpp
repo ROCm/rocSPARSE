@@ -284,8 +284,12 @@ void testing_gebsrmv(const Arguments& arg)
 
         double gflop_count = spmv_gflop_count(
             M, dA.nnzb * dA.row_block_dim * dA.col_block_dim, *h_beta != static_cast<T>(0));
-        double gbyte_count = gebsrmv_gbyte_count<T>(
-            dA.mb, dA.nb, dA.nnzb, dA.row_block_dim, *h_beta != static_cast<T>(0));
+        double gbyte_count = gebsrmv_gbyte_count<T>(dA.mb,
+                                                    dA.nb,
+                                                    dA.nnzb,
+                                                    dA.row_block_dim,
+                                                    dA.col_block_dim,
+                                                    *h_beta != static_cast<T>(0));
 
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
         double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);

@@ -114,6 +114,14 @@ constexpr auto rocsparse_datatype2string(rocsparse_datatype type)
         return "f32_c";
     case rocsparse_datatype_f64_c:
         return "f64_c";
+    case rocsparse_datatype_i8_r:
+        return "i8_r";
+    case rocsparse_datatype_u8_r:
+        return "u8_r";
+    case rocsparse_datatype_i32_r:
+        return "i32_r";
+    case rocsparse_datatype_u32_r:
+        return "u32_r";
     }
     return "invalid";
 }

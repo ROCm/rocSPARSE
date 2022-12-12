@@ -30,6 +30,11 @@ rocsparse_importer_matrixmarket::rocsparse_importer_matrixmarket(const std::stri
 
 /* ============================================================================================ */
 /*! \brief  Read matrix from mtx file in COO format */
+static inline void read_mtx_value(std::istringstream& is, int64_t& row, int64_t& col, int8_t& val)
+{
+    is >> row >> col >> val;
+}
+
 static inline void read_mtx_value(std::istringstream& is, int64_t& row, int64_t& col, float& val)
 {
     is >> row >> col >> val;
@@ -376,6 +381,10 @@ INSTANTIATE_IJ(int32_t, int32_t);
 INSTANTIATE_IJ(int64_t, int32_t);
 INSTANTIATE_IJ(int64_t, int64_t);
 
+INSTANTIATE_TIJ(int8_t, int32_t, int32_t);
+INSTANTIATE_TIJ(int8_t, int64_t, int32_t);
+INSTANTIATE_TIJ(int8_t, int64_t, int64_t);
+
 INSTANTIATE_TIJ(float, int32_t, int32_t);
 INSTANTIATE_TIJ(float, int64_t, int32_t);
 INSTANTIATE_TIJ(float, int64_t, int64_t);
@@ -391,6 +400,9 @@ INSTANTIATE_TIJ(rocsparse_float_complex, int64_t, int64_t);
 INSTANTIATE_TIJ(rocsparse_double_complex, int32_t, int32_t);
 INSTANTIATE_TIJ(rocsparse_double_complex, int64_t, int32_t);
 INSTANTIATE_TIJ(rocsparse_double_complex, int64_t, int64_t);
+
+INSTANTIATE_TI(int8_t, int32_t);
+INSTANTIATE_TI(int8_t, int64_t);
 
 INSTANTIATE_TI(float, int32_t);
 INSTANTIATE_TI(float, int64_t);

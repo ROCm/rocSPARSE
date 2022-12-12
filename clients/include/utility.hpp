@@ -66,6 +66,30 @@ inline rocsparse_indextype get_indextype<int64_t>(void)
 
 /*! \brief  Return \ref rocsparse_datatype */
 template <>
+inline rocsparse_datatype get_datatype<int8_t>(void)
+{
+    return rocsparse_datatype_i8_r;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<uint8_t>(void)
+{
+    return rocsparse_datatype_i8_r;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<int32_t>(void)
+{
+    return rocsparse_datatype_i32_r;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<uint32_t>(void)
+{
+    return rocsparse_datatype_u32_r;
+}
+
+template <>
 inline rocsparse_datatype get_datatype<float>(void)
 {
     return rocsparse_datatype_f32_r;

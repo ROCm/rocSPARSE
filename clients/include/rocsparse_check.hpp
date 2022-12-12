@@ -35,6 +35,12 @@ template <typename T>
 struct default_tolerance;
 
 template <>
+struct default_tolerance<int32_t>
+{
+    static constexpr int32_t value = 0;
+};
+
+template <>
 struct default_tolerance<float>
 {
     static constexpr float value = 1.0e-3f;

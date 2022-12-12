@@ -24,21 +24,27 @@
 #include "testing.hpp"
 #include "testing_spmv.hpp"
 
-template <typename I, typename J, typename T>
+template <typename I, typename J, typename A, typename X, typename Y, typename T>
 void testing_spmv_bsr_bad_arg(const Arguments& arg)
 {
-    testing_spmv_dispatch<rocsparse_format_bsr, I, J, T>::testing_spmv_bad_arg(arg);
+    testing_spmv_dispatch<rocsparse_format_bsr, I, J, A, X, Y, T>::testing_spmv_bad_arg(arg);
 }
 
-template <typename I, typename J, typename T>
+template <typename I, typename J, typename A, typename X, typename Y, typename T>
 void testing_spmv_bsr(const Arguments& arg)
 {
-    testing_spmv_dispatch<rocsparse_format_bsr, I, J, T>::testing_spmv(arg);
+    testing_spmv_dispatch<rocsparse_format_bsr, I, J, A, X, Y, T>::testing_spmv(arg);
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                               \
-    template void testing_spmv_bsr_bad_arg<ITYPE, JTYPE, TTYPE>(const Arguments& arg); \
-    template void testing_spmv_bsr<ITYPE, JTYPE, TTYPE>(const Arguments& arg)
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                              \
+    template void testing_spmv_bsr_bad_arg<ITYPE, JTYPE, TTYPE, TTYPE, TTYPE, TTYPE>( \
+        const Arguments& arg);                                                        \
+    template void testing_spmv_bsr<ITYPE, JTYPE, TTYPE, TTYPE, TTYPE, TTYPE>(const Arguments& arg)
+
+#define INSTANTIATE_MIXED(ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE)                   \
+    template void testing_spmv_bsr_bad_arg<ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE>( \
+        const Arguments& arg);                                                        \
+    template void testing_spmv_bsr<ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE>(const Arguments& arg)
 
 INSTANTIATE(int32_t, int32_t, float);
 INSTANTIATE(int32_t, int32_t, double);
@@ -52,4 +58,48 @@ INSTANTIATE(int64_t, int64_t, float);
 INSTANTIATE(int64_t, int64_t, double);
 INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
+
+INSTANTIATE_MIXED(int32_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_MIXED(int64_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_MIXED(int64_t, int64_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_MIXED(int32_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE_MIXED(int64_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE_MIXED(int64_t, int64_t, int8_t, int8_t, float, float);
+INSTANTIATE_MIXED(int32_t,
+                  int32_t,
+                  float,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_MIXED(int64_t,
+                  int32_t,
+                  float,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_MIXED(int64_t,
+                  int64_t,
+                  float,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_MIXED(int32_t,
+                  int32_t,
+                  double,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_MIXED(int64_t,
+                  int32_t,
+                  double,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_MIXED(int64_t,
+                  int64_t,
+                  double,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+
 void testing_spmv_bsr_extra(const Arguments& arg) {}

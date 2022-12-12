@@ -26,19 +26,19 @@
 
 #include "handle.h"
 
-template <typename I, typename J, typename T>
+template <typename I, typename J, typename A>
 rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans,
                                                    J                         m,
                                                    J                         n,
                                                    I                         nnz,
                                                    const rocsparse_mat_descr descr,
-                                                   const T*                  csc_val,
+                                                   const A*                  csc_val,
                                                    const I*                  csc_col_ptr,
                                                    const J*                  csc_row_ind,
                                                    rocsparse_mat_info        info);
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
 rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
                                           J                         m,
@@ -46,10 +46,10 @@ rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,
                                           I                         nnz,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T*                  csc_val,
+                                          const A*                  csc_val,
                                           const I*                  csc_col_ptr,
                                           const J*                  csc_row_ind,
                                           rocsparse_mat_info        info,
-                                          const T*                  x,
+                                          const X*                  x,
                                           const T*                  beta,
-                                          T*                        y);
+                                          Y*                        y);

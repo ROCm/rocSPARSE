@@ -179,7 +179,7 @@ void host_sctr(I nnz, const T* x_val, const I* x_ind, T* y, rocsparse_index_base
  *    level 2 SPARSE
  * ===========================================================================
  */
-template <typename T, typename I, typename J>
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
 void host_bsrmv(rocsparse_direction  dir,
                 rocsparse_operation  trans,
                 J                    mb,
@@ -188,11 +188,11 @@ void host_bsrmv(rocsparse_direction  dir,
                 T                    alpha,
                 const I*             bsr_row_ptr,
                 const J*             bsr_col_ind,
-                const T*             bsr_val,
+                const A*             bsr_val,
                 J                    bsr_dim,
-                const T*             x,
+                const X*             x,
                 T                    beta,
-                T*                   y,
+                Y*                   y,
                 rocsparse_index_base base);
 
 template <typename T>
@@ -232,7 +232,7 @@ void host_bsrsv(rocsparse_operation  trans,
                 rocsparse_int*       struct_pivot,
                 rocsparse_int*       numeric_pivot);
 
-template <typename I, typename T>
+template <typename T, typename I, typename A, typename X, typename Y>
 void host_coomv(rocsparse_operation  trans,
                 I                    M,
                 I                    N,
@@ -240,26 +240,26 @@ void host_coomv(rocsparse_operation  trans,
                 T                    alpha,
                 const I*             coo_row_ind,
                 const I*             coo_col_ind,
-                const T*             coo_val,
-                const T*             x,
+                const A*             coo_val,
+                const X*             x,
                 T                    beta,
-                T*                   y,
+                Y*                   y,
                 rocsparse_index_base base);
 
-template <typename I, typename T>
+template <typename T, typename I, typename A, typename X, typename Y>
 void host_coomv_aos(rocsparse_operation  trans,
                     I                    M,
                     I                    N,
                     int64_t              nnz,
                     T                    alpha,
                     const I*             coo_ind,
-                    const T*             coo_val,
-                    const T*             x,
+                    const A*             coo_val,
+                    const X*             x,
                     T                    beta,
-                    T*                   y,
+                    Y*                   y,
                     rocsparse_index_base base);
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
 void host_csrmv(rocsparse_operation   trans,
                 J                     M,
                 J                     N,
@@ -267,16 +267,16 @@ void host_csrmv(rocsparse_operation   trans,
                 T                     alpha,
                 const I*              csr_row_ptr,
                 const J*              csr_col_ind,
-                const T*              csr_val,
-                const T*              x,
+                const A*              csr_val,
+                const X*              x,
                 T                     beta,
-                T*                    y,
+                Y*                    y,
                 rocsparse_index_base  base,
                 rocsparse_matrix_type matrix_type,
                 rocsparse_spmv_alg    algo,
                 bool                  force_conj);
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
 void host_cscmv(rocsparse_operation trans,
                 J                   M,
                 J                   N,
@@ -284,10 +284,10 @@ void host_cscmv(rocsparse_operation trans,
                 T                   alpha,
                 const I* __restrict csc_col_ptr,
                 const J* __restrict csc_row_ind,
-                const T* __restrict csc_val,
-                const T* __restrict x,
+                const A* __restrict csc_val,
+                const X* __restrict x,
                 T beta,
-                T* __restrict y,
+                Y* __restrict y,
                 rocsparse_index_base  base,
                 rocsparse_matrix_type matrix_type,
                 rocsparse_spmv_alg    algo);
@@ -324,17 +324,17 @@ void host_coosv(rocsparse_operation   trans,
                 I*                    struct_pivot,
                 I*                    numeric_pivot);
 
-template <typename I, typename T>
+template <typename T, typename I, typename A, typename X, typename Y>
 void host_ellmv(rocsparse_operation  trans,
                 I                    M,
                 I                    N,
                 T                    alpha,
                 const I*             ell_col_ind,
-                const T*             ell_val,
+                const A*             ell_val,
                 I                    ell_width,
-                const T*             x,
+                const X*             x,
                 T                    beta,
-                T*                   y,
+                Y*                   y,
                 rocsparse_index_base base);
 
 template <typename T>

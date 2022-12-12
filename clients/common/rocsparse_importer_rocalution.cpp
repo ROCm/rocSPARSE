@@ -24,6 +24,23 @@
 
 #include "rocsparse_importer_rocalution.hpp"
 
+static inline void read_csr_values(std::ifstream& in, int64_t nnz, int8_t* csr_val)
+{
+    // Temporary array to convert from double to float
+    std::vector<double> tmp(nnz);
+
+    // Read in double values
+    in.read((char*)tmp.data(), sizeof(double) * nnz);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(int64_t i = 0; i < nnz; ++i)
+    {
+        csr_val[i] = static_cast<int8_t>(tmp[i]);
+    }
+}
+
 static inline void read_csr_values(std::ifstream& in, int64_t nnz, float* csr_val)
 {
     // Temporary array to convert from double to float
@@ -287,6 +304,10 @@ INSTANTIATE_IJ(int32_t, int32_t);
 INSTANTIATE_IJ(int64_t, int32_t);
 INSTANTIATE_IJ(int64_t, int64_t);
 
+INSTANTIATE_TIJ(int8_t, int32_t, int32_t);
+INSTANTIATE_TIJ(int8_t, int64_t, int32_t);
+INSTANTIATE_TIJ(int8_t, int64_t, int64_t);
+
 INSTANTIATE_TIJ(float, int32_t, int32_t);
 INSTANTIATE_TIJ(float, int64_t, int32_t);
 INSTANTIATE_TIJ(float, int64_t, int64_t);
@@ -302,6 +323,9 @@ INSTANTIATE_TIJ(rocsparse_float_complex, int64_t, int64_t);
 INSTANTIATE_TIJ(rocsparse_double_complex, int32_t, int32_t);
 INSTANTIATE_TIJ(rocsparse_double_complex, int64_t, int32_t);
 INSTANTIATE_TIJ(rocsparse_double_complex, int64_t, int64_t);
+
+INSTANTIATE_TI(int8_t, int32_t);
+INSTANTIATE_TI(int8_t, int64_t);
 
 INSTANTIATE_TI(float, int32_t);
 INSTANTIATE_TI(float, int64_t);

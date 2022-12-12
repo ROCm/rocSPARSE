@@ -126,18 +126,18 @@ void testing_coomv(const Arguments& arg)
         {
             host_dense_matrix<T> hy_copy(hy);
             // CPU coomv
-            host_coomv<rocsparse_int, T>(trans,
-                                         hA.m,
-                                         hA.n,
-                                         hA.nnz,
-                                         *h_alpha,
-                                         hA.row_ind,
-                                         hA.col_ind,
-                                         hA.val,
-                                         hx,
-                                         *h_beta,
-                                         hy,
-                                         hA.base);
+            host_coomv<T, rocsparse_int, T, T, T>(trans,
+                                                  hA.m,
+                                                  hA.n,
+                                                  hA.nnz,
+                                                  *h_alpha,
+                                                  hA.row_ind,
+                                                  hA.col_ind,
+                                                  hA.val,
+                                                  hx,
+                                                  *h_beta,
+                                                  hy,
+                                                  hA.base);
             hy.near_check(dy);
             dy = hy_copy;
         }

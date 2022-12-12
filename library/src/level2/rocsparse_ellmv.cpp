@@ -28,71 +28,71 @@
 #include "ellmv_device.h"
 #include "utility.h"
 
-template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void ellmvn_kernel(I m,
                                                                  I n,
                                                                  I ell_width,
                                                                  U alpha_device_host,
                                                                  const I* __restrict__ ell_col_ind,
-                                                                 const T* __restrict__ ell_val,
-                                                                 const T* __restrict__ x,
+                                                                 const A* __restrict__ ell_val,
+                                                                 const X* __restrict__ x,
                                                                  U beta_device_host,
-                                                                 T* __restrict__ y,
+                                                                 Y* __restrict__ y,
                                                                  rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
-    if(alpha != static_cast<T>(0) || beta != static_cast<T>(1))
+    if(alpha != 0 || beta != 1)
     {
         ellmvn_device<BLOCKSIZE>(
             m, n, ell_width, alpha, ell_col_ind, ell_val, x, beta, y, idx_base);
     }
 }
 
-template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void ellmvt_kernel(rocsparse_operation trans,
                                                                  I                   m,
                                                                  I                   n,
                                                                  I                   ell_width,
                                                                  U alpha_device_host,
                                                                  const I* __restrict__ ell_col_ind,
-                                                                 const T* __restrict__ ell_val,
-                                                                 const T* __restrict__ x,
-                                                                 T* __restrict__ y,
+                                                                 const A* __restrict__ ell_val,
+                                                                 const X* __restrict__ x,
+                                                                 Y* __restrict__ y,
                                                                  rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
-    if(alpha != static_cast<T>(0))
+    if(alpha != 0)
     {
         ellmvt_device<BLOCKSIZE>(
             trans, m, n, ell_width, alpha, ell_col_ind, ell_val, x, y, idx_base);
     }
 }
 
-template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+template <unsigned int BLOCKSIZE, typename I, typename Y, typename U>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void ellmvt_scale_kernel(I size, U scalar_device_host, T* __restrict__ data)
+    void ellmvt_scale_kernel(I size, U scalar_device_host, Y* __restrict__ data)
 {
     auto scalar = load_scalar_device_host(scalar_device_host);
-    if(scalar != static_cast<T>(1))
+    if(scalar != 1)
     {
         ellmvt_scale_device(size, scalar, data);
     }
 }
 
-template <typename I, typename T, typename U>
+template <typename I, typename A, typename X, typename Y, typename U>
 rocsparse_status rocsparse_ellmv_dispatch(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
                                           I                         m,
                                           I                         n,
                                           U                         alpha_device_host,
                                           const rocsparse_mat_descr descr,
-                                          const T*                  ell_val,
+                                          const A*                  ell_val,
                                           const I*                  ell_col_ind,
                                           I                         ell_width,
-                                          const T*                  x,
+                                          const X*                  x,
                                           U                         beta_device_host,
-                                          T*                        y)
+                                          Y*                        y)
 {
     // Stream
     hipStream_t stream = handle->stream;
@@ -129,19 +129,19 @@ rocsparse_status rocsparse_ellmv_dispatch(rocsparse_handle          handle,
     return rocsparse_status_success;
 }
 
-template <typename I, typename T>
+template <typename T, typename I, typename A, typename X, typename Y>
 rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
                                           I                         m,
                                           I                         n,
                                           const T*                  alpha_device_host,
                                           const rocsparse_mat_descr descr,
-                                          const T*                  ell_val,
+                                          const A*                  ell_val,
                                           const I*                  ell_col_ind,
                                           I                         ell_width,
-                                          const T*                  x,
+                                          const X*                  x,
                                           const T*                  beta_device_host,
-                                          T*                        y)
+                                          Y*                        y)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -264,30 +264,57 @@ rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, TTYPE)                                     \
-    template rocsparse_status rocsparse_ellmv_template<ITYPE, TTYPE>( \
-        rocsparse_handle          handle,                             \
-        rocsparse_operation       trans,                              \
-        ITYPE                     m,                                  \
-        ITYPE                     n,                                  \
-        const TTYPE*              alpha,                              \
-        const rocsparse_mat_descr descr,                              \
-        const TTYPE*              ell_val,                            \
-        const ITYPE*              ell_col_ind,                        \
-        ITYPE                     ell_width,                          \
-        const TTYPE*              x,                                  \
-        const TTYPE*              beta,                               \
-        TTYPE*                    y);
+#define INSTANTIATE(TTYPE, ITYPE)                                                             \
+    template rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,      \
+                                                       rocsparse_operation       trans,       \
+                                                       ITYPE                     m,           \
+                                                       ITYPE                     n,           \
+                                                       const TTYPE*              alpha,       \
+                                                       const rocsparse_mat_descr descr,       \
+                                                       const TTYPE*              ell_val,     \
+                                                       const ITYPE*              ell_col_ind, \
+                                                       ITYPE                     ell_width,   \
+                                                       const TTYPE*              x,           \
+                                                       const TTYPE*              beta,        \
+                                                       TTYPE*                    y);
 
-INSTANTIATE(int32_t, float)
-INSTANTIATE(int32_t, double)
-INSTANTIATE(int32_t, rocsparse_float_complex)
-INSTANTIATE(int32_t, rocsparse_double_complex)
-INSTANTIATE(int64_t, float)
-INSTANTIATE(int64_t, double)
-INSTANTIATE(int64_t, rocsparse_float_complex)
-INSTANTIATE(int64_t, rocsparse_double_complex)
+INSTANTIATE(float, int32_t);
+INSTANTIATE(float, int64_t);
+INSTANTIATE(double, int32_t);
+INSTANTIATE(double, int64_t);
+INSTANTIATE(rocsparse_float_complex, int32_t);
+INSTANTIATE(rocsparse_float_complex, int64_t);
+INSTANTIATE(rocsparse_double_complex, int32_t);
+INSTANTIATE(rocsparse_double_complex, int64_t);
 #undef INSTANTIATE
+
+#define INSTANTIATE_MIXED(TTYPE, ITYPE, ATYPE, XTYPE, YTYPE)                                  \
+    template rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,      \
+                                                       rocsparse_operation       trans,       \
+                                                       ITYPE                     m,           \
+                                                       ITYPE                     n,           \
+                                                       const TTYPE*              alpha,       \
+                                                       const rocsparse_mat_descr descr,       \
+                                                       const ATYPE*              ell_val,     \
+                                                       const ITYPE*              ell_col_ind, \
+                                                       ITYPE                     ell_width,   \
+                                                       const XTYPE*              x,           \
+                                                       const TTYPE*              beta,        \
+                                                       YTYPE*                    y);
+
+INSTANTIATE_MIXED(int32_t, int32_t, int8_t, int8_t, int32_t);
+INSTANTIATE_MIXED(int32_t, int64_t, int8_t, int8_t, int32_t);
+INSTANTIATE_MIXED(float, int32_t, int8_t, int8_t, float);
+INSTANTIATE_MIXED(float, int64_t, int8_t, int8_t, float);
+INSTANTIATE_MIXED(
+    rocsparse_float_complex, int32_t, float, rocsparse_float_complex, rocsparse_float_complex);
+INSTANTIATE_MIXED(
+    rocsparse_float_complex, int64_t, float, rocsparse_float_complex, rocsparse_float_complex);
+INSTANTIATE_MIXED(
+    rocsparse_double_complex, int32_t, double, rocsparse_double_complex, rocsparse_double_complex);
+INSTANTIATE_MIXED(
+    rocsparse_double_complex, int64_t, double, rocsparse_double_complex, rocsparse_double_complex);
+#undef INSTANTIATE_MIXED
 
 /*
  * ===========================================================================

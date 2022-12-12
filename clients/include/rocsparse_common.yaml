@@ -38,6 +38,10 @@ Datatypes:
         f64_r: 152
         f32_c: 154
         f64_c: 155
+        i8_r:  160
+        u8_r:  161
+        i32_r: 162
+        u32_r: 163
   - { single: f32_r, double: f64_r }
   - { single complex: f32_c, double complex: f64_c }
   - rocsparse_matrix_init:
@@ -194,11 +198,11 @@ Datatypes:
         rocsparse_gpsv_interleaved_alg_default: 0
         rocsparse_gpsv_interleaved_alg_qr: 1
 
-indextype i64: &i32
+indextype i32: &i32
   - index_type_I: i32
     index_type_J: i32
 
-indextype i64: &i64i32
+indextype i64i32 mixture: &i64i32
   - index_type_I: i64
     index_type_J: i32
 
@@ -221,16 +225,24 @@ indextype i32 i64i32 mixture and i64: &i32i32_i64i32_i64i64
     index_type_J: i64
 
 Real precisions: &real_precisions
+  - &int8_int8_int32_int32_precision
+    { a_type: i8_r, b_type: i8_r, c_type: i8_r, x_type: i8_r, y_type: i32_r, compute_type: i32_r }
+  - &int8_int8_float32_float32_precision
+    { a_type: i8_r, b_type: i8_r, c_type: i8_r, x_type: i8_r, y_type: f32_r, compute_type: f32_r }
   - &single_precision
-    { compute_type: f32_r }
+    { a_type: f32_r, b_type: f32_r, c_type: f32_r, x_type: f32_r, y_type: f32_r, compute_type: f32_r }
   - &double_precision
-    { compute_type: f64_r }
+    { a_type: f64_r, b_type: f64_r, c_type: f64_r, x_type: f64_r, y_type: f64_r, compute_type: f64_r }
 
 Complex precisions: &complex_precisions
+  - &float32_cmplx32_cmplx32_cmplx32_precision
+    { a_type: f32_r, b_type: f32_r, c_type: f32_r, x_type: f32_c, y_type: f32_c, compute_type: f32_c }
+  - &float64_cmplx64_cmplx64_cmplx64_precision
+    { a_type: f64_r, b_type: f64_r, c_type: f64_r, x_type: f64_c, y_type: f64_c, compute_type: f64_c }
   - &single_precision_complex
-    { compute_type: f32_c }
+    { a_type: f32_c, b_type: f32_c, c_type: f32_c, x_type: f32_c, y_type: f32_c, compute_type: f32_c }
   - &double_precision_complex
-    { compute_type: f64_c }
+    { a_type: f64_c, b_type: f64_c, c_type: f64_c, x_type: f64_c, y_type: f64_c, compute_type: f64_c }
 
 C precisions real: &single_only_precisions
   - *single_precision
@@ -281,6 +293,11 @@ Arguments:
   - uu: rocsparse_int
   - index_type_I: rocsparse_indextype
   - index_type_J: rocsparse_indextype
+  - a_type: rocsparse_datatype
+  - b_type: rocsparse_datatype
+  - c_type: rocsparse_datatype
+  - x_type: rocsparse_datatype
+  - y_type: rocsparse_datatype
   - compute_type: rocsparse_datatype
   - alpha: c_double
   - alphai: c_double
@@ -456,4 +473,9 @@ Defaults:
   name: '*'
   index_type_I: i32
   index_type_J: i32
+  a_type: f32_r
+  b_type: f32_r
+  c_type: f32_r
+  x_type: f32_r
+  y_type: f32_r
   compute_type: f32_r

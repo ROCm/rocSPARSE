@@ -27,8 +27,8 @@
 #include "common.h"
 
 // Scale kernel for beta != 1.0
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, T* __restrict__ data)
+template <unsigned int BLOCKSIZE, typename I, typename Y, typename T>
+ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, Y* __restrict__ data)
 {
     I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -37,28 +37,28 @@ ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, T* __restrict__ dat
         return;
     }
 
-    if(beta == static_cast<T>(0))
+    if(beta == 0)
     {
-        data[gid] = static_cast<T>(0);
+        data[gid] = static_cast<Y>(0);
     }
     else
     {
-        data[gid] = data[gid] * beta;
+        data[gid] = static_cast<Y>(beta * data[gid]);
     }
 }
 
 // Implementation motivated by papers 'Efficient Sparse Matrix-Vector Multiplication on CUDA',
 // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
 // 'Segmented operations for sparse matrix computation on vector multiprocessors'
-template <unsigned int BLOCKSIZE, typename I, typename T>
+template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
 static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
                                                                I       nloops,
                                                                T       alpha,
                                                                const I* __restrict__ coo_row_ind,
                                                                const I* __restrict__ coo_col_ind,
-                                                               const T* __restrict__ coo_val,
-                                                               const T* __restrict__ x,
-                                                               T* __restrict__ y,
+                                                               const A* __restrict__ coo_val,
+                                                               const X* __restrict__ x,
+                                                               Y* __restrict__ y,
                                                                I* __restrict__ row_block_red,
                                                                T* __restrict__ val_block_red,
                                                                rocsparse_index_base idx_base)
@@ -78,8 +78,9 @@ static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
     if(idx < nnz)
     {
         row = rocsparse_nontemporal_load(coo_row_ind + idx) - idx_base;
-        val = rocsparse_nontemporal_load(coo_val + idx)
-              * rocsparse_ldg(x + rocsparse_nontemporal_load(coo_col_ind + idx) - idx_base);
+        val = static_cast<T>(rocsparse_nontemporal_load(coo_val + idx))
+              * static_cast<T>(
+                  rocsparse_ldg(x + rocsparse_nontemporal_load(coo_col_ind + idx) - idx_base));
     }
     else
     {
@@ -112,7 +113,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
     {
         if(row != shared_row[tid + 1] && row >= 0)
         {
-            y[row] = rocsparse_fma(alpha, val, y[row]);
+            y[row] = rocsparse_fma<T>(alpha, val, y[row]);
         }
     }
 
@@ -127,8 +128,9 @@ static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
         if(idx < nnz)
         {
             row = rocsparse_nontemporal_load(coo_row_ind + idx) - idx_base;
-            val = rocsparse_nontemporal_load(coo_val + idx)
-                  * rocsparse_ldg(x + rocsparse_nontemporal_load(coo_col_ind + idx) - idx_base);
+            val = static_cast<T>(rocsparse_nontemporal_load(coo_val + idx))
+                  * static_cast<T>(
+                      rocsparse_ldg(x + rocsparse_nontemporal_load(coo_col_ind + idx) - idx_base));
         }
         else
         {
@@ -148,7 +150,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
             }
             else if(prevrow >= 0)
             {
-                y[prevrow] = rocsparse_fma(alpha, shared_val[BLOCKSIZE - 1], y[prevrow]);
+                y[prevrow] = rocsparse_fma<T>(alpha, shared_val[BLOCKSIZE - 1], y[prevrow]);
             }
         }
 
@@ -178,7 +180,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
         {
             if(row != shared_row[tid + 1] && row >= 0)
             {
-                y[row] = rocsparse_fma(alpha, val, y[row]);
+                y[row] = rocsparse_fma<T>(alpha, val, y[row]);
             }
         }
     }
@@ -216,12 +218,12 @@ static ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* rows, T* vals)
 }
 
 // Do the final block reduction of the block reduction buffers back into global memory
-template <unsigned int BLOCKSIZE, typename I, typename T>
+template <unsigned int BLOCKSIZE, typename I, typename Y, typename T>
 static ROCSPARSE_DEVICE_ILF void
     coomvn_segmented_loops_reduce_device(I nblocks,
                                          const I* __restrict__ row_block_red,
                                          const T* __restrict__ val_block_red,
-                                         T* __restrict__ y)
+                                         Y* __restrict__ y)
 {
     int tid = hipThreadIdx_x;
 
@@ -258,14 +260,14 @@ static ROCSPARSE_DEVICE_ILF void
 // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
 // 'Segmented operations for sparse matrix computation on vector multiprocessors' for array
 // of structure format (AoS)
-template <unsigned int BLOCKSIZE, typename I, typename T>
+template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
 static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
                                                                    I       nloops,
                                                                    T       alpha,
                                                                    const I* __restrict__ coo_ind,
-                                                                   const T* __restrict__ coo_val,
-                                                                   const T* __restrict__ x,
-                                                                   T* __restrict__ y,
+                                                                   const A* __restrict__ coo_val,
+                                                                   const X* __restrict__ x,
+                                                                   Y* __restrict__ y,
                                                                    I* __restrict__ row_block_red,
                                                                    T* __restrict__ val_block_red,
                                                                    rocsparse_index_base idx_base)
@@ -285,8 +287,9 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
     if(idx < nnz)
     {
         row = rocsparse_nontemporal_load(coo_ind + 2 * idx) - idx_base;
-        val = rocsparse_nontemporal_load(coo_val + idx)
-              * rocsparse_ldg(x + rocsparse_nontemporal_load(coo_ind + 2 * idx + 1) - idx_base);
+        val = static_cast<T>(rocsparse_nontemporal_load(coo_val + idx))
+              * static_cast<T>(
+                  rocsparse_ldg(x + rocsparse_nontemporal_load(coo_ind + 2 * idx + 1) - idx_base));
     }
     else
     {
@@ -319,7 +322,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
     {
         if(row != shared_row[tid + 1] && row >= 0)
         {
-            y[row] = rocsparse_fma(alpha, val, y[row]);
+            y[row] = rocsparse_fma<T>(alpha, val, y[row]);
         }
     }
 
@@ -334,8 +337,9 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
         if(idx < nnz)
         {
             row = rocsparse_nontemporal_load(coo_ind + 2 * idx) - idx_base;
-            val = rocsparse_nontemporal_load(coo_val + idx)
-                  * rocsparse_ldg(x + rocsparse_nontemporal_load(coo_ind + 2 * idx + 1) - idx_base);
+            val = static_cast<T>(rocsparse_nontemporal_load(coo_val + idx))
+                  * static_cast<T>(rocsparse_ldg(
+                      x + rocsparse_nontemporal_load(coo_ind + 2 * idx + 1) - idx_base));
         }
         else
         {
@@ -355,7 +359,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
             }
             else if(prevrow >= 0)
             {
-                y[prevrow] = rocsparse_fma(alpha, shared_val[BLOCKSIZE - 1], y[prevrow]);
+                y[prevrow] = rocsparse_fma<T>(alpha, shared_val[BLOCKSIZE - 1], y[prevrow]);
             }
         }
 
@@ -385,7 +389,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
         {
             if(row != shared_row[tid + 1] && row >= 0)
             {
-                y[row] = rocsparse_fma(alpha, val, y[row]);
+                y[row] = rocsparse_fma<T>(alpha, val, y[row]);
             }
         }
     }
@@ -398,14 +402,20 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int LOOPS, typename I, typename T>
+template <unsigned int BLOCKSIZE,
+          unsigned int LOOPS,
+          typename I,
+          typename A,
+          typename X,
+          typename Y,
+          typename T>
 static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
                                                             T       alpha,
                                                             const I* __restrict__ coo_row_ind,
                                                             const I* __restrict__ coo_col_ind,
-                                                            const T* __restrict__ coo_val,
-                                                            const T* __restrict__ x,
-                                                            T* __restrict__ y,
+                                                            const A* __restrict__ coo_val,
+                                                            const X* __restrict__ x,
+                                                            Y* __restrict__ y,
                                                             rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -424,7 +434,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
     {
         row = rocsparse_nontemporal_load(&coo_row_ind[idx]) - idx_base;
         col = rocsparse_nontemporal_load(&coo_col_ind[idx]) - idx_base;
-        val = rocsparse_nontemporal_load(&coo_val[idx]) * x[col];
+        val = static_cast<T>(rocsparse_nontemporal_load(&coo_val[idx])) * static_cast<T>(x[col]);
     }
     else
     {
@@ -471,7 +481,8 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
             {
                 row = rocsparse_nontemporal_load(&coo_row_ind[idx]) - idx_base;
                 col = rocsparse_nontemporal_load(&coo_col_ind[idx]) - idx_base;
-                val = rocsparse_nontemporal_load(&coo_val[idx]) * x[col];
+                val = static_cast<T>(rocsparse_nontemporal_load(&coo_val[idx]))
+                      * static_cast<T>(x[col]);
             }
             else
             {
@@ -535,13 +546,19 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int LOOPS, typename I, typename T>
+template <unsigned int BLOCKSIZE,
+          unsigned int LOOPS,
+          typename I,
+          typename A,
+          typename X,
+          typename Y,
+          typename T>
 static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
                                                                 T       alpha,
                                                                 const I* __restrict__ coo_ind,
-                                                                const T* __restrict__ coo_val,
-                                                                const T* __restrict__ x,
-                                                                T* __restrict__ y,
+                                                                const A* __restrict__ coo_val,
+                                                                const X* __restrict__ x,
+                                                                Y* __restrict__ y,
                                                                 rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -560,7 +577,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
     {
         row = rocsparse_nontemporal_load(&coo_ind[2 * idx]) - idx_base;
         col = rocsparse_nontemporal_load(&coo_ind[2 * idx + 1]) - idx_base;
-        val = rocsparse_nontemporal_load(&coo_val[idx]) * x[col];
+        val = static_cast<T>(rocsparse_nontemporal_load(&coo_val[idx])) * static_cast<T>(x[col]);
     }
     else
     {
@@ -605,7 +622,8 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
         {
             row = rocsparse_nontemporal_load(&coo_ind[2 * idx]) - idx_base;
             col = rocsparse_nontemporal_load(&coo_ind[2 * idx + 1]) - idx_base;
-            val = rocsparse_nontemporal_load(&coo_val[idx]) * x[col];
+            val = static_cast<T>(rocsparse_nontemporal_load(&coo_val[idx]))
+                  * static_cast<T>(x[col]);
         }
         else
         {
@@ -668,15 +686,15 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
     }
 }
 
-template <typename I, typename T>
+template <typename I, typename A, typename X, typename Y, typename T>
 static ROCSPARSE_DEVICE_ILF void coomvt_device(rocsparse_operation  trans,
                                                int64_t              nnz,
                                                T                    alpha,
                                                const I*             coo_row_ind,
                                                const I*             coo_col_ind,
-                                               const T*             coo_val,
-                                               const T*             x,
-                                               T*                   y,
+                                               const A*             coo_val,
+                                               const X*             x,
+                                               Y*                   y,
                                                rocsparse_index_base idx_base)
 {
     int64_t gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -688,20 +706,20 @@ static ROCSPARSE_DEVICE_ILF void coomvt_device(rocsparse_operation  trans,
 
     I row = coo_row_ind[gid] - idx_base;
     I col = coo_col_ind[gid] - idx_base;
-    T val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse_conj(coo_val[gid])
+    A val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse_conj(coo_val[gid])
                                                                : coo_val[gid];
 
     atomicAdd(&y[col], alpha * val * x[row]);
 }
 
-template <typename I, typename T>
+template <typename I, typename A, typename X, typename Y, typename T>
 static ROCSPARSE_DEVICE_ILF void coomvt_aos_device(rocsparse_operation  trans,
                                                    int64_t              nnz,
                                                    T                    alpha,
                                                    const I*             coo_ind,
-                                                   const T*             coo_val,
-                                                   const T*             x,
-                                                   T*                   y,
+                                                   const A*             coo_val,
+                                                   const X*             x,
+                                                   Y*                   y,
                                                    rocsparse_index_base idx_base)
 {
     int64_t gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -713,7 +731,7 @@ static ROCSPARSE_DEVICE_ILF void coomvt_aos_device(rocsparse_operation  trans,
 
     I row = coo_ind[2 * gid] - idx_base;
     I col = coo_ind[2 * gid + 1] - idx_base;
-    T val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse_conj(coo_val[gid])
+    A val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse_conj(coo_val[gid])
                                                                : coo_val[gid];
 
     atomicAdd(&y[col], alpha * val * x[row]);

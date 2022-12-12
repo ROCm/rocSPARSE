@@ -28,14 +28,14 @@
 #include "definitions.h"
 #include "utility.h"
 
-template <typename I, typename J, typename T>
+template <typename I, typename J, typename A>
 rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans,
                                                    J                         m,
                                                    J                         n,
                                                    I                         nnz,
                                                    const rocsparse_mat_descr descr,
-                                                   const T*                  csc_val,
+                                                   const A*                  csc_val,
                                                    const I*                  csc_col_ptr,
                                                    const J*                  csc_row_ind,
                                                    rocsparse_mat_info        info)
@@ -74,7 +74,7 @@ rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          han
     return rocsparse_status_not_implemented;
 }
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
 rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
                                           J                         m,
@@ -82,13 +82,13 @@ rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,
                                           I                         nnz,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T*                  csc_val,
+                                          const A*                  csc_val,
                                           const I*                  csc_col_ptr,
                                           const J*                  csc_row_ind,
                                           rocsparse_mat_info        info,
-                                          const T*                  x,
+                                          const X*                  x,
                                           const T*                  beta,
-                                          T*                        y)
+                                          Y*                        y)
 {
     switch(trans)
     {
@@ -154,60 +154,119 @@ rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,
     return rocsparse_status_not_implemented;
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                              \
-    template rocsparse_status rocsparse_cscmv_analysis_template<ITYPE, JTYPE, TTYPE>( \
-        rocsparse_handle          handle,                                             \
-        rocsparse_operation       trans,                                              \
-        JTYPE                     m,                                                  \
-        JTYPE                     n,                                                  \
-        ITYPE                     nnz,                                                \
-        const rocsparse_mat_descr descr,                                              \
-        const TTYPE*              csc_val,                                            \
-        const ITYPE*              csc_col_ptr,                                        \
-        const JTYPE*              csc_row_ind,                                        \
-        rocsparse_mat_info        info);
+#define INSTANTIATE(TTYPE, ITYPE, JTYPE)                                                           \
+    template rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          handle,  \
+                                                                rocsparse_operation       trans,   \
+                                                                JTYPE                     m,       \
+                                                                JTYPE                     n,       \
+                                                                ITYPE                     nnz,     \
+                                                                const rocsparse_mat_descr descr,   \
+                                                                const TTYPE*              csc_val, \
+                                                                const ITYPE*       csc_col_ptr,    \
+                                                                const JTYPE*       csc_row_ind,    \
+                                                                rocsparse_mat_info info);          \
+    template rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,           \
+                                                       rocsparse_operation       trans,            \
+                                                       JTYPE                     m,                \
+                                                       JTYPE                     n,                \
+                                                       ITYPE                     nnz,              \
+                                                       const TTYPE*              alpha,            \
+                                                       const rocsparse_mat_descr descr,            \
+                                                       const TTYPE*              csc_val,          \
+                                                       const ITYPE*              csc_col_ptr,      \
+                                                       const JTYPE*              csc_row_ind,      \
+                                                       rocsparse_mat_info        info,             \
+                                                       const TTYPE*              x,                \
+                                                       const TTYPE*              beta,             \
+                                                       TTYPE*                    y);
 
-INSTANTIATE(int32_t, int32_t, float);
-INSTANTIATE(int32_t, int32_t, double);
-INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int32_t, float);
-INSTANTIATE(int64_t, int32_t, double);
-INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int64_t, float);
-INSTANTIATE(int64_t, int64_t, double);
-INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
+INSTANTIATE(float, int32_t, int32_t);
+INSTANTIATE(float, int64_t, int32_t);
+INSTANTIATE(float, int64_t, int64_t);
+INSTANTIATE(double, int32_t, int32_t);
+INSTANTIATE(double, int64_t, int32_t);
+INSTANTIATE(double, int64_t, int64_t);
+INSTANTIATE(rocsparse_float_complex, int32_t, int32_t);
+INSTANTIATE(rocsparse_float_complex, int64_t, int32_t);
+INSTANTIATE(rocsparse_float_complex, int64_t, int64_t);
+INSTANTIATE(rocsparse_double_complex, int32_t, int32_t);
+INSTANTIATE(rocsparse_double_complex, int64_t, int32_t);
+INSTANTIATE(rocsparse_double_complex, int64_t, int64_t);
 #undef INSTANTIATE
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                     \
-    template rocsparse_status rocsparse_cscmv_template<ITYPE, JTYPE, TTYPE>( \
-        rocsparse_handle          handle,                                    \
-        rocsparse_operation       trans,                                     \
-        JTYPE                     m,                                         \
-        JTYPE                     n,                                         \
-        ITYPE                     nnz,                                       \
-        const TTYPE*              alpha,                                     \
-        const rocsparse_mat_descr descr,                                     \
-        const TTYPE*              csc_val,                                   \
-        const ITYPE*              csc_col_ptr,                               \
-        const JTYPE*              csc_row_ind,                               \
-        rocsparse_mat_info        info,                                      \
-        const TTYPE*              x,                                         \
-        const TTYPE*              beta,                                      \
-        TTYPE*                    y);
+#define INSTANTIATE_MIXED_ANALYSIS(ITYPE, JTYPE, ATYPE)                                            \
+    template rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          handle,  \
+                                                                rocsparse_operation       trans,   \
+                                                                JTYPE                     m,       \
+                                                                JTYPE                     n,       \
+                                                                ITYPE                     nnz,     \
+                                                                const rocsparse_mat_descr descr,   \
+                                                                const ATYPE*              csc_val, \
+                                                                const ITYPE*       csc_col_ptr,    \
+                                                                const JTYPE*       csc_row_ind,    \
+                                                                rocsparse_mat_info info);
 
-INSTANTIATE(int32_t, int32_t, float);
-INSTANTIATE(int32_t, int32_t, double);
-INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int32_t, float);
-INSTANTIATE(int64_t, int32_t, double);
-INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int64_t, float);
-INSTANTIATE(int64_t, int64_t, double);
-INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
-#undef INSTANTIATE
+INSTANTIATE_MIXED_ANALYSIS(int32_t, int32_t, int8_t);
+INSTANTIATE_MIXED_ANALYSIS(int64_t, int32_t, int8_t);
+INSTANTIATE_MIXED_ANALYSIS(int64_t, int64_t, int8_t);
+#undef INSTANTIATE_MIXED_ANALYSIS
+
+#define INSTANTIATE_MIXED(TTYPE, ITYPE, JTYPE, ATYPE, XTYPE, YTYPE)                           \
+    template rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,      \
+                                                       rocsparse_operation       trans,       \
+                                                       JTYPE                     m,           \
+                                                       JTYPE                     n,           \
+                                                       ITYPE                     nnz,         \
+                                                       const TTYPE*              alpha,       \
+                                                       const rocsparse_mat_descr descr,       \
+                                                       const ATYPE*              csc_val,     \
+                                                       const ITYPE*              csc_col_ptr, \
+                                                       const JTYPE*              csc_row_ind, \
+                                                       rocsparse_mat_info        info,        \
+                                                       const XTYPE*              x,           \
+                                                       const TTYPE*              beta,        \
+                                                       YTYPE*                    y);
+
+INSTANTIATE_MIXED(int32_t, int32_t, int32_t, int8_t, int8_t, int32_t);
+INSTANTIATE_MIXED(int32_t, int64_t, int32_t, int8_t, int8_t, int32_t);
+INSTANTIATE_MIXED(int32_t, int64_t, int64_t, int8_t, int8_t, int32_t);
+INSTANTIATE_MIXED(float, int32_t, int32_t, int8_t, int8_t, float);
+INSTANTIATE_MIXED(float, int64_t, int32_t, int8_t, int8_t, float);
+INSTANTIATE_MIXED(float, int64_t, int64_t, int8_t, int8_t, float);
+INSTANTIATE_MIXED(rocsparse_float_complex,
+                  int32_t,
+                  int32_t,
+                  float,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_MIXED(rocsparse_float_complex,
+                  int64_t,
+                  int32_t,
+                  float,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_MIXED(rocsparse_float_complex,
+                  int64_t,
+                  int64_t,
+                  float,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_MIXED(rocsparse_double_complex,
+                  int32_t,
+                  int32_t,
+                  double,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_MIXED(rocsparse_double_complex,
+                  int64_t,
+                  int32_t,
+                  double,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_MIXED(rocsparse_double_complex,
+                  int64_t,
+                  int64_t,
+                  double,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+#undef INSTANTIATE_MIXED

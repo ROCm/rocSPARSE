@@ -7,6 +7,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Added bsrgemm and spgemm for BSR format
 - Added bsrgeam
 - Added build support for Navi32
+- Added mixed precisions for SpMV
 ### Improved
 - Optimization to csr2bsr
 - Optimization to csr2csr_compress

@@ -93,6 +93,13 @@ rocsparse_status
             uplo,
             storage,
             buffer_size);
+    case rocsparse_datatype_i8_r:
+    case rocsparse_datatype_u8_r:
+    case rocsparse_datatype_i32_r:
+    case rocsparse_datatype_u32_r:
+    {
+        return rocsparse_status_not_implemented;
+    }
     }
 }
 
@@ -168,6 +175,13 @@ rocsparse_status
             uplo,
             storage,
             buffer_size);
+    case rocsparse_datatype_i8_r:
+    case rocsparse_datatype_u8_r:
+    case rocsparse_datatype_i32_r:
+    case rocsparse_datatype_u32_r:
+    {
+        return rocsparse_status_not_implemented;
+    }
     }
 }
 
@@ -242,6 +256,13 @@ rocsparse_status rocsparse_check_matrix_ell_template_dispatch(rocsparse_datatype
             storage,
             data_status,
             temp_buffer);
+    case rocsparse_datatype_i8_r:
+    case rocsparse_datatype_u8_r:
+    case rocsparse_datatype_i32_r:
+    case rocsparse_datatype_u32_r:
+    {
+        return rocsparse_status_not_implemented;
+    }
     }
 }
 
@@ -321,6 +342,13 @@ rocsparse_status rocsparse_check_matrix_coo_template_dispatch(rocsparse_datatype
             storage,
             data_status,
             temp_buffer);
+    case rocsparse_datatype_i8_r:
+    case rocsparse_datatype_u8_r:
+    case rocsparse_datatype_i32_r:
+    case rocsparse_datatype_u32_r:
+    {
+        return rocsparse_status_not_implemented;
+    }
     }
 }
 

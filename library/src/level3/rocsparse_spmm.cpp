@@ -820,6 +820,13 @@ static inline rocsparse_status rocsparse_spmm_dynamic_dispatch(rocsparse_indexty
         }
         }
     }
+    case rocsparse_datatype_i8_r:
+    case rocsparse_datatype_u8_r:
+    case rocsparse_datatype_i32_r:
+    case rocsparse_datatype_u32_r:
+    {
+        return rocsparse_status_not_implemented;
+    }
     }
     return rocsparse_status_invalid_value;
 }

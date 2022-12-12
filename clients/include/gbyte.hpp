@@ -79,37 +79,92 @@ constexpr double sctr_gbyte_count(I nnz)
  *    level 2 SPARSE
  * ===========================================================================
  */
-template <typename T>
-constexpr double bsrmv_gbyte_count(rocsparse_int mb,
-                                   rocsparse_int nb,
-                                   rocsparse_int nnzb,
-                                   rocsparse_int bsr_dim,
-                                   bool          beta = false)
+template <typename A, typename X, typename Y, typename I, typename J>
+constexpr double bsrmv_gbyte_count(J mb, J nb, I nnzb, J block_dim, bool beta = false)
 {
-    return ((mb + 1 + nnzb) * sizeof(rocsparse_int)
-            + ((mb + nb) * bsr_dim + nnzb * bsr_dim * bsr_dim + (beta ? mb * bsr_dim : 0))
-                  * sizeof(T))
+    return (sizeof(I) * (mb + 1) + sizeof(J) * nnzb + sizeof(A) * nnzb * block_dim * block_dim
+            + sizeof(Y) * (mb * block_dim + (beta ? mb * block_dim : 0))
+            + sizeof(X) * (nb * block_dim))
+           / 1e9;
+}
+
+template <typename T, typename I, typename J>
+constexpr double bsrmv_gbyte_count(J mb, J nb, I nnzb, J block_dim, bool beta = false)
+{
+    return bsrmv_gbyte_count<T, T, T>(mb, nb, nnzb, block_dim, beta);
+}
+
+template <typename A, typename X, typename Y, typename I>
+constexpr double coomv_gbyte_count(I M, I N, int64_t nnz, bool beta = false)
+{
+    return (sizeof(I) * 2.0 * nnz + sizeof(A) * nnz + sizeof(Y) * (M + (beta ? M : 0))
+            + sizeof(X) * N)
            / 1e9;
 }
 
 template <typename T, typename I>
 constexpr double coomv_gbyte_count(I M, I N, int64_t nnz, bool beta = false)
 {
-    return (2.0 * nnz * sizeof(I) + (M + N + nnz + (beta ? M : 0)) * sizeof(T)) / 1e9;
+    return coomv_gbyte_count<T, T, T>(M, N, nnz, beta);
+}
+
+template <typename A, typename X, typename Y, typename I, typename J>
+constexpr double csrmv_gbyte_count(J M, J N, I nnz, bool beta = false)
+{
+    return (sizeof(I) * (M + 1) + sizeof(J) * nnz + sizeof(A) * nnz
+            + sizeof(Y) * (M + (beta ? M : 0)) + sizeof(X) * N)
+           / 1e9;
 }
 
 template <typename T, typename I, typename J>
 constexpr double csrmv_gbyte_count(J M, J N, I nnz, bool beta = false)
 {
-    return ((M + 1) * sizeof(I) + nnz * sizeof(J) + (M + N + nnz + (beta ? M : 0)) * sizeof(T))
+    return csrmv_gbyte_count<T, T, T>(M, N, nnz, beta);
+}
+
+template <typename A, typename X, typename Y, typename I, typename J>
+constexpr double cscmv_gbyte_count(J M, J N, I nnz, bool beta = false)
+{
+    return (sizeof(I) * (N + 1) + sizeof(J) * nnz + sizeof(A) * nnz
+            + sizeof(Y) * (M + (beta ? M : 0)) + sizeof(X) * N)
            / 1e9;
 }
 
 template <typename T, typename I, typename J>
 constexpr double cscmv_gbyte_count(J M, J N, I nnz, bool beta = false)
 {
-    return ((N + 1) * sizeof(I) + nnz * sizeof(J) + (M + N + nnz + (beta ? M : 0)) * sizeof(T))
+    return cscmv_gbyte_count<T, T, T>(M, N, nnz, beta);
+}
+
+template <typename A, typename X, typename Y, typename I>
+constexpr double ellmv_gbyte_count(I M, I N, int64_t nnz, bool beta = false)
+{
+    return (sizeof(I) * nnz + sizeof(A) * nnz + sizeof(Y) * (M + (beta ? M : 0)) + sizeof(X) * N)
            / 1e9;
+}
+
+template <typename T, typename I>
+constexpr double ellmv_gbyte_count(I M, I N, int64_t nnz, bool beta = false)
+{
+    return ellmv_gbyte_count<T, T, T>(M, N, nnz, beta);
+}
+
+template <typename A, typename X, typename Y, typename I, typename J>
+constexpr double
+    gebsrmv_gbyte_count(J mb, J nb, I nnzb, J row_block_dim, J col_block_dim, bool beta = false)
+{
+    return (sizeof(I) * (mb + 1) + sizeof(J) * nnzb
+            + sizeof(A) * nnzb * row_block_dim * col_block_dim
+            + sizeof(Y) * (mb * row_block_dim + (beta ? mb * row_block_dim : 0))
+            + sizeof(X) * (nb * col_block_dim))
+           / 1e9;
+}
+
+template <typename T, typename I, typename J>
+constexpr double
+    gebsrmv_gbyte_count(J mb, J nb, I nnzb, J row_block_dim, J col_block_dim, bool beta = false)
+{
+    return gebsrmv_gbyte_count<T, T, T>(mb, nb, nnzb, row_block_dim, col_block_dim, beta);
 }
 
 template <typename T>
@@ -130,27 +185,6 @@ template <typename T, typename I>
 constexpr double coosv_gbyte_count(I M, int64_t nnz)
 {
     return (2 * nnz * sizeof(I) + (M + M + nnz) * sizeof(T)) / 1e9;
-}
-
-template <typename T, typename I>
-constexpr double ellmv_gbyte_count(I M, I N, int64_t nnz, bool beta = false)
-{
-    return (nnz * sizeof(I) + (M + N + nnz + (beta ? M : 0)) * sizeof(T)) / 1e9;
-}
-
-template <typename T>
-constexpr double gebsrmv_gbyte_count(rocsparse_int mb,
-                                     rocsparse_int nb,
-                                     rocsparse_int nnzb,
-                                     rocsparse_int row_block_dim,
-                                     rocsparse_int col_block_dim,
-                                     bool          beta = false)
-{
-    return ((mb + 1 + nnzb) * sizeof(rocsparse_int)
-            + ((mb + nb) * row_block_dim + nnzb * row_block_dim * col_block_dim
-               + (beta ? mb * row_block_dim : 0))
-                  * sizeof(T))
-           / 1e9;
 }
 
 template <typename T, typename I>

@@ -25,7 +25,13 @@
 #include "rocsparse_bsrxmv_spzl.hpp"
 
 // BSRXMV kernel for BSR block dimension of 17 to 32
-template <unsigned int BSRDIM, typename T, typename I, typename J>
+template <unsigned int BSRDIM,
+          typename T,
+          typename I,
+          typename J,
+          typename A,
+          typename X,
+          typename Y>
 __device__ void bsrxmvn_17_32_device(J                   mb,
                                      rocsparse_direction dir,
                                      T                   alpha,
@@ -34,10 +40,10 @@ __device__ void bsrxmvn_17_32_device(J                   mb,
                                      const I* __restrict__ bsr_row_ptr,
                                      const I* __restrict__ bsr_end_ptr,
                                      const J* __restrict__ bsr_col_ind,
-                                     const T* __restrict__ bsr_val,
-                                     const T* __restrict__ x,
+                                     const A* __restrict__ bsr_val,
+                                     const X* __restrict__ x,
                                      T beta,
-                                     T* __restrict__ y,
+                                     Y* __restrict__ y,
                                      rocsparse_index_base idx_base)
 {
     static constexpr int SQBSRDIM = BSRDIM * BSRDIM;
@@ -81,7 +87,7 @@ __device__ void bsrxmvn_17_32_device(J                   mb,
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
-            sum = rocsparse_fma(*bsr_val, x[col + idx], sum);
+            sum = rocsparse_fma<T>(*bsr_val, x[col + idx], sum);
             bsr_val += SQBSRDIM;
         }
     }
@@ -137,7 +143,7 @@ __device__ void bsrxmvn_17_32_device(J                   mb,
         if(beta != static_cast<T>(0))
         {
             y[row * BSRDIM + hipThreadIdx_x]
-                = rocsparse_fma(beta, y[row * BSRDIM + hipThreadIdx_x], alpha * sum);
+                = rocsparse_fma<T>(beta, y[row * BSRDIM + hipThreadIdx_x], alpha * sum);
         }
         else
         {
@@ -147,7 +153,14 @@ __device__ void bsrxmvn_17_32_device(J                   mb,
 }
 
 // Kernels for BSR block dimensions of 17 to 32
-template <unsigned int BSRDIM, typename T, typename I, typename J, typename U>
+template <unsigned int BSRDIM,
+          typename T,
+          typename I,
+          typename J,
+          typename A,
+          typename X,
+          typename Y,
+          typename U>
 __launch_bounds__(BSRDIM* BSRDIM) ROCSPARSE_KERNEL
     void bsrxmvn_17_32_kernel(J                   mb,
                               rocsparse_direction dir,
@@ -157,33 +170,33 @@ __launch_bounds__(BSRDIM* BSRDIM) ROCSPARSE_KERNEL
                               const I* __restrict__ bsr_row_ptr,
                               const I* __restrict__ bsr_end_ptr,
                               const J* __restrict__ bsr_col_ind,
-                              const T* __restrict__ bsr_val,
-                              const T* __restrict__ x,
+                              const A* __restrict__ bsr_val,
+                              const X* __restrict__ x,
                               U beta_device_host,
-                              T* __restrict__ y,
+                              Y* __restrict__ y,
                               rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
     if(alpha != static_cast<T>(0) || beta != static_cast<T>(1))
     {
-        bsrxmvn_17_32_device<BSRDIM>(mb,
-                                     dir,
-                                     alpha,
-                                     size_of_mask,
-                                     bsr_mask_ptr,
-                                     bsr_row_ptr,
-                                     bsr_end_ptr,
-                                     bsr_col_ind,
-                                     bsr_val,
-                                     x,
-                                     beta,
-                                     y,
-                                     idx_base);
+        bsrxmvn_17_32_device<BSRDIM, T>(mb,
+                                        dir,
+                                        alpha,
+                                        size_of_mask,
+                                        bsr_mask_ptr,
+                                        bsr_row_ptr,
+                                        bsr_end_ptr,
+                                        bsr_col_ind,
+                                        bsr_val,
+                                        x,
+                                        beta,
+                                        y,
+                                        idx_base);
     }
 }
 
-template <typename T, typename I, typename J, typename U>
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 void bsrxmvn_17_32(rocsparse_handle     handle,
                    rocsparse_direction  dir,
                    J                    mb,
@@ -194,17 +207,17 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
                    const I*             bsr_row_ptr,
                    const I*             bsr_end_ptr,
                    const J*             bsr_col_ind,
-                   const T*             bsr_val,
+                   const A*             bsr_val,
                    J                    block_dim,
-                   const T*             x,
+                   const X*             x,
                    U                    beta_device_host,
-                   T*                   y,
+                   Y*                   y,
                    rocsparse_index_base base)
 {
     const J size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
     if(block_dim == 17)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<17>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<17, T>),
                            dim3(size),
                            dim3(17 * 17),
                            0,
@@ -225,7 +238,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 18)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<18>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<18, T>),
                            dim3(size),
                            dim3(18 * 18),
                            0,
@@ -246,7 +259,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 19)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<19>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<19, T>),
                            dim3(size),
                            dim3(19 * 19),
                            0,
@@ -267,7 +280,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 20)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<20>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<20, T>),
                            dim3(size),
                            dim3(20 * 20),
                            0,
@@ -288,7 +301,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 21)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<21>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<21, T>),
                            dim3(size),
                            dim3(21 * 21),
                            0,
@@ -309,7 +322,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 22)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<22>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<22, T>),
                            dim3(size),
                            dim3(22 * 22),
                            0,
@@ -330,7 +343,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 23)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<23>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<23, T>),
                            dim3(size),
                            dim3(23 * 23),
                            0,
@@ -351,7 +364,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 24)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<24>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<24, T>),
                            dim3(size),
                            dim3(24 * 24),
                            0,
@@ -372,7 +385,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 25)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<25>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<25, T>),
                            dim3(size),
                            dim3(25 * 25),
                            0,
@@ -393,7 +406,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 26)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<26>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<26, T>),
                            dim3(size),
                            dim3(26 * 26),
                            0,
@@ -414,7 +427,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 27)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<27>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<27, T>),
                            dim3(size),
                            dim3(27 * 27),
                            0,
@@ -435,7 +448,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 28)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<28>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<28, T>),
                            dim3(size),
                            dim3(28 * 28),
                            0,
@@ -456,7 +469,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 29)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<29>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<29, T>),
                            dim3(size),
                            dim3(29 * 29),
                            0,
@@ -477,7 +490,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 30)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<30>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<30, T>),
                            dim3(size),
                            dim3(30 * 30),
                            0,
@@ -498,7 +511,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 31)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<31>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<31, T>),
                            dim3(size),
                            dim3(31 * 31),
                            0,
@@ -519,7 +532,7 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
     }
     else if(block_dim == 32)
     {
-        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<32>),
+        hipLaunchKernelGGL((bsrxmvn_17_32_kernel<32, T>),
                            dim3(size),
                            dim3(32 * 32),
                            0,
@@ -543,39 +556,39 @@ void bsrxmvn_17_32(rocsparse_handle     handle,
 //
 // INSTANTIATE.
 //
-#define INSTANTIATE(T, I, J)                                            \
-    template void bsrxmvn_17_32(rocsparse_handle     handle,            \
-                                rocsparse_direction  dir,               \
-                                J                    mb,                \
-                                I                    nnzb,              \
-                                const T*             alpha_device_host, \
-                                J                    size_of_mask,      \
-                                const J*             bsr_mask_ptr,      \
-                                const I*             bsr_row_ptr,       \
-                                const I*             bsr_end_ptr,       \
-                                const J*             bsr_col_ind,       \
-                                const T*             bsr_val,           \
-                                J                    block_dim,         \
-                                const T*             x,                 \
-                                const T*             beta_device_host,  \
-                                T*                   y,                 \
-                                rocsparse_index_base base);             \
-    template void bsrxmvn_17_32(rocsparse_handle     handle,            \
-                                rocsparse_direction  dir,               \
-                                J                    mb,                \
-                                I                    nnzb,              \
-                                T                    alpha_device_host, \
-                                J                    size_of_mask,      \
-                                const J*             bsr_mask_ptr,      \
-                                const I*             bsr_row_ptr,       \
-                                const I*             bsr_end_ptr,       \
-                                const J*             bsr_col_ind,       \
-                                const T*             bsr_val,           \
-                                J                    block_dim,         \
-                                const T*             x,                 \
-                                T                    beta_device_host,  \
-                                T*                   y,                 \
-                                rocsparse_index_base base)
+#define INSTANTIATE(T, I, J)                                               \
+    template void bsrxmvn_17_32<T>(rocsparse_handle     handle,            \
+                                   rocsparse_direction  dir,               \
+                                   J                    mb,                \
+                                   I                    nnzb,              \
+                                   const T*             alpha_device_host, \
+                                   J                    size_of_mask,      \
+                                   const J*             bsr_mask_ptr,      \
+                                   const I*             bsr_row_ptr,       \
+                                   const I*             bsr_end_ptr,       \
+                                   const J*             bsr_col_ind,       \
+                                   const T*             bsr_val,           \
+                                   J                    block_dim,         \
+                                   const T*             x,                 \
+                                   const T*             beta_device_host,  \
+                                   T*                   y,                 \
+                                   rocsparse_index_base base);             \
+    template void bsrxmvn_17_32<T>(rocsparse_handle     handle,            \
+                                   rocsparse_direction  dir,               \
+                                   J                    mb,                \
+                                   I                    nnzb,              \
+                                   T                    alpha_device_host, \
+                                   J                    size_of_mask,      \
+                                   const J*             bsr_mask_ptr,      \
+                                   const I*             bsr_row_ptr,       \
+                                   const I*             bsr_end_ptr,       \
+                                   const J*             bsr_col_ind,       \
+                                   const T*             bsr_val,           \
+                                   J                    block_dim,         \
+                                   const T*             x,                 \
+                                   T                    beta_device_host,  \
+                                   T*                   y,                 \
+                                   rocsparse_index_base base)
 
 INSTANTIATE(float, int32_t, int32_t);
 INSTANTIATE(double, int32_t, int32_t);
@@ -591,5 +604,82 @@ INSTANTIATE(float, int64_t, int64_t);
 INSTANTIATE(double, int64_t, int64_t);
 INSTANTIATE(rocsparse_float_complex, int64_t, int64_t);
 INSTANTIATE(rocsparse_double_complex, int64_t, int64_t);
-
 #undef INSTANTIATE
+
+#define INSTANTIATE_MIXED(T, I, J, A, X, Y)                                \
+    template void bsrxmvn_17_32<T>(rocsparse_handle     handle,            \
+                                   rocsparse_direction  dir,               \
+                                   J                    mb,                \
+                                   I                    nnzb,              \
+                                   const T*             alpha_device_host, \
+                                   J                    size_of_mask,      \
+                                   const J*             bsr_mask_ptr,      \
+                                   const I*             bsr_row_ptr,       \
+                                   const I*             bsr_end_ptr,       \
+                                   const J*             bsr_col_ind,       \
+                                   const A*             bsr_val,           \
+                                   J                    block_dim,         \
+                                   const X*             x,                 \
+                                   const T*             beta_device_host,  \
+                                   Y*                   y,                 \
+                                   rocsparse_index_base base);             \
+    template void bsrxmvn_17_32<T>(rocsparse_handle     handle,            \
+                                   rocsparse_direction  dir,               \
+                                   J                    mb,                \
+                                   I                    nnzb,              \
+                                   T                    alpha_device_host, \
+                                   J                    size_of_mask,      \
+                                   const J*             bsr_mask_ptr,      \
+                                   const I*             bsr_row_ptr,       \
+                                   const I*             bsr_end_ptr,       \
+                                   const J*             bsr_col_ind,       \
+                                   const A*             bsr_val,           \
+                                   J                    block_dim,         \
+                                   const X*             x,                 \
+                                   T                    beta_device_host,  \
+                                   Y*                   y,                 \
+                                   rocsparse_index_base base)
+
+INSTANTIATE_MIXED(int32_t, int32_t, int32_t, int8_t, int8_t, int32_t);
+INSTANTIATE_MIXED(int32_t, int64_t, int32_t, int8_t, int8_t, int32_t);
+INSTANTIATE_MIXED(int32_t, int64_t, int64_t, int8_t, int8_t, int32_t);
+INSTANTIATE_MIXED(float, int32_t, int32_t, int8_t, int8_t, float);
+INSTANTIATE_MIXED(float, int64_t, int32_t, int8_t, int8_t, float);
+INSTANTIATE_MIXED(float, int64_t, int64_t, int8_t, int8_t, float);
+INSTANTIATE_MIXED(rocsparse_float_complex,
+                  int32_t,
+                  int32_t,
+                  float,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_MIXED(rocsparse_float_complex,
+                  int64_t,
+                  int32_t,
+                  float,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_MIXED(rocsparse_float_complex,
+                  int64_t,
+                  int64_t,
+                  float,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_MIXED(rocsparse_double_complex,
+                  int32_t,
+                  int32_t,
+                  double,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_MIXED(rocsparse_double_complex,
+                  int64_t,
+                  int32_t,
+                  double,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_MIXED(rocsparse_double_complex,
+                  int64_t,
+                  int64_t,
+                  double,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+#undef INSTANTIATE_MIXED

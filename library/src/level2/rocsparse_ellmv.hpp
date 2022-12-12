@@ -26,16 +26,16 @@
 
 #include "handle.h"
 
-template <typename I, typename T>
+template <typename T, typename I, typename A, typename X, typename Y>
 rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
                                           I                         m,
                                           I                         n,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T*                  ell_val,
+                                          const A*                  ell_val,
                                           const I*                  ell_col_ind,
                                           I                         ell_width,
-                                          const T*                  x,
+                                          const X*                  x,
                                           const T*                  beta,
-                                          T*                        y);
+                                          Y*                        y);
