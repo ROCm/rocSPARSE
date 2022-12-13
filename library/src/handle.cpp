@@ -715,3 +715,75 @@ rocsparse_status rocsparse_destroy_csrgemm_info(rocsparse_csrgemm_info info)
     }
     return rocsparse_status_success;
 }
+
+/********************************************************************************
+ * \brief rocsparse_csritsv_info is a structure holding the rocsparse csritsv
+ * info data gathered during csritsv_buffer_size. It must be initialized using
+ * the rocsparse_create_csritsv_info() routine. It should be destroyed at the
+ * end using rocsparse_destroy_csritsv_info().
+ *******************************************************************************/
+rocsparse_status rocsparse_create_csritsv_info(rocsparse_csritsv_info* info)
+{
+    if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else
+    {
+        // Allocate
+        try
+        {
+            *info = new _rocsparse_csritsv_info;
+        }
+        catch(const rocsparse_status& status)
+        {
+            return status;
+        }
+        return rocsparse_status_success;
+    }
+}
+
+/********************************************************************************
+ * \brief Copy csritsv info.
+ *******************************************************************************/
+rocsparse_status rocsparse_copy_csritsv_info(rocsparse_csritsv_info       dest,
+                                             const rocsparse_csritsv_info src)
+{
+    if(dest == nullptr || src == nullptr || dest == src)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    dest->is_submatrix      = src->is_submatrix;
+    dest->ptr_end_size      = src->ptr_end_size;
+    dest->ptr_end_indextype = src->ptr_end_indextype;
+    dest->ptr_end           = src->ptr_end;
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief Destroy csritsv info.
+ *******************************************************************************/
+rocsparse_status rocsparse_destroy_csritsv_info(rocsparse_csritsv_info info)
+{
+    if(info == nullptr)
+    {
+        return rocsparse_status_success;
+    }
+
+    if(info->ptr_end != nullptr && info->is_submatrix)
+    {
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->ptr_end));
+        info->ptr_end = nullptr;
+    }
+
+    // Destruct
+    try
+    {
+        delete info;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+    return rocsparse_status_success;
+}

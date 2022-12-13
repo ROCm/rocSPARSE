@@ -503,6 +503,52 @@ REAL_COMPLEX_TEMPLATE(csrsv_solve,
                       rocsparse_solve_policy    policy,
                       void*                     temp_buffer);
 
+// csritsv
+REAL_COMPLEX_TEMPLATE(csritsv_buffer_size,
+                      rocsparse_handle          handle,
+                      rocsparse_operation       trans,
+                      rocsparse_int             m,
+                      rocsparse_int             nnz,
+                      const rocsparse_mat_descr descr,
+                      const T*                  csr_val,
+                      const rocsparse_int*      csr_row_ptr,
+                      const rocsparse_int*      csr_col_ind,
+                      rocsparse_mat_info        info,
+                      size_t*                   buffer_size);
+
+REAL_COMPLEX_TEMPLATE(csritsv_analysis,
+                      rocsparse_handle          handle,
+                      rocsparse_operation       trans,
+                      rocsparse_int             m,
+                      rocsparse_int             nnz,
+                      const rocsparse_mat_descr descr,
+                      const T*                  csr_val,
+                      const rocsparse_int*      csr_row_ptr,
+                      const rocsparse_int*      csr_col_ind,
+                      rocsparse_mat_info        info,
+                      rocsparse_analysis_policy analysis,
+                      rocsparse_solve_policy    solve,
+                      void*                     temp_buffer);
+
+REAL_COMPLEX_TEMPLATE(csritsv_solve,
+                      rocsparse_int*            nmaxiter,
+                      const floating_data_t<T>* host_tol,
+                      floating_data_t<T>*       host_history,
+                      rocsparse_handle          handle,
+                      rocsparse_operation       trans,
+                      rocsparse_int             m,
+                      rocsparse_int             nnz,
+                      const T*                  alpha,
+                      const rocsparse_mat_descr descr,
+                      const T*                  csr_val,
+                      const rocsparse_int*      csr_row_ptr,
+                      const rocsparse_int*      csr_col_ind,
+                      rocsparse_mat_info        info,
+                      const T*                  x,
+                      T*                        y,
+                      rocsparse_solve_policy    policy,
+                      void*                     temp_buffer);
+
 // ellmv
 REAL_COMPLEX_TEMPLATE(ellmv,
                       rocsparse_handle          handle,

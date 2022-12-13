@@ -77,6 +77,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_csrmv.cpp
 ../testings/testing_csrmv_managed.cpp
 ../testings/testing_csrsv.cpp
+../testings/testing_csritsv.cpp
 ../testings/testing_ellmv.cpp
 ../testings/testing_hybmv.cpp
 ../testings/testing_gebsrmv.cpp
@@ -148,6 +149,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spmv_ell.cpp
 ../testings/testing_spsv_csr.cpp
 ../testings/testing_spsv_coo.cpp
+../testings/testing_spitsv_csr.cpp
 ../testings/testing_spsm_csr.cpp
 ../testings/testing_spsm_coo.cpp
 ../testings/testing_sparse_to_dense_coo.cpp

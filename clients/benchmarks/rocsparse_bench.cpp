@@ -59,6 +59,7 @@ void rocsparse_bench::parse(int& argc, char**& argv, rocsparse_arguments_config&
     config.sddmm_alg           = rocsparse_sddmm_alg_default;
     config.spmv_alg            = rocsparse_spmv_alg_default;
     config.spsv_alg            = rocsparse_spsv_alg_default;
+    config.spitsv_alg          = rocsparse_spitsv_alg_default;
     config.spsm_alg            = rocsparse_spsm_alg_default;
     config.spmm_alg            = rocsparse_spmm_alg_default;
     config.spgemm_alg          = rocsparse_spgemm_alg_default;

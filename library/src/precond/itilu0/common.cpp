@@ -134,7 +134,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
     if(gid < nitems_)
     {
-        shared[tid] = (nrm0_ != nullptr) ? std::abs(x_[gid]) / nrm0_[0] : std::abs(x_[gid]);
+        shared[tid] = std::abs(x_[gid]);
     }
     else
     {
@@ -147,7 +147,14 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
     if(tid == 0)
     {
-        atomicMax(nrm_, shared[0]);
+        if(nrm0_ != nullptr)
+        {
+            atomicMax(nrm_, shared[0] / nrm0_[0]);
+        }
+        else
+        {
+            atomicMax(nrm_, shared[0]);
+        }
     }
 }
 
@@ -172,7 +179,14 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
     if(tid == 0)
     {
-        atomicMax(nrm_, shared[0] / nrm0_[0]);
+        if(nrm0_ != nullptr)
+        {
+            atomicMax(nrm_, shared[0] / nrm0_[0]);
+        }
+        else
+        {
+            atomicMax(nrm_, shared[0]);
+        }
     }
 }
 

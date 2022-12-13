@@ -157,6 +157,10 @@ Datatypes:
       bases: [c_int ]
       attr:
         rocsparse_spsv_alg_default: 0
+  - rocsparse_spitsv_alg:
+      bases: [c_int ]
+      attr:
+        rocsparse_spitsv_alg_default: 0
   - rocsparse_spsm_alg:
       bases: [c_int ]
       attr:
@@ -326,6 +330,7 @@ Arguments:
   - sddmm_alg: rocsparse_sddmm_alg
   - spmv_alg: rocsparse_spmv_alg
   - spsv_alg: rocsparse_spsv_alg
+  - spitsv_alg: rocsparse_spitsv_alg
   - spsm_alg: rocsparse_spsm_alg
   - spmm_alg: rocsparse_spmm_alg
   - spgemm_alg: rocsparse_spgemm_alg
@@ -443,6 +448,7 @@ Defaults:
   sddmm_alg: rocsparse_sddmm_alg_default
   spmv_alg: rocsparse_spmv_alg_default
   spsv_alg: rocsparse_spsv_alg_default
+  spitsv_alg: rocsparse_spitsv_alg_default
   spsm_alg: rocsparse_spsm_alg_default
   spmm_alg: rocsparse_spmm_alg_default
   spgemm_alg: rocsparse_spgemm_alg_default

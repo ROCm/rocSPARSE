@@ -35,6 +35,7 @@
 typedef struct _rocsparse_trm_info*     rocsparse_trm_info;
 typedef struct _rocsparse_csrmv_info*   rocsparse_csrmv_info;
 typedef struct _rocsparse_csrgemm_info* rocsparse_csrgemm_info;
+typedef struct _rocsparse_csritsv_info* rocsparse_csritsv_info;
 
 /********************************************************************************
  * \brief rocsparse_handle is a structure holding the rocsparse library context.
@@ -176,6 +177,7 @@ struct _rocsparse_mat_info
     rocsparse_trm_info     csrsmt_upper_info{};
     rocsparse_trm_info     csrsmt_lower_info{};
     rocsparse_csrgemm_info csrgemm_info{};
+    rocsparse_csritsv_info csritsv_info{};
 
     // zero pivot for csrsv, csrsm, csrilu0, csric0
     void* zero_pivot{};
@@ -295,6 +297,39 @@ rocsparse_status rocsparse_destroy_trm_info(rocsparse_trm_info info);
  * shares its meta data with another trm info structure.
  *******************************************************************************/
 bool rocsparse_check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_info trm);
+
+/********************************************************************************
+ * \brief rocsparse_csritsv_info is a structure holding the rocsparse csritsv
+ * info data gathered during csritsv_buffer_size. It must be initialized using
+ * the rocsparse_create_csritsv_info() routine. It should be destroyed at the
+ * end using rocsparse_destroy_csritsv_info().
+ *******************************************************************************/
+struct _rocsparse_csritsv_info
+{
+    bool                is_submatrix;
+    int64_t             ptr_end_size{};
+    rocsparse_indextype ptr_end_indextype{};
+    void*               ptr_end{};
+};
+
+/********************************************************************************
+ * \brief rocsparse_csritsv_info is a structure holding the rocsparse csritsv
+ * info data gathered during csritsv_buffer_size. It must be initialized using
+ * the rocsparse_create_csritsv_info() routine. It should be destroyed at the
+ * end using rocsparse_destroy_csritsv_info().
+ *******************************************************************************/
+rocsparse_status rocsparse_create_csritsv_info(rocsparse_csritsv_info* info);
+
+/********************************************************************************
+ * \brief Copy csritsv info.
+ *******************************************************************************/
+rocsparse_status rocsparse_copy_csritsv_info(rocsparse_csritsv_info       dest,
+                                             const rocsparse_csritsv_info src);
+
+/********************************************************************************
+ * \brief Destroy csritsv info.
+ *******************************************************************************/
+rocsparse_status rocsparse_destroy_csritsv_info(rocsparse_csritsv_info info);
 
 /********************************************************************************
  * \brief rocsparse_csrgemm_info is a structure holding the rocsparse csrgemm

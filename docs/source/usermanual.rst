@@ -974,34 +974,39 @@ Function name                                     single double single complex d
 Sparse Level 2 Functions
 ------------------------
 
-========================================================================= ====== ====== ============== ==============
-Function name                                                             single double single complex double complex
-========================================================================= ====== ====== ============== ==============
-:cpp:func:`rocsparse_Xbsrmv_ex_analysis() <rocsparse_sbsrmv_ex_analysis>` x      x      x              x
+============================================================================= ====== ====== ============== ==============
+Function name                                                                 single double single complex double complex
+============================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xbsrmv_ex_analysis() <rocsparse_sbsrmv_ex_analysis>`     x      x      x              x
 :cpp:func:`rocsparse_bsrmv_ex_clear`
-:cpp:func:`rocsparse_Xbsrmv_ex() <rocsparse_sbsrmv_ex>`                   x      x      x              x
-:cpp:func:`rocsparse_Xbsrmv() <rocsparse_sbsrmv>`                         x      x      x              x
-:cpp:func:`rocsparse_Xbsrxmv() <rocsparse_sbsrxmv>`                       x      x      x              x
-:cpp:func:`rocsparse_Xbsrsv_buffer_size() <rocsparse_sbsrsv_buffer_size>` x      x      x              x
-:cpp:func:`rocsparse_Xbsrsv_analysis() <rocsparse_sbsrsv_analysis>`       x      x      x              x
+:cpp:func:`rocsparse_Xbsrmv_ex() <rocsparse_sbsrmv_ex>`                       x      x      x              x
+:cpp:func:`rocsparse_Xbsrmv() <rocsparse_sbsrmv>`                             x      x      x              x
+:cpp:func:`rocsparse_Xbsrxmv() <rocsparse_sbsrxmv>`                           x      x      x              x
+:cpp:func:`rocsparse_Xbsrsv_buffer_size() <rocsparse_sbsrsv_buffer_size>`     x      x      x              x
+:cpp:func:`rocsparse_Xbsrsv_analysis() <rocsparse_sbsrsv_analysis>`           x      x      x              x
 :cpp:func:`rocsparse_bsrsv_zero_pivot`
 :cpp:func:`rocsparse_bsrsv_clear`
-:cpp:func:`rocsparse_Xbsrsv_solve() <rocsparse_sbsrsv_solve>`             x      x      x              x
-:cpp:func:`rocsparse_Xcoomv() <rocsparse_scoomv>`                         x      x      x              x
-:cpp:func:`rocsparse_Xcsrmv_analysis() <rocsparse_scsrmv_analysis>`       x      x      x              x
+:cpp:func:`rocsparse_Xbsrsv_solve() <rocsparse_sbsrsv_solve>`                 x      x      x              x
+:cpp:func:`rocsparse_Xcoomv() <rocsparse_scoomv>`                             x      x      x              x
+:cpp:func:`rocsparse_Xcsrmv_analysis() <rocsparse_scsrmv_analysis>`           x      x      x              x
 :cpp:func:`rocsparse_csrmv_clear`
-:cpp:func:`rocsparse_Xcsrmv() <rocsparse_scsrmv>`                         x      x      x              x
-:cpp:func:`rocsparse_Xcsrsv_buffer_size() <rocsparse_scsrsv_buffer_size>` x      x      x              x
-:cpp:func:`rocsparse_Xcsrsv_analysis() <rocsparse_scsrsv_analysis>`       x      x      x              x
+:cpp:func:`rocsparse_Xcsrmv() <rocsparse_scsrmv>`                             x      x      x              x
+:cpp:func:`rocsparse_Xcsrsv_buffer_size() <rocsparse_scsrsv_buffer_size>`     x      x      x              x
+:cpp:func:`rocsparse_Xcsrsv_analysis() <rocsparse_scsrsv_analysis>`           x      x      x              x
 :cpp:func:`rocsparse_csrsv_zero_pivot`
 :cpp:func:`rocsparse_csrsv_clear`
-:cpp:func:`rocsparse_Xcsrsv_solve() <rocsparse_scsrsv_solve>`             x      x      x              x
-:cpp:func:`rocsparse_Xellmv() <rocsparse_sellmv>`                         x      x      x              x
-:cpp:func:`rocsparse_Xhybmv() <rocsparse_shybmv>`                         x      x      x              x
-:cpp:func:`rocsparse_Xgebsrmv() <rocsparse_sgebsrmv>`                     x      x      x              x
-:cpp:func:`rocsparse_Xgemvi_buffer_size() <rocsparse_sgemvi_buffer_size>` x      x      x              x
-:cpp:func:`rocsparse_Xgemvi() <rocsparse_sgemvi>`                         x      x      x              x
-========================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xcsrsv_solve() <rocsparse_scsrsv_solve>`                 x      x      x              x
+:cpp:func:`rocsparse_Xcsritsv_buffer_size() <rocsparse_scsritsv_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_Xcsritsv_analysis() <rocsparse_scsritsv_analysis>`       x      x      x              x
+:cpp:func:`rocsparse_csritsv_zero_pivot`
+:cpp:func:`rocsparse_csritsv_clear`
+:cpp:func:`rocsparse_Xcsritsv_solve() <rocsparse_scsritsv_solve>`             x      x      x              x
+:cpp:func:`rocsparse_Xellmv() <rocsparse_sellmv>`                             x      x      x              x
+:cpp:func:`rocsparse_Xhybmv() <rocsparse_shybmv>`                             x      x      x              x
+:cpp:func:`rocsparse_Xgebsrmv() <rocsparse_sgebsrmv>`                         x      x      x              x
+:cpp:func:`rocsparse_Xgemvi_buffer_size() <rocsparse_sgemvi_buffer_size>`     x      x      x              x
+:cpp:func:`rocsparse_Xgemvi() <rocsparse_sgemvi>`                             x      x      x              x
+============================================================================= ====== ====== ============== ==============
 
 Sparse Level 3 Functions
 ------------------------
@@ -1911,6 +1916,50 @@ rocsparse_csrsv_clear()
 -----------------------
 
 .. doxygenfunction:: rocsparse_csrsv_clear
+
+
+rocsparse_csritsv_zero_pivot()
+------------------------------
+
+.. doxygenfunction:: rocsparse_csritsv_zero_pivot
+
+rocsparse_csritsv_buffer_size()
+-------------------------------
+
+.. doxygenfunction:: rocsparse_scsritsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcsritsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccsritsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcsritsv_buffer_size
+
+rocsparse_csritsv_analysis()
+----------------------------
+
+.. doxygenfunction:: rocsparse_scsritsv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_dcsritsv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_ccsritsv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_zcsritsv_analysis
+
+rocsparse_csritsv_solve()
+-------------------------
+
+.. doxygenfunction:: rocsparse_scsritsv_solve
+  :outline:
+.. doxygenfunction:: rocsparse_dcsritsv_solve
+  :outline:
+.. doxygenfunction:: rocsparse_ccsritsv_solve
+  :outline:
+.. doxygenfunction:: rocsparse_zcsritsv_solve
+
+rocsparse_csritsv_clear()
+-------------------------
+
+.. doxygenfunction:: rocsparse_csritsv_clear
 
 rocsparse_ellmv()
 -----------------

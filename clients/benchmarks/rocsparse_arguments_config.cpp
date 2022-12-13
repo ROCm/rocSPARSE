@@ -77,6 +77,7 @@ rocsparse_arguments_config::rocsparse_arguments_config()
         this->sddmm_alg           = rocsparse_sddmm_alg_default;
         this->spmv_alg            = rocsparse_spmv_alg_default;
         this->spsv_alg            = rocsparse_spsv_alg_default;
+        this->spitsv_alg          = rocsparse_spitsv_alg_default;
         this->spsm_alg            = rocsparse_spsm_alg_default;
         this->spmm_alg            = rocsparse_spmm_alg_default;
         this->spgemm_alg          = rocsparse_spgemm_alg_default;
@@ -274,7 +275,7 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      value<std::string>(&this->function_name)->default_value("axpyi"),
      "SPARSE function to test. Options:\n"
      "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
-     "  Level2: bsrmv, bsrxmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, coosv, ellmv, hybmv, gebsrmv, gemvi\n"
+     "  Level2: bsrmv, bsrxmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, csritsv, coosv, ellmv, hybmv, gebsrmv, gemvi\n"
      "  Level3: bsrmm, bsrsm, gebsrmm, csrmm, csrmm_batched, coomm, coomm_batched, cscmm, cscmm_batched, csrsm, coosm, gemmi, sddmm\n"
      "  Extra: bsrgeam, bsrgemm, csrgeam, csrgemm, csrgemm_reuse\n"
      "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, csritilu0, gtsv, gtsv_no_pivot, gtsv_no_pivot_strided_batch, gtsv_interleaved_batch, gpsv_interleaved_batch\n"
