@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -111,3 +111,13 @@ Tests:
   batch_count: [120574, 172835, 256000]
   batch_stride: [256000]
   matrix: [rocsparse_matrix_random]
+
+- name: gpsv_interleaved_batch_graph_test
+  category: pre_checkin
+  function: gpsv_interleaved_batch
+  precision: *single_double_precisions_complex_real
+  M: [476, 1725, 2301]
+  batch_count: [33, 117, 318, 475]
+  batch_stride: [500]
+  matrix: [rocsparse_matrix_random]
+  graph_test: true

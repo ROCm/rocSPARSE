@@ -235,7 +235,7 @@ void testing_bsr2csr(const Arguments& arg)
     }
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     rocsparse_local_mat_descr bsr_descr;
     rocsparse_local_mat_descr csr_descr;
@@ -330,19 +330,19 @@ void testing_bsr2csr(const Arguments& arg)
     {
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-        CHECK_ROCSPARSE_ERROR(rocsparse_bsr2csr<T>(handle,
-                                                   direction,
-                                                   Mb,
-                                                   Nb,
-                                                   bsr_descr,
-                                                   dbsr_val,
-                                                   dbsr_row_ptr,
-                                                   dbsr_col_ind,
-                                                   block_dim,
-                                                   csr_descr,
-                                                   dcsr_val,
-                                                   dcsr_row_ptr,
-                                                   dcsr_col_ind));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_bsr2csr<T>(handle,
+                                                            direction,
+                                                            Mb,
+                                                            Nb,
+                                                            bsr_descr,
+                                                            dbsr_val,
+                                                            dbsr_row_ptr,
+                                                            dbsr_col_ind,
+                                                            block_dim,
+                                                            csr_descr,
+                                                            dcsr_val,
+                                                            dcsr_row_ptr,
+                                                            dcsr_col_ind));
 
         // Compress the output CSR matrix
         T                            tol = static_cast<T>(0);

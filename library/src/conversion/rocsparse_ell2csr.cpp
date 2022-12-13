@@ -296,7 +296,8 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle          hand
     }
     else
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&d_temp_storage, temp_storage_bytes));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync(&d_temp_storage, temp_storage_bytes, handle->stream));
         d_temp_alloc = true;
     }
 
@@ -348,7 +349,7 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle          hand
     // Free rocprim buffer, if allocated
     if(d_temp_alloc == true)
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(d_temp_storage));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(d_temp_storage, handle->stream));
     }
 
     return rocsparse_status_success;

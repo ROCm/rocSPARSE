@@ -77,7 +77,7 @@ void testing_hyb2csr(const Arguments& arg)
     rocsparse_index_base        base = arg.baseA;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -180,7 +180,7 @@ void testing_hyb2csr(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_hyb2csr<T>(
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_hyb2csr<T>(
             handle, descr, hyb, dcsr_val, dcsr_row_ptr, dcsr_col_ind, dbuffer));
 
         // Copy output to host

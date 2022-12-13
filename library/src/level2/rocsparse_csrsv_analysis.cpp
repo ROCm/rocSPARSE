@@ -78,12 +78,16 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
             tmp_work1, csr_col_ind, sizeof(J) * nnz, hipMemcpyDeviceToDevice, stream));
 
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->trmt_perm, sizeof(I) * nnz));
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->trmt_row_ptr, sizeof(I) * (m + 1)));
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->trmt_col_ind, sizeof(J) * nnz));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+            (void**)&info->trmt_row_ptr, sizeof(I) * (m + 1), handle->stream));
 
         if(nnz > 0)
         {
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+                (void**)&info->trmt_perm, sizeof(I) * nnz, handle->stream));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+                (void**)&info->trmt_col_ind, sizeof(J) * nnz, handle->stream));
+
             // Create identity permutation
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse_create_identity_permutation_template(handle, nnz, (I*)info->trmt_perm));
@@ -168,13 +172,15 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     void* rocprim_buffer = reinterpret_cast<void*>(ptr);
 
     // Allocate buffer to hold diagonal entry point
-    RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->trm_diag_ind, sizeof(I) * m));
+    RETURN_IF_HIP_ERROR(
+        rocsparse_hipMallocAsync((void**)&info->trm_diag_ind, sizeof(I) * m, handle->stream));
 
     // Allocate buffer to hold zero pivot
-    RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)zero_pivot, sizeof(J)));
+    RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)zero_pivot, sizeof(J), handle->stream));
 
     // Allocate buffer to hold row map
-    RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&info->row_map, sizeof(J) * m));
+    RETURN_IF_HIP_ERROR(
+        rocsparse_hipMallocAsync((void**)&info->row_map, sizeof(J) * m, handle->stream));
 
     // Initialize zero pivot
     J max = std::numeric_limits<J>::max();

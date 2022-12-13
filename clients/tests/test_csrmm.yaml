@@ -170,6 +170,20 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mplate]
 
+- name: csrmm_graph_test
+  category: pre_checkin
+  function: csrmm
+  precision: *single_double_precisions_complex_real
+  M: [42, 275]
+  N: [7, 143]
+  K: [50, 73]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  graph_test: true
+
 # ##############################
 # QUICK
 # ##############################

@@ -155,7 +155,6 @@ Tests:
   direction: [rocsparse_direction_column]
   matrix: [rocsparse_matrix_random]
 
-
 - name: bsrmm
   category: nightly
   function: bsrmm
@@ -170,6 +169,23 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
   matrix: [rocsparse_matrix_random]
+
+- name: bsrmm_graph_test
+  category: pre_checkin
+  function: bsrmm
+  precision: *single_double_precisions
+  M: [2511]
+  N: [37]
+  K: [391]
+  block_dim: [2]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix_init_kind: [rocsparse_matrix_init_kind_tunedavg]
+  direction: [rocsparse_direction_column]
+  matrix: [rocsparse_matrix_random]
+  graph_test: true
 
 # ##############################
 # # NIGHTLY

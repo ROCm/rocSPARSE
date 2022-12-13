@@ -1946,6 +1946,39 @@ ROCSPARSE_EXPORT
 hipError_t rocsparse_hip_malloc(void** mem, size_t nbytes, const char* tag);
 
 /*! \ingroup aux_module
+   *  \brief Wrap hipFreeAsync.
+   *
+   *  @param[in]
+   *  mem  memory pointer
+   *  @param[in]
+   *  stream  the stream to be used by the asynchronous operation
+   *  @param[in]
+   *  tag  tag to attach to the operation.
+   *
+   *  \retval error from the related hip operation.
+   */
+ROCSPARSE_EXPORT
+hipError_t rocsparse_hip_free_async(void* mem, hipStream_t stream, const char* tag);
+
+/*! \ingroup aux_module
+   *  \brief Wrap hipMallocAsync.
+   *
+   *  @param[in]
+   *  mem  pointer of memory pointer
+   *  @param[in]
+   *  nbytes  number of bytes
+   *  @param[in]
+   *  stream  the stream to be used by the asynchronous operation
+   *  @param[in]
+   *  tag  tag to attach to the operation
+   *
+   *  \retval error from the related hip operation
+   */
+ROCSPARSE_EXPORT
+hipError_t
+    rocsparse_hip_malloc_async(void** mem, size_t nbytes, hipStream_t stream, const char* tag);
+
+/*! \ingroup aux_module
    *  \brief Wrap hipHostFree.
    *
    *  @param[in]

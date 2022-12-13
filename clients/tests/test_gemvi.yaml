@@ -89,3 +89,14 @@ Tests:
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+
+- name: gemvi_graph_test
+  category: pre_checkin
+  function: gemvi
+  precision: *single_double_precisions_complex_real
+  M: [10, 19]
+  N: [33, 28]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  graph_test: true

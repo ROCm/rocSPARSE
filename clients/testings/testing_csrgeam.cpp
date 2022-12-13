@@ -111,7 +111,7 @@ void testing_csrgeam(const Arguments& arg)
     host_scalar<T> h_beta(arg.get_beta<T>());
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descrA;
@@ -319,47 +319,47 @@ void testing_csrgeam(const Arguments& arg)
 
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrgeam<T>(handle,
-                                                   M,
-                                                   N,
-                                                   h_alpha,
-                                                   descrA,
-                                                   nnz_A,
-                                                   dcsr_val_A,
-                                                   dcsr_row_ptr_A,
-                                                   dcsr_col_ind_A,
-                                                   h_beta,
-                                                   descrB,
-                                                   nnz_B,
-                                                   dcsr_val_B,
-                                                   dcsr_row_ptr_B,
-                                                   dcsr_col_ind_B,
-                                                   descrC,
-                                                   dcsr_val_C_1,
-                                                   dcsr_row_ptr_C_1,
-                                                   dcsr_col_ind_C_1));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csrgeam<T>(handle,
+                                                            M,
+                                                            N,
+                                                            h_alpha,
+                                                            descrA,
+                                                            nnz_A,
+                                                            dcsr_val_A,
+                                                            dcsr_row_ptr_A,
+                                                            dcsr_col_ind_A,
+                                                            h_beta,
+                                                            descrB,
+                                                            nnz_B,
+                                                            dcsr_val_B,
+                                                            dcsr_row_ptr_B,
+                                                            dcsr_col_ind_B,
+                                                            descrC,
+                                                            dcsr_val_C_1,
+                                                            dcsr_row_ptr_C_1,
+                                                            dcsr_col_ind_C_1));
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrgeam<T>(handle,
-                                                   M,
-                                                   N,
-                                                   d_alpha,
-                                                   descrA,
-                                                   nnz_A,
-                                                   dcsr_val_A,
-                                                   dcsr_row_ptr_A,
-                                                   dcsr_col_ind_A,
-                                                   d_beta,
-                                                   descrB,
-                                                   nnz_B,
-                                                   dcsr_val_B,
-                                                   dcsr_row_ptr_B,
-                                                   dcsr_col_ind_B,
-                                                   descrC,
-                                                   dcsr_val_C_2,
-                                                   dcsr_row_ptr_C_2,
-                                                   dcsr_col_ind_C_2));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csrgeam<T>(handle,
+                                                            M,
+                                                            N,
+                                                            d_alpha,
+                                                            descrA,
+                                                            nnz_A,
+                                                            dcsr_val_A,
+                                                            dcsr_row_ptr_A,
+                                                            dcsr_col_ind_A,
+                                                            d_beta,
+                                                            descrB,
+                                                            nnz_B,
+                                                            dcsr_val_B,
+                                                            dcsr_row_ptr_B,
+                                                            dcsr_col_ind_B,
+                                                            descrC,
+                                                            dcsr_val_C_2,
+                                                            dcsr_row_ptr_C_2,
+                                                            dcsr_col_ind_C_2));
 
         // Copy output to host
         host_vector<rocsparse_int> hcsr_col_ind_C_1(hnnz_C_1);

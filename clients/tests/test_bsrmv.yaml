@@ -301,3 +301,18 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_tridiagonal, rocsparse_matrix_pentadiagonal]
   storage: [rocsparse_storage_mode_sorted]
+
+- name: bsrmv_graph_test
+  category: pre_checkin
+  function: bsrmv
+  precision: *single_double_precisions_complex_real
+  M: [10, 500]
+  N: [33, 842]
+  block_dim: [2, 8, 28, 174]
+  alpha_beta: *alpha_beta_range_quick
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  graph_test: true

@@ -99,7 +99,7 @@ void testing_prune_dense2csr_by_percentage(const Arguments& arg)
     T                    percentage = static_cast<T>(arg.percentage);
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -223,18 +223,18 @@ void testing_prune_dense2csr_by_percentage(const Arguments& arg)
         h_nnz_total_dev_host_ptr.unit_check(h_nnz_total_copied_from_device);
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_prune_dense2csr_by_percentage<T>(handle,
-                                                                         M,
-                                                                         N,
-                                                                         d_A,
-                                                                         LDA,
-                                                                         percentage,
-                                                                         descr,
-                                                                         d_csr_val,
-                                                                         d_csr_row_ptr,
-                                                                         d_csr_col_ind,
-                                                                         info,
-                                                                         d_temp_buffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_prune_dense2csr_by_percentage<T>(handle,
+                                                                                  M,
+                                                                                  N,
+                                                                                  d_A,
+                                                                                  LDA,
+                                                                                  percentage,
+                                                                                  descr,
+                                                                                  d_csr_val,
+                                                                                  d_csr_row_ptr,
+                                                                                  d_csr_col_ind,
+                                                                                  info,
+                                                                                  d_temp_buffer));
 
         host_vector<rocsparse_int> h_csr_row_ptr(M + 1);
         host_vector<rocsparse_int> h_csr_col_ind(h_nnz_total_dev_host_ptr[0]);

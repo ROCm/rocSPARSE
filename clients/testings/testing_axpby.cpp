@@ -84,7 +84,7 @@ void testing_axpby(const Arguments& arg)
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(size <= 0 || nnz <= 0)
@@ -158,11 +158,11 @@ void testing_axpby(const Arguments& arg)
     {
         // axpby - host pointer mode
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_axpby(handle, &h_alpha, x, &h_beta, y1));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_axpby(handle, &h_alpha, x, &h_beta, y1));
 
         // axpby - device pointer mode
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_axpby(handle, d_alpha, x, d_beta, y2));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_axpby(handle, d_alpha, x, d_beta, y2));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hy_1, dy_1, sizeof(T) * size, hipMemcpyDeviceToHost));

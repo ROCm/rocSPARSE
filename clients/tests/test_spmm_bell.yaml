@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -153,4 +153,22 @@ Tests:
   matrix: [rocsparse_matrix_random]
   spmm_alg: [rocsparse_spmm_alg_bell]
   order: [rocsparse_order_column]
+
+- name: spmm_bell_graph_test
+  category: pre_checkin
+  function: spmm_bell
+  indextype: *i32_i64
+  precision: *single_double_precisions_complex_real
+  M: [48]
+  N: [64]
+  K: [22]
+  block_dim: [5, 16]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_bell]
+  order: [rocsparse_order_row, rocsparse_order_column]
+  graph_test: true
 

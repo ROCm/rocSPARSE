@@ -186,6 +186,19 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron4]
 
+- name: spmv_ell_graph_test
+  category: pre_checkin
+  function: spmv_ell
+  indextype: *i32_i64
+  precision: *single_double_precisions_complex_real
+  M: [10, 500]
+  N: [33, 842]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  graph_test: true
+
 #
 # mixed precision
 #

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -111,3 +111,13 @@ Tests:
   N: [7]
   denseld: [4194304]
   matrix: [rocsparse_matrix_random]
+
+- name: gtsv_no_pivot_graph_test
+  category: pre_checkin
+  function: gtsv_no_pivot
+  precision: *single_double_precisions_complex_real
+  M: [131072, 424576, 1048576]
+  N: [1, 2]
+  denseld: [131072, 424576, 1048576]
+  matrix: [rocsparse_matrix_random]
+  graph_test: true

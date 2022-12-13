@@ -135,7 +135,7 @@ void testing_csrsv(const Arguments& arg)
     host_scalar<T> h_alpha(arg.get_alpha<T>());
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -258,8 +258,9 @@ void testing_csrsv(const Arguments& arg)
             //
             // Call before analysis
             //
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)),
-                                    rocsparse_status_invalid_pointer);
+            EXPECT_ROCSPARSE_STATUS(
+                testing::rocsparse_csrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)),
+                rocsparse_status_invalid_pointer);
 
             // Call it twice.
             CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
@@ -272,7 +273,8 @@ void testing_csrsv(const Arguments& arg)
             }
 
             CHECK_HIP_ERROR(hipDeviceSynchronize());
-            CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)));
+            CHECK_ROCSPARSE_ERROR(
+                testing::rocsparse_csrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)));
             {
                 auto st = rocsparse_csrsv_zero_pivot(handle, descr, info, solve_pivot);
                 EXPECT_ROCSPARSE_STATUS(st,
@@ -314,8 +316,9 @@ void testing_csrsv(const Arguments& arg)
             //
             // Call before analysis
             //
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)),
-                                    rocsparse_status_invalid_pointer);
+            EXPECT_ROCSPARSE_STATUS(
+                testing::rocsparse_csrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)),
+                rocsparse_status_invalid_pointer);
 
             // Call it twice.
             CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
@@ -324,7 +327,8 @@ void testing_csrsv(const Arguments& arg)
                 rocsparse_csrsv_zero_pivot(handle, descr, info, d_analysis_pivot),
                 (*h_analysis_pivot != -1) ? rocsparse_status_zero_pivot : rocsparse_status_success);
             CHECK_HIP_ERROR(hipDeviceSynchronize());
-            CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve<T>(PARAMS_SOLVE(d_alpha, dA, dx, dy)));
+            CHECK_ROCSPARSE_ERROR(
+                testing::rocsparse_csrsv_solve<T>(PARAMS_SOLVE(d_alpha, dA, dx, dy)));
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descr, info, d_solve_pivot),
                                     (*h_solve_pivot != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);

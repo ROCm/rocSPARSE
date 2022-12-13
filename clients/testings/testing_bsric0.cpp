@@ -161,7 +161,7 @@ void testing_bsric0(const Arguments& arg)
     }
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -355,18 +355,18 @@ void testing_bsric0(const Arguments& arg)
 
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_bsric0<T>(handle,
-                                                  direction,
-                                                  Mb,
-                                                  nnzb,
-                                                  descr,
-                                                  dbsr_val_1,
-                                                  dbsr_row_ptr,
-                                                  dbsr_col_ind,
-                                                  block_dim,
-                                                  info,
-                                                  spol,
-                                                  dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_bsric0<T>(handle,
+                                                           direction,
+                                                           Mb,
+                                                           nnzb,
+                                                           descr,
+                                                           dbsr_val_1,
+                                                           dbsr_row_ptr,
+                                                           dbsr_col_ind,
+                                                           block_dim,
+                                                           info,
+                                                           spol,
+                                                           dbuffer));
         {
             auto st = rocsparse_bsric0_zero_pivot(handle, info, hsolve_pivot_1);
             EXPECT_ROCSPARSE_STATUS(st,
@@ -376,18 +376,18 @@ void testing_bsric0(const Arguments& arg)
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_bsric0<T>(handle,
-                                                  direction,
-                                                  Mb,
-                                                  nnzb,
-                                                  descr,
-                                                  dbsr_val_2,
-                                                  dbsr_row_ptr,
-                                                  dbsr_col_ind,
-                                                  block_dim,
-                                                  info,
-                                                  spol,
-                                                  dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_bsric0<T>(handle,
+                                                           direction,
+                                                           Mb,
+                                                           nnzb,
+                                                           descr,
+                                                           dbsr_val_2,
+                                                           dbsr_row_ptr,
+                                                           dbsr_col_ind,
+                                                           block_dim,
+                                                           info,
+                                                           spol,
+                                                           dbuffer));
         EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0_zero_pivot(handle, info, dsolve_pivot_2),
                                 (hsolve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                           : rocsparse_status_success);

@@ -78,7 +78,7 @@ void testing_csr2ell(const Arguments& arg)
     rocsparse_index_base        baseB = arg.baseB;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor for CSR matrix
     rocsparse_local_mat_descr descrA;
@@ -168,7 +168,7 @@ void testing_csr2ell(const Arguments& arg)
         // Obtain ELL width
         rocsparse_int ell_width;
         CHECK_ROCSPARSE_ERROR(
-            rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width));
+            testing::rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width));
 
         // Allocate device memory
         rocsparse_int ell_nnz = ell_width * M;
@@ -183,16 +183,16 @@ void testing_csr2ell(const Arguments& arg)
         }
 
         // Perform ELL conversion
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2ell<T>(handle,
-                                                   M,
-                                                   descrA,
-                                                   dcsr_val,
-                                                   dcsr_row_ptr,
-                                                   dcsr_col_ind,
-                                                   descrB,
-                                                   ell_width,
-                                                   dell_val,
-                                                   dell_col_ind));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csr2ell<T>(handle,
+                                                            M,
+                                                            descrA,
+                                                            dcsr_val,
+                                                            dcsr_row_ptr,
+                                                            dcsr_col_ind,
+                                                            descrB,
+                                                            ell_width,
+                                                            dell_val,
+                                                            dell_col_ind));
 
         // Copy output to host
         hell_col_ind.resize(ell_nnz);

@@ -449,3 +449,17 @@ Tests:
   uplo: [rocsparse_fill_mode_upper]
   spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [Chevron4]
+
+- name: csrmv_graph_test
+  category: pre_checkin
+  function: csrmv
+  precision: *single_double_precisions_complex_real
+  M: [10, 500]
+  N: [33, 842]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  matrix_type: [rocsparse_matrix_type_general]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
+  graph_test: true

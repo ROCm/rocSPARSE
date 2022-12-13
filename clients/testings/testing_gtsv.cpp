@@ -61,7 +61,7 @@ void testing_gtsv(const Arguments& arg)
     rocsparse_int ldb = arg.denseld;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
 #define PARAMS_BUFFER_SIZE handle, m, n, ddl, dd, ddu, dB, ldb, &buffer_size
 #define PARAMS_SOLVE handle, m, n, ddl, dd, ddu, dB, ldb, dbuffer
@@ -143,7 +143,7 @@ void testing_gtsv(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_gtsv<T>(PARAMS_SOLVE));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gtsv<T>(PARAMS_SOLVE));
 
         hB.transfer_from(dB);
 

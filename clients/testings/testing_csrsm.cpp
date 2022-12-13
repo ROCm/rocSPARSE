@@ -136,7 +136,7 @@ void testing_csrsm(const Arguments& arg)
     *h_alpha = arg.get_alpha<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -307,6 +307,24 @@ void testing_csrsm(const Arguments& arg)
                                                    spol,     \
                                                    dbuffer))
 
+#define CALL_TESTING_SOLVE(alpha)                                     \
+    CHECK_ROCSPARSE_ERROR(testing::rocsparse_csrsm_solve<T>(handle,   \
+                                                            transA,   \
+                                                            transB,   \
+                                                            M,        \
+                                                            nrhs,     \
+                                                            nnz,      \
+                                                            alpha,    \
+                                                            descr,    \
+                                                            dcsr.val, \
+                                                            dcsr.ptr, \
+                                                            dcsr.ind, \
+                                                            dB,       \
+                                                            dB.ld,    \
+                                                            info,     \
+                                                            spol,     \
+                                                            dbuffer))
+
     // Obtain required buffer size
 
     size_t buffer_size;
@@ -346,7 +364,7 @@ void testing_csrsm(const Arguments& arg)
         // CALL SOLVE WITH HOST MODE
         //
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CALL_SOLVE(h_alpha);
+        CALL_TESTING_SOLVE(h_alpha);
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         //
@@ -434,7 +452,7 @@ void testing_csrsm(const Arguments& arg)
         //
         // CALL SOLVE WITH DEVICE MODE
         //
-        CALL_SOLVE(d_alpha);
+        CALL_TESTING_SOLVE(d_alpha);
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         //

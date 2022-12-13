@@ -68,7 +68,7 @@ void testing_gpsv_interleaved_batch(const Arguments& arg)
     rocsparse_gpsv_interleaved_alg alg          = arg.gpsv_interleaved_alg;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
 #define PARAMS_BUFFER_SIZE \
     handle, alg, m, dds, ddl, dd, ddu, ddw, dx, batch_count, batch_stride, &buffer_size
@@ -169,7 +169,7 @@ void testing_gpsv_interleaved_batch(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_gpsv_interleaved_batch<T>(PARAMS_SOLVE));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gpsv_interleaved_batch<T>(PARAMS_SOLVE));
 
         hx.transfer_from(dx);
 

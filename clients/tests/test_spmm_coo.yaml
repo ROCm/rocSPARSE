@@ -300,6 +300,23 @@ Tests:
   order: [rocsparse_order_column]
   filename: [Chevron3]
 
+- name: spmm_coo_graph_test
+  category: pre_checkin
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *single_double_precisions
+  M: [0, 1, 16, 64, 143, 512]
+  N: [0, 1, 9, 11, 27, 300]
+  K: [0, 1, 10, 56, 138]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
+  order: [rocsparse_order_column]
+  graph_test: true
+
 ##############################
 # Nightly
 ##############################

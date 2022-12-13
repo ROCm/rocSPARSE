@@ -180,3 +180,18 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [Chevron4]
+
+- name: gemmi_graph_test
+  category: pre_checkin
+  function: gemmi
+  precision: *single_double_precisions_complex_real
+  M: [42, 275]
+  N: [7, 19, 143]
+  K: [50, 173]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  graph_test: true

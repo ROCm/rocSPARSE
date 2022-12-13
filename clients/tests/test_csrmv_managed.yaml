@@ -172,3 +172,16 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [Chevron3]
+
+- name: csrmv_managed_graph_test
+  category: pre_checkin
+  function: csrmv_managed
+  precision: *single_double_precisions_complex_real
+  M: [10, 500]
+  N: [33, 842]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
+  graph_test: true

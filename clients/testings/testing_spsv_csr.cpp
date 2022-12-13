@@ -113,7 +113,7 @@ void testing_spsv_csr(const Arguments& arg)
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(M <= 0)
@@ -326,31 +326,31 @@ void testing_spsv_csr(const Arguments& arg)
     {
         // Solve on host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_spsv(handle,
-                                             trans_A,
-                                             &halpha,
-                                             A,
-                                             x,
-                                             y1,
-                                             ttype,
-                                             alg,
-                                             rocsparse_spsv_stage_auto /*compute*/,
-                                             &buffer_size,
-                                             dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_spsv(handle,
+                                                      trans_A,
+                                                      &halpha,
+                                                      A,
+                                                      x,
+                                                      y1,
+                                                      ttype,
+                                                      alg,
+                                                      rocsparse_spsv_stage_auto /*compute*/,
+                                                      &buffer_size,
+                                                      dbuffer));
 
         // Solve on device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_spsv(handle,
-                                             trans_A,
-                                             dalpha,
-                                             A,
-                                             x,
-                                             y2,
-                                             ttype,
-                                             alg,
-                                             rocsparse_spsv_stage_auto /*compute*/,
-                                             &buffer_size,
-                                             dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_spsv(handle,
+                                                      trans_A,
+                                                      dalpha,
+                                                      A,
+                                                      x,
+                                                      y2,
+                                                      ttype,
+                                                      alg,
+                                                      rocsparse_spsv_stage_auto /*compute*/,
+                                                      &buffer_size,
+                                                      dbuffer));
 
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 

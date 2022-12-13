@@ -101,7 +101,7 @@ void testing_gemvi(const Arguments& arg)
     T h_beta  = arg.get_beta<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Vector sparsity of 33%
     rocsparse_int nnz = N * 0.33;
@@ -190,37 +190,37 @@ void testing_gemvi(const Arguments& arg)
 
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_gemvi<T>(handle,
-                                                 trans,
-                                                 M,
-                                                 N,
-                                                 &h_alpha,
-                                                 dA,
-                                                 lda,
-                                                 nnz,
-                                                 dx_val,
-                                                 dx_ind,
-                                                 &h_beta,
-                                                 dy_1,
-                                                 base,
-                                                 buffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gemvi<T>(handle,
+                                                          trans,
+                                                          M,
+                                                          N,
+                                                          &h_alpha,
+                                                          dA,
+                                                          lda,
+                                                          nnz,
+                                                          dx_val,
+                                                          dx_ind,
+                                                          &h_beta,
+                                                          dy_1,
+                                                          base,
+                                                          buffer));
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_gemvi<T>(handle,
-                                                 trans,
-                                                 M,
-                                                 N,
-                                                 d_alpha,
-                                                 dA,
-                                                 lda,
-                                                 nnz,
-                                                 dx_val,
-                                                 dx_ind,
-                                                 d_beta,
-                                                 dy_2,
-                                                 base,
-                                                 buffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gemvi<T>(handle,
+                                                          trans,
+                                                          M,
+                                                          N,
+                                                          d_alpha,
+                                                          dA,
+                                                          lda,
+                                                          nnz,
+                                                          dx_val,
+                                                          dx_ind,
+                                                          d_beta,
+                                                          dy_2,
+                                                          base,
+                                                          buffer));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hy_1, dy_1, sizeof(T) * M, hipMemcpyDeviceToHost));

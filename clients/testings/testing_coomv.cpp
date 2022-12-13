@@ -85,7 +85,7 @@ void testing_coomv(const Arguments& arg)
     host_scalar<T> h_beta(arg.get_beta<T>());
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -121,7 +121,7 @@ void testing_coomv(const Arguments& arg)
     {
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_coomv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_coomv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
 
         {
             host_dense_matrix<T> hy_copy(hy);
@@ -145,7 +145,7 @@ void testing_coomv(const Arguments& arg)
         // Pointer mode device
         device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_coomv<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_coomv<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
         hy.near_check(dy);
     }
 

@@ -1257,6 +1257,8 @@ This module holds all sparse auxiliary functions.
 
 The functions that are contained in the auxiliary module describe all available helper functions that are required for subsequent library calls.
 
+The functions in this module do not support execution in a hipGraph context.
+
 .. _rocsparse_create_handle_:
 
 rocsparse_create_handle()
@@ -2114,6 +2116,8 @@ Sparse Extra Functions
 This module holds all sparse extra routines.
 
 The sparse extra routines describe operations that manipulate sparse matrices.
+
+The routines in this module do not support execution in a hipGraph context.
 
 rocsparse_bsrgeam_nnzb()
 ------------------------
@@ -3021,6 +3025,8 @@ This module holds all sparse reordering routines.
 
 The sparse reordering routines describe algorithm for reordering sparse matrices.
 
+The routines in this module do not support execution in a hipGraph context.
+
 rocsparse_csrcolor()
 --------------------
 
@@ -3038,6 +3044,8 @@ Utility Functions
 This module holds all sparse utility routines.
 
 The sparse utility routines allow for testing whether matrix data is valid for different matrix formats
+
+The routines in this module do not support execution in a hipGraph context.
 
 rocsparse_check_matrix_csr_buffer_size()
 ----------------------------------------

@@ -92,7 +92,7 @@ void testing_gemmi(const Arguments& arg)
     *h_beta  = arg.get_beta<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create rocsparse mat descriptor
     rocsparse_local_mat_descr descr;
@@ -164,6 +164,25 @@ void testing_gemmi(const Arguments& arg)
                        _dc,                                               \
                        _dc.ld)
 
+#define TESTING_GEMMI(_ta, _tb, _a, _da, _db, _b, _dc)                             \
+    testing::rocsparse_gemmi<T>(handle,                                            \
+                                _ta,                                               \
+                                _tb,                                               \
+                                _dc.m,                                             \
+                                _dc.n,                                             \
+                                (_ta == rocsparse_operation_none) ? _da.n : _da.m, \
+                                _db.nnz,                                           \
+                                _a,                                                \
+                                _da,                                               \
+                                _da.ld,                                            \
+                                descr,                                             \
+                                _db.val,                                           \
+                                _db.ptr,                                           \
+                                _db.ind,                                           \
+                                _b,                                                \
+                                _dc,                                               \
+                                _dc.ld)
+
     //
     // Compute host reference.
     //
@@ -171,7 +190,7 @@ void testing_gemmi(const Arguments& arg)
     {
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, h_alpha, dA, dB, h_beta, dC));
+        CHECK_ROCSPARSE_ERROR(TESTING_GEMMI(transA, transB, h_alpha, dA, dB, h_beta, dC));
 
         {
             host_dense_matrix<T> hC_copy(hC);
@@ -197,7 +216,7 @@ void testing_gemmi(const Arguments& arg)
         device_scalar<T> d_alpha(h_alpha);
         device_scalar<T> d_beta(h_beta);
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, d_alpha, dA, dB, d_beta, dC));
+        CHECK_ROCSPARSE_ERROR(TESTING_GEMMI(transA, transB, d_alpha, dA, dB, d_beta, dC));
         hC.unit_check(dC);
     }
 

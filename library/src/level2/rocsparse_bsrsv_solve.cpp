@@ -386,7 +386,7 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
     // If diag type is unit, re-initialize zero pivot to remove structural zeros
     if(descr->diag_type == rocsparse_diag_type_unit)
     {
-        rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
+        static const rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
         RETURN_IF_HIP_ERROR(hipMemcpyAsync((rocsparse_int*)info->zero_pivot,
                                            &max,
                                            sizeof(rocsparse_int),

@@ -55,7 +55,7 @@ void testing_dotci(const Arguments& arg)
     rocsparse_index_base base = arg.baseA;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(nnz <= 0)
@@ -118,11 +118,12 @@ void testing_dotci(const Arguments& arg)
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(
-            rocsparse_dotci<T>(handle, nnz, dx_val, dx_ind, dy, &hdot_1[0], base));
+            testing::rocsparse_dotci<T>(handle, nnz, dx_val, dx_ind, dy, &hdot_1[0], base));
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_dotci<T>(handle, nnz, dx_val, dx_ind, dy, ddot_2, base));
+        CHECK_ROCSPARSE_ERROR(
+            testing::rocsparse_dotci<T>(handle, nnz, dx_val, dx_ind, dy, ddot_2, base));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hdot_2, ddot_2, sizeof(T), hipMemcpyDeviceToHost));

@@ -73,7 +73,7 @@ void testing_scatter(const Arguments& arg)
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(size <= 0 || nnz <= 0)
@@ -140,7 +140,7 @@ void testing_scatter(const Arguments& arg)
     if(arg.unit_check)
     {
         // Scatter
-        CHECK_ROCSPARSE_ERROR(rocsparse_scatter(handle, x, y));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_scatter(handle, x, y));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hy, dy, sizeof(T) * size, hipMemcpyDeviceToHost));

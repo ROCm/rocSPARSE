@@ -102,7 +102,7 @@ void testing_spvv(const Arguments& arg)
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(nnz <= 0)
@@ -190,13 +190,13 @@ void testing_spvv(const Arguments& arg)
     {
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(
-            rocsparse_spvv(handle, trans, x, y, &hdot_1[0], ttype, &buffer_size, temp_buffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_spvv(
+            handle, trans, x, y, &hdot_1[0], ttype, &buffer_size, temp_buffer));
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(
-            rocsparse_spvv(handle, trans, x, y, ddot_2, ttype, &buffer_size, temp_buffer));
+            testing::rocsparse_spvv(handle, trans, x, y, ddot_2, ttype, &buffer_size, temp_buffer));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hdot_2, ddot_2, sizeof(T), hipMemcpyDeviceToHost));

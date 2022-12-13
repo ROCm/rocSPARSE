@@ -116,7 +116,7 @@ void testing_csrmv_managed(const Arguments& arg)
     rocsparse_spmv_alg   alg   = arg.spmv_alg;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -227,37 +227,37 @@ void testing_csrmv_managed(const Arguments& arg)
     {
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrmv<T>(handle,
-                                                 trans,
-                                                 M,
-                                                 N,
-                                                 nnz,
-                                                 alpha,
-                                                 descr,
-                                                 csr_val,
-                                                 csr_row_ptr,
-                                                 csr_col_ind,
-                                                 info,
-                                                 x,
-                                                 beta,
-                                                 y_1));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csrmv<T>(handle,
+                                                          trans,
+                                                          M,
+                                                          N,
+                                                          nnz,
+                                                          alpha,
+                                                          descr,
+                                                          csr_val,
+                                                          csr_row_ptr,
+                                                          csr_col_ind,
+                                                          info,
+                                                          x,
+                                                          beta,
+                                                          y_1));
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrmv<T>(handle,
-                                                 trans,
-                                                 M,
-                                                 N,
-                                                 nnz,
-                                                 alpha,
-                                                 descr,
-                                                 csr_val,
-                                                 csr_row_ptr,
-                                                 csr_col_ind,
-                                                 info,
-                                                 x,
-                                                 beta,
-                                                 y_2));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csrmv<T>(handle,
+                                                          trans,
+                                                          M,
+                                                          N,
+                                                          nnz,
+                                                          alpha,
+                                                          descr,
+                                                          csr_val,
+                                                          csr_row_ptr,
+                                                          csr_col_ind,
+                                                          info,
+                                                          x,
+                                                          beta,
+                                                          y_2));
 
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 

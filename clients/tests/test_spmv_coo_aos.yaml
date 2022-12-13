@@ -223,6 +223,21 @@ Tests:
   spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
   filename: [Chevron4]
 
+- name: spmv_coo_aos_graph_test
+  category: pre_checkin
+  function: spmv_coo_aos
+  indextype: *i32_i64
+  precision: *single_double_precisions_complex_real
+  M: [10, 500]
+  N: [33, 842]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo, rocsparse_spmv_alg_coo_atomic]
+  graph_test: true
+
 #
 # mixed precision
 #

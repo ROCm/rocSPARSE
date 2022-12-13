@@ -54,7 +54,7 @@ void testing_coo2csr(const Arguments& arg)
     rocsparse_index_base base = arg.baseA;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Allocate host memory for COO matrix
     host_vector<rocsparse_int> hcoo_row_ind;
@@ -81,7 +81,8 @@ void testing_coo2csr(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_coo2csr(handle, dcoo_row_ind, nnz, M, dcsr_row_ptr, base));
+        CHECK_ROCSPARSE_ERROR(
+            testing::rocsparse_coo2csr(handle, dcoo_row_ind, nnz, M, dcsr_row_ptr, base));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(

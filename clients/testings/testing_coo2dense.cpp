@@ -56,7 +56,7 @@ void testing_coo2dense(const Arguments& arg)
     rocsparse_int             M  = arg.M;
     rocsparse_int             N  = arg.N;
     rocsparse_int             LD = arg.denseld;
-    rocsparse_local_handle    handle;
+    rocsparse_local_handle    handle(arg);
     rocsparse_local_mat_descr descr;
 
     // Set matrix index base
@@ -124,16 +124,16 @@ void testing_coo2dense(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_coo2dense<T>(handle,
-                                                     M,
-                                                     N,
-                                                     nnz,
-                                                     descr,
-                                                     d_coo_val,
-                                                     d_coo_row_ind,
-                                                     d_coo_col_ind,
-                                                     (T*)d_dense_val,
-                                                     LD));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_coo2dense<T>(handle,
+                                                              M,
+                                                              N,
+                                                              nnz,
+                                                              descr,
+                                                              d_coo_val,
+                                                              d_coo_row_ind,
+                                                              d_coo_col_ind,
+                                                              (T*)d_dense_val,
+                                                              LD));
 
         host_vector<T> gpu_dense_val(LD * N);
         CHECK_HIP_ERROR(

@@ -268,7 +268,8 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
         }
         else
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&d_nnz, temp_storage_size_bytes));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&d_nnz, temp_storage_size_bytes, handle->stream));
             temp_storage_ptr = d_nnz + 1;
             temp_alloc       = true;
         }
@@ -305,7 +306,7 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
         //
         if(temp_alloc)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(d_nnz));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(d_nnz, handle->stream));
         }
     }
 

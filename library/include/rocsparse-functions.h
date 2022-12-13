@@ -1990,6 +1990,9 @@ rocsparse_status rocsparse_isctr(rocsparse_handle     handle,
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -2583,6 +2586,9 @@ rocsparse_status rocsparse_zbsrxmv(rocsparse_handle                handle,
 *  \note \p rocsparse_bsrsv_zero_pivot is a blocking function. It might influence
 *  performance negatively.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -2611,6 +2617,9 @@ rocsparse_status rocsparse_bsrsv_zero_pivot(rocsparse_handle   handle,
 *  rocsparse_cbsrsv_analysis(), rocsparse_zbsrsv_analysis(), rocsparse_sbsrsv_solve(),
 *  rocsparse_dbsrsv_solve(), rocsparse_cbsrsv_solve() and rocsparse_zbsrsv_solve(). The
 *  temporary storage buffer must be allocated by the user.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -2740,6 +2749,9 @@ rocsparse_status rocsparse_zbsrsv_buffer_size(rocsparse_handle                ha
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -2864,6 +2876,9 @@ rocsparse_status rocsparse_zbsrsv_analysis(rocsparse_handle                handl
 *  cleared, when the opaque \ref rocsparse_mat_info struct is destroyed using
 *  rocsparse_destroy_mat_info().
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[inout]
@@ -2890,6 +2905,9 @@ rocsparse_status rocsparse_bsrmv_ex_clear(rocsparse_handle handle, rocsparse_mat
 *  another sparse matrix format. Calling \p rocsparse_bsrsv_clear is optional. All
 *  allocated resources will be cleared, when the opaque \ref rocsparse_mat_info struct
 *  is destroyed using rocsparse_destroy_mat_info().
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -3309,6 +3327,9 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle                handle,
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -3408,6 +3429,9 @@ rocsparse_status rocsparse_zcsrmv_analysis(rocsparse_handle                handl
 *  Calling \p rocsparse_csrmv_clear is optional. All allocated resources will be
 *  cleared, when the opaque \ref rocsparse_mat_info struct is destroyed using
 *  rocsparse_destroy_mat_info().
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -3640,6 +3664,9 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle                handle,
 *  \note \p rocsparse_csrsv_zero_pivot is a blocking function. It might influence
 *  performance negatively.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -3675,6 +3702,9 @@ rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle          handle,
 *  rocsparse_dcsrilu0_buffer_size(), rocsparse_ccsrilu0_buffer_size() and
 *  rocsparse_zcsrilu0_buffer_size() if the matrix sparsity pattern is identical. The
 *  user allocated buffer can thus be shared between subsequent calls to those functions.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -3792,6 +3822,9 @@ rocsparse_status rocsparse_zcsrsv_buffer_size(rocsparse_handle                ha
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -3900,6 +3933,9 @@ rocsparse_status rocsparse_zcsrsv_analysis(rocsparse_handle                handl
 *  another sparse matrix format. Calling \p rocsparse_csrsv_clear is optional. All
 *  allocated resources will be cleared, when the opaque \ref rocsparse_mat_info struct
 *  is destroyed using rocsparse_destroy_mat_info().
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -4548,6 +4584,9 @@ rocsparse_status rocsparse_zgebsrmv(rocsparse_handle                handle,
  *  \p rocsparse_gemvi_buffer_size returns the size of the temporary storage buffer
  *  required by rocsparse_sgemvi(), rocsparse_dgemvi(), rocsparse_cgemvi() or
  *  rocsparse_zgemvi(). The temporary storage buffer must be allocated by the user.
+ *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -5502,6 +5541,9 @@ rocsparse_status rocsparse_zcsrmm(rocsparse_handle                handle,
 *  \note \p rocsparse_csrsm_zero_pivot is a blocking function. It might influence
 *  performance negatively.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -5530,6 +5572,9 @@ rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle   handle,
 *  rocsparse_ccsrsm_analysis(), rocsparse_zcsrsm_analysis(), rocsparse_scsrsm_solve(),
 *  rocsparse_dcsrsm_solve(), rocsparse_ccsrsm_solve() and rocsparse_zcsrsm_solve(). The
 *  temporary storage buffer must be allocated by the user.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -5685,6 +5730,9 @@ rocsparse_status rocsparse_zcsrsm_buffer_size(rocsparse_handle                ha
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -5824,6 +5872,9 @@ rocsparse_status rocsparse_zcsrsm_analysis(rocsparse_handle                handl
 *  another sparse matrix format. Calling \p rocsparse_csrsm_clear is optional. All
 *  allocated resources will be cleared, when the opaque \ref rocsparse_mat_info struct
 *  is destroyed using rocsparse_destroy_mat_info().
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -6128,6 +6179,9 @@ rocsparse_status rocsparse_zcsrsm_solve(rocsparse_handle                handle,
 *  \note \p rocsparse_bsrsm_zero_pivot is a blocking function. It might influence
 *  performance negatively.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -6156,6 +6210,9 @@ rocsparse_status rocsparse_bsrsm_zero_pivot(rocsparse_handle   handle,
 *  rocsparse_cbsrsm_analysis(), rocsparse_zbsrsm_analysis(), rocsparse_sbsrsm_solve(),
 *  rocsparse_dbsrsm_solve(), rocsparse_cbsrsm_solve() and rocsparse_zbsrsm_solve(). The
 *  temporary storage buffer must be allocated by the user.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -6299,6 +6356,9 @@ rocsparse_status rocsparse_zbsrsm_buffer_size(rocsparse_handle                ha
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -6431,6 +6491,9 @@ rocsparse_status rocsparse_zbsrsm_analysis(rocsparse_handle                handl
 *  another sparse matrix format. Calling \p rocsparse_bsrsm_clear is optional. All
 *  allocated resources will be cleared, when the opaque \ref rocsparse_mat_info struct
 *  is destroyed using rocsparse_destroy_mat_info().
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -9714,6 +9777,9 @@ rocsparse_status rocsparse_zcsrgemm_numeric(rocsparse_handle                hand
  *  \note \p rocsparse_bsric0_zero_pivot is a blocking function. It might influence
  *  performance negatively.
  *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -9748,6 +9814,9 @@ rocsparse_status rocsparse_bsric0_zero_pivot(rocsparse_handle   handle,
  *  rocsparse_sbsrilu0_buffer_size(), rocsparse_dbsrilu0_buffer_size(), rocsparse_cbsrilu0_buffer_size()
  *  and rocsparse_zbsrilu0_buffer_size() if the matrix sparsity pattern is identical. The user
  *  allocated buffer can thus be shared between subsequent calls to those functions.
+ *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -9870,6 +9939,9 @@ rocsparse_status rocsparse_zbsric0_buffer_size(rocsparse_handle                h
  *  This function is non blocking and executed asynchronously with respect to the host.
  *  It may return before the actual computation has finished.
  *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -9986,6 +10058,9 @@ rocsparse_status rocsparse_zbsric0_analysis(rocsparse_handle                hand
  *  Calling \p rocsparse_bsric0_clear is optional. All allocated resources will be
  *  cleared, when the opaque \ref rocsparse_mat_info struct is destroyed using
  *  rocsparse_destroy_mat_info().
+ *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -10339,6 +10414,9 @@ rocsparse_status rocsparse_zbsric0(rocsparse_handle          handle,
  *  \note \p rocsparse_bsrilu0_zero_pivot is a blocking function. It might influence
  *  performance negatively.
  *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -10372,6 +10450,9 @@ rocsparse_status rocsparse_bsrilu0_zero_pivot(rocsparse_handle   handle,
  *  setting \p enable_boost to 0.
  *
  *  \note \p tol and \p boost_val can be in host or device memory.
+ *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
  *
  *  @param[in]
  *  handle          handle to the rocsparse library context queue.
@@ -10449,6 +10530,9 @@ rocsparse_status rocsparse_dcbsrilu0_numeric_boost(rocsparse_handle             
  *  rocsparse_sbsric0_buffer_size(), rocsparse_dbsric0_buffer_size(), rocsparse_cbsric0_buffer_size()
  *  and rocsparse_zbsric0_buffer_size() if the matrix sparsity pattern is identical. The user
  *  allocated buffer can thus be shared between subsequent calls to those functions.
+ *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -10571,6 +10655,9 @@ rocsparse_status rocsparse_zbsrilu0_buffer_size(rocsparse_handle                
  *  This function is non blocking and executed asynchronously with respect to the host.
  *  It may return before the actual computation has finished.
  *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -10687,6 +10774,9 @@ rocsparse_status rocsparse_zbsrilu0_analysis(rocsparse_handle                han
  *  Calling \p rocsparse_bsrilu0_clear is optional. All allocated resources will be
  *  cleared, when the opaque \ref rocsparse_mat_info struct is destroyed using
  *  rocsparse_destroy_mat_info().
+ *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -11035,6 +11125,9 @@ rocsparse_status rocsparse_zbsrilu0(rocsparse_handle          handle,
 *  \note \p rocsparse_csric0_zero_pivot is a blocking function. It might influence
 *  performance negatively.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -11067,6 +11160,9 @@ rocsparse_status rocsparse_csric0_zero_pivot(rocsparse_handle   handle,
 *  rocsparse_scsrilu0_buffer_size() and rocsparse_dcsrilu0_buffer_size() if the matrix
 *  sparsity pattern is identical. The user allocated buffer can thus be shared between
 *  subsequent calls to those functions.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -11176,6 +11272,9 @@ rocsparse_status rocsparse_zcsric0_buffer_size(rocsparse_handle                h
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -11281,6 +11380,9 @@ rocsparse_status rocsparse_zcsric0_analysis(rocsparse_handle                hand
 *  Calling \p rocsparse_csric0_clear is optional. All allocated resources will be
 *  cleared, when the opaque \ref rocsparse_mat_info struct is destroyed using
 *  rocsparse_destroy_mat_info().
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -11603,6 +11705,9 @@ rocsparse_status rocsparse_zcsric0(rocsparse_handle          handle,
 *  \note \p rocsparse_csrilu0_zero_pivot is a blocking function. It might influence
 *  performance negatively.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -11636,6 +11741,9 @@ rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   handle,
  *  setting \p enable_boost to 0.
  *
  *  \note \p tol and \p boost_val can be in host or device memory.
+ *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
  *
  *  @param[in]
  *  handle          handle to the rocsparse library context queue.
@@ -11712,6 +11820,9 @@ rocsparse_status rocsparse_dccsrilu0_numeric_boost(rocsparse_handle             
 *  rocsparse_dcsrsv_buffer_size(), rocsparse_ccsrsv_buffer_size() and
 *  rocsparse_zcsrsv_buffer_size() if the matrix sparsity pattern is identical. The user
 *  allocated buffer can thus be shared between subsequent calls to those functions.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -11823,6 +11934,9 @@ rocsparse_status rocsparse_zcsrilu0_buffer_size(rocsparse_handle                
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -11929,6 +12043,9 @@ rocsparse_status rocsparse_zcsrilu0_analysis(rocsparse_handle                han
 *  Calling \p rocsparse_csrilu0_clear is optional. All allocated resources will be
 *  cleared, when the opaque \ref rocsparse_mat_info struct is destroyed using
 *  rocsparse_destroy_mat_info().
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -12560,6 +12677,9 @@ rocsparse_status rocsparse_zcsritilu0_history(rocsparse_handle     handle,
 *  rocsparse_cgtsv() and rocsparse_zgtsv(). The temporary storage buffer
 *  must be allocated by the user.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -12725,6 +12845,9 @@ rocsparse_status rocsparse_zgtsv(rocsparse_handle                handle,
 *  rocsparse_cgtsv_no_pivot() and rocsparse_zgtsv_no_pivot(). The temporary storage buffer
 *  must be allocated by the user.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -12889,6 +13012,9 @@ rocsparse_status rocsparse_zgtsv_no_pivot(rocsparse_handle                handle
 *  that is required by rocsparse_sgtsv_no_pivot_strided_batch(), rocsparse_dgtsv_no_pivot_strided_batch(),
 *  rocsparse_cgtsv_no_pivot_strided_batch() and rocsparse_zgtsv_no_pivot_strided_batch(). The temporary
 *  storage buffer must be allocated by the user.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -13056,6 +13182,9 @@ rocsparse_status rocsparse_zgtsv_no_pivot_strided_batch(rocsparse_handle        
 *  that is required by rocsparse_sgtsv_interleaved_batch(), rocsparse_dgtsv_interleaved_batch(),
 *  rocsparse_cgtsv_interleaved_batch() and rocsparse_zgtsv_interleaved_batch(). The temporary
 *  storage buffer must be allocated by the user.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -13242,6 +13371,9 @@ rocsparse_status rocsparse_zgtsv_interleaved_batch(rocsparse_handle             
 *  \p rocsparse_gpsv_interleaved_batch_buffer_size calculates the required buffer size
 *  for rocsparse_gpsv_interleaved_batch(). It is the users responsibility to allocate
 *  this buffer.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
@@ -13463,6 +13595,9 @@ rocsparse_status rocsparse_zgpsv_interleaved_batch(rocsparse_handle             
 *  This function computes the number of nonzero elements per row or column and the total number of nonzero elements in a dense matrix.
 *  \details
 *  The routine does support asynchronous execution if the pointer mode is set to device.
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -13549,6 +13684,9 @@ rocsparse_status rocsparse_znnz(rocsparse_handle                handle,
 *  All the parameters are assumed to have been pre-allocated by the user and the arrays are filled in based on nnz_per_row, which can be pre-computed with rocsparse_xnnz().
 *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
 *  \details
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -13646,6 +13784,9 @@ rocsparse_status rocsparse_zdense2csr(rocsparse_handle                handle,
 *  rocsparse_sprune_dense2csr(), and rocsparse_dprune_dense2csr(). The temporary
 *  storage buffer must be allocated by the user.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -13722,6 +13863,9 @@ rocsparse_status rocsparse_dprune_dense2csr_buffer_size(rocsparse_handle        
 *
 *  \details
 *  The routine does support asynchronous execution if the pointer mode is set to device.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -13800,6 +13944,9 @@ rocsparse_status rocsparse_dprune_dense2csr_nnz(rocsparse_handle          handle
 *  rocsparse_xprune_dense2csr_nnz() and rocsparse_xprune_dense2csr() and must be allocated by the user and whose size is determined
 *  by rocsparse_xprune_dense2csr_buffer_size(). The routine rocsparse_xprune_dense2csr() is executed asynchronously with
 *  respect to the host and may return control to the application on the host before the entire result is ready.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -13892,6 +14039,9 @@ rocsparse_status rocsparse_dprune_dense2csr(rocsparse_handle          handle,
 *  \f]
 *  Once we have this threshold we prune values in the dense matrix \p A as in \p rocsparse_prune_dense2csr. It is executed
 *  asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -13991,6 +14141,9 @@ rocsparse_status
 *  Once we have this threshold we prune values in the dense matrix \p A as in \p rocsparse_prune_dense2csr. The routine does
 *  support asynchronous execution if the pointer mode is set to device.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -14081,6 +14234,9 @@ rocsparse_status rocsparse_dprune_dense2csr_nnz_by_percentage(rocsparse_handle  
 *  Once we have this threshold we prune values in the dense matrix \p A as in \p rocsparse_prune_dense2csr. It is executed
 *  asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -14162,6 +14318,9 @@ rocsparse_status rocsparse_dprune_dense2csr_by_percentage(rocsparse_handle      
 *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
 *
 *  \details
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -14255,6 +14414,9 @@ rocsparse_status rocsparse_zdense2csc(rocsparse_handle                handle,
 *  All the parameters are assumed to have been pre-allocated by the user and the arrays are filled in based on nnz_per_rows, which can be pre-computed with rocsparse_xnnz().
 *
 *  \details
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -14346,6 +14508,9 @@ rocsparse_status rocsparse_zdense2coo(rocsparse_handle                handle,
 *  This function converts the sparse matrix in CSR format into a dense matrix.
 *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
 *  \details
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -14428,6 +14593,9 @@ rocsparse_status rocsparse_zcsr2dense(rocsparse_handle                handle,
 *  This function converts the sparse matrix in CSC format into a dense matrix.
 *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
 *  \details
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -14510,6 +14678,9 @@ rocsparse_status rocsparse_zcsc2dense(rocsparse_handle                handle,
 *  This function converts the sparse matrix in COO format into a dense matrix.
 *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
 *  \details
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -14597,6 +14768,9 @@ rocsparse_status rocsparse_zcoo2dense(rocsparse_handle                handle,
 *  Given a sparse CSR matrix and a non-negative tolerance, this function computes how many entries would be left
 *  in each row of the matrix if elements less than the tolerance were removed. It also computes the total number
 *  of remaining elements in the matrix.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle        handle to the rocsparse library context queue.
@@ -14769,6 +14943,9 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
 *  required by rocsparse_scsr2csc(), rocsparse_dcsr2csc(), rocsparse_ccsr2csc() and
 *  rocsparse_zcsr2csc(). The temporary storage buffer must be allocated by the user.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -14825,6 +15002,9 @@ rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle     handle,
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -14995,6 +15175,9 @@ rocsparse_status rocsparse_zcsr2csc(rocsparse_handle                handle,
 *  required by rocsparse_sgebsr2gebsc(), rocsparse_dgebsr2gebsc(), rocsparse_cgebsr2gebsc() and
 *  rocsparse_zgebsr2gebsc(). The temporary storage buffer must be allocated by the user.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -15095,6 +15278,9 @@ rocsparse_status rocsparse_zgebsr2gebsc_buffer_size(rocsparse_handle            
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -15485,6 +15671,9 @@ rocsparse_status rocsparse_zcsr2ell(rocsparse_handle                handle,
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle          handle to the rocsparse library context queue.
 *  @param[in]
@@ -15609,6 +15798,9 @@ rocsparse_status rocsparse_zcsr2hyb(rocsparse_handle                handle,
 *  \details
 *  The routine does support asynchronous execution if the pointer mode is set to device.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -15673,6 +15865,9 @@ rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          handle,
 *  \p csr2bsr_nnz() which also fills in \p bsr_row_ptr.
 *
 *  \p rocsparse_csr2bsr requires extra temporary storage that is allocated internally if \p block_dim>16
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
@@ -15929,6 +16124,9 @@ rocsparse_status rocsparse_zbsrpad_value(rocsparse_handle          handle,
 *  \details
 *  The routine does support asynchronous execution if the pointer mode is set to device.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -16029,6 +16227,9 @@ rocsparse_status rocsparse_zcsr2gebsr_buffer_size(rocsparse_handle              
 *  \details
 *  The routine does support asynchronous execution if the pointer mode is set to device.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -16102,6 +16303,9 @@ rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          handle,
 *  for \p bsr_row_ptr is computed as \p mb+1 where \p mb is the number of block rows in
 *  the GEneral BSR matrix. Allocation size for \p bsr_val and \p bsr_col_ind is computed using
 *  \p csr2gebsr_nnz() which also fills in \p bsr_row_ptr.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
@@ -16276,6 +16480,9 @@ rocsparse_status rocsparse_zcsr2gebsr(rocsparse_handle                handle,
  *
  *  \note
  *  In the case of complex matrices only the magnitude of the real part of \p tol is used.
+ *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
  *
  *  @param[in]
  *  handle        handle to the rocsparse library context queue.
@@ -16452,6 +16659,9 @@ rocsparse_status rocsparse_zcsr2csr_compress(rocsparse_handle                han
  *  \p rocsparse_sprune_csr2csr, and \p rocsparse_dprune_csr2csr. The temporary storage
  *  buffer must be allocated by the user.
  *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
+ *
  *  @param[in]
  *  handle        handle to the rocsparse library context queue.
  *  @param[in]
@@ -16535,6 +16745,9 @@ rocsparse_status rocsparse_dprune_csr2csr_buffer_size(rocsparse_handle          
  *  pruned from the matrix.
  *
  *  \note The routine does support asynchronous execution if the pointer mode is set to device.
+ *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
  *
  *  @param[in]
  *  handle        handle to the rocsparse library context queue.
@@ -16621,6 +16834,9 @@ rocsparse_status rocsparse_dprune_csr2csr_nnz(rocsparse_handle          handle,
  *  is executed asynchronously with respect to the host and may return control to the application on the host
  *  before the entire result is ready.
  *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
+ *
  *  @param[in]
  *  handle        handle to the rocsparse library context queue.
  *  @param[in]
@@ -16703,6 +16919,9 @@ rocsparse_status rocsparse_dprune_csr2csr(rocsparse_handle          handle,
  *  is required by \p rocsparse_sprune_csr2csr_nnz_by_percentage, \p rocsparse_dprune_csr2csr_nnz_by_percentage,
  *  \p rocsparse_sprune_csr2csr_by_percentage, and \p rocsparse_dprune_csr2csr_by_percentage. The temporary storage
  *  buffer must be allocated by the user.
+ *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
  *
  *  @param[in]
  *  handle        handle to the rocsparse library context queue.
@@ -16795,6 +17014,9 @@ rocsparse_status
  *
  *  \note The routine does support asynchronous execution if the pointer mode is set to device.
  *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
+ *
  *  @param[in]
  *  handle        handle to the rocsparse library context queue.
  *  @param[in]
@@ -16884,6 +17106,9 @@ rocsparse_status rocsparse_dprune_csr2csr_nnz_by_percentage(rocsparse_handle    
  *  in \p nnz_total_dev_host_ptr. The user then calls rocsparse_xprune_csr2csr() to complete the conversion. It
  *  is executed asynchronously with respect to the host and may return control to the application on the host
  *  before the entire result is ready.
+ *
+ *  \note
+ *  This routine does not support execution in a hipGraph context.
  *
  *  @param[in]
  *  handle        handle to the rocsparse library context queue.
@@ -17064,6 +17289,9 @@ rocsparse_status rocsparse_coo2csr(rocsparse_handle     handle,
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -17277,6 +17505,9 @@ rocsparse_status rocsparse_zell2csr(rocsparse_handle                handle,
 *  required by rocsparse_shyb2csr(), rocsparse_dhyb2csr(), rocsparse_chyb2csr() and
 *  rocsparse_dhyb2csr(). The temporary storage buffer must be allocated by the user.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle          handle to the rocsparse library context queue.
 *  @param[in]
@@ -17475,6 +17706,9 @@ rocsparse_status rocsparse_create_identity_permutation(rocsparse_handle handle,
 *  required by rocsparse_csrsort(). The temporary storage buffer must be allocated by
 *  the user.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle          handle to the rocsparse library context queue.
 *  @param[in]
@@ -17525,6 +17759,9 @@ rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle     handle,
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle          handle to the rocsparse library context queue.
@@ -17617,6 +17854,9 @@ rocsparse_status rocsparse_csrsort(rocsparse_handle          handle,
 *  required by rocsparse_cscsort(). The temporary storage buffer must be allocated by
 *  the user.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle          handle to the rocsparse library context queue.
 *  @param[in]
@@ -17667,6 +17907,9 @@ rocsparse_status rocsparse_cscsort_buffer_size(rocsparse_handle     handle,
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle          handle to the rocsparse library context queue.
@@ -17759,6 +18002,9 @@ rocsparse_status rocsparse_cscsort(rocsparse_handle          handle,
 *  required by rocsparse_coosort_by_row() and rocsparse_coosort_by_column(). The
 *  temporary storage buffer has to be allocated by the user.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle          handle to the rocsparse library context queue.
 *  @param[in]
@@ -17812,6 +18058,9 @@ rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle     handle,
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle          handle to the rocsparse library context queue.
@@ -17923,6 +18172,9 @@ rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle          handle to the rocsparse library context queue.
 *  @param[in]
@@ -18026,6 +18278,9 @@ rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -18196,6 +18451,9 @@ rocsparse_status rocsparse_zbsr2csr(rocsparse_handle                handle,
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -18372,6 +18630,9 @@ rocsparse_status rocsparse_zgebsr2csr(rocsparse_handle                handle,
 *  rocsparse_cgebsr2gebsr(), and rocsparse_zgebsr2gebsr(). The temporary
 *  storage buffer must be allocated by the user.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -18496,6 +18757,9 @@ rocsparse_status rocsparse_zgebsr2gebsr_buffer_size(rocsparse_handle            
 *  \details
 *  The routine does support asynchronous execution.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *
@@ -18583,6 +18847,9 @@ rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          handle,
 *  non-zero blocks that will exist in \p C. Finally, the user allocates space for the colimn indices array of \p C to have
 *  \p nnzb_C elements and space for the values array of \p C to have \p nnzb_C*roc_block_dim_C*col_block_dim_C and then calls
 *  rocsparse_xgebsr2gebsr() to complete the conversion.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -18913,6 +19180,9 @@ rocsparse_status rocsparse_rot(rocsparse_handle      handle,
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
 *  @param[in]
@@ -18957,6 +19227,9 @@ rocsparse_status rocsparse_sparse_to_dense(rocsparse_handle              handle,
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
@@ -19136,6 +19409,9 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *  It may return before the actual computation has finished.
 *
 *  \note
+*  This routine does not support execution in a hipGraph context.
+*
+*  \note
 *  The sparse matrix formats currently supported are: rocsparse_format_bsr, rocsparse_format_coo,
 *  rocsparse_format_coo_aos, rocsparse_format_csr, rocsparse_format_csc and rocsparse_format_ell.
 *
@@ -19276,6 +19552,9 @@ __attribute__((deprecated("This function is deprecated and will be removed in a 
 *  If \p temp_buffer is equal to \p nullptr, the required buffer size will be returned.
 *  Else, the SpMV_ex preprocess and the SpMV algorithm will be executed.
 *
+*  \note
+*  Only the final stage \ref rocsparse_spmv_stage_compute supports execution in a hipGraph context.
+*
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
 *  @param[in]
@@ -19364,6 +19643,9 @@ rocsparse_status rocsparse_spmv_ex(rocsparse_handle            handle,
 *
 *  \note
 *  Currently, only \p trans == \ref rocsparse_operation_none and \p trans == \ref rocsparse_operation_transpose is supported.
+*
+*  \note
+*  Only the final stage \ref rocsparse_spsv_stage_compute supports execution in a hipGraph context.
 *
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
@@ -19459,6 +19741,9 @@ rocsparse_status rocsparse_spsv(rocsparse_handle            handle,
 *  \note
 *  Currently, only \p trans_A == \ref rocsparse_operation_none and \p trans_A == \ref rocsparse_operation_transpose is supported.
 *  Currently, only \p trans_B == \ref rocsparse_operation_none and \p trans_B == \ref rocsparse_operation_transpose is supported.
+*
+*  \note
+*  Only the final stage \ref rocsparse_spsm_stage_compute supports execution in a hipGraph context.
 *
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
@@ -19576,6 +19861,9 @@ rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
 *  which stage is required based on the following indicators:
 *  If \p temp_buffer is equal to \p nullptr, the required buffer size will be returned.
 *  Else, the SpMM preprocess and the SpMM algorithm will be executed.
+*
+*  \note
+*  Only the final stage \ref rocsparse_spmm_stage_compute supports execution in a hipGraph context.
 *
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
@@ -19993,6 +20281,9 @@ rocsparse_status rocsparse_spmm(rocsparse_handle            handle,
 *  \note Please note, that for rare matrix products with more than 4096 non-zero entries
 *  per row, additional temporary storage buffer is allocated by the algorithm.
 *
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
 *  @param[in]
@@ -20141,6 +20432,9 @@ rocsparse_status rocsparse_sddmm(rocsparse_handle            handle,
 *
 *  \details
 *  \ref rocsparse_sddmm_buffer_size returns the size of the required buffer to execute the SDDMM operation from a given configuration.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
 *  @param[in]
@@ -20192,6 +20486,9 @@ rocsparse_status rocsparse_sddmm_buffer_size(rocsparse_handle            handle,
 *  \details
 *  \ref rocsparse_sddmm_preprocess executes a part of the algorithm that can be calculated once in the context of multiple calls of the \ref rocsparse_sddmm
 *  with the same sparsity pattern.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
 *  @param[in]

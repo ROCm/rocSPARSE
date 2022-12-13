@@ -217,3 +217,20 @@ Tests:
   direction: [rocsparse_direction_column]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron4]
+
+- name: bsrilu0_graph_test
+  category: pre_checkin
+  function: bsrilu0
+  precision: *single_double_precisions
+  M_N: *M_N_range_quick
+  block_dim: [1, 4, 9]
+  numericboost: [0, 1]
+  boosttol: [0.2, 0.5, 0.9, 1.1]
+  boostval: [0.5, 1.2]
+  transA: [rocsparse_operation_none]
+  apol: [rocsparse_analysis_policy_reuse]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
+  matrix: [rocsparse_matrix_random]
+  graph_test: true

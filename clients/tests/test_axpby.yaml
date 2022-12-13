@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -70,3 +70,17 @@ Tests:
   beta: [-0.9]
   betai: [2.2]
   baseA: [rocsparse_index_base_zero]
+
+- name: axpby_graph_test
+  category: pre_checkin
+  function: axpby
+  indextype: *i32_i64
+  precision: *single_double_precisions_complex_real
+  M: [1200]
+  nnz: [5, 10, 500]
+  alpha: [1.0, 0.0]
+  alphai: [1.0]
+  beta: [1.0, 1.9]
+  betai: [0.3]
+  baseA: [rocsparse_index_base_zero]
+  graph_test: true

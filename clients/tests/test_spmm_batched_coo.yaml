@@ -212,6 +212,66 @@ Tests:
   order: [rocsparse_order_column]
   filename: [qc2534]
 
+- name: spmm_batched_coo_graph_test
+  category: pre_checkin
+  function: spmm_batched_coo
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions
+  M: [155, 326]
+  N: [22, 39, 43]
+  K: [72, 117, 279]
+  batch_count_A: [23]
+  batch_count_B: [1]
+  batch_count_C: [23]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic]
+  order: [rocsparse_order_row]
+  graph_test: true
+
+- name: spmm_batched_coo_graph_test
+  category: pre_checkin
+  function: spmm_batched_coo
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions
+  M: [155, 326]
+  N: [22, 39, 43]
+  K: [72, 117, 279]
+  batch_count_A: [1]
+  batch_count_B: [22]
+  batch_count_C: [22]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic]
+  order: [rocsparse_order_row]
+  graph_test: true
+
+- name: spmm_batched_coo_graph_test
+  category: pre_checkin
+  function: spmm_batched_coo
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions
+  M: [155, 326]
+  N: [22, 39, 43]
+  K: [72, 117, 279]
+  batch_count_A: [14]
+  batch_count_B: [14]
+  batch_count_C: [14]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic]
+  order: [rocsparse_order_row]
+  graph_test: true
+
 ##############################
 # Nightly
 ##############################

@@ -868,7 +868,8 @@ extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          
         }
         else
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+                &temp_storage_ptr, temp_storage_size_bytes, handle->stream));
             temp_alloc = true;
         }
 
@@ -882,7 +883,7 @@ extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          
 
         if(temp_alloc)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(temp_storage_ptr, handle->stream));
         }
 
         // Compute nnz_total_dev_host_ptr

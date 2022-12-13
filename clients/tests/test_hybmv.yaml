@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -178,3 +178,17 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto]
   filename: [Chevron4]
+
+- name: hybmv_graph_test
+  category: pre_checkin
+  function: hybmv
+  precision: *single_double_precisions_complex_real
+  M: [10, 500]
+  N: [33, 842]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
+  algo: [0, 1, 2]
+  graph_test: true

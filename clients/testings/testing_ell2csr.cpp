@@ -77,7 +77,7 @@ void testing_ell2csr(const Arguments& arg)
     rocsparse_index_base        baseB = arg.baseB;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor for ELL matrix
     rocsparse_local_mat_descr descrA;
@@ -205,17 +205,17 @@ void testing_ell2csr(const Arguments& arg)
         }
 
         // Perform CSR conversion
-        CHECK_ROCSPARSE_ERROR(rocsparse_ell2csr<T>(handle,
-                                                   M,
-                                                   N,
-                                                   descrA,
-                                                   ell_width,
-                                                   dell_val,
-                                                   dell_col_ind,
-                                                   descrB,
-                                                   dcsr_val,
-                                                   dcsr_row_ptr,
-                                                   dcsr_col_ind));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_ell2csr<T>(handle,
+                                                            M,
+                                                            N,
+                                                            descrA,
+                                                            ell_width,
+                                                            dell_val,
+                                                            dell_col_ind,
+                                                            descrB,
+                                                            dcsr_val,
+                                                            dcsr_row_ptr,
+                                                            dcsr_col_ind));
 
         // Copy output to host
         hcsr_row_ptr.resize(M + 1);

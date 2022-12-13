@@ -63,7 +63,7 @@ void testing_gtsv_no_pivot_strided_batch(const Arguments& arg)
     rocsparse_int batch_stride = arg.denseld;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
 #define PARAMS_BUFFER_SIZE handle, m, ddl, dd, ddu, dx, batch_count, batch_stride, &buffer_size
 #define PARAMS_SOLVE handle, m, ddl, dd, ddu, dx, batch_count, batch_stride, dbuffer
@@ -148,7 +148,7 @@ void testing_gtsv_no_pivot_strided_batch(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_gtsv_no_pivot_strided_batch<T>(PARAMS_SOLVE));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gtsv_no_pivot_strided_batch<T>(PARAMS_SOLVE));
 
         hx.transfer_from(dx);
 

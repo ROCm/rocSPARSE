@@ -330,6 +330,23 @@ Tests:
   order: [rocsparse_order_row]
   filename: [Chebyshev4]
 
+- name: spmm_csc_graph_test
+  category: pre_checkin
+  function: spmm_csc
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions
+  M: [223, 485, 647]
+  N: [223]
+  K: [223, 485, 647]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  order: [rocsparse_order_column]
+  graph_test: true
+
 
 ##############################
 # Nightly

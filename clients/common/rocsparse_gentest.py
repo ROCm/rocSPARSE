@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # ########################################################################
-# Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -398,7 +398,7 @@ def generate(test, function):
                     # Get argument.
                     #
                     filename_arg = out_path + str(test[key])
-                        
+
                     #
                     # Check if this is a valid argument
                     #
@@ -409,7 +409,7 @@ def generate(test, function):
                         print("skip unrecognized filename, directory or filename regular expression: '" + test[key] + "'")
                     else:
                         cleanlist.append(test[key])
-                
+
                 if not cleanlist:
                     return;
                 test[key] = cleanlist
@@ -423,7 +423,7 @@ def generate(test, function):
                     # Get argument.
                     #
                     filename_arg = out_path + str(test[key])
-                        
+
                     #
                     # It is a directory.
                     #
@@ -454,7 +454,7 @@ def generate(test, function):
                                 test[key]=[subpath]
                                 generate(test,function)
 
-                    
+
             else:
                 for test[key] in test[key]:
                     generate(test,function)
