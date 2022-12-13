@@ -588,6 +588,33 @@ typedef enum rocsparse_spsv_stage_
 } rocsparse_spsv_stage;
 
 /*! \ingroup types_module
+ *  \brief List of SpITSV algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_spitsv_alg types that are used to perform
+ *  triangular solve.
+ */
+typedef enum rocsparse_spitsv_alg_
+{
+    rocsparse_spitsv_alg_default = 0, /**< Default SpITSV algorithm for the given format. */
+} rocsparse_spitsv_alg;
+
+/*! \ingroup types_module
+ *  \brief List of SpITSV stages.
+ *
+ *  \details
+ *  This is a list of possible stages during SpITSV computation. Typical order is
+ *  buffer_size, preprocess, compute.
+ */
+typedef enum rocsparse_spitsv_stage_
+{
+    rocsparse_spitsv_stage_auto        = 0, /**< Automatic stage detection. */
+    rocsparse_spitsv_stage_buffer_size = 1, /**< Returns the required buffer size. */
+    rocsparse_spitsv_stage_preprocess  = 2, /**< Preprocess data. */
+    rocsparse_spitsv_stage_compute     = 3 /**< Performs the actual SpITSV computation. */
+} rocsparse_spitsv_stage;
+
+/*! \ingroup types_module
  *  \brief List of SpSM algorithms.
  *
  *  \details

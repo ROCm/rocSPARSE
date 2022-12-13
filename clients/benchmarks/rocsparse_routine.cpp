@@ -208,11 +208,13 @@ constexpr const char* rocsparse_routine::to_string() const
 #include "testing_bsrmv.hpp"
 #include "testing_bsrsv.hpp"
 #include "testing_bsrxmv.hpp"
+#include "testing_csritsv.hpp"
 #include "testing_csrmv_managed.hpp"
 #include "testing_csrsv.hpp"
 #include "testing_gebsrmv.hpp"
 #include "testing_gemvi.hpp"
 #include "testing_hybmv.hpp"
+#include "testing_spitsv_csr.hpp"
 #include "testing_spmv_bsr.hpp"
 #include "testing_spmv_coo.hpp"
 #include "testing_spmv_coo_aos.hpp"
@@ -510,6 +512,8 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_IJT_X(csrsm, testing_spsm_csr);
         DEFINE_CASE_T_FLOAT_ONLY(csrsort);
         DEFINE_CASE_IJT_X(csrsv, testing_spsv_csr);
+        DEFINE_CASE_IJT_X(spitsv_csr, testing_spitsv_csr);
+        DEFINE_CASE_T(csritsv);
         DEFINE_CASE_T(csr2dense);
         DEFINE_CASE_T(csr2bsr);
         DEFINE_CASE_T_FLOAT_ONLY(csr2coo);

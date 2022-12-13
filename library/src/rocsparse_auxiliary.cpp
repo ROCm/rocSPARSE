@@ -922,6 +922,16 @@ rocsparse_status rocsparse_copy_mat_info(rocsparse_mat_info dest, const rocspars
             rocsparse_copy_csrgemm_info(dest->csrgemm_info, src->csrgemm_info));
     }
 
+    if(src->csritsv_info != nullptr)
+    {
+        if(dest->csritsv_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csritsv_info(&dest->csritsv_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_csritsv_info(dest->csritsv_info, src->csritsv_info));
+    }
+
     if(src->zero_pivot != nullptr)
     {
         // zero pivot for csrsv, csrsm, csrilu0, csric0

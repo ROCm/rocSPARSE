@@ -100,6 +100,7 @@ int main(int argc, char* argv[])
 
     utils_init_csr_laplace2d(
         hcsr_row_ptr, hcsr_col_ind, hcsr_val, ndim, ndim, m, m, nnz, rocsparse_index_base_zero);
+    utils_seedrand();
 
     std::vector<double> hx(m);
     std::vector<double> hy(m);
@@ -134,7 +135,7 @@ int main(int argc, char* argv[])
     ROCSPARSE_CHECK(rocsparse_set_mat_fill_mode(descr, rocsparse_fill_mode_lower));
 
     // Matrix diagonal type
-    ROCSPARSE_CHECK(rocsparse_set_mat_diag_type(descr, rocsparse_diag_type_non_unit));
+    ROCSPARSE_CHECK(rocsparse_set_mat_diag_type(descr, rocsparse_diag_type_unit));
 
     // Matrix info structure
     rocsparse_mat_info info;
@@ -230,7 +231,6 @@ int main(int argc, char* argv[])
 
     // Print result
     HIP_CHECK(hipMemcpy(hy.data(), dy, sizeof(double) * m, hipMemcpyDeviceToHost));
-
     std::cout.precision(2);
     std::cout.setf(std::ios::fixed);
     std::cout.setf(std::ios::left);

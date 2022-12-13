@@ -574,6 +574,19 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsv_alg value_)
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spitsv_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spitsv_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_stage value_)
 {
     switch(value_)
@@ -598,6 +611,22 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsv_stage value_)
     case rocsparse_spsv_stage_buffer_size:
     case rocsparse_spsv_stage_preprocess:
     case rocsparse_spsv_stage_compute:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spitsv_stage value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spitsv_stage_auto:
+    case rocsparse_spitsv_stage_buffer_size:
+    case rocsparse_spitsv_stage_preprocess:
+    case rocsparse_spitsv_stage_compute:
     {
         return false;
     }

@@ -216,6 +216,12 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsv_alg& p)
 }
 
 template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spitsv_alg& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_sddmm_alg& p)
 {
     return rocsparse_status_invalid_value;
@@ -295,6 +301,12 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_hyb_partition&
 
 template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsv_stage& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spitsv_stage& p)
 {
     return rocsparse_status_invalid_value;
 }
@@ -384,6 +396,12 @@ inline void auto_testing_bad_arg_set_invalid(rocsparse_spsv_alg& p)
 }
 
 template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_spitsv_alg& p)
+{
+    p = (rocsparse_spitsv_alg)-1;
+}
+
+template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_spsm_alg& p)
 {
     p = (rocsparse_spsm_alg)-1;
@@ -465,6 +483,12 @@ template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_spsv_stage& p)
 {
     p = (rocsparse_spsv_stage)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_spitsv_stage& p)
+{
+    p = (rocsparse_spitsv_stage)-1;
 }
 
 template <>

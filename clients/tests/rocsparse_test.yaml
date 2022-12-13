@@ -39,6 +39,7 @@ include: test_coomv.yaml
 include: test_csrmv.yaml
 include: test_csrmv_managed.yaml
 include: test_csrsv.yaml
+include: test_csritsv.yaml
 include: test_ellmv.yaml
 include: test_hybmv.yaml
 include: test_gebsrmv.yaml
@@ -105,6 +106,7 @@ include: test_spmv_csr.yaml
 include: test_spmv_csc.yaml
 include: test_spmv_ell.yaml
 include: test_spsv_csr.yaml
+include: test_spitsv_csr.yaml
 include: test_spsv_coo.yaml
 include: test_spsm_csr.yaml
 include: test_spsm_coo.yaml

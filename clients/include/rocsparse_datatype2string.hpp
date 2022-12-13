@@ -365,6 +365,16 @@ constexpr auto rocsparse_spsvalg2string(rocsparse_spsv_alg alg)
     return "invalid";
 }
 
+constexpr auto rocsparse_spitsvalg2string(rocsparse_spitsv_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_spitsv_alg_default:
+        return "default";
+    }
+    return "invalid";
+}
+
 constexpr auto rocsparse_spsmalg2string(rocsparse_spsm_alg alg)
 {
     switch(alg)

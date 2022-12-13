@@ -74,6 +74,8 @@ ROCSPARSE_DO_ROUTINE(cscmm_batched)					\
 ROCSPARSE_DO_ROUTINE(csrsm)					\
 ROCSPARSE_DO_ROUTINE(csrsort)					\
 ROCSPARSE_DO_ROUTINE(csrsv)					\
+ROCSPARSE_DO_ROUTINE(csritsv)					\
+ROCSPARSE_DO_ROUTINE(spitsv_csr)				\
 ROCSPARSE_DO_ROUTINE(csr2dense)					\
 ROCSPARSE_DO_ROUTINE(csr2bsr)					\
 ROCSPARSE_DO_ROUTINE(csr2coo)					\
