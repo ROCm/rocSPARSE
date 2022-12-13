@@ -7,9 +7,10 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Added bsrgemm and spgemm for BSR format
 - Added bsrgeam
 - Added build support for Navi32
+- Added experimental hipGraph support for some rocSPARSE routines
 - Added csritsv, spitsv csr iterative triangular solve
-- Added experimental support for some rocSPARSE routines
 - Added mixed precisions for SpMV
+- Added batched SpMM for transpose A in COO format with atomic atomic algorithm
 ### Improved
 - Optimization to csr2bsr
 - Optimization to csr2csr_compress
@@ -17,7 +18,6 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Optimization to gebsr2csr
 - Optimization to csr2gebsr
 - Fixes to documentation
-- Fixes to SpMV and SpMM COO routined to allow larger matrices
 - Fixes a bug in COO SpMV gridsize
 - Fixes a bug in SpMM gridsize when using very large matrices
 
