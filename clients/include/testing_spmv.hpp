@@ -626,7 +626,7 @@ public:
         rocsparse_datatype     ttype       = get_datatype<T>();
 
         // Create rocsparse handle
-        rocsparse_local_handle handle;
+        rocsparse_local_handle handle(arg);
 
         host_scalar<T> h_alpha(arg.get_alpha<T>());
         host_scalar<T> h_beta(arg.get_beta<T>());
@@ -746,10 +746,16 @@ public:
 
         if(arg.unit_check)
         {
+#define EX_PARAMS(alpha_, A_, x_, beta_, y_, stage_) \
+    handle, trans, alpha_, A_, x_, beta_, y_, ttype, alg, stage_, &buffer_size, dbuffer
+
+            CHECK_ROCSPARSE_ERROR(rocsparse_spmv_ex(
+                EX_PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_preprocess)));
 
             // Pointer mode host
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-            CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, matA, x, h_beta, y)));
+            CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmv_ex(
+                EX_PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_compute)));
 
             //
             // CPU spmv
@@ -772,7 +778,8 @@ public:
                 device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
                 CHECK_ROCSPARSE_ERROR(
                     rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-                CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(d_alpha, matA, x, d_beta, y)));
+                CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmv_ex(
+                    EX_PARAMS(d_alpha, matA, x, d_beta, y, rocsparse_spmv_stage_compute)));
             }
 
             hy.near_check(dy);

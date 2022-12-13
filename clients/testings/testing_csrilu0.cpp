@@ -172,7 +172,7 @@ void testing_csrilu0(const Arguments& arg)
     T h_boost_val = arg.get_boostval<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -345,7 +345,7 @@ void testing_csrilu0(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_numeric_boost<T>(
             handle, info, boost, get_boost_tol(&h_boost_tol), &h_boost_val));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0<T>(
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csrilu0<T>(
             handle, M, nnz, descr, dcsr_val_1, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
         {
             auto st = rocsparse_csrilu0_zero_pivot(handle, info, h_solve_pivot_1);
@@ -361,7 +361,7 @@ void testing_csrilu0(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_numeric_boost<T>(
             handle, info, boost, get_boost_tol(d_boost_tol), d_boost_val));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0<T>(
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csrilu0<T>(
             handle, M, nnz, descr, dcsr_val_2, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
         EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, d_solve_pivot_2),
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot

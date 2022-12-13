@@ -80,7 +80,7 @@ void testing_rot(const Arguments& arg)
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(size <= 0 || nnz <= 0)
@@ -169,11 +169,11 @@ void testing_rot(const Arguments& arg)
     {
         // rot - host pointer mode
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_rot(handle, &hc[0], &hs[0], x1, y1));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_rot(handle, &hc[0], &hs[0], x1, y1));
 
         // rot - device pointer mode
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_rot(handle, dc, ds, x2, y2));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_rot(handle, dc, ds, x2, y2));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hx_val_1, dx_val_1, sizeof(T) * nnz, hipMemcpyDeviceToHost));

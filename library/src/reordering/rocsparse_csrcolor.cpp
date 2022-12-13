@@ -190,7 +190,8 @@ static rocsparse_status rocsparse_csrcolor_assign_uncolored(rocsparse_handle han
     //
     // Allocation.
     //
-    RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&seq_ptr, sizeof(J) * (n + 1)));
+    RETURN_IF_HIP_ERROR(
+        rocsparse_hipMallocAsync((void**)&seq_ptr, sizeof(J) * (n + 1), handle->stream));
 
     //
     // Set to 0.
@@ -242,7 +243,8 @@ static rocsparse_status rocsparse_csrcolor_assign_uncolored(rocsparse_handle han
     }
     else
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&d_temp_storage, temp_storage_bytes));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync(&d_temp_storage, temp_storage_bytes, handle->stream));
         d_temp_alloc = true;
     }
 
@@ -261,7 +263,7 @@ static rocsparse_status rocsparse_csrcolor_assign_uncolored(rocsparse_handle han
     //
     if(d_temp_alloc == true)
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(d_temp_storage));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(d_temp_storage, handle->stream));
     }
 
     //
@@ -336,7 +338,8 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
     // Create workspace.
     //
     J* workspace;
-    RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&workspace, sizeof(J) * blocksize));
+    RETURN_IF_HIP_ERROR(
+        rocsparse_hipMallocAsync((void**)&workspace, sizeof(J) * blocksize, handle->stream));
 
     //
     // Initialize colors
@@ -425,7 +428,7 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
     //
     // Free workspace.
     //
-    RETURN_IF_HIP_ERROR(rocsparse_hipFree(workspace));
+    RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(workspace, handle->stream));
 
     if(num_uncolored > 0)
     {
@@ -443,7 +446,8 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
         //
         // Create identity.
         //
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&reordering_identity, sizeof(J) * m));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync(&reordering_identity, sizeof(J) * m, handle->stream));
 
         //
         //
@@ -459,7 +463,8 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
         //
         // Alloc output sorted colors.
         //
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&sorted_colors, sizeof(J) * m));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync(&sorted_colors, sizeof(J) * m, handle->stream));
 
         {
             rocsparse_int* keys_input    = colors;
@@ -487,7 +492,8 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
             //
             // allocate temporary storage
             //
-            rocsparse_hipMalloc(&temporary_storage_ptr, temporary_storage_size_bytes);
+            rocsparse_hipMallocAsync(
+                &temporary_storage_ptr, temporary_storage_size_bytes, handle->stream);
 
             //
             // perform sort
@@ -503,11 +509,11 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
                                       sizeof(rocsparse_int) * 8,
                                       stream);
 
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(temporary_storage_ptr));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(temporary_storage_ptr, handle->stream));
         }
 
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(reordering_identity));
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(sorted_colors));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(reordering_identity, handle->stream));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(sorted_colors, handle->stream));
     }
 
     return rocsparse_status_success;

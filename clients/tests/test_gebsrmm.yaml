@@ -139,6 +139,23 @@ Tests:
              nos2,
              nos3]
 
+- name: gebsrmm_graph_test
+  category: pre_checkin
+  function: gebsrmm
+  precision: *single_double_precisions_complex_real
+  M: [275, 708]
+  N: [8 ,14]
+  K: [173, 747]
+  row_block_dimA: [8, 32]
+  col_block_dimA: [16, 64]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row]
+  matrix: [rocsparse_matrix_random]
+  graph_test: true
+
 # ##############################
 # # QUICK
 # ##############################

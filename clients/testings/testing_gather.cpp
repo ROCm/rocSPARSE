@@ -71,7 +71,7 @@ void testing_gather(const Arguments& arg)
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(size <= 0 || nnz <= 0)
@@ -135,7 +135,7 @@ void testing_gather(const Arguments& arg)
     if(arg.unit_check)
     {
         // Gather
-        CHECK_ROCSPARSE_ERROR(rocsparse_gather(handle, y, x));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gather(handle, y, x));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hx_val, dx_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));

@@ -81,7 +81,7 @@ void testing_roti(const Arguments& arg)
     rocsparse_index_base base = arg.baseA;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(nnz <= 0)
@@ -163,11 +163,12 @@ void testing_roti(const Arguments& arg)
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(
-            rocsparse_roti<T>(handle, nnz, dx_val_1, dx_ind, dy_1, &hc[0], &hs[0], base));
+            testing::rocsparse_roti<T>(handle, nnz, dx_val_1, dx_ind, dy_1, &hc[0], &hs[0], base));
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_roti<T>(handle, nnz, dx_val_2, dx_ind, dy_2, dc, ds, base));
+        CHECK_ROCSPARSE_ERROR(
+            testing::rocsparse_roti<T>(handle, nnz, dx_val_2, dx_ind, dy_2, dc, ds, base));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hx_val_1, dx_val_1, sizeof(T) * nnz, hipMemcpyDeviceToHost));

@@ -86,7 +86,7 @@ void testing_csr2csr_compress(const Arguments& arg)
     T tol = arg.get_alpha<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     rocsparse_local_mat_descr descr_A;
 
@@ -189,19 +189,19 @@ void testing_csr2csr_compress(const Arguments& arg)
         // Allocate device memory for compressed CSR col indices and values array
         device_vector<rocsparse_int> dcsr_col_ind_C(hnnz_C);
         device_vector<T>             dcsr_val_C(hnnz_C);
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2csr_compress<T>(handle,
-                                                            M,
-                                                            N,
-                                                            descr_A,
-                                                            dcsr_val_A,
-                                                            dcsr_row_ptr_A,
-                                                            dcsr_col_ind_A,
-                                                            nnz_A,
-                                                            dnnz_per_row,
-                                                            dcsr_val_C,
-                                                            dcsr_row_ptr_C,
-                                                            dcsr_col_ind_C,
-                                                            tol));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csr2csr_compress<T>(handle,
+                                                                     M,
+                                                                     N,
+                                                                     descr_A,
+                                                                     dcsr_val_A,
+                                                                     dcsr_row_ptr_A,
+                                                                     dcsr_col_ind_A,
+                                                                     nnz_A,
+                                                                     dnnz_per_row,
+                                                                     dcsr_val_C,
+                                                                     dcsr_row_ptr_C,
+                                                                     dcsr_col_ind_C,
+                                                                     tol));
 
         // Allocate host memory for compressed CSR col indices and values array
         host_vector<rocsparse_int> hcsr_col_ind_C(hnnz_C);

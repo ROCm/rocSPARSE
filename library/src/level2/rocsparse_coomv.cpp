@@ -234,8 +234,10 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
         {
             I* max_nnz     = nullptr;
             I* csr_row_ptr = nullptr;
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&max_nnz, sizeof(I)));
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&csr_row_ptr, sizeof(I) * (m + 1)));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync((void**)&max_nnz, sizeof(I), handle->stream));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+                (void**)&csr_row_ptr, sizeof(I) * (m + 1), handle->stream));
             RETURN_IF_HIP_ERROR(hipMemsetAsync(max_nnz, 0, sizeof(I), handle->stream));
 
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2csr_template(
@@ -257,16 +259,18 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
                                                handle->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-            RETURN_IF_HIP_ERROR(hipFree(max_nnz));
-            RETURN_IF_HIP_ERROR(hipFree(csr_row_ptr));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(max_nnz, handle->stream));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(csr_row_ptr, handle->stream));
         }
         else
         {
             I*       max_nnz     = nullptr;
             int64_t* csr_row_ptr = nullptr;
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&max_nnz, sizeof(I)));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync((void**)&max_nnz, sizeof(I), handle->stream));
 
-            RETURN_IF_HIP_ERROR(hipMalloc((void**)&csr_row_ptr, sizeof(int64_t) * (m + 1)));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+                (void**)&csr_row_ptr, sizeof(int64_t) * (m + 1), handle->stream));
             RETURN_IF_HIP_ERROR(hipMemsetAsync(max_nnz, 0, sizeof(I), handle->stream));
 
             RETURN_IF_ROCSPARSE_ERROR(
@@ -288,8 +292,8 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
                                                handle->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-            RETURN_IF_HIP_ERROR(hipFree(max_nnz));
-            RETURN_IF_HIP_ERROR(hipFree(csr_row_ptr));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(max_nnz, handle->stream));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(csr_row_ptr, handle->stream));
         }
 
         break;

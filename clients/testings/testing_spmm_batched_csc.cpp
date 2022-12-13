@@ -174,7 +174,7 @@ void testing_spmm_batched_csc(const Arguments& arg)
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     if(M <= 0 || N <= 0 || K <= 0)
     {
@@ -338,35 +338,35 @@ void testing_spmm_batched_csc(const Arguments& arg)
     {
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_spmm(handle,
-                                             trans_A,
-                                             trans_B,
-                                             &halpha,
-                                             A,
-                                             B,
-                                             &hbeta,
-                                             C1,
-                                             ttype,
-                                             alg,
-                                             rocsparse_spmm_stage_compute,
-                                             &buffer_size,
-                                             dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmm(handle,
+                                                      trans_A,
+                                                      trans_B,
+                                                      &halpha,
+                                                      A,
+                                                      B,
+                                                      &hbeta,
+                                                      C1,
+                                                      ttype,
+                                                      alg,
+                                                      rocsparse_spmm_stage_compute,
+                                                      &buffer_size,
+                                                      dbuffer));
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_spmm(handle,
-                                             trans_A,
-                                             trans_B,
-                                             dalpha,
-                                             A,
-                                             B,
-                                             dbeta,
-                                             C2,
-                                             ttype,
-                                             alg,
-                                             rocsparse_spmm_stage_compute,
-                                             &buffer_size,
-                                             dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmm(handle,
+                                                      trans_A,
+                                                      trans_B,
+                                                      dalpha,
+                                                      A,
+                                                      B,
+                                                      dbeta,
+                                                      C2,
+                                                      ttype,
+                                                      alg,
+                                                      rocsparse_spmm_stage_compute,
+                                                      &buffer_size,
+                                                      dbuffer));
 
         // Copy output to host
         hC_1.transfer_from(dC_1);

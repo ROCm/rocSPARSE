@@ -54,7 +54,7 @@ void testing_identity(const Arguments& arg)
     rocsparse_int N = arg.N;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(N <= 0)
@@ -91,7 +91,7 @@ void testing_identity(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, N, dp));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_create_identity_permutation(handle, N, dp));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hp, dp, sizeof(rocsparse_int) * N, hipMemcpyDeviceToHost));

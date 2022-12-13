@@ -119,7 +119,7 @@ void testing_csrsort(const Arguments& arg)
     rocsparse_index_base        base    = arg.baseA;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -207,15 +207,15 @@ void testing_csrsort(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, nnz, dperm));
 
         // Sort CSR matrix
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrsort(handle,
-                                                M,
-                                                N,
-                                                nnz,
-                                                descr,
-                                                dcsr_row_ptr,
-                                                dcsr_col_ind,
-                                                permute ? dperm : nullptr,
-                                                dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csrsort(handle,
+                                                         M,
+                                                         N,
+                                                         nnz,
+                                                         descr,
+                                                         dcsr_row_ptr,
+                                                         dcsr_col_ind,
+                                                         permute ? dperm : nullptr,
+                                                         dbuffer));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(

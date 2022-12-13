@@ -148,3 +148,15 @@ Tests:
              webbase-1M,
              Chebyshev4,
              ASIC_320k]
+
+- name: bsrpad_value_graph_test
+  category: pre_checkin
+  function: bsrpad_value
+  precision: *single_double_precisions_complex_real
+  M: [100, 801, 2278]
+  block_dim: [10]
+  baseA: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  matrix: [rocsparse_matrix_random]
+  graph_test: true

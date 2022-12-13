@@ -66,7 +66,7 @@ void testing_gthr(const Arguments& arg)
     rocsparse_index_base base = arg.baseA;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(nnz <= 0)
@@ -121,11 +121,11 @@ void testing_gthr(const Arguments& arg)
     {
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_gthr<T>(handle, nnz, dy, dx_val_1, dx_ind, base));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gthr<T>(handle, nnz, dy, dx_val_1, dx_ind, base));
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_gthr<T>(handle, nnz, dy, dx_val_2, dx_ind, base));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gthr<T>(handle, nnz, dy, dx_val_2, dx_ind, base));
 
         // Copy output to host
 

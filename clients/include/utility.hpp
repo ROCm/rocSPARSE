@@ -121,6 +121,14 @@ class rocsparse_local_handle
 
 public:
     rocsparse_local_handle()
+        : capture_started(false)
+        , graph_testing(false)
+    {
+        rocsparse_create_handle(&this->handle);
+    }
+    rocsparse_local_handle(const Arguments& arg)
+        : capture_started(false)
+        , graph_testing(arg.graph_test)
     {
         rocsparse_create_handle(&this->handle);
     }
@@ -138,6 +146,70 @@ public:
     {
         return this->handle;
     }
+
+    void rocsparse_stream_begin_capture()
+    {
+        if(!(this->graph_testing))
+        {
+            return;
+        }
+
+#ifdef GOOGLE_TEST
+        ASSERT_EQ(capture_started, false);
+#endif
+
+        CHECK_HIP_ERROR(hipStreamCreate(&this->graph_stream));
+        CHECK_ROCSPARSE_ERROR(rocsparse_get_stream(*this, &this->old_stream));
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_stream(*this, this->graph_stream));
+
+        // BEGIN GRAPH CAPTURE
+        CHECK_HIP_ERROR(hipStreamBeginCapture(this->graph_stream, hipStreamCaptureModeGlobal));
+
+        capture_started = true;
+    }
+
+    void rocsparse_stream_end_capture(rocsparse_int runs = 1)
+    {
+        if(!(this->graph_testing))
+        {
+            return;
+        }
+
+#ifdef GOOGLE_TEST
+        ASSERT_EQ(capture_started, true);
+#endif
+
+        hipGraph_t     graph;
+        hipGraphExec_t instance;
+
+        // END GRAPH CAPTURE
+        CHECK_HIP_ERROR(hipStreamEndCapture(this->graph_stream, &graph));
+        CHECK_HIP_ERROR(hipGraphInstantiate(&instance, graph, nullptr, nullptr, 0));
+
+        CHECK_HIP_ERROR(hipGraphDestroy(graph));
+        CHECK_HIP_ERROR(hipGraphLaunch(instance, this->graph_stream));
+        CHECK_HIP_ERROR(hipStreamSynchronize(this->graph_stream));
+        CHECK_HIP_ERROR(hipGraphExecDestroy(instance));
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_stream(*this, this->old_stream));
+        CHECK_HIP_ERROR(hipStreamDestroy(this->graph_stream));
+        this->graph_stream = nullptr;
+
+        capture_started = false;
+    }
+
+    hipStream_t get_stream()
+    {
+        hipStream_t stream;
+        rocsparse_get_stream(*this, &stream);
+        return stream;
+    }
+
+private:
+    hipStream_t graph_stream;
+    hipStream_t old_stream;
+    bool        capture_started;
+    bool        graph_testing;
 };
 
 /* ==================================================================================== */

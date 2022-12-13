@@ -148,10 +148,20 @@ T log_trace_scalar_value(rocsparse_handle handle, const T* value)
         T host;
         if(value && handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIP_ERROR(
-                hipMemcpyAsync(&host, value, sizeof(host), hipMemcpyDeviceToHost, handle->stream));
-            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-            value = &host;
+            hipStreamCaptureStatus capture_status;
+            RETURN_IF_HIP_ERROR(hipStreamIsCapturing(handle->stream, &capture_status));
+
+            if(capture_status == hipStreamCaptureStatusNone)
+            {
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                    &host, value, sizeof(host), hipMemcpyDeviceToHost, handle->stream));
+                RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+                value = &host;
+            }
+            else
+            {
+                value = nullptr;
+            }
         }
         return log_trace_scalar_value(value);
     }
@@ -175,10 +185,20 @@ T log_bench_scalar_value(rocsparse_handle handle, const T* value)
         T host;
         if(value && handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIP_ERROR(
-                hipMemcpyAsync(&host, value, sizeof(host), hipMemcpyDeviceToHost, handle->stream));
-            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-            value = &host;
+            hipStreamCaptureStatus capture_status;
+            RETURN_IF_HIP_ERROR(hipStreamIsCapturing(handle->stream, &capture_status));
+
+            if(capture_status == hipStreamCaptureStatusNone)
+            {
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                    &host, value, sizeof(host), hipMemcpyDeviceToHost, handle->stream));
+                RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+                value = &host;
+            }
+            else
+            {
+                value = nullptr;
+            }
         }
         return log_bench_scalar_value(value);
     }

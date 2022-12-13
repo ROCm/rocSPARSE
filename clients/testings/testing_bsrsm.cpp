@@ -262,7 +262,7 @@ void testing_bsrsm(const Arguments& arg)
     *h_alpha = arg.get_alpha<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -438,6 +438,28 @@ void testing_bsrsm(const Arguments& arg)
                                                    spol,      \
                                                    dbuffer))
 
+#define CALL_TESTING_SOLVE(alpha)                                      \
+    CHECK_ROCSPARSE_ERROR(testing::rocsparse_bsrsm_solve<T>(handle,    \
+                                                            dir,       \
+                                                            trans_A,   \
+                                                            trans_X,   \
+                                                            mb,        \
+                                                            nrhs,      \
+                                                            dA.nnzb,   \
+                                                            alpha,     \
+                                                            descr,     \
+                                                            dA.val,    \
+                                                            dA.ptr,    \
+                                                            dA.ind,    \
+                                                            block_dim, \
+                                                            info,      \
+                                                            dB,        \
+                                                            dB.ld,     \
+                                                            dX,        \
+                                                            dX.ld,     \
+                                                            spol,      \
+                                                            dbuffer))
+
     // Obtain required buffer size
     size_t buffer_size;
 
@@ -467,7 +489,7 @@ void testing_bsrsm(const Arguments& arg)
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // bsrsm_solve
-        CALL_SOLVE(h_alpha);
+        CALL_TESTING_SOLVE(h_alpha);
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // Obtain pivot information
@@ -534,7 +556,7 @@ void testing_bsrsm(const Arguments& arg)
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // bsrsm_solve
-        CALL_SOLVE(d_alpha);
+        CALL_TESTING_SOLVE(d_alpha);
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // Obtain pivot information

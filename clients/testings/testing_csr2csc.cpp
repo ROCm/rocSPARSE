@@ -67,7 +67,7 @@ void testing_csr2csc(const Arguments& arg)
     rocsparse_action            action = arg.action;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0)
@@ -150,19 +150,19 @@ void testing_csr2csc(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2csc<T>(handle,
-                                                   M,
-                                                   N,
-                                                   nnz,
-                                                   dcsr_val,
-                                                   dcsr_row_ptr,
-                                                   dcsr_col_ind,
-                                                   dcsc_val,
-                                                   dcsc_row_ind,
-                                                   dcsc_col_ptr,
-                                                   action,
-                                                   base,
-                                                   dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csr2csc<T>(handle,
+                                                            M,
+                                                            N,
+                                                            nnz,
+                                                            dcsr_val,
+                                                            dcsr_row_ptr,
+                                                            dcsr_col_ind,
+                                                            dcsc_val,
+                                                            dcsc_row_ind,
+                                                            dcsc_col_ptr,
+                                                            action,
+                                                            base,
+                                                            dbuffer));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(

@@ -129,6 +129,8 @@ struct Arguments
 
     double tolm;
 
+    bool graph_test;
+
     char filename[128];
     char function[64];
     char name[64];
@@ -247,6 +249,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(boostval);
         ROCSPARSE_FORMAT_CHECK(boostvali);
         ROCSPARSE_FORMAT_CHECK(tolm);
+        ROCSPARSE_FORMAT_CHECK(graph_test);
         ROCSPARSE_FORMAT_CHECK(filename);
         ROCSPARSE_FORMAT_CHECK(function);
         ROCSPARSE_FORMAT_CHECK(name);
@@ -444,6 +447,7 @@ private:
         print("boost_val", arg.boostval);
         print("boost_vali", arg.boostvali);
         print("tolm", arg.tolm);
+        print("graph_test", arg.graph_test);
         print("name", arg.name);
         print("category", arg.category);
         print("hardware", arg.hardware);

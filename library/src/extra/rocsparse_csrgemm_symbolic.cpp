@@ -1563,7 +1563,8 @@ static inline rocsparse_status
         if(info_C->csrgemm_info->mul == true)
         {
             // Allocate additional buffer for C = A * B
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&workspace_B, sizeof(I) * nnz_A));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync((void**)&workspace_B, sizeof(I) * nnz_A, handle->stream));
         }
 
         hipLaunchKernelGGL((csrgemm_symbolic_fill_block_per_row_multipass<CSRGEMM_DIM,
@@ -1594,7 +1595,7 @@ static inline rocsparse_status
 
         if(info_C->csrgemm_info->mul == true)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(workspace_B));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(workspace_B, handle->stream));
         }
 #undef CSRGEMM_CHUNKSIZE
 #undef CSRGEMM_SUB

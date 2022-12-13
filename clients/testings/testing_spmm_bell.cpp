@@ -80,7 +80,7 @@ void testing_spmm_bell(const Arguments& arg)
     *h_beta  = arg.get_beta<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -268,19 +268,19 @@ void testing_spmm_bell(const Arguments& arg)
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-        CHECK_ROCSPARSE_ERROR(rocsparse_spmm(handle,
-                                             trans_A,
-                                             trans_B,
-                                             h_alpha,
-                                             A,
-                                             B,
-                                             h_beta,
-                                             C,
-                                             ttype,
-                                             alg,
-                                             rocsparse_spmm_stage_compute,
-                                             &buffer_size,
-                                             dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmm(handle,
+                                                      trans_A,
+                                                      trans_B,
+                                                      h_alpha,
+                                                      A,
+                                                      B,
+                                                      h_beta,
+                                                      C,
+                                                      ttype,
+                                                      alg,
+                                                      rocsparse_spmm_stage_compute,
+                                                      &buffer_size,
+                                                      dbuffer));
         {
             host_dense_matrix<T> hC_copy(hC);
 
@@ -379,19 +379,19 @@ void testing_spmm_bell(const Arguments& arg)
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
             device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
-            CHECK_ROCSPARSE_ERROR(rocsparse_spmm(handle,
-                                                 trans_A,
-                                                 trans_B,
-                                                 d_alpha,
-                                                 A,
-                                                 B,
-                                                 d_beta,
-                                                 C,
-                                                 ttype,
-                                                 alg,
-                                                 rocsparse_spmm_stage_compute,
-                                                 &buffer_size,
-                                                 dbuffer));
+            CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmm(handle,
+                                                          trans_A,
+                                                          trans_B,
+                                                          d_alpha,
+                                                          A,
+                                                          B,
+                                                          d_beta,
+                                                          C,
+                                                          ttype,
+                                                          alg,
+                                                          rocsparse_spmm_stage_compute,
+                                                          &buffer_size,
+                                                          dbuffer));
         }
     }
 

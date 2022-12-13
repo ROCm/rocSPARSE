@@ -102,6 +102,7 @@ rocsparse_arguments_config::rocsparse_arguments_config()
         this->boostval             = static_cast<double>(0);
         this->boostvali            = static_cast<double>(0);
         this->tolm                 = static_cast<double>(0);
+        this->graph_test           = static_cast<bool>(0);
         this->filename[0]          = '\0';
         this->function[0]          = '\0';
         this->name[0]              = '\0';

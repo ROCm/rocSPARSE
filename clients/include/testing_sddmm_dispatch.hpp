@@ -414,7 +414,7 @@ public:
         rocsparse_order      order_B = arg.order;
 
         // Create rocsparse handle
-        rocsparse_local_handle handle;
+        rocsparse_local_handle handle(arg);
 
         host_scalar<T> h_alpha(arg.get_alpha<T>());
         host_scalar<T> h_beta(arg.get_beta<T>());
@@ -512,7 +512,7 @@ public:
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
             CHECK_ROCSPARSE_ERROR(rocsparse_sddmm_preprocess(PARAMS(h_alpha, A, B, h_beta, C)));
 
-            CHECK_ROCSPARSE_ERROR(rocsparse_sddmm(PARAMS(h_alpha, A, B, h_beta, C)));
+            CHECK_ROCSPARSE_ERROR(testing::rocsparse_sddmm(PARAMS(h_alpha, A, B, h_beta, C)));
 
             {
                 host_vector<T> hC_val_copy(hC.val);
@@ -538,7 +538,7 @@ public:
                 CHECK_ROCSPARSE_ERROR(
                     rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
                 CHECK_ROCSPARSE_ERROR(rocsparse_sddmm_preprocess(PARAMS(d_alpha, A, B, d_beta, C)));
-                CHECK_ROCSPARSE_ERROR(rocsparse_sddmm(PARAMS(d_alpha, A, B, d_beta, C)));
+                CHECK_ROCSPARSE_ERROR(testing::rocsparse_sddmm(PARAMS(d_alpha, A, B, d_beta, C)));
             }
 
             hC.near_check(dC);

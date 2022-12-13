@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2020 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -51,3 +51,11 @@ Tests:
   precision: *single_precision
   M: 1
   N: [23512, 184412, 711983, 3452387, 9482640]
+
+- name: identity_graph_test
+  category: pre_checkin
+  function: identity
+  precision: *single_precision
+  M: 1
+  N: [33, 242, 623, 1000]
+  graph_test: true

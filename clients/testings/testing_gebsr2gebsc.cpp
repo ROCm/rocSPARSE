@@ -115,7 +115,7 @@ void testing_gebsr2gebsc(const Arguments& arg)
     rocsparse_action action = arg.action;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Argument sanity check before allocating invalid memory
     if(arg.M <= 0 || arg.N <= 0 || arg.row_block_dimA <= 0 || arg.col_block_dimA <= 0)
@@ -225,21 +225,21 @@ void testing_gebsr2gebsc(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2gebsc<T>(handle,
-                                                       dbsr.mb,
-                                                       dbsr.nb,
-                                                       dbsr.nnzb,
-                                                       dbsr.val,
-                                                       dbsr.ptr,
-                                                       dbsr.ind,
-                                                       dbsr.row_block_dim,
-                                                       dbsr.col_block_dim,
-                                                       dbsc.val,
-                                                       dbsc.ind,
-                                                       dbsc.ptr,
-                                                       action,
-                                                       dbsr.base,
-                                                       dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gebsr2gebsc<T>(handle,
+                                                                dbsr.mb,
+                                                                dbsr.nb,
+                                                                dbsr.nnzb,
+                                                                dbsr.val,
+                                                                dbsr.ptr,
+                                                                dbsr.ind,
+                                                                dbsr.row_block_dim,
+                                                                dbsr.col_block_dim,
+                                                                dbsc.val,
+                                                                dbsc.ind,
+                                                                dbsc.ptr,
+                                                                action,
+                                                                dbsr.base,
+                                                                dbuffer));
 
         //
         // Transfer to host.

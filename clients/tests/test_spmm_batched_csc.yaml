@@ -188,6 +188,66 @@ Tests:
   order: [rocsparse_order_row]
   filename: [Chebyshev4]
 
+- name: spmm_batched_csc_graph_test
+  category: pre_checkin
+  function: spmm_batched_csc
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions
+  M: [155, 326]
+  N: [22, 39, 43]
+  K: [72, 117, 279]
+  batch_count_A: [1]
+  batch_count_B: [3]
+  batch_count_C: [3]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  order: [rocsparse_order_row]
+  graph_test: true
+
+- name: spmm_batched_csc_graph_test
+  category: pre_checkin
+  function: spmm_batched_csc
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions
+  M: [155, 326]
+  N: [22, 39, 43]
+  K: [72, 117, 279]
+  batch_count_A: [13]
+  batch_count_B: [1]
+  batch_count_C: [13]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  order: [rocsparse_order_row]
+  graph_test: true
+
+- name: spmm_batched_csc_graph_test
+  category: pre_checkin
+  function: spmm_batched_csc
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions
+  M: [155, 326]
+  N: [22, 39, 43]
+  K: [72, 117, 279]
+  batch_count_A: [12]
+  batch_count_B: [12]
+  batch_count_C: [12]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  order: [rocsparse_order_row]
+  graph_test: true
+
 ##############################
 # Nightly
 ##############################

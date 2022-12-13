@@ -304,7 +304,7 @@ void testing_gebsrmm(const Arguments& arg)
     *h_beta  = arg.get_beta<T>();
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -378,7 +378,7 @@ void testing_gebsrmm(const Arguments& arg)
         // Pointer mode host
         //
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmm<T>(PARAMS(h_alpha, dA, dB, h_beta, dC)));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gebsrmm<T>(PARAMS(h_alpha, dA, dB, h_beta, dC)));
 
         //
         // Compute on host
@@ -396,7 +396,7 @@ void testing_gebsrmm(const Arguments& arg)
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmm<T>(PARAMS(d_alpha, dA, dB, d_beta, dC)));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gebsrmm<T>(PARAMS(d_alpha, dA, dB, d_beta, dC)));
         hC.near_check(dC);
     }
 

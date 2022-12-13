@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2018-2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@
  *  \details
  *  The functions that are contained in the auxiliary module describe all available
  *  helper functions that are required for subsequent library calls.
+ *
+ *  The functions in this module do not support execution in a hipGraph context.
  */
 
 /*! \defgroup types_module SPARSE Types
@@ -66,6 +68,8 @@
  *
  *  \details
  *  The sparse extra routines describe operations that manipulate sparse matrices.
+ *
+ *  The routines in this module do not support execution in a hipGraph context.
  */
 
 /*! \defgroup precond_module SPARSE Preconditioners

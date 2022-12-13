@@ -403,3 +403,19 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron4]
+
+- name: gebsrmv_graph_test
+  category: pre_checkin
+  function: gebsrmv
+  precision: *single_double_precisions_complex
+  M: [4096]
+  N: [8192]
+  row_block_dimA: [33, 64]
+  col_block_dimA: [8, 12]
+  tolm: 3.0
+  alpha_beta: *alpha_beta_range_quick
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  graph_test: true

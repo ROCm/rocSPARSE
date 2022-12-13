@@ -87,7 +87,7 @@ void testing_bsrpad_value(const Arguments& arg)
     }
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr bsr_descr;
@@ -177,7 +177,7 @@ void testing_bsrpad_value(const Arguments& arg)
         // Allocate host memory for BSR matrix
         host_gebsr_matrix<T> hbsr(dbsr);
 
-        CHECK_ROCSPARSE_ERROR(rocsparse_bsrpad_value<T>(
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_bsrpad_value<T>(
             handle, M, Mb, dbsr.nnzb, block_dim, value, bsr_descr, dbsr.val, dbsr.ptr, dbsr.ind));
 
         host_gebsr_matrix<T> hbsrC(dbsr);

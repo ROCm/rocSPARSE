@@ -527,7 +527,8 @@ extern "C" rocsparse_status rocsparse_csrgeam_nnz(rocsparse_handle          hand
     }
     else
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&rocprim_buffer, rocprim_size));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync(&rocprim_buffer, rocprim_size, handle->stream));
         rocprim_alloc = true;
     }
 
@@ -542,7 +543,7 @@ extern "C" rocsparse_status rocsparse_csrgeam_nnz(rocsparse_handle          hand
 
     if(rocprim_alloc == true)
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(rocprim_buffer));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(rocprim_buffer, handle->stream));
     }
 
     // Extract the number of non-zero elements of C

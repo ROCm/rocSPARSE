@@ -720,7 +720,8 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
         }
         else
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&temp_storage_ptr, buffer_size));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&temp_storage_ptr, buffer_size, handle->stream));
             temp_alloc = true;
         }
 
@@ -756,7 +757,7 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
 
         if(temp_alloc)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(temp_storage_ptr, handle->stream));
         }
     }
 
@@ -972,7 +973,8 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
         }
         else
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+                &temp_storage_ptr, temp_storage_size_bytes, handle->stream));
             temp_alloc = true;
         }
 
@@ -986,7 +988,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
 
         if(temp_alloc)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(temp_storage_ptr, handle->stream));
         }
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
@@ -1130,7 +1132,8 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
         }
         else
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&temp_storage_ptr, buffer_size));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&temp_storage_ptr, buffer_size, handle->stream));
             temp_alloc = true;
         }
 
@@ -1157,7 +1160,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
 
         if(temp_alloc)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(temp_storage_ptr, handle->stream));
         }
     }
 
@@ -1176,7 +1179,8 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
     }
     else
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync(&temp_storage_ptr, temp_storage_size_bytes, handle->stream));
         temp_alloc = true;
     }
 
@@ -1190,7 +1194,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
 
     if(temp_alloc)
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(temp_storage_ptr, handle->stream));
     }
 
     // Compute bsr_nnz

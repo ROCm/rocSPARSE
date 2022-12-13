@@ -117,3 +117,13 @@ Tests:
              shipsec1,
              Chevron3,
              Chevron4]
+
+- name: coo2csr_graph_test
+  category: pre_checkin
+  function: coo2csr
+  precision: *single_precision
+  M: [10, 872]
+  N: [33, 623]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  graph_test: true

@@ -81,7 +81,7 @@ void testing_gebsr2csr(const Arguments& arg)
     rocsparse_int Nb = N;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     rocsparse_local_mat_descr bsr_descr;
     rocsparse_local_mat_descr csr_descr;
@@ -201,20 +201,20 @@ void testing_gebsr2csr(const Arguments& arg)
         }
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2csr<T>(handle,
-                                                     direction,
-                                                     Mb,
-                                                     Nb,
-                                                     bsr_descr,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     row_block_dim,
-                                                     col_block_dim,
-                                                     csr_descr,
-                                                     dcsr_val,
-                                                     dcsr_row_ptr,
-                                                     dcsr_col_ind));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_gebsr2csr<T>(handle,
+                                                              direction,
+                                                              Mb,
+                                                              Nb,
+                                                              bsr_descr,
+                                                              dbsr_val,
+                                                              dbsr_row_ptr,
+                                                              dbsr_col_ind,
+                                                              row_block_dim,
+                                                              col_block_dim,
+                                                              csr_descr,
+                                                              dcsr_val,
+                                                              dcsr_row_ptr,
+                                                              dcsr_col_ind));
 
         host_vector<T>             hcsr_val(nnz);
         host_vector<rocsparse_int> hcsr_ind(nnz);

@@ -143,7 +143,7 @@ void testing_csric0(const Arguments& arg)
     rocsparse_matrix_factory<T> matrix_factory(arg, to_int, full_rank);
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle handle(arg);
 
     // Create matrix descriptor
     rocsparse_local_mat_descr descr;
@@ -306,7 +306,7 @@ void testing_csric0(const Arguments& arg)
 
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csric0<T>(
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csric0<T>(
             handle, M, nnz, descr, dcsr_val_1, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
         {
             auto st = rocsparse_csric0_zero_pivot(handle, info, h_solve_pivot_1);
@@ -320,7 +320,7 @@ void testing_csric0(const Arguments& arg)
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csric0<T>(
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csric0<T>(
             handle, M, nnz, descr, dcsr_val_2, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
         EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, d_solve_pivot_2),
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot

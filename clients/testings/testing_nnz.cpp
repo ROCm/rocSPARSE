@@ -62,7 +62,7 @@ void testing_nnz(const Arguments& arg)
     rocsparse_direction dirA = arg.direction;
     rocsparse_int       LD   = arg.denseld;
 
-    rocsparse_local_handle    handle;
+    rocsparse_local_handle    handle(arg);
     rocsparse_local_mat_descr descrA;
 
     //
@@ -189,7 +189,7 @@ void testing_nnz(const Arguments& arg)
         // Pointer mode device for nnz and call.
         //
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_nnz<T>(
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_nnz<T>(
             handle, dirA, M, N, descrA, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr));
 
         //
@@ -215,8 +215,8 @@ void testing_nnz(const Arguments& arg)
         //
         rocsparse_int dh_nnz;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(
-            rocsparse_nnz<T>(handle, dirA, M, N, descrA, d_A, LD, d_nnzPerRowColumn, &dh_nnz));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_nnz<T>(
+            handle, dirA, M, N, descrA, d_A, LD, d_nnzPerRowColumn, &dh_nnz));
 
         //
         // Transfer.

@@ -199,11 +199,14 @@ private:
     static void       init_guards(char* A, size_t N);
     static char*      off_guards(char* d);
     static hipError_t install_guards(void* d, size_t size, void** res);
+    static hipError_t install_guards_async(void* d, size_t size, void** res, hipStream_t stream);
 
 public:
     static hipError_t malloc(void** mem, size_t size);
+    static hipError_t malloc_async(void** mem, size_t size, hipStream_t stream);
     static hipError_t check_guards(char* d, size_t size);
     static hipError_t free(void* d_);
+    static hipError_t free_async(void* d_, hipStream_t stream);
 };
 
 class memstat
@@ -363,6 +366,55 @@ hipError_t memstat_allocator<MODE>::install_guards(void* d_, size_t size, void**
     return hipSuccess;
 }
 
+template <memstat_mode::value_t MODE>
+hipError_t memstat_allocator<MODE>::install_guards_async(void*       d_,
+                                                         size_t      size,
+                                                         void**      res,
+                                                         hipStream_t stream)
+{
+    char* d = static_cast<char*>(d_);
+    if(d != nullptr)
+    {
+        if(PAD > 0)
+        {
+            char guard[PAD];
+            init_guards(guard, PAD);
+            hipMemcpyKind kind_transfer;
+            hipError_t    err
+                = memstat_mode::get_hipMemcpyKind(kind_transfer, MODE, memstat_mode::host);
+            if(err != hipSuccess)
+            {
+                return err;
+            }
+
+            // Copy guard to device memory before allocated memory
+            err = hipMemcpyAsync(d, guard, sizeof(guard), kind_transfer, stream);
+            if(err != hipSuccess)
+            {
+                return err;
+            }
+
+            err = hipMemcpyAsync(d + PAD, guard, sizeof(guard), kind_transfer, stream);
+            if(err != hipSuccess)
+            {
+                return err;
+            }
+
+            // Point to allocated block
+            d += 2 * PAD;
+
+            // Copy guard to device memory after allocated memory
+            err = hipMemcpyAsync(d + size, guard, sizeof(guard), kind_transfer, stream);
+            if(err != hipSuccess)
+            {
+                return err;
+            }
+        }
+    }
+    res[0] = static_cast<void*>(d);
+    return hipSuccess;
+}
+
 hipError_t memstat_allocator_malloc(void** mem, size_t size, memstat_mode::value_t mode)
 {
     switch(mode)
@@ -459,6 +511,66 @@ hipError_t memstat_allocator<MODE>::malloc(void** mem, size_t nbytes_)
 }
 
 template <memstat_mode::value_t MODE>
+hipError_t memstat_allocator<MODE>::malloc_async(void** mem, size_t nbytes_, hipStream_t stream)
+{
+    if(mem == nullptr)
+    {
+        return hipErrorInvalidValue;
+    }
+    if(nbytes_ == 0)
+    {
+        mem[0] = nullptr;
+        // hipMallocAsync returns hipErrorInvalidValue when size is 0
+        return hipErrorInvalidValue;
+    }
+
+    size_t nbytes = compute_nbytes(nbytes_);
+
+    hipError_t err = hipErrorInvalidValue;
+    switch(MODE)
+    {
+    case memstat_mode::host:
+    {
+        err = hipErrorInvalidValue;
+        break;
+    }
+    case memstat_mode::device:
+    {
+#if HIP_VERSION >= 50300000
+        err = hipMallocAsync(mem, nbytes, stream);
+#else
+        err = hipMalloc(mem, nbytes);
+#endif
+        break;
+    }
+    case memstat_mode::managed:
+    {
+        err = hipErrorInvalidValue;
+        break;
+    }
+    }
+
+    if(err != hipSuccess)
+    {
+        fprintf(stderr, "Error allocating %'zu bytes (%zu GB)\n", nbytes, nbytes >> 30);
+        return err;
+    }
+
+    if(memstat::s_guards_enabled)
+    {
+        void* p;
+        err = install_guards_async(mem[0], nbytes_, &p, stream);
+        if(err != hipSuccess)
+        {
+            return err;
+        }
+        mem[0] = p;
+    }
+
+    return hipSuccess;
+}
+
+template <memstat_mode::value_t MODE>
 hipError_t memstat_allocator<MODE>::check_guards(char* d, size_t size)
 {
     if(d != nullptr)
@@ -488,7 +600,7 @@ hipError_t memstat_allocator<MODE>::check_guards(char* d, size_t size)
             }
 
             // Make sure no corruption has occurred
-            EXPECT_EQ(memcmp(host, guard, sizeof(guard)), 0);
+            assert(memcmp(host, guard, sizeof(guard)) == 0);
 
             // Point to guard before allocated memory
             d -= PAD;
@@ -501,7 +613,7 @@ hipError_t memstat_allocator<MODE>::check_guards(char* d, size_t size)
             }
 
             // Make sure no corruption has occurred
-            EXPECT_EQ(memcmp(host, guard, sizeof(guard)), 0);
+            assert(memcmp(host, guard, sizeof(guard)) == 0);
         }
         return hipSuccess;
     }
@@ -529,6 +641,41 @@ hipError_t memstat_allocator<MODE>::free(void* d_)
         {
             // Free device memory
             return hipFree(d);
+        }
+        }
+    }
+    return hipSuccess;
+}
+
+template <memstat_mode::value_t MODE>
+hipError_t memstat_allocator<MODE>::free_async(void* d_, hipStream_t stream)
+{
+    char* d = static_cast<char*>(d_);
+    if(d != nullptr)
+    {
+        if(memstat::s_guards_enabled)
+        {
+            d = off_guards(d);
+        }
+
+        switch(MODE)
+        {
+        case memstat_mode::host:
+        {
+            return hipErrorInvalidValue;
+        }
+        case memstat_mode::managed:
+        {
+            return hipErrorInvalidValue;
+        }
+        case memstat_mode::device:
+        {
+            // Free device memory
+#if HIP_VERSION >= 50300000
+            return hipFreeAsync(d, stream);
+#else
+            return hipFree(d);
+#endif
         }
         }
     }
@@ -591,6 +738,78 @@ hipError_t rocsparse_malloc(void** mem, size_t nbytes, memstat_mode::value_t mod
     case memstat_mode::managed:
     {
         err = memstat_allocator<memstat_mode::managed>::malloc(mem, nbytes);
+        break;
+    }
+    }
+
+    if(err != hipSuccess)
+    {
+        return err;
+    }
+
+    if(memstat::s_enabled)
+    {
+        memstat::instance().add(mem[0], nbytes, mode, tag);
+    }
+    return hipSuccess;
+}
+
+hipError_t
+    rocsparse_free_async(void* mem, hipStream_t stream, memstat_mode::value_t mode, const char* tag)
+{
+    hipError_t err = hipErrorInvalidValue;
+    switch(mode)
+    {
+    case memstat_mode::host:
+    {
+        err = hipErrorInvalidValue;
+        break;
+    }
+    case memstat_mode::device:
+    {
+        err = memstat_allocator<memstat_mode::device>::free_async(mem, stream);
+        break;
+    }
+    case memstat_mode::managed:
+    {
+        err = hipErrorInvalidValue;
+        break;
+    }
+    }
+
+    if(err != hipSuccess)
+    {
+        return err;
+    }
+
+    if(memstat::s_enabled)
+    {
+        memstat::instance().remove(mem, tag);
+    }
+
+    return hipSuccess;
+}
+
+hipError_t rocsparse_malloc_async(
+    void** mem, size_t nbytes, hipStream_t stream, memstat_mode::value_t mode, const char* tag)
+{
+
+    hipError_t err = hipErrorInvalidValue;
+    switch(mode)
+    {
+    case memstat_mode::host:
+    {
+        err = hipErrorInvalidValue;
+        break;
+    }
+    case memstat_mode::device:
+    {
+        err = memstat_allocator<memstat_mode::device>::malloc_async(mem, nbytes, stream);
+        break;
+    }
+    case memstat_mode::managed:
+    {
+        err = hipErrorInvalidValue;
         break;
     }
     }
@@ -825,6 +1044,17 @@ hipError_t rocsparse_hip_malloc(void** mem, size_t nbytes, const char* tag)
                                          : memstat_mode::device;
 
     return rocsparse_malloc(mem, nbytes, mode, tag);
+}
+
+hipError_t rocsparse_hip_free_async(void* mem, hipStream_t stream, const char* tag)
+{
+    return rocsparse_free_async(mem, stream, memstat_mode::device, tag);
+}
+
+hipError_t
+    rocsparse_hip_malloc_async(void** mem, size_t nbytes, hipStream_t stream, const char* tag)
+{
+    return rocsparse_malloc_async(mem, nbytes, stream, memstat_mode::device, tag);
 }
 
 hipError_t rocsparse_hip_host_free(void* mem, const char* tag)
