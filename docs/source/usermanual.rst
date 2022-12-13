@@ -2195,10 +2195,10 @@ rocsparse_bsrgemm_buffer_size()
   :outline:
 .. doxygenfunction:: rocsparse_zbsrgemm_buffer_size
 
-rocsparse_bsrgemm_nnz()
------------------------
+rocsparse_bsrgemm_nnzb()
+------------------------
 
-.. doxygenfunction:: rocsparse_bsrgemm_nnz
+.. doxygenfunction:: rocsparse_bsrgemm_nnzb
 
 rocsparse_bsrgemm()
 -------------------
