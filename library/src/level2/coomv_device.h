@@ -28,7 +28,7 @@
 
 // Scale kernel for beta != 1.0
 template <unsigned int BLOCKSIZE, typename I, typename Y, typename T>
-ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, Y* __restrict__ data)
+static ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, Y* __restrict__ data)
 {
     I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

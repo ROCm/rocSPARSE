@@ -140,7 +140,7 @@ static ROCSPARSE_DEVICE_ILF void csrmvt_general_device(bool                 conj
 }
 
 template <typename I, typename T>
-static inline ROCSPARSE_DEVICE_ILF T
+static ROCSPARSE_DEVICE_ILF T
     sum2_reduce(T cur_sum, T* partial, int lid, I max_size, int reduc_size)
 {
     if(max_size > reduc_size)

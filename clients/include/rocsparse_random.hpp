@@ -87,6 +87,14 @@ public:
         return std::uniform_int_distribution<T>{}(rocsparse_rng_nan_get());
     }
 
+    // Random int8_t
+    explicit operator int8_t()
+    {
+        return (int8_t)std::uniform_int_distribution<int>(std::numeric_limits<int8_t>::min(),
+                                                          std::numeric_limits<int8_t>::max())(
+            rocsparse_rng_nan_get());
+    }
+
     // Random NaN double
     explicit operator double()
     {
