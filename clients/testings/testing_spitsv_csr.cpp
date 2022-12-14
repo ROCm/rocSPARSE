@@ -453,9 +453,7 @@ void testing_spitsv_csr(const Arguments& arg)
 
         if(analysis_pivot == -1 && solve_pivot == -1)
         {
-            std::cout << "NEAR CHECK1  " << std::endl;
             hy_gold.near_check(hy_1);
-            std::cout << "NEAR CHECK2  " << std::endl;
             hy_gold.near_check(hy_2);
         }
     }
