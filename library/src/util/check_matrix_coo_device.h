@@ -26,8 +26,8 @@
 
 #include "common.h"
 
-ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_status,
-                                             rocsparse_data_status  status)
+static ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_status,
+                                                    rocsparse_data_status  status)
 {
     if(status != rocsparse_data_status_success)
     {

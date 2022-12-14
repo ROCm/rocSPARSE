@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,12 @@
 /*! \brief  returns true if value is NaN */
 template <typename T>
 inline bool rocsparse_isnan(T arg);
+
+template <>
+inline bool rocsparse_isnan(int8_t arg)
+{
+    return false;
+}
 
 template <>
 inline bool rocsparse_isnan(int arg)
@@ -78,7 +84,40 @@ inline bool rocsparse_isnan(rocsparse_double_complex arg)
 /* =================================================================================== */
 /*! \brief  returns true if value is inf */
 template <typename T>
-inline bool rocsparse_isinf(T arg)
+inline bool rocsparse_isinf(T arg);
+
+template <>
+inline bool rocsparse_isinf(int8_t arg)
+{
+    return false;
+}
+
+template <>
+inline bool rocsparse_isinf(int arg)
+{
+    return false;
+}
+
+template <>
+inline bool rocsparse_isinf(int64_t arg)
+{
+    return false;
+}
+
+template <>
+inline bool rocsparse_isinf(uint64_t arg)
+{
+    return false;
+}
+
+template <>
+inline bool rocsparse_isinf(float arg)
+{
+    return std::isinf(arg);
+}
+
+template <>
+inline bool rocsparse_isinf(double arg)
 {
     return std::isinf(arg);
 }

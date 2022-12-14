@@ -35,7 +35,7 @@
 //
 template <unsigned int BLOCKSIZE, typename T, typename I>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    static void kernel_get_permuted_array(I size_, const T* a_, T* x_, const I* perm_)
+    void kernel_get_permuted_array(I size_, const T* a_, T* x_, const I* perm_)
 {
     const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
     if(i < size_)
@@ -65,7 +65,7 @@ void rocsparse_get_permuted_array(
 //
 //
 template <unsigned int BLOCKSIZE, typename T, typename I>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL static void kernel_set_identity_array(I size_, T* x_)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void kernel_set_identity_array(I size_, T* x_)
 {
     const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
     if(i < size_)
@@ -94,7 +94,7 @@ void rocsparse_set_identity_array(rocsparse_handle handle_, I size_, T* x_)
 //
 template <unsigned int BLOCKSIZE, typename T, typename I>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    static void kernel_set_permuted_array(I size_, T* a_, const T* x_, const I* perm_)
+    void kernel_set_permuted_array(I size_, T* a_, const T* x_, const I* perm_)
 {
     const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
     if(i < size_)
@@ -122,10 +122,10 @@ void rocsparse_set_permuted_array(
 
 template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    static void kernel_nrminf(size_t nitems_,
-                              const T* __restrict__ x_,
-                              floating_data_t<T>* __restrict__ nrm_,
-                              const floating_data_t<T>* __restrict__ nrm0_)
+    void kernel_nrminf(size_t nitems_,
+                       const T* __restrict__ x_,
+                       floating_data_t<T>* __restrict__ nrm_,
+                       const floating_data_t<T>* __restrict__ nrm0_)
 {
     int    tid = hipThreadIdx_x;
     size_t gid = tid + BLOCKSIZE * hipBlockIdx_x;

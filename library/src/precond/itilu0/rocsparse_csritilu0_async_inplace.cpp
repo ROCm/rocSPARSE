@@ -70,22 +70,22 @@ rocsparse_status rocsparse_inclusive_scan(rocsparse_handle handle, J m_, I* ptr_
 }
 
 template <bool RESIDUAL, typename T, typename I, typename J>
-__device__ __forceinline__ void device_calculate(const J i,
-                                                 const J j,
-                                                 const T* __restrict__ x_,
-                                                 T* __restrict__ y_,
+ROCSPARSE_DEVICE_ILF void device_calculate(const J i,
+                                           const J j,
+                                           const T* __restrict__ x_,
+                                           T* __restrict__ y_,
 
-                                                 const I* __restrict__ lptr_begin_,
-                                                 const I* __restrict__ lptr_end_,
-                                                 const J* __restrict__ lind_,
+                                           const I* __restrict__ lptr_begin_,
+                                           const I* __restrict__ lptr_end_,
+                                           const J* __restrict__ lind_,
 
-                                                 const I* __restrict__ uptr_begin_,
-                                                 const I* __restrict__ uptr_end_,
-                                                 const J* __restrict__ uind_,
-                                                 const I* __restrict__ uperm_,
-                                                 const rocsparse_index_base base_,
-                                                 const T* __restrict__ ilu0_,
-                                                 floating_data_t<T>* __restrict__ nrm_)
+                                           const I* __restrict__ uptr_begin_,
+                                           const I* __restrict__ uptr_end_,
+                                           const J* __restrict__ uind_,
+                                           const I* __restrict__ uperm_,
+                                           const rocsparse_index_base base_,
+                                           const T* __restrict__ ilu0_,
+                                           floating_data_t<T>* __restrict__ nrm_)
 {
     T val = *x_;
 
@@ -164,26 +164,26 @@ __device__ __forceinline__ void device_calculate(const J i,
 }
 
 template <int BLOCKSIZE, int WFSIZE, bool RESIDUAL, typename T, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
-    static void kernel_calculate(const J m_,
-                                 const I nnz_,
-                                 const I* __restrict__ ptr_begin_,
-                                 const I* __restrict__ ptr_end_,
-                                 const J* __restrict__ ind_,
-                                 const T* __restrict__ val_,
-                                 const rocsparse_index_base base_,
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void kernel_calculate(const J m_,
+                          const I nnz_,
+                          const I* __restrict__ ptr_begin_,
+                          const I* __restrict__ ptr_end_,
+                          const J* __restrict__ ind_,
+                          const T* __restrict__ val_,
+                          const rocsparse_index_base base_,
 
-                                 const I* __restrict__ lptr_begin_,
-                                 const I* __restrict__ lptr_end_,
-                                 const J* __restrict__ lind_,
+                          const I* __restrict__ lptr_begin_,
+                          const I* __restrict__ lptr_end_,
+                          const J* __restrict__ lind_,
 
-                                 const I* __restrict__ uptr_begin_,
-                                 const I* __restrict__ uptr_end_,
-                                 const J* __restrict__ uind_,
-                                 const I* __restrict__ uperm_,
-                                 T* __restrict__ ilu0_,
-                                 floating_data_t<T>*       nrm_,
-                                 const floating_data_t<T>* nrm0_)
+                          const I* __restrict__ uptr_begin_,
+                          const I* __restrict__ uptr_end_,
+                          const J* __restrict__ uind_,
+                          const I* __restrict__ uperm_,
+                          T* __restrict__ ilu0_,
+                          floating_data_t<T>*       nrm_,
+                          const floating_data_t<T>* nrm0_)
 {
     static constexpr unsigned int nid = BLOCKSIZE / WFSIZE;
     const J                       lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -318,25 +318,25 @@ static void kernel_calculate_dispatch(
 }
 
 template <int BLOCKSIZE, int WFSIZE, bool RESIDUAL, typename T, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
-    static void kernel_calculate_coo(const J m_,
-                                     const I nnz_,
-                                     const J* __restrict__ row_,
-                                     const J* __restrict__ col_,
-                                     const T* __restrict__ val_,
-                                     const rocsparse_index_base base_,
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void kernel_calculate_coo(const J m_,
+                              const I nnz_,
+                              const J* __restrict__ row_,
+                              const J* __restrict__ col_,
+                              const T* __restrict__ val_,
+                              const rocsparse_index_base base_,
 
-                                     const I* __restrict__ lptr_begin_,
-                                     const I* __restrict__ lptr_end_,
-                                     const J* __restrict__ lind_,
+                              const I* __restrict__ lptr_begin_,
+                              const I* __restrict__ lptr_end_,
+                              const J* __restrict__ lind_,
 
-                                     const I* __restrict__ uptr_begin_,
-                                     const I* __restrict__ uptr_end_,
-                                     const J* __restrict__ uind_,
-                                     const I* __restrict__ uperm_,
-                                     T* __restrict__ ilu0_,
-                                     floating_data_t<T>*       nrm_,
-                                     const floating_data_t<T>* nrm0_)
+                              const I* __restrict__ uptr_begin_,
+                              const I* __restrict__ uptr_end_,
+                              const J* __restrict__ uind_,
+                              const I* __restrict__ uperm_,
+                              T* __restrict__ ilu0_,
+                              floating_data_t<T>*       nrm_,
+                              const floating_data_t<T>* nrm0_)
 {
     static constexpr int num = 64;
 
@@ -861,13 +861,13 @@ private:
 // Calculate the array lptr_end.
 //
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
-    static void kernel_compute_lptr_end(J m_,
-                                        const I* __restrict__ ptr_begin_,
-                                        const I* __restrict__ ptr_end_,
-                                        const J* __restrict__ ind_,
-                                        rocsparse_index_base base_,
-                                        I* __restrict__ lptr_end_)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void kernel_compute_lptr_end(J m_,
+                                 const I* __restrict__ ptr_begin_,
+                                 const I* __restrict__ ptr_end_,
+                                 const J* __restrict__ ind_,
+                                 rocsparse_index_base base_,
+                                 I* __restrict__ lptr_end_)
 {
     const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
     if(i < m_)
@@ -913,16 +913,16 @@ static void kernel_compute_lptr_end_dispatch(J           target_size_,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
-    static void kernel_compute_coo(J m_,
-                                   const I* __restrict__ ptr_begin_,
-                                   const I* __restrict__ ptr_end_,
-                                   const J* __restrict__ ind_,
-                                   rocsparse_index_base base_,
-                                   const I* __restrict__ coo_ptr_,
-                                   J* __restrict__ coo_row_ind_,
-                                   J* __restrict__ coo_col_ind_,
-                                   I* __restrict__ coo_perm_)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void kernel_compute_coo(J m_,
+                            const I* __restrict__ ptr_begin_,
+                            const I* __restrict__ ptr_end_,
+                            const J* __restrict__ ind_,
+                            rocsparse_index_base base_,
+                            const I* __restrict__ coo_ptr_,
+                            J* __restrict__ coo_row_ind_,
+                            J* __restrict__ coo_col_ind_,
+                            I* __restrict__ coo_perm_)
 {
     const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
     if(i < m_)
@@ -967,12 +967,12 @@ static void
 // Calculate the array ucsr_ptr.
 //
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
-    static void kernel_initialize_ucsr_ptr(J m_,
-                                           const I* __restrict__ ptr_begin_,
-                                           const I* __restrict__ ptr_end_,
-                                           I* __restrict__ ucsr_ptr_,
-                                           rocsparse_index_base base_)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void kernel_initialize_ucsr_ptr(J m_,
+                                    const I* __restrict__ ptr_begin_,
+                                    const I* __restrict__ ptr_end_,
+                                    I* __restrict__ ucsr_ptr_,
+                                    rocsparse_index_base base_)
 {
     const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
     if(i < m_)
@@ -1016,13 +1016,13 @@ static void kernel_initialize_ucsr_ptr_dispatch(J           target_size_,
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    static void kernel_compute_unnz(J m_,
-                                    const I* __restrict__ ptr_begin_,
-                                    const I* __restrict__ ptr_end_,
-                                    const J* __restrict__ ind_,
-                                    rocsparse_index_base base_,
-                                    I* __restrict__ nnz_,
-                                    I* __restrict__ nnz_diag_)
+    void kernel_compute_unnz(J m_,
+                             const I* __restrict__ ptr_begin_,
+                             const I* __restrict__ ptr_end_,
+                             const J* __restrict__ ind_,
+                             rocsparse_index_base base_,
+                             I* __restrict__ nnz_,
+                             I* __restrict__ nnz_diag_)
 {
     __shared__ I data[BLOCKSIZE];
     const I      i        = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
