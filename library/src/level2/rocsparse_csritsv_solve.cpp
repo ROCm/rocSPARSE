@@ -435,7 +435,6 @@ rocsparse_status rocsparse_csritsv_solve_template(rocsparse_handle          hand
                                            handle->stream));
         if(zero_pivot != std::numeric_limits<rocsparse_int>::max())
         {
-            std::cout << " zero_pivot detected3 " << zero_pivot << std::endl;
             return rocsparse_status_success;
         }
 
