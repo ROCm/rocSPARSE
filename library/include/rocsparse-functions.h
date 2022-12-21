@@ -18238,6 +18238,47 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_identity_permutation(rocsparse_handle handle,
                                                        rocsparse_int    n,
                                                        rocsparse_int*   p);
+/*! \ingroup conv_module
+*  \brief Inverse a permutation vector.
+*
+*  \details
+*  \p rocsparse_inverse_permutation computes
+*
+*  \code{.c}
+*      for(i = 0; i < \p n; ++i)
+*      {
+*          \p q[\p p[i]-\p base] = i + \p base;
+*      }
+*  \endcode
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  n           size of the permutation vector \p p.
+*  @param[in]
+*  p           array of \p n integers containing the permutation vector to inverse.
+*  @param[out]
+*  q           array of \p n integers containing the invsrse of the permutation vector.
+*  @param[in]
+*  base        \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_size \p n is invalid.
+*  \retval     rocsparse_status_invalid_pointer \p p pointer is invalid or \p q pointer is invalid.
+*  \retval     rocsparse_status_invalid_value \p base is invalid.
+*
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_inverse_permutation(rocsparse_handle     handle,
+                                               rocsparse_int        n,
+                                               const rocsparse_int* p,
+                                               rocsparse_int*       q,
+                                               rocsparse_index_base base);
 
 /*! \ingroup conv_module
 *  \brief Sort a sparse CSR matrix
