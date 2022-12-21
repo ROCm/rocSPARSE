@@ -123,6 +123,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_prune_csr2csr.cpp
   test_prune_csr2csr_by_percentage.cpp
   test_identity.cpp
+  test_inverse_permutation.cpp
   test_csrsort.cpp
   test_cscsort.cpp
   test_coosort.cpp
@@ -244,6 +245,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_prune_csr2csr.cpp
 ../testings/testing_prune_csr2csr_by_percentage.cpp
 ../testings/testing_identity.cpp
+../testings/testing_inverse_permutation.cpp
 ../testings/testing_csrsort.cpp
 ../testings/testing_cscsort.cpp
 ../testings/testing_coosort.cpp

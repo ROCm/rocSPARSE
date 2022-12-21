@@ -816,6 +816,12 @@ constexpr double identity_gbyte_count(rocsparse_int N)
 }
 
 template <typename T>
+constexpr double inverse_permutation_gbyte_count(rocsparse_int N)
+{
+    return (sizeof(rocsparse_int) * N * 2) / 1e9;
+}
+
+template <typename T>
 constexpr double csrsort_gbyte_count(rocsparse_int M, rocsparse_int nnz, bool permute)
 {
     return ((2.0 * M + 2.0 + 2.0 * nnz + (permute ? 2.0 * nnz : 0.0)) * sizeof(rocsparse_int))
