@@ -298,6 +298,12 @@ namespace testing
     TESTING_TEMPLATE(sddmm)
     TESTING_TEMPLATE(sddmm_buffer_size)
     TESTING_TEMPLATE(sddmm_preprocess)
+
+    /*
+    * ===========================================================================
+    *    reordering SPARSE
+    * ===========================================================================
+    */
     TESTING_COMPUTE_TEMPLATE(csrcolor)
 }
 

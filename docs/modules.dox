@@ -95,3 +95,11 @@
  *  The sparse generic routines are a set of functions that can be used if index and
  *  data types need to be mixed.
  */
+
+/*! \defgroup reordering_module SPARSE Reordering routines
+ *  \brief This module holds all sparse reordering routines.
+ *
+ *  \details
+ *  The sparse reordering routines are a set of functions that can be used for creating colorings of 
+ *  sparse matrices
+ */
