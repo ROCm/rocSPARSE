@@ -27,7 +27,8 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void dotci_kernel_part1(
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void dotci_kernel_part1(
     I nnz, const T* x_val, const I* x_ind, const T* y, T* workspace, rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -54,7 +55,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void dotci_kernel_part1(
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void dotci_kernel_part2(T* workspace, T* result)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void dotci_kernel_part2(T* workspace, T* result)
 {
     int tid = hipThreadIdx_x;
 

@@ -34,13 +34,11 @@
 #include <stdint.h>
 
 /// \cond DO_NOT_DOCUMENT
-#ifdef WIN32
-#define ROCSPARSE_KERNEL __global__ static
-#define ROCSPARSE_DEVICE_ILF __device__ __forceinline__
-#else
-#define ROCSPARSE_KERNEL __global__
-#define ROCSPARSE_DEVICE_ILF __device__
-#endif
+#define ROCSPARSE_KERNEL_W(MAX_THREADS_PER_BLOCK, MIN_WARPS_PER_EXECUTION_UNIT) \
+    __launch_bounds__(MAX_THREADS_PER_BLOCK, MIN_WARPS_PER_EXECUTION_UNIT) static __global__
+#define ROCSPARSE_KERNEL(MAX_THREADS_PER_BLOCK) \
+    __launch_bounds__(MAX_THREADS_PER_BLOCK) static __global__
+#define ROCSPARSE_DEVICE_ILF static __device__ __forceinline__
 /// \endcond
 
 /*! \ingroup types_module

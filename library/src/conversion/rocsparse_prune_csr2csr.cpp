@@ -36,13 +36,13 @@ template <rocsparse_int BLOCK_SIZE,
           rocsparse_int WF_SIZE,
           typename T,
           typename U>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void nnz_compress_kernel(rocsparse_int        m,
-                             rocsparse_index_base idx_base_A,
-                             const T* __restrict__ csr_val_A,
-                             const rocsparse_int* __restrict__ csr_row_ptr_A,
-                             rocsparse_int* __restrict__ nnz_per_row,
-                             U threshold_device_host)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void nnz_compress_kernel(rocsparse_int        m,
+                         rocsparse_index_base idx_base_A,
+                         const T* __restrict__ csr_val_A,
+                         const rocsparse_int* __restrict__ csr_row_ptr_A,
+                         rocsparse_int* __restrict__ nnz_per_row,
+                         U threshold_device_host)
 {
     auto threshold = load_scalar_device_host(threshold_device_host);
     nnz_compress_device<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>(
@@ -55,19 +55,19 @@ template <rocsparse_int BLOCK_SIZE,
           rocsparse_int WF_SIZE,
           typename T,
           typename U>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void csr2csr_compress_kernel(rocsparse_int        m,
-                                 rocsparse_int        n,
-                                 rocsparse_index_base idx_base_A,
-                                 const T* __restrict__ csr_val_A,
-                                 const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                 const rocsparse_int* __restrict__ csr_col_ind_A,
-                                 rocsparse_int        nnz_A,
-                                 rocsparse_index_base idx_base_C,
-                                 T* __restrict__ csr_val_C,
-                                 const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                 rocsparse_int* __restrict__ csr_col_ind_C,
-                                 U threshold_device_host)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void csr2csr_compress_kernel(rocsparse_int        m,
+                             rocsparse_int        n,
+                             rocsparse_index_base idx_base_A,
+                             const T* __restrict__ csr_val_A,
+                             const rocsparse_int* __restrict__ csr_row_ptr_A,
+                             const rocsparse_int* __restrict__ csr_col_ind_A,
+                             rocsparse_int        nnz_A,
+                             rocsparse_index_base idx_base_C,
+                             T* __restrict__ csr_val_C,
+                             const rocsparse_int* __restrict__ csr_row_ptr_C,
+                             rocsparse_int* __restrict__ csr_col_ind_C,
+                             U threshold_device_host)
 {
     auto threshold = load_scalar_device_host(threshold_device_host);
     csr2csr_compress_device<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>(m,

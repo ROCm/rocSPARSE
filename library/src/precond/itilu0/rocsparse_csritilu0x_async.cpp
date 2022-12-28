@@ -30,29 +30,29 @@
 #include <iomanip>
 
 template <int BLOCKSIZE, int WFSIZE, typename T, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
-    static void kernel_correction(const J m_,
-                                  const I nnz_,
-                                  const I* __restrict__ ptr_begin_,
-                                  const I* __restrict__ ptr_end_,
-                                  const J* __restrict__ ind_,
-                                  const T* __restrict__ val_,
-                                  const rocsparse_index_base base_,
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_correction(const J m_,
+                       const I nnz_,
+                       const I* __restrict__ ptr_begin_,
+                       const I* __restrict__ ptr_end_,
+                       const J* __restrict__ ind_,
+                       const T* __restrict__ val_,
+                       const rocsparse_index_base base_,
 
-                                  const I* __restrict__ lptr_begin_,
-                                  const I* __restrict__ lptr_end_,
-                                  const J* __restrict__ lind_,
-                                  T* __restrict__ lval_,
-                                  const rocsparse_index_base lbase_,
+                       const I* __restrict__ lptr_begin_,
+                       const I* __restrict__ lptr_end_,
+                       const J* __restrict__ lind_,
+                       T* __restrict__ lval_,
+                       const rocsparse_index_base lbase_,
 
-                                  const I* __restrict__ uptr_begin_,
-                                  const I* __restrict__ uptr_end_,
-                                  const J* __restrict__ uind_,
-                                  T* __restrict__ uval_,
-                                  const rocsparse_index_base ubase_,
-                                  T* __restrict__ dval_,
-                                  floating_data_t<T>*       nrm_,
-                                  const floating_data_t<T>* nrm0_)
+                       const I* __restrict__ uptr_begin_,
+                       const I* __restrict__ uptr_end_,
+                       const J* __restrict__ uind_,
+                       T* __restrict__ uval_,
+                       const rocsparse_index_base ubase_,
+                       T* __restrict__ dval_,
+                       floating_data_t<T>*       nrm_,
+                       const floating_data_t<T>* nrm0_)
 
 {
     floating_data_t<T> nrm = 0;

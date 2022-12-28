@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,8 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrcolor_kernel_count_colors(J size,
-                                      const J* __restrict__ colors,
-                                      J* __restrict__ workspace)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrcolor_kernel_count_colors(J size, const J* __restrict__ colors, J* __restrict__ workspace)
 {
     J gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     J inc = gridDim.x * hipBlockDim_x;
@@ -56,8 +54,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrcolor_kernel_count_colors_finalize(J* __restrict__ workspace)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrcolor_kernel_count_colors_finalize(J* __restrict__ workspace)
 {
     __shared__ J sdata[BLOCKSIZE];
 
@@ -72,10 +70,10 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrcolor_kernel_count_uncolored(J size,
-                                         const J* __restrict__ colors,
-                                         J* __restrict__ workspace)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrcolor_kernel_count_uncolored(J size,
+                                     const J* __restrict__ colors,
+                                     J* __restrict__ workspace)
 {
     J gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     J inc = gridDim.x * hipBlockDim_x;
@@ -102,8 +100,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrcolor_kernel_count_uncolored_finalize(J* __restrict__ workspace)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrcolor_kernel_count_uncolored_finalize(J* __restrict__ workspace)
 {
     __shared__ J sdata[BLOCKSIZE];
 
@@ -117,7 +115,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     }
 }
 
-static __forceinline__ __device__ uint32_t murmur3_32(uint32_t h)
+ROCSPARSE_DEVICE_ILF uint32_t murmur3_32(uint32_t h)
 {
     h ^= h >> 16;
     h *= 0x85ebca6b;
@@ -129,13 +127,13 @@ static __forceinline__ __device__ uint32_t murmur3_32(uint32_t h)
 }
 
 template <unsigned int BLOCKSIZE, typename I = rocsparse_int, typename J = rocsparse_int>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrcolor_kernel_jpl(J m,
-                             J color,
-                             const I* __restrict__ csr_row_ptr,
-                             const J* __restrict__ csr_col_ind,
-                             rocsparse_index_base csr_base,
-                             J* __restrict__ colors)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrcolor_kernel_jpl(J m,
+                         J color,
+                         const I* __restrict__ csr_row_ptr,
+                         const J* __restrict__ csr_col_ind,
+                         rocsparse_index_base csr_base,
+                         J* __restrict__ colors)
 {
 
     //

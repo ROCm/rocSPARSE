@@ -31,16 +31,16 @@ template <rocsparse_int NUMROWS_PER_BLOCK,
           typename I,
           typename J,
           typename T>
-__launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) ROCSPARSE_KERNEL
-    void dense2csr_kernel(rocsparse_index_base base,
-                          rocsparse_order      order,
-                          J                    m,
-                          J                    n,
-                          const T* __restrict__ dense_val,
-                          I ld,
-                          T* __restrict__ csr_val,
-                          I* __restrict__ csr_row_ptr,
-                          J* __restrict__ csr_col_ind)
+ROCSPARSE_KERNEL(WF_SIZE* NUMROWS_PER_BLOCK)
+void dense2csr_kernel(rocsparse_index_base base,
+                      rocsparse_order      order,
+                      J                    m,
+                      J                    n,
+                      const T* __restrict__ dense_val,
+                      I ld,
+                      T* __restrict__ csr_val,
+                      I* __restrict__ csr_row_ptr,
+                      J* __restrict__ csr_col_ind)
 {
     const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE;
     const J             lane_index      = hipThreadIdx_x % WF_SIZE;
@@ -115,16 +115,16 @@ template <rocsparse_int NUMCOLUMNS_PER_BLOCK,
           typename I,
           typename J,
           typename T>
-__launch_bounds__(WF_SIZE* NUMCOLUMNS_PER_BLOCK) ROCSPARSE_KERNEL
-    void dense2csc_kernel(rocsparse_index_base base,
-                          rocsparse_order      order,
-                          J                    m,
-                          J                    n,
-                          const T* __restrict__ dense_val,
-                          I ld,
-                          T* __restrict__ csc_val,
-                          I* __restrict__ csc_col_ptr,
-                          J* __restrict__ csc_row_ind)
+ROCSPARSE_KERNEL(WF_SIZE* NUMCOLUMNS_PER_BLOCK)
+void dense2csc_kernel(rocsparse_index_base base,
+                      rocsparse_order      order,
+                      J                    m,
+                      J                    n,
+                      const T* __restrict__ dense_val,
+                      I ld,
+                      T* __restrict__ csc_val,
+                      I* __restrict__ csc_col_ptr,
+                      J* __restrict__ csc_row_ind)
 {
     const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE;
     const J             lane_index      = hipThreadIdx_x % WF_SIZE;

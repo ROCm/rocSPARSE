@@ -60,13 +60,14 @@
     }
 
 template <unsigned int BLOCKSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void bsrsm_copy_scale(rocsparse_int m,
-                                                                    rocsparse_int n,
-                                                                    U             alpha_device_host,
-                                                                    const T*      B,
-                                                                    rocsparse_int ldb,
-                                                                    T*            X,
-                                                                    rocsparse_int ldx)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrsm_copy_scale(rocsparse_int m,
+                      rocsparse_int n,
+                      U             alpha_device_host,
+                      const T*      B,
+                      rocsparse_int ldb,
+                      T*            X,
+                      rocsparse_int ldx)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
 
@@ -74,13 +75,14 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void bsrsm_copy_scale(rocsparse_in
 }
 
 template <unsigned int DIM_X, unsigned int DIM_Y, typename T, typename U>
-__launch_bounds__(DIM_X* DIM_Y) ROCSPARSE_KERNEL void bsrsm_transpose(rocsparse_int m,
-                                                                      rocsparse_int n,
-                                                                      U alpha_device_host,
-                                                                      const T* __restrict__ A,
-                                                                      rocsparse_int lda,
-                                                                      T* __restrict__ B,
-                                                                      rocsparse_int ldb)
+ROCSPARSE_KERNEL(DIM_X* DIM_Y)
+void bsrsm_transpose(rocsparse_int m,
+                     rocsparse_int n,
+                     U             alpha_device_host,
+                     const T* __restrict__ A,
+                     rocsparse_int lda,
+                     T* __restrict__ B,
+                     rocsparse_int ldb)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
 

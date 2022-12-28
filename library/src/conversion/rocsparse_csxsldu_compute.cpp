@@ -51,21 +51,21 @@ template <unsigned int        BLOCKSIZE,
           typename T,
           typename I,
           typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void rocsparse_csxsldu_fill_kernel(J                    nseq_,
-                                       const I*             ptr_,
-                                       const J*             ind_,
-                                       const T*             val_,
-                                       rocsparse_index_base base_,
-                                       const I*             fptr_,
-                                       J*                   find_,
-                                       T*                   fval_,
-                                       rocsparse_index_base fbase_,
-                                       const I*             sptr_,
-                                       J*                   sind_,
-                                       T*                   sval_,
-                                       rocsparse_index_base sbase_,
-                                       T*                   diag_)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void rocsparse_csxsldu_fill_kernel(J                    nseq_,
+                                   const I*             ptr_,
+                                   const J*             ind_,
+                                   const T*             val_,
+                                   rocsparse_index_base base_,
+                                   const I*             fptr_,
+                                   J*                   find_,
+                                   T*                   fval_,
+                                   rocsparse_index_base fbase_,
+                                   const I*             sptr_,
+                                   J*                   sind_,
+                                   T*                   sval_,
+                                   rocsparse_index_base sbase_,
+                                   T*                   diag_)
 {
     I seq = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
     if(seq < nseq_)

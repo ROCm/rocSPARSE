@@ -29,22 +29,23 @@
 #include <hip/hip_runtime.h>
 
 template <rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y, typename T>
-static __device__ void gebsrmm_large_blockdim_device(rocsparse_direction direction,
-                                                     rocsparse_operation trans_B,
-                                                     rocsparse_int       Mb,
-                                                     rocsparse_int       N,
-                                                     T                   alpha,
-                                                     const rocsparse_int* __restrict__ bsr_row_ptr,
-                                                     const rocsparse_int* __restrict__ bsr_col_ind,
-                                                     const T* __restrict__ bsr_val,
-                                                     rocsparse_int row_block_dim,
-                                                     rocsparse_int col_block_dim,
-                                                     const T* __restrict__ B,
-                                                     rocsparse_int ldb,
-                                                     T             beta,
-                                                     T* __restrict__ C,
-                                                     rocsparse_int        ldc,
-                                                     rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void
+    gebsrmm_large_blockdim_device(rocsparse_direction direction,
+                                  rocsparse_operation trans_B,
+                                  rocsparse_int       Mb,
+                                  rocsparse_int       N,
+                                  T                   alpha,
+                                  const rocsparse_int* __restrict__ bsr_row_ptr,
+                                  const rocsparse_int* __restrict__ bsr_col_ind,
+                                  const T* __restrict__ bsr_val,
+                                  rocsparse_int row_block_dim,
+                                  rocsparse_int col_block_dim,
+                                  const T* __restrict__ B,
+                                  rocsparse_int ldb,
+                                  T             beta,
+                                  T* __restrict__ C,
+                                  rocsparse_int        ldc,
+                                  rocsparse_index_base idx_base)
 {
     const rocsparse_int tidx = hipThreadIdx_x;
     const rocsparse_int tidy = hipThreadIdx_y;

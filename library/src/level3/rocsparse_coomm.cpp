@@ -28,7 +28,7 @@
 
 // Scale kernel for beta != 1.0
 template <unsigned int BLOCKSIZE, typename I, typename T>
-static ROCSPARSE_DEVICE_ILF void coommnn_scale_device(
+ROCSPARSE_DEVICE_ILF void coommnn_scale_device(
     I m, I n, T beta, T* __restrict__ data, I ld, I stride, rocsparse_order order)
 {
     I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
@@ -53,7 +53,8 @@ static ROCSPARSE_DEVICE_ILF void coommnn_scale_device(
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coommnn_scale_kernel(
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void coommnn_scale_kernel(
     I m, I n, U beta_device_host, T* __restrict__ data, I ld, I stride, rocsparse_order order)
 {
     auto beta = load_scalar_device_host(beta_device_host);

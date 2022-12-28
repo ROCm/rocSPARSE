@@ -551,21 +551,22 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrsm(rocsparse_operation transB,
-                                                         J                   m,
-                                                         J                   nrhs,
-                                                         U                   alpha_device_host,
-                                                         const I* __restrict__ csr_row_ptr,
-                                                         const J* __restrict__ csr_col_ind,
-                                                         const T* __restrict__ csr_val,
-                                                         T* __restrict__ B,
-                                                         J ldb,
-                                                         int* __restrict__ done_array,
-                                                         J* __restrict__ map,
-                                                         J* __restrict__ zero_pivot,
-                                                         rocsparse_index_base idx_base,
-                                                         rocsparse_fill_mode  fill_mode,
-                                                         rocsparse_diag_type  diag_type)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrsm(rocsparse_operation transB,
+           J                   m,
+           J                   nrhs,
+           U                   alpha_device_host,
+           const I* __restrict__ csr_row_ptr,
+           const J* __restrict__ csr_col_ind,
+           const T* __restrict__ csr_val,
+           T* __restrict__ B,
+           J ldb,
+           int* __restrict__ done_array,
+           J* __restrict__ map,
+           J* __restrict__ zero_pivot,
+           rocsparse_index_base idx_base,
+           rocsparse_fill_mode  fill_mode,
+           rocsparse_diag_type  diag_type)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     csrsm_device<BLOCKSIZE, WFSIZE, SLEEP>(transB,
@@ -586,8 +587,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrsm(rocsparse_operation tra
 }
 
 template <unsigned int DIM_X, unsigned int DIM_Y, typename I, typename T>
-__launch_bounds__(DIM_X* DIM_Y) ROCSPARSE_KERNEL
-    void csrsm_transpose(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
+ROCSPARSE_KERNEL(DIM_X* DIM_Y)
+void csrsm_transpose(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
 {
     dense_transpose_device<DIM_X, DIM_Y>(m, n, (T)1, A, lda, B, ldb);
 }

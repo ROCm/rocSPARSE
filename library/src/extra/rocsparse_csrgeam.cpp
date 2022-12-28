@@ -30,23 +30,23 @@
 #include <rocprim/rocprim.hpp>
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgeam_fill_multipass_kernel(rocsparse_int m,
-                                       rocsparse_int n,
-                                       U             alpha_device_host,
-                                       const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                       const rocsparse_int* __restrict__ csr_col_ind_A,
-                                       const T* __restrict__ csr_val_A,
-                                       U beta_device_host,
-                                       const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                       const rocsparse_int* __restrict__ csr_col_ind_B,
-                                       const T* __restrict__ csr_val_B,
-                                       const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                       rocsparse_int* __restrict__ csr_col_ind_C,
-                                       T* __restrict__ csr_val_C,
-                                       rocsparse_index_base idx_base_A,
-                                       rocsparse_index_base idx_base_B,
-                                       rocsparse_index_base idx_base_C)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgeam_fill_multipass_kernel(rocsparse_int m,
+                                   rocsparse_int n,
+                                   U             alpha_device_host,
+                                   const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                   const rocsparse_int* __restrict__ csr_col_ind_A,
+                                   const T* __restrict__ csr_val_A,
+                                   U beta_device_host,
+                                   const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                   const rocsparse_int* __restrict__ csr_col_ind_B,
+                                   const T* __restrict__ csr_val_B,
+                                   const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                   rocsparse_int* __restrict__ csr_col_ind_C,
+                                   T* __restrict__ csr_val_C,
+                                   rocsparse_index_base idx_base_A,
+                                   rocsparse_index_base idx_base_B,
+                                   rocsparse_index_base idx_base_C)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);

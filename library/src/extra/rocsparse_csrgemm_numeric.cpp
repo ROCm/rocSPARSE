@@ -32,12 +32,12 @@
 
 // Copy an array
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_numeric_copy(I size,
-                              const J* __restrict__ in,
-                              J* __restrict__ out,
-                              rocsparse_index_base idx_base_in,
-                              rocsparse_index_base idx_base_out)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_numeric_copy(I size,
+                          const J* __restrict__ in,
+                          J* __restrict__ out,
+                          rocsparse_index_base idx_base_in,
+                          rocsparse_index_base idx_base_out)
 {
     I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -51,7 +51,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 // Copy and scale an array
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__device__ void csrgemm_numeric_copy_scale_device(I size, T alpha, const T* in, T* out)
+ROCSPARSE_DEVICE_ILF void csrgemm_numeric_copy_scale_device(I size, T alpha, const T* in, T* out)
 {
     I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -66,7 +66,7 @@ __device__ void csrgemm_numeric_copy_scale_device(I size, T alpha, const T* in, 
 // Hash operation to insert key into hash table
 // Returns true if key has been added
 template <unsigned int HASHVAL, unsigned int HASHSIZE, typename I>
-static __device__ __forceinline__ bool insert_key(I key, I* __restrict__ table)
+ROCSPARSE_DEVICE_ILF bool insert_key(I key, I* __restrict__ table)
 {
     // Compute hash
     I hash = (key * HASHVAL) & (HASHSIZE - 1);
@@ -101,7 +101,7 @@ static __device__ __forceinline__ bool insert_key(I key, I* __restrict__ table)
 // Hash operation to insert key into hash table
 // Returns true if key has been added
 template <unsigned int HASHVAL, unsigned int HASHSIZE, typename I, typename J>
-static __device__ __forceinline__ bool
+ROCSPARSE_DEVICE_ILF bool
     insert_key(J key, I* __restrict__ table, I* __restrict__ local_idxs, I local_idx)
 {
     // Compute hash
@@ -130,7 +130,7 @@ static __device__ __forceinline__ bool
 }
 // Hash operation to insert pair into hash table
 template <unsigned int HASHVAL, unsigned int HASHSIZE, typename I, typename T>
-static __device__ __forceinline__ void
+ROCSPARSE_DEVICE_ILF void
     insert_pair(I key, T val, I* __restrict__ table, T* __restrict__ data, I empty)
 {
     // Compute hash
@@ -170,30 +170,31 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__device__ void csrgemm_numeric_fill_wf_per_row_device(J m,
-                                                       J nk,
-                                                       const J* __restrict__ offset,
-                                                       const J* __restrict__ perm,
-                                                       T alpha,
-                                                       const I* __restrict__ csr_row_ptr_A,
-                                                       const J* __restrict__ csr_col_ind_A,
-                                                       const T* __restrict__ csr_val_A,
-                                                       const I* __restrict__ csr_row_ptr_B,
-                                                       const J* __restrict__ csr_col_ind_B,
-                                                       const T* __restrict__ csr_val_B,
-                                                       T beta,
-                                                       const I* __restrict__ csr_row_ptr_D,
-                                                       const J* __restrict__ csr_col_ind_D,
-                                                       const T* __restrict__ csr_val_D,
-                                                       const I* __restrict__ csr_row_ptr_C,
-                                                       const J* __restrict__ csr_col_ind_C,
-                                                       T* __restrict__ csr_val_C,
-                                                       rocsparse_index_base idx_base_A,
-                                                       rocsparse_index_base idx_base_B,
-                                                       rocsparse_index_base idx_base_C,
-                                                       rocsparse_index_base idx_base_D,
-                                                       bool                 mul,
-                                                       bool                 add)
+ROCSPARSE_DEVICE_ILF void
+    csrgemm_numeric_fill_wf_per_row_device(J m,
+                                           J nk,
+                                           const J* __restrict__ offset,
+                                           const J* __restrict__ perm,
+                                           T alpha,
+                                           const I* __restrict__ csr_row_ptr_A,
+                                           const J* __restrict__ csr_col_ind_A,
+                                           const T* __restrict__ csr_val_A,
+                                           const I* __restrict__ csr_row_ptr_B,
+                                           const J* __restrict__ csr_col_ind_B,
+                                           const T* __restrict__ csr_val_B,
+                                           T beta,
+                                           const I* __restrict__ csr_row_ptr_D,
+                                           const J* __restrict__ csr_col_ind_D,
+                                           const T* __restrict__ csr_val_D,
+                                           const I* __restrict__ csr_row_ptr_C,
+                                           const J* __restrict__ csr_col_ind_C,
+                                           T* __restrict__ csr_val_C,
+                                           rocsparse_index_base idx_base_A,
+                                           rocsparse_index_base idx_base_B,
+                                           rocsparse_index_base idx_base_C,
+                                           rocsparse_index_base idx_base_D,
+                                           bool                 mul,
+                                           bool                 add)
 {
 
     // Lane id
@@ -328,29 +329,30 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__device__ void csrgemm_numeric_fill_block_per_row_device(J nk,
-                                                          const J* __restrict__ offset_,
-                                                          const J* __restrict__ perm,
-                                                          T alpha,
-                                                          const I* __restrict__ csr_row_ptr_A,
-                                                          const J* __restrict__ csr_col_ind_A,
-                                                          const T* __restrict__ csr_val_A,
-                                                          const I* __restrict__ csr_row_ptr_B,
-                                                          const J* __restrict__ csr_col_ind_B,
-                                                          const T* __restrict__ csr_val_B,
-                                                          T beta,
-                                                          const I* __restrict__ csr_row_ptr_D,
-                                                          const J* __restrict__ csr_col_ind_D,
-                                                          const T* __restrict__ csr_val_D,
-                                                          const I* __restrict__ csr_row_ptr_C,
-                                                          const J* __restrict__ csr_col_ind_C,
-                                                          T* __restrict__ csr_val_C,
-                                                          rocsparse_index_base idx_base_A,
-                                                          rocsparse_index_base idx_base_B,
-                                                          rocsparse_index_base idx_base_C,
-                                                          rocsparse_index_base idx_base_D,
-                                                          bool                 mul,
-                                                          bool                 add)
+ROCSPARSE_DEVICE_ILF void
+    csrgemm_numeric_fill_block_per_row_device(J nk,
+                                              const J* __restrict__ offset_,
+                                              const J* __restrict__ perm,
+                                              T alpha,
+                                              const I* __restrict__ csr_row_ptr_A,
+                                              const J* __restrict__ csr_col_ind_A,
+                                              const T* __restrict__ csr_val_A,
+                                              const I* __restrict__ csr_row_ptr_B,
+                                              const J* __restrict__ csr_col_ind_B,
+                                              const T* __restrict__ csr_val_B,
+                                              T beta,
+                                              const I* __restrict__ csr_row_ptr_D,
+                                              const J* __restrict__ csr_col_ind_D,
+                                              const T* __restrict__ csr_val_D,
+                                              const I* __restrict__ csr_row_ptr_C,
+                                              const J* __restrict__ csr_col_ind_C,
+                                              T* __restrict__ csr_val_C,
+                                              rocsparse_index_base idx_base_A,
+                                              rocsparse_index_base idx_base_B,
+                                              rocsparse_index_base idx_base_C,
+                                              rocsparse_index_base idx_base_D,
+                                              bool                 mul,
+                                              bool                 add)
 {
     // Lane id
     int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -538,7 +540,7 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__device__ void
+ROCSPARSE_DEVICE_ILF void
     csrgemm_numeric_fill_block_per_row_multipass_device(J n,
                                                         const J* __restrict__ offset_,
                                                         const J* __restrict__ perm,
@@ -824,31 +826,31 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_numeric_fill_wf_per_row_kernel(J m,
-                                                J nk,
-                                                const J* __restrict__ offset,
-                                                const J* __restrict__ perm,
-                                                U alpha_device_host,
-                                                const I* __restrict__ csr_row_ptr_A,
-                                                const J* __restrict__ csr_col_ind_A,
-                                                const T* __restrict__ csr_val_A,
-                                                const I* __restrict__ csr_row_ptr_B,
-                                                const J* __restrict__ csr_col_ind_B,
-                                                const T* __restrict__ csr_val_B,
-                                                U beta_device_host,
-                                                const I* __restrict__ csr_row_ptr_D,
-                                                const J* __restrict__ csr_col_ind_D,
-                                                const T* __restrict__ csr_val_D,
-                                                const I* __restrict__ csr_row_ptr_C,
-                                                const J* __restrict__ csr_col_ind_C,
-                                                T* __restrict__ csr_val_C,
-                                                rocsparse_index_base idx_base_A,
-                                                rocsparse_index_base idx_base_B,
-                                                rocsparse_index_base idx_base_C,
-                                                rocsparse_index_base idx_base_D,
-                                                bool                 mul,
-                                                bool                 add)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_numeric_fill_wf_per_row_kernel(J m,
+                                            J nk,
+                                            const J* __restrict__ offset,
+                                            const J* __restrict__ perm,
+                                            U alpha_device_host,
+                                            const I* __restrict__ csr_row_ptr_A,
+                                            const J* __restrict__ csr_col_ind_A,
+                                            const T* __restrict__ csr_val_A,
+                                            const I* __restrict__ csr_row_ptr_B,
+                                            const J* __restrict__ csr_col_ind_B,
+                                            const T* __restrict__ csr_val_B,
+                                            U beta_device_host,
+                                            const I* __restrict__ csr_row_ptr_D,
+                                            const J* __restrict__ csr_col_ind_D,
+                                            const T* __restrict__ csr_val_D,
+                                            const I* __restrict__ csr_row_ptr_C,
+                                            const J* __restrict__ csr_col_ind_C,
+                                            T* __restrict__ csr_val_C,
+                                            rocsparse_index_base idx_base_A,
+                                            rocsparse_index_base idx_base_B,
+                                            rocsparse_index_base idx_base_C,
+                                            rocsparse_index_base idx_base_D,
+                                            bool                 mul,
+                                            bool                 add)
 {
     auto alpha = load_scalar_device_host_permissive(alpha_device_host);
     auto beta  = load_scalar_device_host_permissive(beta_device_host);
@@ -887,30 +889,30 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_numeric_fill_block_per_row_kernel(J nk,
-                                                   const J* __restrict__ offset,
-                                                   const J* __restrict__ perm,
-                                                   U alpha_device_host,
-                                                   const I* __restrict__ csr_row_ptr_A,
-                                                   const J* __restrict__ csr_col_ind_A,
-                                                   const T* __restrict__ csr_val_A,
-                                                   const I* __restrict__ csr_row_ptr_B,
-                                                   const J* __restrict__ csr_col_ind_B,
-                                                   const T* __restrict__ csr_val_B,
-                                                   U beta_device_host,
-                                                   const I* __restrict__ csr_row_ptr_D,
-                                                   const J* __restrict__ csr_col_ind_D,
-                                                   const T* __restrict__ csr_val_D,
-                                                   const I* __restrict__ csr_row_ptr_C,
-                                                   const J* __restrict__ csr_col_ind_C,
-                                                   T* __restrict__ csr_val_C,
-                                                   rocsparse_index_base idx_base_A,
-                                                   rocsparse_index_base idx_base_B,
-                                                   rocsparse_index_base idx_base_C,
-                                                   rocsparse_index_base idx_base_D,
-                                                   bool                 mul,
-                                                   bool                 add)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_numeric_fill_block_per_row_kernel(J nk,
+                                               const J* __restrict__ offset,
+                                               const J* __restrict__ perm,
+                                               U alpha_device_host,
+                                               const I* __restrict__ csr_row_ptr_A,
+                                               const J* __restrict__ csr_col_ind_A,
+                                               const T* __restrict__ csr_val_A,
+                                               const I* __restrict__ csr_row_ptr_B,
+                                               const J* __restrict__ csr_col_ind_B,
+                                               const T* __restrict__ csr_val_B,
+                                               U beta_device_host,
+                                               const I* __restrict__ csr_row_ptr_D,
+                                               const J* __restrict__ csr_col_ind_D,
+                                               const T* __restrict__ csr_val_D,
+                                               const I* __restrict__ csr_row_ptr_C,
+                                               const J* __restrict__ csr_col_ind_C,
+                                               T* __restrict__ csr_val_C,
+                                               rocsparse_index_base idx_base_A,
+                                               rocsparse_index_base idx_base_B,
+                                               rocsparse_index_base idx_base_C,
+                                               rocsparse_index_base idx_base_D,
+                                               bool                 mul,
+                                               bool                 add)
 {
     auto alpha = load_scalar_device_host_permissive(alpha_device_host);
     auto beta  = load_scalar_device_host_permissive(beta_device_host);
@@ -947,31 +949,31 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_numeric_fill_block_per_row_multipass_kernel(J n,
-                                                             const J* __restrict__ offset,
-                                                             const J* __restrict__ perm,
-                                                             U alpha_device_host,
-                                                             const I* __restrict__ csr_row_ptr_A,
-                                                             const J* __restrict__ csr_col_ind_A,
-                                                             const T* __restrict__ csr_val_A,
-                                                             const I* __restrict__ csr_row_ptr_B,
-                                                             const J* __restrict__ csr_col_ind_B,
-                                                             const T* __restrict__ csr_val_B,
-                                                             U beta_device_host,
-                                                             const I* __restrict__ csr_row_ptr_D,
-                                                             const J* __restrict__ csr_col_ind_D,
-                                                             const T* __restrict__ csr_val_D,
-                                                             const I* __restrict__ csr_row_ptr_C,
-                                                             const J* __restrict__ csr_col_ind_C,
-                                                             T* __restrict__ csr_val_C,
-                                                             I* __restrict__ workspace_B,
-                                                             rocsparse_index_base idx_base_A,
-                                                             rocsparse_index_base idx_base_B,
-                                                             rocsparse_index_base idx_base_C,
-                                                             rocsparse_index_base idx_base_D,
-                                                             bool                 mul,
-                                                             bool                 add)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_numeric_fill_block_per_row_multipass_kernel(J n,
+                                                         const J* __restrict__ offset,
+                                                         const J* __restrict__ perm,
+                                                         U alpha_device_host,
+                                                         const I* __restrict__ csr_row_ptr_A,
+                                                         const J* __restrict__ csr_col_ind_A,
+                                                         const T* __restrict__ csr_val_A,
+                                                         const I* __restrict__ csr_row_ptr_B,
+                                                         const J* __restrict__ csr_col_ind_B,
+                                                         const T* __restrict__ csr_val_B,
+                                                         U beta_device_host,
+                                                         const I* __restrict__ csr_row_ptr_D,
+                                                         const J* __restrict__ csr_col_ind_D,
+                                                         const T* __restrict__ csr_val_D,
+                                                         const I* __restrict__ csr_row_ptr_C,
+                                                         const J* __restrict__ csr_col_ind_C,
+                                                         T* __restrict__ csr_val_C,
+                                                         I* __restrict__ workspace_B,
+                                                         rocsparse_index_base idx_base_A,
+                                                         rocsparse_index_base idx_base_B,
+                                                         rocsparse_index_base idx_base_C,
+                                                         rocsparse_index_base idx_base_D,
+                                                         bool                 mul,
+                                                         bool                 add)
 {
     auto alpha = load_scalar_device_host_permissive(alpha_device_host);
     auto beta  = load_scalar_device_host_permissive(beta_device_host);
@@ -1572,8 +1574,11 @@ static inline rocsparse_status
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgemm_numeric_copy_scale_kernel(
-    I size, U alpha_device_host, const T* __restrict__ in, T* __restrict__ out)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_numeric_copy_scale_kernel(I size,
+                                       U alpha_device_host,
+                                       const T* __restrict__ in,
+                                       T* __restrict__ out)
 {
     auto alpha = load_scalar_device_host_permissive(alpha_device_host);
     csrgemm_numeric_copy_scale_device<BLOCKSIZE>(size, alpha, in, out);

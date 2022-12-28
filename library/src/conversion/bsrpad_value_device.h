@@ -27,15 +27,15 @@
 #include "common.h"
 
 template <rocsparse_int BLOCK_SIZE, typename T>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void bsrpad_value_kernel_sorted(rocsparse_int        m,
-                                    rocsparse_int        mb,
-                                    rocsparse_int        block_dim,
-                                    T                    value,
-                                    rocsparse_index_base bsr_base,
-                                    T* __restrict__ bsr_val,
-                                    const rocsparse_int* __restrict__ bsr_row_ptr,
-                                    const rocsparse_int* __restrict__ bsr_col_ind)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void bsrpad_value_kernel_sorted(rocsparse_int        m,
+                                rocsparse_int        mb,
+                                rocsparse_int        block_dim,
+                                T                    value,
+                                rocsparse_index_base bsr_base,
+                                T* __restrict__ bsr_val,
+                                const rocsparse_int* __restrict__ bsr_row_ptr,
+                                const rocsparse_int* __restrict__ bsr_col_ind)
 {
 
     rocsparse_int block_id = hipBlockIdx_x;
@@ -74,15 +74,15 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
 }
 
 template <rocsparse_int BLOCK_SIZE, typename T>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void bsrpad_value_kernel_unsorted(rocsparse_int        m,
-                                      rocsparse_int        mb,
-                                      rocsparse_int        block_dim,
-                                      T                    value,
-                                      rocsparse_index_base bsr_base,
-                                      T* __restrict__ bsr_val,
-                                      const rocsparse_int* __restrict__ bsr_row_ptr,
-                                      const rocsparse_int* __restrict__ bsr_col_ind)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void bsrpad_value_kernel_unsorted(rocsparse_int        m,
+                                  rocsparse_int        mb,
+                                  rocsparse_int        block_dim,
+                                  T                    value,
+                                  rocsparse_index_base bsr_base,
+                                  T* __restrict__ bsr_val,
+                                  const rocsparse_int* __restrict__ bsr_row_ptr,
+                                  const rocsparse_int* __restrict__ bsr_col_ind)
 {
     rocsparse_int block_id = hipBlockIdx_x;
     rocsparse_int local_id = hipThreadIdx_x;

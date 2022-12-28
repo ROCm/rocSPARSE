@@ -27,13 +27,13 @@
 #include "common.h"
 
 template <typename T>
-__device__ void bsrsm_copy_scale_device(rocsparse_int m,
-                                        rocsparse_int n,
-                                        T             alpha,
-                                        const T*      B,
-                                        rocsparse_int ldb,
-                                        T*            X,
-                                        rocsparse_int ldx)
+ROCSPARSE_DEVICE_ILF void bsrsm_copy_scale_device(rocsparse_int m,
+                                                  rocsparse_int n,
+                                                  T             alpha,
+                                                  const T*      B,
+                                                  rocsparse_int ldb,
+                                                  T*            X,
+                                                  rocsparse_int ldx)
 {
     rocsparse_int row = blockIdx.x * blockDim.x + threadIdx.x;
 

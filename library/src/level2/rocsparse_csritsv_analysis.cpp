@@ -28,14 +28,14 @@
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) static __global__
-    void kernel_count_missing_diagonal(J m,
-                                       const I* __restrict__ ptr_diag_,
-                                       J ptr_shift_,
-                                       const J* __restrict__ ind_,
-                                       rocsparse_index_base base_,
-                                       J* __restrict__ count,
-                                       rocsparse_int* __restrict__ position)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_count_missing_diagonal(J m,
+                                   const I* __restrict__ ptr_diag_,
+                                   J ptr_shift_,
+                                   const J* __restrict__ ind_,
+                                   rocsparse_index_base base_,
+                                   J* __restrict__ count,
+                                   rocsparse_int* __restrict__ position)
 {
     const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)
@@ -51,13 +51,13 @@ __launch_bounds__(BLOCKSIZE) static __global__
 }
 
 template <rocsparse_fill_mode FILL_MODE, unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) static __global__
-    void kernel_count_missing_diagonal2(J m,
-                                        const I* __restrict__ ptr_,
-                                        const J* __restrict__ ind_,
-                                        rocsparse_index_base base_,
-                                        J* __restrict__ count,
-                                        rocsparse_int* __restrict__ position)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_count_missing_diagonal2(J m,
+                                    const I* __restrict__ ptr_,
+                                    const J* __restrict__ ind_,
+                                    rocsparse_index_base base_,
+                                    J* __restrict__ count,
+                                    rocsparse_int* __restrict__ position)
 {
     const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)
@@ -74,12 +74,12 @@ __launch_bounds__(BLOCKSIZE) static __global__
 }
 
 template <rocsparse_fill_mode FILL_MODE, unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) static __global__
-    void kernel_count_diagonal_triangular(J m,
-                                          const I* __restrict__ ptr_,
-                                          const J* __restrict__ ind_,
-                                          rocsparse_index_base base_,
-                                          J* __restrict__ count)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_count_diagonal_triangular(J m,
+                                      const I* __restrict__ ptr_,
+                                      const J* __restrict__ ind_,
+                                      rocsparse_index_base base_,
+                                      J* __restrict__ count)
 {
     const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)
@@ -94,11 +94,12 @@ __launch_bounds__(BLOCKSIZE) static __global__
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) static __global__ void kernel_ptr_end_unit(J m,
-                                                                        const I* __restrict__ ptr_,
-                                                                        const J* __restrict__ ind_,
-                                                                        I* __restrict__ ptr_end,
-                                                                        rocsparse_index_base base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_ptr_end_unit(J m,
+                         const I* __restrict__ ptr_,
+                         const J* __restrict__ ind_,
+                         I* __restrict__ ptr_end,
+                         rocsparse_index_base base)
 {
     const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)
@@ -116,12 +117,12 @@ __launch_bounds__(BLOCKSIZE) static __global__ void kernel_ptr_end_unit(J m,
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) static __global__
-    void kernel_ptr_end_non_unit(J m,
-                                 const I* __restrict__ ptr_,
-                                 const J* __restrict__ ind_,
-                                 I* __restrict__ ptr_end,
-                                 rocsparse_index_base base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_ptr_end_non_unit(J m,
+                             const I* __restrict__ ptr_,
+                             const J* __restrict__ ind_,
+                             I* __restrict__ ptr_end,
+                             rocsparse_index_base base)
 {
     unsigned int tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)

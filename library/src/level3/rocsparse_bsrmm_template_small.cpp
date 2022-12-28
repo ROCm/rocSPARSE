@@ -30,20 +30,20 @@ template <rocsparse_int BLOCKSIZE,
           rocsparse_int BSR_BLOCK_DIM,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrmmnn_small_blockdim_kernel(rocsparse_direction direction,
-                                       rocsparse_int       mb,
-                                       rocsparse_int       n,
-                                       U                   alpha_device_host,
-                                       const rocsparse_int* __restrict__ bsr_row_ptr,
-                                       const rocsparse_int* __restrict__ bsr_col_ind,
-                                       const T* __restrict__ bsr_val,
-                                       const T* __restrict__ B,
-                                       rocsparse_int ldb,
-                                       U             beta_device_host,
-                                       T* __restrict__ C,
-                                       rocsparse_int        ldc,
-                                       rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrmmnn_small_blockdim_kernel(rocsparse_direction direction,
+                                   rocsparse_int       mb,
+                                   rocsparse_int       n,
+                                   U                   alpha_device_host,
+                                   const rocsparse_int* __restrict__ bsr_row_ptr,
+                                   const rocsparse_int* __restrict__ bsr_col_ind,
+                                   const T* __restrict__ bsr_val,
+                                   const T* __restrict__ B,
+                                   rocsparse_int ldb,
+                                   U             beta_device_host,
+                                   T* __restrict__ C,
+                                   rocsparse_int        ldc,
+                                   rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
@@ -62,20 +62,20 @@ template <rocsparse_int BLOCKSIZE,
           rocsparse_int BSR_BLOCK_DIM,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrmmnt_small_blockdim_kernel(rocsparse_direction direction,
-                                       rocsparse_int       mb,
-                                       rocsparse_int       n,
-                                       U                   alpha_device_host,
-                                       const rocsparse_int* __restrict__ bsr_row_ptr,
-                                       const rocsparse_int* __restrict__ bsr_col_ind,
-                                       const T* __restrict__ bsr_val,
-                                       const T* __restrict__ B,
-                                       rocsparse_int ldb,
-                                       U             beta_device_host,
-                                       T* __restrict__ C,
-                                       rocsparse_int        ldc,
-                                       rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrmmnt_small_blockdim_kernel(rocsparse_direction direction,
+                                   rocsparse_int       mb,
+                                   rocsparse_int       n,
+                                   U                   alpha_device_host,
+                                   const rocsparse_int* __restrict__ bsr_row_ptr,
+                                   const rocsparse_int* __restrict__ bsr_col_ind,
+                                   const T* __restrict__ bsr_val,
+                                   const T* __restrict__ B,
+                                   rocsparse_int ldb,
+                                   U             beta_device_host,
+                                   T* __restrict__ C,
+                                   rocsparse_int        ldc,
+                                   rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);

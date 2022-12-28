@@ -65,7 +65,8 @@ template <unsigned int        BLOCKSIZE,
           rocsparse_diag_type SDIAG,
           typename I,
           typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void rocsparse_csxtril_count_kernel(
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void rocsparse_csxtril_count_kernel(
     J nseq_, const I* ptr_, const J* ind_, rocsparse_index_base base_, I* fptr_, I* sptr_)
 {
     I seq = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
