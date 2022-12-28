@@ -26,8 +26,8 @@
 
 #include "common.h"
 
-static ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_status,
-                                                    rocsparse_data_status  status)
+ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_status,
+                                             rocsparse_data_status  status)
 {
     if(status != rocsparse_data_status_success)
     {
@@ -37,8 +37,8 @@ static ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_
 
 // Shift GEBSR offsets
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void shift_offsets_kernel(J size, const I* __restrict__ in, I* __restrict__ out)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void shift_offsets_kernel(J size, const I* __restrict__ in, I* __restrict__ out)
 {
     J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -51,10 +51,10 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void check_row_ptr_array(J mb,
-                             const I* __restrict__ bsr_row_ptr,
-                             rocsparse_data_status* data_status)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void check_row_ptr_array(J mb,
+                         const I* __restrict__ bsr_row_ptr,
+                         rocsparse_data_status* data_status)
 {
     I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -78,22 +78,22 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void check_matrix_gebsr_device(rocsparse_direction dir,
-                                   J                   mb,
-                                   J                   nb,
-                                   I                   nnzb,
-                                   J                   row_block_dim,
-                                   J                   col_block_dim,
-                                   const T* __restrict__ bsr_val,
-                                   const I* __restrict__ bsr_row_ptr,
-                                   const J*               bsr_col_ind,
-                                   const J*               bsr_col_ind_sorted,
-                                   rocsparse_index_base   idx_base,
-                                   rocsparse_matrix_type  matrix_type,
-                                   rocsparse_fill_mode    uplo,
-                                   rocsparse_storage_mode storage,
-                                   rocsparse_data_status* data_status)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void check_matrix_gebsr_device(rocsparse_direction dir,
+                               J                   mb,
+                               J                   nb,
+                               I                   nnzb,
+                               J                   row_block_dim,
+                               J                   col_block_dim,
+                               const T* __restrict__ bsr_val,
+                               const I* __restrict__ bsr_row_ptr,
+                               const J*               bsr_col_ind,
+                               const J*               bsr_col_ind_sorted,
+                               rocsparse_index_base   idx_base,
+                               rocsparse_matrix_type  matrix_type,
+                               rocsparse_fill_mode    uplo,
+                               rocsparse_storage_mode storage,
+                               rocsparse_data_status* data_status)
 {
     I row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

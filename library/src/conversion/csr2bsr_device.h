@@ -27,17 +27,17 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BLOCKDIM>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csr2bsr_nnz_wavefront_per_row_multipass_kernel(
-    rocsparse_int        m,
-    rocsparse_int        n,
-    rocsparse_int        mb,
-    rocsparse_int        nb,
-    rocsparse_int        block_dim,
-    rocsparse_index_base csr_base,
-    const rocsparse_int* __restrict__ csr_row_ptr,
-    const rocsparse_int* __restrict__ csr_col_ind,
-    rocsparse_index_base bsr_base,
-    rocsparse_int* __restrict__ bsr_row_ptr)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2bsr_nnz_wavefront_per_row_multipass_kernel(rocsparse_int        m,
+                                                    rocsparse_int        n,
+                                                    rocsparse_int        mb,
+                                                    rocsparse_int        nb,
+                                                    rocsparse_int        block_dim,
+                                                    rocsparse_index_base csr_base,
+                                                    const rocsparse_int* __restrict__ csr_row_ptr,
+                                                    const rocsparse_int* __restrict__ csr_col_ind,
+                                                    rocsparse_index_base bsr_base,
+                                                    rocsparse_int* __restrict__ bsr_row_ptr)
 {
     int bid = hipBlockIdx_x;
     int tid = hipThreadIdx_x;
@@ -125,17 +125,17 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csr2bsr_nnz_wavefront_per_row
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr2bsr_nnz_block_per_row_multipass_kernel(rocsparse_int        m,
-                                                    rocsparse_int        n,
-                                                    rocsparse_int        mb,
-                                                    rocsparse_int        nb,
-                                                    rocsparse_int        block_dim,
-                                                    rocsparse_index_base csr_base,
-                                                    const rocsparse_int* __restrict__ csr_row_ptr,
-                                                    const rocsparse_int* __restrict__ csr_col_ind,
-                                                    rocsparse_index_base bsr_base,
-                                                    rocsparse_int* __restrict__ bsr_row_ptr)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2bsr_nnz_block_per_row_multipass_kernel(rocsparse_int        m,
+                                                rocsparse_int        n,
+                                                rocsparse_int        mb,
+                                                rocsparse_int        nb,
+                                                rocsparse_int        block_dim,
+                                                rocsparse_index_base csr_base,
+                                                const rocsparse_int* __restrict__ csr_row_ptr,
+                                                const rocsparse_int* __restrict__ csr_col_ind,
+                                                rocsparse_index_base bsr_base,
+                                                rocsparse_int* __restrict__ bsr_row_ptr)
 {
     int bid = hipBlockIdx_x;
     int tid = hipThreadIdx_x;
@@ -219,21 +219,21 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int WFSIZE, rocsparse_int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr2bsr_wavefront_per_row_multipass_kernel(rocsparse_direction        dir,
-                                                    rocsparse_int              m,
-                                                    rocsparse_int              n,
-                                                    rocsparse_int              mb,
-                                                    rocsparse_int              nb,
-                                                    rocsparse_int              block_dim,
-                                                    const rocsparse_index_base csr_base,
-                                                    const T* __restrict__ csr_val,
-                                                    const rocsparse_int* __restrict__ csr_row_ptr,
-                                                    const rocsparse_int* __restrict__ csr_col_ind,
-                                                    const rocsparse_index_base bsr_base,
-                                                    T* __restrict__ bsr_val,
-                                                    rocsparse_int* __restrict__ bsr_row_ptr,
-                                                    rocsparse_int* __restrict__ bsr_col_ind)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2bsr_wavefront_per_row_multipass_kernel(rocsparse_direction        dir,
+                                                rocsparse_int              m,
+                                                rocsparse_int              n,
+                                                rocsparse_int              mb,
+                                                rocsparse_int              nb,
+                                                rocsparse_int              block_dim,
+                                                const rocsparse_index_base csr_base,
+                                                const T* __restrict__ csr_val,
+                                                const rocsparse_int* __restrict__ csr_row_ptr,
+                                                const rocsparse_int* __restrict__ csr_col_ind,
+                                                const rocsparse_index_base bsr_base,
+                                                T* __restrict__ bsr_val,
+                                                rocsparse_int* __restrict__ bsr_row_ptr,
+                                                rocsparse_int* __restrict__ bsr_col_ind)
 {
     int bid = hipBlockIdx_x;
     int tid = hipThreadIdx_x;
@@ -343,21 +343,21 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr2bsr_block_per_row_multipass_kernel(rocsparse_direction        dir,
-                                                rocsparse_int              m,
-                                                rocsparse_int              n,
-                                                rocsparse_int              mb,
-                                                rocsparse_int              nb,
-                                                rocsparse_int              block_dim,
-                                                const rocsparse_index_base csr_base,
-                                                const T* __restrict__ csr_val,
-                                                const rocsparse_int* __restrict__ csr_row_ptr,
-                                                const rocsparse_int* __restrict__ csr_col_ind,
-                                                const rocsparse_index_base bsr_base,
-                                                T* __restrict__ bsr_val,
-                                                rocsparse_int* __restrict__ bsr_row_ptr,
-                                                rocsparse_int* __restrict__ bsr_col_ind)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2bsr_block_per_row_multipass_kernel(rocsparse_direction        dir,
+                                            rocsparse_int              m,
+                                            rocsparse_int              n,
+                                            rocsparse_int              mb,
+                                            rocsparse_int              nb,
+                                            rocsparse_int              block_dim,
+                                            const rocsparse_index_base csr_base,
+                                            const T* __restrict__ csr_val,
+                                            const rocsparse_int* __restrict__ csr_row_ptr,
+                                            const rocsparse_int* __restrict__ csr_col_ind,
+                                            const rocsparse_index_base bsr_base,
+                                            T* __restrict__ bsr_val,
+                                            rocsparse_int* __restrict__ bsr_row_ptr,
+                                            rocsparse_int* __restrict__ bsr_col_ind)
 {
     int bid = hipBlockIdx_x;
     int tid = hipThreadIdx_x;
@@ -468,19 +468,19 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <rocsparse_int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr2bsr_nnz_65_inf_kernel(rocsparse_int        m,
-                                   rocsparse_int        n,
-                                   rocsparse_int        mb,
-                                   rocsparse_int        nb,
-                                   rocsparse_int        block_dim,
-                                   rocsparse_int        rows_per_segment,
-                                   rocsparse_index_base csr_base,
-                                   const rocsparse_int* __restrict__ csr_row_ptr,
-                                   const rocsparse_int* __restrict__ csr_col_ind,
-                                   rocsparse_index_base bsr_base,
-                                   rocsparse_int* __restrict__ bsr_row_ptr,
-                                   rocsparse_int* __restrict__ temp1)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2bsr_nnz_65_inf_kernel(rocsparse_int        m,
+                               rocsparse_int        n,
+                               rocsparse_int        mb,
+                               rocsparse_int        nb,
+                               rocsparse_int        block_dim,
+                               rocsparse_int        rows_per_segment,
+                               rocsparse_index_base csr_base,
+                               const rocsparse_int* __restrict__ csr_row_ptr,
+                               const rocsparse_int* __restrict__ csr_col_ind,
+                               rocsparse_index_base bsr_base,
+                               rocsparse_int* __restrict__ bsr_row_ptr,
+                               rocsparse_int* __restrict__ temp1)
 {
     rocsparse_int block_id = hipBlockIdx_x;
     rocsparse_int lane_id  = hipThreadIdx_x;
@@ -558,24 +558,24 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <rocsparse_int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr2bsr_65_inf_kernel(rocsparse_direction        direction,
-                               rocsparse_int              m,
-                               rocsparse_int              n,
-                               rocsparse_int              mb,
-                               rocsparse_int              nb,
-                               rocsparse_int              block_dim,
-                               rocsparse_int              rows_per_segment,
-                               const rocsparse_index_base csr_base,
-                               const T* __restrict__ csr_val,
-                               const rocsparse_int* __restrict__ csr_row_ptr,
-                               const rocsparse_int* __restrict__ csr_col_ind,
-                               const rocsparse_index_base bsr_base,
-                               T* __restrict__ bsr_val,
-                               rocsparse_int* __restrict__ bsr_row_ptr,
-                               rocsparse_int* __restrict__ bsr_col_ind,
-                               rocsparse_int* __restrict__ temp1,
-                               T* __restrict__ temp2)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2bsr_65_inf_kernel(rocsparse_direction        direction,
+                           rocsparse_int              m,
+                           rocsparse_int              n,
+                           rocsparse_int              mb,
+                           rocsparse_int              nb,
+                           rocsparse_int              block_dim,
+                           rocsparse_int              rows_per_segment,
+                           const rocsparse_index_base csr_base,
+                           const T* __restrict__ csr_val,
+                           const rocsparse_int* __restrict__ csr_row_ptr,
+                           const rocsparse_int* __restrict__ csr_col_ind,
+                           const rocsparse_index_base bsr_base,
+                           T* __restrict__ bsr_val,
+                           rocsparse_int* __restrict__ bsr_row_ptr,
+                           rocsparse_int* __restrict__ bsr_col_ind,
+                           rocsparse_int* __restrict__ temp1,
+                           T* __restrict__ temp2)
 {
     rocsparse_int block_id = hipBlockIdx_x;
     rocsparse_int lane_id  = hipThreadIdx_x;
@@ -696,13 +696,13 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr2bsr_nnz_block_dim_equals_one_kernel(rocsparse_int        m,
-                                                 rocsparse_index_base csr_base,
-                                                 const rocsparse_int* __restrict__ csr_row_ptr,
-                                                 rocsparse_index_base bsr_base,
-                                                 rocsparse_int* __restrict__ bsr_row_ptr,
-                                                 rocsparse_int* __restrict__ bsr_nnz)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2bsr_nnz_block_dim_equals_one_kernel(rocsparse_int        m,
+                                             rocsparse_index_base csr_base,
+                                             const rocsparse_int* __restrict__ csr_row_ptr,
+                                             rocsparse_index_base bsr_base,
+                                             rocsparse_int* __restrict__ bsr_row_ptr,
+                                             rocsparse_int* __restrict__ bsr_nnz)
 {
     rocsparse_int thread_id = hipThreadIdx_x + hipBlockDim_x * hipBlockIdx_x;
 
@@ -718,12 +718,12 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr2bsr_nnz_block_dim_equals_one_kernel(rocsparse_int        m,
-                                                 rocsparse_index_base csr_base,
-                                                 const rocsparse_int* __restrict__ csr_row_ptr,
-                                                 rocsparse_index_base bsr_base,
-                                                 rocsparse_int* __restrict__ bsr_row_ptr)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2bsr_nnz_block_dim_equals_one_kernel(rocsparse_int        m,
+                                             rocsparse_index_base csr_base,
+                                             const rocsparse_int* __restrict__ csr_row_ptr,
+                                             rocsparse_index_base bsr_base,
+                                             rocsparse_int* __restrict__ bsr_row_ptr)
 {
     rocsparse_int tid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
@@ -734,10 +734,10 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr2bsr_nnz_compute_nnz_total_kernel(rocsparse_int mb,
-                                              const rocsparse_int* __restrict__ bsr_row_ptr,
-                                              rocsparse_int* __restrict__ bsr_nnz)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2bsr_nnz_compute_nnz_total_kernel(rocsparse_int mb,
+                                          const rocsparse_int* __restrict__ bsr_row_ptr,
+                                          rocsparse_int* __restrict__ bsr_nnz)
 {
     rocsparse_int tid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
@@ -748,19 +748,19 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <rocsparse_int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr2bsr_block_dim_equals_one_kernel(rocsparse_int              m,
-                                             rocsparse_int              n,
-                                             rocsparse_int              mb,
-                                             rocsparse_int              nb,
-                                             const rocsparse_index_base csr_base,
-                                             const T*                   csr_val,
-                                             const rocsparse_int*       csr_row_ptr,
-                                             const rocsparse_int*       csr_col_ind,
-                                             const rocsparse_index_base bsr_base,
-                                             T*                         bsr_val,
-                                             rocsparse_int*             bsr_row_ptr,
-                                             rocsparse_int*             bsr_col_ind)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2bsr_block_dim_equals_one_kernel(rocsparse_int              m,
+                                         rocsparse_int              n,
+                                         rocsparse_int              mb,
+                                         rocsparse_int              nb,
+                                         const rocsparse_index_base csr_base,
+                                         const T*                   csr_val,
+                                         const rocsparse_int*       csr_row_ptr,
+                                         const rocsparse_int*       csr_col_ind,
+                                         const rocsparse_index_base bsr_base,
+                                         T*                         bsr_val,
+                                         rocsparse_int*             bsr_row_ptr,
+                                         rocsparse_int*             bsr_col_ind)
 {
     rocsparse_int tid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 

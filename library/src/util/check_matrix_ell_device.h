@@ -26,8 +26,8 @@
 
 #include "common.h"
 
-static ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_status,
-                                                    rocsparse_data_status  status)
+ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_status,
+                                             rocsparse_data_status  status)
 {
     if(status != rocsparse_data_status_success)
     {
@@ -36,17 +36,17 @@ static ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_
 }
 
 template <unsigned int BLOCKSIZE, typename T, typename I>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void check_matrix_ell_device(I m,
-                                 I n,
-                                 I ell_width,
-                                 const T* __restrict__ ell_val,
-                                 const I* __restrict__ ell_col_ind,
-                                 rocsparse_index_base   idx_base,
-                                 rocsparse_matrix_type  matrix_type,
-                                 rocsparse_fill_mode    uplo,
-                                 rocsparse_storage_mode storage,
-                                 rocsparse_data_status* data_status)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void check_matrix_ell_device(I m,
+                             I n,
+                             I ell_width,
+                             const T* __restrict__ ell_val,
+                             const I* __restrict__ ell_col_ind,
+                             rocsparse_index_base   idx_base,
+                             rocsparse_matrix_type  matrix_type,
+                             rocsparse_fill_mode    uplo,
+                             rocsparse_storage_mode storage,
+                             rocsparse_data_status* data_status)
 {
     I row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

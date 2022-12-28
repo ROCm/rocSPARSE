@@ -32,12 +32,12 @@
 
 // Copy an array
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_symbolic_copy(I size,
-                               const J* __restrict__ in,
-                               J* __restrict__ out,
-                               rocsparse_index_base idx_base_in,
-                               rocsparse_index_base idx_base_out)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_symbolic_copy(I size,
+                           const J* __restrict__ in,
+                           J* __restrict__ out,
+                           rocsparse_index_base idx_base_in,
+                           rocsparse_index_base idx_base_out)
 {
     I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -58,7 +58,7 @@ template <unsigned int BLOCKSIZE,
           unsigned int CHUNKSIZE,
           typename I,
           typename J>
-__device__ void
+ROCSPARSE_DEVICE_ILF void
     csrgemm_symbolic_fill_block_per_row_multipass_device(J n,
                                                          const J* __restrict__ offset_,
                                                          const J* __restrict__ perm,
@@ -313,25 +313,25 @@ template <unsigned int BLOCKSIZE,
           unsigned int CHUNKSIZE,
           typename I,
           typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_symbolic_fill_block_per_row_multipass(J n,
-                                                       const J* __restrict__ offset,
-                                                       const J* __restrict__ perm,
-                                                       const I* __restrict__ csr_row_ptr_A,
-                                                       const J* __restrict__ csr_col_ind_A,
-                                                       const I* __restrict__ csr_row_ptr_B,
-                                                       const J* __restrict__ csr_col_ind_B,
-                                                       const I* __restrict__ csr_row_ptr_D,
-                                                       const J* __restrict__ csr_col_ind_D,
-                                                       const I* __restrict__ csr_row_ptr_C,
-                                                       J* __restrict__ csr_col_ind_C,
-                                                       I* __restrict__ workspace_B,
-                                                       rocsparse_index_base idx_base_A,
-                                                       rocsparse_index_base idx_base_B,
-                                                       rocsparse_index_base idx_base_C,
-                                                       rocsparse_index_base idx_base_D,
-                                                       bool                 mul,
-                                                       bool                 add)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_symbolic_fill_block_per_row_multipass(J n,
+                                                   const J* __restrict__ offset,
+                                                   const J* __restrict__ perm,
+                                                   const I* __restrict__ csr_row_ptr_A,
+                                                   const J* __restrict__ csr_col_ind_A,
+                                                   const I* __restrict__ csr_row_ptr_B,
+                                                   const J* __restrict__ csr_col_ind_B,
+                                                   const I* __restrict__ csr_row_ptr_D,
+                                                   const J* __restrict__ csr_col_ind_D,
+                                                   const I* __restrict__ csr_row_ptr_C,
+                                                   J* __restrict__ csr_col_ind_C,
+                                                   I* __restrict__ workspace_B,
+                                                   rocsparse_index_base idx_base_A,
+                                                   rocsparse_index_base idx_base_B,
+                                                   rocsparse_index_base idx_base_C,
+                                                   rocsparse_index_base idx_base_D,
+                                                   bool                 mul,
+                                                   bool                 add)
 {
     csrgemm_symbolic_fill_block_per_row_multipass_device<BLOCKSIZE, WFSIZE, CHUNKSIZE>(
         n,
@@ -355,7 +355,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS, typename I>
-static __device__ __forceinline__ void csrgemm_symbolic_group_reduce(int tid, I* __restrict__ data)
+ROCSPARSE_DEVICE_ILF void csrgemm_symbolic_group_reduce(int tid, I* __restrict__ data)
 {
     // clang-format off
     if(BLOCKSIZE > 512 && tid < 512) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid + 512) * GROUPS + i]; __syncthreads();
@@ -372,10 +372,8 @@ static __device__ __forceinline__ void csrgemm_symbolic_group_reduce(int tid, I*
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_symbolic_group_reduce_part1(J m,
-                                             I* __restrict__ int_prod,
-                                             J* __restrict__ group_size)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_symbolic_group_reduce_part1(J m, I* __restrict__ int_prod, J* __restrict__ group_size)
 {
     J row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -421,8 +419,11 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS, bool CPLX, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgemm_symbolic_group_reduce_part2(
-    J m, const I* __restrict__ csr_row_ptr, J* __restrict__ group_size, int* __restrict__ workspace)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_symbolic_group_reduce_part2(J m,
+                                         const I* __restrict__ csr_row_ptr,
+                                         J* __restrict__ group_size,
+                                         int* __restrict__ workspace)
 {
     J row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -470,8 +471,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgemm_symbolic_group_reduce
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS, typename I>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_symbolic_group_reduce_part3(I* __restrict__ group_size)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_symbolic_group_reduce_part3(I* __restrict__ group_size)
 {
     // Shared memory for block reduction
     __shared__ I sdata[BLOCKSIZE * GROUPS];
@@ -496,10 +497,10 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_symbolic_max_row_nnz_part1(J m,
-                                            const I* __restrict__ csr_row_ptr,
-                                            J* __restrict__ workspace)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_symbolic_max_row_nnz_part1(J m,
+                                        const I* __restrict__ csr_row_ptr,
+                                        J* __restrict__ workspace)
 {
     J row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -533,8 +534,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename I>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_symbolic_max_row_nnz_part2(I* __restrict__ workspace)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_symbolic_max_row_nnz_part2(I* __restrict__ workspace)
 {
     // Shared memory for block reduction
     __shared__ I sdata[BLOCKSIZE];
@@ -558,7 +559,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 // Hash operation to insert key into hash table
 // Returns true if key has been added
 template <unsigned int HASHVAL, unsigned int HASHSIZE, typename I>
-static __device__ __forceinline__ bool insert_key(I key, I* __restrict__ table, I empty)
+ROCSPARSE_DEVICE_ILF bool insert_key(I key, I* __restrict__ table, I empty)
 {
     // Compute hash
     I hash = (key * HASHVAL) & (HASHSIZE - 1);
@@ -597,24 +598,25 @@ template <unsigned int BLOCKSIZE,
           unsigned int HASHVAL,
           typename I,
           typename J>
-__device__ void csrgemm_symbolic_fill_wf_per_row_device(J m,
-                                                        J nk,
-                                                        const J* __restrict__ offset,
-                                                        const J* __restrict__ perm,
-                                                        const I* __restrict__ csr_row_ptr_A,
-                                                        const J* __restrict__ csr_col_ind_A,
-                                                        const I* __restrict__ csr_row_ptr_B,
-                                                        const J* __restrict__ csr_col_ind_B,
-                                                        const I* __restrict__ csr_row_ptr_D,
-                                                        const J* __restrict__ csr_col_ind_D,
-                                                        const I* __restrict__ csr_row_ptr_C,
-                                                        J* __restrict__ csr_col_ind_C,
-                                                        rocsparse_index_base idx_base_A,
-                                                        rocsparse_index_base idx_base_B,
-                                                        rocsparse_index_base idx_base_C,
-                                                        rocsparse_index_base idx_base_D,
-                                                        bool                 mul,
-                                                        bool                 add)
+ROCSPARSE_DEVICE_ILF void
+    csrgemm_symbolic_fill_wf_per_row_device(J m,
+                                            J nk,
+                                            const J* __restrict__ offset,
+                                            const J* __restrict__ perm,
+                                            const I* __restrict__ csr_row_ptr_A,
+                                            const J* __restrict__ csr_col_ind_A,
+                                            const I* __restrict__ csr_row_ptr_B,
+                                            const J* __restrict__ csr_col_ind_B,
+                                            const I* __restrict__ csr_row_ptr_D,
+                                            const J* __restrict__ csr_col_ind_D,
+                                            const I* __restrict__ csr_row_ptr_C,
+                                            J* __restrict__ csr_col_ind_C,
+                                            rocsparse_index_base idx_base_A,
+                                            rocsparse_index_base idx_base_B,
+                                            rocsparse_index_base idx_base_C,
+                                            rocsparse_index_base idx_base_D,
+                                            bool                 mul,
+                                            bool                 add)
 {
     // Lane id
     int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -746,30 +748,30 @@ template <unsigned int BLOCKSIZE,
           unsigned int HASHVAL,
           typename I,
           typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_symbolic_fill_wf_per_row(J m,
-                                          J nk,
-                                          const J* __restrict__ offset,
-                                          const J* __restrict__ perm,
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_symbolic_fill_wf_per_row(J m,
+                                      J nk,
+                                      const J* __restrict__ offset,
+                                      const J* __restrict__ perm,
 
-                                          const I* __restrict__ csr_row_ptr_A,
-                                          const J* __restrict__ csr_col_ind_A,
+                                      const I* __restrict__ csr_row_ptr_A,
+                                      const J* __restrict__ csr_col_ind_A,
 
-                                          const I* __restrict__ csr_row_ptr_B,
-                                          const J* __restrict__ csr_col_ind_B,
+                                      const I* __restrict__ csr_row_ptr_B,
+                                      const J* __restrict__ csr_col_ind_B,
 
-                                          const I* __restrict__ csr_row_ptr_D,
-                                          const J* __restrict__ csr_col_ind_D,
+                                      const I* __restrict__ csr_row_ptr_D,
+                                      const J* __restrict__ csr_col_ind_D,
 
-                                          const I* __restrict__ csr_row_ptr_C,
-                                          J* __restrict__ csr_col_ind_C,
+                                      const I* __restrict__ csr_row_ptr_C,
+                                      J* __restrict__ csr_col_ind_C,
 
-                                          rocsparse_index_base idx_base_A,
-                                          rocsparse_index_base idx_base_B,
-                                          rocsparse_index_base idx_base_C,
-                                          rocsparse_index_base idx_base_D,
-                                          bool                 mul,
-                                          bool                 add)
+                                      rocsparse_index_base idx_base_A,
+                                      rocsparse_index_base idx_base_B,
+                                      rocsparse_index_base idx_base_C,
+                                      rocsparse_index_base idx_base_D,
+                                      bool                 mul,
+                                      bool                 add)
 {
     csrgemm_symbolic_fill_wf_per_row_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(m,
                                                                                   nk,
@@ -798,23 +800,24 @@ template <unsigned int BLOCKSIZE,
           unsigned int HASHVAL,
           typename I,
           typename J>
-__device__ void csrgemm_symbolic_fill_block_per_row_device(J nk,
-                                                           const J* __restrict__ offset_,
-                                                           const J* __restrict__ perm,
-                                                           const I* __restrict__ csr_row_ptr_A,
-                                                           const J* __restrict__ csr_col_ind_A,
-                                                           const I* __restrict__ csr_row_ptr_B,
-                                                           const J* __restrict__ csr_col_ind_B,
-                                                           const I* __restrict__ csr_row_ptr_D,
-                                                           const J* __restrict__ csr_col_ind_D,
-                                                           const I* __restrict__ csr_row_ptr_C,
-                                                           J* __restrict__ csr_col_ind_C,
-                                                           rocsparse_index_base idx_base_A,
-                                                           rocsparse_index_base idx_base_B,
-                                                           rocsparse_index_base idx_base_C,
-                                                           rocsparse_index_base idx_base_D,
-                                                           bool                 mul,
-                                                           bool                 add)
+ROCSPARSE_DEVICE_ILF void
+    csrgemm_symbolic_fill_block_per_row_device(J nk,
+                                               const J* __restrict__ offset_,
+                                               const J* __restrict__ perm,
+                                               const I* __restrict__ csr_row_ptr_A,
+                                               const J* __restrict__ csr_col_ind_A,
+                                               const I* __restrict__ csr_row_ptr_B,
+                                               const J* __restrict__ csr_col_ind_B,
+                                               const I* __restrict__ csr_row_ptr_D,
+                                               const J* __restrict__ csr_col_ind_D,
+                                               const I* __restrict__ csr_row_ptr_C,
+                                               J* __restrict__ csr_col_ind_C,
+                                               rocsparse_index_base idx_base_A,
+                                               rocsparse_index_base idx_base_B,
+                                               rocsparse_index_base idx_base_C,
+                                               rocsparse_index_base idx_base_D,
+                                               bool                 mul,
+                                               bool                 add)
 {
     // Lane id
     int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -988,24 +991,24 @@ template <unsigned int BLOCKSIZE,
           unsigned int HASHVAL,
           typename I,
           typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgemm_symbolic_fill_block_per_row(J nk,
-                                             const J* __restrict__ offset,
-                                             const J* __restrict__ perm,
-                                             const I* __restrict__ csr_row_ptr_A,
-                                             const J* __restrict__ csr_col_ind_A,
-                                             const I* __restrict__ csr_row_ptr_B,
-                                             const J* __restrict__ csr_col_ind_B,
-                                             const I* __restrict__ csr_row_ptr_D,
-                                             const J* __restrict__ csr_col_ind_D,
-                                             const I* __restrict__ csr_row_ptr_C,
-                                             J* __restrict__ csr_col_ind_C,
-                                             rocsparse_index_base idx_base_A,
-                                             rocsparse_index_base idx_base_B,
-                                             rocsparse_index_base idx_base_C,
-                                             rocsparse_index_base idx_base_D,
-                                             bool                 mul,
-                                             bool                 add)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_symbolic_fill_block_per_row(J nk,
+                                         const J* __restrict__ offset,
+                                         const J* __restrict__ perm,
+                                         const I* __restrict__ csr_row_ptr_A,
+                                         const J* __restrict__ csr_col_ind_A,
+                                         const I* __restrict__ csr_row_ptr_B,
+                                         const J* __restrict__ csr_col_ind_B,
+                                         const I* __restrict__ csr_row_ptr_D,
+                                         const J* __restrict__ csr_col_ind_D,
+                                         const I* __restrict__ csr_row_ptr_C,
+                                         J* __restrict__ csr_col_ind_C,
+                                         rocsparse_index_base idx_base_A,
+                                         rocsparse_index_base idx_base_B,
+                                         rocsparse_index_base idx_base_C,
+                                         rocsparse_index_base idx_base_D,
+                                         bool                 mul,
+                                         bool                 add)
 {
     csrgemm_symbolic_fill_block_per_row_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(nk,
                                                                                      offset,

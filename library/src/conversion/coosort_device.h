@@ -28,10 +28,11 @@
 
 // COO to CSR matrix conversion kernel
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coosort_permute_kernel(rocsparse_int        nnz,
-                                                                          const rocsparse_int* in,
-                                                                          const rocsparse_int* perm,
-                                                                          rocsparse_int*       out)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void coosort_permute_kernel(rocsparse_int        nnz,
+                            const rocsparse_int* in,
+                            const rocsparse_int* perm,
+                            rocsparse_int*       out)
 {
     rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

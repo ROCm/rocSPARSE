@@ -30,7 +30,7 @@ template <rocsparse_int BSR_BLOCK_DIM,
           rocsparse_int BLK_SIZE_Y,
           rocsparse_int UNROLL_SIZE_Y,
           typename T>
-static __device__ void
+ROCSPARSE_DEVICE_ILF void
     bsrmm_large_blockdim_device_ext(rocsparse_direction direction,
                                     rocsparse_operation trans_B,
                                     rocsparse_int       Mb,

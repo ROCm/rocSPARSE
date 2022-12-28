@@ -28,16 +28,16 @@
 
 // ELL SpMV for general, non-transposed matrices
 template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
-static __device__ void ellmvn_device(I                    m,
-                                     I                    n,
-                                     I                    ell_width,
-                                     T                    alpha,
-                                     const I*             ell_col_ind,
-                                     const A*             ell_val,
-                                     const X*             x,
-                                     T                    beta,
-                                     Y*                   y,
-                                     rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void ellmvn_device(I                    m,
+                                        I                    n,
+                                        I                    ell_width,
+                                        T                    alpha,
+                                        const I*             ell_col_ind,
+                                        const A*             ell_val,
+                                        const X*             x,
+                                        T                    beta,
+                                        Y*                   y,
+                                        rocsparse_index_base idx_base)
 {
     I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 
@@ -76,7 +76,7 @@ static __device__ void ellmvn_device(I                    m,
 
 // Scale
 template <typename I, typename Y, typename T>
-static __device__ void ellmvt_scale_device(I size, T scalar, Y* data)
+ROCSPARSE_DEVICE_ILF void ellmvt_scale_device(I size, T scalar, Y* data)
 {
     I idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -90,16 +90,16 @@ static __device__ void ellmvt_scale_device(I size, T scalar, Y* data)
 
 // ELL SpMV for general, (conjugate) transposed matrices
 template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
-static __device__ void ellmvt_device(rocsparse_operation  trans,
-                                     I                    m,
-                                     I                    n,
-                                     I                    ell_width,
-                                     T                    alpha,
-                                     const I*             ell_col_ind,
-                                     const A*             ell_val,
-                                     const X*             x,
-                                     Y*                   y,
-                                     rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void ellmvt_device(rocsparse_operation  trans,
+                                        I                    m,
+                                        I                    n,
+                                        I                    ell_width,
+                                        T                    alpha,
+                                        const I*             ell_col_ind,
+                                        const A*             ell_val,
+                                        const X*             x,
+                                        Y*                   y,
+                                        rocsparse_index_base idx_base)
 {
     I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 

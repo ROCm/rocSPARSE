@@ -32,29 +32,29 @@
 #include <rocprim/rocprim.hpp>
 
 template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename T, typename U>
-__launch_bounds__(DIM_X* DIM_Y) ROCSPARSE_KERNEL
-    void prune_dense2csr_nnz_kernel2(rocsparse_int m,
-                                     rocsparse_int n,
-                                     const T* __restrict__ A,
-                                     rocsparse_int lda,
-                                     U             threshold_device_host,
-                                     rocsparse_int* __restrict__ nnz_per_rows)
+ROCSPARSE_KERNEL(DIM_X* DIM_Y)
+void prune_dense2csr_nnz_kernel2(rocsparse_int m,
+                                 rocsparse_int n,
+                                 const T* __restrict__ A,
+                                 rocsparse_int lda,
+                                 U             threshold_device_host,
+                                 rocsparse_int* __restrict__ nnz_per_rows)
 {
     auto threshold = load_scalar_device_host(threshold_device_host);
     prune_dense2csr_nnz_device<DIM_X, DIM_Y>(m, n, A, lda, threshold, nnz_per_rows);
 }
 
 template <rocsparse_int NUMROWS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
-__launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) ROCSPARSE_KERNEL
-    void prune_dense2csr_kernel2_device_pointer(rocsparse_index_base base,
-                                                rocsparse_int        m,
-                                                rocsparse_int        n,
-                                                const T* __restrict__ A,
-                                                rocsparse_int lda,
-                                                const T*      threshold,
-                                                T* __restrict__ csr_val,
-                                                const rocsparse_int* __restrict__ csr_row_ptr,
-                                                rocsparse_int* __restrict__ csr_col_ind)
+ROCSPARSE_KERNEL(WF_SIZE* NUMROWS_PER_BLOCK)
+void prune_dense2csr_kernel2_device_pointer(rocsparse_index_base base,
+                                            rocsparse_int        m,
+                                            rocsparse_int        n,
+                                            const T* __restrict__ A,
+                                            rocsparse_int lda,
+                                            const T*      threshold,
+                                            T* __restrict__ csr_val,
+                                            const rocsparse_int* __restrict__ csr_row_ptr,
+                                            rocsparse_int* __restrict__ csr_col_ind)
 {
     prune_dense2csr_device<NUMROWS_PER_BLOCK, WF_SIZE>(
         base, m, n, A, lda, *threshold, csr_val, csr_row_ptr, csr_col_ind);

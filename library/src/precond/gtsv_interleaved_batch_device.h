@@ -38,16 +38,16 @@
 // [ 0  0  0  0  0  0  a7 b7]
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_interleaved_batch_thomas_kernel(rocsparse_int m,
-                                              rocsparse_int batch_count,
-                                              rocsparse_int batch_stride,
-                                              const T* __restrict__ a0,
-                                              const T* __restrict__ b0,
-                                              const T* __restrict__ c0,
-                                              T* __restrict__ c1,
-                                              T* __restrict__ x1,
-                                              T* __restrict__ x)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_interleaved_batch_thomas_kernel(rocsparse_int m,
+                                          rocsparse_int batch_count,
+                                          rocsparse_int batch_stride,
+                                          const T* __restrict__ a0,
+                                          const T* __restrict__ b0,
+                                          const T* __restrict__ c0,
+                                          T* __restrict__ c1,
+                                          T* __restrict__ x1,
+                                          T* __restrict__ x)
 {
     rocsparse_int gid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
@@ -86,16 +86,16 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_interleaved_batch_lu_kernel(rocsparse_int m,
-                                          rocsparse_int batch_count,
-                                          rocsparse_int batch_stride,
-                                          T* __restrict__ dl,
-                                          T* __restrict__ d,
-                                          T* __restrict__ du,
-                                          T* __restrict__ u2,
-                                          rocsparse_int* __restrict__ p,
-                                          T* __restrict__ x)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_interleaved_batch_lu_kernel(rocsparse_int m,
+                                      rocsparse_int batch_count,
+                                      rocsparse_int batch_stride,
+                                      T* __restrict__ dl,
+                                      T* __restrict__ d,
+                                      T* __restrict__ du,
+                                      T* __restrict__ u2,
+                                      rocsparse_int* __restrict__ p,
+                                      T* __restrict__ x)
 {
     rocsparse_int gid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
@@ -191,15 +191,15 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_interleaved_batch_qr_kernel(rocsparse_int m,
-                                          rocsparse_int batch_count,
-                                          rocsparse_int batch_stride,
-                                          const T* __restrict__ dl,
-                                          T* __restrict__ d,
-                                          T* __restrict__ du,
-                                          T* __restrict__ r2,
-                                          T* __restrict__ x)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_interleaved_batch_qr_kernel(rocsparse_int m,
+                                      rocsparse_int batch_count,
+                                      rocsparse_int batch_stride,
+                                      const T* __restrict__ dl,
+                                      T* __restrict__ d,
+                                      T* __restrict__ du,
+                                      T* __restrict__ r2,
+                                      T* __restrict__ x)
 {
     rocsparse_int gid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 

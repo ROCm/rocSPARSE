@@ -25,18 +25,18 @@
 #include "rocsparse_bsrxmv_spzl.hpp"
 
 template <unsigned int BLOCKSIZE, rocsparse_direction DIR, typename I, typename J>
-__device__ void sbsrxmvn_5x5_device(J     mb,
-                                    float alpha,
-                                    J     size_of_mask,
-                                    const J* __restrict__ bsr_mask_ptr,
-                                    const I* __restrict__ bsr_row_ptr,
-                                    const I* __restrict__ bsr_end_ptr,
-                                    const J* __restrict__ bsr_col_ind,
-                                    const float* __restrict__ bsr_val,
-                                    const float* __restrict__ x,
-                                    float beta,
-                                    float* __restrict__ y,
-                                    rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void sbsrxmvn_5x5_device(J     mb,
+                                              float alpha,
+                                              J     size_of_mask,
+                                              const J* __restrict__ bsr_mask_ptr,
+                                              const I* __restrict__ bsr_row_ptr,
+                                              const I* __restrict__ bsr_end_ptr,
+                                              const J* __restrict__ bsr_col_ind,
+                                              const float* __restrict__ bsr_val,
+                                              const float* __restrict__ x,
+                                              float beta,
+                                              float* __restrict__ y,
+                                              rocsparse_index_base idx_base)
 
 {
     static constexpr int block_size    = 5;
@@ -110,19 +110,19 @@ template <unsigned int BLOCKSIZE,
           typename A,
           typename X,
           typename Y>
-__device__ void bsrxmvn_5x5_device(J                   mb,
-                                   rocsparse_direction dir,
-                                   T                   alpha,
-                                   J                   size_of_mask,
-                                   const J* __restrict__ bsr_mask_ptr,
-                                   const I* __restrict__ bsr_row_ptr,
-                                   const I* __restrict__ bsr_end_ptr,
-                                   const J* __restrict__ bsr_col_ind,
-                                   const A* __restrict__ bsr_val,
-                                   const X* __restrict__ x,
-                                   T beta,
-                                   Y* __restrict__ y,
-                                   rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void bsrxmvn_5x5_device(J                   mb,
+                                             rocsparse_direction dir,
+                                             T                   alpha,
+                                             J                   size_of_mask,
+                                             const J* __restrict__ bsr_mask_ptr,
+                                             const I* __restrict__ bsr_row_ptr,
+                                             const I* __restrict__ bsr_end_ptr,
+                                             const J* __restrict__ bsr_col_ind,
+                                             const A* __restrict__ bsr_val,
+                                             const X* __restrict__ x,
+                                             T beta,
+                                             Y* __restrict__ y,
+                                             rocsparse_index_base idx_base)
 {
     // BSR block dimension
     static constexpr int BSRDIM = 5;
@@ -245,20 +245,20 @@ template <unsigned int BLOCKSIZE,
           typename X,
           typename Y,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrxmvn_5x5_kernel(J                   mb,
-                            rocsparse_direction dir,
-                            U                   alpha_device_host,
-                            J                   size_of_mask,
-                            const J* __restrict__ bsr_mask_ptr,
-                            const I* __restrict__ bsr_row_ptr,
-                            const I* __restrict__ bsr_end_ptr,
-                            const J* __restrict__ bsr_col_ind,
-                            const A* __restrict__ bsr_val,
-                            const X* __restrict__ x,
-                            U beta_device_host,
-                            Y* __restrict__ y,
-                            rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrxmvn_5x5_kernel(J                   mb,
+                        rocsparse_direction dir,
+                        U                   alpha_device_host,
+                        J                   size_of_mask,
+                        const J* __restrict__ bsr_mask_ptr,
+                        const I* __restrict__ bsr_row_ptr,
+                        const I* __restrict__ bsr_end_ptr,
+                        const J* __restrict__ bsr_col_ind,
+                        const A* __restrict__ bsr_val,
+                        const X* __restrict__ x,
+                        U beta_device_host,
+                        Y* __restrict__ y,
+                        rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
@@ -281,19 +281,19 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, rocsparse_direction DIR, typename I, typename J, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void sbsrxmvn_5x5_kernel(J mb,
-                             U alpha_device_host,
-                             J size_of_mask,
-                             const J* __restrict__ bsr_mask_ptr,
-                             const I* __restrict__ bsr_row_ptr,
-                             const I* __restrict__ bsr_end_ptr,
-                             const J* __restrict__ bsr_col_ind,
-                             const float* __restrict__ bsr_val,
-                             const float* __restrict__ x,
-                             U beta_device_host,
-                             float* __restrict__ y,
-                             rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void sbsrxmvn_5x5_kernel(J mb,
+                         U alpha_device_host,
+                         J size_of_mask,
+                         const J* __restrict__ bsr_mask_ptr,
+                         const I* __restrict__ bsr_row_ptr,
+                         const I* __restrict__ bsr_end_ptr,
+                         const J* __restrict__ bsr_col_ind,
+                         const float* __restrict__ bsr_val,
+                         const float* __restrict__ x,
+                         U beta_device_host,
+                         float* __restrict__ y,
+                         rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);

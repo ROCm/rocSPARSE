@@ -27,7 +27,7 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, unsigned int WFSIZE, typename T>
-__device__ void
+ROCSPARSE_DEVICE_ILF void
     bsrgeam_wf_per_row_multipass_2_3_device(rocsparse_direction dir,
                                             rocsparse_int       mb,
                                             rocsparse_int       nb,
@@ -293,24 +293,25 @@ __device__ void
 // Splitting row into several chunks such that we can use shared memory to store whether
 // a column index is populated or not.
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__device__ void bsrgeam_wf_per_row_multipass_device(rocsparse_direction dir,
-                                                    rocsparse_int       mb,
-                                                    rocsparse_int       nb,
-                                                    rocsparse_int       block_dim,
-                                                    T                   alpha,
-                                                    const rocsparse_int* __restrict__ bsr_row_ptr_A,
-                                                    const rocsparse_int* __restrict__ bsr_col_ind_A,
-                                                    const T* __restrict__ bsr_val_A,
-                                                    T beta,
-                                                    const rocsparse_int* __restrict__ bsr_row_ptr_B,
-                                                    const rocsparse_int* __restrict__ bsr_col_ind_B,
-                                                    const T* __restrict__ bsr_val_B,
-                                                    const rocsparse_int* __restrict__ bsr_row_ptr_C,
-                                                    rocsparse_int* __restrict__ bsr_col_ind_C,
-                                                    T* __restrict__ bsr_val_C,
-                                                    rocsparse_index_base idx_base_A,
-                                                    rocsparse_index_base idx_base_B,
-                                                    rocsparse_index_base idx_base_C)
+ROCSPARSE_DEVICE_ILF void
+    bsrgeam_wf_per_row_multipass_device(rocsparse_direction dir,
+                                        rocsparse_int       mb,
+                                        rocsparse_int       nb,
+                                        rocsparse_int       block_dim,
+                                        T                   alpha,
+                                        const rocsparse_int* __restrict__ bsr_row_ptr_A,
+                                        const rocsparse_int* __restrict__ bsr_col_ind_A,
+                                        const T* __restrict__ bsr_val_A,
+                                        T beta,
+                                        const rocsparse_int* __restrict__ bsr_row_ptr_B,
+                                        const rocsparse_int* __restrict__ bsr_col_ind_B,
+                                        const T* __restrict__ bsr_val_B,
+                                        const rocsparse_int* __restrict__ bsr_row_ptr_C,
+                                        rocsparse_int* __restrict__ bsr_col_ind_C,
+                                        T* __restrict__ bsr_val_C,
+                                        rocsparse_index_base idx_base_A,
+                                        rocsparse_index_base idx_base_B,
+                                        rocsparse_index_base idx_base_C)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int bid = hipBlockIdx_x;
@@ -502,7 +503,7 @@ __device__ void bsrgeam_wf_per_row_multipass_device(rocsparse_direction dir,
 // Splitting row into several chunks such that we can use shared memory to store whether
 // a column index is populated or not.
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__device__ void
+ROCSPARSE_DEVICE_ILF void
     bsrgeam_block_per_row_multipass_device(rocsparse_direction dir,
                                            rocsparse_int       mb,
                                            rocsparse_int       nb,
@@ -786,7 +787,7 @@ __device__ void
 // Splitting row into several chunks such that we can use shared memory to store whether
 // a column index is populated or not.
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__device__ void
+ROCSPARSE_DEVICE_ILF void
     bsrgeam_block_per_row_multipass_device2(rocsparse_direction dir,
                                             rocsparse_int       mb,
                                             rocsparse_int       nb,

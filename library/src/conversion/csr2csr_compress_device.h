@@ -29,8 +29,11 @@
 #include "common.h"
 
 template <rocsparse_int BLOCK_SIZE, rocsparse_int WF_SIZE, rocsparse_int LOOPS, typename T>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL void csr2csr_compress_fill_warp_start_device(
-    rocsparse_int nnz_A, const T* __restrict__ csr_val_A, int* __restrict__ warp_start, T tol)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void csr2csr_compress_fill_warp_start_device(rocsparse_int nnz_A,
+                                             const T* __restrict__ csr_val_A,
+                                             int* __restrict__ warp_start,
+                                             T tol)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int bid = hipBlockIdx_x;
@@ -66,16 +69,16 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL void csr2csr_compress_fill_warp_s
 }
 
 template <rocsparse_int BLOCK_SIZE, rocsparse_int WF_SIZE, rocsparse_int LOOPS, typename T>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void csr2csr_compress_use_warp_start_device(rocsparse_int        nnz_A,
-                                                rocsparse_index_base idx_base_A,
-                                                const T* __restrict__ csr_val_A,
-                                                const rocsparse_int* __restrict__ csr_col_ind_A,
-                                                rocsparse_index_base idx_base_C,
-                                                T* __restrict__ csr_val_C,
-                                                rocsparse_int* __restrict__ csr_col_ind_C,
-                                                int* __restrict__ warp_start,
-                                                T tol)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void csr2csr_compress_use_warp_start_device(rocsparse_int        nnz_A,
+                                            rocsparse_index_base idx_base_A,
+                                            const T* __restrict__ csr_val_A,
+                                            const rocsparse_int* __restrict__ csr_col_ind_A,
+                                            rocsparse_index_base idx_base_C,
+                                            T* __restrict__ csr_val_C,
+                                            rocsparse_int* __restrict__ csr_col_ind_C,
+                                            int* __restrict__ warp_start,
+                                            T tol)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int bid = hipBlockIdx_x;
@@ -117,10 +120,10 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
 }
 
 template <rocsparse_int BLOCK_SIZE>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void fill_row_ptr_device(rocsparse_int        m,
-                             rocsparse_index_base idx_base_C,
-                             rocsparse_int* __restrict__ csr_row_ptr_C)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void fill_row_ptr_device(rocsparse_int        m,
+                         rocsparse_index_base idx_base_C,
+                         rocsparse_int* __restrict__ csr_row_ptr_C)
 {
     rocsparse_int tid = hipThreadIdx_x + hipBlockIdx_x * BLOCK_SIZE;
 
@@ -138,11 +141,11 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
 }
 
 template <rocsparse_int BLOCK_SIZE>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void fill_row_ptr_device(rocsparse_int        m,
-                             rocsparse_index_base idx_base_C,
-                             const rocsparse_int* __restrict__ nnz_per_row,
-                             rocsparse_int* __restrict__ csr_row_ptr_C)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void fill_row_ptr_device(rocsparse_int        m,
+                         rocsparse_index_base idx_base_C,
+                         const rocsparse_int* __restrict__ nnz_per_row,
+                         rocsparse_int* __restrict__ csr_row_ptr_C)
 {
     rocsparse_int tid = hipThreadIdx_x + hipBlockIdx_x * BLOCK_SIZE;
 
@@ -164,18 +167,18 @@ template <rocsparse_int BLOCK_SIZE,
           rocsparse_int SEGMENT_SIZE,
           rocsparse_int WF_SIZE,
           typename T>
-__device__ void csr2csr_compress_device(rocsparse_int        m,
-                                        rocsparse_int        n,
-                                        rocsparse_index_base idx_base_A,
-                                        const T* __restrict__ csr_val_A,
-                                        const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                        const rocsparse_int* __restrict__ csr_col_ind_A,
-                                        rocsparse_int        nnz_A,
-                                        rocsparse_index_base idx_base_C,
-                                        T* __restrict__ csr_val_C,
-                                        const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                        rocsparse_int* __restrict__ csr_col_ind_C,
-                                        T tol)
+ROCSPARSE_DEVICE_ILF void csr2csr_compress_device(rocsparse_int        m,
+                                                  rocsparse_int        n,
+                                                  rocsparse_index_base idx_base_A,
+                                                  const T* __restrict__ csr_val_A,
+                                                  const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                                  const rocsparse_int* __restrict__ csr_col_ind_A,
+                                                  rocsparse_int        nnz_A,
+                                                  rocsparse_index_base idx_base_C,
+                                                  T* __restrict__ csr_val_C,
+                                                  const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                                  rocsparse_int* __restrict__ csr_col_ind_C,
+                                                  T tol)
 {
     const rocsparse_int segment_id      = hipThreadIdx_x / SEGMENT_SIZE;
     const rocsparse_int segment_lane_id = hipThreadIdx_x % SEGMENT_SIZE;

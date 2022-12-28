@@ -27,7 +27,8 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgeam_index_base(rocsparse_int* nnz)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgeam_index_base(rocsparse_int* nnz)
 {
     --(*nnz);
 }
@@ -36,16 +37,16 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgeam_index_base(rocsparse_
 // Splitting row into several chunks such that we can use shared memory to store whether
 // a column index is populated or not.
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrgeam_nnz_multipass_device(rocsparse_int m,
-                                      rocsparse_int n,
-                                      const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                      const rocsparse_int* __restrict__ csr_col_ind_A,
-                                      const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                      const rocsparse_int* __restrict__ csr_col_ind_B,
-                                      rocsparse_int* __restrict__ row_nnz,
-                                      rocsparse_index_base idx_base_A,
-                                      rocsparse_index_base idx_base_B)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgeam_nnz_multipass_device(rocsparse_int m,
+                                  rocsparse_int n,
+                                  const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                  const rocsparse_int* __restrict__ csr_col_ind_A,
+                                  const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                  const rocsparse_int* __restrict__ csr_col_ind_B,
+                                  rocsparse_int* __restrict__ row_nnz,
+                                  rocsparse_index_base idx_base_A,
+                                  rocsparse_index_base idx_base_B)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -186,22 +187,23 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 // Splitting row into several chunks such that we can use shared memory to store whether
 // a column index is populated or not.
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T>
-__device__ void csrgeam_fill_multipass_device(rocsparse_int m,
-                                              rocsparse_int n,
-                                              T             alpha,
-                                              const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                              const rocsparse_int* __restrict__ csr_col_ind_A,
-                                              const T* __restrict__ csr_val_A,
-                                              T beta,
-                                              const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                              const rocsparse_int* __restrict__ csr_col_ind_B,
-                                              const T* __restrict__ csr_val_B,
-                                              const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                              rocsparse_int* __restrict__ csr_col_ind_C,
-                                              T* __restrict__ csr_val_C,
-                                              rocsparse_index_base idx_base_A,
-                                              rocsparse_index_base idx_base_B,
-                                              rocsparse_index_base idx_base_C)
+ROCSPARSE_DEVICE_ILF void
+    csrgeam_fill_multipass_device(rocsparse_int m,
+                                  rocsparse_int n,
+                                  T             alpha,
+                                  const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                  const rocsparse_int* __restrict__ csr_col_ind_A,
+                                  const T* __restrict__ csr_val_A,
+                                  T beta,
+                                  const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                  const rocsparse_int* __restrict__ csr_col_ind_B,
+                                  const T* __restrict__ csr_val_B,
+                                  const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                  rocsparse_int* __restrict__ csr_col_ind_C,
+                                  T* __restrict__ csr_val_C,
+                                  rocsparse_index_base idx_base_A,
+                                  rocsparse_index_base idx_base_B,
+                                  rocsparse_index_base idx_base_C)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);

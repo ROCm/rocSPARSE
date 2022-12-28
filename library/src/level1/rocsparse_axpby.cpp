@@ -28,8 +28,8 @@
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void axpby_scale_kernel(I size, U alpha_device_host, T* __restrict__ x)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void axpby_scale_kernel(I size, U alpha_device_host, T* __restrict__ x)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != static_cast<T>(1))

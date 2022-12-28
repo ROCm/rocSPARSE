@@ -797,8 +797,8 @@ __device__ void dense_transpose_device(
 
 // Perform dense matrix back transposition
 template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
-__launch_bounds__(DIMX* DIMY) ROCSPARSE_KERNEL
-    void dense_transpose_back(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
+ROCSPARSE_KERNEL(DIMX* DIMY)
+void dense_transpose_back(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
 {
     int lid = hipThreadIdx_x & (DIMX - 1);
     int wid = hipThreadIdx_x / DIMX;
@@ -838,12 +838,13 @@ __launch_bounds__(DIMX* DIMY) ROCSPARSE_KERNEL
 
 // BSR gather functionality to permute the BSR values array
 template <unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM, typename I, typename T>
-__launch_bounds__(WFSIZE* DIMY) ROCSPARSE_KERNEL void bsr_gather(rocsparse_direction dir,
-                                                                 I                   nnzb,
-                                                                 const I* __restrict__ perm,
-                                                                 const T* __restrict__ bsr_val_A,
-                                                                 T* __restrict__ bsr_val_T,
-                                                                 I block_dim)
+ROCSPARSE_KERNEL(WFSIZE* DIMY)
+void bsr_gather(rocsparse_direction dir,
+                I                   nnzb,
+                const I* __restrict__ perm,
+                const T* __restrict__ bsr_val_A,
+                T* __restrict__ bsr_val_T,
+                I block_dim)
 {
     int lid = threadIdx.x & (BSRDIM - 1);
     int wid = threadIdx.x / BSRDIM;
@@ -873,8 +874,8 @@ __launch_bounds__(WFSIZE* DIMY) ROCSPARSE_KERNEL void bsr_gather(rocsparse_direc
 
 // Set array to be filled with value
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void set_array_to_value(I m, T* __restrict__ array, T value)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void set_array_to_value(I m, T* __restrict__ array, T value)
 {
     I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
@@ -888,7 +889,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 // Scale array by value
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void scale_array(I m, T* __restrict__ array, T value)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void scale_array(I m, T* __restrict__ array, T value)
 {
     I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
@@ -901,8 +903,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void scale_array(I m, T* __restric
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void scale_array(I m, T* __restrict__ array, const T* value)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void scale_array(I m, T* __restrict__ array, const T* value)
 {
     I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
@@ -919,7 +921,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 // conjugate values in array
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void conjugate(I m, T* __restrict__ array)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void conjugate(I m, T* __restrict__ array)
 {
     I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
@@ -932,8 +935,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void conjugate(I m, T* __restrict_
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csr_max_nnz_per_row(J m, const I* __restrict__ csr_row_ptr, J* __restrict__ max_nnz)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr_max_nnz_per_row(J m, const I* __restrict__ csr_row_ptr, J* __restrict__ max_nnz)
 {
     int tid = hipThreadIdx_x;
     J   gid = tid + BLOCKSIZE * hipBlockIdx_x;

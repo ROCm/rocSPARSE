@@ -37,28 +37,28 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmmnt_merge_main_kernel(bool conj_A,
-                                   bool conj_B,
-                                   J    ncol,
-                                   J    m,
-                                   J    n,
-                                   J    k,
-                                   I    nnz,
-                                   U    alpha_device_host,
-                                   J* __restrict__ row_block_red,
-                                   T* __restrict__ val_block_red,
-                                   const J* __restrict__ row_limits,
-                                   const I* __restrict__ csr_row_ptr,
-                                   const J* __restrict__ csr_col_ind,
-                                   const T* __restrict__ csr_val,
-                                   const T* __restrict__ B,
-                                   J ldb,
-                                   U beta_device_host,
-                                   T* __restrict__ C,
-                                   J                    ldc,
-                                   rocsparse_order      order,
-                                   rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrmmnt_merge_main_kernel(bool conj_A,
+                               bool conj_B,
+                               J    ncol,
+                               J    m,
+                               J    n,
+                               J    k,
+                               I    nnz,
+                               U    alpha_device_host,
+                               J* __restrict__ row_block_red,
+                               T* __restrict__ val_block_red,
+                               const J* __restrict__ row_limits,
+                               const I* __restrict__ csr_row_ptr,
+                               const J* __restrict__ csr_col_ind,
+                               const T* __restrict__ csr_val,
+                               const T* __restrict__ B,
+                               J ldb,
+                               U beta_device_host,
+                               T* __restrict__ C,
+                               J                    ldc,
+                               rocsparse_order      order,
+                               rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
@@ -99,28 +99,28 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmmnt_merge_remainder_kernel(bool conj_A,
-                                        bool conj_B,
-                                        J    offset,
-                                        J    m,
-                                        J    n,
-                                        J    k,
-                                        I    nnz,
-                                        U    alpha_device_host,
-                                        J* __restrict__ row_block_red,
-                                        T* __restrict__ val_block_red,
-                                        const J* __restrict__ row_limits,
-                                        const I* __restrict__ csr_row_ptr,
-                                        const J* __restrict__ csr_col_ind,
-                                        const T* __restrict__ csr_val,
-                                        const T* __restrict__ B,
-                                        J ldb,
-                                        U beta_device_host,
-                                        T* __restrict__ C,
-                                        J                    ldc,
-                                        rocsparse_order      order,
-                                        rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrmmnt_merge_remainder_kernel(bool conj_A,
+                                    bool conj_B,
+                                    J    offset,
+                                    J    m,
+                                    J    n,
+                                    J    k,
+                                    I    nnz,
+                                    U    alpha_device_host,
+                                    J* __restrict__ row_block_red,
+                                    T* __restrict__ val_block_red,
+                                    const J* __restrict__ row_limits,
+                                    const I* __restrict__ csr_row_ptr,
+                                    const J* __restrict__ csr_col_ind,
+                                    const T* __restrict__ csr_val,
+                                    const T* __restrict__ B,
+                                    J ldb,
+                                    U beta_device_host,
+                                    T* __restrict__ C,
+                                    J                    ldc,
+                                    rocsparse_order      order,
+                                    rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
@@ -155,7 +155,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrmmnn_merge_scale(
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrmmnn_merge_scale(
     I m, I n, U beta_device_host, T* __restrict__ data, I ld, rocsparse_order order)
 {
     auto beta = load_scalar_device_host(beta_device_host);

@@ -25,7 +25,8 @@
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE, typename I>
-__launch_bounds__(BLOCKSIZE) static __global__ void kernel1(I n_, const I* p_, I* q_)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel1(I n_, const I* p_, I* q_)
 {
     I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
     if(idx >= n_)
@@ -37,7 +38,8 @@ __launch_bounds__(BLOCKSIZE) static __global__ void kernel1(I n_, const I* p_, I
 }
 
 template <unsigned int BLOCKSIZE, typename I>
-__launch_bounds__(BLOCKSIZE) static __global__ void kernel0(I n_, const I* p_, I* q_)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel0(I n_, const I* p_, I* q_)
 {
     I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
     if(idx >= n_)

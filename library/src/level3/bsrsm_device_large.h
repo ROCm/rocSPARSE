@@ -27,21 +27,21 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrsm_upper_large_kernel(rocsparse_int        mb,
-                                  rocsparse_int        nrhs,
-                                  const rocsparse_int* bsr_row_ptr,
-                                  const rocsparse_int* bsr_col_ind,
-                                  const T*             bsr_val,
-                                  rocsparse_int        block_dim,
-                                  T*                   X,
-                                  rocsparse_int        ldx,
-                                  int*                 done_array,
-                                  const rocsparse_int* map,
-                                  rocsparse_int*       zero_pivot,
-                                  rocsparse_index_base idx_base,
-                                  rocsparse_diag_type  diag_type,
-                                  rocsparse_direction  dir)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrsm_upper_large_kernel(rocsparse_int        mb,
+                              rocsparse_int        nrhs,
+                              const rocsparse_int* bsr_row_ptr,
+                              const rocsparse_int* bsr_col_ind,
+                              const T*             bsr_val,
+                              rocsparse_int        block_dim,
+                              T*                   X,
+                              rocsparse_int        ldx,
+                              int*                 done_array,
+                              const rocsparse_int* map,
+                              rocsparse_int*       zero_pivot,
+                              rocsparse_index_base idx_base,
+                              rocsparse_diag_type  diag_type,
+                              rocsparse_direction  dir)
 {
     static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
 
@@ -189,21 +189,21 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrsm_lower_large_kernel(rocsparse_int        mb,
-                                  rocsparse_int        nrhs,
-                                  const rocsparse_int* bsr_row_ptr,
-                                  const rocsparse_int* bsr_col_ind,
-                                  const T*             bsr_val,
-                                  rocsparse_int        block_dim,
-                                  T*                   X,
-                                  rocsparse_int        ldx,
-                                  int*                 done_array,
-                                  const rocsparse_int* map,
-                                  rocsparse_int*       zero_pivot,
-                                  rocsparse_index_base idx_base,
-                                  rocsparse_diag_type  diag_type,
-                                  rocsparse_direction  dir)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrsm_lower_large_kernel(rocsparse_int        mb,
+                              rocsparse_int        nrhs,
+                              const rocsparse_int* bsr_row_ptr,
+                              const rocsparse_int* bsr_col_ind,
+                              const T*             bsr_val,
+                              rocsparse_int        block_dim,
+                              T*                   X,
+                              rocsparse_int        ldx,
+                              int*                 done_array,
+                              const rocsparse_int* map,
+                              rocsparse_int*       zero_pivot,
+                              rocsparse_index_base idx_base,
+                              rocsparse_diag_type  diag_type,
+                              rocsparse_direction  dir)
 {
     static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
 
