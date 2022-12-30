@@ -193,7 +193,7 @@ int main(int argc, char** argv)
             dev = atoi(argv[i + 1]);
         }
 
-        if(strcmp(argv[i], "--version"))
+        if(strcmp(argv[i], "--version") == 0)
         {
             // Print version and exit, if requested
             std::cout << "rocSPARSE version: " << ver / 100000 << "." << ver / 100 % 1000 << "."
