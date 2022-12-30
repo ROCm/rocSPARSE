@@ -116,3 +116,13 @@ inline double get_gpu_time_msec(double gpu_time_used)
 {
     return gpu_time_used / 1e3;
 }
+
+// Check hmm availability
+inline bool is_hmm_enabled()
+{
+    int deviceID, hmm_enabled;
+    hipGetDevice(&deviceID);
+    hipDeviceGetAttribute(&hmm_enabled, hipDeviceAttributeManagedMemory, deviceID);
+
+    return hmm_enabled;
+}

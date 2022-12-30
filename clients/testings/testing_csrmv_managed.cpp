@@ -33,6 +33,14 @@ void testing_csrmv_managed_bad_arg(const Arguments& arg)
         return;
     }
 
+    // check managed memory enablement
+    if(!is_hmm_enabled())
+    {
+        std::puts("Managed memory not enabled on device. Skipping test...");
+        std::fflush(stdout);
+        return;
+    }
+
     static const size_t safe_size = 100;
 
     const T h_alpha = static_cast<T>(1);
@@ -106,6 +114,14 @@ void testing_csrmv_managed(const Arguments& arg)
 {
     if(!std::getenv("ROCSPARSE_MALLOC_MANAGED"))
     {
+        return;
+    }
+
+    // check managed memory enablement
+    if(!is_hmm_enabled())
+    {
+        std::puts("Managed memory not enabled on device. Skipping test...");
+        std::fflush(stdout);
         return;
     }
 
