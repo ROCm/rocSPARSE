@@ -15,7 +15,6 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Fixed bug in ellmv
 - Optimized bsr2csr routine
 - Fixed integer overflow bugs
-- Fixes a bug in COO SpMV gridsize
 
 ## rocSPARSE 2.3.2 for ROCm 5.3.0
 ### Added
