@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -18465,9 +18465,9 @@ rocsparse_status rocsparse_create_identity_permutation(rocsparse_handle handle,
 *  \p rocsparse_inverse_permutation computes
 *
 *  \code{.c}
-*      for(i = 0; i < \p n; ++i)
+*      for(i = 0; i < n; ++i)
 *      {
-*          \p q[\p p[i]-\p base] = i + \p base;
+*          q[p[i]- base] = i + base;
 *      }
 *  \endcode
 *
