@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,7 +98,7 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle     handle,
     // Get workspace from handle device buffer
     T* workspace = reinterpret_cast<T*>(handle->buffer);
 
-    hipLaunchKernelGGL((doti_kernel_part1<DOTI_DIM>),
+    hipLaunchKernelGGL((doti_kernel_part1<DOTI_DIM, 2>),
                        dim3(DOTI_DIM),
                        dim3(DOTI_DIM),
                        0,

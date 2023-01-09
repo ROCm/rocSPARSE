@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, typename I, typename T>
+template <unsigned int BLOCKSIZE, unsigned int LOOPS, typename I, typename T>
 ROCSPARSE_KERNEL(BLOCKSIZE)
 void doti_kernel_part1(
     I nnz, const T* x_val, const I* x_ind, const T* y, T* workspace, rocsparse_index_base idx_base)
@@ -36,9 +36,26 @@ void doti_kernel_part1(
 
     T dot = static_cast<T>(0);
 
-    for(I idx = gid; idx < nnz; idx += hipGridDim_x * BLOCKSIZE)
+    I idx    = LOOPS * BLOCKSIZE * hipBlockIdx_x + tid;
+    I stride = LOOPS * hipGridDim_x * BLOCKSIZE;
+    while(stride < nnz)
     {
-        dot = rocsparse_fma(y[x_ind[idx] - idx_base], x_val[idx], dot);
+#pragma unroll
+        for(unsigned int i = 0; i < LOOPS; i++)
+        {
+            dot = rocsparse_fma(
+                y[x_ind[idx + i * BLOCKSIZE] - idx_base], x_val[idx + i * BLOCKSIZE], dot);
+        }
+
+        idx += LOOPS * hipGridDim_x * BLOCKSIZE;
+        stride += LOOPS * hipGridDim_x * BLOCKSIZE;
+    }
+
+    stride -= LOOPS * hipGridDim_x * BLOCKSIZE;
+
+    for(I i = gid + stride; i < nnz; i += hipGridDim_x * BLOCKSIZE)
+    {
+        dot = rocsparse_fma(y[x_ind[i] - idx_base], x_val[i], dot);
     }
 
     __shared__ T sdata[BLOCKSIZE];
