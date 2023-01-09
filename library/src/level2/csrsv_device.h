@@ -359,6 +359,9 @@ ROCSPARSE_DEVICE_ILF void csrsv_device(J m,
 {
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
     int wid = hipThreadIdx_x / WF_SIZE;
+    // Scalarize wid, i.e. move it from a vector register to a scalar register, so all dependent
+    // values can be loaded or computed with scalar instructions (idx, row, row_begin...)
+    wid = __builtin_amdgcn_readfirstlane(wid);
 
     // Index into the row map
     J idx = hipBlockIdx_x * (BLOCKSIZE / WF_SIZE) + wid;
