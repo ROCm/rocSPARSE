@@ -357,7 +357,7 @@ endif()
 # Add OpenMP if available
 if(OPENMP_FOUND)
 if (NOT WIN32)
-   target_link_libraries(rocsparse-test PRIVATE OpenMP::OpenMP_CXX)
+   target_link_libraries(rocsparse-test PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
   else()
    target_link_libraries(rocsparse-test PRIVATE libomp)
   endif()
