@@ -123,6 +123,13 @@ void unit_check_general(int64_t                         M,
 
 template <>
 void unit_check_general(
+    int64_t M, int64_t N, const int8_t* A, int64_t LDA, const int8_t* B, int64_t LDB)
+{
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_EQ);
+}
+
+template <>
+void unit_check_general(
     int64_t M, int64_t N, const int32_t* A, int64_t LDA, const int32_t* B, int64_t LDB)
 {
     ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_EQ);

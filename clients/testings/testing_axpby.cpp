@@ -121,7 +121,7 @@ void testing_axpby(const Arguments& arg)
 
     // Initialize data on CPU
     rocsparse_seedrand();
-    rocsparse_init_index(hx_ind, nnz, 1, size);
+    rocsparse_init_index(hx_ind, nnz, base, size + base);
     rocsparse_init<T>(hx_val, 1, nnz, 1);
     rocsparse_init<T>(hy_1, 1, size, 1);
     hy_2    = hy_1;

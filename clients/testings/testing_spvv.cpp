@@ -156,7 +156,7 @@ void testing_spvv(const Arguments& arg)
 
     // Initialize data on CPU
     rocsparse_seedrand();
-    rocsparse_init_index(hx_ind, nnz, 1, size);
+    rocsparse_init_index(hx_ind, nnz, base, size + base);
     rocsparse_init_alternating_sign<T>(hx_val, 1, nnz, 1);
     rocsparse_init_exact<T>(hy, 1, size, 1);
 
