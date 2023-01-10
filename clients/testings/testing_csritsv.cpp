@@ -85,7 +85,6 @@ rocsparse_status rocsparse_host_csritsv_ptr_end(rocsparse_fill_mode fill_mode_,
                 if(!mark)
                 {
                     zero_pivot[0] = std::min(zero_pivot[0], i + base_);
-                    ;
                     ++count_symbolic_diag;
                 }
             }
@@ -96,9 +95,6 @@ rocsparse_status rocsparse_host_csritsv_ptr_end(rocsparse_fill_mode fill_mode_,
 
             if(count_symbolic_diag > 0)
             {
-                std::cout << "host csritsv, " << count_symbolic_diag
-                          << "  zero pivots detected, first index is " << zero_pivot[0]
-                          << std::endl;
                 return rocsparse_status_success;
             }
             break;
@@ -159,9 +155,6 @@ rocsparse_status rocsparse_host_csritsv_ptr_end(rocsparse_fill_mode fill_mode_,
 
             if(count_symbolic_diag > 0)
             {
-                std::cout << "host csritsv, " << count_symbolic_diag
-                          << "  zero pivots detected, first index is " << zero_pivot[0]
-                          << std::endl;
                 return rocsparse_status_success;
             }
             break;
