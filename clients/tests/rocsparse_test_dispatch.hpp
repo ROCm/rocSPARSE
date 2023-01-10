@@ -51,6 +51,16 @@ struct rocsparse_test_dispatch<rocsparse_test_dispatch_enum::it>
 };
 
 template <>
+struct rocsparse_test_dispatch<rocsparse_test_dispatch_enum::it_plus_int8>
+{
+    template <template <typename...> class TEST>
+    static auto dispatch(const Arguments& arg)
+    {
+        return rocsparse_it_plus_int8_dispatch<TEST>(arg);
+    }
+};
+
+template <>
 struct rocsparse_test_dispatch<rocsparse_test_dispatch_enum::ijt>
 {
     template <template <typename...> class TEST>

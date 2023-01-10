@@ -5,6 +5,8 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 ## rocSPARSE 2.6.0
 ### Added
 - Added rocsparse_inverse_permutation
+- Added rocsparse_inverse_permutation
+- Added uniform int8 precision for Gather and Scatter
 ### Improved
 - Optimization to doti routine
 

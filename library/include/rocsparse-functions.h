@@ -19867,6 +19867,23 @@ rocsparse_status rocsparse_axpby(rocsparse_handle            handle,
 *      }
 *  \endcode
 *
+*  Uniform Precisions:
+*  \verbatim
+*  |---------------------------------|
+*  |             X / Y               |
+*  |---------------------------------|
+*  |     rocsparse_datatype_i8_r     |
+*  |---------------------------------|
+*  |     rocsparse_datatype_f32_r    |
+*  |---------------------------------|
+*  |     rocsparse_datatype_f64_r    |
+*  |---------------------------------|
+*  |     rocsparse_datatype_f32_c    |
+*  |---------------------------------|
+*  |     rocsparse_datatype_f64_c    |
+*  |---------------------------------|
+*  \endverbatim
+*
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
@@ -19903,6 +19920,23 @@ rocsparse_status rocsparse_gather(rocsparse_handle            handle,
 *          y[x_ind[i]] = x_val[i];
 *      }
 *  \endcode
+*
+*  Uniform Precisions:
+*  \verbatim
+*  |---------------------------------|
+*  |             X / Y               |
+*  |---------------------------------|
+*  |     rocsparse_datatype_i8_r     |
+*  |---------------------------------|
+*  |     rocsparse_datatype_f32_r    |
+*  |---------------------------------|
+*  |     rocsparse_datatype_f64_r    |
+*  |---------------------------------|
+*  |     rocsparse_datatype_f32_c    |
+*  |---------------------------------|
+*  |     rocsparse_datatype_f64_c    |
+*  |---------------------------------|
+*  \endverbatim
 *
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.

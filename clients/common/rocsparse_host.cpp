@@ -9875,7 +9875,13 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                      std::vector<rocsparse_int>&           coo_col_ind,
                                      std::vector<rocsparse_float_complex>& coo_val);
 
-#define INSTANTIATE1(TYPE)                                                  \
+#define INSTANTIATE_GATHER_SCATTER(ITYPE, TTYPE)                                                 \
+    template void host_gthr<ITYPE, TTYPE>(                                                       \
+        ITYPE nnz, const TTYPE* y, TTYPE* x_val, const ITYPE* x_ind, rocsparse_index_base base); \
+    template void host_sctr<ITYPE, TTYPE>(                                                       \
+        ITYPE nnz, const TTYPE* x_val, const ITYPE* x_ind, TTYPE* y, rocsparse_index_base base)
+
+#define INSTANTIATE_T(TYPE)                                                 \
     template void host_bsrpad_value<TYPE>(rocsparse_int m,                  \
                                           rocsparse_int mb,                 \
                                           rocsparse_int nnzb,               \
@@ -9886,141 +9892,137 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                           const rocsparse_int* bsr_col_ind, \
                                           rocsparse_index_base bsr_base);
 
-#define INSTANTIATE2(ITYPE, TTYPE)                                                               \
-    template void host_gemvi<ITYPE, TTYPE>(ITYPE                M,                               \
-                                           ITYPE                N,                               \
-                                           TTYPE                alpha,                           \
-                                           const TTYPE*         A,                               \
-                                           ITYPE                lda,                             \
-                                           ITYPE                nnz,                             \
-                                           const TTYPE*         x_val,                           \
-                                           const ITYPE*         x_ind,                           \
-                                           TTYPE                beta,                            \
-                                           TTYPE*               y,                               \
-                                           rocsparse_index_base base);                           \
-    template void host_coo_to_dense<ITYPE, TTYPE>(ITYPE                     m,                   \
-                                                  ITYPE                     n,                   \
-                                                  ITYPE                     nnz,                 \
-                                                  rocsparse_index_base      base,                \
-                                                  const std::vector<TTYPE>& coo_val,             \
-                                                  const std::vector<ITYPE>& coo_row_ind,         \
-                                                  const std::vector<ITYPE>& coo_col_ind,         \
-                                                  std::vector<TTYPE>&       A,                   \
-                                                  ITYPE                     ld,                  \
-                                                  rocsparse_order           order);                        \
-    template void host_dense_to_coo<ITYPE, TTYPE>(ITYPE                     m,                   \
-                                                  ITYPE                     n,                   \
-                                                  rocsparse_index_base      base,                \
-                                                  const std::vector<TTYPE>& A,                   \
-                                                  ITYPE                     ld,                  \
-                                                  rocsparse_order           order,               \
-                                                  const std::vector<ITYPE>& nnz_per_row,         \
-                                                  std::vector<TTYPE>&       coo_val,             \
-                                                  std::vector<ITYPE>&       coo_row_ind,         \
-                                                  std::vector<ITYPE>&       coo_col_ind);              \
-    template void host_coosv<ITYPE, TTYPE>(rocsparse_operation       trans,                      \
-                                           ITYPE                     M,                          \
-                                           int64_t                   nnz,                        \
-                                           TTYPE                     alpha,                      \
-                                           const std::vector<ITYPE>& coo_row_ind,                \
-                                           const std::vector<ITYPE>& coo_col_ind,                \
-                                           const std::vector<TTYPE>& coo_val,                    \
-                                           const std::vector<TTYPE>& x,                          \
-                                           std::vector<TTYPE>&       y,                          \
-                                           rocsparse_diag_type       diag_type,                  \
-                                           rocsparse_fill_mode       fill_mode,                  \
-                                           rocsparse_index_base      base,                       \
-                                           ITYPE*                    struct_pivot,               \
-                                           ITYPE*                    numeric_pivot);                                \
-    template void host_coomm<TTYPE, ITYPE>(ITYPE                M,                               \
-                                           ITYPE                N,                               \
-                                           ITYPE                K,                               \
-                                           int64_t              NNZ,                             \
-                                           rocsparse_operation  transA,                          \
-                                           rocsparse_operation  transB,                          \
-                                           TTYPE                alpha,                           \
-                                           const ITYPE*         coo_row_ind_A,                   \
-                                           const ITYPE*         coo_col_ind_A,                   \
-                                           const TTYPE*         coo_val_A,                       \
-                                           const TTYPE*         B,                               \
-                                           ITYPE                ldb,                             \
-                                           TTYPE                beta,                            \
-                                           TTYPE*               C,                               \
-                                           ITYPE                ldc,                             \
-                                           rocsparse_order      order,                           \
-                                           rocsparse_index_base base);                           \
-    template void host_coomm_batched<TTYPE, ITYPE>(ITYPE                M,                       \
-                                                   ITYPE                N,                       \
-                                                   ITYPE                K,                       \
-                                                   int64_t              NNZ,                     \
-                                                   ITYPE                batch_count_A,           \
-                                                   int64_t              batch_stride_A,          \
-                                                   rocsparse_operation  transA,                  \
-                                                   rocsparse_operation  transB,                  \
-                                                   TTYPE                alpha,                   \
-                                                   const ITYPE*         coo_row_ind_A,           \
-                                                   const ITYPE*         coo_col_ind_A,           \
-                                                   const TTYPE*         coo_val_A,               \
-                                                   const TTYPE*         B,                       \
-                                                   ITYPE                ldb,                     \
-                                                   ITYPE                batch_count_B,           \
-                                                   int64_t              batch_stride_B,          \
-                                                   TTYPE                beta,                    \
-                                                   TTYPE*               C,                       \
-                                                   ITYPE                ldc,                     \
-                                                   ITYPE                batch_count_C,           \
-                                                   int64_t              batch_stride_C,          \
-                                                   rocsparse_order      order,                   \
-                                                   rocsparse_index_base base);                   \
-    template void host_coosm<ITYPE, TTYPE>(ITYPE                M,                               \
-                                           ITYPE                nrhs,                            \
-                                           int64_t              nnz,                             \
-                                           rocsparse_operation  transA,                          \
-                                           rocsparse_operation  transB,                          \
-                                           TTYPE                alpha,                           \
-                                           const ITYPE*         coo_row_ind,                     \
-                                           const ITYPE*         coo_col_ind,                     \
-                                           const TTYPE*         coo_val,                         \
-                                           TTYPE*               B,                               \
-                                           ITYPE                ldb,                             \
-                                           rocsparse_diag_type  diag_type,                       \
-                                           rocsparse_fill_mode  fill_mode,                       \
-                                           rocsparse_index_base base,                            \
-                                           ITYPE*               struct_pivot,                    \
-                                           ITYPE*               numeric_pivot);                                \
-    template void host_axpby<ITYPE, TTYPE>(ITYPE                size,                            \
-                                           ITYPE                nnz,                             \
-                                           TTYPE                alpha,                           \
-                                           const TTYPE*         x_val,                           \
-                                           const ITYPE*         x_ind,                           \
-                                           TTYPE                beta,                            \
-                                           TTYPE*               y,                               \
-                                           rocsparse_index_base base);                           \
-    template void host_gthr<ITYPE, TTYPE>(                                                       \
-        ITYPE nnz, const TTYPE* y, TTYPE* x_val, const ITYPE* x_ind, rocsparse_index_base base); \
-    template void host_roti<ITYPE, TTYPE>(ITYPE nnz,                                             \
-                                          TTYPE * x_val,                                         \
-                                          const ITYPE*         x_ind,                            \
-                                          TTYPE*               y,                                \
-                                          const TTYPE*         c,                                \
-                                          const TTYPE*         s,                                \
-                                          rocsparse_index_base base);                            \
-    template void host_doti<ITYPE, TTYPE>(ITYPE                nnz,                              \
-                                          const TTYPE*         x_val,                            \
-                                          const ITYPE*         x_ind,                            \
-                                          const TTYPE*         y,                                \
-                                          TTYPE*               result,                           \
-                                          rocsparse_index_base base);                            \
-    template void host_dotci<ITYPE, TTYPE>(ITYPE                nnz,                             \
-                                           const TTYPE*         x_val,                           \
-                                           const ITYPE*         x_ind,                           \
-                                           const TTYPE*         y,                               \
-                                           TTYPE*               result,                          \
-                                           rocsparse_index_base base);                           \
-    template void host_sctr<ITYPE, TTYPE>(                                                       \
-        ITYPE nnz, const TTYPE* x_val, const ITYPE* x_ind, TTYPE* y, rocsparse_index_base base)
+#define INSTANTIATE_IT(ITYPE, TTYPE)                                                     \
+    template void host_gemvi<ITYPE, TTYPE>(ITYPE                M,                       \
+                                           ITYPE                N,                       \
+                                           TTYPE                alpha,                   \
+                                           const TTYPE*         A,                       \
+                                           ITYPE                lda,                     \
+                                           ITYPE                nnz,                     \
+                                           const TTYPE*         x_val,                   \
+                                           const ITYPE*         x_ind,                   \
+                                           TTYPE                beta,                    \
+                                           TTYPE*               y,                       \
+                                           rocsparse_index_base base);                   \
+    template void host_coo_to_dense<ITYPE, TTYPE>(ITYPE                     m,           \
+                                                  ITYPE                     n,           \
+                                                  ITYPE                     nnz,         \
+                                                  rocsparse_index_base      base,        \
+                                                  const std::vector<TTYPE>& coo_val,     \
+                                                  const std::vector<ITYPE>& coo_row_ind, \
+                                                  const std::vector<ITYPE>& coo_col_ind, \
+                                                  std::vector<TTYPE>&       A,           \
+                                                  ITYPE                     ld,          \
+                                                  rocsparse_order           order);                \
+    template void host_dense_to_coo<ITYPE, TTYPE>(ITYPE                     m,           \
+                                                  ITYPE                     n,           \
+                                                  rocsparse_index_base      base,        \
+                                                  const std::vector<TTYPE>& A,           \
+                                                  ITYPE                     ld,          \
+                                                  rocsparse_order           order,       \
+                                                  const std::vector<ITYPE>& nnz_per_row, \
+                                                  std::vector<TTYPE>&       coo_val,     \
+                                                  std::vector<ITYPE>&       coo_row_ind, \
+                                                  std::vector<ITYPE>&       coo_col_ind);      \
+    template void host_coosv<ITYPE, TTYPE>(rocsparse_operation       trans,              \
+                                           ITYPE                     M,                  \
+                                           int64_t                   nnz,                \
+                                           TTYPE                     alpha,              \
+                                           const std::vector<ITYPE>& coo_row_ind,        \
+                                           const std::vector<ITYPE>& coo_col_ind,        \
+                                           const std::vector<TTYPE>& coo_val,            \
+                                           const std::vector<TTYPE>& x,                  \
+                                           std::vector<TTYPE>&       y,                  \
+                                           rocsparse_diag_type       diag_type,          \
+                                           rocsparse_fill_mode       fill_mode,          \
+                                           rocsparse_index_base      base,               \
+                                           ITYPE*                    struct_pivot,       \
+                                           ITYPE*                    numeric_pivot);                        \
+    template void host_coomm<TTYPE, ITYPE>(ITYPE                M,                       \
+                                           ITYPE                N,                       \
+                                           ITYPE                K,                       \
+                                           int64_t              NNZ,                     \
+                                           rocsparse_operation  transA,                  \
+                                           rocsparse_operation  transB,                  \
+                                           TTYPE                alpha,                   \
+                                           const ITYPE*         coo_row_ind_A,           \
+                                           const ITYPE*         coo_col_ind_A,           \
+                                           const TTYPE*         coo_val_A,               \
+                                           const TTYPE*         B,                       \
+                                           ITYPE                ldb,                     \
+                                           TTYPE                beta,                    \
+                                           TTYPE*               C,                       \
+                                           ITYPE                ldc,                     \
+                                           rocsparse_order      order,                   \
+                                           rocsparse_index_base base);                   \
+    template void host_coomm_batched<TTYPE, ITYPE>(ITYPE                M,               \
+                                                   ITYPE                N,               \
+                                                   ITYPE                K,               \
+                                                   int64_t              NNZ,             \
+                                                   ITYPE                batch_count_A,   \
+                                                   int64_t              batch_stride_A,  \
+                                                   rocsparse_operation  transA,          \
+                                                   rocsparse_operation  transB,          \
+                                                   TTYPE                alpha,           \
+                                                   const ITYPE*         coo_row_ind_A,   \
+                                                   const ITYPE*         coo_col_ind_A,   \
+                                                   const TTYPE*         coo_val_A,       \
+                                                   const TTYPE*         B,               \
+                                                   ITYPE                ldb,             \
+                                                   ITYPE                batch_count_B,   \
+                                                   int64_t              batch_stride_B,  \
+                                                   TTYPE                beta,            \
+                                                   TTYPE*               C,               \
+                                                   ITYPE                ldc,             \
+                                                   ITYPE                batch_count_C,   \
+                                                   int64_t              batch_stride_C,  \
+                                                   rocsparse_order      order,           \
+                                                   rocsparse_index_base base);           \
+    template void host_coosm<ITYPE, TTYPE>(ITYPE                M,                       \
+                                           ITYPE                nrhs,                    \
+                                           int64_t              nnz,                     \
+                                           rocsparse_operation  transA,                  \
+                                           rocsparse_operation  transB,                  \
+                                           TTYPE                alpha,                   \
+                                           const ITYPE*         coo_row_ind,             \
+                                           const ITYPE*         coo_col_ind,             \
+                                           const TTYPE*         coo_val,                 \
+                                           TTYPE*               B,                       \
+                                           ITYPE                ldb,                     \
+                                           rocsparse_diag_type  diag_type,               \
+                                           rocsparse_fill_mode  fill_mode,               \
+                                           rocsparse_index_base base,                    \
+                                           ITYPE*               struct_pivot,            \
+                                           ITYPE*               numeric_pivot);                        \
+    template void host_axpby<ITYPE, TTYPE>(ITYPE                size,                    \
+                                           ITYPE                nnz,                     \
+                                           TTYPE                alpha,                   \
+                                           const TTYPE*         x_val,                   \
+                                           const ITYPE*         x_ind,                   \
+                                           TTYPE                beta,                    \
+                                           TTYPE*               y,                       \
+                                           rocsparse_index_base base);                   \
+    template void host_roti<ITYPE, TTYPE>(ITYPE nnz,                                     \
+                                          TTYPE * x_val,                                 \
+                                          const ITYPE*         x_ind,                    \
+                                          TTYPE*               y,                        \
+                                          const TTYPE*         c,                        \
+                                          const TTYPE*         s,                        \
+                                          rocsparse_index_base base);                    \
+    template void host_doti<ITYPE, TTYPE>(ITYPE                nnz,                      \
+                                          const TTYPE*         x_val,                    \
+                                          const ITYPE*         x_ind,                    \
+                                          const TTYPE*         y,                        \
+                                          TTYPE*               result,                   \
+                                          rocsparse_index_base base);                    \
+    template void host_dotci<ITYPE, TTYPE>(ITYPE                nnz,                     \
+                                           const TTYPE*         x_val,                   \
+                                           const ITYPE*         x_ind,                   \
+                                           const TTYPE*         y,                       \
+                                           TTYPE*               result,                  \
+                                           rocsparse_index_base base);
 
-#define INSTANTIATE3(ITYPE, JTYPE, TTYPE)                                                      \
+#define INSTANTIATE_IJT(ITYPE, JTYPE, TTYPE)                                                   \
     template void host_csr_to_csc<ITYPE, JTYPE, TTYPE>(JTYPE                M,                 \
                                                        JTYPE                N,                 \
                                                        ITYPE                nnz,               \
@@ -10222,7 +10224,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                     rocsparse_index_base base_C,               \
                                                     rocsparse_index_base base_D);
 
-#define INSTANTIATE4(DIR, ITYPE, JTYPE, TTYPE)                                                       \
+#define INSTANTIATE_DIR_IJT(DIR, ITYPE, JTYPE, TTYPE)                                                \
     template void host_dense2csx<DIR, TTYPE, ITYPE, JTYPE>(JTYPE                m,                   \
                                                            JTYPE                n,                   \
                                                            rocsparse_index_base base,                \
@@ -10243,52 +10245,52 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                            TTYPE*               A,                   \
                                                            ITYPE                ld);
 
-#define INSTANTIATE5(ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE)  \
-    template void host_bsrmv(rocsparse_direction  dir,          \
-                             rocsparse_operation  trans,        \
-                             JTYPE                mb,           \
-                             JTYPE                nb,           \
-                             ITYPE                nnzb,         \
-                             TTYPE                alpha,        \
-                             const ITYPE*         bsr_row_ptr,  \
-                             const JTYPE*         bsr_col_ind,  \
-                             const ATYPE*         bsr_val,      \
-                             JTYPE                bsr_dim,      \
-                             const XTYPE*         x,            \
-                             TTYPE                beta,         \
-                             YTYPE*               y,            \
-                             rocsparse_index_base base);        \
-    template void host_cscmv(rocsparse_operation   trans,       \
-                             JTYPE                 M,           \
-                             JTYPE                 N,           \
-                             ITYPE                 nnz,         \
-                             TTYPE                 alpha,       \
-                             const ITYPE*          csc_col_ptr, \
-                             const JTYPE*          csc_row_ind, \
-                             const ATYPE*          csc_val,     \
-                             const XTYPE*          x,           \
-                             TTYPE                 beta,        \
-                             YTYPE*                y,           \
-                             rocsparse_index_base  base,        \
-                             rocsparse_matrix_type matrix_type, \
-                             rocsparse_spmv_alg    algo);          \
-    template void host_csrmv(rocsparse_operation   trans,       \
-                             JTYPE                 M,           \
-                             JTYPE                 N,           \
-                             ITYPE                 nnz,         \
-                             TTYPE                 alpha,       \
-                             const ITYPE*          csr_row_ptr, \
-                             const JTYPE*          csr_col_ind, \
-                             const ATYPE*          csr_val,     \
-                             const XTYPE*          x,           \
-                             TTYPE                 beta,        \
-                             YTYPE*                y,           \
-                             rocsparse_index_base  base,        \
-                             rocsparse_matrix_type matrix_type, \
-                             rocsparse_spmv_alg    algo,        \
+#define INSTANTIATE_IJAXYT(ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE) \
+    template void host_bsrmv(rocsparse_direction  dir,               \
+                             rocsparse_operation  trans,             \
+                             JTYPE                mb,                \
+                             JTYPE                nb,                \
+                             ITYPE                nnzb,              \
+                             TTYPE                alpha,             \
+                             const ITYPE*         bsr_row_ptr,       \
+                             const JTYPE*         bsr_col_ind,       \
+                             const ATYPE*         bsr_val,           \
+                             JTYPE                bsr_dim,           \
+                             const XTYPE*         x,                 \
+                             TTYPE                beta,              \
+                             YTYPE*               y,                 \
+                             rocsparse_index_base base);             \
+    template void host_cscmv(rocsparse_operation   trans,            \
+                             JTYPE                 M,                \
+                             JTYPE                 N,                \
+                             ITYPE                 nnz,              \
+                             TTYPE                 alpha,            \
+                             const ITYPE*          csc_col_ptr,      \
+                             const JTYPE*          csc_row_ind,      \
+                             const ATYPE*          csc_val,          \
+                             const XTYPE*          x,                \
+                             TTYPE                 beta,             \
+                             YTYPE*                y,                \
+                             rocsparse_index_base  base,             \
+                             rocsparse_matrix_type matrix_type,      \
+                             rocsparse_spmv_alg    algo);               \
+    template void host_csrmv(rocsparse_operation   trans,            \
+                             JTYPE                 M,                \
+                             JTYPE                 N,                \
+                             ITYPE                 nnz,              \
+                             TTYPE                 alpha,            \
+                             const ITYPE*          csr_row_ptr,      \
+                             const JTYPE*          csr_col_ind,      \
+                             const ATYPE*          csr_val,          \
+                             const XTYPE*          x,                \
+                             TTYPE                 beta,             \
+                             YTYPE*                y,                \
+                             rocsparse_index_base  base,             \
+                             rocsparse_matrix_type matrix_type,      \
+                             rocsparse_spmv_alg    algo,             \
                              bool                  force_conj);
 
-#define INSTANTIATE6(ITYPE, ATYPE, XTYPE, YTYPE, TTYPE)        \
+#define INSTANTIATE_IAXYT(ITYPE, ATYPE, XTYPE, YTYPE, TTYPE)   \
     template void host_coomv(rocsparse_operation  trans,       \
                              ITYPE                M,           \
                              ITYPE                N,           \
@@ -10324,176 +10326,187 @@ template void host_coosort_by_column(rocsparse_int                         M,
                              YTYPE*               y,           \
                              rocsparse_index_base base);
 
-INSTANTIATE1(float);
-INSTANTIATE1(double);
-INSTANTIATE1(rocsparse_float_complex);
-INSTANTIATE1(rocsparse_double_complex);
+INSTANTIATE_GATHER_SCATTER(int32_t, int8_t);
+INSTANTIATE_GATHER_SCATTER(int32_t, float);
+INSTANTIATE_GATHER_SCATTER(int32_t, double);
+INSTANTIATE_GATHER_SCATTER(int32_t, rocsparse_float_complex);
+INSTANTIATE_GATHER_SCATTER(int32_t, rocsparse_double_complex);
+INSTANTIATE_GATHER_SCATTER(int64_t, int8_t);
+INSTANTIATE_GATHER_SCATTER(int64_t, float);
+INSTANTIATE_GATHER_SCATTER(int64_t, double);
+INSTANTIATE_GATHER_SCATTER(int64_t, rocsparse_float_complex);
+INSTANTIATE_GATHER_SCATTER(int64_t, rocsparse_double_complex);
 
-INSTANTIATE2(int32_t, float);
-INSTANTIATE2(int32_t, double);
-INSTANTIATE2(int32_t, rocsparse_float_complex);
-INSTANTIATE2(int32_t, rocsparse_double_complex);
-INSTANTIATE2(int64_t, float);
-INSTANTIATE2(int64_t, double);
-INSTANTIATE2(int64_t, rocsparse_float_complex);
-INSTANTIATE2(int64_t, rocsparse_double_complex);
+INSTANTIATE_T(float);
+INSTANTIATE_T(double);
+INSTANTIATE_T(rocsparse_float_complex);
+INSTANTIATE_T(rocsparse_double_complex);
 
-INSTANTIATE3(int32_t, int32_t, float);
-INSTANTIATE3(int32_t, int32_t, double);
-INSTANTIATE3(int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE3(int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE3(int64_t, int32_t, float);
-INSTANTIATE3(int64_t, int32_t, double);
-INSTANTIATE3(int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE3(int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE3(int64_t, int64_t, float);
-INSTANTIATE3(int64_t, int64_t, double);
-INSTANTIATE3(int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE3(int64_t, int64_t, rocsparse_double_complex);
+INSTANTIATE_IT(int32_t, float);
+INSTANTIATE_IT(int32_t, double);
+INSTANTIATE_IT(int32_t, rocsparse_float_complex);
+INSTANTIATE_IT(int32_t, rocsparse_double_complex);
+INSTANTIATE_IT(int64_t, float);
+INSTANTIATE_IT(int64_t, double);
+INSTANTIATE_IT(int64_t, rocsparse_float_complex);
+INSTANTIATE_IT(int64_t, rocsparse_double_complex);
 
-INSTANTIATE4(rocsparse_direction_row, int32_t, int32_t, float);
-INSTANTIATE4(rocsparse_direction_row, int32_t, int32_t, double);
-INSTANTIATE4(rocsparse_direction_row, int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE4(rocsparse_direction_row, int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE4(rocsparse_direction_row, int64_t, int32_t, float);
-INSTANTIATE4(rocsparse_direction_row, int64_t, int32_t, double);
-INSTANTIATE4(rocsparse_direction_row, int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE4(rocsparse_direction_row, int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE4(rocsparse_direction_row, int64_t, int64_t, float);
-INSTANTIATE4(rocsparse_direction_row, int64_t, int64_t, double);
-INSTANTIATE4(rocsparse_direction_row, int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE4(rocsparse_direction_row, int64_t, int64_t, rocsparse_double_complex);
-INSTANTIATE4(rocsparse_direction_column, int32_t, int32_t, float);
-INSTANTIATE4(rocsparse_direction_column, int32_t, int32_t, double);
-INSTANTIATE4(rocsparse_direction_column, int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE4(rocsparse_direction_column, int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE4(rocsparse_direction_column, int64_t, int32_t, float);
-INSTANTIATE4(rocsparse_direction_column, int64_t, int32_t, double);
-INSTANTIATE4(rocsparse_direction_column, int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE4(rocsparse_direction_column, int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, float);
-INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, double);
-INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, rocsparse_double_complex);
+INSTANTIATE_IJT(int32_t, int32_t, float);
+INSTANTIATE_IJT(int32_t, int32_t, double);
+INSTANTIATE_IJT(int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE_IJT(int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE_IJT(int64_t, int32_t, float);
+INSTANTIATE_IJT(int64_t, int32_t, double);
+INSTANTIATE_IJT(int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE_IJT(int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE_IJT(int64_t, int64_t, float);
+INSTANTIATE_IJT(int64_t, int64_t, double);
+INSTANTIATE_IJT(int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE_IJT(int64_t, int64_t, rocsparse_double_complex);
 
-INSTANTIATE5(int32_t, int32_t, int8_t, int8_t, int32_t, int32_t);
-INSTANTIATE5(int64_t, int32_t, int8_t, int8_t, int32_t, int32_t);
-INSTANTIATE5(int64_t, int64_t, int8_t, int8_t, int32_t, int32_t);
-INSTANTIATE5(int32_t, int32_t, int8_t, int8_t, float, float);
-INSTANTIATE5(int64_t, int32_t, int8_t, int8_t, float, float);
-INSTANTIATE5(int64_t, int64_t, int8_t, int8_t, float, float);
-INSTANTIATE5(int32_t,
-             int32_t,
-             float,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int64_t,
-             int32_t,
-             float,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int64_t,
-             int64_t,
-             float,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int32_t,
-             int32_t,
-             double,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
-INSTANTIATE5(int64_t,
-             int32_t,
-             double,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
-INSTANTIATE5(int64_t,
-             int64_t,
-             double,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
-INSTANTIATE5(int32_t, int32_t, float, float, float, float);
-INSTANTIATE5(int64_t, int32_t, float, float, float, float);
-INSTANTIATE5(int64_t, int64_t, float, float, float, float);
-INSTANTIATE5(int32_t, int32_t, double, double, double, double);
-INSTANTIATE5(int64_t, int32_t, double, double, double, double);
-INSTANTIATE5(int64_t, int64_t, double, double, double, double);
-INSTANTIATE5(int32_t,
-             int32_t,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int64_t,
-             int32_t,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int64_t,
-             int64_t,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int32_t,
-             int32_t,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
-INSTANTIATE5(int64_t,
-             int32_t,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
-INSTANTIATE5(int64_t,
-             int64_t,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int32_t, int32_t, float);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int32_t, int32_t, double);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int64_t, int32_t, float);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int64_t, int32_t, double);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int64_t, int64_t, float);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int64_t, int64_t, double);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_row, int64_t, int64_t, rocsparse_double_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int32_t, int32_t, float);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int32_t, int32_t, double);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int32_t, float);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int32_t, double);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int64_t, float);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int64_t, double);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int64_t, rocsparse_double_complex);
 
-INSTANTIATE6(int32_t, int8_t, int8_t, int32_t, int32_t);
-INSTANTIATE6(int64_t, int8_t, int8_t, int32_t, int32_t);
-INSTANTIATE6(int32_t, int8_t, int8_t, float, float);
-INSTANTIATE6(int64_t, int8_t, int8_t, float, float);
-INSTANTIATE6(
+INSTANTIATE_IJAXYT(int32_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_IJAXYT(int64_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_IJAXYT(int64_t, int64_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_IJAXYT(int32_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE_IJAXYT(int64_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE_IJAXYT(int64_t, int64_t, int8_t, int8_t, float, float);
+INSTANTIATE_IJAXYT(int32_t,
+                   int32_t,
+                   float,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int32_t,
+                   float,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int64_t,
+                   float,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int32_t,
+                   int32_t,
+                   double,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int32_t,
+                   double,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int64_t,
+                   double,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int32_t, int32_t, float, float, float, float);
+INSTANTIATE_IJAXYT(int64_t, int32_t, float, float, float, float);
+INSTANTIATE_IJAXYT(int64_t, int64_t, float, float, float, float);
+INSTANTIATE_IJAXYT(int32_t, int32_t, double, double, double, double);
+INSTANTIATE_IJAXYT(int64_t, int32_t, double, double, double, double);
+INSTANTIATE_IJAXYT(int64_t, int64_t, double, double, double, double);
+INSTANTIATE_IJAXYT(int32_t,
+                   int32_t,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int32_t,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int64_t,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int32_t,
+                   int32_t,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int32_t,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int64_t,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+
+INSTANTIATE_IAXYT(int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_IAXYT(int64_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_IAXYT(int32_t, int8_t, int8_t, float, float);
+INSTANTIATE_IAXYT(int64_t, int8_t, int8_t, float, float);
+INSTANTIATE_IAXYT(
     int32_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
-INSTANTIATE6(
+INSTANTIATE_IAXYT(
     int64_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
-INSTANTIATE6(
+INSTANTIATE_IAXYT(
     int32_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
-INSTANTIATE6(
+INSTANTIATE_IAXYT(
     int64_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
-INSTANTIATE6(int32_t, float, float, float, float);
-INSTANTIATE6(int64_t, float, float, float, float);
-INSTANTIATE6(int32_t, double, double, double, double);
-INSTANTIATE6(int64_t, double, double, double, double);
-INSTANTIATE6(int32_t,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE6(int64_t,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE6(int32_t,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
-INSTANTIATE6(int64_t,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
+INSTANTIATE_IAXYT(int32_t, float, float, float, float);
+INSTANTIATE_IAXYT(int64_t, float, float, float, float);
+INSTANTIATE_IAXYT(int32_t, double, double, double, double);
+INSTANTIATE_IAXYT(int64_t, double, double, double, double);
+INSTANTIATE_IAXYT(int32_t,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_IAXYT(int64_t,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_IAXYT(int32_t,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_IAXYT(int64_t,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);

@@ -70,6 +70,12 @@ struct rocsparse_test_config_it_complex_only
 {
 };
 
+struct rocsparse_test_config_it_plus_int8
+    : rocsparse_test_config_template<rocsparse_test_dispatch_enum::it_plus_int8,
+                                     rocsparse_test_numeric_types_enum::all>
+{
+};
+
 struct rocsparse_test_config_ijt
     : rocsparse_test_config_template<rocsparse_test_dispatch_enum::ijt,
                                      rocsparse_test_numeric_types_enum::all>

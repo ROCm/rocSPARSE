@@ -166,6 +166,7 @@ namespace
                 }
 
                 case rocsparse_test_dispatch_enum::it:
+                case rocsparse_test_dispatch_enum::it_plus_int8:
                 {
                     s << rocsparse_indextype2string(arg.index_type_I) << '_'
                       << rocsparse_datatype2string(arg.compute_type);
@@ -298,6 +299,30 @@ namespace
                          T,
                          typename std::enable_if<check_t::template is_type_valid<I, J, T>()>::type>
             : rocsparse_test_template<ROUTINE>::template test_call_proxy<I, J, T>
+        {
+        };
+
+        struct test : rocsparse_test_template<ROUTINE>::template test_proxy<test, test_call>
+        {
+        };
+    };
+
+    template <rocsparse_test_enum::value_type ROUTINE>
+    struct rocsparse_test_it_plus_int8_template
+    {
+        using check_t = rocsparse_test_check<ROUTINE>;
+        //
+        template <typename T, typename I = int32_t, typename = void>
+        struct test_call : rocsparse_test_invalid
+        {
+        };
+
+        //
+        template <typename I, typename T>
+        struct test_call<I,
+                         T,
+                         typename std::enable_if<check_t::template is_type_valid<I, T>()>::type>
+            : rocsparse_test_template<ROUTINE>::template test_call_proxy<I, T>
         {
         };
 

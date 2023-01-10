@@ -24,4 +24,5 @@
 #include "test.hpp"
 #include "testing_scatter.hpp"
 
-TEST_ROUTINE_WITH_CONFIG(scatter, level1, rocsparse_test_config_it, arg.M, arg.nnz, arg.baseA);
+TEST_ROUTINE_WITH_CONFIG(
+    scatter, level1, rocsparse_test_config_it_plus_int8, arg.M, arg.nnz, arg.baseA);

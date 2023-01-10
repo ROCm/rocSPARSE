@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,6 +73,11 @@ extern "C" rocsparse_status rocsparse_scatter(rocsparse_handle            handle
         return rocsparse_status_not_implemented;
     }
 
+    // int8 ; i32
+    if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_i8_r)
+    {
+        return rocsparse_scatter_template<int32_t, int8_t>(handle, x, y);
+    }
     // single real ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f32_r)
     {
@@ -92,6 +97,11 @@ extern "C" rocsparse_status rocsparse_scatter(rocsparse_handle            handle
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f64_c)
     {
         return rocsparse_scatter_template<int32_t, rocsparse_double_complex>(handle, x, y);
+    }
+    // int8 ; i64
+    if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_i8_r)
+    {
+        return rocsparse_scatter_template<int64_t, int8_t>(handle, x, y);
     }
     // single real ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f32_r)
