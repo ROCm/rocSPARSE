@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -114,6 +114,17 @@ typedef struct _rocsparse_mat_info* rocsparse_mat_info;
 typedef struct _rocsparse_spvec_descr* rocsparse_spvec_descr;
 
 /*! \ingroup types_module
+ *  \brief Generic API descriptor of the sparse vector.
+ *
+ *  \details
+ *  The rocSPARSE constant sparse vector descriptor is a structure holding all properties of a sparse vector.
+ *  It must be initialized using rocsparse_create_const_spvec_descr() and the returned
+ *  descriptor must be passed to all subsequent generic API library calls that involve the sparse vector.
+ *  It should be destroyed at the end using rocsparse_destroy_spvec_descr().
+ */
+typedef struct _rocsparse_spvec_descr const* rocsparse_const_spvec_descr;
+
+/*! \ingroup types_module
  *  \brief Generic API descriptor of the sparse matrix.
  *
  *  \details
@@ -127,6 +138,19 @@ typedef struct _rocsparse_spvec_descr* rocsparse_spvec_descr;
 typedef struct _rocsparse_spmat_descr* rocsparse_spmat_descr;
 
 /*! \ingroup types_module
+ *  \brief Generic API descriptor of the sparse matrix.
+ *
+ *  \details
+ *  The rocSPARSE constant sparse matrix descriptor is a structure holding all properties of a sparse matrix.
+ *  It must be initialized using rocsparse_create__constcoo_descr(), rocsparse_create_const_bsr_descr(),
+ *  rocsparse_create_const_csr_descr(), rocsparse_create_const_csc_descr(),
+ *  or rocsparse_create_const_bell_descr() and the returned
+ *  descriptor must be passed to all subsequent generic API library calls that involve the sparse matrix.
+ *  It should be destroyed at the end using rocsparse_destroy_spmat_descr().
+ */
+typedef struct _rocsparse_spmat_descr const* rocsparse_const_spmat_descr;
+
+/*! \ingroup types_module
  *  \brief Generic API descriptor of the dense vector.
  *
  *  \details
@@ -138,6 +162,17 @@ typedef struct _rocsparse_spmat_descr* rocsparse_spmat_descr;
 typedef struct _rocsparse_dnvec_descr* rocsparse_dnvec_descr;
 
 /*! \ingroup types_module
+ *  \brief Generic API descriptor of the dense vector.
+ *
+ *  \details
+ *  The rocSPARSE constant dense vector descriptor is a structure holding all properties of a dense vector.
+ *  It must be initialized using rocsparse_create_const_dnvec_descr() and the returned
+ *  descriptor must be passed to all subsequent generic API library calls that involve the dense vector.
+ *  It should be destroyed at the end using rocsparse_destroy_dnvec_descr().
+ */
+typedef struct _rocsparse_dnvec_descr const* rocsparse_const_dnvec_descr;
+
+/*! \ingroup types_module
  *  \brief Generic API descriptor of the dense matrix.
  *
  *  \details
@@ -147,6 +182,17 @@ typedef struct _rocsparse_dnvec_descr* rocsparse_dnvec_descr;
  *  It should be destroyed at the end using rocsparse_destroy_dnmat_descr().
  */
 typedef struct _rocsparse_dnmat_descr* rocsparse_dnmat_descr;
+
+/*! \ingroup types_module
+ *  \brief Generic API descriptor of the dense matrix.
+ *
+ *  \details
+ *  The rocSPARSE constant dense matrix descriptor is a structure holding all properties of a dense matrix.
+ *  It must be initialized using rocsparse_create_const_dnmat_descr() and the returned
+ *  descriptor must be passed to all subsequent generic API library calls that involve the dense matrix.
+ *  It should be destroyed at the end using rocsparse_destroy_dnmat_descr().
+ */
+typedef struct _rocsparse_dnmat_descr const* rocsparse_const_dnmat_descr;
 
 /*! \ingroup types_module
  *  \brief Coloring info structure to hold data gathered during analysis and later used in

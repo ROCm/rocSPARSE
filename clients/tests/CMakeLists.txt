@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -142,6 +142,10 @@ set(ROCSPARSE_TEST_SOURCES
   test_spmat_descr.cpp
   test_dnvec_descr.cpp
   test_dnmat_descr.cpp
+  test_const_spvec_descr.cpp
+  test_const_spmat_descr.cpp
+  test_const_dnvec_descr.cpp
+  test_const_dnmat_descr.cpp
   test_spmv_bsr.cpp
   test_spmv_coo.cpp
   test_spmv_coo_aos.cpp
@@ -264,6 +268,10 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spmat_descr.cpp
 ../testings/testing_dnvec_descr.cpp
 ../testings/testing_dnmat_descr.cpp
+../testings/testing_const_spvec_descr.cpp
+../testings/testing_const_spmat_descr.cpp
+../testings/testing_const_dnvec_descr.cpp
+../testings/testing_const_dnmat_descr.cpp
 ../testings/testing_spmv_coo.cpp
 ../testings/testing_spmv_coo_aos.cpp
 ../testings/testing_spmv_bsr.cpp
