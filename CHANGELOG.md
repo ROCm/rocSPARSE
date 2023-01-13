@@ -9,6 +9,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Added uniform int8 precision for Gather and Scatter
 ### Improved
 - Optimization to doti routine
+- Fixed a bug in csrsm and bsrsm
 
 ## rocSPARSE 2.5.0 ROCm 5.5
 ### Added

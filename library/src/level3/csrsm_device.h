@@ -231,11 +231,11 @@ ROCSPARSE_DEVICE_ILF void csrsm_device(rocsparse_operation transB,
         B[idx_B] = local_sum;
     }
 
-    // Wait for all threads to finish writing into global memory before we mark the row "done"
-    __syncthreads();
-
     // Make sure B is written to global memory before setting row is done flag
     __threadfence();
+
+    // Wait for all threads to finish the threadfence before we mark the row "done"
+    __syncthreads();
 
     if(hipThreadIdx_x == 0)
     {
