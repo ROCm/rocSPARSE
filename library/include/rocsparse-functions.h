@@ -26,8 +26,8 @@
 *  of Level 1, 2 and 3, using HIP optimized for AMD GPU hardware.
 */
 
-#ifndef _ROCSPARSE_FUNCTIONS_H_
-#define _ROCSPARSE_FUNCTIONS_H_
+#ifndef ROCSPARSE_FUNCTIONS_H
+#define ROCSPARSE_FUNCTIONS_H
 
 #include "rocsparse-export.h"
 #include "rocsparse-types.h"
@@ -21599,4 +21599,4 @@ rocsparse_status rocsparse_zcsrcolor(rocsparse_handle                handle,
 }
 #endif
 
-#endif /* _ROCSPARSE_FUNCTIONS_H_ */
+#endif /* ROCSPARSE_FUNCTIONS_H */
