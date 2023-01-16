@@ -720,7 +720,7 @@ rocsparse_status rocsparse_const_spvec_get(rocsparse_const_spvec_descr descr,
  *  \retval rocsparse_status_invalid_value if \p idx_base is invalid.
  */
 __attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_destroy_spvec_descr_ex instead.")))
+                          "Use rocsparse_spvec_get_index_base_ex instead.")))
 ROCSPARSE_EXPORT rocsparse_status
     rocsparse_spvec_get_index_base(const rocsparse_spvec_descr descr,
                                    rocsparse_index_base*       idx_base);
@@ -1153,7 +1153,8 @@ rocsparse_status rocsparse_create_const_bell_descr(rocsparse_const_spmat_descr* 
  *  \retval rocsparse_status_invalid_pointer \p descr is invalid.
  */
 __attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_spmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
+                          "Use rocsparse_destroy_spmat_descr_ex instead.")))
+ROCSPARSE_EXPORT rocsparse_status
     rocsparse_destroy_spmat_descr(rocsparse_spmat_descr descr);
 
 ROCSPARSE_EXPORT
@@ -1552,7 +1553,8 @@ rocsparse_status rocsparse_bsr_set_pointers(rocsparse_spmat_descr descr,
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p nnz is invalid.
  */
 __attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_spmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
+                          "Use rocsparse_spmat_get_size_ex instead.")))
+ROCSPARSE_EXPORT rocsparse_status
     rocsparse_spmat_get_size(rocsparse_spmat_descr descr,
                              int64_t*              rows,
                              int64_t*              cols,
@@ -1579,7 +1581,8 @@ rocsparse_status rocsparse_spmat_get_size_ex(rocsparse_const_spmat_descr descr,
  *  \retval rocsparse_status_invalid_value if \p format is invalid.
  */
 __attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_spmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
+                          "Use rocsparse_spmat_get_format_ex instead.")))
+ROCSPARSE_EXPORT rocsparse_status
     rocsparse_spmat_get_format(const rocsparse_spmat_descr descr, rocsparse_format* format);
 
 ROCSPARSE_EXPORT
@@ -1599,7 +1602,8 @@ rocsparse_status rocsparse_spmat_get_format_ex(rocsparse_const_spmat_descr descr
  *  \retval rocsparse_status_invalid_value if \p idx_base is invalid.
  */
 __attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_spmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
+                          "Use rocsparse_spmat_get_index_base_ex instead.")))
+ROCSPARSE_EXPORT rocsparse_status
     rocsparse_spmat_get_index_base(const rocsparse_spmat_descr descr,
                                    rocsparse_index_base*       idx_base);
 
@@ -1652,7 +1656,8 @@ rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* v
  *  \retval rocsparse_status_invalid_size if \p batch_count is invalid.
  */
 __attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_spmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
+                          "Use rocsparse_spmat_get_strided_batch_ex instead.")))
+ROCSPARSE_EXPORT rocsparse_status
     rocsparse_spmat_get_strided_batch(rocsparse_spmat_descr descr, int* batch_count);
 
 ROCSPARSE_EXPORT
@@ -1756,7 +1761,8 @@ rocsparse_status rocsparse_csc_set_strided_batch(rocsparse_spmat_descr descr,
  *  \retval rocsparse_status_invalid_size if \p data_size is invalid.
  */
 __attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_spmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
+                          "Use rocsparse_spmat_get_attribute_ex instead.")))
+ROCSPARSE_EXPORT rocsparse_status
     rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
                                   rocsparse_spmat_attribute attribute,
                                   void*                     data,
@@ -1839,7 +1845,8 @@ rocsparse_status rocsparse_create_const_dnvec_descr(rocsparse_const_dnvec_descr*
  *  \retval rocsparse_status_invalid_pointer \p descr is invalid.
  */
 __attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_spmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
+                          "Use rocsparse_destroy_dnvec_descr_ex instead.")))
+ROCSPARSE_EXPORT rocsparse_status
     rocsparse_destroy_dnvec_descr(rocsparse_dnvec_descr descr);
 
 ROCSPARSE_EXPORT
@@ -1969,7 +1976,8 @@ rocsparse_status rocsparse_create_const_dnmat_descr(rocsparse_const_dnmat_descr*
  *  \retval rocsparse_status_invalid_pointer \p descr is invalid.
  */
 __attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_spmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
+                          "Use rocsparse_destroy_dnmat_descr_ex instead.")))
+ROCSPARSE_EXPORT rocsparse_status
     rocsparse_destroy_dnmat_descr(rocsparse_dnmat_descr descr);
 
 ROCSPARSE_EXPORT
@@ -2067,7 +2075,8 @@ rocsparse_status rocsparse_dnmat_set_values(rocsparse_dnmat_descr descr, void* v
  *  \retval rocsparse_status_invalid_size if \p batch_count or \p batch_stride is invalid.
  */
 __attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_spmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
+                          "Use rocsparse_dnmat_get_strided_batch_ex instead.")))
+ROCSPARSE_EXPORT rocsparse_status
     rocsparse_dnmat_get_strided_batch(rocsparse_dnmat_descr descr,
                                       int*                  batch_count,
                                       int64_t*              batch_stride);
