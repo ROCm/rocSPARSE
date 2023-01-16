@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -289,10 +289,8 @@ namespace testing
     TESTING_TEMPLATE(dense_to_sparse)
     TESTING_TEMPLATE(spvv)
     TESTING_TEMPLATE(spmv)
-    TESTING_TEMPLATE(spmv_ex)
     TESTING_TEMPLATE(spsv)
     TESTING_TEMPLATE(spsm)
-    TESTING_TEMPLATE(spmm_ex)
     TESTING_TEMPLATE(spmm)
     TESTING_TEMPLATE(spgemm)
     TESTING_TEMPLATE(sddmm)

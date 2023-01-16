@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -971,33 +971,4 @@ extern "C" rocsparse_status rocsparse_spmm(rocsparse_handle            handle,
                                            stage,
                                            buffer_size,
                                            temp_buffer);
-}
-
-extern "C" rocsparse_status rocsparse_spmm_ex(rocsparse_handle            handle,
-                                              rocsparse_operation         trans_A,
-                                              rocsparse_operation         trans_B,
-                                              const void*                 alpha,
-                                              const rocsparse_spmat_descr mat_A,
-                                              const rocsparse_dnmat_descr mat_B,
-                                              const void*                 beta,
-                                              const rocsparse_dnmat_descr mat_C,
-                                              rocsparse_datatype          compute_type,
-                                              rocsparse_spmm_alg          alg,
-                                              rocsparse_spmm_stage        stage,
-                                              size_t*                     buffer_size,
-                                              void*                       temp_buffer)
-{
-    return rocsparse_spmm(handle,
-                          trans_A,
-                          trans_B,
-                          alpha,
-                          mat_A,
-                          mat_B,
-                          beta,
-                          mat_C,
-                          compute_type,
-                          alg,
-                          stage,
-                          buffer_size,
-                          temp_buffer);
 }
