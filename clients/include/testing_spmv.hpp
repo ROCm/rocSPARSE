@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -568,24 +568,25 @@ private:
 public:
     static void testing_spmv_bad_arg(const Arguments& arg)
     {
-        T alpha = 0.6;
-        T beta  = 0.1;
+        T alpha = static_cast<T>(6);
+        T beta  = static_cast<T>(2);
 
         rocsparse_local_handle local_handle;
 
-        rocsparse_handle    handle  = local_handle;
-        rocsparse_operation trans   = rocsparse_operation_none;
-        const void*         p_alpha = (const void*)&alpha;
-        const void*         p_beta  = (const void*)&beta;
-        rocsparse_spmv_alg  alg     = rocsparse_spmv_alg_default;
-        size_t              buffer_size;
-        size_t*             p_buffer_size = &buffer_size;
-        void*               temp_buffer   = (void*)0x4;
-        rocsparse_datatype  ttype         = get_datatype<T>();
+        rocsparse_handle     handle  = local_handle;
+        rocsparse_operation  trans   = rocsparse_operation_none;
+        const void*          p_alpha = (const void*)&alpha;
+        const void*          p_beta  = (const void*)&beta;
+        rocsparse_spmv_alg   alg     = rocsparse_spmv_alg_default;
+        rocsparse_spmv_stage stage   = rocsparse_spmv_stage_auto;
+        size_t               buffer_size;
+        size_t*              p_buffer_size = &buffer_size;
+        void*                temp_buffer   = (void*)0x4;
+        rocsparse_datatype   ttype         = get_datatype<T>();
 
 #define PARAMS                                                                                   \
     handle, trans, p_alpha, (const rocsparse_spmat_descr&)matA, (const rocsparse_dnvec_descr&)x, \
-        p_beta, (rocsparse_dnvec_descr&)y, ttype, alg, p_buffer_size, temp_buffer
+        p_beta, (rocsparse_dnvec_descr&)y, ttype, alg, stage, p_buffer_size, temp_buffer
 
         //
         // AUTOMATIC BAD ARGS.
@@ -602,7 +603,7 @@ public:
             // WITH 2 ARGUMENTS BEING SKIPPED DURING THE CHECK.
             //
             static const int nex   = 2;
-            static const int ex[2] = {9, 10};
+            static const int ex[2] = {10, 11};
             auto_testing_bad_arg(rocsparse_spmv, nex, ex, PARAMS);
 
             p_buffer_size = nullptr;
@@ -631,8 +632,8 @@ public:
         host_scalar<T> h_alpha(arg.get_alpha<T>());
         host_scalar<T> h_beta(arg.get_beta<T>());
 
-#define PARAMS(alpha_, A_, x_, beta_, y_) \
-    handle, trans, alpha_, A_, x_, beta_, y_, ttype, alg, &buffer_size, dbuffer
+#define PARAMS(alpha_, A_, x_, beta_, y_, stage) \
+    handle, trans, alpha_, A_, x_, beta_, y_, ttype, alg, stage, &buffer_size, dbuffer
 
         // Argument sanity check before allocating invalid memory
 
@@ -672,11 +673,15 @@ public:
 
                 size_t buffer_size;
                 void*  dbuffer = nullptr;
-                EXPECT_ROCSPARSE_STATUS(rocsparse_spmv(PARAMS(h_alpha, matA, x, h_beta, y)),
-                                        rocsparse_status_success);
+                EXPECT_ROCSPARSE_STATUS(
+                    rocsparse_spmv(
+                        PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_buffer_size)),
+                    rocsparse_status_success);
                 CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, 10));
-                EXPECT_ROCSPARSE_STATUS(rocsparse_spmv(PARAMS(h_alpha, matA, x, h_beta, y)),
-                                        rocsparse_status_success);
+                EXPECT_ROCSPARSE_STATUS(
+                    rocsparse_spmv(
+                        PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_compute)),
+                    rocsparse_status_success);
                 CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
                 return;
             }
@@ -741,21 +746,19 @@ public:
 
         void*  dbuffer     = nullptr;
         size_t buffer_size = 0;
-        CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, matA, x, h_beta, y)));
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_spmv(PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_buffer_size)));
         CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
         if(arg.unit_check)
         {
-#define EX_PARAMS(alpha_, A_, x_, beta_, y_, stage_) \
-    handle, trans, alpha_, A_, x_, beta_, y_, ttype, alg, stage_, &buffer_size, dbuffer
-
-            CHECK_ROCSPARSE_ERROR(rocsparse_spmv_ex(
-                EX_PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_preprocess)));
+            CHECK_ROCSPARSE_ERROR(rocsparse_spmv(
+                PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_preprocess)));
 
             // Pointer mode host
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-            CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmv_ex(
-                EX_PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_compute)));
+            CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmv(
+                PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_compute)));
 
             //
             // CPU spmv
@@ -778,8 +781,8 @@ public:
                 device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
                 CHECK_ROCSPARSE_ERROR(
                     rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-                CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmv_ex(
-                    EX_PARAMS(d_alpha, matA, x, d_beta, y, rocsparse_spmv_stage_compute)));
+                CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmv(
+                    PARAMS(d_alpha, matA, x, d_beta, y, rocsparse_spmv_stage_compute)));
             }
 
             hy.near_check(dy);
@@ -795,7 +798,8 @@ public:
             // Warm up
             for(int iter = 0; iter < number_cold_calls; ++iter)
             {
-                CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, matA, x, h_beta, y)));
+                CHECK_ROCSPARSE_ERROR(rocsparse_spmv(
+                    PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_compute)));
             }
 
             double gpu_time_used = get_time_us();
@@ -803,7 +807,8 @@ public:
             // Performance run
             for(int iter = 0; iter < number_hot_calls; ++iter)
             {
-                CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, matA, x, h_beta, y)));
+                CHECK_ROCSPARSE_ERROR(rocsparse_spmv(
+                    PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_compute)));
             }
 
             gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

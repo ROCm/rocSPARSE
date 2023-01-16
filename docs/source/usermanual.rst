@@ -1205,7 +1205,6 @@ Function name                             single double single complex double co
 :cpp:func:`rocsparse_spmv_ex()`           x      x      x              x
 :cpp:func:`rocsparse_spsv()`              x      x      x              x
 :cpp:func:`rocsparse_spmm()`              x      x      x              x
-:cpp:func:`rocsparse_spmm_ex()`           x      x      x              x
 :cpp:func:`rocsparse_spsm()`              x      x      x              x
 :cpp:func:`rocsparse_spgemm()`            x      x      x              x
 :cpp:func:`rocsparse_sddmm_buffer_size()` x      x      x              x
@@ -3303,11 +3302,6 @@ rocsparse_spmm()
 ----------------
 
 .. doxygenfunction:: rocsparse_spmm
-
-rocsparse_spmm_ex()
--------------------
-
-.. doxygenfunction:: rocsparse_spmm_ex
 
 rocsparse_spgemm()
 ------------------

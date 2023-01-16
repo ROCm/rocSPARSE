@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -115,6 +115,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                    y,
                                    ttype,
                                    rocsparse_spmv_alg_default,
+                                   rocsparse_spmv_stage_buffer_size,
                                    &buffer_size,
                                    nullptr));
 
@@ -134,6 +135,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                        y,
                                        ttype,
                                        rocsparse_spmv_alg_default,
+                                       rocsparse_spmv_stage_compute,
                                        &buffer_size,
                                        temp_buffer));
     }
@@ -159,6 +161,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                            y,
                                            ttype,
                                            rocsparse_spmv_alg_default,
+                                           rocsparse_spmv_stage_compute,
                                            &buffer_size,
                                            temp_buffer));
         }

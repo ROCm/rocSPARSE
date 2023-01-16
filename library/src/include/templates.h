@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,6 +83,7 @@ inline rocsparse_status rocsparse_bsrmv(rocsparse_handle          handle,
                                         const rocsparse_int*      bsr_row_ptr,
                                         const rocsparse_int*      bsr_col_ind,
                                         rocsparse_int             bsr_dim,
+                                        rocsparse_mat_info        info,
                                         const T*                  x,
                                         const T*                  beta,
                                         T*                        y);
@@ -100,6 +101,7 @@ inline rocsparse_status rocsparse_bsrmv(rocsparse_handle          handle,
                                         const rocsparse_int*      bsr_row_ptr,
                                         const rocsparse_int*      bsr_col_ind,
                                         rocsparse_int             bsr_dim,
+                                        rocsparse_mat_info        info,
                                         const float*              x,
                                         const float*              beta,
                                         float*                    y)
@@ -116,6 +118,7 @@ inline rocsparse_status rocsparse_bsrmv(rocsparse_handle          handle,
                             bsr_row_ptr,
                             bsr_col_ind,
                             bsr_dim,
+                            info,
                             x,
                             beta,
                             y);
@@ -134,6 +137,7 @@ inline rocsparse_status rocsparse_bsrmv(rocsparse_handle          handle,
                                         const rocsparse_int*      bsr_row_ptr,
                                         const rocsparse_int*      bsr_col_ind,
                                         rocsparse_int             bsr_dim,
+                                        rocsparse_mat_info        info,
                                         const double*             x,
                                         const double*             beta,
                                         double*                   y)
@@ -150,6 +154,7 @@ inline rocsparse_status rocsparse_bsrmv(rocsparse_handle          handle,
                             bsr_row_ptr,
                             bsr_col_ind,
                             bsr_dim,
+                            info,
                             x,
                             beta,
                             y);
@@ -168,6 +173,7 @@ inline rocsparse_status rocsparse_bsrmv(rocsparse_handle               handle,
                                         const rocsparse_int*           bsr_row_ptr,
                                         const rocsparse_int*           bsr_col_ind,
                                         rocsparse_int                  bsr_dim,
+                                        rocsparse_mat_info             info,
                                         const rocsparse_float_complex* x,
                                         const rocsparse_float_complex* beta,
                                         rocsparse_float_complex*       y)
@@ -184,6 +190,7 @@ inline rocsparse_status rocsparse_bsrmv(rocsparse_handle               handle,
                             bsr_row_ptr,
                             bsr_col_ind,
                             bsr_dim,
+                            info,
                             x,
                             beta,
                             y);
@@ -202,6 +209,7 @@ inline rocsparse_status rocsparse_bsrmv(rocsparse_handle                handle,
                                         const rocsparse_int*            bsr_row_ptr,
                                         const rocsparse_int*            bsr_col_ind,
                                         rocsparse_int                   bsr_dim,
+                                        rocsparse_mat_info              info,
                                         const rocsparse_double_complex* x,
                                         const rocsparse_double_complex* beta,
                                         rocsparse_double_complex*       y)
@@ -218,6 +226,7 @@ inline rocsparse_status rocsparse_bsrmv(rocsparse_handle                handle,
                             bsr_row_ptr,
                             bsr_col_ind,
                             bsr_dim,
+                            info,
                             x,
                             beta,
                             y);
