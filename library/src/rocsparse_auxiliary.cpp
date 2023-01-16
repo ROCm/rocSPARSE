@@ -1420,35 +1420,7 @@ rocsparse_status rocsparse_create_const_spvec_descr(rocsparse_const_spvec_descr*
 /********************************************************************************
  * \brief rocsparse_destroy_spvec_descr destroys a sparse vector descriptor.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_spvec_descr(rocsparse_spvec_descr descr)
-{
-    // Check for valid handle
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check if descriptor has been initialized
-    if(descr->init == false)
-    {
-        // Do nothing
-        return rocsparse_status_success;
-    }
-
-    // Destruct
-    try
-    {
-        delete descr;
-    }
-    catch(const rocsparse_status& status)
-    {
-        return status;
-    }
-
-    return rocsparse_status_success;
-}
-
-rocsparse_status rocsparse_destroy_spvec_descr_ex(rocsparse_const_spvec_descr descr)
+rocsparse_status rocsparse_destroy_spvec_descr(rocsparse_const_spvec_descr descr)
 {
     // Check for valid handle
     if(descr == nullptr)
@@ -1587,28 +1559,8 @@ rocsparse_status rocsparse_const_spvec_get(rocsparse_const_spvec_descr descr,
 /********************************************************************************
  * \brief rocsparse_spvec_get_index_base returns the sparse vector index base.
  *******************************************************************************/
-rocsparse_status rocsparse_spvec_get_index_base(const rocsparse_spvec_descr descr,
+rocsparse_status rocsparse_spvec_get_index_base(rocsparse_const_spvec_descr descr,
                                                 rocsparse_index_base*       idx_base)
-{
-    // Check for valid pointers
-    if(descr == nullptr || idx_base == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check if descriptor has been initialized
-    if(descr->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
-
-    *idx_base = descr->idx_base;
-
-    return rocsparse_status_success;
-}
-
-rocsparse_status rocsparse_spvec_get_index_base_ex(rocsparse_const_spvec_descr descr,
-                                                   rocsparse_index_base*       idx_base)
 {
     // Check for valid pointers
     if(descr == nullptr || idx_base == nullptr)
@@ -2772,38 +2724,7 @@ rocsparse_status rocsparse_create_bsr_descr(rocsparse_spmat_descr* descr,
 /********************************************************************************
  * \brief rocsparse_destroy_spmat_descr destroys a sparse matrix descriptor.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_spmat_descr(rocsparse_spmat_descr descr)
-{
-    // Check for valid handle
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check if descriptor has been initialized
-    if(descr->init == false)
-    {
-        // Do nothing
-        return rocsparse_status_success;
-    }
-
-    // Destruct
-    try
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_mat_descr(descr->descr));
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_mat_info(descr->info));
-
-        delete descr;
-    }
-    catch(const rocsparse_status& status)
-    {
-        return status;
-    }
-
-    return rocsparse_status_success;
-}
-
-rocsparse_status rocsparse_destroy_spmat_descr_ex(rocsparse_const_spmat_descr descr)
+rocsparse_status rocsparse_destroy_spmat_descr(rocsparse_const_spmat_descr descr)
 {
     // Check for valid handle
     if(descr == nullptr)
@@ -3514,40 +3435,10 @@ rocsparse_status rocsparse_bsr_set_pointers(rocsparse_spmat_descr descr,
 /********************************************************************************
  * \brief rocsparse_spmat_get_size returns the sparse matrix sizes.
  *******************************************************************************/
-rocsparse_status rocsparse_spmat_get_size(rocsparse_spmat_descr descr,
-                                          int64_t*              rows,
-                                          int64_t*              cols,
-                                          int64_t*              nnz)
-{
-    // Check for valid pointers
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check for invalid size pointers
-    if(rows == nullptr || cols == nullptr || nnz == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check if descriptor has been initialized
-    if(descr->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
-
-    *rows = descr->rows;
-    *cols = descr->cols;
-    *nnz  = descr->nnz;
-
-    return rocsparse_status_success;
-}
-
-rocsparse_status rocsparse_spmat_get_size_ex(rocsparse_const_spmat_descr descr,
-                                             int64_t*                    rows,
-                                             int64_t*                    cols,
-                                             int64_t*                    nnz)
+rocsparse_status rocsparse_spmat_get_size(rocsparse_const_spmat_descr descr,
+                                          int64_t*                    rows,
+                                          int64_t*                    cols,
+                                          int64_t*                    nnz)
 {
     // Check for valid pointers
     if(descr == nullptr)
@@ -3577,28 +3468,8 @@ rocsparse_status rocsparse_spmat_get_size_ex(rocsparse_const_spmat_descr descr,
 /********************************************************************************
  * \brief rocsparse_spmat_get_format returns the sparse matrix format.
  *******************************************************************************/
-rocsparse_status rocsparse_spmat_get_format(const rocsparse_spmat_descr descr,
+rocsparse_status rocsparse_spmat_get_format(rocsparse_const_spmat_descr descr,
                                             rocsparse_format*           format)
-{
-    // Check for valid pointers
-    if(descr == nullptr || format == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check if descriptor has been initialized
-    if(descr->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
-
-    *format = descr->format;
-
-    return rocsparse_status_success;
-}
-
-rocsparse_status rocsparse_spmat_get_format_ex(rocsparse_const_spmat_descr descr,
-                                               rocsparse_format*           format)
 {
     // Check for valid pointers
     if(descr == nullptr || format == nullptr)
@@ -3620,28 +3491,8 @@ rocsparse_status rocsparse_spmat_get_format_ex(rocsparse_const_spmat_descr descr
 /********************************************************************************
  * \brief rocsparse_spmat_get_index_base returns the sparse matrix index base.
  *******************************************************************************/
-rocsparse_status rocsparse_spmat_get_index_base(const rocsparse_spmat_descr descr,
+rocsparse_status rocsparse_spmat_get_index_base(rocsparse_const_spmat_descr descr,
                                                 rocsparse_index_base*       idx_base)
-{
-    // Check for valid pointers
-    if(descr == nullptr || idx_base == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check if descriptor has been initialized
-    if(descr->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
-
-    *idx_base = descr->idx_base;
-
-    return rocsparse_status_success;
-}
-
-rocsparse_status rocsparse_spmat_get_index_base_ex(rocsparse_const_spmat_descr descr,
-                                                   rocsparse_index_base*       idx_base)
 {
     // Check for valid pointers
     if(descr == nullptr || idx_base == nullptr)
@@ -3727,27 +3578,8 @@ rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* v
 /********************************************************************************
  * \brief rocsparse_spmat_get_strided_batch gets the sparse matrix batch count.
  *******************************************************************************/
-rocsparse_status rocsparse_spmat_get_strided_batch(rocsparse_spmat_descr descr, int* batch_count)
-{
-    // Check for valid pointers
-    if(descr == nullptr || batch_count == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check if descriptor has been initialized
-    if(descr->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
-
-    *batch_count = descr->batch_count;
-
-    return rocsparse_status_success;
-}
-
-rocsparse_status rocsparse_spmat_get_strided_batch_ex(rocsparse_const_spmat_descr descr,
-                                                      int*                        batch_count)
+rocsparse_status rocsparse_spmat_get_strided_batch(rocsparse_const_spmat_descr descr,
+                                                   int*                        batch_count)
 {
     // Check for valid pointers
     if(descr == nullptr || batch_count == nullptr)
@@ -3873,67 +3705,10 @@ rocsparse_status rocsparse_csc_set_strided_batch(rocsparse_spmat_descr descr,
 /********************************************************************************
  * \brief rocsparse_spmat_get_attribute gets the sparse matrix attribute.
  *******************************************************************************/
-rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
-                                               rocsparse_spmat_attribute attribute,
-                                               void*                     data,
-                                               size_t                    data_size)
-{
-    if(descr == nullptr || data == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    switch(attribute)
-    {
-    case rocsparse_spmat_fill_mode:
-    {
-        if(data_size != sizeof(rocsparse_spmat_fill_mode))
-        {
-            return rocsparse_status_invalid_size;
-        }
-        rocsparse_fill_mode* uplo = reinterpret_cast<rocsparse_fill_mode*>(data);
-        *uplo                     = rocsparse_get_mat_fill_mode(descr->descr);
-        return rocsparse_status_success;
-    }
-    case rocsparse_spmat_diag_type:
-    {
-        if(data_size != sizeof(rocsparse_spmat_diag_type))
-        {
-            return rocsparse_status_invalid_size;
-        }
-        rocsparse_diag_type* uplo = reinterpret_cast<rocsparse_diag_type*>(data);
-        *uplo                     = rocsparse_get_mat_diag_type(descr->descr);
-        return rocsparse_status_success;
-    }
-    case rocsparse_spmat_matrix_type:
-    {
-        if(data_size != sizeof(rocsparse_spmat_matrix_type))
-        {
-            return rocsparse_status_invalid_size;
-        }
-        rocsparse_matrix_type* matrix = reinterpret_cast<rocsparse_matrix_type*>(data);
-        *matrix                       = rocsparse_get_mat_type(descr->descr);
-        return rocsparse_status_success;
-    }
-    case rocsparse_spmat_storage_mode:
-    {
-        if(data_size != sizeof(rocsparse_spmat_storage_mode))
-        {
-            return rocsparse_status_invalid_size;
-        }
-        rocsparse_storage_mode* storage = reinterpret_cast<rocsparse_storage_mode*>(data);
-        *storage                        = rocsparse_get_mat_storage_mode(descr->descr);
-        return rocsparse_status_success;
-    }
-    }
-
-    return rocsparse_status_invalid_value;
-}
-
-rocsparse_status rocsparse_spmat_get_attribute_ex(rocsparse_const_spmat_descr descr,
-                                                  rocsparse_spmat_attribute   attribute,
-                                                  void*                       data,
-                                                  size_t                      data_size)
+rocsparse_status rocsparse_spmat_get_attribute(rocsparse_const_spmat_descr descr,
+                                               rocsparse_spmat_attribute   attribute,
+                                               void*                       data,
+                                               size_t                      data_size)
 {
     if(descr == nullptr || data == nullptr)
     {
@@ -4152,27 +3927,7 @@ rocsparse_status rocsparse_create_const_dnvec_descr(rocsparse_const_dnvec_descr*
 /********************************************************************************
  * \brief rocsparse_destroy_dnvec_descr destroys a dense vector descriptor.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_dnvec_descr(rocsparse_dnvec_descr descr)
-{
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Destruct
-    try
-    {
-        delete descr;
-    }
-    catch(const rocsparse_status& status)
-    {
-        return status;
-    }
-
-    return rocsparse_status_success;
-}
-
-rocsparse_status rocsparse_destroy_dnvec_descr_ex(rocsparse_const_dnvec_descr descr)
+rocsparse_status rocsparse_destroy_dnvec_descr(rocsparse_const_dnvec_descr descr)
 {
     if(descr == nullptr)
     {
@@ -4444,27 +4199,7 @@ rocsparse_status rocsparse_create_const_dnmat_descr(rocsparse_const_dnmat_descr*
 /********************************************************************************
  * \brief rocsparse_destroy_dnmat_descr destroys a dense matrix descriptor.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_dnmat_descr(rocsparse_dnmat_descr descr)
-{
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Destruct
-    try
-    {
-        delete descr;
-    }
-    catch(const rocsparse_status& status)
-    {
-        return status;
-    }
-
-    return rocsparse_status_success;
-}
-
-rocsparse_status rocsparse_destroy_dnmat_descr_ex(rocsparse_const_dnmat_descr descr)
+rocsparse_status rocsparse_destroy_dnmat_descr(rocsparse_const_dnmat_descr descr)
 {
     if(descr == nullptr)
     {
@@ -4617,31 +4352,9 @@ rocsparse_status rocsparse_dnmat_set_values(rocsparse_dnmat_descr descr, void* v
  * \brief rocsparse_dnmat_get_strided_batch gets the dense matrix batch count
  * and batch stride.
  *******************************************************************************/
-rocsparse_status rocsparse_dnmat_get_strided_batch(rocsparse_dnmat_descr descr,
-                                                   int*                  batch_count,
-                                                   int64_t*              batch_stride)
-{
-    // Check for valid pointers
-    if(descr == nullptr || batch_count == nullptr || batch_stride == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check if descriptor has been initialized
-    if(descr->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
-
-    *batch_count  = descr->batch_count;
-    *batch_stride = descr->batch_stride;
-
-    return rocsparse_status_success;
-}
-
-rocsparse_status rocsparse_dnmat_get_strided_batch_ex(rocsparse_const_dnmat_descr descr,
-                                                      int*                        batch_count,
-                                                      int64_t*                    batch_stride)
+rocsparse_status rocsparse_dnmat_get_strided_batch(rocsparse_const_dnmat_descr descr,
+                                                   int*                        batch_count,
+                                                   int64_t*                    batch_stride)
 {
     // Check for valid pointers
     if(descr == nullptr || batch_count == nullptr || batch_stride == nullptr)

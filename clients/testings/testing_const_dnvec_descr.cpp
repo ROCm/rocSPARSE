@@ -38,13 +38,13 @@ void testing_const_dnvec_descr_bad_arg(const Arguments& arg)
 #undef PARAMS_CREATE
 
     // rocsparse_destroy_dnvec_descr_ex
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr_ex(nullptr),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(nullptr),
                             rocsparse_status_invalid_pointer);
 
     // Check valid descriptor creations
     EXPECT_ROCSPARSE_STATUS(rocsparse_create_const_dnvec_descr(&x, 0, nullptr, ttype),
                             rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr_ex(x), rocsparse_status_success);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(x), rocsparse_status_success);
 
     // Create valid descriptor
     EXPECT_ROCSPARSE_STATUS(rocsparse_create_const_dnvec_descr(&x, size, values, ttype),
@@ -63,7 +63,7 @@ void testing_const_dnvec_descr_bad_arg(const Arguments& arg)
                             rocsparse_status_invalid_pointer);
 
     // Destroy valid descriptor
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr_ex(x), rocsparse_status_success);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(x), rocsparse_status_success);
 }
 
 template <typename T>

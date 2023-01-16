@@ -43,18 +43,18 @@ void testing_const_spvec_descr_bad_arg(const Arguments& arg)
 #undef PARAMS_CREATE
 
     // rocsparse_destroy_spvec_descr_ex
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr_ex(nullptr),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(nullptr),
                             rocsparse_status_invalid_pointer);
 
     // Check valid descriptor creations
     EXPECT_ROCSPARSE_STATUS(
         rocsparse_create_const_spvec_descr(&x, 0, 0, nullptr, nullptr, itype, base, ttype),
         rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr_ex(x), rocsparse_status_success);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(x), rocsparse_status_success);
     EXPECT_ROCSPARSE_STATUS(
         rocsparse_create_const_spvec_descr(&x, size, 0, nullptr, nullptr, itype, base, ttype),
         rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr_ex(x), rocsparse_status_success);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(x), rocsparse_status_success);
 
     // Create valid descriptor
     EXPECT_ROCSPARSE_STATUS(
@@ -69,9 +69,9 @@ void testing_const_spvec_descr_bad_arg(const Arguments& arg)
 #undef PARAMS_GET
 
     // rocsparse_spvec_get_index_base
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_index_base_ex(nullptr, &base),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_index_base(nullptr, &base),
                             rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_index_base_ex(x, nullptr),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_index_base(x, nullptr),
                             rocsparse_status_invalid_pointer);
 
     // rocsparse_spvec_get_values
@@ -81,7 +81,7 @@ void testing_const_spvec_descr_bad_arg(const Arguments& arg)
                             rocsparse_status_invalid_pointer);
 
     // Destroy valid descriptors
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr_ex(x), rocsparse_status_success);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(x), rocsparse_status_success);
 }
 
 template <typename I, typename T>
