@@ -26,8 +26,8 @@
 *  of Level 1, 2 and 3, using HIP optimized for AMD GPU hardware.
 */
 
-#ifndef _ROCSPARSE_FUNCTIONS_H_
-#define _ROCSPARSE_FUNCTIONS_H_
+#ifndef ROCSPARSE_FUNCTIONS_H
+#define ROCSPARSE_FUNCTIONS_H
 
 #include "rocsparse-export.h"
 #include "rocsparse-types.h"
@@ -2097,61 +2097,69 @@ rocsparse_status rocsparse_isctr(rocsparse_handle     handle,
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
 /**@{*/
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_sbsrmv_ex_analysis(rocsparse_handle          handle,
-                                              rocsparse_direction       dir,
-                                              rocsparse_operation       trans,
-                                              rocsparse_int             mb,
-                                              rocsparse_int             nb,
-                                              rocsparse_int             nnzb,
-                                              const rocsparse_mat_descr descr,
-                                              const float*              bsr_val,
-                                              const rocsparse_int*      bsr_row_ptr,
-                                              const rocsparse_int*      bsr_col_ind,
-                                              rocsparse_int             block_dim,
-                                              rocsparse_mat_info        info);
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_sbsrmv_analysis instead.")))
+ROCSPARSE_EXPORT rocsparse_status
+    rocsparse_sbsrmv_ex_analysis(rocsparse_handle          handle,
+                                 rocsparse_direction       dir,
+                                 rocsparse_operation       trans,
+                                 rocsparse_int             mb,
+                                 rocsparse_int             nb,
+                                 rocsparse_int             nnzb,
+                                 const rocsparse_mat_descr descr,
+                                 const float*              bsr_val,
+                                 const rocsparse_int*      bsr_row_ptr,
+                                 const rocsparse_int*      bsr_col_ind,
+                                 rocsparse_int             block_dim,
+                                 rocsparse_mat_info        info);
 
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_dbsrmv_ex_analysis(rocsparse_handle          handle,
-                                              rocsparse_direction       dir,
-                                              rocsparse_operation       trans,
-                                              rocsparse_int             mb,
-                                              rocsparse_int             nb,
-                                              rocsparse_int             nnzb,
-                                              const rocsparse_mat_descr descr,
-                                              const double*             bsr_val,
-                                              const rocsparse_int*      bsr_row_ptr,
-                                              const rocsparse_int*      bsr_col_ind,
-                                              rocsparse_int             block_dim,
-                                              rocsparse_mat_info        info);
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_dbsrmv_analysis instead.")))
+ROCSPARSE_EXPORT rocsparse_status
+    rocsparse_dbsrmv_ex_analysis(rocsparse_handle          handle,
+                                 rocsparse_direction       dir,
+                                 rocsparse_operation       trans,
+                                 rocsparse_int             mb,
+                                 rocsparse_int             nb,
+                                 rocsparse_int             nnzb,
+                                 const rocsparse_mat_descr descr,
+                                 const double*             bsr_val,
+                                 const rocsparse_int*      bsr_row_ptr,
+                                 const rocsparse_int*      bsr_col_ind,
+                                 rocsparse_int             block_dim,
+                                 rocsparse_mat_info        info);
 
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_cbsrmv_ex_analysis(rocsparse_handle               handle,
-                                              rocsparse_direction            dir,
-                                              rocsparse_operation            trans,
-                                              rocsparse_int                  mb,
-                                              rocsparse_int                  nb,
-                                              rocsparse_int                  nnzb,
-                                              const rocsparse_mat_descr      descr,
-                                              const rocsparse_float_complex* bsr_val,
-                                              const rocsparse_int*           bsr_row_ptr,
-                                              const rocsparse_int*           bsr_col_ind,
-                                              rocsparse_int                  block_dim,
-                                              rocsparse_mat_info             info);
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_cbsrmv_analysis instead.")))
+ROCSPARSE_EXPORT rocsparse_status
+    rocsparse_cbsrmv_ex_analysis(rocsparse_handle               handle,
+                                 rocsparse_direction            dir,
+                                 rocsparse_operation            trans,
+                                 rocsparse_int                  mb,
+                                 rocsparse_int                  nb,
+                                 rocsparse_int                  nnzb,
+                                 const rocsparse_mat_descr      descr,
+                                 const rocsparse_float_complex* bsr_val,
+                                 const rocsparse_int*           bsr_row_ptr,
+                                 const rocsparse_int*           bsr_col_ind,
+                                 rocsparse_int                  block_dim,
+                                 rocsparse_mat_info             info);
 
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_zbsrmv_ex_analysis(rocsparse_handle                handle,
-                                              rocsparse_direction             dir,
-                                              rocsparse_operation             trans,
-                                              rocsparse_int                   mb,
-                                              rocsparse_int                   nb,
-                                              rocsparse_int                   nnzb,
-                                              const rocsparse_mat_descr       descr,
-                                              const rocsparse_double_complex* bsr_val,
-                                              const rocsparse_int*            bsr_row_ptr,
-                                              const rocsparse_int*            bsr_col_ind,
-                                              rocsparse_int                   block_dim,
-                                              rocsparse_mat_info              info);
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_zbsrmv_analysis instead.")))
+ROCSPARSE_EXPORT rocsparse_status
+    rocsparse_zbsrmv_ex_analysis(rocsparse_handle                handle,
+                                 rocsparse_direction             dir,
+                                 rocsparse_operation             trans,
+                                 rocsparse_int                   mb,
+                                 rocsparse_int                   nb,
+                                 rocsparse_int                   nnzb,
+                                 const rocsparse_mat_descr       descr,
+                                 const rocsparse_double_complex* bsr_val,
+                                 const rocsparse_int*            bsr_row_ptr,
+                                 const rocsparse_int*            bsr_col_ind,
+                                 rocsparse_int                   block_dim,
+                                 rocsparse_mat_info              info);
 /**@}*/
 
 /*! \ingroup level2_module
@@ -2237,77 +2245,232 @@ rocsparse_status rocsparse_zbsrmv_ex_analysis(rocsparse_handle                ha
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
 /**@{*/
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_sbsrmv instead."))) ROCSPARSE_EXPORT rocsparse_status
+    rocsparse_sbsrmv_ex(rocsparse_handle          handle,
+                        rocsparse_direction       dir,
+                        rocsparse_operation       trans,
+                        rocsparse_int             mb,
+                        rocsparse_int             nb,
+                        rocsparse_int             nnzb,
+                        const float*              alpha,
+                        const rocsparse_mat_descr descr,
+                        const float*              bsr_val,
+                        const rocsparse_int*      bsr_row_ptr,
+                        const rocsparse_int*      bsr_col_ind,
+                        rocsparse_int             block_dim,
+                        rocsparse_mat_info        info,
+                        const float*              x,
+                        const float*              beta,
+                        float*                    y);
+
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_dbsrmv instead."))) ROCSPARSE_EXPORT rocsparse_status
+    rocsparse_dbsrmv_ex(rocsparse_handle          handle,
+                        rocsparse_direction       dir,
+                        rocsparse_operation       trans,
+                        rocsparse_int             mb,
+                        rocsparse_int             nb,
+                        rocsparse_int             nnzb,
+                        const double*             alpha,
+                        const rocsparse_mat_descr descr,
+                        const double*             bsr_val,
+                        const rocsparse_int*      bsr_row_ptr,
+                        const rocsparse_int*      bsr_col_ind,
+                        rocsparse_int             block_dim,
+                        rocsparse_mat_info        info,
+                        const double*             x,
+                        const double*             beta,
+                        double*                   y);
+
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_cbsrmv instead."))) ROCSPARSE_EXPORT rocsparse_status
+    rocsparse_cbsrmv_ex(rocsparse_handle               handle,
+                        rocsparse_direction            dir,
+                        rocsparse_operation            trans,
+                        rocsparse_int                  mb,
+                        rocsparse_int                  nb,
+                        rocsparse_int                  nnzb,
+                        const rocsparse_float_complex* alpha,
+                        const rocsparse_mat_descr      descr,
+                        const rocsparse_float_complex* bsr_val,
+                        const rocsparse_int*           bsr_row_ptr,
+                        const rocsparse_int*           bsr_col_ind,
+                        rocsparse_int                  block_dim,
+                        rocsparse_mat_info             info,
+                        const rocsparse_float_complex* x,
+                        const rocsparse_float_complex* beta,
+                        rocsparse_float_complex*       y);
+
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_zbsrmv instead."))) ROCSPARSE_EXPORT rocsparse_status
+    rocsparse_zbsrmv_ex(rocsparse_handle                handle,
+                        rocsparse_direction             dir,
+                        rocsparse_operation             trans,
+                        rocsparse_int                   mb,
+                        rocsparse_int                   nb,
+                        rocsparse_int                   nnzb,
+                        const rocsparse_double_complex* alpha,
+                        const rocsparse_mat_descr       descr,
+                        const rocsparse_double_complex* bsr_val,
+                        const rocsparse_int*            bsr_row_ptr,
+                        const rocsparse_int*            bsr_col_ind,
+                        rocsparse_int                   block_dim,
+                        rocsparse_mat_info              info,
+                        const rocsparse_double_complex* x,
+                        const rocsparse_double_complex* beta,
+                        rocsparse_double_complex*       y);
+/**@}*/
+
+/*! \ingroup level2_module
+*  \brief Sparse matrix vector multiplication using BSR storage format
+*
+*  \details
+*  \p rocsparse_bsrmv_ex_clear deallocates all memory that was allocated by
+*  rocsparse_sbsrmv_ex_analysis(), rocsparse_dbsrmv_ex_analysis(), rocsparse_cbsrmv_ex_analysis()
+*  or rocsparse_zbsrmv_ex_analysis(). This is especially useful, if memory is an issue and
+*  the analysis data is not required anymore for further computation, e.g. when
+*  switching to another sparse matrix format.
+*
+*  \note
+*  Calling \p rocsparse_bsrmv_ex_clear is optional. All allocated resources will be
+*  cleared, when the opaque \ref rocsparse_mat_info struct is destroyed using
+*  rocsparse_destroy_mat_info().
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[inout]
+*  info        structure that holds the information collected during analysis step.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_pointer \p info pointer is invalid.
+*  \retval     rocsparse_status_memory_error the buffer for the gathered information
+*              could not be deallocated.
+*  \retval     rocsparse_status_internal_error an internal error occurred.
+* */
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_bsrmv_clear instead."))) ROCSPARSE_EXPORT rocsparse_status
+    rocsparse_bsrmv_ex_clear(rocsparse_handle handle, rocsparse_mat_info info);
+
+/*! \ingroup level2_module
+*  \brief Sparse matrix vector multiplication using BSR storage format
+*
+*  \details
+*  \p rocsparse_bsrmv_analysis performs the analysis step for rocsparse_sbsrmv(),
+*  rocsparse_dbsrmv(), rocsparse_cbsrmv() and rocsparse_zbsrmv(). It is expected that
+*  this function will be executed only once for a given matrix and particular operation
+*  type. The gathered analysis meta data can be cleared by rocsparse_bsrmv_clear().
+*
+*  \note
+*  If the matrix sparsity pattern changes, the gathered information will become invalid.
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  dir         matrix storage of BSR blocks.
+*  @param[in]
+*  trans       matrix operation type.
+*  @param[in]
+*  mb          number of block rows of the sparse BSR matrix.
+*  @param[in]
+*  nb          number of block columns of the sparse BSR matrix.
+*  @param[in]
+*  nnzb        number of non-zero blocks of the sparse BSR matrix.
+*  @param[in]
+*  descr       descriptor of the sparse BSR matrix. Currently, only
+*              \ref rocsparse_matrix_type_general is supported.
+*  @param[in]
+*  bsr_val     array of \p nnzb blocks of the sparse BSR matrix.
+*  @param[in]
+*  bsr_row_ptr array of \p mb+1 elements that point to the start of every block row of
+*              the sparse BSR matrix.
+*  @param[in]
+*  bsr_col_ind array of \p nnzb elements containing the block column indices of the sparse
+*              BSR matrix.
+*  @param[in]
+*  block_dim     block dimension of the sparse BSR matrix.
+*  @param[out]
+*  info        structure that holds the information collected during the analysis step.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_size \p mb, \p nb or \p nnzb is invalid.
+*  \retval     rocsparse_status_invalid_pointer \p descr, \p bsr_val, \p bsr_row_ptr,
+*              \p bsr_col_ind or \p info pointer is invalid.
+*  \retval     rocsparse_status_memory_error the buffer for the gathered information
+*              could not be allocated.
+*  \retval     rocsparse_status_internal_error an internal error occurred.
+*  \retval     rocsparse_status_not_implemented
+*              \p trans != \ref rocsparse_operation_none or
+*              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
+*/
+/**@{*/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_sbsrmv_ex(rocsparse_handle          handle,
-                                     rocsparse_direction       dir,
-                                     rocsparse_operation       trans,
-                                     rocsparse_int             mb,
-                                     rocsparse_int             nb,
-                                     rocsparse_int             nnzb,
-                                     const float*              alpha,
-                                     const rocsparse_mat_descr descr,
-                                     const float*              bsr_val,
-                                     const rocsparse_int*      bsr_row_ptr,
-                                     const rocsparse_int*      bsr_col_ind,
-                                     rocsparse_int             block_dim,
-                                     rocsparse_mat_info        info,
-                                     const float*              x,
-                                     const float*              beta,
-                                     float*                    y);
+rocsparse_status rocsparse_sbsrmv_analysis(rocsparse_handle          handle,
+                                           rocsparse_direction       dir,
+                                           rocsparse_operation       trans,
+                                           rocsparse_int             mb,
+                                           rocsparse_int             nb,
+                                           rocsparse_int             nnzb,
+                                           const rocsparse_mat_descr descr,
+                                           const float*              bsr_val,
+                                           const rocsparse_int*      bsr_row_ptr,
+                                           const rocsparse_int*      bsr_col_ind,
+                                           rocsparse_int             block_dim,
+                                           rocsparse_mat_info        info);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_dbsrmv_ex(rocsparse_handle          handle,
-                                     rocsparse_direction       dir,
-                                     rocsparse_operation       trans,
-                                     rocsparse_int             mb,
-                                     rocsparse_int             nb,
-                                     rocsparse_int             nnzb,
-                                     const double*             alpha,
-                                     const rocsparse_mat_descr descr,
-                                     const double*             bsr_val,
-                                     const rocsparse_int*      bsr_row_ptr,
-                                     const rocsparse_int*      bsr_col_ind,
-                                     rocsparse_int             block_dim,
-                                     rocsparse_mat_info        info,
-                                     const double*             x,
-                                     const double*             beta,
-                                     double*                   y);
+rocsparse_status rocsparse_dbsrmv_analysis(rocsparse_handle          handle,
+                                           rocsparse_direction       dir,
+                                           rocsparse_operation       trans,
+                                           rocsparse_int             mb,
+                                           rocsparse_int             nb,
+                                           rocsparse_int             nnzb,
+                                           const rocsparse_mat_descr descr,
+                                           const double*             bsr_val,
+                                           const rocsparse_int*      bsr_row_ptr,
+                                           const rocsparse_int*      bsr_col_ind,
+                                           rocsparse_int             block_dim,
+                                           rocsparse_mat_info        info);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_cbsrmv_ex(rocsparse_handle               handle,
-                                     rocsparse_direction            dir,
-                                     rocsparse_operation            trans,
-                                     rocsparse_int                  mb,
-                                     rocsparse_int                  nb,
-                                     rocsparse_int                  nnzb,
-                                     const rocsparse_float_complex* alpha,
-                                     const rocsparse_mat_descr      descr,
-                                     const rocsparse_float_complex* bsr_val,
-                                     const rocsparse_int*           bsr_row_ptr,
-                                     const rocsparse_int*           bsr_col_ind,
-                                     rocsparse_int                  block_dim,
-                                     rocsparse_mat_info             info,
-                                     const rocsparse_float_complex* x,
-                                     const rocsparse_float_complex* beta,
-                                     rocsparse_float_complex*       y);
+rocsparse_status rocsparse_cbsrmv_analysis(rocsparse_handle               handle,
+                                           rocsparse_direction            dir,
+                                           rocsparse_operation            trans,
+                                           rocsparse_int                  mb,
+                                           rocsparse_int                  nb,
+                                           rocsparse_int                  nnzb,
+                                           const rocsparse_mat_descr      descr,
+                                           const rocsparse_float_complex* bsr_val,
+                                           const rocsparse_int*           bsr_row_ptr,
+                                           const rocsparse_int*           bsr_col_ind,
+                                           rocsparse_int                  block_dim,
+                                           rocsparse_mat_info             info);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_zbsrmv_ex(rocsparse_handle                handle,
-                                     rocsparse_direction             dir,
-                                     rocsparse_operation             trans,
-                                     rocsparse_int                   mb,
-                                     rocsparse_int                   nb,
-                                     rocsparse_int                   nnzb,
-                                     const rocsparse_double_complex* alpha,
-                                     const rocsparse_mat_descr       descr,
-                                     const rocsparse_double_complex* bsr_val,
-                                     const rocsparse_int*            bsr_row_ptr,
-                                     const rocsparse_int*            bsr_col_ind,
-                                     rocsparse_int                   block_dim,
-                                     rocsparse_mat_info              info,
-                                     const rocsparse_double_complex* x,
-                                     const rocsparse_double_complex* beta,
-                                     rocsparse_double_complex*       y);
+rocsparse_status rocsparse_zbsrmv_analysis(rocsparse_handle                handle,
+                                           rocsparse_direction             dir,
+                                           rocsparse_operation             trans,
+                                           rocsparse_int                   mb,
+                                           rocsparse_int                   nb,
+                                           rocsparse_int                   nnzb,
+                                           const rocsparse_mat_descr       descr,
+                                           const rocsparse_double_complex* bsr_val,
+                                           const rocsparse_int*            bsr_row_ptr,
+                                           const rocsparse_int*            bsr_col_ind,
+                                           rocsparse_int                   block_dim,
+                                           rocsparse_mat_info              info);
 /**@}*/
 
 /*! \ingroup level2_module
@@ -2378,6 +2541,8 @@ rocsparse_status rocsparse_zbsrmv_ex(rocsparse_handle                handle,
 *  @param[inout]
 *  y           array of \p mb*block_dim elements (\f$op(A) = A\f$) or \p nb*block_dim
 *              elements (\f$op(A) = A^T\f$ or \f$op(A) = A^H\f$).
+*  @param[out]
+*  info        structure that holds the information collected during the analysis step.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -2391,78 +2556,111 @@ rocsparse_status rocsparse_zbsrmv_ex(rocsparse_handle                handle,
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
 /**@{*/
-__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_sbsrmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
-    rocsparse_sbsrmv(rocsparse_handle          handle,
-                     rocsparse_direction       dir,
-                     rocsparse_operation       trans,
-                     rocsparse_int             mb,
-                     rocsparse_int             nb,
-                     rocsparse_int             nnzb,
-                     const float*              alpha,
-                     const rocsparse_mat_descr descr,
-                     const float*              bsr_val,
-                     const rocsparse_int*      bsr_row_ptr,
-                     const rocsparse_int*      bsr_col_ind,
-                     rocsparse_int             block_dim,
-                     const float*              x,
-                     const float*              beta,
-                     float*                    y);
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sbsrmv(rocsparse_handle          handle,
+                                  rocsparse_direction       dir,
+                                  rocsparse_operation       trans,
+                                  rocsparse_int             mb,
+                                  rocsparse_int             nb,
+                                  rocsparse_int             nnzb,
+                                  const float*              alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const float*              bsr_val,
+                                  const rocsparse_int*      bsr_row_ptr,
+                                  const rocsparse_int*      bsr_col_ind,
+                                  rocsparse_int             block_dim,
+                                  rocsparse_mat_info        info,
+                                  const float*              x,
+                                  const float*              beta,
+                                  float*                    y);
 
-__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_dbsrmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
-    rocsparse_dbsrmv(rocsparse_handle          handle,
-                     rocsparse_direction       dir,
-                     rocsparse_operation       trans,
-                     rocsparse_int             mb,
-                     rocsparse_int             nb,
-                     rocsparse_int             nnzb,
-                     const double*             alpha,
-                     const rocsparse_mat_descr descr,
-                     const double*             bsr_val,
-                     const rocsparse_int*      bsr_row_ptr,
-                     const rocsparse_int*      bsr_col_ind,
-                     rocsparse_int             block_dim,
-                     const double*             x,
-                     const double*             beta,
-                     double*                   y);
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dbsrmv(rocsparse_handle          handle,
+                                  rocsparse_direction       dir,
+                                  rocsparse_operation       trans,
+                                  rocsparse_int             mb,
+                                  rocsparse_int             nb,
+                                  rocsparse_int             nnzb,
+                                  const double*             alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const double*             bsr_val,
+                                  const rocsparse_int*      bsr_row_ptr,
+                                  const rocsparse_int*      bsr_col_ind,
+                                  rocsparse_int             block_dim,
+                                  rocsparse_mat_info        info,
+                                  const double*             x,
+                                  const double*             beta,
+                                  double*                   y);
 
-__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_cbsrmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
-    rocsparse_cbsrmv(rocsparse_handle               handle,
-                     rocsparse_direction            dir,
-                     rocsparse_operation            trans,
-                     rocsparse_int                  mb,
-                     rocsparse_int                  nb,
-                     rocsparse_int                  nnzb,
-                     const rocsparse_float_complex* alpha,
-                     const rocsparse_mat_descr      descr,
-                     const rocsparse_float_complex* bsr_val,
-                     const rocsparse_int*           bsr_row_ptr,
-                     const rocsparse_int*           bsr_col_ind,
-                     rocsparse_int                  block_dim,
-                     const rocsparse_float_complex* x,
-                     const rocsparse_float_complex* beta,
-                     rocsparse_float_complex*       y);
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cbsrmv(rocsparse_handle               handle,
+                                  rocsparse_direction            dir,
+                                  rocsparse_operation            trans,
+                                  rocsparse_int                  mb,
+                                  rocsparse_int                  nb,
+                                  rocsparse_int                  nnzb,
+                                  const rocsparse_float_complex* alpha,
+                                  const rocsparse_mat_descr      descr,
+                                  const rocsparse_float_complex* bsr_val,
+                                  const rocsparse_int*           bsr_row_ptr,
+                                  const rocsparse_int*           bsr_col_ind,
+                                  rocsparse_int                  block_dim,
+                                  rocsparse_mat_info             info,
+                                  const rocsparse_float_complex* x,
+                                  const rocsparse_float_complex* beta,
+                                  rocsparse_float_complex*       y);
 
-__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_zbsrmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
-    rocsparse_zbsrmv(rocsparse_handle                handle,
-                     rocsparse_direction             dir,
-                     rocsparse_operation             trans,
-                     rocsparse_int                   mb,
-                     rocsparse_int                   nb,
-                     rocsparse_int                   nnzb,
-                     const rocsparse_double_complex* alpha,
-                     const rocsparse_mat_descr       descr,
-                     const rocsparse_double_complex* bsr_val,
-                     const rocsparse_int*            bsr_row_ptr,
-                     const rocsparse_int*            bsr_col_ind,
-                     rocsparse_int                   block_dim,
-                     const rocsparse_double_complex* x,
-                     const rocsparse_double_complex* beta,
-                     rocsparse_double_complex*       y);
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zbsrmv(rocsparse_handle                handle,
+                                  rocsparse_direction             dir,
+                                  rocsparse_operation             trans,
+                                  rocsparse_int                   mb,
+                                  rocsparse_int                   nb,
+                                  rocsparse_int                   nnzb,
+                                  const rocsparse_double_complex* alpha,
+                                  const rocsparse_mat_descr       descr,
+                                  const rocsparse_double_complex* bsr_val,
+                                  const rocsparse_int*            bsr_row_ptr,
+                                  const rocsparse_int*            bsr_col_ind,
+                                  rocsparse_int                   block_dim,
+                                  rocsparse_mat_info              info,
+                                  const rocsparse_double_complex* x,
+                                  const rocsparse_double_complex* beta,
+                                  rocsparse_double_complex*       y);
 /**@}*/
+
+/*! \ingroup level2_module
+*  \brief Sparse matrix vector multiplication using BSR storage format
+*
+*  \details
+*  \p rocsparse_bsrmv_clear deallocates all memory that was allocated by
+*  rocsparse_sbsrmv_analysis(), rocsparse_dbsrmv_analysis(), rocsparse_cbsrmv_analysis()
+*  or rocsparse_zbsrmv_analysis(). This is especially useful, if memory is an issue and
+*  the analysis data is not required anymore for further computation, e.g. when
+*  switching to another sparse matrix format.
+*
+*  \note
+*  Calling \p rocsparse_bsrmv_clear is optional. All allocated resources will be
+*  cleared, when the opaque \ref rocsparse_mat_info struct is destroyed using
+*  rocsparse_destroy_mat_info().
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[inout]
+*  info        structure that holds the information collected during analysis step.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_pointer \p info pointer is invalid.
+*  \retval     rocsparse_status_memory_error the buffer for the gathered information
+*              could not be deallocated.
+*  \retval     rocsparse_status_internal_error an internal error occurred.
+* */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_bsrmv_clear(rocsparse_handle handle, rocsparse_mat_info info);
 
 /*! \ingroup level2_module
 *  \brief Sparse matrix vector multiplication with mask operation using BSR storage format
@@ -2932,39 +3130,6 @@ rocsparse_status rocsparse_zbsrsv_analysis(rocsparse_handle                handl
                                            rocsparse_solve_policy          solve,
                                            void*                           temp_buffer);
 /**@}*/
-
-/*! \ingroup level2_module
-*  \brief Sparse matrix vector multiplication using BSR storage format
-*
-*  \details
-*  \p rocsparse_bsrmv_ex_clear deallocates all memory that was allocated by
-*  rocsparse_sbsrmv_ex_analysis(), rocsparse_dbsrmv_ex_analysis(), rocsparse_cbsrmv_ex_analysis()
-*  or rocsparse_zbsrmv_ex_analysis(). This is especially useful, if memory is an issue and
-*  the analysis data is not required anymore for further computation, e.g. when
-*  switching to another sparse matrix format.
-*
-*  \note
-*  Calling \p rocsparse_bsrmv_ex_clear is optional. All allocated resources will be
-*  cleared, when the opaque \ref rocsparse_mat_info struct is destroyed using
-*  rocsparse_destroy_mat_info().
-*
-*  \note
-*  This routine does not support execution in a hipGraph context.
-*
-*  @param[in]
-*  handle      handle to the rocsparse library context queue.
-*  @param[inout]
-*  info        structure that holds the information collected during analysis step.
-*
-*  \retval     rocsparse_status_success the operation completed successfully.
-*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval     rocsparse_status_invalid_pointer \p info pointer is invalid.
-*  \retval     rocsparse_status_memory_error the buffer for the gathered information
-*              could not be deallocated.
-*  \retval     rocsparse_status_internal_error an internal error occurred.
-* */
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_bsrmv_ex_clear(rocsparse_handle handle, rocsparse_mat_info info);
 
 /*! \ingroup level2_module
 *  \brief Sparse triangular solve using BSR storage format
@@ -19845,6 +20010,97 @@ rocsparse_status rocsparse_zgebsr2gebsr(rocsparse_handle                handle,
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval rocsparse_status_invalid_pointer \p alpha, \p x, \p beta or \p y pointer is
 *          invalid.
+*
+*  \par Example
+*  \code{.c}
+*   // Number of non-zeros of the sparse vector
+*   int nnz = 3;
+*
+*   // Size of sparse and dense vector
+*   int size = 9;
+*
+*   // Sparse index vector
+*   std::vector<int> hx_ind = {0, 3, 5};
+*
+*   // Sparse value vector
+*   std::vector<float> hx_val = {1.0f, 2.0f, 3.0f};
+*
+*   // Dense vector
+*   std::vector<float> hy = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+*
+*   // Scalar alpha
+*   float alpha = 3.7f;
+*
+*   // Scalar beta
+*   float beta = 1.2f;
+*
+*   // Offload data to device
+*   int* dx_ind;
+*   float* dx_val;
+*   float* dy;
+*   hipMalloc((void**)&dx_ind, sizeof(int) * nnz);
+*   hipMalloc((void**)&dx_val, sizeof(float) * nnz);
+*   hipMalloc((void**)&dy, sizeof(float) * size);
+*
+*   hipMemcpy(dx_ind, hx_ind.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dx_val, hx_val.data(), sizeof(float) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dy, hy.data(), sizeof(float) * size, hipMemcpyHostToDevice);
+*
+*   rocsparse_handle     handle;
+*   rocsparse_spvec_descr vecX;
+*   rocsparse_dnvec_descr vecY;
+*
+*   rocsparse_indextype idx_type = rocsparse_indextype_i32;
+*   rocsparse_datatype  data_type = rocsparse_datatype_f32_r;
+*   rocsparse_index_base idx_base = rocsparse_index_base_zero;
+*
+*   rocsparse_create_handle(&handle);
+*
+*   // Create sparse vector X
+*   rocsparse_create_spvec_descr(&vecX,
+*                                size,
+*                                nnz,
+*                                dx_ind,
+*                                dx_val,
+*                                idx_type,
+*                                idx_base,
+*                                data_type);
+*
+*   // Create dense vector Y
+*   rocsparse_create_dnvec_descr(&vecY,
+*                                size,
+*                                dy,
+*                                data_type);
+*
+*   // Call axpby to perform y = beta * y + alpha * x
+*   rocsparse_axpby(handle,
+*                   &alpha,
+*                   vecX,
+*                   &beta,
+*                   vecY);
+*
+*   rocsparse_dnvec_get_values(vecY, (void**)&dy);
+*
+*   // Copy result back to host
+*   hipMemcpy(hy.data(), dy, sizeof(float) * size, hipMemcpyDeviceToHost);
+*
+*   std::cout << "y" << std::endl;
+*   for(size_t i = 0; i < hy.size(); ++i)
+*   {
+*       std::cout << hy[i] << " ";
+*   }
+*   std::cout << std::endl;
+*
+*   // Clear rocSPARSE
+*   rocsparse_destroy_spvec_descr(vecX);
+*   rocsparse_destroy_dnvec_descr(vecY);
+*   rocsparse_destroy_handle(handle);
+*
+*   // Clear device memory
+*   hipFree(dx_ind);
+*   hipFree(dx_val);
+*   hipFree(dy);
+*  \endcode
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_axpby(rocsparse_handle            handle,
@@ -19901,6 +20157,85 @@ rocsparse_status rocsparse_axpby(rocsparse_handle            handle,
 *  \retval      rocsparse_status_success the operation completed successfully.
 *  \retval      rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval      rocsparse_status_invalid_pointer \p x or \p y pointer is invalid.
+*
+*  \par Example
+*  \code{.c}
+*   // Number of non-zeros of the sparse vector
+*   int nnz = 3;
+*
+*   // Size of sparse and dense vector
+*   int size = 9;
+*
+*   // Sparse index vector
+*   std::vector<int> hx_ind = {0, 3, 5};
+*
+*   // Dense vector
+*   std::vector<float> hy = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+*
+*   // Offload data to device
+*   int* dx_ind;
+*   float* dx_val;
+*   float* dy;
+*   hipMalloc((void**)&dx_ind, sizeof(int) * nnz);
+*   hipMalloc((void**)&dx_val, sizeof(float) * nnz);
+*   hipMalloc((void**)&dy, sizeof(float) * size);
+*
+*   hipMemcpy(dx_ind, hx_ind.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dy, hy.data(), sizeof(float) * size, hipMemcpyHostToDevice);
+*
+*   rocsparse_handle     handle;
+*   rocsparse_spvec_descr vecX;
+*   rocsparse_dnvec_descr vecY;
+*
+*   rocsparse_indextype idx_type = rocsparse_indextype_i32;
+*   rocsparse_datatype  data_type = rocsparse_datatype_f32_r;
+*   rocsparse_index_base idx_base = rocsparse_index_base_zero;
+*
+*   rocsparse_create_handle(&handle);
+*
+*   // Create sparse vector X
+*   rocsparse_create_spvec_descr(&vecX,
+*                                size,
+*                                nnz,
+*                                dx_ind,
+*                                dx_val,
+*                                idx_type,
+*                                idx_base,
+*                                data_type);
+*
+*   // Create dense vector Y
+*   rocsparse_create_dnvec_descr(&vecY,
+*                                size,
+*                                dy,
+*                                data_type);
+*
+*   // Call axpby to perform gather
+*   rocsparse_gather(handle, vecY, vecX);
+*
+*   rocsparse_spvec_get_values(vecX, (void**)&dx_val);
+*
+*   // Copy result back to host
+*   std::vector<float> hx_val(nnz, 0.0f);
+*   hipMemcpy(hx_val.data(), dx_val, sizeof(float) * nnz, hipMemcpyDeviceToHost);
+*
+*   std::cout << "x" << std::endl;
+*   for(size_t i = 0; i < hx_val.size(); ++i)
+*   {
+*       std::cout << hx_val[i] << " ";
+*   }
+*
+*   std::cout << std::endl;
+*
+*   // Clear rocSPARSE
+*   rocsparse_destroy_spvec_descr(vecX);
+*   rocsparse_destroy_dnvec_descr(vecY);
+*   rocsparse_destroy_handle(handle);
+*
+*   // Clear device memory
+*   hipFree(dx_ind);
+*   hipFree(dx_val);
+*   hipFree(dy);
+*  \endcode
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_gather(rocsparse_handle            handle,
@@ -19955,6 +20290,88 @@ rocsparse_status rocsparse_gather(rocsparse_handle            handle,
 *  \retval      rocsparse_status_success the operation completed successfully.
 *  \retval      rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval      rocsparse_status_invalid_pointer \p x or \p y pointer is invalid.
+*
+*  \par Example
+*  \code{.c}
+*   // Number of non-zeros of the sparse vector
+*   int nnz = 3;
+*
+*   // Size of sparse and dense vector
+*   int size = 9;
+*
+*   // Sparse index vector
+*   std::vector<int> hx_ind = {0, 3, 5};
+*
+*   // Sparse value vector
+*   std::vector<float> hx_val = {1.0f, 2.0f, 3.0f};
+*
+*   // Dense vector
+*   std::vector<float> hy = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+*
+*   // Offload data to device
+*   int* dx_ind;
+*   float* dx_val;
+*   float* dy;
+*   hipMalloc((void**)&dx_ind, sizeof(int) * nnz);
+*   hipMalloc((void**)&dx_val, sizeof(float) * nnz);
+*   hipMalloc((void**)&dy, sizeof(float) * size);
+*
+*   hipMemcpy(dx_ind, hx_ind.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dx_val, hx_val.data(), sizeof(float) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dy, hy.data(), sizeof(float) * size, hipMemcpyHostToDevice);
+*
+*   rocsparse_handle     handle;
+*   rocsparse_spvec_descr vecX;
+*   rocsparse_dnvec_descr vecY;
+*
+*   rocsparse_indextype idx_type = rocsparse_indextype_i32;
+*   rocsparse_datatype  data_type = rocsparse_datatype_f32_r;
+*   rocsparse_index_base idx_base = rocsparse_index_base_zero;
+*
+*   rocsparse_create_handle(&handle);
+*
+*   // Create sparse vector X
+*   rocsparse_create_spvec_descr(&vecX,
+*                                size,
+*                                nnz,
+*                                dx_ind,
+*                                dx_val,
+*                                idx_type,
+*                                idx_base,
+*                                data_type);
+*
+*   // Create dense vector Y
+*   rocsparse_create_dnvec_descr(&vecY,
+*                                size,
+*                                dy,
+*                                data_type);
+*
+*   // Call axpby to perform scatter
+*   rocsparse_scatter(handle, vecX, vecY);
+*
+*   rocsparse_dnvec_get_values(vecY, (void**)&dy);
+*
+*   // Copy result back to host
+*   hipMemcpy(hy.data(), dy, sizeof(float) * size, hipMemcpyDeviceToHost);
+*
+*   std::cout << "y" << std::endl;
+*   for(size_t i = 0; i < hy.size(); ++i)
+*   {
+*       std::cout << hy[i] << " ";
+*   }
+*
+*   std::cout << std::endl;
+*
+*   // Clear rocSPARSE
+*   rocsparse_destroy_spvec_descr(vecX);
+*   rocsparse_destroy_dnvec_descr(vecY);
+*   rocsparse_destroy_handle(handle);
+*
+*   // Clear device memory
+*   hipFree(dx_ind);
+*   hipFree(dx_val);
+*   hipFree(dy);
+*  \endcode
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scatter(rocsparse_handle            handle,
@@ -20004,6 +20421,103 @@ rocsparse_status rocsparse_scatter(rocsparse_handle            handle,
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval     rocsparse_status_invalid_pointer \p c, \p s, \p x or \p y pointer is
 *              invalid.
+*  \par Example
+*  \code{.c}
+*   // Number of non-zeros of the sparse vector
+*   int nnz = 3;
+*
+*   // Size of sparse and dense vector
+*   int size = 9;
+*
+*   // Sparse index vector
+*   std::vector<int> hx_ind = {0, 3, 5};
+*
+*   // Sparse value vector
+*   std::vector<float> hx_val = {1.0f, 2.0f, 3.0f};
+*
+*   // Dense vector
+*   std::vector<float> hy = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+*
+*   // Scalar c
+*   float c = 3.7f;
+*
+*   // Scalar s
+*   float s = 1.2f;
+*
+*   // Offload data to device
+*   int* dx_ind;
+*   float* dx_val;
+*   float* dy;
+*   hipMalloc((void**)&dx_ind, sizeof(int) * nnz);
+*   hipMalloc((void**)&dx_val, sizeof(float) * nnz);
+*   hipMalloc((void**)&dy, sizeof(float) * size);
+*
+*   hipMemcpy(dx_ind, hx_ind.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dx_val, hx_val.data(), sizeof(float) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dy, hy.data(), sizeof(float) * size, hipMemcpyHostToDevice);
+*
+*   rocsparse_handle     handle;
+*   rocsparse_spvec_descr vecX;
+*   rocsparse_dnvec_descr vecY;
+*
+*   rocsparse_indextype idx_type = rocsparse_indextype_i32;
+*   rocsparse_datatype  data_type = rocsparse_datatype_f32_r;
+*   rocsparse_index_base idx_base = rocsparse_index_base_zero;
+*
+*   rocsparse_create_handle(&handle);
+*
+*   // Create sparse vector X
+*   rocsparse_create_spvec_descr(&vecX,
+*                                size,
+*                                nnz,
+*                                dx_ind,
+*                                dx_val,
+*                                idx_type,
+*                                idx_base,
+*                                data_type);
+*
+*   // Create dense vector Y
+*   rocsparse_create_dnvec_descr(&vecY,
+*                                size,
+*                                dy,
+*                                data_type);
+*
+*   // Call rot
+*   rocsparse_rot(handle, (void*)&c, (void*)&s, vecX, vecY);
+*
+*   rocsparse_spvec_get_values(vecX, (void**)&dx_val);
+*   rocsparse_dnvec_get_values(vecY, (void**)&dy);
+*
+*   // Copy result back to host
+*   hipMemcpy(hx_val.data(), dx_val, sizeof(float) * nnz, hipMemcpyDeviceToHost);
+*   hipMemcpy(hy.data(), dy, sizeof(float) * size, hipMemcpyDeviceToHost);
+*
+*   std::cout << "x" << std::endl;
+*   for(size_t i = 0; i < hx_val.size(); ++i)
+*   {
+*       std::cout << hx_val[i] << " ";
+*   }
+*
+*   std::cout << std::endl;
+*
+*   std::cout << "y" << std::endl;
+*   for(size_t i = 0; i < hy.size(); ++i)
+*   {
+*       std::cout << hy[i] << " ";
+*   }
+*
+*   std::cout << std::endl;
+*
+*   // Clear rocSPARSE
+*   rocsparse_destroy_spvec_descr(vecX);
+*   rocsparse_destroy_dnvec_descr(vecY);
+*   rocsparse_destroy_handle(handle);
+*
+*   // Clear device memory
+*   hipFree(dx_ind);
+*   hipFree(dx_val);
+*   hipFree(dy);
+*  \endcode
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_rot(rocsparse_handle      handle,
@@ -20051,6 +20565,105 @@ rocsparse_status rocsparse_rot(rocsparse_handle      handle,
 *  \retval      rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval      rocsparse_status_invalid_pointer \p mat_A, \p mat_B, or \p buffer_size
 *               pointer is invalid.
+*
+*  \par Example
+*  \code{.c}
+*   //     1 4 0 0 0 0
+*   // A = 0 2 3 0 0 0
+*   //     5 0 0 7 8 0
+*   //     0 0 9 0 6 0
+*   rocsparse_int m   = 4;
+*   rocsparse_int n   = 6;
+*
+*   std::vector<int> hcsr_row_ptr = {0, 2, 4, 7, 9};
+*   std::vector<int> hcsr_col_ind = {0, 1, 1, 2, 0, 3, 4, 2, 4};
+*   std::vector<float> hcsr_val   = {1, 4, 2, 3, 5, 7, 8, 9, 6};
+*   std::vector<float> hdense(m * n, 0.0f);
+*
+*   rocsparse_int nnz = hcsr_row_ptr[m] - hcsr_row_ptr[0];
+*
+*   // Offload data to device
+*   int* dcsr_row_ptr;
+*   int* dcsr_col_ind;
+*   float* dcsr_val;
+*   float* ddense;
+*   hipMalloc((void**)&dcsr_row_ptr, sizeof(int) * (m + 1));
+*   hipMalloc((void**)&dcsr_col_ind, sizeof(int) * nnz);
+*   hipMalloc((void**)&dcsr_val, sizeof(float) * nnz);
+*   hipMalloc((void**)&ddense, sizeof(float) * m * n);
+*
+*   hipMemcpy(dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(int) * (m + 1), hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_col_ind, hcsr_col_ind.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_val, hcsr_val.data(), sizeof(float) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(ddense, hdense.data(), sizeof(float) * m * n, hipMemcpyHostToDevice);
+*
+*   rocsparse_handle     handle;
+*   rocsparse_spmat_descr matA;
+*   rocsparse_dnmat_descr matB;
+*
+*   rocsparse_indextype row_idx_type = rocsparse_indextype_i32;
+*   rocsparse_indextype col_idx_type = rocsparse_indextype_i32;
+*   rocsparse_datatype  data_type = rocsparse_datatype_f32_r;
+*   rocsparse_index_base idx_base = rocsparse_index_base_zero;
+*
+*   rocsparse_create_handle(&handle);
+*
+*   // Create sparse matrix A
+*   rocsparse_create_csr_descr(&matA,
+*                              m,
+*                              n,
+*                              nnz,
+*                              dcsr_row_ptr,
+*                              dcsr_col_ind,
+*                              dcsr_val,
+*                              row_idx_type,
+*                              col_idx_type,
+*                              idx_base,
+*                              data_type);
+*
+*   // Create dense matrix B
+*   rocsparse_create_dnmat_descr(&matB, m, n, m, ddense, data_type, rocsparse_order_column);
+*
+*   // Call sparse_to_dense
+*   size_t buffer_size = 0;
+*   rocsparse_sparse_to_dense(handle,
+*                             matA,
+*                             matB,
+*                             rocsparse_sparse_to_dense_alg_default,
+*                             &buffer_size,
+*                             nullptr);
+*
+*   void* temp_buffer;
+*   hipMalloc((void**)&temp_buffer, buffer_size);
+*
+*   rocsparse_sparse_to_dense(handle,
+*                             matA,
+*                             matB,
+*                             rocsparse_sparse_to_dense_alg_default,
+*                             &buffer_size,
+*                             temp_buffer);
+*
+*   // Copy result back to host
+*   hipMemcpy(hdense.data(), ddense, sizeof(float) * m * n, hipMemcpyDeviceToHost);
+*
+*   std::cout << "hdense" << std::endl;
+*   for(size_t i = 0; i < hdense.size(); ++i)
+*   {
+*       std::cout << hdense[i] << " ";
+*   }
+*   std::cout << std::endl;
+*
+*   // Clear rocSPARSE
+*   rocsparse_destroy_spmat_descr(matA);
+*   rocsparse_destroy_dnmat_descr(matB);
+*   rocsparse_destroy_handle(handle);
+*
+*   // Clear device memory
+*   hipFree(dcsr_row_ptr);
+*   hipFree(dcsr_col_ind);
+*   hipFree(dcsr_val);
+*   hipFree(ddense);
+*  \endcode
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_sparse_to_dense(rocsparse_handle              handle,
@@ -20099,6 +20712,132 @@ rocsparse_status rocsparse_sparse_to_dense(rocsparse_handle              handle,
 *  \retval      rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval      rocsparse_status_invalid_pointer \p mat_A, \p mat_B, or \p buffer_size
 *               pointer is invalid.
+*
+*  \par Example
+*  \code{.c}
+*   //     1 4 0 0 0 0
+*   // A = 0 2 3 0 0 0
+*   //     5 0 0 7 8 0
+*   //     0 0 9 0 6 0
+*   rocsparse_int m   = 4;
+*   rocsparse_int n   = 6;
+*
+*   std::vector<float> hdense = {1, 0, 5, 0, 4, 2, 0, 0, 0, 3, 0, 9, 0, 0, 7, 0, 0, 0, 8, 6, 0, 0, 0, 0};
+*
+*   // Offload data to device
+*   int* dcsr_row_ptr;
+*   float* ddense;
+*   hipMalloc((void**)&dcsr_row_ptr, sizeof(int) * (m + 1));
+*   hipMalloc((void**)&ddense, sizeof(float) * m * n);
+*
+*   hipMemcpy(ddense, hdense.data(), sizeof(float) * m * n, hipMemcpyHostToDevice);
+*
+*   rocsparse_handle     handle;
+*   rocsparse_dnmat_descr matA;
+*   rocsparse_spmat_descr matB;
+*
+*   rocsparse_indextype row_idx_type = rocsparse_indextype_i32;
+*   rocsparse_indextype col_idx_type = rocsparse_indextype_i32;
+*   rocsparse_datatype  data_type = rocsparse_datatype_f32_r;
+*   rocsparse_index_base idx_base = rocsparse_index_base_zero;
+*
+*   rocsparse_create_handle(&handle);
+*
+*   // Create sparse matrix A
+*   rocsparse_create_dnmat_descr(&matA, m, n, m, ddense, data_type, rocsparse_order_column);
+*
+*   // Create dense matrix B
+*   rocsparse_create_csr_descr(&matB,
+*                              m,
+*                              n,
+*                              0,
+*                              dcsr_row_ptr,
+*                              nullptr,
+*                              nullptr,
+*                              row_idx_type,
+*                              col_idx_type,
+*                              idx_base,
+*                              data_type);
+*
+*   // Call dense_to_sparse to get required buffer size
+*   size_t buffer_size = 0;
+*   rocsparse_dense_to_sparse(handle,
+*                             matA,
+*                             matB,
+*                             rocsparse_dense_to_sparse_alg_default,
+*                             &buffer_size,
+*                             nullptr);
+*
+*   void* temp_buffer;
+*   hipMalloc((void**)&temp_buffer, buffer_size);
+*
+*   // Call dense_to_sparse to perform analysis
+*   rocsparse_dense_to_sparse(handle,
+*                             matA,
+*                             matB,
+*                             rocsparse_dense_to_sparse_alg_default,
+*                             nullptr,
+*                             temp_buffer);
+*
+*   int64_t num_rows_tmp, num_cols_tmp, nnz;
+*   rocsparse_spmat_get_size(matB, &num_rows_tmp, &num_cols_tmp, &nnz);
+*
+*   int* dcsr_col_ind;
+*   float* dcsr_val;
+*   hipMalloc((void**)&dcsr_col_ind, sizeof(int) * nnz);
+*   hipMalloc((void**)&dcsr_val, sizeof(float) * nnz);
+*
+*   rocsparse_csr_set_pointers(matB, dcsr_row_ptr, dcsr_col_ind, dcsr_val);
+*
+*   // Call dense_to_sparse to complete conversion
+*   rocsparse_dense_to_sparse(handle,
+*                             matA,
+*                             matB,
+*                             rocsparse_dense_to_sparse_alg_default,
+*                             &buffer_size,
+*                             temp_buffer);
+*
+*   std::vector<int> hcsr_row_ptr(m + 1, 0);
+*   std::vector<int> hcsr_col_ind(nnz, 0);
+*   std::vector<float> hcsr_val(nnz, 0);
+*
+*   // Copy result back to host
+*   hipMemcpy(hcsr_row_ptr.data(), dcsr_row_ptr, sizeof(int) * (m + 1), hipMemcpyDeviceToHost);
+*   hipMemcpy(hcsr_col_ind.data(), dcsr_col_ind, sizeof(int) * nnz, hipMemcpyDeviceToHost);
+*   hipMemcpy(hcsr_val.data(), dcsr_val, sizeof(int) * nnz, hipMemcpyDeviceToHost);
+*
+*   std::cout << "hcsr_row_ptr" << std::endl;
+*   for(size_t i = 0; i < hcsr_row_ptr.size(); ++i)
+*   {
+*       std::cout << hcsr_row_ptr[i] << " ";
+*   }
+*   std::cout << std::endl;
+*
+*   std::cout << "hcsr_col_ind" << std::endl;
+*   for(size_t i = 0; i < hcsr_col_ind.size(); ++i)
+*   {
+*       std::cout << hcsr_col_ind[i] << " ";
+*   }
+*   std::cout << std::endl;
+*
+*   std::cout << "hcsr_val" << std::endl;
+*   for(size_t i = 0; i < hcsr_val.size(); ++i)
+*   {
+*       std::cout << hcsr_val[i] << " ";
+*   }
+*   std::cout << std::endl;
+*
+*   // Clear rocSPARSE
+*   rocsparse_destroy_dnmat_descr(matA);
+*   rocsparse_destroy_spmat_descr(matB);
+*   rocsparse_destroy_handle(handle);
+*
+*   // Clear device memory
+*   hipFree(dcsr_row_ptr);
+*   hipFree(dcsr_col_ind);
+*   hipFree(dcsr_val);
+*   hipFree(ddense);
+*  \endcode
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dense_to_sparse(rocsparse_handle              handle,
@@ -20173,6 +20912,102 @@ rocsparse_status rocsparse_dense_to_sparse(rocsparse_handle              handle,
 *               pointer is invalid.
 *  \retval      rocsparse_status_not_implemented \p compute_type is currently not
 *               supported.
+*
+*  \par Example
+*  \code{.c}
+*   // Number of non-zeros of the sparse vector
+*   int nnz = 3;
+*
+*   // Size of sparse and dense vector
+*   int size = 9;
+*
+*   // Sparse index vector
+*   std::vector<int> hx_ind = {0, 3, 5};
+*
+*   // Sparse value vector
+*   std::vector<float> hx_val = {1.0f, 2.0f, 3.0f};
+*
+*   // Dense vector
+*   std::vector<float> hy = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+*
+*   // Offload data to device
+*   int* dx_ind;
+*   float* dx_val;
+*   float* dy;
+*   hipMalloc((void**)&dx_ind, sizeof(int) * nnz);
+*   hipMalloc((void**)&dx_val, sizeof(float) * nnz);
+*   hipMalloc((void**)&dy, sizeof(float) * size);
+*
+*   hipMemcpy(dx_ind, hx_ind.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dx_val, hx_val.data(), sizeof(float) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dy, hy.data(), sizeof(float) * size, hipMemcpyHostToDevice);
+*
+*   rocsparse_handle     handle;
+*   rocsparse_spvec_descr vecX;
+*   rocsparse_dnvec_descr vecY;
+*
+*   rocsparse_indextype idx_type = rocsparse_indextype_i32;
+*   rocsparse_datatype  data_type = rocsparse_datatype_f32_r;
+*   rocsparse_datatype  compute_type = rocsparse_datatype_f32_r;
+*   rocsparse_operation trans = rocsparse_operation_none;
+*   rocsparse_index_base idx_base = rocsparse_index_base_zero;
+*
+*   rocsparse_create_handle(&handle);
+*
+*   // Create sparse vector X
+*   rocsparse_create_spvec_descr(&vecX,
+*                                size,
+*                                nnz,
+*                                dx_ind,
+*                                dx_val,
+*                                idx_type,
+*                                idx_base,
+*                                data_type);
+*
+*   // Create dense vector Y
+*   rocsparse_create_dnvec_descr(&vecY,
+*                                size,
+*                                dy,
+*                                data_type);
+*
+*   // Obtain buffer size
+*   float hresult = 0.0f;
+*   size_t buffer_size;
+*   rocsparse_spvv(handle,
+*                  trans,
+*                  vecX,
+*                  vecY,
+*                  &hresult,
+*                  compute_type,
+*                  &buffer_size,
+*                  nullptr);
+*
+*   void* temp_buffer;
+*   hipMalloc(&temp_buffer, buffer_size);
+*
+*   // SpVV
+*   rocsparse_spvv(handle,
+*                  trans,
+*                  vecX,
+*                  vecY,
+*                  &hresult,
+*                  compute_type,
+*                  &buffer_size,
+*                  temp_buffer);
+*
+*   std::cout << "hresult: " << hresult << std::endl;
+*
+*   // Clear rocSPARSE
+*   rocsparse_destroy_spvec_descr(vecX);
+*   rocsparse_destroy_dnvec_descr(vecY);
+*   rocsparse_destroy_handle(handle);
+*
+*   // Clear device memory
+*   hipFree(dx_ind);
+*   hipFree(dx_val);
+*   hipFree(dy);
+*   hipFree(temp_buffer);
+*  \endcode
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
@@ -20284,6 +21119,8 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *  compute_type floating point precision for the SpMV computation.
 *  @param[in]
 *  alg          SpMV algorithm for the SpMV computation.
+*  @param[in]
+*  stage        SpMV stage for the SpMV computation.
 *  @param[out]
 *  buffer_size  number of bytes of the temporary storage buffer. buffer_size is set when
 *               \p temp_buffer is nullptr.
@@ -20293,26 +21130,175 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *               function returns without performing the SpMV operation.
 *
 *  \retval      rocsparse_status_success the operation completed successfully.
-*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_handle the library context \p handle was not initialized.
 *  \retval      rocsparse_status_invalid_pointer \p alpha, \p mat, \p x, \p beta, \p y or
 *               \p buffer_size pointer is invalid.
-*  \retval      rocsparse_status_invalid_value the value of \p trans, \p trans\_B, \p compute\_type, \p alg is incorrect.
+*  \retval      rocsparse_status_invalid_value the value of \p trans, \p compute_type, \p alg, or \p stage is incorrect.
 *  \retval      rocsparse_status_not_implemented \p compute_type or \p alg is
 *               currently not supported.
+*
+*  \par Example
+*  \code{.c}
+*   //     1 4 0 0 0 0
+*   // A = 0 2 3 0 0 0
+*   //     5 0 0 7 8 0
+*   //     0 0 9 0 6 0
+*   rocsparse_int m   = 4;
+*   rocsparse_int n   = 6;
+*
+*   std::vector<int> hcsr_row_ptr = {0, 2, 4, 7, 9};
+*   std::vector<int> hcsr_col_ind = {0, 1, 1, 2, 0, 3, 4, 2, 4};
+*   std::vector<float> hcsr_val   = {1, 4, 2, 3, 5, 7, 8, 9, 6};
+*   std::vector<float> hx(n, 1.0f);
+*   std::vector<float> hy(m, 0.0f);
+*
+*   // Scalar alpha
+*   float alpha = 3.7f;
+*
+*   // Scalar beta
+*   float beta = 0.0f;
+*
+*   rocsparse_int nnz = hcsr_row_ptr[m] - hcsr_row_ptr[0];
+*
+*   // Offload data to device
+*   int* dcsr_row_ptr;
+*   int* dcsr_col_ind;
+*   float* dcsr_val;
+*   float* dx;
+*   float* dy;
+*   hipMalloc((void**)&dcsr_row_ptr, sizeof(int) * (m + 1));
+*   hipMalloc((void**)&dcsr_col_ind, sizeof(int) * nnz);
+*   hipMalloc((void**)&dcsr_val, sizeof(float) * nnz);
+*   hipMalloc((void**)&dx, sizeof(float) * n);
+*   hipMalloc((void**)&dy, sizeof(float) * m);
+*
+*   hipMemcpy(dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(int) * (m + 1), hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_col_ind, hcsr_col_ind.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_val, hcsr_val.data(), sizeof(float) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dx, hx.data(), sizeof(float) * n, hipMemcpyHostToDevice);
+*
+*   rocsparse_handle     handle;
+*   rocsparse_spmat_descr matA;
+*   rocsparse_dnvec_descr vecX;
+*   rocsparse_dnvec_descr vecY;
+*
+*   rocsparse_indextype row_idx_type = rocsparse_indextype_i32;
+*   rocsparse_indextype col_idx_type = rocsparse_indextype_i32;
+*   rocsparse_datatype  data_type = rocsparse_datatype_f32_r;
+*   rocsparse_datatype  compute_type = rocsparse_datatype_f32_r;
+*   rocsparse_index_base idx_base = rocsparse_index_base_zero;
+*   rocsparse_operation trans = rocsparse_operation_none;
+*
+*   rocsparse_create_handle(&handle);
+*
+*   // Create sparse matrix A
+*   rocsparse_create_csr_descr(&matA,
+*                              m,
+*                              n,
+*                              nnz,
+*                              dcsr_row_ptr,
+*                              dcsr_col_ind,
+*                              dcsr_val,
+*                              row_idx_type,
+*                              col_idx_type,
+*                              idx_base,
+*                              data_type);
+*
+*   // Create dense vector X
+*   rocsparse_create_dnvec_descr(&vecX,
+*                                n,
+*                                dx,
+*                                data_type);
+*
+*   // Create dense vector Y
+*   rocsparse_create_dnvec_descr(&vecY,
+*                                m,
+*                                dy,
+*                                data_type);
+*
+*   // Call spmv to get buffer size
+*   size_t buffer_size;
+*   rocsparse_spmv(handle,
+*                  trans,
+*                  &alpha,
+*                  matA,
+*                  vecX,
+*                  &beta,
+*                  vecY,
+*                  compute_type,
+*                  rocsparse_spmv_alg_csr_adaptive,
+*                  rocsparse_spmv_stage_buffer_size,
+*                  &buffer_size,
+*                  nullptr);
+*
+*   void* temp_buffer;
+*   hipMalloc((void**)&temp_buffer, buffer_size);
+*
+*   // Call spmv to perform analysis
+*   rocsparse_spmv(handle,
+*                  trans,
+*                  &alpha,
+*                  matA,
+*                  vecX,
+*                  &beta,
+*                  vecY,
+*                  compute_type,
+*                  rocsparse_spmv_alg_csr_adaptive,
+*                  rocsparse_spmv_stage_preprocess,
+*                  &buffer_size,
+*                  temp_buffer);
+*
+*   // Call spmv to perform computation
+*   rocsparse_spmv(handle,
+*                  trans,
+*                  &alpha,
+*                  matA,
+*                  vecX,
+*                  &beta,
+*                  vecY,
+*                  compute_type,
+*                  rocsparse_spmv_alg_csr_adaptive,
+*                  rocsparse_spmv_stage_compute,
+*                  &buffer_size,
+*                  temp_buffer);
+*
+*   // Copy result back to host
+*   hipMemcpy(hy.data(), dy, sizeof(float) * m, hipMemcpyDeviceToHost);
+*
+*   std::cout << "hy" << std::endl;
+*   for(size_t i = 0; i < hy.size(); ++i)
+*   {
+*       std::cout << hy[i] << " ";
+*   }
+*   std::cout << std::endl;
+*
+*   // Clear rocSPARSE
+*   rocsparse_destroy_spmat_descr(matA);
+*   rocsparse_destroy_dnvec_descr(vecX);
+*   rocsparse_destroy_dnvec_descr(vecY);
+*   rocsparse_destroy_handle(handle);
+*
+*   // Clear device memory
+*   hipFree(dcsr_row_ptr);
+*   hipFree(dcsr_col_ind);
+*   hipFree(dcsr_val);
+*   hipFree(dx);
+*   hipFree(dy);
+*   hipFree(temp_buffer);
+*  \endcode
 */
-__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_spmv_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
-    rocsparse_spmv(rocsparse_handle            handle,
-                   rocsparse_operation         trans,
-                   const void*                 alpha,
-                   const rocsparse_spmat_descr mat,
-                   const rocsparse_dnvec_descr x,
-                   const void*                 beta,
-                   const rocsparse_dnvec_descr y,
-                   rocsparse_datatype          compute_type,
-                   rocsparse_spmv_alg          alg,
-                   size_t*                     buffer_size,
-                   void*                       temp_buffer);
+ROCSPARSE_EXPORT rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
+                                                 rocsparse_operation         trans,
+                                                 const void*                 alpha,
+                                                 const rocsparse_spmat_descr mat,
+                                                 const rocsparse_dnvec_descr x,
+                                                 const void*                 beta,
+                                                 const rocsparse_dnvec_descr y,
+                                                 rocsparse_datatype          compute_type,
+                                                 rocsparse_spmv_alg          alg,
+                                                 rocsparse_spmv_stage        stage,
+                                                 size_t*                     buffer_size,
+                                                 void*                       temp_buffer);
 
 /*! \ingroup generic_module
 *  \brief Sparse matrix vector multiplication
@@ -20336,7 +21322,7 @@ __attribute__((deprecated("This function is deprecated and will be removed in a 
 *  \f]
 *
 *  \details
-*  \ref rocsparse_spmv supports multiple combinations of data types and compute types. The tables below indicate the currently
+*  \ref rocsparse_spmv_ex supports multiple combinations of data types and compute types. The tables below indicate the currently
 *  supported different data types that can be used for for the sparse matrix A and the dense vectors X and Y and the compute
 *  type for \f$\alpha\f$ and \f$\beta\f$. The advantage of using different data types is to save on memory bandwidth and storage
 *  when a user application allows while performing the actual computation in a higher precision.
@@ -20435,26 +21421,27 @@ __attribute__((deprecated("This function is deprecated and will be removed in a 
 *               function returns without performing the SpMV operation.
 *
 *  \retval      rocsparse_status_success the operation completed successfully.
-*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_handle the library context \p handle was not initialized.
 *  \retval      rocsparse_status_invalid_pointer \p alpha, \p mat, \p x, \p beta, \p y or
 *               \p buffer_size pointer is invalid.
-*  \retval      rocsparse_status_invalid_value the value of \p trans, \p trans\_B, \p compute\_type, \p alg or \p stage is incorrect.
+*  \retval      rocsparse_status_invalid_value the value of \p trans, \p compute_type, \p alg or \p stage is incorrect.
 *  \retval      rocsparse_status_not_implemented \p compute_type or \p alg is
 *               currently not supported.
 */
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_spmv_ex(rocsparse_handle            handle,
-                                   rocsparse_operation         trans,
-                                   const void*                 alpha,
-                                   const rocsparse_spmat_descr mat,
-                                   const rocsparse_dnvec_descr x,
-                                   const void*                 beta,
-                                   const rocsparse_dnvec_descr y,
-                                   rocsparse_datatype          compute_type,
-                                   rocsparse_spmv_alg          alg,
-                                   rocsparse_spmv_stage        stage,
-                                   size_t*                     buffer_size,
-                                   void*                       temp_buffer);
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_spmv instead."))) ROCSPARSE_EXPORT rocsparse_status
+    rocsparse_spmv_ex(rocsparse_handle            handle,
+                      rocsparse_operation         trans,
+                      const void*                 alpha,
+                      const rocsparse_spmat_descr mat,
+                      const rocsparse_dnvec_descr x,
+                      const void*                 beta,
+                      const rocsparse_dnvec_descr y,
+                      rocsparse_datatype          compute_type,
+                      rocsparse_spmv_alg          alg,
+                      rocsparse_spmv_stage        stage,
+                      size_t*                     buffer_size,
+                      void*                       temp_buffer);
 
 /*! \ingroup generic_module
 *  \brief Sparse triangular solve
@@ -20525,10 +21512,153 @@ rocsparse_status rocsparse_spmv_ex(rocsparse_handle            handle,
 *
 *  \retval      rocsparse_status_success the operation completed successfully.
 *  \retval      rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval      rocsparse_status_invalid_pointer \p alpha, \p mat, \p x, \p y, \p descr or
+*  \retval      rocsparse_status_invalid_pointer \p alpha, \p mat, \p x, \p y or
 *               \p buffer_size pointer is invalid.
 *  \retval      rocsparse_status_not_implemented \p trans, \p compute_type, \p stage or \p alg is
 *               currently not supported.
+*
+*  \par Example
+*  \code{.c}
+*   //     1 0 0 0
+*   // A = 4 2 0 0
+*   //     0 3 7 0
+*   //     0 0 0 1
+*   rocsparse_int m   = 4;
+*
+*   std::vector<int> hcsr_row_ptr = {0, 1, 3, 5, 6};
+*   std::vector<int> hcsr_col_ind = {0, 0, 1, 1, 2, 3};
+*   std::vector<float> hcsr_val   = {1, 4, 2, 3, 7, 1};
+*   std::vector<float> hx(m, 1.0f);
+*   std::vector<float> hy(m, 0.0f);
+*
+*   // Scalar alpha
+*   float alpha = 1.0f;
+*
+*   rocsparse_int nnz = hcsr_row_ptr[m] - hcsr_row_ptr[0];
+*
+*   // Offload data to device
+*   int* dcsr_row_ptr;
+*   int* dcsr_col_ind;
+*   float* dcsr_val;
+*   float* dx;
+*   float* dy;
+*   hipMalloc((void**)&dcsr_row_ptr, sizeof(int) * (m + 1));
+*   hipMalloc((void**)&dcsr_col_ind, sizeof(int) * nnz);
+*   hipMalloc((void**)&dcsr_val, sizeof(float) * nnz);
+*   hipMalloc((void**)&dx, sizeof(float) * m);
+*   hipMalloc((void**)&dy, sizeof(float) * m);
+*
+*   hipMemcpy(dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(int) * (m + 1), hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_col_ind, hcsr_col_ind.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_val, hcsr_val.data(), sizeof(float) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dx, hx.data(), sizeof(float) * m, hipMemcpyHostToDevice);
+*
+*   rocsparse_handle     handle;
+*   rocsparse_spmat_descr matA;
+*   rocsparse_dnvec_descr vecX;
+*   rocsparse_dnvec_descr vecY;
+*
+*   rocsparse_indextype row_idx_type = rocsparse_indextype_i32;
+*   rocsparse_indextype col_idx_type = rocsparse_indextype_i32;
+*   rocsparse_datatype  data_type = rocsparse_datatype_f32_r;
+*   rocsparse_datatype  compute_type = rocsparse_datatype_f32_r;
+*   rocsparse_index_base idx_base = rocsparse_index_base_zero;
+*   rocsparse_operation trans = rocsparse_operation_none;
+*
+*   rocsparse_create_handle(&handle);
+*
+*   // Create sparse matrix A
+*   rocsparse_create_csr_descr(&matA,
+*                              m,
+*                              m,
+*                              nnz,
+*                              dcsr_row_ptr,
+*                              dcsr_col_ind,
+*                              dcsr_val,
+*                              row_idx_type,
+*                              col_idx_type,
+*                              idx_base,
+*                              data_type);
+*
+*   // Create dense vector X
+*   rocsparse_create_dnvec_descr(&vecX,
+*                                m,
+*                                dx,
+*                                data_type);
+*
+*   // Create dense vector Y
+*   rocsparse_create_dnvec_descr(&vecY,
+*                                m,
+*                                dy,
+*                                data_type);
+*
+*   // Call spsv to get buffer size
+*   size_t buffer_size;
+*   rocsparse_spsv(handle,
+*                  trans,
+*                  &alpha,
+*                  matA,
+*                  vecX,
+*                  vecY,
+*                  compute_type,
+*                  rocsparse_spsv_alg_default,
+*                  rocsparse_spsv_stage_buffer_size,
+*                  &buffer_size,
+*                  nullptr);
+*
+*   void* temp_buffer;
+*   hipMalloc((void**)&temp_buffer, buffer_size);
+*
+*   // Call spsv to perform analysis
+*   rocsparse_spsv(handle,
+*                  trans,
+*                  &alpha,
+*                  matA,
+*                  vecX,
+*                  vecY,
+*                  compute_type,
+*                  rocsparse_spsv_alg_default,
+*                  rocsparse_spsv_stage_preprocess,
+*                  &buffer_size,
+*                  temp_buffer);
+*
+*   // Call spsv to perform computation
+*   rocsparse_spsv(handle,
+*                  trans,
+*                  &alpha,
+*                  matA,
+*                  vecX,
+*                  vecY,
+*                  compute_type,
+*                  rocsparse_spsv_alg_default,
+*                  rocsparse_spsv_stage_compute,
+*                  &buffer_size,
+*                  temp_buffer);
+*
+*   // Copy result back to host
+*   hipMemcpy(hy.data(), dy, sizeof(float) * m, hipMemcpyDeviceToHost);
+*
+*   std::cout << "hy" << std::endl;
+*   for(size_t i = 0; i < hy.size(); ++i)
+*   {
+*       std::cout << hy[i] << " ";
+*   }
+*   std::cout << std::endl;
+*
+*   // Clear rocSPARSE
+*   rocsparse_destroy_spmat_descr(matA);
+*   rocsparse_destroy_dnvec_descr(vecX);
+*   rocsparse_destroy_dnvec_descr(vecY);
+*   rocsparse_destroy_handle(handle);
+*
+*   // Clear device memory
+*   hipFree(dcsr_row_ptr);
+*   hipFree(dcsr_col_ind);
+*   hipFree(dcsr_val);
+*   hipFree(dx);
+*   hipFree(dy);
+*   hipFree(temp_buffer);
+*  \endcode
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spsv(rocsparse_handle            handle,
@@ -20721,6 +21851,168 @@ rocsparse_status rocsparse_spitsv(rocsparse_handle            handle,
 *               \p buffer_size pointer is invalid.
 *  \retval      rocsparse_status_not_implemented \p trans_A, \p trans_B, \p compute_type, \p stage or \p alg is
 *               currently not supported.
+*
+*  \par Example
+*  \code{.c}
+*   //     1 0 0 0
+*   // A = 4 2 0 0
+*   //     0 3 7 0
+*   //     0 0 0 1
+*   rocsparse_int m   = 4;
+*   rocsparse_int n   = 2;
+*
+*   std::vector<int> hcsr_row_ptr = {0, 1, 3, 5, 6};
+*   std::vector<int> hcsr_col_ind = {0, 0, 1, 1, 2, 3};
+*   std::vector<float> hcsr_val   = {1, 4, 2, 3, 7, 1};
+*   std::vector<float> hB(m * n);
+*   std::vector<float> hC(m * n);
+*
+*   for(int i = 0; i < n; i++)
+*   {
+*       for(int j = 0; j < m; j++)
+*       {
+*           hB[m * i + j] = static_cast<float>(i + 1);
+*       }
+*   }
+*
+*   // Scalar alpha
+*   float alpha = 1.0f;
+*
+*   rocsparse_int nnz = hcsr_row_ptr[m] - hcsr_row_ptr[0];
+*
+*   // Offload data to device
+*   int* dcsr_row_ptr;
+*   int* dcsr_col_ind;
+*   float* dcsr_val;
+*   float* dB;
+*   float* dC;
+*   hipMalloc((void**)&dcsr_row_ptr, sizeof(int) * (m + 1));
+*   hipMalloc((void**)&dcsr_col_ind, sizeof(int) * nnz);
+*   hipMalloc((void**)&dcsr_val, sizeof(float) * nnz);
+*   hipMalloc((void**)&dB, sizeof(float) * m * n);
+*   hipMalloc((void**)&dC, sizeof(float) * m * n);
+*
+*   hipMemcpy(dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(int) * (m + 1), hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_col_ind, hcsr_col_ind.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_val, hcsr_val.data(), sizeof(float) * nnz, hipMemcpyHostToDevice);
+*   hipMemcpy(dB, hB.data(), sizeof(float) * m * n, hipMemcpyHostToDevice);
+*
+*   rocsparse_handle     handle;
+*   rocsparse_spmat_descr matA;
+*   rocsparse_dnmat_descr matB;
+*   rocsparse_dnmat_descr matC;
+*
+*   rocsparse_indextype row_idx_type = rocsparse_indextype_i32;
+*   rocsparse_indextype col_idx_type = rocsparse_indextype_i32;
+*   rocsparse_datatype  data_type = rocsparse_datatype_f32_r;
+*   rocsparse_datatype  compute_type = rocsparse_datatype_f32_r;
+*   rocsparse_index_base idx_base = rocsparse_index_base_zero;
+*   rocsparse_operation trans_A = rocsparse_operation_none;
+*   rocsparse_operation trans_B = rocsparse_operation_none;
+*
+*   rocsparse_create_handle(&handle);
+*
+*   // Create sparse matrix A
+*   rocsparse_create_csr_descr(&matA,
+*                              m,
+*                              m,
+*                              nnz,
+*                              dcsr_row_ptr,
+*                              dcsr_col_ind,
+*                              dcsr_val,
+*                              row_idx_type,
+*                              col_idx_type,
+*                              idx_base,
+*                              data_type);
+*
+*   // Create dense matrix B
+*   rocsparse_create_dnmat_descr(&matB,
+*                                m,
+*                                n,
+*                                m,
+*                                dB,
+*                                data_type,
+*                                rocsparse_order_column);
+*
+*   // Create dense matrix C
+*   rocsparse_create_dnmat_descr(&matC,
+*                                m,
+*                                n,
+*                                m,
+*                                dC,
+*                                data_type,
+*                                rocsparse_order_column);
+*
+*   // Call spsv to get buffer size
+*   size_t buffer_size;
+*   rocsparse_spsm(handle,
+*                  trans_A,
+*                  trans_B,
+*                  &alpha,
+*                  matA,
+*                  matB,
+*                  matC,
+*                  compute_type,
+*                  rocsparse_spsm_alg_default,
+*                  rocsparse_spsm_stage_buffer_size,
+*                  &buffer_size,
+*                  nullptr);
+*
+*   void* temp_buffer;
+*   hipMalloc((void**)&temp_buffer, buffer_size);
+*
+*   // Call spsv to perform analysis
+*   rocsparse_spsm(handle,
+*                  trans_A,
+*                  trans_B,
+*                  &alpha,
+*                  matA,
+*                  matB,
+*                  matC,
+*                  compute_type,
+*                  rocsparse_spsm_alg_default,
+*                  rocsparse_spsm_stage_preprocess,
+*                  &buffer_size,
+*                  temp_buffer);
+*
+*   // Call spsv to perform computation
+*   rocsparse_spsm(handle,
+*                  trans_A,
+*                  trans_B,
+*                  &alpha,
+*                  matA,
+*                  matB,
+*                  matC,
+*                  compute_type,
+*                  rocsparse_spsm_alg_default,
+*                  rocsparse_spsm_stage_compute,
+*                  &buffer_size,
+*                  temp_buffer);
+*
+*   // Copy result back to host
+*   hipMemcpy(hC.data(), dC, sizeof(float) * m * n, hipMemcpyDeviceToHost);
+*
+*   std::cout << "hC" << std::endl;
+*   for(size_t i = 0; i < hC.size(); ++i)
+*   {
+*       std::cout << hC[i] << " ";
+*   }
+*   std::cout << std::endl;
+*
+*   // Clear rocSPARSE
+*   rocsparse_destroy_spmat_descr(matA);
+*   rocsparse_destroy_dnmat_descr(matB);
+*   rocsparse_destroy_dnmat_descr(matC);
+*   rocsparse_destroy_handle(handle);
+*
+*   // Clear device memory
+*   hipFree(dcsr_row_ptr);
+*   hipFree(dcsr_col_ind);
+*   hipFree(dcsr_val);
+*   hipFree(dB);
+*   hipFree(dC);
+*   hipFree(temp_buffer);
+*  \endcode
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
@@ -20740,7 +22032,7 @@ rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
 *  \brief Sparse matrix dense matrix multiplication, extension routine.
 *
 *  \details
-*  \p rocsparse_spmm (or \p rocsparse_spmm_ex ) multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times k\f$
+*  \p rocsparse_spmm multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times k\f$
 *  matrix \f$A\f$, defined in CSR or COO or Blocked ELL storage format, and the dense \f$k \times n\f$
 *  matrix \f$B\f$ and adds the result to the dense \f$m \times n\f$ matrix \f$C\f$ that
 *  is multiplied by the scalar \f$\beta\f$, such that
@@ -20797,7 +22089,7 @@ rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
 *
 *  \note SpMM requires three stages to complete. The first stage
 *  \ref rocsparse_spmm_stage_buffer_size will return the size of the temporary storage buffer
-*  that is required for subsequent calls to \ref rocsparse_spmm (or \ref rocsparse_spmm_ex). The second stage
+*  that is required for subsequent calls to \ref rocsparse_spmm. The second stage
 *  \ref rocsparse_spmm_stage_preprocess will preprocess data that would be saved in the temporary storage buffer.
 *  In the final stage \ref rocsparse_spmm_stage_compute, the actual computation is performed.
 *  \note If \ref rocsparse_spmm_stage_auto is selected, rocSPARSE will automatically detect
@@ -21129,21 +22421,6 @@ rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
 *  \endcode
 */
 /**@{*/
-__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
-                          "Use rocsparse_spmm_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
-    rocsparse_spmm_ex(rocsparse_handle            handle,
-                      rocsparse_operation         trans_A,
-                      rocsparse_operation         trans_B,
-                      const void*                 alpha,
-                      const rocsparse_spmat_descr mat_A,
-                      const rocsparse_dnmat_descr mat_B,
-                      const void*                 beta,
-                      const rocsparse_dnmat_descr mat_C,
-                      rocsparse_datatype          compute_type,
-                      rocsparse_spmm_alg          alg,
-                      rocsparse_spmm_stage        stage,
-                      size_t*                     buffer_size,
-                      void*                       temp_buffer);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spmm(rocsparse_handle            handle,
                                 rocsparse_operation         trans_A,
@@ -21268,6 +22545,191 @@ rocsparse_status rocsparse_spmm(rocsparse_handle            handle,
 *  \retval rocsparse_status_not_implemented
 *          \p trans_A != \ref rocsparse_operation_none or
 *          \p trans_B != \ref rocsparse_operation_none.
+*
+*  \par Example
+*  \code{.c}
+*   // A - m x k
+*   // B - k x n
+*   // C - m x n
+*   int m = 400;
+*   int n = 400;
+*   int k = 300;
+*
+*   std::vector<int> hcsr_row_ptr_A = {...}; // host A m x k matrix
+*   std::vector<int> hcsr_col_ind_A = {...}; // host A m x k matrix
+*   std::vector<float> hcsr_val_A = {...};   // host A m x k matrix
+*
+*   std::vector<int> hcsr_row_ptr_B = {...}; // host B k x n matrix
+*   std::vector<int> hcsr_col_ind_B = {...}; // host B k x n matrix
+*   std::vector<float> hcsr_val_B = {...};   // host B k x n matrix
+*
+*   int nnz_A = hcsr_val_A.size();
+*   int nnz_B = hcsr_val_B.size();
+*
+*   float alpha            = 1.0f;
+*   float beta             = 0.0f;
+*
+*   int* dcsr_row_ptr_A = nullptr;
+*   int* dcsr_col_ind_A = nullptr;
+*   float* dcsr_val_A = nullptr;
+*
+*   int* dcsr_row_ptr_B = nullptr;
+*   int* dcsr_col_ind_B = nullptr;
+*   float* dcsr_val_B = nullptr;
+*
+*   int* dcsr_row_ptr_C = nullptr;
+*
+*   hipMalloc((void**)&dcsr_row_ptr_A, (m + 1) * sizeof(int));
+*   hipMalloc((void**)&dcsr_col_ind_A, nnz_A * sizeof(int));
+*   hipMalloc((void**)&dcsr_val_A, nnz_A * sizeof(float));
+*
+*   hipMalloc((void**)&dcsr_row_ptr_B, (k + 1) * sizeof(int));
+*   hipMalloc((void**)&dcsr_col_ind_B, nnz_B * sizeof(int));
+*   hipMalloc((void**)&dcsr_val_B, nnz_B * sizeof(float));
+*
+*   hipMalloc((void**)&dcsr_row_ptr_C, (m + 1) * sizeof(int));
+*
+*   hipMemcpy(dcsr_row_ptr_A, hcsr_row_ptr_A.data(), (m + 1) * sizeof(int), hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_col_ind_A, hcsr_col_ind_A.data(), nnz_A * sizeof(int), hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_val_A, hcsr_val_A.data(), nnz_A * sizeof(float), hipMemcpyHostToDevice);
+*
+*   hipMemcpy(dcsr_row_ptr_B, hcsr_row_ptr_B.data(), (k + 1) * sizeof(int), hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_col_ind_B, hcsr_col_ind_B.data(), nnz_B * sizeof(int), hipMemcpyHostToDevice);
+*   hipMemcpy(dcsr_val_B, hcsr_val_B.data(), nnz_B * sizeof(float), hipMemcpyHostToDevice);
+*
+*   rocsparse_handle     handle;
+*   rocsparse_spmat_descr matA, matB, matC, matD;
+*   void*                temp_buffer    = NULL;
+*   size_t               buffer_size = 0;
+*
+*   rocsparse_operation trans_A = rocsparse_operation_none;
+*   rocsparse_operation trans_B = rocsparse_operation_none;
+*   rocsparse_index_base index_base = rocsparse_index_base_zero;
+*   rocsparse_indextype itype = rocsparse_indextype_i32;
+*   rocsparse_indextype jtype = rocsparse_indextype_i32;
+*   rocsparse_datatype  ttype = rocsparse_datatype_f32_r;
+*
+*   rocsparse_create_handle(&handle);
+*
+*   // Create sparse matrix A in CSR format
+*   rocsparse_create_csr_descr(&matA, m, k, nnz_A,
+*                       dcsr_row_ptr_A, dcsr_col_ind_A, dcsr_val_A,
+*                       itype, jtype,
+*                       index_base, ttype);
+*
+*   // Create sparse matrix B in CSR format
+*   rocsparse_create_csr_descr(&matB, k, n, nnz_B,
+*                       dcsr_row_ptr_B, dcsr_col_ind_B, dcsr_val_B,
+*                       itype, jtype,
+*                       index_base, ttype);
+*
+*   // Create sparse matrix C in CSR format
+*   rocsparse_create_csr_descr(&matC, m, n, 0,
+*                       dcsr_row_ptr_C, nullptr, nullptr,
+*                       itype, jtype,
+*                       index_base, ttype);
+*
+*   // Create sparse matrix D in CSR format
+*   rocsparse_create_csr_descr(&matD, 0, 0, 0,
+*                       nullptr, nullptr, nullptr,
+*                       itype, jtype,
+*                       index_base, ttype);
+*
+*   Determine buffer size
+*   rocsparse_spgemm(handle,
+*                    trans_A,
+*                    trans_B,
+*                    &alpha,
+*                    matA,
+*                    matB,
+*                    &beta,
+*                    matD,
+*                    matC,
+*                    ttype,
+*                    rocsparse_spgemm_alg_default,
+*                    rocsparse_spgemm_stage_buffer_size,
+*                    &buffer_size,
+*                    nullptr);
+*
+*   hipMalloc(&temp_buffer, buffer_size);
+*
+*   Determine number of non-zeros in C matrix
+*   rocsparse_spgemm(handle,
+*                    trans_A,
+*                    trans_B,
+*                    &alpha,
+*                    matA,
+*                    matB,
+*                    &beta,
+*                    matD,
+*                    matC,
+*                    ttype,
+*                    rocsparse_spgemm_alg_default,
+*                    rocsparse_spgemm_stage_nnz,
+*                    &buffer_size,
+*                    temp_buffer);
+*
+*   int64_t rows_C;
+*   int64_t cols_C;
+*   int64_t nnz_C;
+*
+*   Extract number of non-zeros in C matrix so we can allocate the column indices and values arrays
+*   rocsparse_spmat_get_size(matC, &rows_C, &cols_C, &nnz_C);
+*
+*   int* dcsr_col_ind_C;
+*   float* dcsr_val_C;
+*   hipMalloc((void**)&dcsr_col_ind_C, sizeof(int) * nnz_C);
+*   hipMalloc((void**)&dcsr_val_C, sizeof(float) * nnz_C);
+*
+*   // Set C matrix pointers
+*   rocsparse_csr_set_pointers(matC, dcsr_row_ptr_C, dcsr_col_ind_C, dcsr_val_C);
+*
+*   // SpGEMM computation
+*   rocsparse_spgemm(handle,
+*                    trans_A,
+*                    trans_B,
+*                    &alpha,
+*                    matA,
+*                    matB,
+*                    &beta,
+*                    matD,
+*                    matC,
+*                    ttype,
+*                    rocsparse_spgemm_alg_default,
+*                    rocsparse_spgemm_stage_compute,
+*                    &buffer_size,
+*                    temp_buffer);
+*
+*   // Copy C matrix result back to host
+*   std::vector<int> hcsr_row_ptr_C(m + 1);
+*   std::vector<int> hcsr_col_ind_C(nnz_C);
+*   std::vector<float>  hcsr_val_C(nnz_C);
+*
+*   hipMemcpy(hcsr_row_ptr_C.data(), dcsr_row_ptr_C, sizeof(int) * (m + 1), hipMemcpyDeviceToHost);
+*   hipMemcpy(hcsr_col_ind_C.data(), dcsr_col_ind_C, sizeof(int) * nnz_C, hipMemcpyDeviceToHost);
+*   hipMemcpy(hcsr_val_C.data(), dcsr_val_C, sizeof(float) * nnz_C, hipMemcpyDeviceToHost);
+*
+*   // Destroy matrix descriptors
+*   rocsparse_destroy_spmat_descr(matA);
+*   rocsparse_destroy_spmat_descr(matB);
+*   rocsparse_destroy_spmat_descr(matC);
+*   rocsparse_destroy_spmat_descr(matD);
+*   rocsparse_destroy_handle(handle);
+*
+*   // Free device arrays
+*   hipFree(temp_buffer);
+*   hipFree(dcsr_row_ptr_A);
+*   hipFree(dcsr_col_ind_A);
+*   hipFree(dcsr_val_A);
+*
+*   hipFree(dcsr_row_ptr_B);
+*   hipFree(dcsr_col_ind_B);
+*   hipFree(dcsr_val_B);
+*
+*   hipFree(dcsr_row_ptr_C);
+*   hipFree(dcsr_col_ind_C);
+*   hipFree(dcsr_val_C);
+*  \endcode
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spgemm(rocsparse_handle            handle,
@@ -21284,95 +22746,6 @@ rocsparse_status rocsparse_spgemm(rocsparse_handle            handle,
                                   rocsparse_spgemm_stage      stage,
                                   size_t*                     buffer_size,
                                   void*                       temp_buffer);
-
-/*! \ingroup generic_module
-*  \brief  Sampled Dense-Dense Matrix Multiplication.
-*
-*  \details
-*  \ref rocsparse_sddmm multiplies the scalar \f$\alpha\f$ with the dense
-*  \f$m \times k\f$ matrix \f$A\f$, the dense \f$k \times n\f$ matrix \f$B\f$, filtered by the sparsity pattern of the \f$m \times n\f$ sparse matrix \f$C\f$ and
-*  adds the result to \f$C\f$ scaled by
-*  \f$\beta\f$. The final result is stored in the sparse \f$m \times n\f$ matrix \f$C\f$,
-*  such that
-*  \f[
-*    C := \alpha ( opA(A) \cdot opB(B) ) \cdot spy(C) + \beta C,
-*  \f]
-*  with
-*  \f[
-*    op(A) = \left\{
-*    \begin{array}{ll}
-*        A,   & \text{if opA == rocsparse_operation_none} \\
-*        A^T,   & \text{if opA == rocsparse_operation_transpose} \\
-*    \end{array}
-*    \right.
-*  \f],
-*  \f[
-*    op(B) = \left\{
-*    \begin{array}{ll}
-*        B,   & \text{if opB == rocsparse_operation_none} \\
-*        B^T,   & \text{if opB == rocsparse_operation_transpose} \\
-*    \end{array}
-*    \right.
-*  \f]
-*   and
-*  \f[
-*    spy(C)_ij = \left\{
-*    \begin{array}{ll}
-*        1 \text{if i == j},   & 0 \text{if i != j} \\
-*    \end{array}
-*    \right.
-*  \f]
-*
-*  \note \p opA == \ref rocsparse_operation_conjugate_transpose is not supported.
-*  \note \p opB == \ref rocsparse_operation_conjugate_transpose is not supported.
-*  \note
-*  This routine supports execution in a hipGraph context.
-*
-*  @param[in]
-*  handle       handle to the rocsparse library context queue.
-*  @param[in]
-*  opA      dense matrix \f$A\f$ operation type.
-*  @param[in]
-*  opB      dense matrix \f$B\f$ operation type.
-*  @param[in]
-*  alpha        scalar \f$\alpha\f$.
-*  @param[in]
-*  A            dense matrix \f$A\f$ descriptor.
-*  @param[in]
-*  B            dense matrix \f$B\f$ descriptor.
-*  @param[in]
-*  beta         scalar \f$\beta\f$.
-*  @param[inout]
-*  C            sparse matrix \f$C\f$ descriptor.
-*  @param[in]
-*  compute_type floating point precision for the SDDMM computation.
-*  @param[in]
-*  alg specification of the algorithm to use.
-*  @param[in]
-*  temp_buffer  temporary storage buffer allocated by the user.
-*  The size must be greater or equal to the size obtained with \ref rocsparse_sddmm_buffer_size.
-*
-*  \retval rocsparse_status_success the operation completed successfully.
-*  \retval rocsparse_status_invalid_value the value of \p trans\_A, \p trans\_B, \p compute\_type or alg is incorrect.
-*  \retval rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval rocsparse_status_invalid_pointer \p alpha and \p beta are invalid,
-*          \p A, \p B, \p D, \p C or \p temp_buffer pointer is invalid.
-*  \retval rocsparse_status_not_implemented
-*          \p opA == \ref rocsparse_operation_conjugate_transpose or
-*          \p opB == \ref rocsparse_operation_conjugate_transpose.
-*/
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_sddmm(rocsparse_handle            handle,
-                                 rocsparse_operation         opA,
-                                 rocsparse_operation         opB,
-                                 const void*                 alpha,
-                                 const rocsparse_dnmat_descr A,
-                                 const rocsparse_dnmat_descr B,
-                                 const void*                 beta,
-                                 rocsparse_spmat_descr       C,
-                                 rocsparse_datatype          compute_type,
-                                 rocsparse_sddmm_alg         alg,
-                                 void*                       temp_buffer);
 
 /*! \ingroup generic_module
 *  \brief Calculate the size in bytes of the required buffer for the use of \ref rocsparse_sddmm and \ref rocsparse_sddmm_preprocess
@@ -21483,6 +22856,95 @@ rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle            handle,
                                             rocsparse_datatype          compute_type,
                                             rocsparse_sddmm_alg         alg,
                                             void*                       temp_buffer);
+
+/*! \ingroup generic_module
+*  \brief  Sampled Dense-Dense Matrix Multiplication.
+*
+*  \details
+*  \ref rocsparse_sddmm multiplies the scalar \f$\alpha\f$ with the dense
+*  \f$m \times k\f$ matrix \f$A\f$, the dense \f$k \times n\f$ matrix \f$B\f$, filtered by the sparsity pattern of the \f$m \times n\f$ sparse matrix \f$C\f$ and
+*  adds the result to \f$C\f$ scaled by
+*  \f$\beta\f$. The final result is stored in the sparse \f$m \times n\f$ matrix \f$C\f$,
+*  such that
+*  \f[
+*    C := \alpha ( opA(A) \cdot opB(B) ) \cdot spy(C) + \beta C,
+*  \f]
+*  with
+*  \f[
+*    op(A) = \left\{
+*    \begin{array}{ll}
+*        A,   & \text{if opA == rocsparse_operation_none} \\
+*        A^T,   & \text{if opA == rocsparse_operation_transpose} \\
+*    \end{array}
+*    \right.
+*  \f],
+*  \f[
+*    op(B) = \left\{
+*    \begin{array}{ll}
+*        B,   & \text{if opB == rocsparse_operation_none} \\
+*        B^T,   & \text{if opB == rocsparse_operation_transpose} \\
+*    \end{array}
+*    \right.
+*  \f]
+*   and
+*  \f[
+*    spy(C)_ij = \left\{
+*    \begin{array}{ll}
+*        1 \text{if i == j},   & 0 \text{if i != j} \\
+*    \end{array}
+*    \right.
+*  \f]
+*
+*  \note \p opA == \ref rocsparse_operation_conjugate_transpose is not supported.
+*  \note \p opB == \ref rocsparse_operation_conjugate_transpose is not supported.
+*  \note
+*  This routine supports execution in a hipGraph context.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  opA      dense matrix \f$A\f$ operation type.
+*  @param[in]
+*  opB      dense matrix \f$B\f$ operation type.
+*  @param[in]
+*  alpha        scalar \f$\alpha\f$.
+*  @param[in]
+*  A            dense matrix \f$A\f$ descriptor.
+*  @param[in]
+*  B            dense matrix \f$B\f$ descriptor.
+*  @param[in]
+*  beta         scalar \f$\beta\f$.
+*  @param[inout]
+*  C            sparse matrix \f$C\f$ descriptor.
+*  @param[in]
+*  compute_type floating point precision for the SDDMM computation.
+*  @param[in]
+*  alg specification of the algorithm to use.
+*  @param[in]
+*  temp_buffer  temporary storage buffer allocated by the user.
+*  The size must be greater or equal to the size obtained with \ref rocsparse_sddmm_buffer_size.
+*
+*  \retval rocsparse_status_success the operation completed successfully.
+*  \retval rocsparse_status_invalid_value the value of \p trans\_A, \p trans\_B, \p compute\_type or alg is incorrect.
+*  \retval rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval rocsparse_status_invalid_pointer \p alpha and \p beta are invalid,
+*          \p A, \p B, \p D, \p C or \p temp_buffer pointer is invalid.
+*  \retval rocsparse_status_not_implemented
+*          \p opA == \ref rocsparse_operation_conjugate_transpose or
+*          \p opB == \ref rocsparse_operation_conjugate_transpose.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sddmm(rocsparse_handle            handle,
+                                 rocsparse_operation         opA,
+                                 rocsparse_operation         opB,
+                                 const void*                 alpha,
+                                 const rocsparse_dnmat_descr A,
+                                 const rocsparse_dnmat_descr B,
+                                 const void*                 beta,
+                                 rocsparse_spmat_descr       C,
+                                 rocsparse_datatype          compute_type,
+                                 rocsparse_sddmm_alg         alg,
+                                 void*                       temp_buffer);
 
 /*
 * ===========================================================================
@@ -21599,4 +23061,4 @@ rocsparse_status rocsparse_zcsrcolor(rocsparse_handle                handle,
 }
 #endif
 
-#endif /* _ROCSPARSE_FUNCTIONS_H_ */
+#endif /* ROCSPARSE_FUNCTIONS_H */

@@ -105,11 +105,11 @@ void bsrsm_upper_large_kernel(rocsparse_int        mb,
             }
         }
 
-        // Wait for spin looping thread to finish as the whole block depends on this row
-        __syncthreads();
-
         // Make sure updated X is visible globally
         __threadfence();
+
+        // Wait for spin looping thread to finish as the whole block depends on this row
+        __syncthreads();
 
         // Local sum computation
 
@@ -170,11 +170,11 @@ void bsrsm_upper_large_kernel(rocsparse_int        mb,
         }
     }
 
-    // Wait for all threads to finish writing into global memory before we mark the row "done"
-    __syncthreads();
-
     // Make sure X is written to global memory before setting row is done flag
     __threadfence();
+
+    // Wait for all threads to finish the threadfence before we mark the row "done"
+    __syncthreads();
 
     if(row < mb && threadIdx.x == 0)
     {
@@ -267,11 +267,11 @@ void bsrsm_lower_large_kernel(rocsparse_int        mb,
             }
         }
 
-        // Wait for spin looping thread to finish as the whole block depends on this row
-        __syncthreads();
-
         // Make sure updated X is visible globally
         __threadfence();
+
+        // Wait for spin looping thread to finish as the whole block depends on this row
+        __syncthreads();
 
         // Local sum computation
 
@@ -332,11 +332,11 @@ void bsrsm_lower_large_kernel(rocsparse_int        mb,
         }
     }
 
-    // Wait for all threads to finish writing into global memory before we mark the row "done"
-    __syncthreads();
-
     // Make sure X is written to global memory before setting row is done flag
     __threadfence();
+
+    // Wait for all threads to finish the threadfence before we mark the row "done"
+    __syncthreads();
 
     if(row < mb && threadIdx.x == 0)
     {

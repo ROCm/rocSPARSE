@@ -25,8 +25,8 @@
  * \brief rocsparse-types.h defines data types used by rocsparse
  */
 
-#ifndef _ROCSPARSE_TYPES_H_
-#define _ROCSPARSE_TYPES_H_
+#ifndef ROCSPARSE_TYPES_H
+#define ROCSPARSE_TYPES_H
 
 #include "rocsparse-complex-types.h"
 
@@ -804,4 +804,4 @@ typedef enum rocsparse_gpsv_interleaved_alg_
 }
 #endif
 
-#endif /* _ROCSPARSE_TYPES_H_ */
+#endif /* ROCSPARSE_TYPES_H */

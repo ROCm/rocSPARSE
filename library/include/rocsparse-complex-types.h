@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,8 @@
  *  \brief rocsparse-complex-types.h defines complex data types used in rocsparse
  */
 
-#ifndef _ROCSPARSE_COMPLEX_TYPES_H_
-#define _ROCSPARSE_COMPLEX_TYPES_H_
+#ifndef ROCSPARSE_COMPLEX_TYPES_H
+#define ROCSPARSE_COMPLEX_TYPES_H
 
 #if __cplusplus < 201402L || (!defined(__HIPCC__))
 
@@ -281,4 +281,4 @@ using rocsparse_double_complex = rocsparse_complex_num<double>;
 
 #endif /* __cplusplus < 201402L || (!defined(__HIPCC__)) */
 
-#endif /* _ROCSPARSE_COMPLEX_TYPES_H_ */
+#endif /* ROCSPARSE_COMPLEX_TYPES_H */
