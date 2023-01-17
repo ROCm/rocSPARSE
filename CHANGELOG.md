@@ -2,15 +2,21 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## rocSPARSE 2.6.0
+## rocSPARSE 3.0.0
 ### Added
 - Added rocsparse_inverse_permutation
-- Added rocsparse_inverse_permutation
 - Added uniform int8 precision for Gather and Scatter
+### Changed
+- Removed old deprecated rocsparse_spmv, deprecated current rocsparse_spmv_ex, and added new rocsparse_spmv routine
+- Removed old deprecated rocsparse_xbsrmv routines, deprecated current rocsparse_xbsrmv_ex routines, and added new rocsparse_xbsrmv routines
+- Removed old deprecated rocsparse_spmm_ex routine
 ### Improved
 - Optimization to doti routine
+- Fixed a bug in csrsm and bsrsm
+### Known Issues
+- none
 
-## rocSPARSE 2.5.0 ROCm 5.5
+## rocSPARSE 2.5.0 for ROCm 5.5.0
 ### Added
 - Added bsrgemm and spgemm for BSR format
 - Added bsrgeam
@@ -28,6 +34,8 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Fixes to documentation
 - Fixes a bug in COO SpMV gridsize
 - Fixes a bug in SpMM gridsize when using very large matrices
+### Known Issues
+- none
 
 ## rocSPARSE 2.4.0 for ROCm 5.4.0
 ### Added
@@ -144,7 +152,6 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - coo2dense and dense2coo
 - generic API including axpby, gather, scatter, rot, spvv, spmv, spgemm, sparsetodense, densetosparse
 - support for mixed indexing types in matrix formats
-
 
 ## rocSPARSE 1.18.4 for ROCm 4.0.0
 ### Added

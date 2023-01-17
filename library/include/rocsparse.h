@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,11 @@
  * \brief rocsparse.h includes other *.h and exposes a common interface
  */
 
-#ifndef _ROCSPARSE_H_
-#define _ROCSPARSE_H_
+#ifndef ROCSPARSE_H
+#define ROCSPARSE_H
 
 #include "rocsparse-auxiliary.h"
 #include "rocsparse-functions.h"
 #include "rocsparse-version.h"
 
-#endif /* _ROCSPARSE_H_ */
+#endif /* ROCSPARSE_H */

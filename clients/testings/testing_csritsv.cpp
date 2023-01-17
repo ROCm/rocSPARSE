@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,7 +85,6 @@ rocsparse_status rocsparse_host_csritsv_ptr_end(rocsparse_fill_mode fill_mode_,
                 if(!mark)
                 {
                     zero_pivot[0] = std::min(zero_pivot[0], i + base_);
-                    ;
                     ++count_symbolic_diag;
                 }
             }
@@ -96,9 +95,6 @@ rocsparse_status rocsparse_host_csritsv_ptr_end(rocsparse_fill_mode fill_mode_,
 
             if(count_symbolic_diag > 0)
             {
-                std::cout << "host csritsv, " << count_symbolic_diag
-                          << "  zero pivots detected, first index is " << zero_pivot[0]
-                          << std::endl;
                 return rocsparse_status_success;
             }
             break;
@@ -159,9 +155,6 @@ rocsparse_status rocsparse_host_csritsv_ptr_end(rocsparse_fill_mode fill_mode_,
 
             if(count_symbolic_diag > 0)
             {
-                std::cout << "host csritsv, " << count_symbolic_diag
-                          << "  zero pivots detected, first index is " << zero_pivot[0]
-                          << std::endl;
                 return rocsparse_status_success;
             }
             break;
@@ -1160,19 +1153,23 @@ void testing_csritsv(const Arguments& arg)
 
         if(device_iterative_convergence != host_iterative_convergence)
         {
-            if(trans == rocsparse_operation_none)
+            if(verbose)
             {
-                std::cout << " - WARNING host and device iterative convergece differs on "
-                             "NonTranspose case ... it happens rarely but it does."
-                          << std::endl;
-                // Let's not be too restrictive ...
-                // CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-            }
-            else
-            {
-                std::cout << " - WARNING host and device iterative convergece differs, it happens "
-                             "with transpose cases since csrmv uses atomics."
-                          << std::endl;
+                if(trans == rocsparse_operation_none)
+                {
+                    std::cout << " - WARNING host and device iterative convergece differs on "
+                                 "NonTranspose case ... it happens rarely but it does."
+                              << std::endl;
+                    // Let's not be too restrictive ...
+                    // CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+                }
+                else
+                {
+                    std::cout
+                        << " - WARNING host and device iterative convergece differs, it happens "
+                           "with transpose cases since csrmv uses atomics."
+                        << std::endl;
+                }
             }
         }
         if(verbose)
