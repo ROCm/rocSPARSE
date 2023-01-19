@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -174,8 +174,8 @@ extern "C" rocsparse_status rocsparse_sddmm_buffer_size(rocsparse_handle        
                                                         rocsparse_operation         trans_A,
                                                         rocsparse_operation         trans_B,
                                                         const void*                 alpha,
-                                                        const rocsparse_dnmat_descr mat_A,
-                                                        const rocsparse_dnmat_descr mat_B,
+                                                        rocsparse_const_dnmat_descr mat_A,
+                                                        rocsparse_const_dnmat_descr mat_B,
                                                         const void*                 beta,
                                                         const rocsparse_spmat_descr mat_C,
                                                         rocsparse_datatype          compute_type,
@@ -404,8 +404,8 @@ extern "C" rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle         
                                                        rocsparse_operation         trans_A,
                                                        rocsparse_operation         trans_B,
                                                        const void*                 alpha,
-                                                       const rocsparse_dnmat_descr mat_A,
-                                                       const rocsparse_dnmat_descr mat_B,
+                                                       rocsparse_const_dnmat_descr mat_A,
+                                                       rocsparse_const_dnmat_descr mat_B,
                                                        const void*                 beta,
                                                        const rocsparse_spmat_descr mat_C,
                                                        rocsparse_datatype          compute_type,
@@ -636,8 +636,8 @@ extern "C" rocsparse_status rocsparse_sddmm(rocsparse_handle            handle,
                                             rocsparse_operation         trans_A,
                                             rocsparse_operation         trans_B,
                                             const void*                 alpha,
-                                            const rocsparse_dnmat_descr mat_A,
-                                            const rocsparse_dnmat_descr mat_B,
+                                            rocsparse_const_dnmat_descr mat_A,
+                                            rocsparse_const_dnmat_descr mat_B,
                                             const void*                 beta,
                                             const rocsparse_spmat_descr mat_C,
                                             rocsparse_datatype          compute_type,
