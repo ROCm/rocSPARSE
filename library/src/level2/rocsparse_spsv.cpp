@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,14 +33,17 @@ template <typename I, typename J, typename T>
 rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                                          rocsparse_operation         trans,
                                          const void*                 alpha,
-                                         const rocsparse_spmat_descr mat,
-                                         const rocsparse_dnvec_descr x,
+                                         rocsparse_const_spmat_descr mat,
+                                         rocsparse_const_dnvec_descr x,
                                          rocsparse_dnvec_descr       y,
                                          rocsparse_spsv_alg          alg,
                                          rocsparse_spsv_stage        stage,
                                          size_t*                     buffer_size,
                                          void*                       temp_buffer)
 {
+#define MAT_CONST_DATA(mat_, data_) \
+    (const T*)(mat_->const_##data_ == nullptr ? mat_->data_ : mat_->const_##data_)
+
     // STAGE 1 - compute required buffer size of temp_buffer
     if(stage == rocsparse_spsv_stage_buffer_size
        || (stage == rocsparse_spsv_stage_auto && temp_buffer == nullptr))
@@ -52,9 +55,9 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                                                         (J)mat->rows,
                                                         (I)mat->nnz,
                                                         mat->descr,
-                                                        (const T*)mat->val_data,
-                                                        (const I*)mat->row_data,
-                                                        (const J*)mat->col_data,
+                                                        (const T*)MAT_CONST_DATA(mat, val_data),
+                                                        (const I*)MAT_CONST_DATA(mat, row_data),
+                                                        (const J*)MAT_CONST_DATA(mat, col_data),
                                                         mat->info,
                                                         buffer_size);
         }
@@ -65,9 +68,9 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                                                         (I)mat->rows,
                                                         mat->nnz,
                                                         mat->descr,
-                                                        (const T*)mat->val_data,
-                                                        (const I*)mat->row_data,
-                                                        (const I*)mat->col_data,
+                                                        (const T*)MAT_CONST_DATA(mat, val_data),
+                                                        (const I*)MAT_CONST_DATA(mat, row_data),
+                                                        (const I*)MAT_CONST_DATA(mat, col_data),
                                                         mat->info,
                                                         buffer_size);
         }
@@ -91,9 +94,9 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                                                        (J)mat->rows,
                                                        (I)mat->nnz,
                                                        mat->descr,
-                                                       (const T*)mat->val_data,
-                                                       (const I*)mat->row_data,
-                                                       (const J*)mat->col_data,
+                                                       (const T*)MAT_CONST_DATA(mat, val_data),
+                                                       (const I*)MAT_CONST_DATA(mat, row_data),
+                                                       (const J*)MAT_CONST_DATA(mat, col_data),
                                                        mat->info,
                                                        rocsparse_analysis_policy_force,
                                                        rocsparse_solve_policy_auto,
@@ -107,9 +110,9 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                                                        (I)mat->rows,
                                                        mat->nnz,
                                                        mat->descr,
-                                                       (const T*)mat->val_data,
-                                                       (const I*)mat->row_data,
-                                                       (const I*)mat->col_data,
+                                                       (const T*)MAT_CONST_DATA(mat, val_data),
+                                                       (const I*)MAT_CONST_DATA(mat, row_data),
+                                                       (const I*)MAT_CONST_DATA(mat, col_data),
                                                        mat->info,
                                                        rocsparse_analysis_policy_force,
                                                        rocsparse_solve_policy_auto,
@@ -120,7 +123,7 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                 return rocsparse_status_not_implemented;
             }
 
-            mat->analysed = true;
+            // mat->analysed = true;
         }
 
         return rocsparse_status_success;
@@ -137,11 +140,11 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                                                   (I)mat->nnz,
                                                   (const T*)alpha,
                                                   mat->descr,
-                                                  (const T*)mat->val_data,
-                                                  (const I*)mat->row_data,
-                                                  (const J*)mat->col_data,
+                                                  (const T*)MAT_CONST_DATA(mat, val_data),
+                                                  (const I*)MAT_CONST_DATA(mat, row_data),
+                                                  (const J*)MAT_CONST_DATA(mat, col_data),
                                                   mat->info,
-                                                  (const T*)x->values,
+                                                  (const T*)MAT_CONST_DATA(x, values),
                                                   (T*)y->values,
                                                   rocsparse_solve_policy_auto,
                                                   temp_buffer);
@@ -154,11 +157,11 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                                                   mat->nnz,
                                                   (const T*)alpha,
                                                   mat->descr,
-                                                  (const T*)mat->val_data,
-                                                  (const I*)mat->row_data,
-                                                  (const I*)mat->col_data,
+                                                  (const T*)MAT_CONST_DATA(mat, val_data),
+                                                  (const I*)MAT_CONST_DATA(mat, row_data),
+                                                  (const I*)MAT_CONST_DATA(mat, col_data),
                                                   mat->info,
-                                                  (const T*)x->values,
+                                                  (const T*)MAT_CONST_DATA(x, values),
                                                   (T*)y->values,
                                                   rocsparse_solve_policy_auto,
                                                   temp_buffer);
@@ -168,6 +171,8 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
             return rocsparse_status_not_implemented;
         }
     }
+
+#undef MAT_CONST_DATA
 
     return rocsparse_status_not_implemented;
 }
@@ -259,8 +264,8 @@ rocsparse_status rocsparse_spsv_dynamic_dispatch(rocsparse_indextype itype,
 extern "C" rocsparse_status rocsparse_spsv(rocsparse_handle            handle,
                                            rocsparse_operation         trans,
                                            const void*                 alpha,
-                                           const rocsparse_spmat_descr mat,
-                                           const rocsparse_dnvec_descr x,
+                                           rocsparse_const_spmat_descr mat,
+                                           rocsparse_const_dnvec_descr x,
                                            const rocsparse_dnvec_descr y,
                                            rocsparse_datatype          compute_type,
                                            rocsparse_spsv_alg          alg,

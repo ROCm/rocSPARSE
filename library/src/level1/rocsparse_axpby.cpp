@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ void axpby_scale_kernel(I size, U alpha_device_host, T* __restrict__ x)
 template <typename I, typename T>
 rocsparse_status rocsparse_axpby_template(rocsparse_handle            handle,
                                           const void*                 alpha,
-                                          const rocsparse_spvec_descr x,
+                                          rocsparse_const_spvec_descr x,
                                           const void*                 beta,
                                           rocsparse_dnvec_descr       y)
 {
@@ -90,13 +90,14 @@ rocsparse_status rocsparse_axpby_template(rocsparse_handle            handle,
     }
 #undef SCALE_DIM
 
-    return rocsparse_axpyi_template<I, T>(handle,
-                                          (I)x->nnz,
-                                          (const T*)alpha,
-                                          (const T*)x->val_data,
-                                          (const I*)x->idx_data,
-                                          (T*)y->values,
-                                          x->idx_base);
+    return rocsparse_axpyi_template<I, T>(
+        handle,
+        (I)x->nnz,
+        (const T*)alpha,
+        (const T*)(x->const_val_data == nullptr ? x->val_data : x->const_val_data),
+        (const I*)(x->const_idx_data == nullptr ? x->idx_data : x->const_idx_data),
+        (T*)y->values,
+        x->idx_base);
 }
 
 /*
@@ -107,7 +108,7 @@ rocsparse_status rocsparse_axpby_template(rocsparse_handle            handle,
 
 extern "C" rocsparse_status rocsparse_axpby(rocsparse_handle            handle,
                                             const void*                 alpha,
-                                            const rocsparse_spvec_descr x,
+                                            rocsparse_const_spvec_descr x,
                                             const void*                 beta,
                                             rocsparse_dnvec_descr       y)
 {

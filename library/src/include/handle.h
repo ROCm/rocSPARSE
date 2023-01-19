@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -381,6 +381,9 @@ struct _rocsparse_spvec_descr
     void* idx_data{};
     void* val_data{};
 
+    const void* const_idx_data{};
+    const void* const_val_data{};
+
     rocsparse_indextype idx_type{};
     rocsparse_datatype  data_type{};
 
@@ -400,6 +403,11 @@ struct _rocsparse_spmat_descr
     void* col_data{};
     void* ind_data{};
     void* val_data{};
+
+    const void* const_row_data{};
+    const void* const_col_data{};
+    const void* const_ind_data{};
+    const void* const_val_data{};
 
     rocsparse_indextype row_type{};
     rocsparse_indextype col_type{};
@@ -428,6 +436,7 @@ struct _rocsparse_dnvec_descr
 
     int64_t            size{};
     void*              values{};
+    const void*        const_values{};
     rocsparse_datatype data_type{};
 };
 
@@ -440,6 +449,8 @@ struct _rocsparse_dnmat_descr
     int64_t ld{};
 
     void* values{};
+
+    const void* const_values{};
 
     rocsparse_datatype data_type{};
     rocsparse_order    order{};
