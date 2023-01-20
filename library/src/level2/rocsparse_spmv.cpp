@@ -353,9 +353,6 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
 {
     RETURN_IF_ROCSPARSE_ERROR((rocsparse_check_spmv_alg(mat->format, alg)));
 
-#define MAT_CONST_DATA(mat_, data_) \
-    (const T*)(mat_->const_##data_ == nullptr ? mat_->data_ : mat_->const_##data_)
-
     switch(mat->format)
     {
     case rocsparse_format_coo:
@@ -382,9 +379,9 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                                        (I)mat->cols,
                                                        mat->nnz,
                                                        mat->descr,
-                                                       (const A*)MAT_CONST_DATA(mat, val_data),
-                                                       (const I*)MAT_CONST_DATA(mat, row_data),
-                                                       (const I*)MAT_CONST_DATA(mat, col_data))));
+                                                       (const A*)(mat->const_val_data),
+                                                       (const I*)(mat->const_row_data),
+                                                       (const I*)(mat->const_col_data))));
 
                 mat->analysed = true;
             }
@@ -400,10 +397,10 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                             mat->nnz,
                                             (const T*)alpha,
                                             mat->descr,
-                                            (const A*)MAT_CONST_DATA(mat, val_data),
-                                            (const I*)MAT_CONST_DATA(mat, row_data),
-                                            (const I*)MAT_CONST_DATA(mat, col_data),
-                                            (const X*)MAT_CONST_DATA(x, values),
+                                            (const A*)(mat->const_val_data),
+                                            (const I*)(mat->const_row_data),
+                                            (const I*)(mat->const_col_data),
+                                            (const X*)(x->const_values),
                                             (const T*)beta,
                                             (Y*)y->values);
         }
@@ -442,9 +439,9 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                                 mat->nnz,
                                                 (const T*)alpha,
                                                 mat->descr,
-                                                (const A*)mat->val_data,
-                                                (const I*)mat->ind_data,
-                                                (const X*)x->values,
+                                                (const A*)(mat->const_val_data),
+                                                (const I*)(mat->const_ind_data),
+                                                (const X*)(x->const_values),
                                                 (const T*)beta,
                                                 (Y*)y->values);
         }
@@ -482,9 +479,9 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                                            (J)mat->cols,
                                                            (I)mat->nnz,
                                                            mat->descr,
-                                                           (const A*)mat->val_data,
-                                                           (const I*)mat->row_data,
-                                                           (const J*)mat->col_data,
+                                                           (const A*)(mat->const_val_data),
+                                                           (const I*)(mat->const_row_data),
+                                                           (const J*)(mat->const_col_data),
                                                            (J)mat->block_dim,
                                                            mat->info);
                 if(status != rocsparse_status_success)
@@ -508,12 +505,12 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                             (I)mat->nnz,
                                             (const T*)alpha,
                                             mat->descr,
-                                            (const A*)mat->val_data,
-                                            (const I*)mat->row_data,
-                                            (const J*)mat->col_data,
+                                            (const A*)(mat->const_val_data),
+                                            (const I*)(mat->const_row_data),
+                                            (const J*)(mat->const_col_data),
                                             (J)mat->block_dim,
                                             mat->info,
-                                            (const X*)x->values,
+                                            (const X*)(x->const_values),
                                             (const T*)beta,
                                             (Y*)y->values);
         }
@@ -551,9 +548,9 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                                            (J)mat->cols,
                                                            (I)mat->nnz,
                                                            mat->descr,
-                                                           (const A*)MAT_CONST_DATA(mat, val_data),
-                                                           (const I*)MAT_CONST_DATA(mat, row_data),
-                                                           (const J*)MAT_CONST_DATA(mat, col_data),
+                                                           (const A*)(mat->const_val_data),
+                                                           (const I*)(mat->const_row_data),
+                                                           (const J*)(mat->const_col_data),
                                                            mat->info);
                 if(status != rocsparse_status_success)
                 {
@@ -575,13 +572,13 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                             (I)mat->nnz,
                                             (const T*)alpha,
                                             mat->descr,
-                                            (const A*)MAT_CONST_DATA(mat, val_data),
-                                            (const I*)MAT_CONST_DATA(mat, row_data),
-                                            ((const I*)MAT_CONST_DATA(mat, row_data)) + 1,
-                                            (const J*)MAT_CONST_DATA(mat, col_data),
+                                            (const A*)(mat->const_val_data),
+                                            (const I*)(mat->const_row_data),
+                                            ((const I*)(mat->const_row_data)) + 1,
+                                            (const J*)(mat->const_col_data),
                                             (alg == rocsparse_spmv_alg_csr_stream) ? nullptr
                                                                                    : mat->info,
-                                            (const X*)MAT_CONST_DATA(x, values),
+                                            (const X*)(x->const_values),
                                             (const T*)beta,
                                             (Y*)y->values,
                                             false);
@@ -620,9 +617,9 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                                            (J)mat->cols,
                                                            (I)mat->nnz,
                                                            mat->descr,
-                                                           (const A*)MAT_CONST_DATA(mat, val_data),
-                                                           (const I*)MAT_CONST_DATA(mat, col_data),
-                                                           (const J*)MAT_CONST_DATA(mat, row_data),
+                                                           (const A*)(mat->const_val_data),
+                                                           (const I*)(mat->const_col_data),
+                                                           (const J*)(mat->const_row_data),
                                                            mat->info);
                 if(status != rocsparse_status_success)
                 {
@@ -644,12 +641,12 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                             (I)mat->nnz,
                                             (const T*)alpha,
                                             mat->descr,
-                                            (const A*)MAT_CONST_DATA(mat, val_data),
-                                            (const I*)MAT_CONST_DATA(mat, col_data),
-                                            (const J*)MAT_CONST_DATA(mat, row_data),
+                                            (const A*)(mat->const_val_data),
+                                            (const I*)(mat->const_col_data),
+                                            (const J*)(mat->const_row_data),
                                             (alg == rocsparse_spmv_alg_csr_stream) ? nullptr
                                                                                    : mat->info,
-                                            (const X*)MAT_CONST_DATA(x, values),
+                                            (const X*)(x->const_values),
                                             (const T*)beta,
                                             (Y*)y->values);
         }
@@ -685,10 +682,10 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                             (I)mat->cols,
                                             (const T*)alpha,
                                             mat->descr,
-                                            (const A*)mat->val_data,
-                                            (const I*)mat->col_data,
+                                            (const A*)(mat->const_val_data),
+                                            (const I*)(mat->const_col_data),
                                             (I)mat->ell_width,
-                                            (const X*)x->values,
+                                            (const X*)(x->const_values),
                                             (const T*)beta,
                                             (Y*)y->values);
         }
@@ -709,7 +706,6 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
     }
     }
 
-#undef MAT_CONST_DATA
     return rocsparse_status_invalid_value;
 }
 

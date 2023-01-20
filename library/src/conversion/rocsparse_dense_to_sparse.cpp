@@ -108,8 +108,6 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
         return rocsparse_status_success;
     }
 
-#define MAT_CONST_DATA(mat_, data_) \
-    (const T*)(mat_->const_##data_ == nullptr ? mat_->data_ : mat_->const_##data_)
     // If buffer_size is nullptr, perform analysis
     if(buffer_size == nullptr)
     {
@@ -121,7 +119,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                       (I)mat_A->rows,
                                       (I)mat_A->cols,
                                       mat_B->descr,
-                                      (const T*)MAT_CONST_DATA(mat_A, values),
+                                      (const T*)(mat_A->const_values),
                                       (I)mat_A->ld,
                                       (I*)temp_buffer,
                                       (I*)&mat_B->nnz);
@@ -134,7 +132,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                       (J)mat_A->rows,
                                       (J)mat_A->cols,
                                       mat_B->descr,
-                                      (const T*)MAT_CONST_DATA(mat_A, values),
+                                      (const T*)(mat_A->const_values),
                                       (I)mat_A->ld,
                                       (I*)temp_buffer,
                                       (I*)&mat_B->nnz);
@@ -147,7 +145,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                       (J)mat_A->rows,
                                       (J)mat_A->cols,
                                       mat_B->descr,
-                                      (const T*)MAT_CONST_DATA(mat_A, values),
+                                      (const T*)(mat_A->const_values),
                                       (I)mat_A->ld,
                                       (I*)temp_buffer,
                                       (I*)&mat_B->nnz);
@@ -162,7 +160,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                             (I)mat_A->rows,
                                             (I)mat_A->cols,
                                             mat_B->descr,
-                                            (const T*)MAT_CONST_DATA(mat_A, values),
+                                            (const T*)(mat_A->const_values),
                                             (I)mat_A->ld,
                                             (I*)temp_buffer,
                                             (T*)mat_B->val_data,
@@ -173,37 +171,35 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
     // CSR
     if(mat_B->format == rocsparse_format_csr)
     {
-        return rocsparse_dense2csx_impl<rocsparse_direction_row>(
-            handle,
-            mat_A->order,
-            (J)mat_A->rows,
-            (J)mat_A->cols,
-            mat_B->descr,
-            (const T*)MAT_CONST_DATA(mat_A, values),
-            (I)mat_A->ld,
-            (I*)temp_buffer,
-            (T*)mat_B->val_data,
-            (I*)mat_B->row_data,
-            (J*)mat_B->col_data);
+        return rocsparse_dense2csx_impl<rocsparse_direction_row>(handle,
+                                                                 mat_A->order,
+                                                                 (J)mat_A->rows,
+                                                                 (J)mat_A->cols,
+                                                                 mat_B->descr,
+                                                                 (const T*)(mat_A->const_values),
+                                                                 (I)mat_A->ld,
+                                                                 (I*)temp_buffer,
+                                                                 (T*)mat_B->val_data,
+                                                                 (I*)mat_B->row_data,
+                                                                 (J*)mat_B->col_data);
     }
 
     // CSC
     if(mat_B->format == rocsparse_format_csc)
     {
-        return rocsparse_dense2csx_impl<rocsparse_direction_column>(
-            handle,
-            mat_A->order,
-            (J)mat_A->rows,
-            (J)mat_A->cols,
-            mat_B->descr,
-            (const T*)MAT_CONST_DATA(mat_A, values),
-            (I)mat_A->ld,
-            (I*)temp_buffer,
-            (T*)mat_B->val_data,
-            (I*)mat_B->col_data,
-            (J*)mat_B->row_data);
+        return rocsparse_dense2csx_impl<rocsparse_direction_column>(handle,
+                                                                    mat_A->order,
+                                                                    (J)mat_A->rows,
+                                                                    (J)mat_A->cols,
+                                                                    mat_B->descr,
+                                                                    (const T*)(mat_A->const_values),
+                                                                    (I)mat_A->ld,
+                                                                    (I*)temp_buffer,
+                                                                    (T*)mat_B->val_data,
+                                                                    (I*)mat_B->col_data,
+                                                                    (J*)mat_B->row_data);
     }
-#undef MAT_CONST_DATA
+
     return rocsparse_status_not_implemented;
 }
 

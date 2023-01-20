@@ -90,14 +90,13 @@ rocsparse_status rocsparse_axpby_template(rocsparse_handle            handle,
     }
 #undef SCALE_DIM
 
-    return rocsparse_axpyi_template<I, T>(
-        handle,
-        (I)x->nnz,
-        (const T*)alpha,
-        (const T*)(x->const_val_data == nullptr ? x->val_data : x->const_val_data),
-        (const I*)(x->const_idx_data == nullptr ? x->idx_data : x->const_idx_data),
-        (T*)y->values,
-        x->idx_base);
+    return rocsparse_axpyi_template<I, T>(handle,
+                                          (I)x->nnz,
+                                          (const T*)alpha,
+                                          (const T*)(x->const_val_data),
+                                          (const I*)(x->const_idx_data),
+                                          (T*)y->values,
+                                          x->idx_base);
 }
 
 /*

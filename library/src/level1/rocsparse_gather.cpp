@@ -33,13 +33,12 @@ rocsparse_status rocsparse_gather_template(rocsparse_handle            handle,
                                            rocsparse_const_dnvec_descr y,
                                            rocsparse_spvec_descr       x)
 {
-    return rocsparse_gthr_template<I, T>(
-        handle,
-        (I)x->nnz,
-        (const T*)(y->const_values == nullptr ? y->values : y->const_values),
-        (T*)x->val_data,
-        (const I*)x->idx_data,
-        x->idx_base);
+    return rocsparse_gthr_template<I, T>(handle,
+                                         (I)x->nnz,
+                                         (const T*)(y->const_values),
+                                         (T*)x->val_data,
+                                         (const I*)(x->const_idx_data),
+                                         x->idx_base);
 }
 
 /*
