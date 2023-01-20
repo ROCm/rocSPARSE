@@ -33,13 +33,12 @@ rocsparse_status rocsparse_scatter_template(rocsparse_handle            handle,
                                             rocsparse_const_spvec_descr x,
                                             rocsparse_dnvec_descr       y)
 {
-    return rocsparse_sctr_template<I, T>(
-        handle,
-        (I)x->nnz,
-        (const T*)(x->const_val_data == nullptr ? x->val_data : x->const_val_data),
-        (const I*)(x->const_idx_data == nullptr ? x->idx_data : x->const_idx_data),
-        (T*)y->values,
-        x->idx_base);
+    return rocsparse_sctr_template<I, T>(handle,
+                                         (I)x->nnz,
+                                         (const T*)(x->const_val_data),
+                                         (const I*)(x->const_idx_data),
+                                         (T*)y->values,
+                                         x->idx_base);
 }
 
 /*

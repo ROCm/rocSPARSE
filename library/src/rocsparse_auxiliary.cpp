@@ -1333,6 +1333,9 @@ rocsparse_status rocsparse_create_spvec_descr(rocsparse_spvec_descr* descr,
         (*descr)->idx_data = indices;
         (*descr)->val_data = values;
 
+        (*descr)->const_idx_data = indices;
+        (*descr)->const_val_data = values;
+
         (*descr)->idx_type  = idx_type;
         (*descr)->data_type = data_type;
 
@@ -1398,6 +1401,9 @@ rocsparse_status rocsparse_create_const_spvec_descr(rocsparse_const_spvec_descr*
 
         new_descr->size = size;
         new_descr->nnz  = nnz;
+
+        new_descr->idx_data = nullptr;
+        new_descr->val_data = nullptr;
 
         new_descr->const_idx_data = indices;
         new_descr->const_val_data = values;
@@ -1638,7 +1644,8 @@ rocsparse_status rocsparse_spvec_set_values(rocsparse_spvec_descr descr, void* v
         return rocsparse_status_not_initialized;
     }
 
-    descr->val_data = values;
+    descr->val_data       = values;
+    descr->const_val_data = values;
 
     return rocsparse_status_success;
 }
@@ -1709,6 +1716,10 @@ rocsparse_status rocsparse_create_coo_descr(rocsparse_spmat_descr* descr,
         (*descr)->row_data = coo_row_ind;
         (*descr)->col_data = coo_col_ind;
         (*descr)->val_data = coo_val;
+
+        (*descr)->const_row_data = coo_row_ind;
+        (*descr)->const_col_data = coo_col_ind;
+        (*descr)->const_val_data = coo_val;
 
         (*descr)->row_type  = idx_type;
         (*descr)->col_type  = idx_type;
@@ -1792,6 +1803,10 @@ rocsparse_status rocsparse_create_const_coo_descr(rocsparse_const_spmat_descr* d
         new_descr->rows = rows;
         new_descr->cols = cols;
         new_descr->nnz  = nnz;
+
+        new_descr->row_data = nullptr;
+        new_descr->col_data = nullptr;
+        new_descr->val_data = nullptr;
 
         new_descr->const_row_data = coo_row_ind;
         new_descr->const_col_data = coo_col_ind;
@@ -1889,6 +1904,9 @@ rocsparse_status rocsparse_create_coo_aos_descr(rocsparse_spmat_descr* descr,
 
         (*descr)->ind_data = coo_ind;
         (*descr)->val_data = coo_val;
+
+        (*descr)->const_ind_data = coo_ind;
+        (*descr)->const_val_data = coo_val;
 
         (*descr)->row_type  = idx_type;
         (*descr)->col_type  = idx_type;
@@ -1993,6 +2011,10 @@ rocsparse_status rocsparse_create_csr_descr(rocsparse_spmat_descr* descr,
         (*descr)->col_data = csr_col_ind;
         (*descr)->val_data = csr_val;
 
+        (*descr)->const_row_data = csr_row_ptr;
+        (*descr)->const_col_data = csr_col_ind;
+        (*descr)->const_val_data = csr_val;
+
         (*descr)->row_type  = row_ptr_type;
         (*descr)->col_type  = col_ind_type;
         (*descr)->data_type = data_type;
@@ -2085,6 +2107,10 @@ rocsparse_status rocsparse_create_const_csr_descr(rocsparse_const_spmat_descr* d
         new_descr->rows = rows;
         new_descr->cols = cols;
         new_descr->nnz  = nnz;
+
+        new_descr->row_data = nullptr;
+        new_descr->col_data = nullptr;
+        new_descr->val_data = nullptr;
 
         new_descr->const_row_data = csr_row_ptr;
         new_descr->const_col_data = csr_col_ind;
@@ -2195,6 +2221,10 @@ rocsparse_status rocsparse_create_csc_descr(rocsparse_spmat_descr* descr,
         (*descr)->col_data = csc_col_ptr;
         (*descr)->val_data = csc_val;
 
+        (*descr)->const_row_data = csc_row_ind;
+        (*descr)->const_col_data = csc_col_ptr;
+        (*descr)->const_val_data = csc_val;
+
         (*descr)->row_type  = row_ind_type;
         (*descr)->col_type  = col_ptr_type;
         (*descr)->data_type = data_type;
@@ -2287,6 +2317,10 @@ rocsparse_status rocsparse_create_const_csc_descr(rocsparse_const_spmat_descr* d
         new_descr->rows = rows;
         new_descr->cols = cols;
         new_descr->nnz  = nnz;
+
+        new_descr->row_data = nullptr;
+        new_descr->col_data = nullptr;
+        new_descr->val_data = nullptr;
 
         new_descr->const_row_data = csc_row_ind;
         new_descr->const_col_data = csc_col_ptr;
@@ -2383,6 +2417,9 @@ rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
 
         (*descr)->col_data = ell_col_ind;
         (*descr)->val_data = ell_val;
+
+        (*descr)->const_col_data = ell_col_ind;
+        (*descr)->const_val_data = ell_val;
 
         (*descr)->row_type  = idx_type;
         (*descr)->col_type  = idx_type;
@@ -2491,6 +2528,9 @@ rocsparse_status rocsparse_create_bell_descr(rocsparse_spmat_descr* descr,
         (*descr)->col_data = ell_col_ind;
         (*descr)->val_data = ell_val;
 
+        (*descr)->const_col_data = ell_col_ind;
+        (*descr)->const_val_data = ell_val;
+
         (*descr)->row_type  = idx_type;
         (*descr)->col_type  = idx_type;
         (*descr)->data_type = data_type;
@@ -2581,6 +2621,9 @@ rocsparse_status rocsparse_create_const_bell_descr(rocsparse_const_spmat_descr* 
         new_descr->ell_cols  = ell_cols;
         new_descr->block_dir = ell_block_dir;
         new_descr->block_dim = ell_block_dim;
+
+        new_descr->col_data = nullptr;
+        new_descr->val_data = nullptr;
 
         new_descr->const_col_data = ell_col_ind;
         new_descr->const_val_data = ell_val;
@@ -2691,6 +2734,10 @@ rocsparse_status rocsparse_create_bsr_descr(rocsparse_spmat_descr* descr,
         (*descr)->row_data = bsr_row_ptr;
         (*descr)->col_data = bsr_col_ind;
         (*descr)->val_data = bsr_val;
+
+        (*descr)->const_row_data = bsr_row_ptr;
+        (*descr)->const_col_data = bsr_col_ind;
+        (*descr)->const_val_data = bsr_val;
 
         (*descr)->row_type  = row_ptr_type;
         (*descr)->col_type  = col_ind_type;
@@ -3261,6 +3308,10 @@ rocsparse_status rocsparse_coo_set_pointers(rocsparse_spmat_descr descr,
     descr->col_data = coo_col_ind;
     descr->val_data = coo_val;
 
+    descr->const_row_data = coo_row_ind;
+    descr->const_col_data = coo_col_ind;
+    descr->const_val_data = coo_val;
+
     return rocsparse_status_success;
 }
 
@@ -3290,6 +3341,9 @@ rocsparse_status
 
     descr->ind_data = coo_ind;
     descr->val_data = coo_val;
+
+    descr->const_ind_data = coo_ind;
+    descr->const_val_data = coo_val;
 
     return rocsparse_status_success;
 }
@@ -3327,6 +3381,10 @@ rocsparse_status rocsparse_csr_set_pointers(rocsparse_spmat_descr descr,
     descr->col_data = csr_col_ind;
     descr->val_data = csr_val;
 
+    descr->const_row_data = csr_row_ptr;
+    descr->const_col_data = csr_col_ind;
+    descr->const_val_data = csr_val;
+
     return rocsparse_status_success;
 }
 
@@ -3363,6 +3421,10 @@ rocsparse_status rocsparse_csc_set_pointers(rocsparse_spmat_descr descr,
     descr->col_data = csc_col_ptr;
     descr->val_data = csc_val;
 
+    descr->const_row_data = csc_row_ind;
+    descr->const_col_data = csc_col_ptr;
+    descr->const_val_data = csc_val;
+
     return rocsparse_status_success;
 }
 
@@ -3392,6 +3454,9 @@ rocsparse_status
 
     descr->col_data = ell_col_ind;
     descr->val_data = ell_val;
+
+    descr->const_col_data = ell_col_ind;
+    descr->const_val_data = ell_val;
 
     return rocsparse_status_success;
 }
@@ -3428,6 +3493,10 @@ rocsparse_status rocsparse_bsr_set_pointers(rocsparse_spmat_descr descr,
     descr->row_data = bsr_row_ptr;
     descr->col_data = bsr_col_ind;
     descr->val_data = bsr_val;
+
+    descr->const_row_data = bsr_row_ptr;
+    descr->const_col_data = bsr_col_ind;
+    descr->const_val_data = bsr_val;
 
     return rocsparse_status_success;
 }
@@ -3570,7 +3639,8 @@ rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* v
         return rocsparse_status_not_initialized;
     }
 
-    descr->val_data = values;
+    descr->val_data       = values;
+    descr->const_val_data = values;
 
     return rocsparse_status_success;
 }
@@ -3862,9 +3932,10 @@ rocsparse_status rocsparse_create_dnvec_descr(rocsparse_dnvec_descr* descr,
 
         (*descr)->init = true;
 
-        (*descr)->size      = size;
-        (*descr)->values    = values;
-        (*descr)->data_type = data_type;
+        (*descr)->size         = size;
+        (*descr)->values       = values;
+        (*descr)->const_values = values;
+        (*descr)->data_type    = data_type;
     }
     catch(const rocsparse_status& status)
     {
@@ -3911,6 +3982,7 @@ rocsparse_status rocsparse_create_const_dnvec_descr(rocsparse_const_dnvec_descr*
         new_descr->init = true;
 
         new_descr->size         = size;
+        new_descr->values       = nullptr;
         new_descr->const_values = values;
         new_descr->data_type    = data_type;
 
@@ -4057,7 +4129,8 @@ rocsparse_status rocsparse_dnvec_set_values(rocsparse_dnvec_descr descr, void* v
         return rocsparse_status_not_initialized;
     }
 
-    descr->values = values;
+    descr->values       = values;
+    descr->const_values = values;
 
     return rocsparse_status_success;
 }
@@ -4113,12 +4186,13 @@ rocsparse_status rocsparse_create_dnmat_descr(rocsparse_dnmat_descr* descr,
 
         (*descr)->init = true;
 
-        (*descr)->rows      = rows;
-        (*descr)->cols      = cols;
-        (*descr)->ld        = ld;
-        (*descr)->values    = values;
-        (*descr)->data_type = data_type;
-        (*descr)->order     = order;
+        (*descr)->rows         = rows;
+        (*descr)->cols         = cols;
+        (*descr)->ld           = ld;
+        (*descr)->values       = values;
+        (*descr)->const_values = values;
+        (*descr)->data_type    = data_type;
+        (*descr)->order        = order;
 
         (*descr)->batch_count  = 1;
         (*descr)->batch_stride = 0;
@@ -4179,6 +4253,7 @@ rocsparse_status rocsparse_create_const_dnmat_descr(rocsparse_const_dnmat_descr*
         new_descr->rows         = rows;
         new_descr->cols         = cols;
         new_descr->ld           = ld;
+        new_descr->values       = nullptr;
         new_descr->const_values = values;
         new_descr->data_type    = data_type;
         new_descr->order        = order;
@@ -4343,7 +4418,8 @@ rocsparse_status rocsparse_dnmat_set_values(rocsparse_dnmat_descr descr, void* v
         return rocsparse_status_not_initialized;
     }
 
-    descr->values = values;
+    descr->values       = values;
+    descr->const_values = values;
 
     return rocsparse_status_success;
 }
