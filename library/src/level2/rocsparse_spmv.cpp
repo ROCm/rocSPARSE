@@ -386,7 +386,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                                        (const I*)MAT_CONST_DATA(mat, row_data),
                                                        (const I*)MAT_CONST_DATA(mat, col_data))));
 
-                // mat->analysed = true;
+                mat->analysed = true;
             }
             return rocsparse_status_success;
         }
@@ -492,7 +492,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                     return status;
                 }
 
-                // mat->analysed = true;
+                mat->analysed = true;
             }
 
             return status;
@@ -560,7 +560,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                     return status;
                 }
 
-                // mat->analysed = true;
+                mat->analysed = true;
             }
 
             return status;
@@ -629,7 +629,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                     return status;
                 }
 
-                // mat->analysed = true;
+                mat->analysed = true;
             }
 
             return status;

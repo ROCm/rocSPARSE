@@ -393,7 +393,8 @@ struct _rocsparse_spvec_descr
 struct _rocsparse_spmat_descr
 {
     bool init{};
-    bool analysed{};
+
+    mutable bool analysed{};
 
     int64_t rows{};
     int64_t cols{};
