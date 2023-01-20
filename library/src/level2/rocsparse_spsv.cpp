@@ -123,7 +123,7 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                 return rocsparse_status_not_implemented;
             }
 
-            // mat->analysed = true;
+            mat->analysed = true;
         }
 
         return rocsparse_status_success;

@@ -148,7 +148,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 return rocsparse_status_not_implemented;
             }
 
-            // matA->analysed = true;
+            matA->analysed = true;
         }
 
         return rocsparse_status_success;
