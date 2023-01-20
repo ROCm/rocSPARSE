@@ -272,7 +272,7 @@ rocsparse_status rocsparse_coomv_aos_segmented_dispatch(rocsparse_handle        
 
         I minblocks = (nnz - 1) / COOMVN_DIM + 1;
         I nblocks   = maxblocks < minblocks ? maxblocks : minblocks;
-        I nloops    = (nnz / COOMVN_DIM + 1) / nblocks + 1;
+        I nloops    = (nnz - 1) / (COOMVN_DIM * nblocks) + 1;
 
         // Buffer
         char* ptr = reinterpret_cast<char*>(handle->buffer);
