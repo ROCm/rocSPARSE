@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -162,6 +162,18 @@ void unit_check_enum(const rocsparse_order a, const rocsparse_order b)
 
 template <>
 void unit_check_enum(const rocsparse_direction a, const rocsparse_direction b)
+{
+    ASSERT_TRUE(a == b);
+}
+
+template <>
+void unit_check_enum(const rocsparse_datatype a, const rocsparse_datatype b)
+{
+    ASSERT_TRUE(a == b);
+}
+
+template <>
+void unit_check_enum(const rocsparse_indextype a, const rocsparse_indextype b)
 {
     ASSERT_TRUE(a == b);
 }

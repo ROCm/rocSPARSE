@@ -1301,6 +1301,19 @@ rocsparse_status rocsparse_const_csr_get(rocsparse_const_spmat_descr descr,
                                          rocsparse_index_base*       idx_base,
                                          rocsparse_datatype*         data_type);
 
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_const_csc_get(rocsparse_const_spmat_descr descr,
+                                         int64_t*                    rows,
+                                         int64_t*                    cols,
+                                         int64_t*                    nnz,
+                                         const void**                csc_col_ptr,
+                                         const void**                csc_row_ind,
+                                         const void**                csc_val,
+                                         rocsparse_indextype*        col_ptr_type,
+                                         rocsparse_indextype*        row_ind_type,
+                                         rocsparse_index_base*       idx_base,
+                                         rocsparse_datatype*         data_type);
+
 /*! \ingroup aux_module
  *  \brief Get the fields of the sparse ELL matrix descriptor
  *  \details
