@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,6 +69,48 @@ void testing_const_dnvec_descr_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_const_dnvec_descr(const Arguments& arg)
 {
+    int64_t            m     = arg.M;
+    rocsparse_datatype ttype = get_datatype<T>();
+
+    if(m <= 0)
+    {
+        return;
+    }
+
+    device_vector<T> values(m);
+
+    if(arg.unit_check)
+    {
+        rocsparse_const_dnvec_descr A{};
+
+        // Create valid descriptor
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_create_const_dnvec_descr(&A, m, (const void*)values, ttype));
+
+        int64_t            gold_m;
+        rocsparse_datatype gold_ttype;
+        const T*           gold_values;
+
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_const_dnvec_get(A, &gold_m, (const void**)&gold_values, &gold_ttype));
+
+        unit_check_scalar<int64_t>(m, gold_m);
+        unit_check_enum<rocsparse_datatype>(ttype, gold_ttype);
+
+        ASSERT_EQ(values, (const T*)gold_values);
+
+        gold_values = nullptr;
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_dnvec_get_values(A, (const void**)&gold_values));
+
+        ASSERT_EQ(values, (const T*)gold_values);
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_dnvec_descr(A));
+    }
+
+    if(arg.timing)
+    {
+    }
 }
 
 #define INSTANTIATE(TTYPE)                                                        \

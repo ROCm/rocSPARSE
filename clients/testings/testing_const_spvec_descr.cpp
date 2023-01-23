@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,6 +87,67 @@ void testing_const_spvec_descr_bad_arg(const Arguments& arg)
 template <typename I, typename T>
 void testing_const_spvec_descr(const Arguments& arg)
 {
+    int64_t              m     = arg.M;
+    int64_t              nnz   = arg.nnz;
+    rocsparse_index_base base  = arg.baseA;
+    rocsparse_indextype  itype = get_indextype<I>();
+    rocsparse_datatype   ttype = get_datatype<T>();
+
+    if(m <= 0 || nnz <= 0)
+    {
+        return;
+    }
+
+    device_vector<T> values(m);
+    device_vector<I> idx_data(m);
+
+    if(arg.unit_check)
+    {
+        rocsparse_const_spvec_descr A{};
+
+        // Create valid descriptor
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_create_const_spvec_descr(&A, m, nnz, idx_data, values, itype, base, ttype));
+
+        int64_t              gold_m;
+        int64_t              gold_nnz;
+        rocsparse_index_base gold_base;
+        rocsparse_datatype   gold_ttype;
+        rocsparse_indextype  gold_itype;
+
+        const T* gold_values;
+        const I* gold_idx_data;
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_spvec_get(A,
+                                                        &gold_m,
+                                                        &gold_nnz,
+                                                        (const void**)&gold_idx_data,
+                                                        (const void**)&gold_values,
+                                                        &gold_itype,
+                                                        &gold_base,
+                                                        &gold_ttype));
+
+        unit_check_scalar<int64_t>(m, gold_m);
+        unit_check_scalar<int64_t>(nnz, gold_nnz);
+        unit_check_enum<rocsparse_datatype>(ttype, gold_ttype);
+        unit_check_enum<rocsparse_indextype>(itype, gold_itype);
+        unit_check_enum<rocsparse_index_base>(base, gold_base);
+
+        ASSERT_EQ(values, (const T*)gold_values);
+        ASSERT_EQ(idx_data, (const I*)gold_idx_data);
+
+        gold_values = nullptr;
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_spvec_get_values(A, (const void**)&gold_values));
+
+        ASSERT_EQ(values, (const T*)gold_values);
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_spvec_descr(A));
+    }
+
+    if(arg.timing)
+    {
+    }
 }
 
 #define INSTANTIATE(ITYPE, TTYPE)                                                        \

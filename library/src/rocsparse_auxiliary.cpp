@@ -3099,6 +3099,69 @@ rocsparse_status rocsparse_const_csr_get(rocsparse_const_spmat_descr descr,
 }
 
 /********************************************************************************
+ * \brief rocsparse_csc_get returns the sparse CSC matrix data, sizes and
+ * properties.
+ *******************************************************************************/
+rocsparse_status rocsparse_const_csc_get(rocsparse_const_spmat_descr descr,
+                                         int64_t*                    rows,
+                                         int64_t*                    cols,
+                                         int64_t*                    nnz,
+                                         const void**                csc_col_ptr,
+                                         const void**                csc_row_ind,
+                                         const void**                csc_val,
+                                         rocsparse_indextype*        col_ptr_type,
+                                         rocsparse_indextype*        row_ind_type,
+                                         rocsparse_index_base*       idx_base,
+                                         rocsparse_datatype*         data_type)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid size pointers
+    if(rows == nullptr || cols == nullptr || nnz == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid data pointers
+    if(csc_col_ptr == nullptr || csc_row_ind == nullptr || csc_val == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid property pointers
+    if(col_ptr_type == nullptr || row_ind_type == nullptr || idx_base == nullptr
+       || data_type == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *rows = descr->rows;
+    *cols = descr->cols;
+    *nnz  = descr->nnz;
+
+    *csc_col_ptr = descr->const_col_data;
+    *csc_row_ind = descr->const_row_data;
+    *csc_val     = descr->const_val_data;
+
+    *row_ind_type = descr->row_type;
+    *col_ptr_type = descr->col_type;
+    *idx_base     = descr->idx_base;
+    *data_type    = descr->data_type;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
  * \brief rocsparse_ell_get returns the sparse ELL matrix data, sizes and
  * properties.
  *******************************************************************************/

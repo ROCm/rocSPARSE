@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,6 +95,58 @@ void testing_const_dnmat_descr_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_const_dnmat_descr(const Arguments& arg)
 {
+    int64_t         m     = arg.M;
+    int64_t         n     = arg.N;
+    int64_t         ld    = arg.denseld;
+    rocsparse_order order = arg.order;
+
+    rocsparse_datatype ttype = get_datatype<T>();
+
+    if(m <= 0 || n <= 0 || ld <= 0)
+    {
+        return;
+    }
+
+    device_vector<T> values(ld * ((order == rocsparse_order_column) ? n : m));
+
+    if(arg.unit_check)
+    {
+        rocsparse_const_dnmat_descr A{};
+
+        // Create valid descriptor
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_create_const_dnmat_descr(&A, m, n, ld, (const void*)values, ttype, order));
+
+        int64_t            gold_m;
+        int64_t            gold_n;
+        int64_t            gold_ld;
+        rocsparse_order    gold_order;
+        rocsparse_datatype gold_ttype;
+        const T*           gold_values;
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_dnmat_get(
+            A, &gold_m, &gold_n, &gold_ld, (const void**)&gold_values, &gold_ttype, &gold_order));
+
+        unit_check_scalar<int64_t>(m, gold_m);
+        unit_check_scalar<int64_t>(n, gold_n);
+        unit_check_scalar<int64_t>(ld, gold_ld);
+        unit_check_enum<rocsparse_order>(order, gold_order);
+        unit_check_enum<rocsparse_datatype>(ttype, gold_ttype);
+
+        ASSERT_EQ(values, (const T*)gold_values);
+
+        gold_values = nullptr;
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_dnmat_get_values(A, (const void**)&gold_values));
+
+        ASSERT_EQ(values, (const T*)gold_values);
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_dnmat_descr(A));
+    }
+
+    if(arg.timing)
+    {
+    }
 }
 
 #define INSTANTIATE(TTYPE)                                                        \

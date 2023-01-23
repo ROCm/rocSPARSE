@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -290,6 +290,220 @@ void testing_const_spmat_descr_bad_arg(const Arguments& arg)
 template <typename I, typename J, typename T>
 void testing_const_spmat_descr(const Arguments& arg)
 {
+    int64_t              m         = arg.M;
+    int64_t              n         = arg.N;
+    int64_t              nnz       = arg.nnz;
+    rocsparse_direction  block_dir = arg.direction;
+    int64_t              block_dim = arg.block_dim;
+    rocsparse_index_base base      = arg.baseA;
+
+    int64_t col_width = m;
+
+    rocsparse_indextype itype = get_indextype<I>();
+    rocsparse_indextype jtype = get_indextype<J>();
+    rocsparse_datatype  ttype = get_datatype<T>();
+
+    if(m <= 0 || n <= 0 || nnz <= 0)
+    {
+        return;
+    }
+
+    device_vector<I> row_data(nnz);
+    device_vector<I> col_data(nnz);
+    device_vector<J> idx_data(m + 1);
+    device_vector<T> val_data(nnz);
+
+    if(arg.unit_check)
+    {
+        /*
+        *   COO
+        */
+        rocsparse_const_spmat_descr coo;
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_const_coo_descr(
+            &coo, m, n, nnz, row_data, col_data, val_data, itype, base, ttype));
+
+        int64_t              coo_m;
+        int64_t              coo_n;
+        int64_t              coo_nnz;
+        rocsparse_index_base coo_base;
+        rocsparse_indextype  coo_itype;
+        rocsparse_datatype   coo_ttype;
+        const T*             coo_val;
+        const I*             coo_row;
+        const I*             coo_col;
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_coo_get(coo,
+                                                      &coo_m,
+                                                      &coo_n,
+                                                      &coo_nnz,
+                                                      (const void**)&coo_row,
+                                                      (const void**)&coo_col,
+                                                      (const void**)&coo_val,
+                                                      &coo_itype,
+                                                      &coo_base,
+                                                      &coo_ttype));
+
+        unit_check_scalar(m, coo_m);
+        unit_check_scalar(n, coo_n);
+        unit_check_scalar(nnz, coo_nnz);
+        unit_check_enum(base, coo_base);
+        unit_check_enum(itype, coo_itype);
+        unit_check_enum(ttype, coo_ttype);
+        ASSERT_EQ(val_data, coo_val);
+        ASSERT_EQ(row_data, coo_row);
+        ASSERT_EQ(col_data, coo_col);
+
+        coo_val = nullptr;
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_spmat_get_values(coo, (const void**)&coo_val));
+        ASSERT_EQ(val_data, coo_val);
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_spmat_descr(coo));
+
+        /*
+        *   CSR
+        */
+        rocsparse_const_spmat_descr csr;
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_const_csr_descr(
+            &csr, m, n, nnz, idx_data, col_data, val_data, jtype, itype, base, ttype));
+
+        int64_t              csr_m;
+        int64_t              csr_n;
+        int64_t              csr_nnz;
+        rocsparse_index_base csr_base;
+        rocsparse_indextype  csr_itype;
+        rocsparse_indextype  csr_jtype;
+        rocsparse_datatype   csr_ttype;
+        const T*             csr_val;
+        const J*             csr_idx;
+        const I*             csr_col;
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_csr_get(csr,
+                                                      &csr_m,
+                                                      &csr_n,
+                                                      &csr_nnz,
+                                                      (const void**)&csr_idx,
+                                                      (const void**)&csr_col,
+                                                      (const void**)&csr_val,
+                                                      &csr_jtype,
+                                                      &csr_itype,
+                                                      &csr_base,
+                                                      &csr_ttype));
+
+        unit_check_scalar(m, csr_m);
+        unit_check_scalar(n, csr_n);
+        unit_check_scalar(nnz, csr_nnz);
+        unit_check_enum(base, csr_base);
+        unit_check_enum(itype, csr_itype);
+        unit_check_enum(jtype, csr_jtype);
+        unit_check_enum(ttype, csr_ttype);
+        ASSERT_EQ(val_data, csr_val);
+        ASSERT_EQ(idx_data, csr_idx);
+        ASSERT_EQ(col_data, csr_col);
+
+        csr_val = nullptr;
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_spmat_get_values(csr, (const void**)&csr_val));
+        ASSERT_EQ(val_data, csr_val);
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_spmat_descr(csr));
+
+        /*
+        *   CSC
+        */
+        rocsparse_const_spmat_descr csc;
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_const_csc_descr(
+            &csc, n, m, nnz, idx_data, row_data, val_data, jtype, itype, base, ttype));
+
+        int64_t              csc_m;
+        int64_t              csc_n;
+        int64_t              csc_nnz;
+        rocsparse_index_base csc_base;
+        rocsparse_indextype  csc_itype;
+        rocsparse_indextype  csc_jtype;
+        rocsparse_datatype   csc_ttype;
+        const T*             csc_val;
+        const J*             csc_idx;
+        const I*             csc_row;
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_csc_get(csc,
+                                                      &csc_n,
+                                                      &csc_m,
+                                                      &csc_nnz,
+                                                      (const void**)&csc_idx,
+                                                      (const void**)&csc_row,
+                                                      (const void**)&csc_val,
+                                                      &csc_jtype,
+                                                      &csc_itype,
+                                                      &csc_base,
+                                                      &csc_ttype));
+
+        unit_check_scalar(m, csc_m);
+        unit_check_scalar(n, csc_n);
+        unit_check_scalar(nnz, csc_nnz);
+        unit_check_enum(base, csc_base);
+        unit_check_enum(itype, csc_itype);
+        unit_check_enum(jtype, csc_jtype);
+        unit_check_enum(ttype, csc_ttype);
+        ASSERT_EQ(val_data, csc_val);
+        ASSERT_EQ(idx_data, csc_idx);
+        ASSERT_EQ(row_data, csc_row);
+
+        csc_val = nullptr;
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_spmat_get_values(csc, (const void**)&csc_val));
+        ASSERT_EQ(val_data, csc_val);
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_spmat_descr(csc));
+
+        /*
+        *   BELL
+        */
+        rocsparse_const_spmat_descr bell;
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_const_bell_descr(
+            &bell, m, n, block_dir, block_dim, col_width, col_data, val_data, itype, base, ttype));
+
+        int64_t              bell_m;
+        int64_t              bell_n;
+        int64_t              bell_col_width;
+        int64_t              bell_block_dim;
+        rocsparse_direction  bell_block_dir;
+        rocsparse_index_base bell_base;
+        rocsparse_indextype  bell_itype;
+        rocsparse_datatype   bell_ttype;
+        const T*             bell_val;
+        const I*             bell_col;
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_bell_get(bell,
+                                                       &bell_m,
+                                                       &bell_n,
+                                                       &bell_block_dir,
+                                                       &bell_block_dim,
+                                                       &bell_col_width,
+                                                       (const void**)&bell_col,
+                                                       (const void**)&bell_val,
+                                                       &bell_itype,
+                                                       &bell_base,
+                                                       &bell_ttype));
+
+        unit_check_scalar(m, bell_m);
+        unit_check_scalar(n, bell_n);
+        unit_check_scalar(col_width, bell_col_width);
+        unit_check_scalar(block_dim, bell_block_dim);
+        unit_check_enum(block_dir, bell_block_dir);
+        unit_check_enum(base, bell_base);
+        unit_check_enum(itype, bell_itype);
+        unit_check_enum(ttype, bell_ttype);
+        ASSERT_EQ(val_data, bell_val);
+        ASSERT_EQ(col_data, bell_col);
+
+        bell_val = nullptr;
+        CHECK_ROCSPARSE_ERROR(rocsparse_const_spmat_get_values(bell, (const void**)&bell_val));
+        ASSERT_EQ(val_data, bell_val);
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_spmat_descr(bell));
+    }
+
+    if(arg.timing)
+    {
+    }
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                        \
