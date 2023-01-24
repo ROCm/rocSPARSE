@@ -42,6 +42,11 @@ void testing_const_spvec_descr_bad_arg(const Arguments& arg)
     auto_testing_bad_arg(rocsparse_create_const_spvec_descr, PARAMS_CREATE);
 #undef PARAMS_CREATE
 
+    // size < nnz
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_const_spvec_descr(
+                                &x, size, (size + 1), idx_data, val_data, itype, base, ttype),
+                            rocsparse_status_invalid_size);
+
     // rocsparse_destroy_spvec_descr_ex
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(nullptr),
                             rocsparse_status_invalid_pointer);
