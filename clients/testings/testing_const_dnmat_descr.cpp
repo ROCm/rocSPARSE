@@ -102,11 +102,6 @@ void testing_const_dnmat_descr(const Arguments& arg)
 
     rocsparse_datatype ttype = get_datatype<T>();
 
-    if(m <= 0 || n <= 0 || ld <= 0)
-    {
-        return;
-    }
-
     device_vector<T> values(ld * ((order == rocsparse_order_column) ? n : m));
 
     if(arg.unit_check)

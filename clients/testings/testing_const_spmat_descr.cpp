@@ -49,21 +49,74 @@ void testing_const_spmat_descr_bad_arg(const Arguments& arg)
     auto_testing_bad_arg(rocsparse_create_const_coo_descr, PARAMS_CREATE_COO);
 #undef PARAMS_CREATE_COO
 
+    // nnz > rows * cols
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_create_const_coo_descr(
+            &A, rows, cols, (rows * cols + 1), row_data, col_data, val_data, itype, base, ttype),
+        rocsparse_status_invalid_size);
+
 #define PARAMS_CREATE_CSR \
     &A, rows, cols, nnz, row_data, col_data, val_data, itype, jtype, base, ttype
     auto_testing_bad_arg(rocsparse_create_const_csr_descr, PARAMS_CREATE_CSR);
 #undef PARAMS_CREATE_CSR
+
+    // nnz > rows * cols
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_const_csr_descr(&A,
+                                                             rows,
+                                                             cols,
+                                                             (rows * cols + 1),
+                                                             row_data,
+                                                             col_data,
+                                                             val_data,
+                                                             itype,
+                                                             jtype,
+                                                             base,
+                                                             ttype),
+                            rocsparse_status_invalid_size);
 
 #define PARAMS_CREATE_CSC \
     &A, rows, cols, nnz, col_data, row_data, val_data, itype, jtype, base, ttype
     auto_testing_bad_arg(rocsparse_create_const_csc_descr, PARAMS_CREATE_CSC);
 #undef PARAMS_CREATE_CSC
 
+    // nnz > rows * cols
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_const_csc_descr(&A,
+                                                             rows,
+                                                             cols,
+                                                             (rows * cols + 1),
+                                                             col_data,
+                                                             row_data,
+                                                             val_data,
+                                                             itype,
+                                                             jtype,
+                                                             base,
+                                                             ttype),
+                            rocsparse_status_invalid_size);
+
 #define PARAMS_CREATE_ELL                                                                       \
     &A, rows, cols, bell_block_dir, bell_block_dim, bell_cols, col_data, val_data, itype, base, \
         ttype
     auto_testing_bad_arg(rocsparse_create_const_bell_descr, PARAMS_CREATE_ELL);
 #undef PARAMS_CREATE_ELL
+
+    // block_dim = 0
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_create_const_bell_descr(
+            &A, rows, cols, bell_block_dir, 0, bell_cols, col_data, val_data, itype, base, ttype),
+        rocsparse_status_invalid_size);
+    // bell_cols > cols
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_const_bell_descr(&A,
+                                                              rows,
+                                                              cols,
+                                                              bell_block_dir,
+                                                              bell_block_dim,
+                                                              (cols + 1),
+                                                              col_data,
+                                                              val_data,
+                                                              itype,
+                                                              base,
+                                                              ttype),
+                            rocsparse_status_invalid_size);
 
     // rocsparse_destroy_spmat_descr_ex
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(nullptr),
@@ -297,21 +350,21 @@ void testing_const_spmat_descr(const Arguments& arg)
     int64_t              block_dim = arg.block_dim;
     rocsparse_index_base base      = arg.baseA;
 
-    int64_t col_width = m;
+    int64_t col_width = n;
+    int64_t mb        = (m + block_dim - 1) / block_dim;
+    int64_t nb        = (col_width + block_dim - 1) / block_dim;
 
     rocsparse_indextype itype = get_indextype<I>();
     rocsparse_indextype jtype = get_indextype<J>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
-    if(m <= 0 || n <= 0 || nnz <= 0)
-    {
-        return;
-    }
-
     device_vector<I> row_data(nnz);
     device_vector<I> col_data(nnz);
     device_vector<J> idx_data(m + 1);
     device_vector<T> val_data(nnz);
+
+    device_vector<I> bell_col_data(mb * nb);
+    device_vector<T> bell_val_data(mb * block_dim * col_width);
 
     if(arg.unit_check)
     {
@@ -457,8 +510,17 @@ void testing_const_spmat_descr(const Arguments& arg)
         *   BELL
         */
         rocsparse_const_spmat_descr bell;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_const_bell_descr(
-            &bell, m, n, block_dir, block_dim, col_width, col_data, val_data, itype, base, ttype));
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_const_bell_descr(&bell,
+                                                                m,
+                                                                n,
+                                                                block_dir,
+                                                                block_dim,
+                                                                col_width,
+                                                                bell_col_data,
+                                                                bell_val_data,
+                                                                itype,
+                                                                base,
+                                                                ttype));
 
         int64_t              bell_m;
         int64_t              bell_n;
@@ -491,12 +553,12 @@ void testing_const_spmat_descr(const Arguments& arg)
         unit_check_enum(base, bell_base);
         unit_check_enum(itype, bell_itype);
         unit_check_enum(ttype, bell_ttype);
-        ASSERT_EQ(val_data, bell_val);
-        ASSERT_EQ(col_data, bell_col);
+        ASSERT_EQ(bell_val_data, bell_val);
+        ASSERT_EQ(bell_col_data, bell_col);
 
         bell_val = nullptr;
         CHECK_ROCSPARSE_ERROR(rocsparse_const_spmat_get_values(bell, (const void**)&bell_val));
-        ASSERT_EQ(val_data, bell_val);
+        ASSERT_EQ(bell_val_data, bell_val);
 
         CHECK_ROCSPARSE_ERROR(rocsparse_destroy_spmat_descr(bell));
     }
