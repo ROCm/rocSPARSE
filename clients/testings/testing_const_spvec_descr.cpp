@@ -93,13 +93,8 @@ void testing_const_spvec_descr(const Arguments& arg)
     rocsparse_indextype  itype = get_indextype<I>();
     rocsparse_datatype   ttype = get_datatype<T>();
 
-    if(m <= 0 || nnz <= 0)
-    {
-        return;
-    }
-
-    device_vector<T> values(m);
-    device_vector<I> idx_data(m);
+    device_vector<T> values(nnz);
+    device_vector<I> idx_data(nnz);
 
     if(arg.unit_check)
     {

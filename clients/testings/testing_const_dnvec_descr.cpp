@@ -72,11 +72,6 @@ void testing_const_dnvec_descr(const Arguments& arg)
     int64_t            m     = arg.M;
     rocsparse_datatype ttype = get_datatype<T>();
 
-    if(m <= 0)
-    {
-        return;
-    }
-
     device_vector<T> values(m);
 
     if(arg.unit_check)

@@ -30,13 +30,22 @@ Tests:
   category: pre_checkin
   function: const_spvec_descr_bad_arg
   indextype: *i32_i64
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
 
 - name: const_spvec_descr
   category: pre_checkin
   function: const_spvec_descr
   indextype: *i32_i64
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
   M: [100]
-  N: [50]
+  nnz: [0, 50]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+
+- name: const_spvec_descr
+  category: pre_checkin
+  function: const_spvec_descr
+  indextype: *i32_i64
+  precision: *single_double_precisions_complex_real
+  M: [0]
+  nnz: [0]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
