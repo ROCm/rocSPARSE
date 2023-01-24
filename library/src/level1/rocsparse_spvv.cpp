@@ -73,9 +73,9 @@ rocsparse_status rocsparse_spvv_template(rocsparse_handle            handle,
     {
         return rocsparse_doti_template(handle,
                                        (I)x->nnz,
-                                       (const T*)(x->const_val_data),
-                                       (const I*)(x->const_idx_data),
-                                       (const T*)(y->const_values),
+                                       (const T*)x->const_val_data,
+                                       (const I*)x->const_idx_data,
+                                       (const T*)y->const_values,
                                        (T*)result,
                                        x->idx_base);
     }
@@ -88,9 +88,9 @@ rocsparse_status rocsparse_spvv_template(rocsparse_handle            handle,
         {
             return rocsparse_doti_template(handle,
                                            (I)x->nnz,
-                                           (const T*)(x->const_val_data),
-                                           (const I*)(x->const_idx_data),
-                                           (const T*)(y->const_values),
+                                           (const T*)x->const_val_data,
+                                           (const I*)x->const_idx_data,
+                                           (const T*)y->const_values,
                                            (T*)result,
                                            x->idx_base);
         }
@@ -100,9 +100,9 @@ rocsparse_status rocsparse_spvv_template(rocsparse_handle            handle,
         {
             return rocsparse_dotci_template(handle,
                                             (I)x->nnz,
-                                            (const T*)(x->const_val_data),
-                                            (const I*)(x->const_idx_data),
-                                            (const T*)(y->const_values),
+                                            (const T*)x->const_val_data,
+                                            (const I*)x->const_idx_data,
+                                            (const T*)y->const_values,
                                             (T*)result,
                                             x->idx_base);
         }

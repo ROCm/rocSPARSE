@@ -105,9 +105,9 @@ rocsparse_status rocsparse_sparse_to_dense_template(rocsparse_handle            
                                             (I)mat_A->cols,
                                             mat_A->nnz,
                                             mat_A->descr,
-                                            (const T*)(mat_A->const_val_data),
-                                            (const I*)(mat_A->const_row_data),
-                                            (const I*)(mat_A->const_col_data),
+                                            (const T*)mat_A->const_val_data,
+                                            (const I*)mat_A->const_row_data,
+                                            (const I*)mat_A->const_col_data,
                                             (T*)mat_B->values,
                                             (I)mat_B->ld,
                                             mat_B->order);
@@ -120,9 +120,9 @@ rocsparse_status rocsparse_sparse_to_dense_template(rocsparse_handle            
                                                                  (J)mat_A->rows,
                                                                  (J)mat_A->cols,
                                                                  mat_A->descr,
-                                                                 (const T*)(mat_A->const_val_data),
-                                                                 (const I*)(mat_A->const_row_data),
-                                                                 (const J*)(mat_A->const_col_data),
+                                                                 (const T*)mat_A->const_val_data,
+                                                                 (const I*)mat_A->const_row_data,
+                                                                 (const J*)mat_A->const_col_data,
                                                                  (T*)mat_B->values,
                                                                  (I)mat_B->ld,
                                                                  mat_B->order);
@@ -131,17 +131,16 @@ rocsparse_status rocsparse_sparse_to_dense_template(rocsparse_handle            
     // CSC
     if(mat_A->format == rocsparse_format_csc)
     {
-        return rocsparse_csx2dense_impl<rocsparse_direction_column>(
-            handle,
-            (J)mat_A->rows,
-            (J)mat_A->cols,
-            mat_A->descr,
-            (const T*)(mat_A->const_val_data),
-            (const I*)(mat_A->const_col_data),
-            (const J*)(mat_A->const_row_data),
-            (T*)mat_B->values,
-            (I)mat_B->ld,
-            mat_B->order);
+        return rocsparse_csx2dense_impl<rocsparse_direction_column>(handle,
+                                                                    (J)mat_A->rows,
+                                                                    (J)mat_A->cols,
+                                                                    mat_A->descr,
+                                                                    (const T*)mat_A->const_val_data,
+                                                                    (const I*)mat_A->const_col_data,
+                                                                    (const J*)mat_A->const_row_data,
+                                                                    (T*)mat_B->values,
+                                                                    (I)mat_B->ld,
+                                                                    mat_B->order);
     }
 
     return rocsparse_status_not_implemented;
