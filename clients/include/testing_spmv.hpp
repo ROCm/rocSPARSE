@@ -22,8 +22,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef TESTING_SPMV_HPP
-#define TESTING_SPMV_HPP
 
 #include "auto_testing_bad_arg.hpp"
 
@@ -841,5 +839,3 @@ public:
         return;
     }
 };
-
-#endif // TESTING_SPMV_HPP
