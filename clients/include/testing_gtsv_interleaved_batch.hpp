@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef TESTING_GTSV_INTERLEAVED_BATCH_HPP
-#define TESTING_GTSV_INTERLEAVED_BATCH_HPP
 
 #include "rocsparse_arguments.hpp"
 
@@ -33,5 +31,3 @@ void testing_gtsv_interleaved_batch_bad_arg(const Arguments& arg);
 void testing_gtsv_interleaved_batch_extra(const Arguments& arg);
 template <typename T>
 void testing_gtsv_interleaved_batch(const Arguments& arg);
-
-#endif // TESTING_GTSV_INTERLEAVED_BATCH_HPP

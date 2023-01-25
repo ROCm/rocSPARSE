@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef TESTING_DENSE2CSX_HPP
-#define TESTING_DENSE2CSX_HPP
 
 #include <rocsparse.hpp>
 
@@ -415,5 +413,3 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
                             get_gpu_time_msec(gpu_time_used));
     }
 }
-
-#endif // TESTING_DENSE2CSX_HPP
