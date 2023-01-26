@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -248,11 +248,6 @@ public:
         rocsparse_hyb_mat hyb, I& m, I& n, I& nnz, rocsparse_index_base base, bool& conform);
 };
 
-//
-// Transform a csr matrix in a general bsr matrix.
-// It fills the values such as the conversion to the csr matrix
-// will give to 1,2,3,4,5,6,7,8,9, etc...
-//
 template <typename T>
 inline void rocsparse_init_gebsr_matrix_from_csr(rocsparse_matrix_factory<T>& matrix_factory,
                                                  std::vector<rocsparse_int>&  bsr_row_ptr,
@@ -270,11 +265,10 @@ inline void rocsparse_init_gebsr_matrix_from_csr(rocsparse_matrix_factory<T>& ma
     std::vector<T> hcsr_val_A;
 
     // Generate uncompressed CSR matrix on host (or read from file)
-
     matrix_factory.init_csr(bsr_row_ptr, bsr_col_ind, hcsr_val_A, mb, nb, nnzb, bsr_base);
 
-    bsr_val.resize(row_block_dim * col_block_dim * nnzb);
-    rocsparse_int idx = 0;
+    size_t nnz = size_t(nnzb) * row_block_dim * col_block_dim;
+    bsr_val.resize(nnz);
 
     switch(direction)
     {
@@ -282,15 +276,19 @@ inline void rocsparse_init_gebsr_matrix_from_csr(rocsparse_matrix_factory<T>& ma
     {
         for(rocsparse_int i = 0; i < mb; ++i)
         {
-            for(rocsparse_int r = 0; r < row_block_dim; ++r)
+            rocsparse_int start = bsr_row_ptr[i] - bsr_base;
+            rocsparse_int end   = bsr_row_ptr[i + 1] - bsr_base;
+
+            for(rocsparse_int k = start; k < end; k++)
             {
-                for(rocsparse_int k = bsr_row_ptr[i] - bsr_base; k < bsr_row_ptr[i + 1] - bsr_base;
-                    ++k)
+                T val = random_generator<T>();
+                for(rocsparse_int c = 0; c < col_block_dim; ++c)
                 {
-                    for(rocsparse_int c = 0; c < col_block_dim; ++c)
+                    for(rocsparse_int r = 0; r < row_block_dim; ++r)
                     {
-                        bsr_val[k * row_block_dim * col_block_dim + c * row_block_dim + r]
-                            = static_cast<T>(++idx);
+                        int64_t index
+                            = int64_t(k) * row_block_dim * col_block_dim + c * row_block_dim + r;
+                        bsr_val[index] = val + static_cast<T>(c + r);
                     }
                 }
             }
@@ -302,15 +300,19 @@ inline void rocsparse_init_gebsr_matrix_from_csr(rocsparse_matrix_factory<T>& ma
     {
         for(rocsparse_int i = 0; i < mb; ++i)
         {
-            for(rocsparse_int r = 0; r < row_block_dim; ++r)
+            rocsparse_int start = bsr_row_ptr[i] - bsr_base;
+            rocsparse_int end   = bsr_row_ptr[i + 1] - bsr_base;
+
+            for(rocsparse_int k = start; k < end; k++)
             {
-                for(rocsparse_int k = bsr_row_ptr[i] - bsr_base; k < bsr_row_ptr[i + 1] - bsr_base;
-                    ++k)
+                T val = random_generator<T>();
+                for(rocsparse_int r = 0; r < row_block_dim; ++r)
                 {
                     for(rocsparse_int c = 0; c < col_block_dim; ++c)
                     {
-                        bsr_val[k * row_block_dim * col_block_dim + r * col_block_dim + c]
-                            = static_cast<T>(++idx);
+                        int64_t index
+                            = int64_t(k) * row_block_dim * col_block_dim + r * col_block_dim + c;
+                        bsr_val[index] = val + static_cast<T>(c + r);
                     }
                 }
             }
