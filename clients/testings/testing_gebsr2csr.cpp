@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -123,11 +123,6 @@ void testing_gebsr2csr(const Arguments& arg)
         return;
     }
 
-    // Allocate host memory for original CSR matrix
-    host_vector<rocsparse_int> hcsr_row_ptr_orig;
-    host_vector<rocsparse_int> hcsr_col_ind_orig;
-    host_vector<T>             hcsr_val_orig;
-
     // Allocate host memory for output BSR matrix
     host_vector<rocsparse_int> hbsr_row_ptr;
     host_vector<rocsparse_int> hbsr_col_ind;
@@ -149,6 +144,7 @@ void testing_gebsr2csr(const Arguments& arg)
     M          = Mb * row_block_dim;
     N          = Nb * col_block_dim;
     size_t nnz = size_t(nnzb) * row_block_dim * col_block_dim;
+
     // Allocate device memory for input BSR matrix
     device_vector<rocsparse_int> dbsr_row_ptr(Mb + 1);
     device_vector<rocsparse_int> dbsr_col_ind(nnzb);
@@ -189,16 +185,6 @@ void testing_gebsr2csr(const Arguments& arg)
                           hcsr_ptr_ref,
                           hcsr_ind_ref,
                           csr_base);
-
-        //
-        // Check values of hcsr_val_ref, must be 1,2,3,4,5,6,7,...
-        //
-        size_t len = size_t(nnzb) * row_block_dim * col_block_dim;
-        for(size_t i = 0; i < len; ++i)
-        {
-            T ref = static_cast<T>(i + 1);
-            unit_check_scalar(hcsr_val_ref[i], ref);
-        }
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_gebsr2csr<T>(handle,

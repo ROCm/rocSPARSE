@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -7315,40 +7315,53 @@ void host_gebsr_to_csr(rocsparse_direction               direction,
                        std::vector<rocsparse_int>&       csr_col_ind,
                        rocsparse_index_base              csr_base)
 {
+    rocsparse_int m   = mb * row_block_dim;
+    size_t        nnz = size_t(nnzb) * row_block_dim * col_block_dim;
 
-    csr_col_ind.resize(nnzb * row_block_dim * col_block_dim);
-    csr_row_ptr.resize(mb * row_block_dim + 1);
-    csr_val.resize(nnzb * row_block_dim * col_block_dim);
-    rocsparse_int at = 0;
-    csr_row_ptr[0]   = csr_base;
+    csr_row_ptr.resize(m + 1);
+    csr_col_ind.resize(nnz);
+    csr_val.resize(nnz);
+
+    csr_row_ptr[0] = csr_base;
+
     for(rocsparse_int i = 0; i < mb; ++i)
     {
-        for(rocsparse_int r = 0; r < row_block_dim; ++r)
+        rocsparse_int start = bsr_row_ptr[i] - bsr_base;
+        rocsparse_int end   = bsr_row_ptr[i + 1] - bsr_base;
+
+        for(rocsparse_int k = start; k < end; ++k)
         {
-            rocsparse_int row = i * row_block_dim + r;
-            for(rocsparse_int k = bsr_row_ptr[i] - bsr_base; k < bsr_row_ptr[i + 1] - bsr_base; ++k)
+            rocsparse_int j = bsr_col_ind[k] - bsr_base;
+
+            for(rocsparse_int r = 0; r < row_block_dim; ++r)
             {
-                rocsparse_int j = bsr_col_ind[k] - bsr_base;
                 for(rocsparse_int c = 0; c < col_block_dim; ++c)
                 {
                     rocsparse_int col = col_block_dim * j + c;
-                    csr_col_ind[at]   = col + csr_base;
+
+                    rocsparse_int index = start * row_block_dim * col_block_dim
+                                          + (end - start) * col_block_dim * r
+                                          + (k - start) * col_block_dim + c;
+
+                    csr_col_ind[index] = col + csr_base;
                     if(direction == rocsparse_direction_row)
                     {
-                        csr_val[at]
+                        csr_val[index]
                             = bsr_val[k * row_block_dim * col_block_dim + col_block_dim * r + c];
                     }
                     else
                     {
-                        csr_val[at]
+                        csr_val[index]
                             = bsr_val[k * row_block_dim * col_block_dim + row_block_dim * c + r];
                     }
-                    ++at;
                 }
             }
+        }
 
-            csr_row_ptr[row + 1]
-                = csr_row_ptr[row] + (bsr_row_ptr[i + 1] - bsr_row_ptr[i]) * col_block_dim;
+        for(rocsparse_int r = 0; r < row_block_dim; ++r)
+        {
+            rocsparse_int row    = i * row_block_dim + r;
+            csr_row_ptr[row + 1] = csr_row_ptr[row] + (end - start) * col_block_dim;
         }
     }
 }
