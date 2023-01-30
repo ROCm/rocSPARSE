@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,15 +78,15 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
             tmp_work1, csr_col_ind, sizeof(J) * nnz, hipMemcpyDeviceToDevice, stream));
 
-        RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
-            (void**)&info->trmt_row_ptr, sizeof(I) * (m + 1), handle->stream));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync((void**)&info->trmt_row_ptr, sizeof(I) * (m + 1), stream));
 
         if(nnz > 0)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
-                (void**)&info->trmt_perm, sizeof(I) * nnz, handle->stream));
-            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
-                (void**)&info->trmt_col_ind, sizeof(J) * nnz, handle->stream));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync((void**)&info->trmt_perm, sizeof(I) * nnz, stream));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync((void**)&info->trmt_col_ind, sizeof(J) * nnz, stream));
 
             // Create identity permutation
             RETURN_IF_ROCSPARSE_ERROR(
@@ -173,22 +173,18 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
 
     // Allocate buffer to hold diagonal entry point
     RETURN_IF_HIP_ERROR(
-        rocsparse_hipMallocAsync((void**)&info->trm_diag_ind, sizeof(I) * m, handle->stream));
+        rocsparse_hipMallocAsync((void**)&info->trm_diag_ind, sizeof(I) * m, stream));
 
     // Allocate buffer to hold zero pivot
-    RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)zero_pivot, sizeof(J), handle->stream));
+    RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)zero_pivot, sizeof(J), stream));
 
     // Allocate buffer to hold row map
-    RETURN_IF_HIP_ERROR(
-        rocsparse_hipMallocAsync((void**)&info->row_map, sizeof(J) * m, handle->stream));
+    RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)&info->row_map, sizeof(J) * m, stream));
 
     // Initialize zero pivot
     J max = std::numeric_limits<J>::max();
     RETURN_IF_HIP_ERROR(
         hipMemcpyAsync(*zero_pivot, &max, sizeof(J), hipMemcpyHostToDevice, stream));
-
-    // Wait for device transfer to finish
-    RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
     // Determine gcnArch and ASIC revision
     int gcnArch = handle->properties.gcnArch;
