@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -439,6 +439,7 @@ rocsparse_status rocsparse_csritsv_solve_template(rocsparse_handle          hand
                                            sizeof(rocsparse_int),
                                            hipMemcpyDeviceToHost,
                                            handle->stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
         if(zero_pivot != std::numeric_limits<rocsparse_int>::max())
         {
             return rocsparse_status_success;

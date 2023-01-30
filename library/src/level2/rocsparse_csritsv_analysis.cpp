@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -155,7 +155,8 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
     // Allocate buffer to hold zero pivot
     if(zero_pivot[0] == nullptr)
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)zero_pivot, sizeof(rocsparse_int)));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync((void**)zero_pivot, sizeof(rocsparse_int), handle->stream));
     }
 
     // Initialize zero pivot
@@ -191,7 +192,8 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
             info->ptr_end_indextype = rocsparse_indextype_i64;
         }
         info->ptr_end_size = m;
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&info->ptr_end, sizeof(I) * m));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync(&info->ptr_end, sizeof(I) * m, handle->stream));
         info->is_submatrix = true;
 
         //
@@ -324,7 +326,7 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
                                            sizeof(J),
                                            hipMemcpyDeviceToHost,
                                            handle->stream));
-        hipStreamSynchronize(handle->stream);
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
         if(count_missing_diagonal > 0)
         {
@@ -389,7 +391,7 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
                                                        sizeof(J),
                                                        hipMemcpyDeviceToHost,
                                                        handle->stream));
-                    hipStreamSynchronize(handle->stream);
+                    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
                 }
 
                 if(count_diagonal > 0)
