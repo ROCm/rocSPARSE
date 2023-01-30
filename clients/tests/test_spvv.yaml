@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -71,4 +71,3 @@ Tests:
   nnz: [5, 10, 500]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
-  graph_test: true
