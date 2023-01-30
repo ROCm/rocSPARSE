@@ -665,7 +665,6 @@ void testing_csritsv_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_csritsv(const Arguments& arg)
 {
-    //  testing_csritsv_bad_arg<T>(arg);
     static const bool verbose = false;
 
     //
