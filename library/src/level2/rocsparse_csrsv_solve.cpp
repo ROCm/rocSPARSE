@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -119,9 +119,6 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
         static J max = std::numeric_limits<J>::max();
         RETURN_IF_HIP_ERROR(
             hipMemcpyAsync(info->zero_pivot, &max, sizeof(J), hipMemcpyHostToDevice, stream));
-
-        // Wait for device transfer to finish
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     }
 
     // Pointers to differentiate between transpose mode
