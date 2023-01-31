@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,8 +52,8 @@
 template <typename I, typename T>
 rocsparse_status rocsparse_spvv_template(rocsparse_handle            handle,
                                          rocsparse_operation         trans,
-                                         const rocsparse_spvec_descr x,
-                                         const rocsparse_dnvec_descr y,
+                                         rocsparse_const_spvec_descr x,
+                                         rocsparse_const_dnvec_descr y,
                                          void*                       result,
                                          rocsparse_datatype          compute_type,
                                          size_t*                     buffer_size,
@@ -73,9 +73,9 @@ rocsparse_status rocsparse_spvv_template(rocsparse_handle            handle,
     {
         return rocsparse_doti_template(handle,
                                        (I)x->nnz,
-                                       (const T*)x->val_data,
-                                       (const I*)x->idx_data,
-                                       (const T*)y->values,
+                                       (const T*)x->const_val_data,
+                                       (const I*)x->const_idx_data,
+                                       (const T*)y->const_values,
                                        (T*)result,
                                        x->idx_base);
     }
@@ -88,9 +88,9 @@ rocsparse_status rocsparse_spvv_template(rocsparse_handle            handle,
         {
             return rocsparse_doti_template(handle,
                                            (I)x->nnz,
-                                           (const T*)x->val_data,
-                                           (const I*)x->idx_data,
-                                           (const T*)y->values,
+                                           (const T*)x->const_val_data,
+                                           (const I*)x->const_idx_data,
+                                           (const T*)y->const_values,
                                            (T*)result,
                                            x->idx_base);
         }
@@ -100,9 +100,9 @@ rocsparse_status rocsparse_spvv_template(rocsparse_handle            handle,
         {
             return rocsparse_dotci_template(handle,
                                             (I)x->nnz,
-                                            (const T*)x->val_data,
-                                            (const I*)x->idx_data,
-                                            (const T*)y->values,
+                                            (const T*)x->const_val_data,
+                                            (const I*)x->const_idx_data,
+                                            (const T*)y->const_values,
                                             (T*)result,
                                             x->idx_base);
         }
@@ -119,8 +119,8 @@ rocsparse_status rocsparse_spvv_template(rocsparse_handle            handle,
 
 extern "C" rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
                                            rocsparse_operation         trans,
-                                           const rocsparse_spvec_descr x,
-                                           const rocsparse_dnvec_descr y,
+                                           rocsparse_const_spvec_descr x,
+                                           rocsparse_const_dnvec_descr y,
                                            void*                       result,
                                            rocsparse_datatype          compute_type,
                                            size_t*                     buffer_size,

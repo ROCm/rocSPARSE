@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1333,6 +1333,9 @@ rocsparse_status rocsparse_create_spvec_descr(rocsparse_spvec_descr* descr,
         (*descr)->idx_data = indices;
         (*descr)->val_data = values;
 
+        (*descr)->const_idx_data = indices;
+        (*descr)->const_val_data = values;
+
         (*descr)->idx_type  = idx_type;
         (*descr)->data_type = data_type;
 
@@ -1346,10 +1349,84 @@ rocsparse_status rocsparse_create_spvec_descr(rocsparse_spvec_descr* descr,
     return rocsparse_status_success;
 }
 
+rocsparse_status rocsparse_create_const_spvec_descr(rocsparse_const_spvec_descr* descr,
+                                                    int64_t                      size,
+                                                    int64_t                      nnz,
+                                                    const void*                  indices,
+                                                    const void*                  values,
+                                                    rocsparse_indextype          idx_type,
+                                                    rocsparse_index_base         idx_base,
+                                                    rocsparse_datatype           data_type)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check for valid sizes
+    if(size < 0 || nnz < 0 || size < nnz)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check for valid pointers
+    if(nnz != 0 && (indices == nullptr || values == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    *descr = nullptr;
+    // Allocate
+    try
+    {
+        rocsparse_spvec_descr new_descr = new _rocsparse_spvec_descr;
+
+        new_descr->init = true;
+
+        new_descr->size = size;
+        new_descr->nnz  = nnz;
+
+        new_descr->idx_data = nullptr;
+        new_descr->val_data = nullptr;
+
+        new_descr->const_idx_data = indices;
+        new_descr->const_val_data = values;
+
+        new_descr->idx_type  = idx_type;
+        new_descr->data_type = data_type;
+
+        new_descr->idx_base = idx_base;
+
+        *descr = new_descr;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_destroy_spvec_descr destroys a sparse vector descriptor.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_spvec_descr(rocsparse_spvec_descr descr)
+rocsparse_status rocsparse_destroy_spvec_descr(rocsparse_const_spvec_descr descr)
 {
     // Check for valid handle
     if(descr == nullptr)
@@ -1433,10 +1510,62 @@ rocsparse_status rocsparse_spvec_get(const rocsparse_spvec_descr descr,
     return rocsparse_status_success;
 }
 
+rocsparse_status rocsparse_const_spvec_get(rocsparse_const_spvec_descr descr,
+                                           int64_t*                    size,
+                                           int64_t*                    nnz,
+                                           const void**                indices,
+                                           const void**                values,
+                                           rocsparse_indextype*        idx_type,
+                                           rocsparse_index_base*       idx_base,
+                                           rocsparse_datatype*         data_type)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid size pointers
+    if(size == nullptr || nnz == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid data pointers
+    if(indices == nullptr || values == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid property pointers
+    if(idx_type == nullptr || idx_base == nullptr || data_type == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *size = descr->size;
+    *nnz  = descr->nnz;
+
+    *indices = descr->const_idx_data;
+    *values  = descr->const_val_data;
+
+    *idx_type  = descr->idx_type;
+    *idx_base  = descr->idx_base;
+    *data_type = descr->data_type;
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_spvec_get_index_base returns the sparse vector index base.
  *******************************************************************************/
-rocsparse_status rocsparse_spvec_get_index_base(const rocsparse_spvec_descr descr,
+rocsparse_status rocsparse_spvec_get_index_base(rocsparse_const_spvec_descr descr,
                                                 rocsparse_index_base*       idx_base)
 {
     // Check for valid pointers
@@ -1478,6 +1607,26 @@ rocsparse_status rocsparse_spvec_get_values(const rocsparse_spvec_descr descr, v
     return rocsparse_status_success;
 }
 
+rocsparse_status rocsparse_const_spvec_get_values(rocsparse_const_spvec_descr descr,
+                                                  const void**                values)
+{
+    // Check for valid pointers
+    if(descr == nullptr || values == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *values = descr->const_val_data;
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_spvec_set_values sets the sparse vector value pointer.
  *******************************************************************************/
@@ -1495,7 +1644,8 @@ rocsparse_status rocsparse_spvec_set_values(rocsparse_spvec_descr descr, void* v
         return rocsparse_status_not_initialized;
     }
 
-    descr->val_data = values;
+    descr->val_data       = values;
+    descr->const_val_data = values;
 
     return rocsparse_status_success;
 }
@@ -1567,6 +1717,10 @@ rocsparse_status rocsparse_create_coo_descr(rocsparse_spmat_descr* descr,
         (*descr)->col_data = coo_col_ind;
         (*descr)->val_data = coo_val;
 
+        (*descr)->const_row_data = coo_row_ind;
+        (*descr)->const_col_data = coo_col_ind;
+        (*descr)->const_val_data = coo_val;
+
         (*descr)->row_type  = idx_type;
         (*descr)->col_type  = idx_type;
         (*descr)->data_type = data_type;
@@ -1584,6 +1738,99 @@ rocsparse_status rocsparse_create_coo_descr(rocsparse_spmat_descr* descr,
         (*descr)->batch_stride                = 0;
         (*descr)->offsets_batch_stride        = 0;
         (*descr)->columns_values_batch_stride = 0;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+
+    return rocsparse_status_success;
+}
+
+rocsparse_status rocsparse_create_const_coo_descr(rocsparse_const_spmat_descr* descr,
+                                                  int64_t                      rows,
+                                                  int64_t                      cols,
+                                                  int64_t                      nnz,
+                                                  const void*                  coo_row_ind,
+                                                  const void*                  coo_col_ind,
+                                                  const void*                  coo_val,
+                                                  rocsparse_indextype          idx_type,
+                                                  rocsparse_index_base         idx_base,
+                                                  rocsparse_datatype           data_type)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check for valid sizes
+    if(rows < 0 || cols < 0 || nnz < 0 || nnz > rows * cols)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check for valid pointers
+    if(rows > 0 && cols > 0 && nnz > 0
+       && (coo_row_ind == nullptr || coo_col_ind == nullptr || coo_val == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    *descr = nullptr;
+    // Allocate
+    try
+    {
+        rocsparse_spmat_descr new_descr = new _rocsparse_spmat_descr;
+
+        new_descr->init = true;
+
+        new_descr->rows = rows;
+        new_descr->cols = cols;
+        new_descr->nnz  = nnz;
+
+        new_descr->row_data = nullptr;
+        new_descr->col_data = nullptr;
+        new_descr->val_data = nullptr;
+
+        new_descr->const_row_data = coo_row_ind;
+        new_descr->const_col_data = coo_col_ind;
+        new_descr->const_val_data = coo_val;
+
+        new_descr->row_type  = idx_type;
+        new_descr->col_type  = idx_type;
+        new_descr->data_type = data_type;
+
+        new_descr->idx_base = idx_base;
+        new_descr->format   = rocsparse_format_coo;
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&new_descr->descr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&new_descr->info));
+
+        // Initialize descriptor
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(new_descr->descr, idx_base));
+
+        new_descr->batch_count                 = 1;
+        new_descr->batch_stride                = 0;
+        new_descr->offsets_batch_stride        = 0;
+        new_descr->columns_values_batch_stride = 0;
+
+        *descr = new_descr;
     }
     catch(const rocsparse_status& status)
     {
@@ -1657,6 +1904,9 @@ rocsparse_status rocsparse_create_coo_aos_descr(rocsparse_spmat_descr* descr,
 
         (*descr)->ind_data = coo_ind;
         (*descr)->val_data = coo_val;
+
+        (*descr)->const_ind_data = coo_ind;
+        (*descr)->const_val_data = coo_val;
 
         (*descr)->row_type  = idx_type;
         (*descr)->col_type  = idx_type;
@@ -1761,6 +2011,10 @@ rocsparse_status rocsparse_create_csr_descr(rocsparse_spmat_descr* descr,
         (*descr)->col_data = csr_col_ind;
         (*descr)->val_data = csr_val;
 
+        (*descr)->const_row_data = csr_row_ptr;
+        (*descr)->const_col_data = csr_col_ind;
+        (*descr)->const_val_data = csr_val;
+
         (*descr)->row_type  = row_ptr_type;
         (*descr)->col_type  = col_ind_type;
         (*descr)->data_type = data_type;
@@ -1778,6 +2032,109 @@ rocsparse_status rocsparse_create_csr_descr(rocsparse_spmat_descr* descr,
         (*descr)->batch_stride                = 0;
         (*descr)->offsets_batch_stride        = 0;
         (*descr)->columns_values_batch_stride = 0;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+
+    return rocsparse_status_success;
+}
+
+rocsparse_status rocsparse_create_const_csr_descr(rocsparse_const_spmat_descr* descr,
+                                                  int64_t                      rows,
+                                                  int64_t                      cols,
+                                                  int64_t                      nnz,
+                                                  const void*                  csr_row_ptr,
+                                                  const void*                  csr_col_ind,
+                                                  const void*                  csr_val,
+                                                  rocsparse_indextype          row_ptr_type,
+                                                  rocsparse_indextype          col_ind_type,
+                                                  rocsparse_index_base         idx_base,
+                                                  rocsparse_datatype           data_type)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(row_ptr_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(col_ind_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check for valid sizes
+    if(rows < 0 || cols < 0 || nnz < 0 || nnz > rows * cols)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check for valid pointers
+    if(nnz > 0 && rows > 0 && csr_row_ptr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz != 0 && (csr_col_ind == nullptr || csr_val == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    *descr = nullptr;
+    // Allocate
+    try
+    {
+        rocsparse_spmat_descr new_descr = new _rocsparse_spmat_descr;
+
+        new_descr->init = true;
+
+        new_descr->rows = rows;
+        new_descr->cols = cols;
+        new_descr->nnz  = nnz;
+
+        new_descr->row_data = nullptr;
+        new_descr->col_data = nullptr;
+        new_descr->val_data = nullptr;
+
+        new_descr->const_row_data = csr_row_ptr;
+        new_descr->const_col_data = csr_col_ind;
+        new_descr->const_val_data = csr_val;
+
+        new_descr->row_type  = row_ptr_type;
+        new_descr->col_type  = col_ind_type;
+        new_descr->data_type = data_type;
+
+        new_descr->idx_base = idx_base;
+        new_descr->format   = rocsparse_format_csr;
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&new_descr->descr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&new_descr->info));
+
+        // Initialize descriptor
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(new_descr->descr, idx_base));
+
+        new_descr->batch_count                 = 1;
+        new_descr->batch_stride                = 0;
+        new_descr->offsets_batch_stride        = 0;
+        new_descr->columns_values_batch_stride = 0;
+
+        *descr = new_descr;
     }
     catch(const rocsparse_status& status)
     {
@@ -1864,6 +2221,10 @@ rocsparse_status rocsparse_create_csc_descr(rocsparse_spmat_descr* descr,
         (*descr)->col_data = csc_col_ptr;
         (*descr)->val_data = csc_val;
 
+        (*descr)->const_row_data = csc_row_ind;
+        (*descr)->const_col_data = csc_col_ptr;
+        (*descr)->const_val_data = csc_val;
+
         (*descr)->row_type  = row_ind_type;
         (*descr)->col_type  = col_ptr_type;
         (*descr)->data_type = data_type;
@@ -1881,6 +2242,109 @@ rocsparse_status rocsparse_create_csc_descr(rocsparse_spmat_descr* descr,
         (*descr)->batch_stride                = 0;
         (*descr)->offsets_batch_stride        = 0;
         (*descr)->columns_values_batch_stride = 0;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+
+    return rocsparse_status_success;
+}
+
+rocsparse_status rocsparse_create_const_csc_descr(rocsparse_const_spmat_descr* descr,
+                                                  int64_t                      rows,
+                                                  int64_t                      cols,
+                                                  int64_t                      nnz,
+                                                  const void*                  csc_col_ptr,
+                                                  const void*                  csc_row_ind,
+                                                  const void*                  csc_val,
+                                                  rocsparse_indextype          col_ptr_type,
+                                                  rocsparse_indextype          row_ind_type,
+                                                  rocsparse_index_base         idx_base,
+                                                  rocsparse_datatype           data_type)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(col_ptr_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(row_ind_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check for valid sizes
+    if(rows < 0 || cols < 0 || nnz < 0 || nnz > rows * cols)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check for valid pointers
+    if(cols > 0 && csc_col_ptr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz != 0 && (csc_row_ind == nullptr || csc_val == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    *descr = nullptr;
+    // Allocate
+    try
+    {
+        rocsparse_spmat_descr new_descr = new _rocsparse_spmat_descr;
+
+        new_descr->init = true;
+
+        new_descr->rows = rows;
+        new_descr->cols = cols;
+        new_descr->nnz  = nnz;
+
+        new_descr->row_data = nullptr;
+        new_descr->col_data = nullptr;
+        new_descr->val_data = nullptr;
+
+        new_descr->const_row_data = csc_row_ind;
+        new_descr->const_col_data = csc_col_ptr;
+        new_descr->const_val_data = csc_val;
+
+        new_descr->row_type  = row_ind_type;
+        new_descr->col_type  = col_ptr_type;
+        new_descr->data_type = data_type;
+
+        new_descr->idx_base = idx_base;
+        new_descr->format   = rocsparse_format_csc;
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&new_descr->descr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&new_descr->info));
+
+        // Initialize descriptor
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(new_descr->descr, idx_base));
+
+        new_descr->batch_count                 = 1;
+        new_descr->batch_stride                = 0;
+        new_descr->offsets_batch_stride        = 0;
+        new_descr->columns_values_batch_stride = 0;
+
+        *descr = new_descr;
     }
     catch(const rocsparse_status& status)
     {
@@ -1953,6 +2417,9 @@ rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
 
         (*descr)->col_data = ell_col_ind;
         (*descr)->val_data = ell_val;
+
+        (*descr)->const_col_data = ell_col_ind;
+        (*descr)->const_val_data = ell_val;
 
         (*descr)->row_type  = idx_type;
         (*descr)->col_type  = idx_type;
@@ -2061,6 +2528,9 @@ rocsparse_status rocsparse_create_bell_descr(rocsparse_spmat_descr* descr,
         (*descr)->col_data = ell_col_ind;
         (*descr)->val_data = ell_val;
 
+        (*descr)->const_col_data = ell_col_ind;
+        (*descr)->const_val_data = ell_val;
+
         (*descr)->row_type  = idx_type;
         (*descr)->col_type  = idx_type;
         (*descr)->data_type = data_type;
@@ -2078,6 +2548,105 @@ rocsparse_status rocsparse_create_bell_descr(rocsparse_spmat_descr* descr,
         (*descr)->batch_stride                = 0;
         (*descr)->offsets_batch_stride        = 0;
         (*descr)->columns_values_batch_stride = 0;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+
+    return rocsparse_status_success;
+}
+
+rocsparse_status rocsparse_create_const_bell_descr(rocsparse_const_spmat_descr* descr,
+                                                   int64_t                      rows,
+                                                   int64_t                      cols,
+                                                   rocsparse_direction          ell_block_dir,
+                                                   int64_t                      ell_block_dim,
+                                                   int64_t                      ell_cols,
+                                                   const void*                  ell_col_ind,
+                                                   const void*                  ell_val,
+                                                   rocsparse_indextype          idx_type,
+                                                   rocsparse_index_base         idx_base,
+                                                   rocsparse_datatype           data_type)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(ell_block_dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check for valid sizes
+    if(rows < 0 || cols < 0 || ell_cols < 0 || ell_cols > cols || ell_block_dim <= 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check for valid pointers
+    if(rows > 0 && cols > 0 && ell_cols > 0 && (ell_col_ind == nullptr || ell_val == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    *descr = nullptr;
+    // Allocate
+    try
+    {
+        rocsparse_spmat_descr new_descr = new _rocsparse_spmat_descr;
+
+        new_descr->init = true;
+
+        new_descr->rows = rows;
+        new_descr->cols = cols;
+
+        new_descr->ell_cols  = ell_cols;
+        new_descr->block_dir = ell_block_dir;
+        new_descr->block_dim = ell_block_dim;
+
+        new_descr->col_data = nullptr;
+        new_descr->val_data = nullptr;
+
+        new_descr->const_col_data = ell_col_ind;
+        new_descr->const_val_data = ell_val;
+
+        new_descr->row_type  = idx_type;
+        new_descr->col_type  = idx_type;
+        new_descr->data_type = data_type;
+
+        new_descr->idx_base = idx_base;
+        new_descr->format   = rocsparse_format_bell;
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&new_descr->descr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&new_descr->info));
+
+        // Initialize descriptor
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(new_descr->descr, idx_base));
+
+        new_descr->batch_count                 = 1;
+        new_descr->batch_stride                = 0;
+        new_descr->offsets_batch_stride        = 0;
+        new_descr->columns_values_batch_stride = 0;
+
+        *descr = new_descr;
     }
     catch(const rocsparse_status& status)
     {
@@ -2166,6 +2735,10 @@ rocsparse_status rocsparse_create_bsr_descr(rocsparse_spmat_descr* descr,
         (*descr)->col_data = bsr_col_ind;
         (*descr)->val_data = bsr_val;
 
+        (*descr)->const_row_data = bsr_row_ptr;
+        (*descr)->const_col_data = bsr_col_ind;
+        (*descr)->const_val_data = bsr_val;
+
         (*descr)->row_type  = row_ptr_type;
         (*descr)->col_type  = col_ind_type;
         (*descr)->data_type = data_type;
@@ -2198,7 +2771,7 @@ rocsparse_status rocsparse_create_bsr_descr(rocsparse_spmat_descr* descr,
 /********************************************************************************
  * \brief rocsparse_destroy_spmat_descr destroys a sparse matrix descriptor.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_spmat_descr(rocsparse_spmat_descr descr)
+rocsparse_status rocsparse_destroy_spmat_descr(rocsparse_const_spmat_descr descr)
 {
     // Check for valid handle
     if(descr == nullptr)
@@ -2281,6 +2854,62 @@ rocsparse_status rocsparse_coo_get(const rocsparse_spmat_descr descr,
     *coo_row_ind = descr->row_data;
     *coo_col_ind = descr->col_data;
     *coo_val     = descr->val_data;
+
+    *idx_type  = descr->row_type;
+    *idx_base  = descr->idx_base;
+    *data_type = descr->data_type;
+
+    return rocsparse_status_success;
+}
+
+rocsparse_status rocsparse_const_coo_get(rocsparse_const_spmat_descr descr,
+                                         int64_t*                    rows,
+                                         int64_t*                    cols,
+                                         int64_t*                    nnz,
+                                         const void**                coo_row_ind,
+                                         const void**                coo_col_ind,
+                                         const void**                coo_val,
+                                         rocsparse_indextype*        idx_type,
+                                         rocsparse_index_base*       idx_base,
+                                         rocsparse_datatype*         data_type)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid size pointers
+    if(rows == nullptr || cols == nullptr || nnz == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid data pointers
+    if(coo_row_ind == nullptr || coo_col_ind == nullptr || coo_val == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid property pointers
+    if(idx_type == nullptr || idx_base == nullptr || data_type == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *rows = descr->rows;
+    *cols = descr->cols;
+    *nnz  = descr->nnz;
+
+    *coo_row_ind = descr->const_row_data;
+    *coo_col_ind = descr->const_col_data;
+    *coo_val     = descr->const_val_data;
 
     *idx_type  = descr->row_type;
     *idx_base  = descr->idx_base;
@@ -2410,6 +3039,128 @@ rocsparse_status rocsparse_csr_get(const rocsparse_spmat_descr descr,
     return rocsparse_status_success;
 }
 
+rocsparse_status rocsparse_const_csr_get(rocsparse_const_spmat_descr descr,
+                                         int64_t*                    rows,
+                                         int64_t*                    cols,
+                                         int64_t*                    nnz,
+                                         const void**                csr_row_ptr,
+                                         const void**                csr_col_ind,
+                                         const void**                csr_val,
+                                         rocsparse_indextype*        row_ptr_type,
+                                         rocsparse_indextype*        col_ind_type,
+                                         rocsparse_index_base*       idx_base,
+                                         rocsparse_datatype*         data_type)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid size pointers
+    if(rows == nullptr || cols == nullptr || nnz == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid data pointers
+    if(csr_row_ptr == nullptr || csr_col_ind == nullptr || csr_val == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid property pointers
+    if(row_ptr_type == nullptr || col_ind_type == nullptr || idx_base == nullptr
+       || data_type == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *rows = descr->rows;
+    *cols = descr->cols;
+    *nnz  = descr->nnz;
+
+    *csr_row_ptr = descr->const_row_data;
+    *csr_col_ind = descr->const_col_data;
+    *csr_val     = descr->const_val_data;
+
+    *row_ptr_type = descr->row_type;
+    *col_ind_type = descr->col_type;
+    *idx_base     = descr->idx_base;
+    *data_type    = descr->data_type;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief rocsparse_csc_get returns the sparse CSC matrix data, sizes and
+ * properties.
+ *******************************************************************************/
+rocsparse_status rocsparse_const_csc_get(rocsparse_const_spmat_descr descr,
+                                         int64_t*                    rows,
+                                         int64_t*                    cols,
+                                         int64_t*                    nnz,
+                                         const void**                csc_col_ptr,
+                                         const void**                csc_row_ind,
+                                         const void**                csc_val,
+                                         rocsparse_indextype*        col_ptr_type,
+                                         rocsparse_indextype*        row_ind_type,
+                                         rocsparse_index_base*       idx_base,
+                                         rocsparse_datatype*         data_type)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid size pointers
+    if(rows == nullptr || cols == nullptr || nnz == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid data pointers
+    if(csc_col_ptr == nullptr || csc_row_ind == nullptr || csc_val == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid property pointers
+    if(col_ptr_type == nullptr || row_ind_type == nullptr || idx_base == nullptr
+       || data_type == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *rows = descr->rows;
+    *cols = descr->cols;
+    *nnz  = descr->nnz;
+
+    *csc_col_ptr = descr->const_col_data;
+    *csc_row_ind = descr->const_row_data;
+    *csc_val     = descr->const_val_data;
+
+    *row_ind_type = descr->row_type;
+    *col_ptr_type = descr->col_type;
+    *idx_base     = descr->idx_base;
+    *data_type    = descr->data_type;
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_ell_get returns the sparse ELL matrix data, sizes and
  * properties.
@@ -2531,6 +3282,65 @@ rocsparse_status rocsparse_bell_get(const rocsparse_spmat_descr descr,
     return rocsparse_status_success;
 }
 
+rocsparse_status rocsparse_const_bell_get(rocsparse_const_spmat_descr descr,
+                                          int64_t*                    rows,
+                                          int64_t*                    cols,
+                                          rocsparse_direction*        ell_block_dir,
+                                          int64_t*                    ell_block_dim,
+                                          int64_t*                    ell_cols,
+                                          const void**                ell_col_ind,
+                                          const void**                ell_val,
+                                          rocsparse_indextype*        idx_type,
+                                          rocsparse_index_base*       idx_base,
+                                          rocsparse_datatype*         data_type)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid size pointers
+    if(rows == nullptr || cols == nullptr || ell_cols == nullptr || ell_block_dim == nullptr
+       || ell_block_dir == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid data pointers
+    if(ell_col_ind == nullptr || ell_val == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid property pointers
+    if(idx_type == nullptr || idx_base == nullptr || data_type == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *rows = descr->rows;
+    *cols = descr->cols;
+
+    *ell_col_ind   = descr->const_col_data;
+    *ell_val       = descr->const_val_data;
+    *ell_cols      = descr->ell_cols;
+    *ell_block_dir = descr->block_dir;
+    *ell_block_dim = descr->block_dim;
+
+    *idx_type  = descr->row_type;
+    *idx_base  = descr->idx_base;
+    *data_type = descr->data_type;
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_coo_set_pointers sets the sparse COO matrix data pointers.
  *******************************************************************************/
@@ -2561,6 +3371,10 @@ rocsparse_status rocsparse_coo_set_pointers(rocsparse_spmat_descr descr,
     descr->col_data = coo_col_ind;
     descr->val_data = coo_val;
 
+    descr->const_row_data = coo_row_ind;
+    descr->const_col_data = coo_col_ind;
+    descr->const_val_data = coo_val;
+
     return rocsparse_status_success;
 }
 
@@ -2590,6 +3404,9 @@ rocsparse_status
 
     descr->ind_data = coo_ind;
     descr->val_data = coo_val;
+
+    descr->const_ind_data = coo_ind;
+    descr->const_val_data = coo_val;
 
     return rocsparse_status_success;
 }
@@ -2627,6 +3444,10 @@ rocsparse_status rocsparse_csr_set_pointers(rocsparse_spmat_descr descr,
     descr->col_data = csr_col_ind;
     descr->val_data = csr_val;
 
+    descr->const_row_data = csr_row_ptr;
+    descr->const_col_data = csr_col_ind;
+    descr->const_val_data = csr_val;
+
     return rocsparse_status_success;
 }
 
@@ -2663,6 +3484,10 @@ rocsparse_status rocsparse_csc_set_pointers(rocsparse_spmat_descr descr,
     descr->col_data = csc_col_ptr;
     descr->val_data = csc_val;
 
+    descr->const_row_data = csc_row_ind;
+    descr->const_col_data = csc_col_ptr;
+    descr->const_val_data = csc_val;
+
     return rocsparse_status_success;
 }
 
@@ -2692,6 +3517,9 @@ rocsparse_status
 
     descr->col_data = ell_col_ind;
     descr->val_data = ell_val;
+
+    descr->const_col_data = ell_col_ind;
+    descr->const_val_data = ell_val;
 
     return rocsparse_status_success;
 }
@@ -2729,16 +3557,20 @@ rocsparse_status rocsparse_bsr_set_pointers(rocsparse_spmat_descr descr,
     descr->col_data = bsr_col_ind;
     descr->val_data = bsr_val;
 
+    descr->const_row_data = bsr_row_ptr;
+    descr->const_col_data = bsr_col_ind;
+    descr->const_val_data = bsr_val;
+
     return rocsparse_status_success;
 }
 
 /********************************************************************************
  * \brief rocsparse_spmat_get_size returns the sparse matrix sizes.
  *******************************************************************************/
-rocsparse_status rocsparse_spmat_get_size(rocsparse_spmat_descr descr,
-                                          int64_t*              rows,
-                                          int64_t*              cols,
-                                          int64_t*              nnz)
+rocsparse_status rocsparse_spmat_get_size(rocsparse_const_spmat_descr descr,
+                                          int64_t*                    rows,
+                                          int64_t*                    cols,
+                                          int64_t*                    nnz)
 {
     // Check for valid pointers
     if(descr == nullptr)
@@ -2768,7 +3600,7 @@ rocsparse_status rocsparse_spmat_get_size(rocsparse_spmat_descr descr,
 /********************************************************************************
  * \brief rocsparse_spmat_get_format returns the sparse matrix format.
  *******************************************************************************/
-rocsparse_status rocsparse_spmat_get_format(const rocsparse_spmat_descr descr,
+rocsparse_status rocsparse_spmat_get_format(rocsparse_const_spmat_descr descr,
                                             rocsparse_format*           format)
 {
     // Check for valid pointers
@@ -2791,7 +3623,7 @@ rocsparse_status rocsparse_spmat_get_format(const rocsparse_spmat_descr descr,
 /********************************************************************************
  * \brief rocsparse_spmat_get_index_base returns the sparse matrix index base.
  *******************************************************************************/
-rocsparse_status rocsparse_spmat_get_index_base(const rocsparse_spmat_descr descr,
+rocsparse_status rocsparse_spmat_get_index_base(rocsparse_const_spmat_descr descr,
                                                 rocsparse_index_base*       idx_base)
 {
     // Check for valid pointers
@@ -2833,6 +3665,26 @@ rocsparse_status rocsparse_spmat_get_values(rocsparse_spmat_descr descr, void** 
     return rocsparse_status_success;
 }
 
+rocsparse_status rocsparse_const_spmat_get_values(rocsparse_const_spmat_descr descr,
+                                                  const void**                values)
+{
+    // Check for valid pointers
+    if(descr == nullptr || values == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *values = descr->const_val_data;
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_spmat_set_values sets the sparse matrix value pointer.
  *******************************************************************************/
@@ -2850,7 +3702,8 @@ rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* v
         return rocsparse_status_not_initialized;
     }
 
-    descr->val_data = values;
+    descr->val_data       = values;
+    descr->const_val_data = values;
 
     return rocsparse_status_success;
 }
@@ -2858,7 +3711,8 @@ rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* v
 /********************************************************************************
  * \brief rocsparse_spmat_get_strided_batch gets the sparse matrix batch count.
  *******************************************************************************/
-rocsparse_status rocsparse_spmat_get_strided_batch(rocsparse_spmat_descr descr, int* batch_count)
+rocsparse_status rocsparse_spmat_get_strided_batch(rocsparse_const_spmat_descr descr,
+                                                   int*                        batch_count)
 {
     // Check for valid pointers
     if(descr == nullptr || batch_count == nullptr)
@@ -2984,10 +3838,10 @@ rocsparse_status rocsparse_csc_set_strided_batch(rocsparse_spmat_descr descr,
 /********************************************************************************
  * \brief rocsparse_spmat_get_attribute gets the sparse matrix attribute.
  *******************************************************************************/
-rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
-                                               rocsparse_spmat_attribute attribute,
-                                               void*                     data,
-                                               size_t                    data_size)
+rocsparse_status rocsparse_spmat_get_attribute(rocsparse_const_spmat_descr descr,
+                                               rocsparse_spmat_attribute   attribute,
+                                               void*                       data,
+                                               size_t                      data_size)
 {
     if(descr == nullptr || data == nullptr)
     {
@@ -3141,9 +3995,61 @@ rocsparse_status rocsparse_create_dnvec_descr(rocsparse_dnvec_descr* descr,
 
         (*descr)->init = true;
 
-        (*descr)->size      = size;
-        (*descr)->values    = values;
-        (*descr)->data_type = data_type;
+        (*descr)->size         = size;
+        (*descr)->values       = values;
+        (*descr)->const_values = values;
+        (*descr)->data_type    = data_type;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+
+    return rocsparse_status_success;
+}
+
+rocsparse_status rocsparse_create_const_dnvec_descr(rocsparse_const_dnvec_descr* descr,
+                                                    int64_t                      size,
+                                                    const void*                  values,
+                                                    rocsparse_datatype           data_type)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check for valid size
+    if(size < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check for valid pointer
+    if(size > 0 && values == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    *descr = nullptr;
+    // Allocate
+    try
+    {
+        rocsparse_dnvec_descr new_descr = new _rocsparse_dnvec_descr;
+
+        new_descr->init = true;
+
+        new_descr->size         = size;
+        new_descr->values       = nullptr;
+        new_descr->const_values = values;
+        new_descr->data_type    = data_type;
+
+        *descr = new_descr;
     }
     catch(const rocsparse_status& status)
     {
@@ -3156,7 +4062,7 @@ rocsparse_status rocsparse_create_dnvec_descr(rocsparse_dnvec_descr* descr,
 /********************************************************************************
  * \brief rocsparse_destroy_dnvec_descr destroys a dense vector descriptor.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_dnvec_descr(rocsparse_dnvec_descr descr)
+rocsparse_status rocsparse_destroy_dnvec_descr(rocsparse_const_dnvec_descr descr)
 {
     if(descr == nullptr)
     {
@@ -3203,6 +4109,30 @@ rocsparse_status rocsparse_dnvec_get(const rocsparse_dnvec_descr descr,
     return rocsparse_status_success;
 }
 
+rocsparse_status rocsparse_const_dnvec_get(rocsparse_const_dnvec_descr descr,
+                                           int64_t*                    size,
+                                           const void**                values,
+                                           rocsparse_datatype*         data_type)
+{
+    // Check for valid pointers
+    if(descr == nullptr || size == nullptr || values == nullptr || data_type == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *size      = descr->size;
+    *values    = descr->const_values;
+    *data_type = descr->data_type;
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_dnvec_get_values returns the dense vector value pointer.
  *******************************************************************************/
@@ -3225,6 +4155,26 @@ rocsparse_status rocsparse_dnvec_get_values(const rocsparse_dnvec_descr descr, v
     return rocsparse_status_success;
 }
 
+rocsparse_status rocsparse_const_dnvec_get_values(rocsparse_const_dnvec_descr descr,
+                                                  const void**                values)
+{
+    // Check for valid pointers
+    if(descr == nullptr || values == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *values = descr->const_values;
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_dnvec_set_values sets the dense vector value pointer.
  *******************************************************************************/
@@ -3242,7 +4192,8 @@ rocsparse_status rocsparse_dnvec_set_values(rocsparse_dnvec_descr descr, void* v
         return rocsparse_status_not_initialized;
     }
 
-    descr->values = values;
+    descr->values       = values;
+    descr->const_values = values;
 
     return rocsparse_status_success;
 }
@@ -3298,12 +4249,13 @@ rocsparse_status rocsparse_create_dnmat_descr(rocsparse_dnmat_descr* descr,
 
         (*descr)->init = true;
 
-        (*descr)->rows      = rows;
-        (*descr)->cols      = cols;
-        (*descr)->ld        = ld;
-        (*descr)->values    = values;
-        (*descr)->data_type = data_type;
-        (*descr)->order     = order;
+        (*descr)->rows         = rows;
+        (*descr)->cols         = cols;
+        (*descr)->ld           = ld;
+        (*descr)->values       = values;
+        (*descr)->const_values = values;
+        (*descr)->data_type    = data_type;
+        (*descr)->order        = order;
 
         (*descr)->batch_count  = 1;
         (*descr)->batch_stride = 0;
@@ -3316,10 +4268,76 @@ rocsparse_status rocsparse_create_dnmat_descr(rocsparse_dnmat_descr* descr,
     return rocsparse_status_success;
 }
 
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_const_dnmat_descr(rocsparse_const_dnmat_descr* descr,
+                                                    int64_t                      rows,
+                                                    int64_t                      cols,
+                                                    int64_t                      ld,
+                                                    const void*                  values,
+                                                    rocsparse_datatype           data_type,
+                                                    rocsparse_order              order)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(order))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check for valid size
+    if(rows < 0 || cols < 0 || ld < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check for valid pointer
+    if(rows > 0 && cols > 0 && ld > 0 && values == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    *descr = nullptr;
+    // Allocate
+    try
+    {
+        rocsparse_dnmat_descr new_descr = new _rocsparse_dnmat_descr;
+
+        new_descr->init = true;
+
+        new_descr->rows         = rows;
+        new_descr->cols         = cols;
+        new_descr->ld           = ld;
+        new_descr->values       = nullptr;
+        new_descr->const_values = values;
+        new_descr->data_type    = data_type;
+        new_descr->order        = order;
+
+        new_descr->batch_count  = 1;
+        new_descr->batch_stride = 0;
+
+        *descr = new_descr;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_destroy_dnmat_descr destroys a dense matrix descriptor.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_dnmat_descr(rocsparse_dnmat_descr descr)
+rocsparse_status rocsparse_destroy_dnmat_descr(rocsparse_const_dnmat_descr descr)
 {
     if(descr == nullptr)
     {
@@ -3373,6 +4391,37 @@ rocsparse_status rocsparse_dnmat_get(const rocsparse_dnmat_descr descr,
     return rocsparse_status_success;
 }
 
+rocsparse_status rocsparse_const_dnmat_get(rocsparse_const_dnmat_descr descr,
+                                           int64_t*                    rows,
+                                           int64_t*                    cols,
+                                           int64_t*                    ld,
+                                           const void**                values,
+                                           rocsparse_datatype*         data_type,
+                                           rocsparse_order*            order)
+{
+    // Check for valid pointers
+    if(descr == nullptr || rows == nullptr || cols == nullptr || ld == nullptr || values == nullptr
+       || data_type == nullptr || order == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *rows      = descr->rows;
+    *cols      = descr->cols;
+    *ld        = descr->ld;
+    *values    = descr->const_values;
+    *data_type = descr->data_type;
+    *order     = descr->order;
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_dnmat_get_values returns the dense matrix value pointer.
  *******************************************************************************/
@@ -3395,6 +4444,26 @@ rocsparse_status rocsparse_dnmat_get_values(const rocsparse_dnmat_descr descr, v
     return rocsparse_status_success;
 }
 
+rocsparse_status rocsparse_const_dnmat_get_values(rocsparse_const_dnmat_descr descr,
+                                                  const void**                values)
+{
+    // Check for valid pointers
+    if(descr == nullptr || values == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *values = descr->const_values;
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_dnmat_set_values sets the dense matrix value pointer.
  *******************************************************************************/
@@ -3412,7 +4481,8 @@ rocsparse_status rocsparse_dnmat_set_values(rocsparse_dnmat_descr descr, void* v
         return rocsparse_status_not_initialized;
     }
 
-    descr->values = values;
+    descr->values       = values;
+    descr->const_values = values;
 
     return rocsparse_status_success;
 }
@@ -3421,9 +4491,9 @@ rocsparse_status rocsparse_dnmat_set_values(rocsparse_dnmat_descr descr, void* v
  * \brief rocsparse_dnmat_get_strided_batch gets the dense matrix batch count
  * and batch stride.
  *******************************************************************************/
-rocsparse_status rocsparse_dnmat_get_strided_batch(rocsparse_dnmat_descr descr,
-                                                   int*                  batch_count,
-                                                   int64_t*              batch_stride)
+rocsparse_status rocsparse_dnmat_get_strided_batch(rocsparse_const_dnmat_descr descr,
+                                                   int*                        batch_count,
+                                                   int64_t*                    batch_stride)
 {
     // Check for valid pointers
     if(descr == nullptr || batch_count == nullptr || batch_stride == nullptr)
