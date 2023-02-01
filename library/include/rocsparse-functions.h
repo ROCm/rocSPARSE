@@ -1574,10 +1574,11 @@ rocsparse_status rocsparse_zaxpyi(rocsparse_handle                handle,
 *  \endcode
 *
 *  \note
-*  This function is blocking with respect to the host.
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
 *
 *  \note
-*  This routine does not support execution in a hipGraph context.
+*  This routine supports execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -1662,10 +1663,11 @@ rocsparse_status rocsparse_zdoti(rocsparse_handle                handle,
 *  \endcode
 *
 *  \note
-*  This function is blocking with respect to the host.
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
 *
 *  \note
-*  This routine does not support execution in a hipGraph context.
+*  This routine supports execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -16465,10 +16467,11 @@ rocsparse_status rocsparse_zgebsr2gebsc(rocsparse_handle                handle,
 *  over all rows, the ELL \p width, for a given CSR matrix.
 *
 *  \note
-*  This function is blocking with respect to the host.
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
 *
 *  \note
-*  This routine does not support execution in a hipGraph context.
+*  This routine supports execution in a hipGraph context.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.

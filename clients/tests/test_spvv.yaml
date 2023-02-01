@@ -71,3 +71,4 @@ Tests:
   nnz: [5, 10, 500]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
+  graph_test: true

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,6 +104,9 @@ void testing_spvv(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
+    // Grab stream used by handle
+    hipStream_t stream = handle.get_stream();
+
     // Argument sanity check before allocating invalid memory
     if(nnz <= 0)
     {
@@ -192,6 +195,7 @@ void testing_spvv(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_spvv(
             handle, trans, x, y, &hdot_1[0], ttype, &buffer_size, temp_buffer));
+        CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
@@ -227,6 +231,7 @@ void testing_spvv(const Arguments& arg)
         {
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_spvv(handle, trans, x, y, &hdot_1[0], ttype, &buffer_size, temp_buffer));
+            CHECK_HIP_ERROR(hipStreamSynchronize(stream));
         }
 
         double gpu_time_used = get_time_us();
@@ -236,6 +241,7 @@ void testing_spvv(const Arguments& arg)
         {
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_spvv(handle, trans, x, y, &hdot_1[0], ttype, &buffer_size, temp_buffer));
+            CHECK_HIP_ERROR(hipStreamSynchronize(stream));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

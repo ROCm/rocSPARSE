@@ -152,3 +152,4 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   baseB: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
+  graph_test: true

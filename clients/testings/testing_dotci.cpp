@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,9 @@ void testing_dotci(const Arguments& arg)
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
+
+    // Grab stream used by handle
+    hipStream_t stream = handle.get_stream();
 
     // Argument sanity check before allocating invalid memory
     if(nnz <= 0)
@@ -119,6 +122,7 @@ void testing_dotci(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(
             testing::rocsparse_dotci<T>(handle, nnz, dx_val, dx_ind, dy, &hdot_1[0], base));
+        CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
@@ -133,8 +137,6 @@ void testing_dotci(const Arguments& arg)
 
         hdot_gold.unit_check(hdot_1);
         hdot_gold.unit_check(hdot_2);
-        //        unit_check_general<T>(1, 1, 1, hdot_gold, hdot_1);
-        //        unit_check_general<T>(1, 1, 1, hdot_gold, hdot_2);
     }
 
     if(arg.timing)
@@ -149,6 +151,7 @@ void testing_dotci(const Arguments& arg)
         {
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_dotci<T>(handle, nnz, dx_val, dx_ind, dy, &hdot_1[0], base));
+            CHECK_HIP_ERROR(hipStreamSynchronize(stream));
         }
 
         double gpu_time_used = get_time_us();
@@ -158,6 +161,7 @@ void testing_dotci(const Arguments& arg)
         {
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_dotci<T>(handle, nnz, dx_val, dx_ind, dy, &hdot_1[0], base));
+            CHECK_HIP_ERROR(hipStreamSynchronize(stream));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
