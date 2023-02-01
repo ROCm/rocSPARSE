@@ -2,7 +2,7 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## rocSPARSE 3.0.0
+## rocSPARSE 2.6.0
 ### Added
 - Added rocsparse_inverse_permutation
 - Added uniform int8 precision for Gather and Scatter
@@ -10,6 +10,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Removed old deprecated rocsparse_spmv, deprecated current rocsparse_spmv_ex, and added new rocsparse_spmv routine
 - Removed old deprecated rocsparse_xbsrmv routines, deprecated current rocsparse_xbsrmv_ex routines, and added new rocsparse_xbsrmv routines
 - Removed old deprecated rocsparse_spmm_ex routine
+- doti, dotci, spvv, and csr2ell now require calling hipStreamSynchronize after when using host pointer mode
 ### Improved
 - Optimization to doti routine
 - Fixed a bug in csrsm and bsrsm

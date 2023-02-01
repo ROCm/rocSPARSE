@@ -62,3 +62,4 @@ Tests:
   M: [12000]
   nnz: [5, 10, 500]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  graph_test: true

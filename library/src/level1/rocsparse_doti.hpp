@@ -126,8 +126,7 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle     handle,
                            (T*)nullptr);
 
         RETURN_IF_HIP_ERROR(
-            hipMemcpyAsync(result, workspace, sizeof(T), hipMemcpyDeviceToHost, handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+            hipMemcpyAsync(result, workspace, sizeof(T), hipMemcpyDeviceToHost, stream));
     }
 #undef DOTI_DIM
 

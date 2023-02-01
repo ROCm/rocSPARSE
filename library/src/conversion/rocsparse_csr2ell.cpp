@@ -279,7 +279,6 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle          ha
     {
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
             ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     }
 
     return rocsparse_status_success;

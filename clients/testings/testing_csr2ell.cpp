@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,6 +79,9 @@ void testing_csr2ell(const Arguments& arg)
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
+
+    // Grab stream used by handle
+    hipStream_t stream = handle.get_stream();
 
     // Create matrix descriptor for CSR matrix
     rocsparse_local_mat_descr descrA;
@@ -170,6 +173,8 @@ void testing_csr2ell(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(
             testing::rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width));
 
+        CHECK_HIP_ERROR(hipStreamSynchronize(stream));
+
         // Allocate device memory
         rocsparse_int ell_nnz = ell_width * M;
 
@@ -232,6 +237,7 @@ void testing_csr2ell(const Arguments& arg)
         {
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width));
+            CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
             ell_nnz = ell_width * M;
 
@@ -263,6 +269,7 @@ void testing_csr2ell(const Arguments& arg)
         {
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width));
+            CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
             ell_nnz = ell_width * M;
 
