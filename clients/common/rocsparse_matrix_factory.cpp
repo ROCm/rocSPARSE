@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,26 @@
  * ************************************************************************ */
 
 #include "rocsparse_matrix_factory.hpp"
+#include "rocsparse_clients_envariables.hpp"
 #include "rocsparse_init.hpp"
+
+static void get_matrix_full_filename(std::string&       full_filename_,
+                                     const std::string& filename_,
+                                     const std::string& extension_,
+                                     const bool         timing_)
+{
+    const bool envar_is_defined
+        = rocsparse_clients_envariables::is_defined(rocsparse_clients_envariables::MATRICES_DIR);
+    std::string path = rocsparse_exepath() + "../matrices/";
+    if(envar_is_defined)
+    {
+        path = rocsparse_clients_envariables::get(rocsparse_clients_envariables::MATRICES_DIR);
+        path += "/";
+    }
+
+    full_filename_ = timing_ ? ((envar_is_defined) ? (path + filename_) : filename_)
+                             : (path + filename_ + extension_);
+}
 
 //
 // Destructor.
@@ -96,30 +115,28 @@ rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments&    
 
     case rocsparse_matrix_file_rocalution:
     {
-        std::string filename = arg.timing
-                                   ? arg.filename
-                                   : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+        std::string full_filename;
+        get_matrix_full_filename(full_filename, arg.filename, ".csr", arg.timing);
+
         this->m_instance
-            = new rocsparse_matrix_factory_rocalution<T, I, J>(filename.c_str(), to_int);
+            = new rocsparse_matrix_factory_rocalution<T, I, J>(full_filename.c_str(), to_int);
         break;
     }
 
     case rocsparse_matrix_file_rocsparseio:
     {
-        std::string filename = arg.timing
-                                   ? arg.filename
-                                   : rocsparse_exepath() + "../matrices/" + arg.filename + ".bin";
+        std::string full_filename;
+        get_matrix_full_filename(full_filename, arg.filename, ".bin", arg.timing);
         this->m_instance
-            = new rocsparse_matrix_factory_rocsparseio<T, I, J>(filename.c_str(), to_int);
+            = new rocsparse_matrix_factory_rocsparseio<T, I, J>(full_filename.c_str(), to_int);
         break;
     }
 
     case rocsparse_matrix_file_mtx:
     {
-        std::string filename = arg.timing
-                                   ? arg.filename
-                                   : rocsparse_exepath() + "../matrices/" + arg.filename + ".mtx";
-        this->m_instance     = new rocsparse_matrix_factory_mtx<T, I, J>(filename.c_str());
+        std::string full_filename;
+        get_matrix_full_filename(full_filename, arg.filename, ".mtx", arg.timing);
+        this->m_instance = new rocsparse_matrix_factory_mtx<T, I, J>(full_filename.c_str());
         break;
     }
 
