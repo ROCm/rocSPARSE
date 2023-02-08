@@ -345,6 +345,20 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         }                                     \
     }
 
+#define DEFINE_CASE_IXYT_X(value, testingf)   \
+    case value:                               \
+    {                                         \
+        try                                   \
+        {                                     \
+            testingf<I, T, T, T>(arg);        \
+            return rocsparse_status_success;  \
+        }                                     \
+        catch(const rocsparse_status& status) \
+        {                                     \
+            return status;                    \
+        }                                     \
+    }
+
 #define DEFINE_CASE_IAXYT_X(value, testingf)  \
     case value:                               \
     {                                         \
@@ -375,6 +389,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
 
 #define DEFINE_CASE_IT(value) DEFINE_CASE_IT_X(value, testing_##value)
 #define DEFINE_CASE_IJT(value) DEFINE_CASE_IJT_X(value, testing_##value)
+#define DEFINE_CASE_IXYT(value) DEFINE_CASE_IXYT_X(value, testing_##value)
 #define DEFINE_CASE_IAXYT(value) DEFINE_CASE_IAXYT_X(value, testing_##value)
 #define DEFINE_CASE_IJAXYT(value) DEFINE_CASE_IJAXYT_X(value, testing_##value)
 #define IS_T_REAL (std::is_same<T, double>() || std::is_same<T, float>())

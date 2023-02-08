@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,10 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, typename I, typename T>
+template <unsigned int BLOCKSIZE, typename I, typename X, typename Y, typename T>
 ROCSPARSE_KERNEL(BLOCKSIZE)
 void dotci_kernel_part1(
-    I nnz, const T* x_val, const I* x_ind, const T* y, T* workspace, rocsparse_index_base idx_base)
+    I nnz, const X* x_val, const I* x_ind, const Y* y, T* workspace, rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
     I   gid = BLOCKSIZE * hipBlockIdx_x + tid;
@@ -38,7 +38,7 @@ void dotci_kernel_part1(
 
     for(I idx = gid; idx < nnz; idx += hipGridDim_x * BLOCKSIZE)
     {
-        dotc = rocsparse_fma(y[x_ind[idx] - idx_base], rocsparse_conj(x_val[idx]), dotc);
+        dotc = rocsparse_fma<T>(y[x_ind[idx] - idx_base], rocsparse_conj(x_val[idx]), dotc);
     }
 
     __shared__ T sdata[BLOCKSIZE];

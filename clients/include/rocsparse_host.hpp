@@ -156,12 +156,12 @@ void host_axpby(I                    size,
                 T*                   y,
                 rocsparse_index_base base);
 
-template <typename I, typename T>
+template <typename I, typename X, typename Y, typename T>
 void host_doti(
-    I nnz, const T* x_val, const I* x_ind, const T* y, T* result, rocsparse_index_base base);
-template <typename I, typename T>
+    I nnz, const X* x_val, const I* x_ind, const Y* y, T* result, rocsparse_index_base base);
+template <typename I, typename X, typename Y, typename T>
 void host_dotci(
-    I nnz, const T* x_val, const I* x_ind, const T* y, T* result, rocsparse_index_base base);
+    I nnz, const X* x_val, const I* x_ind, const Y* y, T* result, rocsparse_index_base base);
 template <typename I, typename T>
 void host_gthr(I nnz, const T* y, T* x_val, const I* x_ind, rocsparse_index_base base);
 template <typename T>

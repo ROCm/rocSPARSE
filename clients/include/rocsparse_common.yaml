@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -229,6 +229,10 @@ indextype i32 i64i32 mixture and i64: &i32i32_i64i32_i64i64
     index_type_J: i64
 
 Real precisions: &real_precisions
+  - &int8_int8_int32_xyt_precision
+    { a_type: i8_r, b_type: i8_r, c_type: i8_r, x_type: i8_r, y_type: i8_r, compute_type: i32_r }
+  - &int8_int8_float32_xyt_precision
+    { a_type: i8_r, b_type: i8_r, c_type: i8_r, x_type: i8_r, y_type: i8_r, compute_type: f32_r }
   - &int8_int8_int32_int32_axyt_precision
     { a_type: i8_r, b_type: i8_r, c_type: i8_r, x_type: i8_r, y_type: i32_r, compute_type: i32_r }
   - &int8_int8_float32_float32_axyt_precision
