@@ -163,7 +163,7 @@ static rocsparse_status csrilu0(rocsparse_handle          handle_,
 
     rocsparse_csrilu0_clear(handle_, info_);
 
-    if(hipSuccess != hipFree(dbuffer))
+    if(hipSuccess != rocsparse_hipFree(dbuffer))
     {
         return rocsparse_status_memory_error;
     }
@@ -376,7 +376,7 @@ void testing_csritilu0(const Arguments& arg)
     {
         CHECK_ROCSPARSE_ERROR(status);
     }
-    CHECK_HIP_ERROR(hipMalloc(&buffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&buffer, buffer_size));
     rocsparse_status       status_buffer_size = status;
     device_dense_vector<T> ilu0(dA.nnz);
     if(arg.unit_check)
@@ -745,7 +745,7 @@ void testing_csritilu0(const Arguments& arg)
                             "buffer_size",
                             buffer_size);
     }
-    CHECK_HIP_ERROR(hipFree(buffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(buffer));
 }
 
 #define INSTANTIATE(TYPE)                                                \
