@@ -26,10 +26,15 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, unsigned int LOOPS, typename I, typename T>
+template <unsigned int BLOCKSIZE,
+          unsigned int LOOPS,
+          typename I,
+          typename X,
+          typename Y,
+          typename T>
 ROCSPARSE_KERNEL(BLOCKSIZE)
 void doti_kernel_part1(
-    I nnz, const T* x_val, const I* x_ind, const T* y, T* workspace, rocsparse_index_base idx_base)
+    I nnz, const X* x_val, const I* x_ind, const Y* y, T* workspace, rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
     I   gid = BLOCKSIZE * hipBlockIdx_x + tid;
@@ -43,7 +48,7 @@ void doti_kernel_part1(
 #pragma unroll
         for(unsigned int i = 0; i < LOOPS; i++)
         {
-            dot = rocsparse_fma(
+            dot = rocsparse_fma<T>(
                 y[x_ind[idx + i * BLOCKSIZE] - idx_base], x_val[idx + i * BLOCKSIZE], dot);
         }
 
@@ -55,7 +60,7 @@ void doti_kernel_part1(
 
     for(I i = gid + stride; i < nnz; i += hipGridDim_x * BLOCKSIZE)
     {
-        dot = rocsparse_fma(y[x_ind[i] - idx_base], x_val[i], dot);
+        dot = rocsparse_fma<T>(y[x_ind[i] - idx_base], x_val[i], dot);
     }
 
     __shared__ T sdata[BLOCKSIZE];

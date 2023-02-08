@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,14 @@ struct rocsparse_test_template_traits<ROUTINE, rocsparse_test_dispatch_enum::ijt
     using filter = typename rocsparse_test_ijt_template<ROUTINE>::test;
     template <typename... P>
     using caller = typename rocsparse_test_ijt_template<ROUTINE>::template test_call<P...>;
+};
+
+template <rocsparse_test_enum::value_type ROUTINE>
+struct rocsparse_test_template_traits<ROUTINE, rocsparse_test_dispatch_enum::ixyt>
+{
+    using filter = typename rocsparse_test_ixyt_template<ROUTINE>::test;
+    template <typename... P>
+    using caller = typename rocsparse_test_ixyt_template<ROUTINE>::template test_call<P...>;
 };
 
 template <rocsparse_test_enum::value_type ROUTINE>

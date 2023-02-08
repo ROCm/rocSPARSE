@@ -55,9 +55,9 @@ void host_axpby(
     }
 }
 
-template <typename I, typename T>
+template <typename I, typename X, typename Y, typename T>
 void host_doti(
-    I nnz, const T* x_val, const I* x_ind, const T* y, T* result, rocsparse_index_base base)
+    I nnz, const X* x_val, const I* x_ind, const Y* y, T* result, rocsparse_index_base base)
 {
     *result = static_cast<T>(0);
 
@@ -67,9 +67,9 @@ void host_doti(
     }
 }
 
-template <typename I, typename T>
+template <typename I, typename X, typename Y, typename T>
 void host_dotci(
-    I nnz, const T* x_val, const I* x_ind, const T* y, T* result, rocsparse_index_base base)
+    I nnz, const X* x_val, const I* x_ind, const Y* y, T* result, rocsparse_index_base base)
 {
     *result = static_cast<T>(0);
 
@@ -10021,19 +10021,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                           TTYPE*               y,                        \
                                           const TTYPE*         c,                        \
                                           const TTYPE*         s,                        \
-                                          rocsparse_index_base base);                    \
-    template void host_doti<ITYPE, TTYPE>(ITYPE                nnz,                      \
-                                          const TTYPE*         x_val,                    \
-                                          const ITYPE*         x_ind,                    \
-                                          const TTYPE*         y,                        \
-                                          TTYPE*               result,                   \
-                                          rocsparse_index_base base);                    \
-    template void host_dotci<ITYPE, TTYPE>(ITYPE                nnz,                     \
-                                           const TTYPE*         x_val,                   \
-                                           const ITYPE*         x_ind,                   \
-                                           const TTYPE*         y,                       \
-                                           TTYPE*               result,                  \
-                                           rocsparse_index_base base);
+                                          rocsparse_index_base base);
 
 #define INSTANTIATE_IJT(ITYPE, JTYPE, TTYPE)                                                   \
     template void host_csr_to_csc<ITYPE, JTYPE, TTYPE>(JTYPE                M,                 \
@@ -10237,6 +10225,20 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                     rocsparse_index_base base_C,               \
                                                     rocsparse_index_base base_D);
 
+#define INSTANTIATE_IXYT(ITYPE, XTYPE, YTYPE, TTYPE)                                  \
+    template void host_doti<ITYPE, XTYPE, YTYPE, TTYPE>(ITYPE                nnz,     \
+                                                        const XTYPE*         x_val,   \
+                                                        const ITYPE*         x_ind,   \
+                                                        const YTYPE*         y,       \
+                                                        TTYPE*               result,  \
+                                                        rocsparse_index_base base);   \
+    template void host_dotci<ITYPE, XTYPE, YTYPE, TTYPE>(ITYPE                nnz,    \
+                                                         const XTYPE*         x_val,  \
+                                                         const ITYPE*         x_ind,  \
+                                                         const YTYPE*         y,      \
+                                                         TTYPE*               result, \
+                                                         rocsparse_index_base base);
+
 #define INSTANTIATE_DIR_IJT(DIR, ITYPE, JTYPE, TTYPE)                                                \
     template void host_dense2csx<DIR, TTYPE, ITYPE, JTYPE>(JTYPE                m,                   \
                                                            JTYPE                n,                   \
@@ -10401,6 +10403,31 @@ INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int64_t, float);
 INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int64_t, double);
 INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE_DIR_IJT(rocsparse_direction_column, int64_t, int64_t, rocsparse_double_complex);
+
+INSTANTIATE_IXYT(int32_t, float, float, float);
+INSTANTIATE_IXYT(int64_t, float, float, float);
+INSTANTIATE_IXYT(int32_t, double, double, double);
+INSTANTIATE_IXYT(int64_t, double, double, double);
+INSTANTIATE_IXYT(int32_t,
+                 rocsparse_float_complex,
+                 rocsparse_float_complex,
+                 rocsparse_float_complex);
+INSTANTIATE_IXYT(int64_t,
+                 rocsparse_float_complex,
+                 rocsparse_float_complex,
+                 rocsparse_float_complex);
+INSTANTIATE_IXYT(int32_t,
+                 rocsparse_double_complex,
+                 rocsparse_double_complex,
+                 rocsparse_double_complex);
+INSTANTIATE_IXYT(int64_t,
+                 rocsparse_double_complex,
+                 rocsparse_double_complex,
+                 rocsparse_double_complex);
+INSTANTIATE_IXYT(int32_t, int8_t, int8_t, int32_t);
+INSTANTIATE_IXYT(int64_t, int8_t, int8_t, int32_t);
+INSTANTIATE_IXYT(int32_t, int8_t, int8_t, float);
+INSTANTIATE_IXYT(int64_t, int8_t, int8_t, float);
 
 INSTANTIATE_IJAXYT(int32_t, int32_t, int8_t, int8_t, int32_t, int32_t);
 INSTANTIATE_IJAXYT(int64_t, int32_t, int8_t, int8_t, int32_t, int32_t);

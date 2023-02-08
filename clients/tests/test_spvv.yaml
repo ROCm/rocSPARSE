@@ -37,7 +37,7 @@ Tests:
   function: spvv
   indextype: *i32_i64
   precision: *single_double_precisions_complex_real
-  M: [12000]
+  M: [500, 12000]
   nnz: [5, 10, 500]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
@@ -48,7 +48,7 @@ Tests:
   indextype: *i32_i64
   precision: *single_double_precisions_complex_real
   M: [15332, 22031, 31958]
-  nnz: [-1, 0, 1543, 7111, 10000]
+  nnz: [0, 1543, 7111, 10000]
   baseA: [rocsparse_index_base_one]
   transA: [rocsparse_operation_conjugate_transpose]
 
@@ -61,6 +61,67 @@ Tests:
   nnz: [23512, 84412, 311983]
   baseA: [rocsparse_index_base_zero]
   transA: [rocsparse_operation_none]
+
+- name: spvv
+  category: quick
+  function: spvv
+  indextype: *i32_i64
+  precision: *int8_int8_int32_xyt_precision
+  M: [70, 101, 228, 456]
+  nnz: [50]
+  baseA: [rocsparse_index_base_zero]
+  transA: [rocsparse_operation_none]
+
+- name: spvv
+  category: quick
+  function: spvv
+  indextype: *i32_i64
+  precision: *int8_int8_float32_xyt_precision
+  M: [70, 101, 228, 456]
+  nnz: [50]
+  baseA: [rocsparse_index_base_zero]
+  transA: [rocsparse_operation_none]
+
+- name: spvv
+  category: pre_checkin
+  function: spvv
+  indextype: *i32_i64
+  precision: *int8_int8_int32_xyt_precision
+  M: [1207, 3452, 28375, 77824]
+  nnz: [128, 500, 1100]
+  baseA: [rocsparse_index_base_zero]
+  transA: [rocsparse_operation_none]
+
+- name: spvv
+  category: pre_checkin
+  function: spvv
+  indextype: *i32_i64
+  precision: *int8_int8_float32_xyt_precision
+  M: [1207, 3452, 28375, 77824]
+  nnz: [128, 500, 1100]
+  baseA: [rocsparse_index_base_zero]
+  transA: [rocsparse_operation_none]
+
+- name: spvv
+  category: nightly
+  function: spvv
+  indextype: *i32_i64
+  precision: *int8_int8_int32_xyt_precision
+  M: [1000000, 2000000, 4000000]
+  nnz: [20000, 40000, 80000]
+  baseA: [rocsparse_index_base_zero]
+  transA: [rocsparse_operation_none]
+
+- name: spvv
+  category: nightly
+  function: spvv
+  indextype: *i32_i64
+  precision: *int8_int8_float32_xyt_precision
+  M: [1000000, 2000000, 4000000]
+  nnz: [20000, 40000, 80000]
+  baseA: [rocsparse_index_base_zero]
+  transA: [rocsparse_operation_none]
+
 
 - name: spvv_graph_test
   category: pre_checkin

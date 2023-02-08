@@ -95,7 +95,7 @@ void testing_doti(const Arguments& arg)
 
     // Initialize data on CPU
     rocsparse_seedrand();
-    rocsparse_init_index(hx_ind, nnz, 1, M);
+    rocsparse_init_index(hx_ind, nnz, base, M + base);
     rocsparse_init_alternating_sign<T>(hx_val, 1, nnz, 1);
     rocsparse_init_exact<T>(hy, 1, M, 1);
 
@@ -134,7 +134,7 @@ void testing_doti(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hdot_2, ddot_2, sizeof(T), hipMemcpyDeviceToHost));
 
         // CPU doti
-        host_doti<rocsparse_int, T>(nnz, hx_val, hx_ind, hy, hdot_gold, base);
+        host_doti<rocsparse_int, T, T, T>(nnz, hx_val, hx_ind, hy, hdot_gold, base);
 
         hdot_gold.unit_check(hdot_1);
         hdot_gold.unit_check(hdot_2);
@@ -168,7 +168,7 @@ void testing_doti(const Arguments& arg)
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
         double gflop_count = doti_gflop_count(nnz);
-        double gbyte_count = doti_gbyte_count<T>(nnz);
+        double gbyte_count = doti_gbyte_count<T, T>(nnz);
 
         double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);

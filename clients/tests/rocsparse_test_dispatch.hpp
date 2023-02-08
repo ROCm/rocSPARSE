@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -67,6 +67,16 @@ struct rocsparse_test_dispatch<rocsparse_test_dispatch_enum::ijt>
     static auto dispatch(const Arguments& arg)
     {
         return rocsparse_ijt_dispatch<TEST>(arg);
+    }
+};
+
+template <>
+struct rocsparse_test_dispatch<rocsparse_test_dispatch_enum::ixyt>
+{
+    template <template <typename...> class TEST>
+    static auto dispatch(const Arguments& arg)
+    {
+        return rocsparse_ixyt_dispatch<TEST>(arg);
     }
 };
 

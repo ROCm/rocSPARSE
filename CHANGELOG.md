@@ -5,6 +5,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 ## rocSPARSE 2.6.0
 ### Added
 - Added rocsparse_inverse_permutation
+- Added mixed precisions for SpVV
 - Added uniform int8 precision for Gather and Scatter
 ### Changed
 - Removed old deprecated rocsparse_spmv, deprecated current rocsparse_spmv_ex, and added new rocsparse_spmv routine

@@ -21009,6 +21009,32 @@ rocsparse_status rocsparse_dense_to_sparse(rocsparse_handle              handle,
 *      }
 *  \endcode
 *
+*  Uniform Precisions:
+*  \verbatim
+*  |----------------------------------------------------|
+*  |               X / Y / compute_type                 |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f32_r               |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f64_r               |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f32_c               |
+*  |----------------------------------------------------|
+*  |             rocsparse_datatype_f64_c               |
+*  |----------------------------------------------------|
+*  \endverbatim
+*
+*  Mixed precisions:
+*  \verbatim
+*  |-------------------------|--------------------------|
+*  |          X / Y          |  compute_type / result   |
+*  |-------------------------|--------------------------|
+*  | rocsparse_datatype_i8_r | rocsparse_datatype_i32_r |
+*  |-------------------------|--------------------------|
+*  | rocsparse_datatype_i8_r | rocsparse_datatype_f32_r |
+*  |-------------------------|--------------------------|
+*  \endverbatim
+*
 *  \note
 *  This function writes the required allocation size (in bytes) to \p buffer_size and
 *  returns without performing the SpVV operation, when a nullptr is passed for

@@ -25,8 +25,8 @@
 
 #include "rocsparse_arguments.hpp"
 
-template <typename I, typename T>
+template <typename I, typename X, typename Y, typename T>
 void testing_spvv_bad_arg(const Arguments& arg);
 void testing_spvv_extra(const Arguments& arg);
-template <typename I, typename T>
+template <typename I, typename X, typename Y, typename T>
 void testing_spvv(const Arguments& arg);
