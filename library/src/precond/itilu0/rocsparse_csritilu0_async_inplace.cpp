@@ -64,7 +64,7 @@ rocsparse_status rocsparse_inclusive_scan(rocsparse_handle handle, J m_, I* ptr_
 
     if(temp_alloc)
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(temp_storage_ptr, handle->stream));
     }
 
     return rocsparse_status_success;
@@ -1405,14 +1405,14 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             //
             // Free buffer.
             //
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(buffer));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(buffer, handle_->stream));
 
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse_coo2csr_template(handle_, csc_col_ind, unnz, m_, p_uptr, base_));
 
             if(p_coo_row_ind == nullptr && csc_col_ind != handle_->buffer)
             {
-                RETURN_IF_HIP_ERROR(rocsparse_hipFree(csc_col_ind));
+                RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(csc_col_ind, handle_->stream));
             }
 
             if(use_coo_format)
