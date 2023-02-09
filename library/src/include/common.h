@@ -33,11 +33,7 @@
 // clang-format off
 
 #ifndef ROCSPARSE_USE_MOVE_DPP
-#if defined(__gfx803__) || \
-    defined(__gfx900__) || \
-    defined(__gfx906__) || \
-    defined(__gfx908__) || \
-    defined(__gfx90a__)
+#if defined(__GFX8__) || defined(__GFX9__)
 #define ROCSPARSE_USE_MOVE_DPP 1
 #else
 #define ROCSPARSE_USE_MOVE_DPP 0
