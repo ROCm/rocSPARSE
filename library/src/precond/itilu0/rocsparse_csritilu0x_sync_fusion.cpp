@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -653,6 +653,10 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                     return rocsparse_status_internal_error;
                 }
             }
+
+            //
+            // No stream synchronization needed here,
+            //
             return rocsparse_status_success;
         }
     };
@@ -1143,7 +1147,9 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                     nrm_indicator_previous = nrm_indicator;
                 }
             }
+
             RETURN_IF_HIP_ERROR(on_device(p_iter, (converged) ? nmaxiter_ : (&nmaxiter), stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
             return rocsparse_status_success;
         }
     };

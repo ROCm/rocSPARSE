@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -154,9 +154,11 @@ struct rocsparse_itilu0x_convergence_info_t
 
         void* buffer = buffer_;
         buffer       = info.init(buffer);
-
-        hipMemcpyAsync(info.options, &options_, sizeof(J), hipMemcpyHostToDevice, handle_->stream);
-        hipMemcpyAsync(info.nmaxiter, &nsweeps_, sizeof(J), hipMemcpyHostToDevice, handle_->stream);
+        THROW_IF_HIP_ERROR(hipMemcpyAsync(
+            info.options, &options_, sizeof(J), hipMemcpyHostToDevice, handle_->stream));
+        THROW_IF_HIP_ERROR(hipMemcpyAsync(
+            info.nmaxiter, &nsweeps_, sizeof(J), hipMemcpyHostToDevice, handle_->stream));
+        THROW_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
 
         const bool compute_nrm_corr
             = (options_ & rocsparse_itilu0_option_compute_nrm_correction) > 0;
@@ -188,8 +190,11 @@ struct rocsparse_itilu0x_convergence_info_t
         buffer       = info.init(buffer);
 
         J options_, nsweeps_;
-        hipMemcpyAsync(&options_, info.options, sizeof(J), hipMemcpyDeviceToHost, handle_->stream);
-        hipMemcpyAsync(&nsweeps_, info.nmaxiter, sizeof(J), hipMemcpyDeviceToHost, handle_->stream);
+        THROW_IF_HIP_ERROR(hipMemcpyAsync(
+            &options_, info.options, sizeof(J), hipMemcpyDeviceToHost, handle_->stream));
+        THROW_IF_HIP_ERROR(hipMemcpyAsync(
+            &nsweeps_, info.nmaxiter, sizeof(J), hipMemcpyDeviceToHost, handle_->stream));
+        THROW_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
 
         const bool compute_nrm_corr
             = (options_ & rocsparse_itilu0_option_compute_nrm_correction) > 0;
