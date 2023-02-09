@@ -227,7 +227,6 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
                                                     //
                                                     void* buffer_)
 {
-    rocsparse_status              status;
     static constexpr unsigned int nthreads_per_block = 1024;
     J                             size               = (dir_ == rocsparse_direction_row) ? m_ : n_;
     J                             sizet              = (dir_ == rocsparse_direction_row) ? n_ : m_;
@@ -248,68 +247,58 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
         //
         // calculated csr_row_uptr_ is in the buffer.
         //
-        status = rocsparse_csxsldu_fill_kernel_dispatch<nthreads_per_block, T, I, J>(handle_,
-                                                                                     blocks,
-                                                                                     threads,
-                                                                                     udiag_,
-                                                                                     ldiag_,
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_csxsldu_fill_kernel_dispatch<nthreads_per_block, T, I, J>)(handle_,
+                                                                                  blocks,
+                                                                                  threads,
+                                                                                  udiag_,
+                                                                                  ldiag_,
 
-                                                                                     size,
-                                                                                     ptr_,
-                                                                                     ind_,
-                                                                                     val_,
-                                                                                     base_,
+                                                                                  size,
+                                                                                  ptr_,
+                                                                                  ind_,
+                                                                                  val_,
+                                                                                  base_,
 
-                                                                                     lptr,
-                                                                                     lind_,
-                                                                                     lval_,
-                                                                                     lbase_,
+                                                                                  lptr,
+                                                                                  lind_,
+                                                                                  lval_,
+                                                                                  lbase_,
 
-                                                                                     uptr,
-                                                                                     uind_,
-                                                                                     uval_,
-                                                                                     ubase_,
+                                                                                  uptr,
+                                                                                  uind_,
+                                                                                  uval_,
+                                                                                  ubase_,
 
-                                                                                     diag_);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
+                                                                                  diag_));
     }
     else
     {
 
-        status = rocsparse_csxsldu_fill_kernel_dispatch<nthreads_per_block, T, I, J>(handle_,
-                                                                                     blocks,
-                                                                                     threads,
-                                                                                     udiag_,
-                                                                                     ldiag_,
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_csxsldu_fill_kernel_dispatch<nthreads_per_block, T, I, J>)(handle_,
+                                                                                  blocks,
+                                                                                  threads,
+                                                                                  udiag_,
+                                                                                  ldiag_,
 
-                                                                                     size,
-                                                                                     ptr_,
-                                                                                     ind_,
-                                                                                     val_,
-                                                                                     base_,
+                                                                                  size,
+                                                                                  ptr_,
+                                                                                  ind_,
+                                                                                  val_,
+                                                                                  base_,
 
-                                                                                     uptr,
-                                                                                     uind_,
-                                                                                     uval_,
-                                                                                     ubase_,
+                                                                                  uptr,
+                                                                                  uind_,
+                                                                                  uval_,
+                                                                                  ubase_,
 
-                                                                                     lptr,
-                                                                                     lind_,
-                                                                                     lval_,
-                                                                                     lbase_,
+                                                                                  lptr,
+                                                                                  lind_,
+                                                                                  lval_,
+                                                                                  lbase_,
 
-                                                                                     diag_);
-
-        if(status != rocsparse_status_success)
-        {
-#ifndef NDEBUG
-            std::cerr << "rocsparse_csxsldu.cpp, line " << __LINE__ << std::endl;
-#endif
-            return status;
-        }
+                                                                                  diag_));
     }
 
     if(udir_ != dir_)
@@ -318,19 +307,26 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
         {
             if(m_ == n_)
             {
-                hipMemsetAsync(uptr_, 0, sizeof(I) * (sizet + 1), handle_->stream);
-                //	      hipMemcpyAsync(uptr_,uptr,sizeof(I) * (m_+1),hipMemcpyDeviceToDevice,handle_->stream);
+                RETURN_IF_HIP_ERROR(
+                    hipMemsetAsync(uptr_, 0, sizeof(I) * (sizet + 1), handle_->stream));
             }
             else
             {
                 if(ubase_ == rocsparse_index_base_zero)
                 {
-                    hipMemsetAsync(uptr_, 0, sizeof(I) * (sizet + 1), handle_->stream);
+                    RETURN_IF_HIP_ERROR(
+                        hipMemsetAsync(uptr_, 0, sizeof(I) * (sizet + 1), handle_->stream));
                 }
                 else
                 {
-                    std::cerr << "fixit" << std::endl;
-                    exit(1);
+                    hipLaunchKernelGGL((set_array_to_value<256>),
+                                       dim3(((sizet + 1) - 1) / 256 + 1),
+                                       dim3(256),
+                                       0,
+                                       handle_->stream,
+                                       (sizet + 1),
+                                       uptr_,
+                                       static_cast<rocsparse_int>(rocsparse_index_base_one));
                 }
             }
         }
@@ -341,15 +337,8 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
             //
             // Synchronize.
             //
-            status = rocsparse_csr2csc_buffer_size(
-                handle_, m_, n_, unnz_, uptr, uind_, rocsparse_action_numeric, &buffer_size);
-            if(status != rocsparse_status_success)
-            {
-#ifndef NDEBUG
-                std::cerr << "rocsparse_csxsldu.cpp, line " << __LINE__ << std::endl;
-#endif
-                return status;
-            }
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2csc_buffer_size(
+                handle_, m_, n_, unnz_, uptr, uind_, rocsparse_action_numeric, &buffer_size));
 
             void* buffer_conversion;
             RETURN_IF_HIP_ERROR(
@@ -367,29 +356,22 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
                 tmp_val, uval_, sizeof(T) * (unnz_), hipMemcpyDeviceToDevice, handle_->stream));
             I* tmp_uptr = uptr;
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
-            status = rocsparse_csr2csc_template(handle_,
-                                                m_,
-                                                n_,
-                                                unnz_,
-                                                tmp_val,
-                                                tmp_uptr,
-                                                tmp_ind,
-                                                uval_,
-                                                uind_,
-                                                uptr_,
-                                                rocsparse_action_numeric,
-                                                ubase_,
-                                                buffer_conversion);
-            if(status != rocsparse_status_success)
-            {
-#ifndef NDEBUG
-                std::cerr << "invalid status rocsparse_csxsldu.cpp, line " << __LINE__ << std::endl;
-#endif
-                return status;
-            }
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(buffer_conversion));
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(tmp_val));
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(tmp_ind));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2csc_template(handle_,
+                                                                 m_,
+                                                                 n_,
+                                                                 unnz_,
+                                                                 tmp_val,
+                                                                 tmp_uptr,
+                                                                 tmp_ind,
+                                                                 uval_,
+                                                                 uind_,
+                                                                 uptr_,
+                                                                 rocsparse_action_numeric,
+                                                                 ubase_,
+                                                                 buffer_conversion));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(buffer_conversion, handle_->stream));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(tmp_val, handle_->stream));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(tmp_ind, handle_->stream));
         }
     }
 
@@ -399,19 +381,26 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
         {
             if(m_ == n_)
             {
-                hipMemcpyAsync(
-                    lptr_, lptr, sizeof(I) * (m_ + 1), hipMemcpyDeviceToDevice, handle_->stream);
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                    lptr_, lptr, sizeof(I) * (m_ + 1), hipMemcpyDeviceToDevice, handle_->stream));
             }
             else
             {
                 if(lbase_ == rocsparse_index_base_zero)
                 {
-                    hipMemsetAsync(lptr_, 0, sizeof(I) * (sizet + 1), handle_->stream);
+                    RETURN_IF_HIP_ERROR(
+                        hipMemsetAsync(lptr_, 0, sizeof(I) * (sizet + 1), handle_->stream));
                 }
                 else
                 {
-                    std::cerr << "fixit" << std::endl;
-                    exit(1);
+                    hipLaunchKernelGGL((set_array_to_value<256>),
+                                       dim3(((sizet + 1) - 1) / 256 + 1),
+                                       dim3(256),
+                                       0,
+                                       handle_->stream,
+                                       (sizet + 1),
+                                       lptr_,
+                                       static_cast<rocsparse_int>(rocsparse_index_base_one));
                 }
             }
         }
@@ -424,15 +413,8 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
             //
             // Synchronize.
             //
-            status = rocsparse_csr2csc_buffer_size(
-                handle_, n_, m_, lnnz_, lptr, lind_, rocsparse_action_numeric, &buffer_size);
-            if(status != rocsparse_status_success)
-            {
-#ifndef NDEBUG
-                std::cerr << "invalid status rocsparse_csxsldu.cpp, line " << __LINE__ << std::endl;
-#endif
-                return status;
-            }
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2csc_buffer_size(
+                handle_, n_, m_, lnnz_, lptr, lind_, rocsparse_action_numeric, &buffer_size));
 
             void* buffer_conversion;
             RETURN_IF_HIP_ERROR(
@@ -452,30 +434,23 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
 
             I* tmp_lptr = lptr;
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
-            status = rocsparse_csr2csc_template(handle_,
-                                                n_,
-                                                m_,
-                                                lnnz_,
-                                                tmp_val,
-                                                tmp_lptr,
-                                                tmp_ind,
-                                                lval_,
-                                                lind_,
-                                                lptr_,
-                                                rocsparse_action_numeric,
-                                                lbase_,
-                                                buffer_conversion);
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2csc_template(handle_,
+                                                                 n_,
+                                                                 m_,
+                                                                 lnnz_,
+                                                                 tmp_val,
+                                                                 tmp_lptr,
+                                                                 tmp_ind,
+                                                                 lval_,
+                                                                 lind_,
+                                                                 lptr_,
+                                                                 rocsparse_action_numeric,
+                                                                 lbase_,
+                                                                 buffer_conversion));
 
-            if(status != rocsparse_status_success)
-            {
-#ifndef NDEBUG
-                std::cerr << "invalid status rocsparse_csxsldu.cpp, line " << __LINE__ << std::endl;
-#endif
-                return status;
-            }
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(buffer_conversion));
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(tmp_val));
-            RETURN_IF_HIP_ERROR(rocsparse_hipFree(tmp_ind));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(buffer_conversion, handle_->stream));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(tmp_val, handle_->stream));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(tmp_ind, handle_->stream));
         }
     }
 
