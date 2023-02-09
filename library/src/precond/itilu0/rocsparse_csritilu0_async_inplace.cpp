@@ -1166,6 +1166,9 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
                                                    hipMemcpyDeviceToHost,
                                                    handle_->stream));
             }
+            //
+            // No synchronization needed here.
+            //
             return rocsparse_status_success;
         }
 
@@ -1428,7 +1431,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
 
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
                 buffer__, &layout, sizeof(layout_t), hipMemcpyHostToDevice, handle_->stream));
-
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
             return rocsparse_status_success;
         }
     };
@@ -1481,61 +1484,59 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             //
             // Compute expert routine.
             //
-            rocsparse_status status;
-            const bool       compute_residual
+
+            const bool compute_residual
                 = (options_ & rocsparse_itilu0_option_compute_nrm_residual) > 0;
 
             if(compute_residual)
             {
-                status = compute_iter<BLOCKSIZE, T, I, J>::run(handle_,
-                                                               options_,
-                                                               nmaxiter_,
-                                                               tol_,
-                                                               m_,
-                                                               nnz_,
-                                                               ptr_,
-                                                               ptr_ + 1,
-                                                               p_coo_row_ind,
-                                                               ind_,
-                                                               val_,
-                                                               base_,
-                                                               p_lptr_begin,
-                                                               p_lptr_end,
-                                                               ind_,
+                RETURN_IF_ROCSPARSE_ERROR((compute_iter<BLOCKSIZE, T, I, J>::run)(handle_,
+                                                                                  options_,
+                                                                                  nmaxiter_,
+                                                                                  tol_,
+                                                                                  m_,
+                                                                                  nnz_,
+                                                                                  ptr_,
+                                                                                  ptr_ + 1,
+                                                                                  p_coo_row_ind,
+                                                                                  ind_,
+                                                                                  val_,
+                                                                                  base_,
+                                                                                  p_lptr_begin,
+                                                                                  p_lptr_end,
+                                                                                  ind_,
 
-                                                               p_uptr_begin,
-                                                               p_uptr_end,
-                                                               p_uind,
-                                                               p_uperm,
-                                                               sol_,
-                                                               p_buffer_size,
-                                                               p_buffer);
-                RETURN_IF_ROCSPARSE_ERROR(status);
+                                                                                  p_uptr_begin,
+                                                                                  p_uptr_end,
+                                                                                  p_uind,
+                                                                                  p_uperm,
+                                                                                  sol_,
+                                                                                  p_buffer_size,
+                                                                                  p_buffer));
             }
             else
             {
-                status = compute_iter<BLOCKSIZE, T, I, J>::light_run(handle_,
-                                                                     options_,
-                                                                     nmaxiter_[0],
-                                                                     m_,
-                                                                     nnz_,
-                                                                     ptr_,
-                                                                     ptr_ + 1,
-                                                                     p_coo_row_ind,
-                                                                     ind_,
-                                                                     val_,
-                                                                     base_,
-                                                                     p_lptr_begin,
-                                                                     p_lptr_end,
-                                                                     ind_,
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (compute_iter<BLOCKSIZE, T, I, J>::light_run)(handle_,
+                                                                  options_,
+                                                                  nmaxiter_[0],
+                                                                  m_,
+                                                                  nnz_,
+                                                                  ptr_,
+                                                                  ptr_ + 1,
+                                                                  p_coo_row_ind,
+                                                                  ind_,
+                                                                  val_,
+                                                                  base_,
+                                                                  p_lptr_begin,
+                                                                  p_lptr_end,
+                                                                  ind_,
 
-                                                                     p_uptr_begin,
-                                                                     p_uptr_end,
-                                                                     p_uind,
-                                                                     p_uperm,
-                                                                     sol_);
-
-                RETURN_IF_ROCSPARSE_ERROR(status);
+                                                                  p_uptr_begin,
+                                                                  p_uptr_end,
+                                                                  p_uind,
+                                                                  p_uperm,
+                                                                  sol_));
             }
             return rocsparse_status_success;
         }

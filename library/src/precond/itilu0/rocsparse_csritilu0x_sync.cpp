@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -525,7 +525,6 @@ public:
             return rocsparse_status_success;
         };
     };
-#if 1
 
     template <typename T, typename I, typename J>
     static rocsparse_status copy_unkwowns(rocsparse_handle handle_,
@@ -560,39 +559,6 @@ public:
         return rocsparse_status_success;
     }
 
-#else
-    template <typename T, typename I, typename J>
-    static rocsparse_status copy_unkwowns(rocsparse_handle handle_,
-                                          I                lnnz_,
-                                          const T*         lval0_,
-                                          T*               lval1_,
-                                          I                unnz_,
-                                          const T*         uval0_,
-                                          T*               uval1_,
-                                          J                m_,
-                                          const T*         dval0_,
-                                          T*               dval1_,
-                                          hipMemcpyKind    mode_)
-    {
-        if(hipSuccess != hipMemcpyAsync(lval1_, lval0_, sizeof(T) * lnnz_, mode_, handle_->stream))
-        {
-            return rocsparse_status_internal_error;
-        }
-
-        if(hipSuccess != hipMemcpyAsync(uval1_, uval0_, sizeof(T) * unnz_, mode_, handle_->stream))
-        {
-            return rocsparse_status_internal_error;
-        }
-        if(dval0_ != nullptr)
-        {
-            if(hipSuccess != hipMemcpyAsync(dval1_, dval0_, sizeof(T) * m_, mode_, handle_->stream))
-            {
-                return rocsparse_status_internal_error;
-            }
-        }
-        return rocsparse_status_success;
-    }
-#endif
     template <typename T, typename I, typename J>
     static rocsparse_status calculate_nrm_correction(rocsparse_handle          handle_,
                                                      J                         m_,
@@ -732,13 +698,13 @@ public:
                     //
                     // Compute norm of residual.
                     //
-                    RETURN_IF_HIP_ERROR(hipMemsetAsync(
-                        p_nrm_residual, 0, sizeof(floating_data_t<T>), handle_->stream));
+                    RETURN_IF_HIP_ERROR(
+                        hipMemsetAsync(p_nrm_residual, 0, sizeof(floating_data_t<T>), stream));
 
                     kernel_nrm_residual_dispatch<BLOCKSIZE, T, I, J>(m_,
                                                                      mean,
                                                                      handle_->wavefront_size,
-                                                                     handle_->stream,
+                                                                     stream,
                                                                      m_,
                                                                      nnz_,
                                                                      ptr_begin_,
@@ -776,7 +742,7 @@ public:
                 kernel_correction_dispatch<BLOCKSIZE, T, I, J>(m_,
                                                                mean,
                                                                handle_->wavefront_size,
-                                                               handle_->stream,
+                                                               stream,
                                                                m_,
                                                                nnz_,
                                                                ptr_begin_,
@@ -913,7 +879,7 @@ public:
                         converged    = false;
 
                         RETURN_IF_HIP_ERROR(on_device(p_iter, nmaxiter_, stream));
-
+                        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
                         return rocsparse_status_zero_pivot;
                     }
                     else
@@ -950,7 +916,7 @@ public:
             }
 
             RETURN_IF_HIP_ERROR(on_device(p_iter, (converged) ? nmaxiter_ : (&nmaxiter), stream));
-
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
             return rocsparse_status_success;
         }
     };
