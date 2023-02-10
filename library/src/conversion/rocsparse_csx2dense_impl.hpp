@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,47 +122,6 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
        || (csx_col_row_ind != nullptr && csx_val == nullptr))
     {
         return rocsparse_status_invalid_pointer;
-    }
-
-    if(csx_col_row_ind == nullptr && csx_val == nullptr)
-    {
-        rocsparse_int start = 0;
-        rocsparse_int end   = 0;
-
-        if(is_row_oriented)
-        {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&end,
-                                               &csx_row_col_ptr[m],
-                                               sizeof(rocsparse_int),
-                                               hipMemcpyDeviceToHost,
-                                               handle->stream));
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&start,
-                                               &csx_row_col_ptr[0],
-                                               sizeof(rocsparse_int),
-                                               hipMemcpyDeviceToHost,
-                                               handle->stream));
-        }
-        else
-        {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&end,
-                                               &csx_row_col_ptr[n],
-                                               sizeof(rocsparse_int),
-                                               hipMemcpyDeviceToHost,
-                                               handle->stream));
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&start,
-                                               &csx_row_col_ptr[0],
-                                               sizeof(rocsparse_int),
-                                               hipMemcpyDeviceToHost,
-                                               handle->stream));
-        }
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-
-        rocsparse_int nnz = (end - start);
-
-        if(nnz != 0)
-        {
-            return rocsparse_status_invalid_pointer;
-        }
     }
 
     //

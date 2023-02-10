@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -173,7 +173,7 @@ void testing_hyb2csr(const Arguments& arg)
     // Obtain required buffer size
     size_t buffer_size;
     CHECK_ROCSPARSE_ERROR(
-        rocsparse_hyb2csr_buffer_size(handle, descr, hyb, dcsr_row_ptr, &buffer_size));
+        testing::rocsparse_hyb2csr_buffer_size(handle, descr, hyb, dcsr_row_ptr, &buffer_size));
 
     void* dbuffer;
     CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));

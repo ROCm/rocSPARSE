@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -462,25 +462,6 @@ rocsparse_status rocsparse_gebsr2csr_template(rocsparse_handle          handle,
        || (csr_val != nullptr && csr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
-    }
-
-    if(bsr_val == nullptr && bsr_col_ind == nullptr)
-    {
-        rocsparse_int start = 0;
-        rocsparse_int end   = 0;
-
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-
-        rocsparse_int nnzb = (end - start);
-
-        if(nnzb != 0)
-        {
-            return rocsparse_status_invalid_pointer;
-        }
     }
 
     // Check the description type of the matrix.

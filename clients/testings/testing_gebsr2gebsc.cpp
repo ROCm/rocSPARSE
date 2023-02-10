@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -195,16 +195,16 @@ void testing_gebsr2gebsc(const Arguments& arg)
     // Obtain required buffer size (from host)
     //
     size_t buffer_size;
-    CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                               dbsr.mb,
-                                                               dbsr.nb,
-                                                               dbsr.nnzb,
-                                                               dbsr.val,
-                                                               dbsr.ptr,
-                                                               dbsr.ind,
-                                                               dbsr.row_block_dim,
-                                                               dbsr.col_block_dim,
-                                                               &buffer_size));
+    CHECK_ROCSPARSE_ERROR(testing::rocsparse_gebsr2gebsc_buffer_size<T>(handle,
+                                                                        dbsr.mb,
+                                                                        dbsr.nb,
+                                                                        dbsr.nnzb,
+                                                                        dbsr.val,
+                                                                        dbsr.ptr,
+                                                                        dbsr.ind,
+                                                                        dbsr.row_block_dim,
+                                                                        dbsr.col_block_dim,
+                                                                        &buffer_size));
 
     //
     // Allocate the buffer size.

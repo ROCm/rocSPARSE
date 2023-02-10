@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 
 #include "rocsparse_coo2dense.hpp"
 
+#include "common.h"
 #include "coo2dense_device.h"
 
 #include <rocprim/rocprim.hpp>
@@ -103,12 +104,26 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle,
     // Stream
     hipStream_t stream = handle->stream;
 
-    I mn = order == rocsparse_order_column ? m : n;
-    I nm = order == rocsparse_order_column ? n : m;
+    // Note: hipMemset2DAsync does not seem to be supported by hipgraph but should be in the future.
+    // Once hipgraph supports hipMemset2DAsync then the kernel memset2d_kernel can be replaced
+    // with the hipMemset2DAsync call below.
+    //
+    // I mn = order == rocsparse_order_column ? m : n;
+    // I nm = order == rocsparse_order_column ? n : m;
+    // RETURN_IF_HIP_ERROR(hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, stream));
 
     // Set memory to zero.
-    RETURN_IF_HIP_ERROR(
-        hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, handle->stream));
+    hipLaunchKernelGGL((memset2d_kernel<512>),
+                       dim3((m * n - 1) / 512 + 1),
+                       dim3(512),
+                       0,
+                       stream,
+                       m,
+                       n,
+                       static_cast<T>(0),
+                       A,
+                       lda,
+                       order);
 
     if(nnz > 0)
     {
