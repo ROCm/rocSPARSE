@@ -2,7 +2,7 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## rocSPARSE 2.6.0
+## rocSPARSE 2.5.2
 ### Added
 - Added rocsparse_inverse_permutation
 - Added mixed precisions for SpVV
@@ -15,6 +15,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 ### Improved
 - Optimization to doti routine
 - Fixed a bug in csrsm and bsrsm
+- Fixed a bug in rocsparse-bench, where SpMV algorithm was not taken into account in CSR format
 ### Known Issues
 - none
 

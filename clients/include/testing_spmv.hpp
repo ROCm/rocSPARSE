@@ -748,13 +748,15 @@ public:
             rocsparse_spmv(PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_buffer_size)));
         CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
+        // Run preprocess
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_spmv(PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_preprocess)));
+
+        // Pointer mode host
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
         if(arg.unit_check)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_spmv(
-                PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_preprocess)));
-
-            // Pointer mode host
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
             CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmv(
                 PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_compute)));
 
@@ -790,8 +792,6 @@ public:
         {
             const int number_cold_calls = 2;
             const int number_hot_calls  = arg.iters;
-
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
             // Warm up
             for(int iter = 0; iter < number_cold_calls; ++iter)
