@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -68,8 +68,9 @@ ROCSPARSE_DEVICE_ILF void prune_dense2csr_nnz_device(rocsparse_int m,
             {
                 for(rocsparse_int j = 0; j < 4; ++j)
                 {
-                    if(rocsparse_abs(A[ind + k * DIM_X + (col + j) * lda]) > threshold)
-                        res_A[k] += 1;
+                    res_A[k] += (rocsparse_abs(A[ind + k * DIM_X + (col + j) * lda]) > threshold)
+                                    ? 1
+                                    : 0;
                 }
             }
         }

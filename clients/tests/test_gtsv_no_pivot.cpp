@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,4 +26,4 @@
 
 #include "testing_gtsv_no_pivot.hpp"
 
-TEST_ROUTINE(gtsv_no_pivot, precond, arg.M, arg.N, arg.denseld, arg.matrix);
+TEST_ROUTINE(gtsv_no_pivot, precond, arg.M, arg.N, arg.denseld, arg.matrix, arg.graph_test);

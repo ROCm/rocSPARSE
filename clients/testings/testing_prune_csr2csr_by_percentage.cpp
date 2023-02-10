@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,6 +94,32 @@ void testing_prune_csr2csr_by_percentage_bad_arg(const Arguments& arg)
                             rocsparse_status_not_implemented);
     EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(PARAMS),
                             rocsparse_status_not_implemented);
+
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_set_mat_storage_mode(csr_descr_A, rocsparse_storage_mode_sorted));
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_set_mat_storage_mode(csr_descr_C, rocsparse_storage_mode_sorted));
+
+    // Check percentage being less than 0
+    percentage = -10;
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_prune_csr2csr_by_percentage_buffer_size<T>(PARAMS_BUFFER_SIZE),
+        rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(PARAMS_NNZ),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(PARAMS),
+                            rocsparse_status_invalid_size);
+
+    // Check percentage being greater than 100
+    percentage = 110;
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_prune_csr2csr_by_percentage_buffer_size<T>(PARAMS_BUFFER_SIZE),
+        rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(PARAMS_NNZ),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(PARAMS),
+                            rocsparse_status_invalid_size);
+
 #undef PARAMS
 #undef PARAMS_NNZ
 #undef PARAMS_BUFFER_SIZE
@@ -120,34 +146,6 @@ void testing_prune_csr2csr_by_percentage(const Arguments& arg)
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr_A, csr_base_A));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr_C, csr_base_C));
-
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || percentage < static_cast<T>(0) || percentage > static_cast<T>(100))
-    {
-        static const size_t safe_size = 100;
-
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                     M,
-                                                     N,
-                                                     safe_size,
-                                                     csr_descr_A,
-                                                     nullptr,
-                                                     nullptr,
-                                                     nullptr,
-                                                     percentage,
-                                                     csr_descr_C,
-                                                     nullptr,
-                                                     nullptr,
-                                                     nullptr,
-                                                     info,
-                                                     nullptr),
-            (M < 0 || N < 0 || percentage < static_cast<T>(0) || percentage > static_cast<T>(100))
-                ? rocsparse_status_invalid_size
-                : rocsparse_status_success);
-
-        return;
-    }
 
     // Allocate host memory for output CSR matrix
     host_vector<rocsparse_int> h_csr_row_ptr_A;
@@ -226,21 +224,21 @@ void testing_prune_csr2csr_by_percentage(const Arguments& arg)
                                                                        info,
                                                                        d_temp_buffer));
 
+    host_vector<rocsparse_int> h_nnz_total_copied_from_device(1);
+    h_nnz_total_copied_from_device.transfer_from(d_nnz_total_dev_host_ptr);
+    // CHECK_HIP_ERROR(hipMemcpy(h_nnz_total_copied_from_device,
+    //                           d_nnz_total_dev_host_ptr,
+    //                           sizeof(rocsparse_int),
+    //                           hipMemcpyDeviceToHost));
+
+    h_nnz_total_dev_host_ptr.unit_check(h_nnz_total_copied_from_device);
+
     device_vector<rocsparse_int> d_csr_col_ind_C(h_nnz_total_dev_host_ptr[0]);
     device_vector<T>             d_csr_val_C(h_nnz_total_dev_host_ptr[0]);
 
     if(arg.unit_check)
     {
-        host_vector<rocsparse_int> h_nnz_total_copied_from_device(1);
-        CHECK_HIP_ERROR(hipMemcpy(h_nnz_total_copied_from_device,
-                                  d_nnz_total_dev_host_ptr,
-                                  sizeof(rocsparse_int),
-                                  hipMemcpyDeviceToHost));
-
-        h_nnz_total_dev_host_ptr.unit_check(h_nnz_total_copied_from_device);
-
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_prune_csr2csr_by_percentage<T>(handle,
                                                                                 M,
                                                                                 N,

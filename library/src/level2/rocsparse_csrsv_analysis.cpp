@@ -182,7 +182,7 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)&info->row_map, sizeof(J) * m, stream));
 
     // Initialize zero pivot
-    J max = std::numeric_limits<J>::max();
+    static const J max = std::numeric_limits<J>::max();
     RETURN_IF_HIP_ERROR(
         hipMemcpyAsync(*zero_pivot, &max, sizeof(J), hipMemcpyHostToDevice, stream));
 
