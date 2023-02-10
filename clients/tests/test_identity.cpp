@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,4 +26,5 @@
 
 #include "testing_identity.hpp"
 
-TEST_ROUTINE_WITH_CONFIG(identity, conversion, rocsparse_test_config_real_only, arg.N);
+TEST_ROUTINE_WITH_CONFIG(
+    identity, conversion, rocsparse_test_config_real_only, arg.N, arg.graph_test);

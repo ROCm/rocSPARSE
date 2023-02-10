@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -957,4 +957,21 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     {
         atomicMax(max_nnz, shared[0]);
     }
+}
+
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+void memset2d_kernel(I m, I n, T value, T* __restrict__ data, I ld, rocsparse_order order)
+{
+    I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+    if(gid >= m * n)
+    {
+        return;
+    }
+
+    I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
+    I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
+
+    data[lid + ld * wid] = value;
 }

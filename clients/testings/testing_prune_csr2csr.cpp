@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,9 +97,10 @@ void testing_prune_csr2csr(const Arguments& arg)
     rocsparse_matrix_factory<T> matrix_factory(arg);
     rocsparse_int               M          = arg.M;
     rocsparse_int               N          = arg.N;
-    T                           threshold  = static_cast<T>(arg.threshold);
     rocsparse_index_base        csr_base_A = arg.baseA;
     rocsparse_index_base        csr_base_C = arg.baseB;
+
+    host_scalar<T> h_threshold(arg.threshold);
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
@@ -109,31 +110,6 @@ void testing_prune_csr2csr(const Arguments& arg)
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr_A, csr_base_A));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr_C, csr_base_C));
-
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                           M,
-                                                           N,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           nullptr,
-                                                           nullptr,
-                                                           nullptr,
-                                                           nullptr,
-                                                           csr_descr_C,
-                                                           nullptr,
-                                                           nullptr,
-                                                           nullptr,
-                                                           nullptr),
-                                (M < 0 || N < 0) ? rocsparse_status_invalid_size
-                                                 : rocsparse_status_success);
-
-        return;
-    }
 
     // Allocate host memory for output CSR matrix
     host_vector<rocsparse_int> h_csr_row_ptr_A;
@@ -152,6 +128,7 @@ void testing_prune_csr2csr(const Arguments& arg)
     device_vector<rocsparse_int> d_csr_row_ptr_A(M + 1);
     device_vector<rocsparse_int> d_csr_col_ind_A(nnz_A);
     device_vector<T>             d_csr_val_A(nnz_A);
+    device_scalar<T>             d_threshold(h_threshold);
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
@@ -169,7 +146,7 @@ void testing_prune_csr2csr(const Arguments& arg)
                                                                  d_csr_val_A,
                                                                  d_csr_row_ptr_A,
                                                                  d_csr_col_ind_A,
-                                                                 &threshold,
+                                                                 h_threshold,
                                                                  csr_descr_C,
                                                                  nullptr,
                                                                  d_csr_row_ptr_C,
@@ -178,11 +155,6 @@ void testing_prune_csr2csr(const Arguments& arg)
 
     T* d_temp_buffer = nullptr;
     CHECK_HIP_ERROR(rocsparse_hipMalloc(&d_temp_buffer, buffer_size));
-
-    T* d_threshold = nullptr;
-    CHECK_HIP_ERROR(rocsparse_hipMalloc(&d_threshold, sizeof(T)));
-
-    CHECK_HIP_ERROR(hipMemcpy(d_threshold, &threshold, sizeof(T), hipMemcpyHostToDevice));
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
     CHECK_ROCSPARSE_ERROR(rocsparse_prune_csr2csr_nnz<T>(handle,
@@ -193,7 +165,7 @@ void testing_prune_csr2csr(const Arguments& arg)
                                                          d_csr_val_A,
                                                          d_csr_row_ptr_A,
                                                          d_csr_col_ind_A,
-                                                         &threshold,
+                                                         h_threshold,
                                                          csr_descr_C,
                                                          d_csr_row_ptr_C,
                                                          h_nnz_total_dev_host_ptr,
@@ -214,19 +186,19 @@ void testing_prune_csr2csr(const Arguments& arg)
                                                          d_nnz_total_dev_host_ptr,
                                                          d_temp_buffer));
 
+    host_vector<rocsparse_int> h_nnz_total_copied_from_device(1);
+    CHECK_HIP_ERROR(hipMemcpy(h_nnz_total_copied_from_device,
+                              d_nnz_total_dev_host_ptr,
+                              sizeof(rocsparse_int),
+                              hipMemcpyDeviceToHost));
+
+    h_nnz_total_dev_host_ptr.unit_check(h_nnz_total_copied_from_device);
+
     device_vector<rocsparse_int> d_csr_col_ind_C(h_nnz_total_dev_host_ptr[0]);
     device_vector<T>             d_csr_val_C(h_nnz_total_dev_host_ptr[0]);
 
     if(arg.unit_check)
     {
-        host_vector<rocsparse_int> h_nnz_total_copied_from_device(1);
-        CHECK_HIP_ERROR(hipMemcpy(h_nnz_total_copied_from_device,
-                                  d_nnz_total_dev_host_ptr,
-                                  sizeof(rocsparse_int),
-                                  hipMemcpyDeviceToHost));
-
-        h_nnz_total_dev_host_ptr.unit_check(h_nnz_total_copied_from_device);
-
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_prune_csr2csr<T>(handle,
@@ -237,7 +209,7 @@ void testing_prune_csr2csr(const Arguments& arg)
                                                                   d_csr_val_A,
                                                                   d_csr_row_ptr_A,
                                                                   d_csr_col_ind_A,
-                                                                  &threshold,
+                                                                  h_threshold,
                                                                   csr_descr_C,
                                                                   d_csr_val_C,
                                                                   d_csr_row_ptr_C,
@@ -280,7 +252,7 @@ void testing_prune_csr2csr(const Arguments& arg)
                               h_csr_val_C_cpu,
                               csr_base_A,
                               csr_base_C,
-                              threshold);
+                              *h_threshold);
 
         h_nnz_C_cpu.unit_check(h_nnz_total_dev_host_ptr);
         h_csr_row_ptr_C_cpu.unit_check(h_csr_row_ptr_C);
@@ -306,7 +278,7 @@ void testing_prune_csr2csr(const Arguments& arg)
                                                              d_csr_val_A,
                                                              d_csr_row_ptr_A,
                                                              d_csr_col_ind_A,
-                                                             &threshold,
+                                                             h_threshold,
                                                              csr_descr_C,
                                                              d_csr_val_C,
                                                              d_csr_row_ptr_C,
@@ -327,7 +299,7 @@ void testing_prune_csr2csr(const Arguments& arg)
                                                              d_csr_val_A,
                                                              d_csr_row_ptr_A,
                                                              d_csr_col_ind_A,
-                                                             &threshold,
+                                                             h_threshold,
                                                              csr_descr_C,
                                                              d_csr_val_C,
                                                              d_csr_row_ptr_C,
@@ -349,7 +321,7 @@ void testing_prune_csr2csr(const Arguments& arg)
                             "nnz_C",
                             h_nnz_total_dev_host_ptr[0],
                             "threshold",
-                            threshold,
+                            *h_threshold,
                             s_timing_info_bandwidth,
                             gpu_gbyte,
                             s_timing_info_time,
@@ -357,7 +329,6 @@ void testing_prune_csr2csr(const Arguments& arg)
     }
 
     CHECK_HIP_ERROR(rocsparse_hipFree(d_temp_buffer));
-    CHECK_HIP_ERROR(rocsparse_hipFree(d_threshold));
 }
 
 #define INSTANTIATE(TYPE)                                                    \

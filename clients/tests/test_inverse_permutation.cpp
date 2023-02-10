@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,7 @@
 
 #include "test.hpp"
 
-#include "testing_bsrsm.hpp"
+#include "testing_inverse_permutation.hpp"
 
-TEST_ROUTINE(bsrsm,
-             level3,
-             arg.M,
-             arg.K,
-             arg.alpha,
-             arg.alphai,
-             arg.direction,
-             arg.block_dim,
-             arg.transA,
-             arg.transB,
-             arg.diag,
-             arg.uplo,
-             arg.apol,
-             arg.spol,
-             arg.baseA,
-             arg.matrix,
-             arg.graph_test);
+TEST_ROUTINE_WITH_CONFIG(
+    inverse_permutation, conversion, rocsparse_test_config_real_only, arg.N, arg.graph_test);

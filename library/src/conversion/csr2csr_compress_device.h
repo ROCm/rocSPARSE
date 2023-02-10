@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,27 +113,6 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
         }
 
         gid += BLOCK_SIZE;
-    }
-}
-
-template <rocsparse_int BLOCK_SIZE>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void fill_row_ptr_device(rocsparse_int        m,
-                             rocsparse_index_base idx_base_C,
-                             rocsparse_int* __restrict__ csr_row_ptr_C)
-{
-    rocsparse_int tid = hipThreadIdx_x + hipBlockIdx_x * BLOCK_SIZE;
-
-    if(tid >= m)
-    {
-        return;
-    }
-
-    csr_row_ptr_C[tid + 1] = idx_base_C;
-
-    if(tid == 0)
-    {
-        csr_row_ptr_C[0] = idx_base_C;
     }
 }
 

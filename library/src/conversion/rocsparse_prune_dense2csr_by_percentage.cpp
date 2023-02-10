@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -201,25 +201,16 @@ rocsparse_status
     {
         if(nnz_total_dev_host_ptr != nullptr && csr_row_ptr != nullptr)
         {
-            rocsparse_pointer_mode mode;
-            rocsparse_status       status = rocsparse_get_pointer_mode(handle, &mode);
-            if(rocsparse_status_success != status)
-            {
-                return status;
-            }
-
-            constexpr rocsparse_int block_size = 1024;
-            rocsparse_int           grid_size  = (m + block_size - 1) / block_size;
-            hipLaunchKernelGGL((fill_row_ptr_device<block_size>),
-                               dim3(grid_size),
-                               dim3(block_size),
+            hipLaunchKernelGGL((set_array_to_value<256>),
+                               dim3(m / 256 + 1),
+                               dim3(256),
                                0,
                                stream,
-                               m,
-                               descr->base,
-                               csr_row_ptr);
+                               (m + 1),
+                               csr_row_ptr,
+                               static_cast<rocsparse_int>(descr->base));
 
-            if(rocsparse_pointer_mode_device == mode)
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
                 RETURN_IF_HIP_ERROR(hipMemsetAsync(
                     nnz_total_dev_host_ptr, 0, sizeof(rocsparse_int), handle->stream));
@@ -290,7 +281,7 @@ rocsparse_status
 
     // perform sort on first half of output array and store result in second half of output array
     rocprim::radix_sort_keys(
-        temp_storage_ptr, temp_storage_size_bytes, output, (output + nnz_A), nnz_A);
+        temp_storage_ptr, temp_storage_size_bytes_sort, output, (output + nnz_A), nnz_A);
 
     const T* d_threshold = &output[nnz_A + pos];
 
@@ -343,10 +334,11 @@ rocsparse_status
     rocsparse_int first_value = descr->base;
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
         csr_row_ptr, &first_value, sizeof(rocsparse_int), hipMemcpyHostToDevice, handle->stream));
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
     // Perform actual inclusive sum
     RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(temp_storage_ptr,
-                                                temp_storage_size_bytes,
+                                                temp_storage_size_bytes_scan,
                                                 csr_row_ptr,
                                                 csr_row_ptr,
                                                 m + 1,
@@ -361,11 +353,9 @@ rocsparse_status
     // Extract nnz_total_dev_host_ptr
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        dim3 grid(1);
-        dim3 threads(1);
         hipLaunchKernelGGL(nnz_total_device_kernel,
-                           grid,
-                           threads,
+                           dim3(1),
+                           dim3(1),
                            0,
                            stream,
                            m,
@@ -374,14 +364,14 @@ rocsparse_status
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(nnz_total_dev_host_ptr,
-                                           &csr_row_ptr[m],
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyDeviceToHost,
-                                           handle->stream));
+        rocsparse_int start, end;
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &start, &csr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &end, &csr_row_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-        *nnz_total_dev_host_ptr -= descr->base;
+        *nnz_total_dev_host_ptr = end - start;
     }
 
     return rocsparse_status_success;

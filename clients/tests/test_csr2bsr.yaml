@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,18 @@ Tests:
 - name: csr2bsr
   category: quick
   function: csr2bsr
+  precision: *double_only_precisions
+  M: [325]
+  N: [435]
+  block_dim: [6]
+  baseA: [rocsparse_index_base_zero]
+  baseB: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row]
+  matrix: [rocsparse_matrix_random]
+
+- name: csr2bsr
+  category: quick
+  function: csr2bsr
   precision: *single_double_precisions_complex_real
   M: [325]
   N: [435]
@@ -49,7 +61,7 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [0, 1, 10, 325, 1107]
   N: [0, 1, 33, 435, 1089]
-  block_dim: [0, 1, 2, 4, 5, 6, 8, 37]
+  block_dim: [1, 2, 4, 5, 6, 8, 37]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_one]
   direction: [rocsparse_direction_row, rocsparse_direction_column]

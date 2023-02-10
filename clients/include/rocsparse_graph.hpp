@@ -221,6 +221,13 @@ namespace testing
     TESTING_COMPUTE_TEMPLATE(gtsv_interleaved_batch)
     TESTING_COMPUTE_TEMPLATE(gpsv_interleaved_batch_buffer_size)
     TESTING_COMPUTE_TEMPLATE(gpsv_interleaved_batch)
+
+    /*
+    * ===========================================================================
+    *    conversion SPARSE
+    * ===========================================================================
+    */
+
     TESTING_COMPUTE_TEMPLATE(nnz)
     TESTING_COMPUTE_TEMPLATE(dense2csr)
     TESTING_COMPUTE_TEMPLATE(prune_dense2csr_buffer_size)

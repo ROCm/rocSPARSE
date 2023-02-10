@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,7 +142,7 @@ void testing_csr2csc(const Arguments& arg)
 
     // Obtain required buffer size
     size_t buffer_size;
-    CHECK_ROCSPARSE_ERROR(rocsparse_csr2csc_buffer_size(
+    CHECK_ROCSPARSE_ERROR(testing::rocsparse_csr2csc_buffer_size(
         handle, M, N, nnz, dcsr_row_ptr, dcsr_col_ind, action, &buffer_size));
 
     void* dbuffer;

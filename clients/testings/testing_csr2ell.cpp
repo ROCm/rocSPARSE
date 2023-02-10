@@ -80,6 +80,9 @@ void testing_csr2ell(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
+    // Grab stream used by handle
+    hipStream_t stream = handle.get_stream();
+
     // Create matrix descriptor for CSR matrix
     rocsparse_local_mat_descr descrA;
 
@@ -117,6 +120,7 @@ void testing_csr2ell(const Arguments& arg)
         EXPECT_ROCSPARSE_STATUS(
             rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width),
             (M < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
+        CHECK_HIP_ERROR(hipStreamSynchronize(stream));
         EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
                                                      M,
                                                      descrA,

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,44 +26,40 @@ include: rocsparse_common.yaml
 include: known_bugs.yaml
 
 Tests:
-- name: csr2dense_bad_arg
+- name: inverse_permutation_bad_arg
   category: pre_checkin
-  function: csr2dense_bad_arg
-  precision: *single_double_precisions_complex_real
+  function: inverse_permutation_bad_arg
+  precision: *single_precision
 
-- name: csr2dense
+- name: inverse_permutation
   category: quick
-  function: csr2dense
-  precision: *single_double_precisions_complex_real
-  M: [0, 3, 8, 13, 64, 256]
-  N: [0, 3, 8, 13, 64, 256]
-  denseld: [-8, 64, 512]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  function: inverse_permutation
+  precision: *single_precision
+  M: 1
+  N: [33, 242, 623, 1000]
+  baseA: [rocsparse_index_base_zero,rocsparse_index_base_one]
 
-- name: csr2dense
+- name: inverse_permutation
   category: pre_checkin
-  function: csr2dense
-  precision: *single_double_precisions_complex_real
-  M: [-1, 0, 531, 1000]
-  N: [-3, 0, 241, 1000]
-  denseld: [100, 1000, 2000]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  function: inverse_permutation
+  precision: *single_precision
+  M: 1
+  N: [0, 1543, 7111, 10000]
+  baseA: [rocsparse_index_base_zero,rocsparse_index_base_one]
 
-- name: csr2dense
+- name: inverse_permutation
   category: pre_checkin
-  function: csr2dense
-  precision: *single_double_precisions_complex_real
-  M: [-1, 0, 531, 1000]
-  N: [-3, 0, 241, 1000]
-  denseld: [100, 1000, 2000]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  function: inverse_permutation
+  precision: *single_precision
+  M: 1
+  N: [0, 1543, 7111, 10000]
+  baseA: [rocsparse_index_base_zero,rocsparse_index_base_one]
   graph_test: true
 
-- name: csr2dense
+- name: inverse_permutation
   category: nightly
-  function: csr2dense
-  precision: *single_double_precisions_complex_real
-  M: [2000, 4000, 8000]
-  N: [2000, 4000]
-  denseld: [ 8000 ]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  function: inverse_permutation
+  precision: *single_precision
+  M: 1
+  N: [23512, 184412, 711983, 3452387, 9482640]
+  baseA: [rocsparse_index_base_zero,rocsparse_index_base_one]
