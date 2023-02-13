@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,14 @@
 
 #include <hip/hip_runtime.h>
 
-template <unsigned int BLOCKSIZE, typename T>
+template <unsigned int BLOCKSIZE, typename I, typename J, typename T>
 ROCSPARSE_KERNEL(BLOCKSIZE)
-void csr2csc_permute_kernel(rocsparse_int        nnz,
-                            const rocsparse_int* in1,
-                            const T*             in2,
-                            const rocsparse_int* map,
-                            rocsparse_int*       out1,
-                            T*                   out2)
+void csr2csc_permute_kernel(I nnz,
+                            const J* __restrict__ in1,
+                            const T* __restrict__ in2,
+                            const I* __restrict__ map,
+                            J* __restrict__ out1,
+                            T* __restrict__ out2)
 {
     rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -42,7 +42,7 @@ void csr2csc_permute_kernel(rocsparse_int        nnz,
         return;
     }
 
-    rocsparse_int idx = map[gid];
+    I idx = map[gid];
 
     out1[gid] = in1[idx];
     out2[gid] = in2[idx];
