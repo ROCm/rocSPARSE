@@ -20,7 +20,7 @@ beautifulsoup4==4.11.1
     # via pydata-sphinx-theme
 breathe==4.31.0
     # via -r docs/source/requirements.in
-certifi==2022.6.15
+certifi==2022.12.7
     # via requests
 charset-normalizer==2.1.0
     # via requests
