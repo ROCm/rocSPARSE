@@ -19,7 +19,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 ### Known Issues
 - none
 
-## rocSPARSE 2.5.0 for ROCm 5.5.0
+## rocSPARSE 2.5.1 for ROCm 5.5.0
 ### Added
 - Added bsrgemm and spgemm for BSR format
 - Added bsrgeam
