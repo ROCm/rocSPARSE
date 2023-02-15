@@ -196,7 +196,6 @@ Tests:
 
 - name: csrsv_file
   category: nightly
-  hardware: [gfx900, gfx906, gfx908, gfx90a, gfx1030]
   function: csrsv
   precision: *single_double_precisions
   M: 1
