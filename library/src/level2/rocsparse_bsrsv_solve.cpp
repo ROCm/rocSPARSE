@@ -366,7 +366,7 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
 
     // done array
     int* done_array = reinterpret_cast<int*>(ptr);
-    ptr += sizeof(int) * ((mb - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(int) * mb - 1) / 256 + 1) * 256;
 
     // Initialize buffers
     RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * mb, stream));

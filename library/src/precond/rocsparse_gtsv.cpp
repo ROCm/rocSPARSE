@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -110,21 +110,21 @@ rocsparse_status rocsparse_gtsv_buffer_size_template(rocsparse_handle handle,
 
     *buffer_size = 0;
 
-    *buffer_size += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256; // dl_pad
-    *buffer_size += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256; // d_pad
-    *buffer_size += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256; // du_pad
-    *buffer_size += sizeof(T) * ((m_pad * n - 1) / 256 + 1) * 256; // rhs_pad
-    *buffer_size += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256; // w_pad
-    *buffer_size += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256; // v_pad
-    *buffer_size += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256; // w2_pad
-    *buffer_size += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256; // v2_pad
-    *buffer_size += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256; // mt_pad
+    *buffer_size += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256; // dl_pad
+    *buffer_size += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256; // d_pad
+    *buffer_size += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256; // du_pad
+    *buffer_size += ((sizeof(T) * m_pad * n - 1) / 256 + 1) * 256; // rhs_pad
+    *buffer_size += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256; // w_pad
+    *buffer_size += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256; // v_pad
+    *buffer_size += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256; // w2_pad
+    *buffer_size += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256; // v2_pad
+    *buffer_size += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256; // mt_pad
 
-    *buffer_size += sizeof(T) * ((2 * gridsize * n - 1) / 256 + 1) * 256; // rhs_scratch
-    *buffer_size += sizeof(T) * ((2 * gridsize - 1) / 256 + 1) * 256; // w_scratch
-    *buffer_size += sizeof(T) * ((2 * gridsize - 1) / 256 + 1) * 256; // v_scratch
+    *buffer_size += ((sizeof(T) * 2 * gridsize * n - 1) / 256 + 1) * 256; // rhs_scratch
+    *buffer_size += ((sizeof(T) * 2 * gridsize - 1) / 256 + 1) * 256; // w_scratch
+    *buffer_size += ((sizeof(T) * 2 * gridsize - 1) / 256 + 1) * 256; // v_scratch
 
-    *buffer_size += sizeof(rocsparse_int) * ((m_pad - 1) / 256 + 1) * 256; // pivot_pad
+    *buffer_size += ((sizeof(rocsparse_int) * m_pad - 1) / 256 + 1) * 256; // pivot_pad
 
     return rocsparse_status_success;
 }
@@ -144,33 +144,33 @@ rocsparse_status rocsparse_gtsv_spike_solver_template(rocsparse_handle handle,
 {
     char* ptr    = reinterpret_cast<char*>(temp_buffer);
     T*    dl_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256;
     T* d_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256;
     T* du_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256;
     T* rhs_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad * n - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m_pad * n - 1) / 256 + 1) * 256;
     T* w_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256;
     T* v_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256;
     T* w2_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256;
     T* v2_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256;
     T* mt_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m_pad - 1) / 256 + 1) * 256;
 
     T* rhs_scratch = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((2 * gridsize * n - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * 2 * gridsize * n - 1) / 256 + 1) * 256;
     T* w_scratch = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((2 * gridsize - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * 2 * gridsize - 1) / 256 + 1) * 256;
     T* v_scratch = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((2 * gridsize - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * 2 * gridsize - 1) / 256 + 1) * 256;
 
     rocsparse_int* pivot_pad = reinterpret_cast<rocsparse_int*>(ptr);
-    //    ptr += sizeof(rocsparse_int) * ((m_pad - 1) / 256 + 1) * 256;
+    //    ptr += ((sizeof(rocsparse_int) * m_pad - 1) / 256 + 1) * 256;
 
     hipLaunchKernelGGL((gtsv_transpose_and_pad_array_shared_kernel<BLOCKSIZE, BLOCKDIM>),
                        dim3((m_pad - 1) / BLOCKSIZE + 1),

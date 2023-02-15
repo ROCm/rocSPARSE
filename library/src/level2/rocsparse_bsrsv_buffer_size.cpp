@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,11 +70,11 @@
         if(trans == rocsparse_operation_transpose)                                                 \
         {                                                                                          \
             /* Remove additional CSR buffer */                                                     \
-            *buffer_size -= sizeof(TYPE) * ((nnzb - 1) / 256 + 1) * 256;                           \
+            *buffer_size -= ((sizeof(TYPE) * nnzb - 1) / 256 + 1) * 256;                           \
                                                                                                    \
             /* Add BSR buffer instead */                                                           \
             *buffer_size                                                                           \
-                += sizeof(TYPE) * ((size_t(nnzb) * block_dim * block_dim - 1) / 256 + 1) * 256;    \
+                += ((sizeof(TYPE) * size_t(nnzb) * block_dim * block_dim - 1) / 256 + 1) * 256;    \
         }                                                                                          \
                                                                                                    \
         return stat;                                                                               \
