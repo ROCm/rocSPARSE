@@ -71,7 +71,9 @@ __device__ __forceinline__ double rocsparse_ldg(const double* ptr) { return __ld
 __device__ __forceinline__ rocsparse_float_complex rocsparse_ldg(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__ldg((const float*)ptr), __ldg((const float*)ptr + 1)); }
 __device__ __forceinline__ rocsparse_double_complex rocsparse_ldg(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__ldg((const double*)ptr), __ldg((const double*)ptr + 1)); }
 
-__device__ __forceinline__ int32_t rocsparse_fma(int32_t p, int32_t q, int32_t r) { return fma(p, q, r); }
+__device__ __forceinline__ int8_t rocsparse_fma(int8_t p, int8_t q, int8_t r) { return p*q + r; }
+__device__ __forceinline__ int32_t rocsparse_fma(int32_t p, int32_t q, int32_t r) { return p*q + r; }
+__device__ __forceinline__ int64_t rocsparse_fma(int64_t p, int64_t q, int64_t r) { return p*q + r; }
 __device__ __forceinline__ float rocsparse_fma(float p, float q, float r) { return fma(p, q, r); }
 __device__ __forceinline__ double rocsparse_fma(double p, double q, double r) { return fma(p, q, r); }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_fma(rocsparse_float_complex p, rocsparse_float_complex q, rocsparse_float_complex r) { return std::fma(p, q, r); }
