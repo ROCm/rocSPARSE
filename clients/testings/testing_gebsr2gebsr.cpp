@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,25 +54,71 @@ void testing_gebsr2gebsr_bad_arg(const Arguments& arg)
     rocsparse_int*            bsr_col_ind_C   = (rocsparse_int*)0x4;
     rocsparse_int             row_block_dim_C = safe_size;
     rocsparse_int             col_block_dim_C = safe_size;
-    size_t*                   buffer_size     = (size_t*)0x4;
-    void*                     temp_buffer     = (void*)0x4;
+    rocsparse_int*            nnzb_C          = (rocsparse_int*)0x4;
+    ;
+    size_t* buffer_size = (size_t*)0x4;
+    void*   temp_buffer = (void*)0x4;
 
 #define PARAMS_BUFFER_SIZE                                                                        \
     handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, bsr_col_ind_A, row_block_dim_A, \
         col_block_dim_A, row_block_dim_C, col_block_dim_C, buffer_size
+#define PARAMS_NNZ                                                                         \
+    handle, dir, mb, nb, nnzb, descr_A, bsr_row_ptr_A, bsr_col_ind_A, row_block_dim_A,     \
+        col_block_dim_A, descr_C, bsr_row_ptr_C, row_block_dim_C, col_block_dim_C, nnzb_C, \
+        temp_buffer
 #define PARAMS                                                                                    \
     handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, bsr_col_ind_A, row_block_dim_A, \
         col_block_dim_A, descr_C, bsr_val_C, bsr_row_ptr_C, bsr_col_ind_C, row_block_dim_C,       \
         col_block_dim_C, temp_buffer
+
     auto_testing_bad_arg(rocsparse_gebsr2gebsr_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(rocsparse_gebsr2gebsr_nnz, PARAMS_NNZ);
     auto_testing_bad_arg(rocsparse_gebsr2gebsr<T>, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_A, rocsparse_storage_mode_unsorted));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_C, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
                             rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr_nnz(PARAMS_NNZ),
+                            rocsparse_status_not_implemented);
     EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr<T>(PARAMS), rocsparse_status_not_implemented);
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_A, rocsparse_storage_mode_sorted));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_C, rocsparse_storage_mode_sorted));
+
+    // Check row_block_dim_A == 0
+    row_block_dim_A = 0;
+    col_block_dim_A = safe_size;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr_nnz(PARAMS_NNZ), rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr<T>(PARAMS), rocsparse_status_invalid_size);
+
+    // Check col_block_dim_A == 0
+    row_block_dim_A = safe_size;
+    col_block_dim_A = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr_nnz(PARAMS_NNZ), rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr<T>(PARAMS), rocsparse_status_invalid_size);
+
+    // Check row_block_dim_C == 0
+    row_block_dim_C = 0;
+    col_block_dim_C = safe_size;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr_nnz(PARAMS_NNZ), rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr<T>(PARAMS), rocsparse_status_invalid_size);
+
+    // Check col_block_dim_C == 0
+    row_block_dim_C = safe_size;
+    col_block_dim_C = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr_nnz(PARAMS_NNZ), rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr<T>(PARAMS), rocsparse_status_invalid_size);
 #undef PARAMS
+#undef PARAMS_NNZ
 #undef PARAMS_BUFFER_SIZE
 }
 
@@ -90,14 +136,6 @@ void testing_gebsr2gebsr(const Arguments& arg)
     rocsparse_int               row_block_dim_C = arg.row_block_dimB;
     rocsparse_int               col_block_dim_C = arg.col_block_dimB;
 
-    rocsparse_int Mb = -1;
-    rocsparse_int Nb = -1;
-    if(row_block_dim_A > 0 && col_block_dim_A > 0)
-    {
-        Mb = (M + row_block_dim_A - 1) / row_block_dim_A;
-        Nb = (N + col_block_dim_A - 1) / col_block_dim_A;
-    }
-
     // Create rocsparse handle
     rocsparse_local_handle handle;
 
@@ -107,226 +145,129 @@ void testing_gebsr2gebsr(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_A, base_A));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_C, base_C));
 
-    // Argument sanity check before allocating invalid memory
-    if(Mb <= 0 || Nb <= 0 || row_block_dim_A <= 0 || col_block_dim_A <= 0 || row_block_dim_C <= 0
-       || col_block_dim_C <= 0)
-    {
-        static const size_t safe_size = 100;
+    // Declare and initialize matrices.
+    host_gebsr_matrix<T> hA;
+    matrix_factory.init_gebsr(hA);
 
-        // Allocate memory on device
-        device_vector<rocsparse_int> dbsr_row_ptr_A(safe_size);
-        device_vector<rocsparse_int> dbsr_col_ind_A(safe_size);
-        device_vector<T>             dbsr_val_A(safe_size);
-        device_vector<rocsparse_int> dbsr_row_ptr_C(safe_size);
-        device_vector<rocsparse_int> dbsr_col_ind_C(safe_size);
-        device_vector<T>             dbsr_val_C(safe_size);
+    device_gebsr_matrix<T> dA(hA);
 
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr<T>(handle,
-                                                         rocsparse_direction_row,
-                                                         Mb,
-                                                         Nb,
-                                                         safe_size,
-                                                         descr_A,
-                                                         dbsr_val_A,
-                                                         dbsr_row_ptr_A,
-                                                         dbsr_col_ind_A,
-                                                         row_block_dim_A,
-                                                         col_block_dim_A,
-                                                         descr_C,
-                                                         dbsr_val_C,
-                                                         dbsr_row_ptr_C,
-                                                         dbsr_col_ind_C,
-                                                         row_block_dim_C,
-                                                         col_block_dim_C,
-                                                         nullptr),
-                                (Mb < 0 || Nb < 0 || row_block_dim_A <= 0 || col_block_dim_A <= 0
-                                 || row_block_dim_C <= 0 || col_block_dim_C <= 0)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
+    M = dA.mb * dA.row_block_dim;
+    N = dA.nb * dA.col_block_dim;
 
-        return;
-    }
-
-    // Allocate host memory for input BSR matrix
-    host_vector<rocsparse_int> hbsr_row_ptr_A;
-    host_vector<rocsparse_int> hbsr_col_ind_A;
-    host_vector<T>             hbsr_val_A;
-
-    rocsparse_int hnnzb_A = 0;
-    rocsparse_init_gebsr_matrix_from_csr(matrix_factory,
-                                         hbsr_row_ptr_A,
-                                         hbsr_col_ind_A,
-                                         hbsr_val_A,
-                                         direction,
-                                         Mb,
-                                         Nb,
-                                         row_block_dim_A,
-                                         col_block_dim_A,
-                                         hnnzb_A,
-                                         base_A);
-
-    // Mb and Nb can be modified by rocsparse_init_csr_matrix if reading from a file
-    M                  = Mb * row_block_dim_A;
-    N                  = Nb * col_block_dim_A;
+    rocsparse_int Mb_A = dA.mb;
+    rocsparse_int Nb_A = dA.nb;
     rocsparse_int Mb_C = (M + row_block_dim_C - 1) / row_block_dim_C;
+    rocsparse_int Nb_C = (N + col_block_dim_C - 1) / col_block_dim_C;
 
-    // Allocate device memory for input BSR matrix
-    device_vector<rocsparse_int> dbsr_row_ptr_A(Mb + 1);
-    device_vector<rocsparse_int> dbsr_col_ind_A(hnnzb_A);
-    device_vector<T>             dbsr_val_A(size_t(hnnzb_A) * row_block_dim_A * col_block_dim_A);
-
-    // Allocate device memory for output BSR row pointer array
-    device_vector<rocsparse_int> dbsr_row_ptr_C(Mb_C + 1);
-
-    // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(dbsr_row_ptr_A,
-                              hbsr_row_ptr_A.data(),
-                              sizeof(rocsparse_int) * (Mb + 1),
-                              hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dbsr_col_ind_A,
-                              hbsr_col_ind_A.data(),
-                              sizeof(rocsparse_int) * hnnzb_A,
-                              hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dbsr_val_A,
-                              hbsr_val_A.data(),
-                              sizeof(T) * hnnzb_A * row_block_dim_A * col_block_dim_A,
-                              hipMemcpyHostToDevice));
+    device_gebsr_matrix<T> dC(direction, Mb_C, Nb_C, 0, row_block_dim_C, col_block_dim_C, base_C);
 
     size_t buffer_size = 0;
     CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2gebsr_buffer_size<T>(handle,
                                                                direction,
-                                                               Mb,
-                                                               Nb,
-                                                               hnnzb_A,
+                                                               dA.mb,
+                                                               dA.nb,
+                                                               dA.nnzb,
                                                                descr_A,
-                                                               dbsr_val_A,
-                                                               dbsr_row_ptr_A,
-                                                               dbsr_col_ind_A,
+                                                               dA.val,
+                                                               dA.ptr,
+                                                               dA.ind,
                                                                row_block_dim_A,
                                                                col_block_dim_A,
                                                                row_block_dim_C,
                                                                col_block_dim_C,
                                                                &buffer_size));
 
-    T* dtemp_buffer = nullptr;
-    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dtemp_buffer, buffer_size));
+    void* dbuffer;
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
-    host_vector<rocsparse_int> hnnzb_C(1);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
+    host_scalar<rocsparse_int> hnnzb_C;
     CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2gebsr_nnz(handle,
                                                     direction,
-                                                    Mb,
-                                                    Nb,
-                                                    hnnzb_A,
+                                                    dA.mb,
+                                                    dA.nb,
+                                                    dA.nnzb,
                                                     descr_A,
-                                                    dbsr_row_ptr_A,
-                                                    dbsr_col_ind_A,
+                                                    dA.ptr,
+                                                    dA.ind,
                                                     row_block_dim_A,
                                                     col_block_dim_A,
                                                     descr_C,
-                                                    dbsr_row_ptr_C,
+                                                    dC.ptr,
                                                     row_block_dim_C,
                                                     col_block_dim_C,
                                                     hnnzb_C,
-                                                    dtemp_buffer));
+                                                    dbuffer));
 
-    device_vector<rocsparse_int> dnnzb_C(1);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+
+    device_scalar<rocsparse_int> dnnzb_C;
     CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2gebsr_nnz(handle,
                                                     direction,
-                                                    Mb,
-                                                    Nb,
-                                                    hnnzb_A,
+                                                    dA.mb,
+                                                    dA.nb,
+                                                    dA.nnzb,
                                                     descr_A,
-                                                    dbsr_row_ptr_A,
-                                                    dbsr_col_ind_A,
+                                                    dA.ptr,
+                                                    dA.ind,
                                                     row_block_dim_A,
                                                     col_block_dim_A,
                                                     descr_C,
-                                                    dbsr_row_ptr_C,
+                                                    dC.ptr,
                                                     row_block_dim_C,
                                                     col_block_dim_C,
                                                     dnnzb_C,
-                                                    dtemp_buffer));
+                                                    dbuffer));
 
-    device_vector<rocsparse_int> dbsr_col_ind_C(hnnzb_C[0]);
-    device_vector<T>             dbsr_val_C(size_t(hnnzb_C[0]) * row_block_dim_C * col_block_dim_C);
+    dC.define(direction, Mb_C, Nb_C, *hnnzb_C, row_block_dim_C, col_block_dim_C, base_C);
 
     if(arg.unit_check)
     {
-        host_vector<rocsparse_int> hnnzb_C_copied_from_device(1);
-        CHECK_HIP_ERROR(hipMemcpy(
-            hnnzb_C_copied_from_device, dnnzb_C, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        dnnzb_C.unit_check(hnnzb_C);
 
-        hnnzb_C.unit_check(hnnzb_C_copied_from_device);
-
+        // Finish conversion
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2gebsr<T>(handle,
                                                        direction,
-                                                       Mb,
-                                                       Nb,
-                                                       hnnzb_A,
+                                                       dA.mb,
+                                                       dA.nb,
+                                                       dA.nnzb,
                                                        descr_A,
-                                                       dbsr_val_A,
-                                                       dbsr_row_ptr_A,
-                                                       dbsr_col_ind_A,
+                                                       dA.val,
+                                                       dA.ptr,
+                                                       dA.ind,
                                                        row_block_dim_A,
                                                        col_block_dim_A,
                                                        descr_C,
-                                                       dbsr_val_C,
-                                                       dbsr_row_ptr_C,
-                                                       dbsr_col_ind_C,
+                                                       dC.val,
+                                                       dC.ptr,
+                                                       dC.ind,
                                                        row_block_dim_C,
                                                        col_block_dim_C,
-                                                       dtemp_buffer));
+                                                       dbuffer));
 
-        host_vector<rocsparse_int> hbsr_row_ptr_C(Mb_C + 1);
-        host_vector<rocsparse_int> hbsr_col_ind_C(hnnzb_C[0]);
-        host_vector<T> hbsr_val_C(size_t(hnnzb_C[0]) * row_block_dim_C * col_block_dim_C);
-
-        // Copy output to host
-        CHECK_HIP_ERROR(hipMemcpy(hbsr_row_ptr_C,
-                                  dbsr_row_ptr_C,
-                                  sizeof(rocsparse_int) * (Mb_C + 1),
-                                  hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hbsr_col_ind_C,
-                                  dbsr_col_ind_C,
-                                  sizeof(rocsparse_int) * hnnzb_C[0],
-                                  hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hbsr_val_C,
-                                  dbsr_val_C,
-                                  sizeof(T) * hnnzb_C[0] * row_block_dim_C * col_block_dim_C,
-                                  hipMemcpyDeviceToHost));
-
-        // call host and check results
-        host_vector<rocsparse_int> hbsr_row_ptr_cpu;
-        host_vector<rocsparse_int> hbsr_col_ind_cpu;
-        host_vector<T>             hbsr_val_cpu;
-        host_vector<rocsparse_int> hnnzb_cpu(1);
-
+        // Host solution
+        host_gebsr_matrix<T> hC_gold(
+            direction, Mb_C, Nb_C, *hnnzb_C, row_block_dim_C, col_block_dim_C, base_C);
         host_gebsr_to_gebsr(direction,
-                            Mb,
-                            Nb,
-                            hnnzb_A,
-                            hbsr_val_A,
-                            hbsr_row_ptr_A,
-                            hbsr_col_ind_A,
+                            hA.mb,
+                            hA.nb,
+                            hA.nnzb,
+                            hA.val,
+                            hA.ptr,
+                            hA.ind,
                             row_block_dim_A,
                             col_block_dim_A,
                             base_A,
-                            hbsr_val_cpu,
-                            hbsr_row_ptr_cpu,
-                            hbsr_col_ind_cpu,
+                            hC_gold.val,
+                            hC_gold.ptr,
+                            hC_gold.ind,
                             row_block_dim_C,
                             col_block_dim_C,
                             base_C);
 
-        hnnzb_cpu[0] = hbsr_col_ind_cpu.size();
-
-        hnnzb_cpu.unit_check(hnnzb_C);
-        hbsr_row_ptr_cpu.unit_check(hbsr_row_ptr_C);
-        hbsr_col_ind_cpu.unit_check(hbsr_col_ind_C);
-        hbsr_val_cpu.unit_check(hbsr_val_C);
+        hC_gold.near_check(dC);
     }
 
     if(arg.timing)
@@ -339,22 +280,22 @@ void testing_gebsr2gebsr(const Arguments& arg)
         {
             CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2gebsr<T>(handle,
                                                            direction,
-                                                           Mb,
-                                                           Nb,
-                                                           hnnzb_A,
+                                                           dA.mb,
+                                                           dA.nb,
+                                                           dA.nnzb,
                                                            descr_A,
-                                                           dbsr_val_A,
-                                                           dbsr_row_ptr_A,
-                                                           dbsr_col_ind_A,
+                                                           dA.val,
+                                                           dA.ptr,
+                                                           dA.ind,
                                                            row_block_dim_A,
                                                            col_block_dim_A,
                                                            descr_C,
-                                                           dbsr_val_C,
-                                                           dbsr_row_ptr_C,
-                                                           dbsr_col_ind_C,
+                                                           dC.val,
+                                                           dC.ptr,
+                                                           dC.ind,
                                                            row_block_dim_C,
                                                            col_block_dim_C,
-                                                           dtemp_buffer));
+                                                           dbuffer));
         }
 
         double gpu_time_used = get_time_us();
@@ -364,34 +305,34 @@ void testing_gebsr2gebsr(const Arguments& arg)
         {
             CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2gebsr<T>(handle,
                                                            direction,
-                                                           Mb,
-                                                           Nb,
-                                                           hnnzb_A,
+                                                           dA.mb,
+                                                           dA.nb,
+                                                           dA.nnzb,
                                                            descr_A,
-                                                           dbsr_val_A,
-                                                           dbsr_row_ptr_A,
-                                                           dbsr_col_ind_A,
+                                                           dA.val,
+                                                           dA.ptr,
+                                                           dA.ind,
                                                            row_block_dim_A,
                                                            col_block_dim_A,
                                                            descr_C,
-                                                           dbsr_val_C,
-                                                           dbsr_row_ptr_C,
-                                                           dbsr_col_ind_C,
+                                                           dC.val,
+                                                           dC.ptr,
+                                                           dC.ind,
                                                            row_block_dim_C,
                                                            col_block_dim_C,
-                                                           dtemp_buffer));
+                                                           dbuffer));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gbyte_count = gebsr2gebsr_gbyte_count<T>(Mb,
-                                                        Mb_C,
+        double gbyte_count = gebsr2gebsr_gbyte_count<T>(dA.mb,
+                                                        dC.mb,
                                                         row_block_dim_A,
                                                         col_block_dim_A,
                                                         row_block_dim_C,
                                                         col_block_dim_C,
-                                                        hnnzb_A,
-                                                        hnnzb_C[0]);
+                                                        dA.nnzb,
+                                                        dC.nnzb);
 
         double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
@@ -399,10 +340,14 @@ void testing_gebsr2gebsr(const Arguments& arg)
                             M,
                             "N",
                             N,
-                            "Mb",
-                            Mb,
-                            "Nb",
-                            Nb,
+                            "Mb_A",
+                            Mb_A,
+                            "Nb_A",
+                            Nb_A,
+                            "Mb_C",
+                            Mb_C,
+                            "Nb_C",
+                            Nb_C,
                             "rblockdimA",
                             row_block_dim_A,
                             "cblockdimA",
@@ -411,16 +356,18 @@ void testing_gebsr2gebsr(const Arguments& arg)
                             row_block_dim_C,
                             "cblockdimC",
                             col_block_dim_C,
+                            "nnzbA",
+                            dA.nnzb,
                             "nnzbC",
-                            hnnzb_C[0],
+                            dC.nnzb,
                             s_timing_info_bandwidth,
                             gpu_gbyte,
                             s_timing_info_time,
                             get_gpu_time_msec(gpu_time_used));
-
-        // Free buffer
-        CHECK_HIP_ERROR(rocsparse_hipFree(dtemp_buffer));
     }
+
+    // Free buffer
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
 #define INSTANTIATE(TYPE)                                                  \

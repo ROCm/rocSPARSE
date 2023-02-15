@@ -111,41 +111,41 @@ void testing_csr2bsr(const Arguments& arg)
     device_csr_matrix<T>   dA(hA);
     device_gebsr_matrix<T> dC(direction, Mb, Nb, 0, block_dim, block_dim, bsr_base);
 
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
+    host_scalar<rocsparse_int> hbsr_nnzb;
+    CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr_nnz(handle,
+                                                direction,
+                                                dA.m,
+                                                dA.n,
+                                                csr_descr,
+                                                dA.ptr,
+                                                dA.ind,
+                                                block_dim,
+                                                bsr_descr,
+                                                dC.ptr,
+                                                hbsr_nnzb));
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+
+    device_scalar<rocsparse_int> dbsr_nnzb;
+    CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr_nnz(handle,
+                                                direction,
+                                                dA.m,
+                                                dA.n,
+                                                csr_descr,
+                                                dA.ptr,
+                                                dA.ind,
+                                                block_dim,
+                                                bsr_descr,
+                                                dC.ptr,
+                                                dbsr_nnzb));
+
+    dC.define(direction, Mb, Nb, *hbsr_nnzb, block_dim, block_dim, bsr_base);
+
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        host_scalar<rocsparse_int> hbsr_nnzb;
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr_nnz(handle,
-                                                    direction,
-                                                    dA.m,
-                                                    dA.n,
-                                                    csr_descr,
-                                                    dA.ptr,
-                                                    dA.ind,
-                                                    block_dim,
-                                                    bsr_descr,
-                                                    dC.ptr,
-                                                    hbsr_nnzb));
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-
-        device_scalar<rocsparse_int> dbsr_nnzb;
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr_nnz(handle,
-                                                    direction,
-                                                    dA.m,
-                                                    dA.n,
-                                                    csr_descr,
-                                                    dA.ptr,
-                                                    dA.ind,
-                                                    block_dim,
-                                                    bsr_descr,
-                                                    dC.ptr,
-                                                    dbsr_nnzb));
-
         dbsr_nnzb.unit_check(hbsr_nnzb);
-
-        dC.define(direction, Mb, Nb, *hbsr_nnzb, block_dim, block_dim, bsr_base);
 
         // Finish conversion
         CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr<T>(handle,
@@ -186,26 +186,6 @@ void testing_csr2bsr(const Arguments& arg)
         int number_cold_calls = 2;
         int number_hot_calls  = arg.iters;
 
-        device_gebsr_matrix<T> dD(direction, Mb, Nb, 0, block_dim, block_dim, bsr_base);
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        host_scalar<rocsparse_int> hbsr_nnzb;
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr_nnz(handle,
-                                                    direction,
-                                                    dA.m,
-                                                    dA.n,
-                                                    csr_descr,
-                                                    dA.ptr,
-                                                    dA.ind,
-                                                    block_dim,
-                                                    bsr_descr,
-                                                    dD.ptr,
-                                                    hbsr_nnzb));
-
-        dD.define(direction, Mb, Nb, *hbsr_nnzb, block_dim, block_dim, bsr_base);
-
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
@@ -219,9 +199,9 @@ void testing_csr2bsr(const Arguments& arg)
                                                        dA.ind,
                                                        block_dim,
                                                        bsr_descr,
-                                                       dD.val,
-                                                       dD.ptr,
-                                                       dD.ind));
+                                                       dC.val,
+                                                       dC.ptr,
+                                                       dC.ind));
         }
 
         double gpu_time_used = get_time_us();
@@ -239,9 +219,9 @@ void testing_csr2bsr(const Arguments& arg)
                                                        dA.ind,
                                                        block_dim,
                                                        bsr_descr,
-                                                       dD.val,
-                                                       dD.ptr,
-                                                       dD.ind));
+                                                       dC.val,
+                                                       dC.ptr,
+                                                       dC.ind));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
