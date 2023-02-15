@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -139,7 +139,7 @@ rocsparse_status
     }
 
     *buffer_size = 0;
-    *buffer_size += sizeof(rocsparse_data_status) * 256; // data status
+    *buffer_size += ((sizeof(rocsparse_data_status) - 1) / 256 + 1) * 256; // data status
 
     if(storage == rocsparse_storage_mode_unsorted)
     {
@@ -160,11 +160,11 @@ rocsparse_status
         *buffer_size += ((rocprim_buffer_size - 1) / 256 + 1) * 256;
 
         // offset buffer
-        *buffer_size += sizeof(I) * (mb / 256 + 1) * 256;
+        *buffer_size += ((sizeof(I) * mb) / 256 + 1) * 256;
 
         // columns buffer
-        *buffer_size += sizeof(J) * ((nnzb - 1) / 256 + 1) * 256;
-        *buffer_size += sizeof(J) * ((nnzb - 1) / 256 + 1) * 256;
+        *buffer_size += ((sizeof(J) * nnzb - 1) / 256 + 1) * 256;
+        *buffer_size += ((sizeof(J) * nnzb - 1) / 256 + 1) * 256;
     }
 
     return rocsparse_status_success;
@@ -306,7 +306,7 @@ rocsparse_status rocsparse_check_matrix_gebsr_template(rocsparse_handle       ha
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
     rocsparse_data_status* d_data_status = reinterpret_cast<rocsparse_data_status*>(ptr);
-    ptr += sizeof(rocsparse_data_status) * 256;
+    ptr += ((sizeof(rocsparse_data_status) - 1) / 256 + 1) * 256;
 
     RETURN_IF_HIP_ERROR(hipMemsetAsync(d_data_status, 0, sizeof(rocsparse_data_status)));
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
@@ -347,15 +347,15 @@ rocsparse_status rocsparse_check_matrix_gebsr_template(rocsparse_handle       ha
 
         // offsets buffer
         tmp_offsets = reinterpret_cast<I*>(ptr);
-        ptr += sizeof(I) * (mb / 256 + 1) * 256;
+        ptr += ((sizeof(I) * mb) / 256 + 1) * 256;
 
         // columns 1 buffer
         tmp_cols1 = reinterpret_cast<J*>(ptr);
-        ptr += sizeof(J) * ((nnzb - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(J) * nnzb - 1) / 256 + 1) * 256;
 
         // columns 2 buffer
         tmp_cols2 = reinterpret_cast<J*>(ptr);
-        ptr += sizeof(J) * ((nnzb - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(J) * nnzb - 1) / 256 + 1) * 256;
 
         hipLaunchKernelGGL((shift_offsets_kernel<512>),
                            dim3(mb / 512 + 1),

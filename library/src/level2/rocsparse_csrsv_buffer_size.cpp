@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -128,13 +128,13 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
     *buffer_size = 256;
 
     // rocsparse_int done_array[m]
-    *buffer_size += sizeof(int) * ((m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
 
     // rocsparse_int workspace
-    *buffer_size += sizeof(J) * ((m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(J) * m - 1) / 256 + 1) * 256;
 
     // rocsparse_int workspace2
-    *buffer_size += sizeof(int) * ((m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
 
     size_t rocprim_size = 0;
     int*   ptr1         = reinterpret_cast<int*>(buffer_size);
@@ -161,8 +161,8 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
             nullptr, transpose_size, dummy3, dummy2, nnz, 0, rocsparse_clz(m), stream));
 
         // rocPRIM does not support in-place sorting, so we need an additional buffer
-        transpose_size += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
-        transpose_size += std::max(sizeof(I), sizeof(T)) * ((nnz - 1) / 256 + 1) * 256;
+        transpose_size += ((sizeof(J) * nnz - 1) / 256 + 1) * 256;
+        transpose_size += ((std::max(sizeof(I), sizeof(T)) * nnz - 1) / 256 + 1) * 256;
 
         *buffer_size = std::max(*buffer_size, transpose_size);
     }

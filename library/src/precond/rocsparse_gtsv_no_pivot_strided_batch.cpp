@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -228,14 +228,14 @@ rocsparse_status
     {
         *buffer_size = 0;
 
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // da0
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // da1
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // db0
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // db1
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dc0
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dc1
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // drhs0
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // drhs1
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // da0
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // da1
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // db0
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // db1
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // dc0
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // dc1
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // drhs0
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // drhs1
     }
 
     return rocsparse_status_success;
@@ -348,38 +348,38 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_large_template(rocsparse_
 
     char* ptr = reinterpret_cast<char*>(temp_buffer);
     T*    da0 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
     T* da1 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
     T* db0 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
     T* db1 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
     T* dc0 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
     T* dc1 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
     T* drhs0 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
     T* drhs1 = reinterpret_cast<T*>(ptr);
-    // ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    // ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
 
     RETURN_IF_HIP_ERROR(hipMemsetAsync(
-        da0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+        da0, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
     RETURN_IF_HIP_ERROR(hipMemsetAsync(
-        da1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+        da1, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
     RETURN_IF_HIP_ERROR(hipMemsetAsync(
-        db0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+        db0, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
     RETURN_IF_HIP_ERROR(hipMemsetAsync(
-        db1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+        db1, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
     RETURN_IF_HIP_ERROR(hipMemsetAsync(
-        dc0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+        dc0, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
     RETURN_IF_HIP_ERROR(hipMemsetAsync(
-        dc1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+        dc1, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
     RETURN_IF_HIP_ERROR(hipMemsetAsync(
-        drhs0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+        drhs0, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
     RETURN_IF_HIP_ERROR(hipMemsetAsync(
-        drhs1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+        drhs1, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
 
     // Run special algorithm if m is power of 2
     if((m & (m - 1)) == 0)

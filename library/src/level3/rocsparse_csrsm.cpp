@@ -182,13 +182,13 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     int narrays = (nrhs - 1) / blockdim + 1;
 
     // int done_array
-    *buffer_size += sizeof(int) * ((m * narrays - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(int) * m * narrays - 1) / 256 + 1) * 256;
 
     // workspace
-    *buffer_size += sizeof(J) * ((m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(J) * m - 1) / 256 + 1) * 256;
 
     // int workspace2
-    *buffer_size += sizeof(int) * ((m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
 
     size_t rocprim_size;
     int*   ptr1 = reinterpret_cast<int*>(buffer_size);
@@ -208,7 +208,7 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     // Additional buffer to store transpose of B, if trans_B == rocsparse_operation_none
     if(trans_B == rocsparse_operation_none)
     {
-        *buffer_size += sizeof(T) * ((m * nrhs - 1) / 256 + 1) * 256;
+        *buffer_size += ((sizeof(T) * m * nrhs - 1) / 256 + 1) * 256;
     }
 
     // Additional buffer to store transpose A, if transA != rocsparse_operation_none
@@ -222,8 +222,8 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
             nullptr, transpose_size, dummy3, dummy2, nnz, 0, rocsparse_clz(m), stream));
 
         // rocPRIM does not support in-place sorting, so we need an additional buffer
-        transpose_size += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
-        transpose_size += std::max(sizeof(I), sizeof(T)) * ((nnz - 1) / 256 + 1) * 256;
+        transpose_size += ((sizeof(J) * nnz - 1) / 256 + 1) * 256;
+        transpose_size += ((std::max(sizeof(I), sizeof(T)) * nnz - 1) / 256 + 1) * 256;
 
         *buffer_size += transpose_size;
     }
@@ -636,14 +636,14 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
 
     // done array
     int* done_array = reinterpret_cast<int*>(ptr);
-    ptr += sizeof(int) * ((m * narrays - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(int) * m * narrays - 1) / 256 + 1) * 256;
 
     // Temporary array to store transpose of B
     T* Bt = B;
     if(trans_B == rocsparse_operation_none)
     {
         Bt = reinterpret_cast<T*>(ptr);
-        ptr += sizeof(T) * ((m * nrhs - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(T) * m * nrhs - 1) / 256 + 1) * 256;
     }
 
     // Temporary array to store transpose of A

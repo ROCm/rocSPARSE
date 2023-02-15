@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -162,15 +162,15 @@ rocsparse_status rocsparse_gebsr2gebsc_template(rocsparse_handle     handle,
 
     // work1 buffer
     rocsparse_int* tmp_work1 = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((nnzb - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
 
     // work2 buffer
     rocsparse_int* tmp_work2 = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((nnzb - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
 
     // perm buffer
     rocsparse_int* tmp_perm = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((nnzb - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
 
     // rocprim buffer
     void* tmp_rocprim = reinterpret_cast<void*>(ptr);
@@ -343,9 +343,9 @@ rocsparse_status rocsparse_gebsr2gebsc_buffer_size_template(rocsparse_handle    
 
     // rocPRIM does not support in-place sorting, so we need additional buffer
     // for all temporary arrays
-    *p_buffer_size += sizeof(rocsparse_int) * ((nnzb - 1) / 256 + 1) * 256;
-    *p_buffer_size += sizeof(rocsparse_int) * ((nnzb - 1) / 256 + 1) * 256;
-    *p_buffer_size += sizeof(rocsparse_int) * ((nnzb - 1) / 256 + 1) * 256;
+    *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
+    *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
+    *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
 
     // Do not return 0 as size
     if(*p_buffer_size == 0)

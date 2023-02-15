@@ -65,11 +65,11 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
 
         // work1 buffer
         J* tmp_work1 = reinterpret_cast<J*>(ptr);
-        ptr += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(J) * nnz - 1) / 256 + 1) * 256;
 
         // work2 buffer
         I* tmp_work2 = reinterpret_cast<I*>(ptr);
-        ptr += sizeof(I) * ((nnz - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(I) * nnz - 1) / 256 + 1) * 256;
 
         // rocprim buffer
         void* rocprim_buffer = reinterpret_cast<void*>(ptr);
@@ -149,7 +149,7 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
     // Initialize temporary buffer with 0
-    size_t buffer_size = 256 + sizeof(int) * ((m - 1) / 256 + 1) * 256;
+    size_t buffer_size = 256 + ((sizeof(int) * m - 1) / 256 + 1) * 256;
     RETURN_IF_HIP_ERROR(hipMemsetAsync(ptr, 0, sizeof(char) * buffer_size, stream));
 
     // max_nnz
@@ -158,15 +158,15 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
 
     // done array
     int* done_array = reinterpret_cast<int*>(ptr);
-    ptr += sizeof(int) * ((m - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(int) * m - 1) / 256 + 1) * 256;
 
     // workspace
     J* workspace = reinterpret_cast<J*>(ptr);
-    ptr += sizeof(J) * ((m - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(J) * m - 1) / 256 + 1) * 256;
 
     // workspace2
     int* workspace2 = reinterpret_cast<int*>(ptr);
-    ptr += sizeof(int) * ((m - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(int) * m - 1) / 256 + 1) * 256;
 
     // rocprim buffer
     void* rocprim_buffer = reinterpret_cast<void*>(ptr);
