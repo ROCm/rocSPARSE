@@ -58,6 +58,21 @@ void testing_gebsr2gebsc_bad_arg(const Arguments& arg)
         bsc_val, bsc_row_ind, bsc_col_ptr, copy_values, idx_base, temp_buffer
     auto_testing_bad_arg(rocsparse_gebsr2gebsc_buffer_size<T>, PARAMS_BUFFER_SIZE);
     auto_testing_bad_arg(rocsparse_gebsr2gebsc<T>, PARAMS);
+
+    // Check row_block_dim == 0
+    row_block_dim = 0;
+    col_block_dim = safe_size;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(PARAMS), rocsparse_status_invalid_size);
+
+    // Check col_block_dim == 0
+    row_block_dim = safe_size;
+    col_block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(PARAMS), rocsparse_status_invalid_size);
+
 #undef PARAMS
 #undef PARAMS_BUFFER_SIZE
 
@@ -116,64 +131,6 @@ void testing_gebsr2gebsc(const Arguments& arg)
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
-
-    // Argument sanity check before allocating invalid memory
-    if(arg.M <= 0 || arg.N <= 0 || arg.row_block_dimA <= 0 || arg.col_block_dimA <= 0)
-    {
-        rocsparse_int        M             = arg.M;
-        rocsparse_int        N             = arg.N;
-        rocsparse_int        row_block_dim = arg.row_block_dimA;
-        rocsparse_int        col_block_dim = arg.col_block_dimA;
-        rocsparse_index_base base          = arg.baseA;
-
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-
-        device_vector<T> dbuffer(safe_size);
-
-        if(!dbuffer)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        size_t buffer_size;
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                                     M,
-                                                                     N,
-                                                                     safe_size,
-                                                                     (const T*)nullptr,
-                                                                     nullptr,
-                                                                     nullptr,
-                                                                     row_block_dim,
-                                                                     col_block_dim,
-                                                                     &buffer_size),
-                                (M < 0 || N < 0 || row_block_dim < 0 || col_block_dim < 0)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                         M,
-                                                         N,
-                                                         safe_size,
-                                                         (const T*)nullptr,
-                                                         nullptr,
-                                                         nullptr,
-                                                         row_block_dim,
-                                                         col_block_dim,
-                                                         (T*)nullptr,
-                                                         nullptr,
-                                                         nullptr,
-                                                         action,
-                                                         base,
-                                                         dbuffer),
-                                (M < 0 || N < 0 || row_block_dim < 0 || col_block_dim < 0)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
-        return;
-    }
 
     //
     // Declare the factory.
@@ -240,7 +197,6 @@ void testing_gebsr2gebsc(const Arguments& arg)
                                                                 action,
                                                                 dbsr.base,
                                                                 dbuffer));
-
         //
         // Transfer to host.
         //

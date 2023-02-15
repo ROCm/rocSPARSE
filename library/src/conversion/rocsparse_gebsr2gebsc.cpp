@@ -86,14 +86,26 @@ rocsparse_status rocsparse_gebsr2gebsc_template(rocsparse_handle     handle,
     }
 
     // Check sizes
-    if(mb < 0 || nb < 0 || nnzb < 0 || row_block_dim < 0 || col_block_dim < 0)
+    if(mb < 0 || nb < 0 || nnzb < 0 || row_block_dim <= 0 || col_block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(mb == 0 || nb == 0 || row_block_dim == 0 || col_block_dim == 0)
+    if(mb == 0 || nb == 0)
     {
+        if(bsc_col_ptr != nullptr)
+        {
+            hipLaunchKernelGGL((set_array_to_value<256>),
+                               dim3(nb / 256 + 1),
+                               dim3(256),
+                               0,
+                               handle->stream,
+                               (nb + 1),
+                               bsc_col_ptr,
+                               static_cast<rocsparse_int>(idx_base));
+        }
+
         return rocsparse_status_success;
     }
 
@@ -292,7 +304,7 @@ rocsparse_status rocsparse_gebsr2gebsc_buffer_size_template(rocsparse_handle    
               (const void*&)p_buffer_size);
 
     // Check sizes
-    if(mb < 0 || nb < 0 || nnzb < 0 || row_block_dim < 0 || col_block_dim < 0)
+    if(mb < 0 || nb < 0 || nnzb < 0 || row_block_dim <= 0 || col_block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
@@ -304,7 +316,7 @@ rocsparse_status rocsparse_gebsr2gebsc_buffer_size_template(rocsparse_handle    
     }
 
     // Quick return if possible
-    if(mb == 0 || nb == 0 || row_block_dim == 0 || col_block_dim == 0)
+    if(mb == 0 || nb == 0)
     {
         // Do not return 0 as buffer size
         *p_buffer_size = 4;

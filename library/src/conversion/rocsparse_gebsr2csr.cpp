@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_gebsr2csr.hpp"
+#include "common.h"
 #include "definitions.h"
 #include "rocsparse_bsr2csr.hpp"
 #include "utility.h"
@@ -441,6 +442,19 @@ rocsparse_status rocsparse_gebsr2csr_template(rocsparse_handle          handle,
     // Quick return if possible
     if(mb == 0 || nb == 0)
     {
+        if(csr_row_ptr != nullptr)
+        {
+            rocsparse_int m = row_block_dim * mb;
+            hipLaunchKernelGGL((set_array_to_value<256>),
+                               dim3(((m + 1) - 1) / 256 + 1),
+                               dim3(256),
+                               0,
+                               handle->stream,
+                               (m + 1),
+                               csr_row_ptr,
+                               static_cast<rocsparse_int>(csr_descr->base));
+        }
+
         return rocsparse_status_success;
     }
 

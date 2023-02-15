@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -127,6 +127,26 @@ rocsparse_status rocsparse_gebsr2gebsr_buffer_size_template(rocsparse_handle    
     if(row_block_dim_A <= 0 || col_block_dim_A <= 0 || row_block_dim_C <= 0 || col_block_dim_C <= 0)
     {
         return rocsparse_status_invalid_size;
+    }
+
+    // Quick return if possible
+    if(mb == 0 || nb == 0)
+    {
+        if(row_block_dim_C <= 32)
+        {
+            *buffer_size = 4;
+        }
+        else
+        {
+            // Perform the conversion gebsr->gebsr by performing gebsr->csr->gebsr.
+            rocsparse_int m = mb * row_block_dim_A;
+
+            *buffer_size = sizeof(rocsparse_int) * (m + 1)
+                           + sizeof(rocsparse_int) * row_block_dim_A * col_block_dim_A * nnzb
+                           + sizeof(T) * row_block_dim_A * col_block_dim_A * nnzb;
+        }
+
+        return rocsparse_status_success;
     }
 
     // Check pointer arguments
