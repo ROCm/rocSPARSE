@@ -60,8 +60,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_zero]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
 
@@ -72,8 +71,7 @@ Tests:
   M_N: *M_N_range_quick
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   matrix: [rocsparse_matrix_random]
@@ -86,8 +84,7 @@ Tests:
   numericbsrst: [0, 1]
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   matrix: [rocsparse_matrix_random]
@@ -102,8 +99,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-       rocsparse_itilu0_alg_async_split,
+  itilu0_alg: [rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   filename: [Chevron2]
 
@@ -116,8 +112,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   filename: [nos4,
@@ -132,7 +127,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,rocsparse_itilu0_alg_sync_split,rocsparse_itilu0_alg_async_split,rocsparse_itilu0_alg_async_inplace]
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,rocsparse_itilu0_alg_async_split,rocsparse_itilu0_alg_async_inplace]
   filename: [nos1]
 
 - name: csritilu0_file
@@ -144,7 +139,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,rocsparse_itilu0_alg_sync_split]
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split]
   filename: [nos1]
 
 - name: csritilu0_file
@@ -156,7 +151,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,rocsparse_itilu0_alg_sync_split,rocsparse_itilu0_alg_async_split,rocsparse_itilu0_alg_async_inplace]
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,rocsparse_itilu0_alg_async_split,rocsparse_itilu0_alg_async_inplace]
   filename: [nos2]
 
 - name: csritilu0
@@ -166,8 +161,7 @@ Tests:
   M_N: *M_N_range_checkin
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   matrix: [rocsparse_matrix_random]
@@ -194,8 +188,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   filename: [mc2depi,
@@ -212,8 +205,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   filename: [mc2depi,
@@ -231,8 +223,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   numericboost: [1]
@@ -248,8 +239,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   filename: [amazon0312,
@@ -264,8 +254,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   filename: [sme3Dc]
@@ -279,8 +268,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   filename: [Chevron3]
@@ -295,100 +283,7 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron4]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-         rocsparse_itilu0_alg_sync_split,
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split,
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
-
-
-#########################################################################3
-#
-# DISABLE TESTS
-#
-#
-
-
-# FIRST TEST TO BE IGNORED
-#
-# single precision complex fails on Jean-Luc
-#
-#
-#- name: csritilu0_file
-#  category: quick
-#  function: csritilu0
-#  precision: *single_double_precisions_complex
-#  M: 1
-#  N: 1
-#  transA: [rocsparse_operation_none]
-#  baseA: [rocsparse_index_base_zero]
-#  matrix: [rocsparse_matrix_file_rocalution]
-#  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
-#  filename: [Chevron2]
-#
-
-
-
-- name: csritilu0_file
-  category: quick
-  function: csritilu0
-  precision: *double_only_precisions_complex
-  M: 1
-  N: 1
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
-  filename: [Chevron2]
-
-
-# SECOND TEST TO BE IGNORED
-#
-# double complex precision fails on Jean-Luc
-# with rocsparse_index_base_one
-#
-#
-#- name: csritilu0
-#  category: nightly
-#  function: csritilu0
-#  precision: *double_only_precisions_complex
-#  M: 505193
-#  N: 505193
-#  transA: [rocsparse_operation_none]
-#  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
-#  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
-#  matrix: [rocsparse_matrix_random]
-
-
-- name: csritilu0
-  category: nightly
-  function: csritilu0
-  precision: *single_double_precisions
-  M: 505193
-  N: 505193
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_one]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
-  matrix: [rocsparse_matrix_random]
-
-- name: csritilu0
-  category: nightly
-  function: csritilu0
-  precision: *single_only_precisions_complex
-  M: 505193
-  N: 505193
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_one]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
-  matrix: [rocsparse_matrix_random]
-
-
-- name: csritilu0
-  category: nightly
-  function: csritilu0
-  precision: *single_double_precisions_complex_real
-  M_N: *M_N_range_nightly
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
-  matrix: [rocsparse_matrix_random]
 

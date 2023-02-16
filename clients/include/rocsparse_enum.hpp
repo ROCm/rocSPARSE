@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,7 @@ struct rocsparse_itilu0_alg_t
     static constexpr value_t      values[nvalues] = {rocsparse_itilu0_alg_default,
                                                 rocsparse_itilu0_alg_async_inplace,
                                                 rocsparse_itilu0_alg_async_split,
-                                                rocsparse_itilu0_alg_sync_split,
-                                                rocsparse_itilu0_alg_sync_split_fusion};
+                                                rocsparse_itilu0_alg_sync_split};
 
     static void info(std::ostream& out_)
     {
@@ -68,7 +67,6 @@ struct rocsparse_itilu0_alg_t
                 LOCAL_CASE(rocsparse_itilu0_alg_async_inplace);
                 LOCAL_CASE(rocsparse_itilu0_alg_async_split);
                 LOCAL_CASE(rocsparse_itilu0_alg_sync_split);
-                LOCAL_CASE(rocsparse_itilu0_alg_sync_split_fusion);
 #undef LOCAL_CASE
             }
         }
@@ -87,7 +85,6 @@ struct rocsparse_itilu0_alg_t
         case rocsparse_itilu0_alg_async_inplace:
         case rocsparse_itilu0_alg_async_split:
         case rocsparse_itilu0_alg_sync_split:
-        case rocsparse_itilu0_alg_sync_split_fusion:
         {
             return false;
         }
