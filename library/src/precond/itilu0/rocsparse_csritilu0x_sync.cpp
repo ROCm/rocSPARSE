@@ -377,83 +377,8 @@ public:
                                     size_t buffer_size_,
                                     void* __restrict__ buffer_)
         {
-
-            if(buffer_size_ == 0)
-            {
-                *niter_ = static_cast<J>(0);
-                return rocsparse_status_success;
-            }
-
-            rocsparse_itilu0x_convergence_info_t<T, J> convergence_info;
-            buffer_ = convergence_info.init(handle_, buffer_);
-            J options;
-
-            if(hipSuccess
-               != hipMemcpyAsync(&options,
-                                 convergence_info.info.options,
-                                 sizeof(J),
-                                 hipMemcpyDeviceToHost,
-                                 handle_->stream))
-            {
-                return rocsparse_status_internal_error;
-            }
-
-            if(hipSuccess
-               != hipMemcpyAsync(niter_,
-                                 convergence_info.info.iter,
-                                 sizeof(J),
-                                 hipMemcpyDeviceToHost,
-                                 handle_->stream))
-            {
-                return rocsparse_status_internal_error;
-            }
-
-            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
-
-            J          niter = niter_[0];
-            const bool convergence_history
-                = (options & rocsparse_itilu0_option_convergence_history) > 0;
-            if(!convergence_history)
-            {
-                std::cerr << "convergence history has not been activated." << std::endl;
-                return rocsparse_status_internal_error;
-            }
-
-            const bool compute_nrm_residual
-                = (options & rocsparse_itilu0_option_compute_nrm_residual) > 0;
-            const bool compute_nrm_corr
-                = (options & rocsparse_itilu0_option_compute_nrm_correction) > 0;
-
-            if(compute_nrm_corr)
-            {
-                if(hipSuccess
-                   != hipMemcpyAsync(data_,
-                                     convergence_info.log_mxcorr,
-                                     sizeof(T) * niter,
-                                     hipMemcpyDeviceToHost,
-                                     handle_->stream))
-                {
-                    return rocsparse_status_internal_error;
-                }
-            }
-
-            if(compute_nrm_residual)
-            {
-                if(hipSuccess
-                   != hipMemcpyAsync(data_ + niter,
-                                     convergence_info.log_mxresidual,
-                                     sizeof(T) * niter,
-                                     hipMemcpyDeviceToHost,
-                                     handle_->stream))
-                {
-                    return rocsparse_status_internal_error;
-                }
-            }
-
-            //
-            // No stream synchronization needed here,
-            //
-            return rocsparse_status_success;
+            return rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
+                history<T, J>::run(handle_, niter_, data_, buffer_size_, buffer_);
         }
     };
 

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -162,6 +162,7 @@ set(rocsparse_source
   src/precond/itilu0/rocsparse_csritilu0x_preprocess.cpp
   src/precond/itilu0/rocsparse_csritilu0x_compute.cpp
   src/precond/itilu0/rocsparse_csritilu0x_history.cpp
+  src/precond/itilu0/rocsparse_csritilu0x_sync_fusion.cpp
   src/precond/itilu0/rocsparse_csritilu0x_sync.cpp
   src/precond/itilu0/rocsparse_csritilu0x_async.cpp
   src/precond/itilu0/rocsparse_csritilu0_buffer_size.cpp
@@ -171,6 +172,7 @@ set(rocsparse_source
   src/precond/itilu0/rocsparse_csritilu0_async_inplace.cpp
   src/precond/itilu0/rocsparse_csritilu0_async_split.cpp
   src/precond/itilu0/rocsparse_csritilu0_sync_split.cpp
+  src/precond/itilu0/rocsparse_csritilu0_sync_split_fusion.cpp
 
 # Conversion
   src/conversion/rocsparse_nnz.cpp
