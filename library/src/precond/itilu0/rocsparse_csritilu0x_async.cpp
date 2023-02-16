@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -255,8 +255,8 @@ public:
                                     size_t buffer_size_,
                                     void* __restrict__ buffer_)
         {
-            return rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
-                history<T, J>::run(handle_, niter_, data_, buffer_size_, buffer_);
+            return rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split>::history<T, J>::
+                run(handle_, niter_, data_, buffer_size_, buffer_);
         }
     };
 
