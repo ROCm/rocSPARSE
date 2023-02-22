@@ -507,6 +507,7 @@ extern "C" {
                            typer_*                   csr_val,       \
                            rocsparse_int*            csr_row_ptr,   \
                            rocsparse_int*            csr_col_ind)   \
+    try                                                             \
     {                                                               \
         return rocsparse_gebsr2csr_template(handle,                 \
                                             dir,                    \
@@ -522,6 +523,10 @@ extern "C" {
                                             csr_val,                \
                                             csr_row_ptr,            \
                                             csr_col_ind);           \
+    }                                                               \
+    catch(...)                                                      \
+    {                                                               \
+        return exception_to_rocsparse_status();                     \
     }
 
 IMPL(rocsparse_sgebsr2csr, float);

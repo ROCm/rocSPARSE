@@ -450,6 +450,7 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
                                                   const rocsparse_mat_descr bsr_descr,
                                                   rocsparse_int*            bsr_row_ptr,
                                                   rocsparse_int*            bsr_nnz)
+try
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -754,6 +755,10 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
 
     return rocsparse_status_success;
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_scsr2bsr(rocsparse_handle          handle,
                                                rocsparse_direction       direction,
@@ -768,6 +773,7 @@ extern "C" rocsparse_status rocsparse_scsr2bsr(rocsparse_handle          handle,
                                                float*                    bsr_val,
                                                rocsparse_int*            bsr_row_ptr,
                                                rocsparse_int*            bsr_col_ind)
+try
 {
     return rocsparse_csr2bsr_template(handle,
                                       direction,
@@ -782,6 +788,10 @@ extern "C" rocsparse_status rocsparse_scsr2bsr(rocsparse_handle          handle,
                                       bsr_val,
                                       bsr_row_ptr,
                                       bsr_col_ind);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_dcsr2bsr(rocsparse_handle          handle,
@@ -797,6 +807,7 @@ extern "C" rocsparse_status rocsparse_dcsr2bsr(rocsparse_handle          handle,
                                                double*                   bsr_val,
                                                rocsparse_int*            bsr_row_ptr,
                                                rocsparse_int*            bsr_col_ind)
+try
 {
     return rocsparse_csr2bsr_template(handle,
                                       direction,
@@ -811,6 +822,10 @@ extern "C" rocsparse_status rocsparse_dcsr2bsr(rocsparse_handle          handle,
                                       bsr_val,
                                       bsr_row_ptr,
                                       bsr_col_ind);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_ccsr2bsr(rocsparse_handle               handle,
@@ -826,6 +841,7 @@ extern "C" rocsparse_status rocsparse_ccsr2bsr(rocsparse_handle               ha
                                                rocsparse_float_complex*       bsr_val,
                                                rocsparse_int*                 bsr_row_ptr,
                                                rocsparse_int*                 bsr_col_ind)
+try
 {
     return rocsparse_csr2bsr_template(handle,
                                       direction,
@@ -841,6 +857,10 @@ extern "C" rocsparse_status rocsparse_ccsr2bsr(rocsparse_handle               ha
                                       bsr_row_ptr,
                                       bsr_col_ind);
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
                                                rocsparse_direction             direction,
@@ -855,6 +875,7 @@ extern "C" rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                h
                                                rocsparse_double_complex*       bsr_val,
                                                rocsparse_int*                  bsr_row_ptr,
                                                rocsparse_int*                  bsr_col_ind)
+try
 {
     return rocsparse_csr2bsr_template(handle,
                                       direction,
@@ -869,4 +890,8 @@ extern "C" rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                h
                                       bsr_val,
                                       bsr_row_ptr,
                                       bsr_col_ind);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

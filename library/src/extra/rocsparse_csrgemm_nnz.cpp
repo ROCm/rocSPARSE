@@ -1860,6 +1860,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      const rocsparse_int*      csr_col_ind_D, \
                                      rocsparse_mat_info        info_C,        \
                                      size_t*                   buffer_size)   \
+    try                                                                       \
     {                                                                         \
         return rocsparse_csrgemm_buffer_size_template(handle,                 \
                                                       trans_A,                \
@@ -1883,6 +1884,10 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                                       csr_col_ind_D,          \
                                                       info_C,                 \
                                                       buffer_size);           \
+    }                                                                         \
+    catch(...)                                                                \
+    {                                                                         \
+        return exception_to_rocsparse_status();                               \
     }
 
 C_IMPL(rocsparse_scsrgemm_buffer_size, float);
@@ -1918,6 +1923,7 @@ extern "C" rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          hand
                                                   rocsparse_int*            nnz_C,
                                                   const rocsparse_mat_info  info_C,
                                                   void*                     temp_buffer)
+try
 {
     return rocsparse_csrgemm_nnz_template(handle,
                                           trans_A,
@@ -1942,4 +1948,8 @@ extern "C" rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          hand
                                           nnz_C,
                                           info_C,
                                           temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

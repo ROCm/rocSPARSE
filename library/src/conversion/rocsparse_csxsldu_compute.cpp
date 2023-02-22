@@ -504,6 +504,7 @@ INSTANTIATE(template, rocsparse_double_complex, rocsparse_int, rocsparse_int);
                                      rocsparse_index_base ubase_,  \
                                      TYPE*                diag_,   \
                                      void*                buffer_) \
+    try                                                            \
     {                                                              \
         return rocsparse_csxsldu_compute_template(handle_,         \
                                                   dir_,            \
@@ -530,6 +531,10 @@ INSTANTIATE(template, rocsparse_double_complex, rocsparse_int, rocsparse_int);
                                                   ubase_,          \
                                                   diag_,           \
                                                   buffer_);        \
+    }                                                              \
+    catch(...)                                                     \
+    {                                                              \
+        return exception_to_rocsparse_status();                    \
     }
 
 C_IMPL(rocsparse_scsxsldu_compute, float);

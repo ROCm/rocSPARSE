@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -814,6 +814,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
                                                     rocsparse_int             col_block_dim,
                                                     rocsparse_int*            bsr_nnz_devhost,
                                                     void*                     temp_buffer)
+try
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -1227,6 +1228,10 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
 
     return rocsparse_status_success;
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 //
 // C INTERFACE
@@ -1243,6 +1248,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
                                         rocsparse_int             row_block_dim, \
                                         rocsparse_int             col_block_dim, \
                                         size_t*                   buffer_size)   \
+    try                                                                          \
     {                                                                            \
         return rocsparse_csr2gebsr_buffer_size_template(handle,                  \
                                                         direction,               \
@@ -1255,6 +1261,10 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
                                                         row_block_dim,           \
                                                         col_block_dim,           \
                                                         buffer_size);            \
+    }                                                                            \
+    catch(...)                                                                   \
+    {                                                                            \
+        return exception_to_rocsparse_status();                                  \
     }                                                                            \
                                                                                  \
     extern "C" rocsparse_status NAME(rocsparse_handle          handle,           \
@@ -1273,6 +1283,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
                                      rocsparse_int             col_block_dim,    \
                                      void*                     temp_buffer)      \
                                                                                  \
+    try                                                                          \
     {                                                                            \
         return rocsparse_csr2gebsr_template(handle,                              \
                                             direction,                           \
@@ -1289,6 +1300,10 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
                                             row_block_dim,                       \
                                             col_block_dim,                       \
                                             temp_buffer);                        \
+    }                                                                            \
+    catch(...)                                                                   \
+    {                                                                            \
+        return exception_to_rocsparse_status();                                  \
     }
 
 C_IMPL(rocsparse_scsr2gebsr, float);
