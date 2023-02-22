@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -202,6 +202,7 @@ extern "C" rocsparse_status rocsparse_hyb2csr_buffer_size(rocsparse_handle      
                                                           const rocsparse_hyb_mat   hyb,
                                                           const rocsparse_int*      csr_row_ptr,
                                                           size_t*                   buffer_size)
+try
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -293,6 +294,10 @@ extern "C" rocsparse_status rocsparse_hyb2csr_buffer_size(rocsparse_handle      
 
     return rocsparse_status_success;
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_shyb2csr(rocsparse_handle          handle,
                                                const rocsparse_mat_descr descr,
@@ -301,9 +306,14 @@ extern "C" rocsparse_status rocsparse_shyb2csr(rocsparse_handle          handle,
                                                rocsparse_int*            csr_row_ptr,
                                                rocsparse_int*            csr_col_ind,
                                                void*                     temp_buffer)
+try
 {
     return rocsparse_hyb2csr_template(
         handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_dhyb2csr(rocsparse_handle          handle,
@@ -313,9 +323,14 @@ extern "C" rocsparse_status rocsparse_dhyb2csr(rocsparse_handle          handle,
                                                rocsparse_int*            csr_row_ptr,
                                                rocsparse_int*            csr_col_ind,
                                                void*                     temp_buffer)
+try
 {
     return rocsparse_hyb2csr_template(
         handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_chyb2csr(rocsparse_handle          handle,
@@ -325,9 +340,14 @@ extern "C" rocsparse_status rocsparse_chyb2csr(rocsparse_handle          handle,
                                                rocsparse_int*            csr_row_ptr,
                                                rocsparse_int*            csr_col_ind,
                                                void*                     temp_buffer)
+try
 {
     return rocsparse_hyb2csr_template(
         handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_zhyb2csr(rocsparse_handle          handle,
@@ -337,7 +357,12 @@ extern "C" rocsparse_status rocsparse_zhyb2csr(rocsparse_handle          handle,
                                                rocsparse_int*            csr_row_ptr,
                                                rocsparse_int*            csr_col_ind,
                                                void*                     temp_buffer)
+try
 {
     return rocsparse_hyb2csr_template(
         handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

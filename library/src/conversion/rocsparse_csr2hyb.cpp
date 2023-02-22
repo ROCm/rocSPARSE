@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -390,6 +390,7 @@ extern "C" rocsparse_status rocsparse_scsr2hyb(rocsparse_handle          handle,
                                                rocsparse_hyb_mat         hyb,
                                                rocsparse_int             user_ell_width,
                                                rocsparse_hyb_partition   partition_type)
+try
 {
     return rocsparse_csr2hyb_template(handle,
                                       m,
@@ -401,6 +402,10 @@ extern "C" rocsparse_status rocsparse_scsr2hyb(rocsparse_handle          handle,
                                       hyb,
                                       user_ell_width,
                                       partition_type);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle          handle,
@@ -413,6 +418,7 @@ extern "C" rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle          handle,
                                                rocsparse_hyb_mat         hyb,
                                                rocsparse_int             user_ell_width,
                                                rocsparse_hyb_partition   partition_type)
+try
 {
     return rocsparse_csr2hyb_template(handle,
                                       m,
@@ -424,6 +430,10 @@ extern "C" rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle          handle,
                                       hyb,
                                       user_ell_width,
                                       partition_type);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_ccsr2hyb(rocsparse_handle               handle,
@@ -436,6 +446,7 @@ extern "C" rocsparse_status rocsparse_ccsr2hyb(rocsparse_handle               ha
                                                rocsparse_hyb_mat              hyb,
                                                rocsparse_int                  user_ell_width,
                                                rocsparse_hyb_partition        partition_type)
+try
 {
     return rocsparse_csr2hyb_template(handle,
                                       m,
@@ -448,6 +459,10 @@ extern "C" rocsparse_status rocsparse_ccsr2hyb(rocsparse_handle               ha
                                       user_ell_width,
                                       partition_type);
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_zcsr2hyb(rocsparse_handle                handle,
                                                rocsparse_int                   m,
@@ -459,6 +474,7 @@ extern "C" rocsparse_status rocsparse_zcsr2hyb(rocsparse_handle                h
                                                rocsparse_hyb_mat               hyb,
                                                rocsparse_int                   user_ell_width,
                                                rocsparse_hyb_partition         partition_type)
+try
 {
     return rocsparse_csr2hyb_template(handle,
                                       m,
@@ -470,4 +486,8 @@ extern "C" rocsparse_status rocsparse_zcsr2hyb(rocsparse_handle                h
                                       hyb,
                                       user_ell_width,
                                       partition_type);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

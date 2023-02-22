@@ -192,9 +192,14 @@ extern "C" rocsparse_status rocsparse_scoo2dense(rocsparse_handle          handl
                                                  const rocsparse_int*      coo_col_ind,
                                                  float*                    A,
                                                  rocsparse_int             ld)
+try
 {
     return rocsparse_coo2dense_template(
         handle, m, n, nnz, descr, coo_val, coo_row_ind, coo_col_ind, A, ld, rocsparse_order_column);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_dcoo2dense(rocsparse_handle          handle,
@@ -207,9 +212,14 @@ extern "C" rocsparse_status rocsparse_dcoo2dense(rocsparse_handle          handl
                                                  const rocsparse_int*      coo_col_ind,
                                                  double*                   A,
                                                  rocsparse_int             ld)
+try
 {
     return rocsparse_coo2dense_template(
         handle, m, n, nnz, descr, coo_val, coo_row_ind, coo_col_ind, A, ld, rocsparse_order_column);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_ccoo2dense(rocsparse_handle               handle,
@@ -222,9 +232,14 @@ extern "C" rocsparse_status rocsparse_ccoo2dense(rocsparse_handle               
                                                  const rocsparse_int*           coo_col_ind,
                                                  rocsparse_float_complex*       A,
                                                  rocsparse_int                  ld)
+try
 {
     return rocsparse_coo2dense_template(
         handle, m, n, nnz, descr, coo_val, coo_row_ind, coo_col_ind, A, ld, rocsparse_order_column);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_zcoo2dense(rocsparse_handle                handle,
@@ -237,7 +252,12 @@ extern "C" rocsparse_status rocsparse_zcoo2dense(rocsparse_handle               
                                                  const rocsparse_int*            coo_col_ind,
                                                  rocsparse_double_complex*       A,
                                                  rocsparse_int                   ld)
+try
 {
     return rocsparse_coo2dense_template(
         handle, m, n, nnz, descr, coo_val, coo_row_ind, coo_col_ind, A, ld, rocsparse_order_column);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

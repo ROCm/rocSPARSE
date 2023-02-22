@@ -2068,6 +2068,7 @@ INSTANTIATE(int64_t, int64_t);
                                      rocsparse_int*            csr_col_ind_C,                   \
                                      const rocsparse_mat_info  info_C,                          \
                                      void*                     temp_buffer)                     \
+    try                                                                                         \
     {                                                                                           \
         return rocsparse_csrgemm_symbolic_template<rocsparse_int, rocsparse_int>(handle,        \
                                                                                  trans_A,       \
@@ -2093,6 +2094,10 @@ INSTANTIATE(int64_t, int64_t);
                                                                                  csr_col_ind_C, \
                                                                                  info_C,        \
                                                                                  temp_buffer);  \
+    }                                                                                           \
+    catch(...)                                                                                  \
+    {                                                                                           \
+        return exception_to_rocsparse_status();                                                 \
     }
 
 C_IMPL(rocsparse_csrgemm_symbolic);

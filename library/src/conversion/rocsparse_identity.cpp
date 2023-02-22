@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,6 +104,11 @@ INSTANTIATE(int64_t);
 extern "C" rocsparse_status rocsparse_create_identity_permutation(rocsparse_handle handle,
                                                                   rocsparse_int    n,
                                                                   rocsparse_int*   p)
+try
 {
     return rocsparse_create_identity_permutation_impl(handle, n, p);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

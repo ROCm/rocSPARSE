@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -3241,6 +3241,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      rocsparse_int*            bsr_col_ind_C, \
                                      const rocsparse_mat_info  info_C,        \
                                      void*                     temp_buffer)   \
+    try                                                                       \
     {                                                                         \
         return rocsparse_bsrgemm_template(handle,                             \
                                           dir,                                \
@@ -3273,6 +3274,10 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                           bsr_col_ind_C,                      \
                                           info_C,                             \
                                           temp_buffer);                       \
+    }                                                                         \
+    catch(...)                                                                \
+    {                                                                         \
+        return exception_to_rocsparse_status();                               \
     }
 
 C_IMPL(rocsparse_sbsrgemm, float);

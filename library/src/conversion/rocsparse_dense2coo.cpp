@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -173,6 +173,7 @@ extern "C" rocsparse_status rocsparse_sdense2coo(rocsparse_handle          handl
                                                  float*                    coo_val,
                                                  rocsparse_int*            coo_row_ind,
                                                  rocsparse_int*            coo_col_ind)
+try
 {
     return rocsparse_dense2coo_template(handle,
                                         rocsparse_order_column,
@@ -185,6 +186,10 @@ extern "C" rocsparse_status rocsparse_sdense2coo(rocsparse_handle          handl
                                         coo_val,
                                         coo_row_ind,
                                         coo_col_ind);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_ddense2coo(rocsparse_handle          handle,
@@ -197,6 +202,7 @@ extern "C" rocsparse_status rocsparse_ddense2coo(rocsparse_handle          handl
                                                  double*                   coo_val,
                                                  rocsparse_int*            coo_row_ind,
                                                  rocsparse_int*            coo_col_ind)
+try
 {
     return rocsparse_dense2coo_template(handle,
                                         rocsparse_order_column,
@@ -209,6 +215,10 @@ extern "C" rocsparse_status rocsparse_ddense2coo(rocsparse_handle          handl
                                         coo_val,
                                         coo_row_ind,
                                         coo_col_ind);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_cdense2coo(rocsparse_handle               handle,
@@ -221,6 +231,7 @@ extern "C" rocsparse_status rocsparse_cdense2coo(rocsparse_handle               
                                                  rocsparse_float_complex*       coo_val,
                                                  rocsparse_int*                 coo_row_ind,
                                                  rocsparse_int*                 coo_col_ind)
+try
 {
     return rocsparse_dense2coo_template(handle,
                                         rocsparse_order_column,
@@ -234,6 +245,10 @@ extern "C" rocsparse_status rocsparse_cdense2coo(rocsparse_handle               
                                         coo_row_ind,
                                         coo_col_ind);
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_zdense2coo(rocsparse_handle                handle,
                                                  rocsparse_int                   m,
@@ -245,6 +260,7 @@ extern "C" rocsparse_status rocsparse_zdense2coo(rocsparse_handle               
                                                  rocsparse_double_complex*       coo_val,
                                                  rocsparse_int*                  coo_row_ind,
                                                  rocsparse_int*                  coo_col_ind)
+try
 {
     return rocsparse_dense2coo_template(handle,
                                         rocsparse_order_column,
@@ -257,4 +273,8 @@ extern "C" rocsparse_status rocsparse_zdense2coo(rocsparse_handle               
                                         coo_val,
                                         coo_row_ind,
                                         coo_col_ind);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

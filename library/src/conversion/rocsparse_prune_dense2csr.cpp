@@ -538,9 +538,14 @@ extern "C" rocsparse_status rocsparse_sprune_dense2csr_buffer_size(rocsparse_han
                                                                    const rocsparse_int* csr_row_ptr,
                                                                    const rocsparse_int* csr_col_ind,
                                                                    size_t*              buffer_size)
+try
 {
     return rocsparse_prune_dense2csr_buffer_size_template(
         handle, m, n, A, lda, threshold, descr, csr_val, csr_row_ptr, csr_col_ind, buffer_size);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_dprune_dense2csr_buffer_size(rocsparse_handle handle,
@@ -554,9 +559,14 @@ extern "C" rocsparse_status rocsparse_dprune_dense2csr_buffer_size(rocsparse_han
                                                                    const rocsparse_int* csr_row_ptr,
                                                                    const rocsparse_int* csr_col_ind,
                                                                    size_t*              buffer_size)
+try
 {
     return rocsparse_prune_dense2csr_buffer_size_template(
         handle, m, n, A, lda, threshold, descr, csr_val, csr_row_ptr, csr_col_ind, buffer_size);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_sprune_dense2csr_nnz(rocsparse_handle          handle,
@@ -569,9 +579,14 @@ extern "C" rocsparse_status rocsparse_sprune_dense2csr_nnz(rocsparse_handle     
                                                            rocsparse_int*            csr_row_ptr,
                                                            rocsparse_int* nnz_total_dev_host_ptr,
                                                            void*          temp_buffer)
+try
 {
     return rocsparse_prune_dense2csr_nnz_template(
         handle, m, n, A, lda, threshold, descr, csr_row_ptr, nnz_total_dev_host_ptr, temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_dprune_dense2csr_nnz(rocsparse_handle          handle,
@@ -584,9 +599,14 @@ extern "C" rocsparse_status rocsparse_dprune_dense2csr_nnz(rocsparse_handle     
                                                            rocsparse_int*            csr_row_ptr,
                                                            rocsparse_int* nnz_total_dev_host_ptr,
                                                            void*          temp_buffer)
+try
 {
     return rocsparse_prune_dense2csr_nnz_template(
         handle, m, n, A, lda, threshold, descr, csr_row_ptr, nnz_total_dev_host_ptr, temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_sprune_dense2csr(rocsparse_handle          handle,
@@ -600,9 +620,14 @@ extern "C" rocsparse_status rocsparse_sprune_dense2csr(rocsparse_handle         
                                                        const rocsparse_int*      csr_row_ptr,
                                                        rocsparse_int*            csr_col_ind,
                                                        void*                     temp_buffer)
+try
 {
     return rocsparse_prune_dense2csr_template(
         handle, m, n, A, lda, threshold, descr, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_dprune_dense2csr(rocsparse_handle          handle,
@@ -616,7 +641,12 @@ extern "C" rocsparse_status rocsparse_dprune_dense2csr(rocsparse_handle         
                                                        const rocsparse_int*      csr_row_ptr,
                                                        rocsparse_int*            csr_col_ind,
                                                        void*                     temp_buffer)
+try
 {
     return rocsparse_prune_dense2csr_template(
         handle, m, n, A, lda, threshold, descr, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

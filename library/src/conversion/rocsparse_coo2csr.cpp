@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -172,6 +172,11 @@ extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle     handle,
                                               rocsparse_int        m,
                                               rocsparse_int*       csr_row_ptr,
                                               rocsparse_index_base idx_base)
+try
 {
     return rocsparse_coo2csr_impl(handle, coo_row_ind, nnz, m, csr_row_ptr, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
