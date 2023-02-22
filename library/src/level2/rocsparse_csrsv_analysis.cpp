@@ -176,7 +176,10 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
         rocsparse_hipMallocAsync((void**)&info->trm_diag_ind, sizeof(I) * m, stream));
 
     // Allocate buffer to hold zero pivot
-    RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)zero_pivot, sizeof(J), stream));
+    if(*zero_pivot == nullptr)
+    {
+        RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)zero_pivot, sizeof(J), stream));
+    }
 
     // Allocate buffer to hold row map
     RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)&info->row_map, sizeof(J) * m, stream));
