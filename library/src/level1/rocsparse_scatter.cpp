@@ -50,6 +50,7 @@ rocsparse_status rocsparse_scatter_template(rocsparse_handle            handle,
 extern "C" rocsparse_status rocsparse_scatter(rocsparse_handle            handle,
                                               rocsparse_const_spvec_descr x,
                                               rocsparse_dnvec_descr       y)
+try
 {
     // Check for invalid handle
     RETURN_IF_INVALID_HANDLE(handle);
@@ -125,4 +126,8 @@ extern "C" rocsparse_status rocsparse_scatter(rocsparse_handle            handle
     }
 
     return rocsparse_status_not_implemented;
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,13 @@ extern "C" rocsparse_status rocsparse_sgthrz(rocsparse_handle     handle,
                                              float*               x_val,
                                              const rocsparse_int* x_ind,
                                              rocsparse_index_base idx_base)
+try
 {
     return rocsparse_gthrz_template(handle, nnz, y, x_val, x_ind, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_dgthrz(rocsparse_handle     handle,
@@ -45,8 +50,13 @@ extern "C" rocsparse_status rocsparse_dgthrz(rocsparse_handle     handle,
                                              double*              x_val,
                                              const rocsparse_int* x_ind,
                                              rocsparse_index_base idx_base)
+try
 {
     return rocsparse_gthrz_template(handle, nnz, y, x_val, x_ind, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_cgthrz(rocsparse_handle         handle,
@@ -55,8 +65,13 @@ extern "C" rocsparse_status rocsparse_cgthrz(rocsparse_handle         handle,
                                              rocsparse_float_complex* x_val,
                                              const rocsparse_int*     x_ind,
                                              rocsparse_index_base     idx_base)
+try
 {
     return rocsparse_gthrz_template(handle, nnz, y, x_val, x_ind, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_zgthrz(rocsparse_handle          handle,
@@ -65,6 +80,11 @@ extern "C" rocsparse_status rocsparse_zgthrz(rocsparse_handle          handle,
                                              rocsparse_double_complex* x_val,
                                              const rocsparse_int*      x_ind,
                                              rocsparse_index_base      idx_base)
+try
 {
     return rocsparse_gthrz_template(handle, nnz, y, x_val, x_ind, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
