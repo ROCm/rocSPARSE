@@ -382,6 +382,7 @@ rocsparse_status rocsparse_bsr2csr_template(rocsparse_handle          handle,
                                      TYPE*                     csr_val,     \
                                      rocsparse_int*            csr_row_ptr, \
                                      rocsparse_int*            csr_col_ind) \
+    try                                                                     \
     {                                                                       \
         return rocsparse_bsr2csr_template(handle,                           \
                                           dir,                              \
@@ -396,6 +397,10 @@ rocsparse_status rocsparse_bsr2csr_template(rocsparse_handle          handle,
                                           csr_val,                          \
                                           csr_row_ptr,                      \
                                           csr_col_ind);                     \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_sbsr2csr, float);
