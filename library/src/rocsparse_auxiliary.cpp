@@ -1188,6 +1188,12 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrgemm_info(info->csrgemm_info));
     }
 
+    // Clear csritsv info struct
+    if(info->csritsv_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csritsv_info(info->csritsv_info));
+    }
+
     // Clear zero pivot
     if(info->zero_pivot != nullptr)
     {
