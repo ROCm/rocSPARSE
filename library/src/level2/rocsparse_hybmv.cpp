@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -240,8 +240,13 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle          handle,
                                      const TYPE*               x,                      \
                                      const TYPE*               beta,                   \
                                      TYPE*                     y)                      \
+    try                                                                                \
     {                                                                                  \
         return rocsparse_hybmv_template(handle, trans, alpha, descr, hyb, x, beta, y); \
+    }                                                                                  \
+    catch(...)                                                                         \
+    {                                                                                  \
+        return exception_to_rocsparse_status();                                        \
     }
 
 C_IMPL(rocsparse_shybmv, float);

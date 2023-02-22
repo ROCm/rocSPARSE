@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -337,9 +337,14 @@ INSTANTIATE_MIXED(
                                      const TYPE*               x,                            \
                                      const TYPE*               beta,                         \
                                      TYPE*                     y)                            \
+    try                                                                                      \
     {                                                                                        \
         return rocsparse_ellmv_template(                                                     \
             handle, trans, m, n, alpha, descr, ell_val, ell_col_ind, ell_width, x, beta, y); \
+    }                                                                                        \
+    catch(...)                                                                               \
+    {                                                                                        \
+        return exception_to_rocsparse_status();                                              \
     }
 
 C_IMPL(rocsparse_sellmv, float);

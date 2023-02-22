@@ -641,6 +641,7 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
                                      TYPE*                     y,           \
                                      rocsparse_solve_policy    policy,      \
                                      void*                     temp_buffer) \
+    try                                                                     \
     {                                                                       \
         return rocsparse_bsrsv_solve_template(handle,                       \
                                               dir,                          \
@@ -658,6 +659,10 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
                                               y,                            \
                                               policy,                       \
                                               temp_buffer);                 \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_sbsrsv_solve, float);

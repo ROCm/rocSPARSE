@@ -632,6 +632,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      rocsparse_analysis_policy analysis,    \
                                      rocsparse_solve_policy    solve,       \
                                      void*                     temp_buffer) \
+    try                                                                     \
     {                                                                       \
         return rocsparse_csritsv_analysis_impl(handle,                      \
                                                trans,                       \
@@ -645,6 +646,10 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                                analysis,                    \
                                                solve,                       \
                                                temp_buffer);                \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_scsritsv_analysis, float);

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,7 @@
                                      rocsparse_int             block_dim,                          \
                                      rocsparse_mat_info        info,                               \
                                      size_t*                   buffer_size)                        \
+    try                                                                                            \
     {                                                                                              \
         /* Check direction */                                                                      \
         if(rocsparse_enum_utils::is_invalid(dir))                                                  \
@@ -78,6 +79,10 @@
         }                                                                                          \
                                                                                                    \
         return stat;                                                                               \
+    }                                                                                              \
+    catch(...)                                                                                     \
+    {                                                                                              \
+        return exception_to_rocsparse_status();                                                    \
     }
 
 C_IMPL(rocsparse_sbsrsv_buffer_size, float);
