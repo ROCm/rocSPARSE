@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@ extern "C" rocsparse_status rocsparse_csritsv_zero_pivot(rocsparse_handle       
                                                          const rocsparse_mat_descr descr,
                                                          rocsparse_mat_info        info,
                                                          rocsparse_int*            position)
+try
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -120,10 +121,15 @@ extern "C" rocsparse_status rocsparse_csritsv_zero_pivot(rocsparse_handle       
 
     return rocsparse_status_success;
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_csritsv_clear(rocsparse_handle          handle,
                                                     const rocsparse_mat_descr descr,
                                                     rocsparse_mat_info        info)
+try
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -146,4 +152,8 @@ extern "C" rocsparse_status rocsparse_csritsv_clear(rocsparse_handle          ha
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csritsv_info(info->csritsv_info));
     info->csritsv_info = nullptr;
     return rocsparse_status_success;
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

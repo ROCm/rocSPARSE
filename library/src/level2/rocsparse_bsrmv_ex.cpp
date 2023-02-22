@@ -21,8 +21,8 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "rocsparse_bsrmv.hpp"
+#include "utility.h"
 
 /*
  * ===========================================================================
@@ -44,6 +44,7 @@
                                      const rocsparse_int*      bsr_col_ind, \
                                      rocsparse_int             block_dim,   \
                                      rocsparse_mat_info        info)        \
+    try                                                                     \
     {                                                                       \
         return rocsparse_bsrmv_analysis_template(handle,                    \
                                                  dir,                       \
@@ -57,6 +58,10 @@
                                                  bsr_col_ind,               \
                                                  block_dim,                 \
                                                  info);                     \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_sbsrmv_ex_analysis, float);
@@ -84,6 +89,7 @@ C_IMPL(rocsparse_zbsrmv_ex_analysis, rocsparse_double_complex);
                                      const TYPE*               x,           \
                                      const TYPE*               beta,        \
                                      TYPE*                     y)           \
+    try                                                                     \
     {                                                                       \
         return rocsparse_bsrmv_template(handle,                             \
                                         dir,                                \
@@ -101,6 +107,10 @@ C_IMPL(rocsparse_zbsrmv_ex_analysis, rocsparse_double_complex);
                                         x,                                  \
                                         beta,                               \
                                         y);                                 \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_sbsrmv_ex, float);
@@ -112,6 +122,11 @@ C_IMPL(rocsparse_zbsrmv_ex, rocsparse_double_complex);
 
 extern "C" rocsparse_status rocsparse_bsrmv_ex_clear(rocsparse_handle   handle,
                                                      rocsparse_mat_info info)
+try
 {
     return rocsparse_bsrmv_clear(handle, info);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

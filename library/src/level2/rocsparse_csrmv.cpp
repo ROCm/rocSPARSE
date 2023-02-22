@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1558,9 +1558,14 @@ INSTANTIATE_MIXED(rocsparse_double_complex,
                                      const rocsparse_int*      csr_row_ptr,            \
                                      const rocsparse_int*      csr_col_ind,            \
                                      rocsparse_mat_info        info)                   \
+    try                                                                                \
     {                                                                                  \
         return rocsparse_csrmv_analysis_template(                                      \
             handle, trans, m, n, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info); \
+    }                                                                                  \
+    catch(...)                                                                         \
+    {                                                                                  \
+        return exception_to_rocsparse_status();                                        \
     }
 
 C_IMPL(rocsparse_scsrmv_analysis, float);
@@ -1588,6 +1593,7 @@ C_IMPL(rocsparse_zcsrmv_analysis, rocsparse_double_complex);
                                      const TYPE*               x,           \
                                      const TYPE*               beta,        \
                                      TYPE*                     y)           \
+    try                                                                     \
     {                                                                       \
         return rocsparse_csrmv_template(handle,                             \
                                         trans,                              \
@@ -1605,6 +1611,10 @@ C_IMPL(rocsparse_zcsrmv_analysis, rocsparse_double_complex);
                                         beta,                               \
                                         y,                                  \
                                         false);                             \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_scsrmv, float);
@@ -1614,6 +1624,7 @@ C_IMPL(rocsparse_zcsrmv, rocsparse_double_complex);
 #undef C_IMPL
 
 extern "C" rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle, rocsparse_mat_info info)
+try
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -1633,4 +1644,8 @@ extern "C" rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle, rocsp
     info->csrmv_info = nullptr;
 
     return rocsparse_status_success;
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
