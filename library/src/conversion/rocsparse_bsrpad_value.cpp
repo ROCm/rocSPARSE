@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -165,9 +165,14 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
                                      const rocsparse_int*      bsr_row_ptr,                       \
                                      const rocsparse_int*      bsr_col_ind)                       \
                                                                                                   \
+    try                                                                                           \
     {                                                                                             \
         return rocsparse_bsrpad_value_template<TYPE>(                                             \
             handle, m, mb, nnzb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind); \
+    }                                                                                             \
+    catch(...)                                                                                    \
+    {                                                                                             \
+        return exception_to_rocsparse_status();                                                   \
     }
 
 C_IMPL(rocsparse_sbsrpad_value, float);
