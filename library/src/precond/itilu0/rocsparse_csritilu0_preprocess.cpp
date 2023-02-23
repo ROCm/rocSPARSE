@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -201,6 +201,7 @@ extern "C" rocsparse_status rocsparse_csritilu0_preprocess(rocsparse_handle     
                                                            rocsparse_datatype   datatype_,
                                                            size_t               buffer_size_,
                                                            void*                buffer_)
+try
 {
     return rocsparse_csritilu0_preprocess_impl<rocsparse_int, rocsparse_int>(handle_,
                                                                              alg_,
@@ -214,4 +215,8 @@ extern "C" rocsparse_status rocsparse_csritilu0_preprocess(rocsparse_handle     
                                                                              datatype_,
                                                                              buffer_size_,
                                                                              buffer_);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

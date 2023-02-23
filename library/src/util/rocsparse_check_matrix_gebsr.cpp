@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -587,6 +587,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      rocsparse_fill_mode    uplo,               \
                                      rocsparse_storage_mode storage,            \
                                      size_t*                buffer_size)        \
+    try                                                                         \
     {                                                                           \
         return rocsparse_check_matrix_gebsr_buffer_size_template(handle,        \
                                                                  dir,           \
@@ -603,6 +604,10 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                                                  uplo,          \
                                                                  storage,       \
                                                                  buffer_size);  \
+    }                                                                           \
+    catch(...)                                                                  \
+    {                                                                           \
+        return exception_to_rocsparse_status();                                 \
     }
 
 C_IMPL(rocsparse_scheck_matrix_gebsr_buffer_size, float);
@@ -628,6 +633,7 @@ C_IMPL(rocsparse_zcheck_matrix_gebsr_buffer_size, rocsparse_double_complex);
                                      rocsparse_storage_mode storage,       \
                                      rocsparse_data_status* data_status,   \
                                      void*                  temp_buffer)   \
+    try                                                                    \
     {                                                                      \
         return rocsparse_check_matrix_gebsr_template(handle,               \
                                                      dir,                  \
@@ -645,6 +651,10 @@ C_IMPL(rocsparse_zcheck_matrix_gebsr_buffer_size, rocsparse_double_complex);
                                                      storage,              \
                                                      data_status,          \
                                                      temp_buffer);         \
+    }                                                                      \
+    catch(...)                                                             \
+    {                                                                      \
+        return exception_to_rocsparse_status();                            \
     }
 
 C_IMPL(rocsparse_scheck_matrix_gebsr, float);
