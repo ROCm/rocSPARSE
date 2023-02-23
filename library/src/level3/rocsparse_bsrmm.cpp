@@ -504,6 +504,7 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
                                      const TYPE*               beta,        \
                                      TYPE*                     C,           \
                                      rocsparse_int             ldc)         \
+    try                                                                     \
     {                                                                       \
         return rocsparse_bsrmm_template(handle,                             \
                                         dir,                                \
@@ -524,6 +525,10 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
                                         beta,                               \
                                         C,                                  \
                                         ldc);                               \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_sbsrmm, float);
