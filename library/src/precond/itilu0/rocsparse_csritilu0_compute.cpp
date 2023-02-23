@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -227,6 +227,7 @@ rocsparse_status rocsparse_csritilu0_compute_impl(rocsparse_handle     handle_,
                                      rocsparse_index_base base_,        \
                                      size_t               buffer_size_, \
                                      void*                buffer_)      \
+    try                                                                 \
     {                                                                   \
         return rocsparse_csritilu0_compute_impl<T, I, J>(handle_,       \
                                                          alg_,          \
@@ -242,6 +243,10 @@ rocsparse_status rocsparse_csritilu0_compute_impl(rocsparse_handle     handle_,
                                                          base_,         \
                                                          buffer_size_,  \
                                                          buffer_);      \
+    }                                                                   \
+    catch(...)                                                          \
+    {                                                                   \
+        return exception_to_rocsparse_status();                         \
     }
 
 IMPL(rocsparse_scsritilu0_compute, float, rocsparse_int, rocsparse_int);

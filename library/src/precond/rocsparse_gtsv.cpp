@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -638,8 +638,13 @@ rocsparse_status rocsparse_gtsv_template(rocsparse_handle handle,
                                      const TYPE*      B,                                          \
                                      rocsparse_int    ldb,                                        \
                                      size_t*          buffer_size)                                \
+    try                                                                                           \
     {                                                                                             \
         return rocsparse_gtsv_buffer_size_template(handle, m, n, dl, d, du, B, ldb, buffer_size); \
+    }                                                                                             \
+    catch(...)                                                                                    \
+    {                                                                                             \
+        return exception_to_rocsparse_status();                                                   \
     }
 
 C_IMPL(rocsparse_sgtsv_buffer_size, float);
@@ -659,8 +664,13 @@ C_IMPL(rocsparse_zgtsv_buffer_size, rocsparse_double_complex);
                                      TYPE*            B,                              \
                                      rocsparse_int    ldb,                            \
                                      void*            temp_buffer)                    \
+    try                                                                               \
     {                                                                                 \
         return rocsparse_gtsv_template(handle, m, n, dl, d, du, B, ldb, temp_buffer); \
+    }                                                                                 \
+    catch(...)                                                                        \
+    {                                                                                 \
+        return exception_to_rocsparse_status();                                       \
     }
 
 C_IMPL(rocsparse_sgtsv, float);
