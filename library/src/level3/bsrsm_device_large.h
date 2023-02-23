@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,21 +27,21 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrsm_upper_large_kernel(rocsparse_int        mb,
-                                  rocsparse_int        nrhs,
-                                  const rocsparse_int* bsr_row_ptr,
-                                  const rocsparse_int* bsr_col_ind,
-                                  const T*             bsr_val,
-                                  rocsparse_int        block_dim,
-                                  T*                   X,
-                                  rocsparse_int        ldx,
-                                  int*                 done_array,
-                                  const rocsparse_int* map,
-                                  rocsparse_int*       zero_pivot,
-                                  rocsparse_index_base idx_base,
-                                  rocsparse_diag_type  diag_type,
-                                  rocsparse_direction  dir)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrsm_upper_large_kernel(rocsparse_int        mb,
+                              rocsparse_int        nrhs,
+                              const rocsparse_int* bsr_row_ptr,
+                              const rocsparse_int* bsr_col_ind,
+                              const T*             bsr_val,
+                              rocsparse_int        block_dim,
+                              T*                   X,
+                              rocsparse_int        ldx,
+                              int*                 done_array,
+                              const rocsparse_int* map,
+                              rocsparse_int*       zero_pivot,
+                              rocsparse_index_base idx_base,
+                              rocsparse_diag_type  diag_type,
+                              rocsparse_direction  dir)
 {
     static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
 
@@ -105,11 +105,11 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
             }
         }
 
-        // Wait for spin looping thread to finish as the whole block depends on this row
-        __syncthreads();
-
         // Make sure updated X is visible globally
         __threadfence();
+
+        // Wait for spin looping thread to finish as the whole block depends on this row
+        __syncthreads();
 
         // Local sum computation
 
@@ -170,11 +170,11 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         }
     }
 
-    // Wait for all threads to finish writing into global memory before we mark the row "done"
-    __syncthreads();
-
     // Make sure X is written to global memory before setting row is done flag
     __threadfence();
+
+    // Wait for all threads to finish the threadfence before we mark the row "done"
+    __syncthreads();
 
     if(row < mb && threadIdx.x == 0)
     {
@@ -189,21 +189,21 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrsm_lower_large_kernel(rocsparse_int        mb,
-                                  rocsparse_int        nrhs,
-                                  const rocsparse_int* bsr_row_ptr,
-                                  const rocsparse_int* bsr_col_ind,
-                                  const T*             bsr_val,
-                                  rocsparse_int        block_dim,
-                                  T*                   X,
-                                  rocsparse_int        ldx,
-                                  int*                 done_array,
-                                  const rocsparse_int* map,
-                                  rocsparse_int*       zero_pivot,
-                                  rocsparse_index_base idx_base,
-                                  rocsparse_diag_type  diag_type,
-                                  rocsparse_direction  dir)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrsm_lower_large_kernel(rocsparse_int        mb,
+                              rocsparse_int        nrhs,
+                              const rocsparse_int* bsr_row_ptr,
+                              const rocsparse_int* bsr_col_ind,
+                              const T*             bsr_val,
+                              rocsparse_int        block_dim,
+                              T*                   X,
+                              rocsparse_int        ldx,
+                              int*                 done_array,
+                              const rocsparse_int* map,
+                              rocsparse_int*       zero_pivot,
+                              rocsparse_index_base idx_base,
+                              rocsparse_diag_type  diag_type,
+                              rocsparse_direction  dir)
 {
     static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
 
@@ -267,11 +267,11 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
             }
         }
 
-        // Wait for spin looping thread to finish as the whole block depends on this row
-        __syncthreads();
-
         // Make sure updated X is visible globally
         __threadfence();
+
+        // Wait for spin looping thread to finish as the whole block depends on this row
+        __syncthreads();
 
         // Local sum computation
 
@@ -332,11 +332,11 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         }
     }
 
-    // Wait for all threads to finish writing into global memory before we mark the row "done"
-    __syncthreads();
-
     // Make sure X is written to global memory before setting row is done flag
     __threadfence();
+
+    // Wait for all threads to finish the threadfence before we mark the row "done"
+    __syncthreads();
 
     if(row < mb && threadIdx.x == 0)
     {

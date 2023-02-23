@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +27,18 @@
 #include "handle.h"
 
 template <typename I, typename J, typename A>
-rocsparse_status rocsparse_bsrmv_ex_analysis_template(rocsparse_handle          handle,
-                                                      rocsparse_direction       dir,
-                                                      rocsparse_operation       trans,
-                                                      J                         mb,
-                                                      J                         nb,
-                                                      I                         nnzb,
-                                                      const rocsparse_mat_descr descr,
-                                                      const A*                  bsr_val,
-                                                      const I*                  bsr_row_ptr,
-                                                      const J*                  bsr_col_ind,
-                                                      J                         block_dim,
-                                                      rocsparse_mat_info        info);
+rocsparse_status rocsparse_bsrmv_analysis_template(rocsparse_handle          handle,
+                                                   rocsparse_direction       dir,
+                                                   rocsparse_operation       trans,
+                                                   J                         mb,
+                                                   J                         nb,
+                                                   I                         nnzb,
+                                                   const rocsparse_mat_descr descr,
+                                                   const A*                  bsr_val,
+                                                   const I*                  bsr_row_ptr,
+                                                   const J*                  bsr_col_ind,
+                                                   J                         block_dim,
+                                                   rocsparse_mat_info        info);
 
 template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          handle,
@@ -76,19 +76,19 @@ rocsparse_status rocsparse_bsrmv_adaptive_template_dispatch(rocsparse_handle    
                                                             Y* y);
 
 template <typename T, typename I, typename J, typename A, typename X, typename Y>
-rocsparse_status rocsparse_bsrmv_ex_template(rocsparse_handle          handle,
-                                             rocsparse_direction       dir,
-                                             rocsparse_operation       trans,
-                                             J                         mb,
-                                             J                         nb,
-                                             I                         nnzb,
-                                             const T*                  alpha_device_host,
-                                             const rocsparse_mat_descr descr,
-                                             const A*                  bsr_val,
-                                             const I*                  bsr_row_ptr,
-                                             const J*                  bsr_col_ind,
-                                             J                         block_dim,
-                                             rocsparse_mat_info        info,
-                                             const X*                  x,
-                                             const T*                  beta_device_host,
-                                             Y*                        y);
+rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
+                                          rocsparse_direction       dir,
+                                          rocsparse_operation       trans,
+                                          J                         mb,
+                                          J                         nb,
+                                          I                         nnzb,
+                                          const T*                  alpha_device_host,
+                                          const rocsparse_mat_descr descr,
+                                          const A*                  bsr_val,
+                                          const I*                  bsr_row_ptr,
+                                          const J*                  bsr_col_ind,
+                                          J                         block_dim,
+                                          rocsparse_mat_info        info,
+                                          const X*                  x,
+                                          const T*                  beta_device_host,
+                                          Y*                        y);

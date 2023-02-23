@@ -28,7 +28,7 @@
 
 // x = alpha * x
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__device__ void axpby_scale_device(I size, T alpha, T* __restrict__ x)
+ROCSPARSE_DEVICE_ILF void axpby_scale_device(I size, T alpha, T* __restrict__ x)
 {
     I i = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

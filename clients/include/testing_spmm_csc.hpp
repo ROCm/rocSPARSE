@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -22,8 +22,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef TESTING_SPMM_CSC_HPP
-#define TESTING_SPMM_CSC_HPP
 
 #include "rocsparse_arguments.hpp"
 
@@ -32,5 +30,3 @@ void testing_spmm_csc_bad_arg(const Arguments& arg);
 void testing_spmm_csc_extra(const Arguments& arg);
 template <typename I, typename J, typename T>
 void testing_spmm_csc(const Arguments& arg);
-
-#endif // TESTING_SPMM_CSC_HPP

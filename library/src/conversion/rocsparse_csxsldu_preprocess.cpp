@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,8 @@ rocsparse_status rocsparse_inclusive_scan(rocsparse_handle handle, J m_, I* ptr_
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync(&temp_storage_ptr, temp_storage_size_bytes, handle->stream));
         temp_alloc = true;
     }
 
@@ -54,7 +55,7 @@ rocsparse_status rocsparse_inclusive_scan(rocsparse_handle handle, J m_, I* ptr_
 
     if(temp_alloc)
     {
-        RETURN_IF_HIP_ERROR(hipFree(temp_storage_ptr));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
     }
 
     return rocsparse_status_success;
@@ -65,7 +66,8 @@ template <unsigned int        BLOCKSIZE,
           rocsparse_diag_type SDIAG,
           typename I,
           typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void rocsparse_csxtril_count_kernel(
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void rocsparse_csxtril_count_kernel(
     J nseq_, const I* ptr_, const J* ind_, rocsparse_index_base base_, I* fptr_, I* sptr_)
 {
     I seq = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
@@ -214,22 +216,17 @@ rocsparse_status rocsparse_csxsldu_preprocess_template(rocsparse_handle     hand
     {
     case rocsparse_direction_row:
     {
-        hipMemcpyAsync(lptr, &lbase, sizeof(I), hipMemcpyHostToDevice, handle_->stream);
-        hipMemcpyAsync(uptr, &ubase, sizeof(I), hipMemcpyHostToDevice, handle_->stream);
+        RETURN_IF_HIP_ERROR(
+            hipMemcpyAsync(lptr, &lbase, sizeof(I), hipMemcpyHostToDevice, handle_->stream));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpyAsync(uptr, &ubase, sizeof(I), hipMemcpyHostToDevice, handle_->stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
         J    nblocks = (m_ - 1) / nthreads_per_block + 1;
         dim3 blocks(nblocks);
         rocsparse_csxtril_count_kernel_dispatch<nthreads_per_block, I, J>(
             handle_, blocks, threads, ldiag_, udiag_, m_, ptr_, ind_, base_, lptr, uptr);
-        status = rocsparse_inclusive_scan(handle_, m_, lptr);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-        status = rocsparse_inclusive_scan(handle_, m_, uptr);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_inclusive_scan(handle_, m_, lptr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_inclusive_scan(handle_, m_, uptr));
         break;
     }
 
@@ -239,16 +236,8 @@ rocsparse_status rocsparse_csxsldu_preprocess_template(rocsparse_handle     hand
         dim3 blocks(nblocks);
         rocsparse_csxtril_count_kernel_dispatch<nthreads_per_block, I, J>(
             handle_, blocks, threads, udiag_, ldiag_, n_, ptr_, ind_, base_, uptr, lptr);
-        status = rocsparse_inclusive_scan(handle_, n_, lptr);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-        status = rocsparse_inclusive_scan(handle_, n_, uptr);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_inclusive_scan(handle_, n_, lptr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_inclusive_scan(handle_, n_, uptr));
         break;
     }
     }
@@ -257,6 +246,7 @@ rocsparse_status rocsparse_csxsldu_preprocess_template(rocsparse_handle     hand
         hipMemcpyAsync(host_lnnz_, &lptr[m_], sizeof(I), hipMemcpyDeviceToHost, handle_->stream));
     RETURN_IF_HIP_ERROR(
         hipMemcpyAsync(host_unnz_, &uptr[m_], sizeof(I), hipMemcpyDeviceToHost, handle_->stream));
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
 
     host_lnnz_[0] -= lbase;
     host_unnz_[0] -= ubase;

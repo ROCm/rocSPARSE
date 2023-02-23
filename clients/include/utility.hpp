@@ -74,7 +74,7 @@ inline rocsparse_datatype get_datatype<int8_t>(void)
 template <>
 inline rocsparse_datatype get_datatype<uint8_t>(void)
 {
-    return rocsparse_datatype_i8_r;
+    return rocsparse_datatype_u8_r;
 }
 
 template <>

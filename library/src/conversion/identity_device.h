@@ -28,7 +28,8 @@
 
 // Create identity permutation
 template <unsigned int BLOCKSIZE, typename I>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void identity_kernel(I n, I* p)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void identity_kernel(I n, I* p)
 {
     I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

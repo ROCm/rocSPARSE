@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,19 +49,19 @@
                        base);
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gebsrmvn_general_kernel(rocsparse_int       mb,
-                                 rocsparse_direction dir,
-                                 U                   alpha_device_host,
-                                 const rocsparse_int* __restrict__ bsr_row_ptr,
-                                 const rocsparse_int* __restrict__ bsr_col_ind,
-                                 const T* __restrict__ bsr_val,
-                                 rocsparse_int row_block_dim,
-                                 rocsparse_int col_block_dim,
-                                 const T* __restrict__ x,
-                                 U beta_device_host,
-                                 T* __restrict__ y,
-                                 rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gebsrmvn_general_kernel(rocsparse_int       mb,
+                             rocsparse_direction dir,
+                             U                   alpha_device_host,
+                             const rocsparse_int* __restrict__ bsr_row_ptr,
+                             const rocsparse_int* __restrict__ bsr_col_ind,
+                             const T* __restrict__ bsr_val,
+                             rocsparse_int row_block_dim,
+                             rocsparse_int col_block_dim,
+                             const T* __restrict__ x,
+                             U beta_device_host,
+                             T* __restrict__ y,
+                             rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);

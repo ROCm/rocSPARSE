@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,14 @@ void testing_csrmv_managed_bad_arg(const Arguments& arg)
 {
     if(!std::getenv("ROCSPARSE_MALLOC_MANAGED"))
     {
+        return;
+    }
+
+    // check managed memory enablement
+    if(!is_hmm_enabled())
+    {
+        std::puts("Managed memory not enabled on device. Skipping test...");
+        std::fflush(stdout);
         return;
     }
 
@@ -106,6 +114,14 @@ void testing_csrmv_managed(const Arguments& arg)
 {
     if(!std::getenv("ROCSPARSE_MALLOC_MANAGED"))
     {
+        return;
+    }
+
+    // check managed memory enablement
+    if(!is_hmm_enabled())
+    {
+        std::puts("Managed memory not enabled on device. Skipping test...");
+        std::fflush(stdout);
         return;
     }
 

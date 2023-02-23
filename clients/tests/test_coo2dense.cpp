@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,4 +26,4 @@
 
 #include "testing_coo2dense.hpp"
 
-TEST_ROUTINE(coo2dense, conversion, arg.M, arg.N, arg.denseld, arg.baseA);
+TEST_ROUTINE(coo2dense, conversion, arg.M, arg.N, arg.denseld, arg.baseA, arg.graph_test);

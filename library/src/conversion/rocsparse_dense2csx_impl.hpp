@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,17 +142,13 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
     {
         J dimdir = is_row_oriented ? m : n;
 
-        I first_value = descr_A->base;
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            csx_row_col_ptr_A, &first_value, sizeof(I), hipMemcpyHostToDevice, handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-
+            csx_row_col_ptr_A, &descr_A->base, sizeof(I), hipMemcpyHostToDevice, handle->stream));
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(csx_row_col_ptr_A + 1,
                                            nnz_per_row_column,
                                            sizeof(I) * dimdir,
                                            hipMemcpyDeviceToDevice,
                                            handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
         size_t temp_storage_bytes = 0;
         // Obtain rocprim buffer size

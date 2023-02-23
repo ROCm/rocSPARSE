@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -115,4 +115,14 @@ inline double get_gpu_gbyte(double gpu_time_used, F count, Ts... ts)
 inline double get_gpu_time_msec(double gpu_time_used)
 {
     return gpu_time_used / 1e3;
+}
+
+// Check hmm availability
+inline bool is_hmm_enabled()
+{
+    int deviceID, hmm_enabled;
+    hipGetDevice(&deviceID);
+    hipDeviceGetAttribute(&hmm_enabled, hipDeviceAttributeManagedMemory, deviceID);
+
+    return hmm_enabled;
 }

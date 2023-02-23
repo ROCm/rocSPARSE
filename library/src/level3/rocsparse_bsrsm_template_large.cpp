@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,13 +60,14 @@
     }
 
 template <unsigned int BLOCKSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void bsrsm_copy_scale(rocsparse_int m,
-                                                                    rocsparse_int n,
-                                                                    U             alpha_device_host,
-                                                                    const T*      B,
-                                                                    rocsparse_int ldb,
-                                                                    T*            X,
-                                                                    rocsparse_int ldx)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrsm_copy_scale(rocsparse_int m,
+                      rocsparse_int n,
+                      U             alpha_device_host,
+                      const T*      B,
+                      rocsparse_int ldb,
+                      T*            X,
+                      rocsparse_int ldx)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
 
@@ -74,13 +75,14 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void bsrsm_copy_scale(rocsparse_in
 }
 
 template <unsigned int DIM_X, unsigned int DIM_Y, typename T, typename U>
-__launch_bounds__(DIM_X* DIM_Y) ROCSPARSE_KERNEL void bsrsm_transpose(rocsparse_int m,
-                                                                      rocsparse_int n,
-                                                                      U alpha_device_host,
-                                                                      const T* __restrict__ A,
-                                                                      rocsparse_int lda,
-                                                                      T* __restrict__ B,
-                                                                      rocsparse_int ldb)
+ROCSPARSE_KERNEL(DIM_X* DIM_Y)
+void bsrsm_transpose(rocsparse_int m,
+                     rocsparse_int n,
+                     U             alpha_device_host,
+                     const T* __restrict__ A,
+                     rocsparse_int lda,
+                     T* __restrict__ B,
+                     rocsparse_int ldb)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
 
@@ -145,14 +147,14 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
 
     // done_array
     int* done_array = reinterpret_cast<int*>(ptr);
-    ptr += sizeof(int) * ((size_t(mb) * narrays - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(int) * size_t(mb) * narrays - 1) / 256 + 1) * 256;
 
     // Temporary array to store transpose of X
     T* Xt = X;
     if(trans_X == rocsparse_operation_none)
     {
         Xt = reinterpret_cast<T*>(ptr);
-        ptr += sizeof(T) * ((size_t(mb) * block_dim * nrhs - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(T) * size_t(mb) * block_dim * nrhs - 1) / 256 + 1) * 256;
     }
 
     // Initialize buffers
@@ -171,9 +173,6 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
         static const rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
             info->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
-
-        // Wait for device transfer to finish
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     }
 
     rocsparse_fill_mode fill_mode = descr->fill_mode;

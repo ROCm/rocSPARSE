@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,11 +91,11 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle     h
     // for all temporary arrays
 
     // columns buffer
-    *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * nnz - 1) / 256 + 1) * 256;
     // perm buffer
-    *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * nnz - 1) / 256 + 1) * 256;
     // segm buffer
-    *buffer_size += sizeof(rocsparse_int) * (m / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * m) / 256 + 1) * 256;
 
     return rocsparse_status_success;
 }
@@ -195,15 +195,15 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle          handle,
 
     // columns buffer
     rocsparse_int* tmp_cols = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(rocsparse_int) * nnz - 1) / 256 + 1) * 256;
 
     // perm buffer
     rocsparse_int* tmp_perm = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(rocsparse_int) * nnz - 1) / 256 + 1) * 256;
 
     // segm buffer
     rocsparse_int* tmp_segm = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * (m / 256 + 1) * 256;
+    ptr += ((sizeof(rocsparse_int) * m) / 256 + 1) * 256;
 
     // Index base one requires shift of offset positions
     if(descr->base == rocsparse_index_base_one)

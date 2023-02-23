@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,6 +78,25 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
                             rocsparse_status_not_implemented);
     EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_nnz(PARAMS_NNZ), rocsparse_status_not_implemented);
     EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr<T>(PARAMS), rocsparse_status_not_implemented);
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(csr_descr, rocsparse_storage_mode_sorted));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(bsr_descr, rocsparse_storage_mode_sorted));
+
+    // Check row_block_dim == 0
+    row_block_dim = 0;
+    col_block_dim = safe_size;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_nnz(PARAMS_NNZ), rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr<T>(PARAMS), rocsparse_status_invalid_size);
+
+    // Check col_block_dim == 0
+    row_block_dim = safe_size;
+    col_block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_nnz(PARAMS_NNZ), rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr<T>(PARAMS), rocsparse_status_invalid_size);
 #undef PARAMS
 #undef PARAMS_NNZ
 #undef PARAMS_BUFFER_SIZE
@@ -104,127 +123,25 @@ void testing_csr2gebsr(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr, csr_base));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(bsr_descr, bsr_base));
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || row_block_dim <= 0 || col_block_dim <= 0)
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_nnz(handle,
-                                                        rocsparse_direction_row,
-                                                        M,
-                                                        N,
-                                                        csr_descr,
-                                                        nullptr,
-                                                        nullptr,
-                                                        bsr_descr,
-                                                        nullptr,
-                                                        row_block_dim,
-                                                        col_block_dim,
-                                                        nullptr,
-                                                        nullptr),
-                                (M < 0 || N < 0 || row_block_dim < 0 || col_block_dim < 0)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
+    host_csr_matrix<T> hA;
+    matrix_factory.init_csr(hA, M, N);
 
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr<T>(handle,
-                                                       direction,
-                                                       M,
-                                                       N,
-                                                       csr_descr,
-                                                       nullptr,
-                                                       nullptr,
-                                                       nullptr,
-                                                       bsr_descr,
-                                                       nullptr,
-                                                       nullptr,
-                                                       nullptr,
-                                                       row_block_dim,
-                                                       col_block_dim,
-                                                       nullptr),
-                                (M < 0 || N < 0 || row_block_dim < 0)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
-        return;
-    }
-
-    // Allocate host memory for uncompressed CSR matrix
-    host_vector<rocsparse_int> hcsr_row_ptr_A;
-    host_vector<rocsparse_int> hcsr_col_ind_A;
-    host_vector<T>             hcsr_val_A;
-
-    // Generate (or load from file) uncompressed CSR matrix
-    rocsparse_int nnz;
-    matrix_factory.init_csr(hcsr_row_ptr_A, hcsr_col_ind_A, hcsr_val_A, M, N, nnz, csr_base);
-
-    // Uncompressed CSR matrix on device
-    device_vector<rocsparse_int> dcsr_row_ptr_A(M + 1);
-    device_vector<rocsparse_int> dcsr_col_ind_A(nnz);
-    device_vector<T>             dcsr_val_A(nnz);
-
-    // Copy uncompressed host data to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_row_ptr_A, hcsr_row_ptr_A, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_col_ind_A, hcsr_col_ind_A, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_val_A, hcsr_val_A, sizeof(T) * nnz, hipMemcpyHostToDevice));
-
-    // Compress CSR matrix to ensure it contains no zeros (some matrices loaded from files will have zeros)
-    T                            tol = static_cast<T>(0);
-    rocsparse_int                nnz_C;
-    device_vector<rocsparse_int> dnnz_per_row(M);
-
-    CHECK_ROCSPARSE_ERROR(rocsparse_nnz_compress<T>(
-        handle, M, csr_descr, dcsr_val_A, dcsr_row_ptr_A, dnnz_per_row, &nnz_C, tol));
-
-    // Allocate device memory for the compressed version of the CSR matrix
-    device_vector<rocsparse_int> dcsr_row_ptr_C(M + 1);
-    device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
-    device_vector<T>             dcsr_val_C(nnz_C);
-
-    // Finish compression
-    CHECK_ROCSPARSE_ERROR(rocsparse_csr2csr_compress<T>(handle,
-                                                        M,
-                                                        N,
-                                                        csr_descr,
-                                                        dcsr_val_A,
-                                                        dcsr_row_ptr_A,
-                                                        dcsr_col_ind_A,
-                                                        nnz,
-                                                        dnnz_per_row,
-                                                        dcsr_val_C,
-                                                        dcsr_row_ptr_C,
-                                                        dcsr_col_ind_C,
-                                                        tol));
-
-    // Allocate host memory for compressed CSR matrix
-    host_vector<rocsparse_int> hcsr_row_ptr_C(M + 1);
-    host_vector<rocsparse_int> hcsr_col_ind_C(nnz_C);
-    host_vector<T>             hcsr_val_C(nnz_C);
-
-    // Copy compressed CSR matrix to host
-    hcsr_row_ptr_C.transfer_from(dcsr_row_ptr_C);
-    hcsr_col_ind_C.transfer_from(dcsr_col_ind_C);
-    hcsr_val_C.transfer_from(dcsr_val_C);
-
-    // M and N can be modified in rocsparse_init_csr_matrix
+    // M and N can be modified in init_csr
     rocsparse_int Mb = (M + row_block_dim - 1) / row_block_dim;
     rocsparse_int Nb = (N + col_block_dim - 1) / col_block_dim;
 
-    // Allocate host memory for BSR row ptr array
-    host_vector<rocsparse_int> hbsr_row_ptr(Mb + 1);
-
-    // Allocate device memory for BSR row ptr array
-    device_vector<rocsparse_int> dbsr_row_ptr(Mb + 1);
+    device_csr_matrix<T>   dA(hA);
+    device_gebsr_matrix<T> dC(direction, Mb, Nb, 0, row_block_dim, col_block_dim, bsr_base);
 
     size_t buffer_size;
     CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_buffer_size<T>(handle,
                                                              direction,
-                                                             M,
-                                                             N,
+                                                             dA.m,
+                                                             dA.n,
                                                              csr_descr,
-                                                             dcsr_val_C,
-                                                             dcsr_row_ptr_C,
-                                                             dcsr_col_ind_C,
+                                                             dA.val,
+                                                             dA.ptr,
+                                                             dA.ind,
                                                              row_block_dim,
                                                              col_block_dim,
                                                              &buffer_size));
@@ -232,174 +149,82 @@ void testing_csr2gebsr(const Arguments& arg)
     void* dbuffer;
     CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
+    host_scalar<rocsparse_int> hbsr_nnzb;
+    CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_nnz(handle,
+                                                  direction,
+                                                  dA.m,
+                                                  dA.n,
+                                                  csr_descr,
+                                                  dA.ptr,
+                                                  dA.ind,
+                                                  bsr_descr,
+                                                  dC.ptr,
+                                                  row_block_dim,
+                                                  col_block_dim,
+                                                  hbsr_nnzb,
+                                                  dbuffer));
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+
+    device_scalar<rocsparse_int> dbsr_nnzb;
+    CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_nnz(handle,
+                                                  direction,
+                                                  dA.m,
+                                                  dA.n,
+                                                  csr_descr,
+                                                  dA.ptr,
+                                                  dA.ind,
+                                                  bsr_descr,
+                                                  dC.ptr,
+                                                  row_block_dim,
+                                                  col_block_dim,
+                                                  dbsr_nnzb,
+                                                  dbuffer));
+
+    dC.define(direction, Mb, Nb, *hbsr_nnzb, row_block_dim, col_block_dim, bsr_base);
+
     if(arg.unit_check)
     {
-        // Obtain BSR nnzb twice, first using host pointer for nnzb and second using device pointer
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        rocsparse_int hbsr_nnzb;
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_nnz(handle,
-                                                      direction,
-                                                      M,
-                                                      N,
-                                                      csr_descr,
-                                                      dcsr_row_ptr_C,
-                                                      dcsr_col_ind_C,
-                                                      bsr_descr,
-                                                      dbsr_row_ptr,
-                                                      row_block_dim,
-                                                      col_block_dim,
-                                                      &hbsr_nnzb,
-                                                      dbuffer));
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-
-        device_vector<rocsparse_int> dbsr_nnzb(1);
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_nnz(handle,
-                                                      direction,
-                                                      M,
-                                                      N,
-                                                      csr_descr,
-                                                      dcsr_row_ptr_C,
-                                                      dcsr_col_ind_C,
-                                                      bsr_descr,
-                                                      dbsr_row_ptr,
-                                                      row_block_dim,
-                                                      col_block_dim,
-                                                      dbsr_nnzb,
-                                                      dbuffer));
-
-        rocsparse_int hbsr_nnzb_copied_from_device = 0;
-        CHECK_HIP_ERROR(hipMemcpy(&hbsr_nnzb_copied_from_device,
-                                  dbsr_nnzb,
-                                  sizeof(rocsparse_int),
-                                  hipMemcpyDeviceToHost));
-
-        // Confirm that nnzb is the same regardless of whether we use host or device pointers
-        unit_check_scalar<rocsparse_int>(hbsr_nnzb, hbsr_nnzb_copied_from_device);
-
-        // Allocate device memory for BSR col indices and values array
-
-        device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
-        device_vector<T>             dbsr_val(size_t(hbsr_nnzb) * row_block_dim * col_block_dim);
+        dbsr_nnzb.unit_check(hbsr_nnzb);
 
         // Finish conversion
         CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr<T>(handle,
                                                      direction,
-                                                     M,
-                                                     N,
+                                                     dA.m,
+                                                     dA.n,
                                                      csr_descr,
-                                                     dcsr_val_C,
-                                                     dcsr_row_ptr_C,
-                                                     dcsr_col_ind_C,
+                                                     dA.val,
+                                                     dA.ptr,
+                                                     dA.ind,
                                                      bsr_descr,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
+                                                     dC.val,
+                                                     dC.ptr,
+                                                     dC.ind,
                                                      row_block_dim,
                                                      col_block_dim,
                                                      dbuffer));
 
-        // Allocate host memory for BSR col indices and values array
-        host_vector<rocsparse_int> hbsr_col_ind(hbsr_nnzb);
-        host_vector<T>             hbsr_val(size_t(hbsr_nnzb) * row_block_dim * col_block_dim);
+        // Host solution
+        host_gebsr_matrix<T> hC_gold(
+            direction, Mb, Nb, *hbsr_nnzb, row_block_dim, col_block_dim, bsr_base);
+        host_csr_to_gebsr(direction,
+                          hA.m,
+                          hA.n,
+                          hA.nnz,
+                          hA.val,
+                          hA.ptr,
+                          hA.ind,
+                          row_block_dim,
+                          col_block_dim,
+                          csr_base,
+                          hC_gold.val,
+                          hC_gold.ptr,
+                          hC_gold.ind,
+                          bsr_base);
 
-        // Copy BSR matrix output to host
-        CHECK_HIP_ERROR(hipMemcpy(
-            hbsr_row_ptr, dbsr_row_ptr, sizeof(rocsparse_int) * (Mb + 1), hipMemcpyDeviceToHost));
-
-        CHECK_HIP_ERROR(hipMemcpy(
-            hbsr_col_ind, dbsr_col_ind, sizeof(rocsparse_int) * hbsr_nnzb, hipMemcpyDeviceToHost));
-
-        CHECK_HIP_ERROR(hipMemcpy(hbsr_val,
-                                  dbsr_val,
-                                  sizeof(T) * hbsr_nnzb * row_block_dim * col_block_dim,
-                                  hipMemcpyDeviceToHost));
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        // Convert BSR matrix back to CSR for comparison with original compressed CSR matrix
-        M = Mb * row_block_dim;
-        N = Nb * col_block_dim;
-
-        device_vector<rocsparse_int> dcsr_row_ptr_gold_A(M + 1);
-        device_vector<rocsparse_int> dcsr_col_ind_gold_A(size_t(hbsr_nnzb) * row_block_dim
-                                                         * col_block_dim);
-        device_vector<T> dcsr_val_gold_A(size_t(hbsr_nnzb) * row_block_dim * col_block_dim);
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2csr<T>(handle,
-                                                     direction,
-                                                     Mb,
-                                                     Nb,
-                                                     bsr_descr,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     row_block_dim,
-                                                     col_block_dim,
-                                                     csr_descr,
-                                                     dcsr_val_gold_A,
-                                                     dcsr_row_ptr_gold_A,
-                                                     dcsr_col_ind_gold_A));
-
-        // Compress the CSR matrix (the matrix may have retained zeros when we converted the BSR matrix back to CSR format)
-        rocsparse_int                nnz_gold_C;
-        device_vector<rocsparse_int> dnnz_per_row_gold(M);
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_nnz_compress<T>(handle,
-                                                        M,
-                                                        csr_descr,
-                                                        dcsr_val_gold_A,
-                                                        dcsr_row_ptr_gold_A,
-                                                        dnnz_per_row_gold,
-                                                        &nnz_gold_C,
-                                                        tol));
-
-        // Allocate device memory for the compressed version of the CSR matrix
-        device_vector<rocsparse_int> dcsr_row_ptr_gold_C(M + 1);
-        device_vector<rocsparse_int> dcsr_col_ind_gold_C(nnz_gold_C);
-        device_vector<T>             dcsr_val_gold_C(nnz_gold_C);
-
-        // Finish compression
-        CHECK_ROCSPARSE_ERROR(
-            rocsparse_csr2csr_compress<T>(handle,
-                                          M,
-                                          N,
-                                          csr_descr,
-                                          dcsr_val_gold_A,
-                                          dcsr_row_ptr_gold_A,
-                                          dcsr_col_ind_gold_A,
-                                          hbsr_nnzb * row_block_dim * col_block_dim,
-                                          dnnz_per_row_gold,
-                                          dcsr_val_gold_C,
-                                          dcsr_row_ptr_gold_C,
-                                          dcsr_col_ind_gold_C,
-                                          tol));
-
-        // Allocate host memory for compressed CSR matrix
-        host_vector<rocsparse_int> hcsr_row_ptr_gold_C(M + 1);
-        host_vector<rocsparse_int> hcsr_col_ind_gold_C(nnz_gold_C);
-        host_vector<T>             hcsr_val_gold_C(nnz_gold_C);
-
-        // Copy compressed CSR matrix to host
-        CHECK_HIP_ERROR(hipMemcpy(hcsr_row_ptr_gold_C,
-                                  dcsr_row_ptr_C,
-                                  sizeof(rocsparse_int) * (M + 1),
-                                  hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hcsr_col_ind_gold_C,
-                                  dcsr_col_ind_C,
-                                  sizeof(rocsparse_int) * nnz_gold_C,
-                                  hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(hcsr_val_gold_C, dcsr_val_C, sizeof(T) * nnz_gold_C, hipMemcpyDeviceToHost));
-
-        // Compare with the original compressed CSR matrix. Note: The compressed CSR matrix we found when converting
-        // from BSR back to CSR format may contain extra rows that are zero. Therefore just compare the rows found
-        // in the original CSR matrix
-        unit_check_segments<rocsparse_int>(
-            hcsr_row_ptr_C.size(), hcsr_row_ptr_gold_C, hcsr_row_ptr_C);
-        unit_check_segments<rocsparse_int>(
-            hcsr_col_ind_C.size(), hcsr_col_ind_gold_C, hcsr_col_ind_C);
+        hC_gold.near_check(dC);
     }
 
     if(arg.timing)
@@ -407,66 +232,25 @@ void testing_csr2gebsr(const Arguments& arg)
         int number_cold_calls = 2;
         int number_hot_calls  = arg.iters;
 
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        rocsparse_int hbsr_nnzb;
-
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_nnz(handle,
-                                                          direction,
-                                                          M,
-                                                          N,
-                                                          csr_descr,
-                                                          dcsr_row_ptr_C,
-                                                          dcsr_col_ind_C,
-                                                          bsr_descr,
-                                                          dbsr_row_ptr,
-                                                          row_block_dim,
-                                                          col_block_dim,
-                                                          &hbsr_nnzb,
-                                                          (void*)dbuffer));
-
-            // Allocate device memory for BSR col indices and values array
-            device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
-            device_vector<T> dbsr_val(size_t(hbsr_nnzb) * row_block_dim * col_block_dim);
-
             CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr<T>(handle,
                                                          direction,
-                                                         M,
-                                                         N,
+                                                         dA.m,
+                                                         dA.n,
                                                          csr_descr,
-                                                         dcsr_val_C,
-                                                         dcsr_row_ptr_C,
-                                                         dcsr_col_ind_C,
+                                                         dA.val,
+                                                         dA.ptr,
+                                                         dA.ind,
                                                          bsr_descr,
-                                                         dbsr_val,
-                                                         dbsr_row_ptr,
-                                                         dbsr_col_ind,
+                                                         dC.val,
+                                                         dC.ptr,
+                                                         dC.ind,
                                                          row_block_dim,
                                                          col_block_dim,
-                                                         (void*)dbuffer));
+                                                         dbuffer));
         }
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_nnz(handle,
-                                                      direction,
-                                                      M,
-                                                      N,
-                                                      csr_descr,
-                                                      dcsr_row_ptr_C,
-                                                      dcsr_col_ind_C,
-                                                      bsr_descr,
-                                                      dbsr_row_ptr,
-
-                                                      row_block_dim,
-                                                      col_block_dim,
-                                                      &hbsr_nnzb,
-                                                      (void*)dbuffer));
-
-        // Allocate device memory for BSR col indices and values array
-        device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
-        device_vector<T>             dbsr_val(size_t(hbsr_nnzb) * row_block_dim * col_block_dim);
 
         double gpu_time_used = get_time_us();
 
@@ -475,26 +259,25 @@ void testing_csr2gebsr(const Arguments& arg)
         {
             CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr<T>(handle,
                                                          direction,
-                                                         M,
-                                                         N,
+                                                         dA.m,
+                                                         dA.n,
                                                          csr_descr,
-                                                         dcsr_val_C,
-                                                         dcsr_row_ptr_C,
-                                                         dcsr_col_ind_C,
-
+                                                         dA.val,
+                                                         dA.ptr,
+                                                         dA.ind,
                                                          bsr_descr,
-                                                         dbsr_val,
-                                                         dbsr_row_ptr,
-                                                         dbsr_col_ind,
+                                                         dC.val,
+                                                         dC.ptr,
+                                                         dC.ind,
                                                          row_block_dim,
                                                          col_block_dim,
-                                                         (void*)dbuffer));
+                                                         dbuffer));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
         double gbyte_count
-            = csr2gebsr_gbyte_count<T>(M, Mb, nnz, hbsr_nnzb, row_block_dim, col_block_dim);
+            = csr2gebsr_gbyte_count<T>(M, Mb, hA.nnz, *hbsr_nnzb, row_block_dim, col_block_dim);
         double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
         display_timing_info("M",
@@ -505,12 +288,12 @@ void testing_csr2gebsr(const Arguments& arg)
                             Mb,
                             "Nb",
                             Nb,
-                            "rowblockdim",
+                            "row_block_dim",
                             row_block_dim,
-                            "colblockdim",
+                            "col_block_dim",
                             col_block_dim,
                             "nnzb",
-                            hbsr_nnzb,
+                            *hbsr_nnzb,
                             s_timing_info_bandwidth,
                             gpu_gbyte,
                             s_timing_info_time,

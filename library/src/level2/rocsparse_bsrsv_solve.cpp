@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -197,21 +197,21 @@ template <unsigned int  BLOCKSIZE,
           bool          SLEEP,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrsv_lower_shared(rocsparse_int mb,
-                            U             alpha_device_host,
-                            const rocsparse_int* __restrict__ bsr_row_ptr,
-                            const rocsparse_int* __restrict__ bsr_col_ind,
-                            const T* __restrict__ bsr_val,
-                            rocsparse_int block_dim,
-                            const T* __restrict__ x,
-                            T* __restrict__ y,
-                            int* __restrict__ done_array,
-                            rocsparse_int* __restrict__ map,
-                            rocsparse_int* __restrict__ zero_pivot,
-                            rocsparse_index_base idx_base,
-                            rocsparse_diag_type  diag_type,
-                            rocsparse_direction  dir)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrsv_lower_shared(rocsparse_int mb,
+                        U             alpha_device_host,
+                        const rocsparse_int* __restrict__ bsr_row_ptr,
+                        const rocsparse_int* __restrict__ bsr_col_ind,
+                        const T* __restrict__ bsr_val,
+                        rocsparse_int block_dim,
+                        const T* __restrict__ x,
+                        T* __restrict__ y,
+                        int* __restrict__ done_array,
+                        rocsparse_int* __restrict__ map,
+                        rocsparse_int* __restrict__ zero_pivot,
+                        rocsparse_index_base idx_base,
+                        rocsparse_diag_type  diag_type,
+                        rocsparse_direction  dir)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     bsrsv_lower_shared_device<BLOCKSIZE, WFSIZE, BSRDIM, SLEEP>(mb,
@@ -236,21 +236,21 @@ template <unsigned int  BLOCKSIZE,
           bool          SLEEP,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrsv_upper_shared(rocsparse_int mb,
-                            U             alpha_device_host,
-                            const rocsparse_int* __restrict__ bsr_row_ptr,
-                            const rocsparse_int* __restrict__ bsr_col_ind,
-                            const T* __restrict__ bsr_val,
-                            rocsparse_int block_dim,
-                            const T* __restrict__ x,
-                            T* __restrict__ y,
-                            int* __restrict__ done_array,
-                            rocsparse_int* __restrict__ map,
-                            rocsparse_int* __restrict__ zero_pivot,
-                            rocsparse_index_base idx_base,
-                            rocsparse_diag_type  diag_type,
-                            rocsparse_direction  dir)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrsv_upper_shared(rocsparse_int mb,
+                        U             alpha_device_host,
+                        const rocsparse_int* __restrict__ bsr_row_ptr,
+                        const rocsparse_int* __restrict__ bsr_col_ind,
+                        const T* __restrict__ bsr_val,
+                        rocsparse_int block_dim,
+                        const T* __restrict__ x,
+                        T* __restrict__ y,
+                        int* __restrict__ done_array,
+                        rocsparse_int* __restrict__ map,
+                        rocsparse_int* __restrict__ zero_pivot,
+                        rocsparse_index_base idx_base,
+                        rocsparse_diag_type  diag_type,
+                        rocsparse_direction  dir)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     bsrsv_upper_shared_device<BLOCKSIZE, WFSIZE, BSRDIM, SLEEP>(mb,
@@ -270,21 +270,21 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrsv_lower_general(rocsparse_int mb,
-                             U             alpha_device_host,
-                             const rocsparse_int* __restrict__ bsr_row_ptr,
-                             const rocsparse_int* __restrict__ bsr_col_ind,
-                             const T* __restrict__ bsr_val,
-                             rocsparse_int block_dim,
-                             const T* __restrict__ x,
-                             T* __restrict__ y,
-                             int* __restrict__ done_array,
-                             rocsparse_int* __restrict__ map,
-                             rocsparse_int* __restrict__ zero_pivot,
-                             rocsparse_index_base idx_base,
-                             rocsparse_diag_type  diag_type,
-                             rocsparse_direction  dir)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrsv_lower_general(rocsparse_int mb,
+                         U             alpha_device_host,
+                         const rocsparse_int* __restrict__ bsr_row_ptr,
+                         const rocsparse_int* __restrict__ bsr_col_ind,
+                         const T* __restrict__ bsr_val,
+                         rocsparse_int block_dim,
+                         const T* __restrict__ x,
+                         T* __restrict__ y,
+                         int* __restrict__ done_array,
+                         rocsparse_int* __restrict__ map,
+                         rocsparse_int* __restrict__ zero_pivot,
+                         rocsparse_index_base idx_base,
+                         rocsparse_diag_type  diag_type,
+                         rocsparse_direction  dir)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     bsrsv_lower_general_device<BLOCKSIZE, WFSIZE, SLEEP>(mb,
@@ -304,21 +304,21 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrsv_upper_general(rocsparse_int mb,
-                             U             alpha_device_host,
-                             const rocsparse_int* __restrict__ bsr_row_ptr,
-                             const rocsparse_int* __restrict__ bsr_col_ind,
-                             const T* __restrict__ bsr_val,
-                             rocsparse_int block_dim,
-                             const T* __restrict__ x,
-                             T* __restrict__ y,
-                             int* __restrict__ done_array,
-                             rocsparse_int* __restrict__ map,
-                             rocsparse_int* __restrict__ zero_pivot,
-                             rocsparse_index_base idx_base,
-                             rocsparse_diag_type  diag_type,
-                             rocsparse_direction  dir)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrsv_upper_general(rocsparse_int mb,
+                         U             alpha_device_host,
+                         const rocsparse_int* __restrict__ bsr_row_ptr,
+                         const rocsparse_int* __restrict__ bsr_col_ind,
+                         const T* __restrict__ bsr_val,
+                         rocsparse_int block_dim,
+                         const T* __restrict__ x,
+                         T* __restrict__ y,
+                         int* __restrict__ done_array,
+                         rocsparse_int* __restrict__ map,
+                         rocsparse_int* __restrict__ zero_pivot,
+                         rocsparse_index_base idx_base,
+                         rocsparse_diag_type  diag_type,
+                         rocsparse_direction  dir)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     bsrsv_upper_general_device<BLOCKSIZE, WFSIZE, SLEEP>(mb,
@@ -366,7 +366,7 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
 
     // done array
     int* done_array = reinterpret_cast<int*>(ptr);
-    ptr += sizeof(int) * ((mb - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(int) * mb - 1) / 256 + 1) * 256;
 
     // Initialize buffers
     RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * mb, stream));
@@ -392,9 +392,6 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
                                            sizeof(rocsparse_int),
                                            hipMemcpyHostToDevice,
                                            stream));
-
-        // Wait for device transfer to finish
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     }
 
     // Pointers to differentiate between transpose mode

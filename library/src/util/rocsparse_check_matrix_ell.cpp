@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -117,7 +117,7 @@ rocsparse_status rocsparse_check_matrix_ell_buffer_size_template(rocsparse_handl
     }
 
     // data status
-    *buffer_size = sizeof(rocsparse_data_status) * 256;
+    *buffer_size = ((sizeof(rocsparse_data_status) - 1) / 256 + 1) * 256;
     return rocsparse_status_success;
 }
 
@@ -223,7 +223,7 @@ rocsparse_status rocsparse_check_matrix_ell_template(rocsparse_handle       hand
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
     rocsparse_data_status* d_data_status = reinterpret_cast<rocsparse_data_status*>(ptr);
-    ptr += sizeof(rocsparse_data_status) * 256;
+    ptr += ((sizeof(rocsparse_data_status) - 1) / 256 + 1) * 256;
 
     RETURN_IF_HIP_ERROR(hipMemsetAsync(d_data_status, 0, sizeof(rocsparse_data_status)));
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));

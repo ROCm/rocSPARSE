@@ -27,20 +27,20 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM, typename T, typename U>
-__device__ void bsrilu0_2_8_device(rocsparse_direction  dir,
-                                   rocsparse_int        mb,
-                                   const rocsparse_int* bsr_row_ptr,
-                                   const rocsparse_int* bsr_col_ind,
-                                   T*                   bsr_val,
-                                   const rocsparse_int* bsr_diag_ind,
-                                   rocsparse_int        block_dim,
-                                   int*                 done_array,
-                                   const rocsparse_int* map,
-                                   rocsparse_int*       zero_pivot,
-                                   rocsparse_index_base idx_base,
-                                   int                  boost,
-                                   U                    boost_tol,
-                                   T                    boost_val)
+ROCSPARSE_DEVICE_ILF void bsrilu0_2_8_device(rocsparse_direction  dir,
+                                             rocsparse_int        mb,
+                                             const rocsparse_int* bsr_row_ptr,
+                                             const rocsparse_int* bsr_col_ind,
+                                             T*                   bsr_val,
+                                             const rocsparse_int* bsr_diag_ind,
+                                             rocsparse_int        block_dim,
+                                             int*                 done_array,
+                                             const rocsparse_int* map,
+                                             rocsparse_int*       zero_pivot,
+                                             rocsparse_index_base idx_base,
+                                             int                  boost,
+                                             U                    boost_tol,
+                                             T                    boost_val)
 {
     // Current row this wavefront is working on
     rocsparse_int row = map[blockIdx.x];
@@ -322,20 +322,20 @@ __device__ void bsrilu0_2_8_device(rocsparse_direction  dir,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM, typename T, typename U>
-__device__ void bsrilu0_9_32_device(rocsparse_direction  dir,
-                                    rocsparse_int        mb,
-                                    const rocsparse_int* bsr_row_ptr,
-                                    const rocsparse_int* bsr_col_ind,
-                                    T*                   bsr_val,
-                                    const rocsparse_int* bsr_diag_ind,
-                                    rocsparse_int        block_dim,
-                                    int*                 done_array,
-                                    const rocsparse_int* map,
-                                    rocsparse_int*       zero_pivot,
-                                    rocsparse_index_base idx_base,
-                                    int                  boost,
-                                    U                    boost_tol,
-                                    T                    boost_val)
+ROCSPARSE_DEVICE_ILF void bsrilu0_9_32_device(rocsparse_direction  dir,
+                                              rocsparse_int        mb,
+                                              const rocsparse_int* bsr_row_ptr,
+                                              const rocsparse_int* bsr_col_ind,
+                                              T*                   bsr_val,
+                                              const rocsparse_int* bsr_diag_ind,
+                                              rocsparse_int        block_dim,
+                                              int*                 done_array,
+                                              const rocsparse_int* map,
+                                              rocsparse_int*       zero_pivot,
+                                              rocsparse_index_base idx_base,
+                                              int                  boost,
+                                              U                    boost_tol,
+                                              T                    boost_val)
 {
     constexpr static unsigned int DIMX = BSRDIM;
     constexpr static unsigned int DIMY = BLOCKSIZE / BSRDIM;
@@ -649,20 +649,20 @@ __device__ void bsrilu0_9_32_device(rocsparse_direction  dir,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM, typename T, typename U>
-__device__ void bsrilu0_33_64_device(rocsparse_direction  dir,
-                                     rocsparse_int        mb,
-                                     const rocsparse_int* bsr_row_ptr,
-                                     const rocsparse_int* bsr_col_ind,
-                                     T*                   bsr_val,
-                                     const rocsparse_int* bsr_diag_ind,
-                                     rocsparse_int        block_dim,
-                                     int*                 done_array,
-                                     const rocsparse_int* map,
-                                     rocsparse_int*       zero_pivot,
-                                     rocsparse_index_base idx_base,
-                                     int                  boost,
-                                     U                    boost_tol,
-                                     T                    boost_val)
+ROCSPARSE_DEVICE_ILF void bsrilu0_33_64_device(rocsparse_direction  dir,
+                                               rocsparse_int        mb,
+                                               const rocsparse_int* bsr_row_ptr,
+                                               const rocsparse_int* bsr_col_ind,
+                                               T*                   bsr_val,
+                                               const rocsparse_int* bsr_diag_ind,
+                                               rocsparse_int        block_dim,
+                                               int*                 done_array,
+                                               const rocsparse_int* map,
+                                               rocsparse_int*       zero_pivot,
+                                               rocsparse_index_base idx_base,
+                                               int                  boost,
+                                               U                    boost_tol,
+                                               T                    boost_val)
 {
     constexpr static unsigned int DIMX = BSRDIM;
     constexpr static unsigned int DIMY = BLOCKSIZE / BSRDIM;
@@ -956,20 +956,20 @@ __device__ void bsrilu0_33_64_device(rocsparse_direction  dir,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-__device__ void bsrilu0_general_device(rocsparse_direction  dir,
-                                       rocsparse_int        mb,
-                                       const rocsparse_int* bsr_row_ptr,
-                                       const rocsparse_int* bsr_col_ind,
-                                       T*                   bsr_val,
-                                       const rocsparse_int* bsr_diag_ind,
-                                       rocsparse_int        block_dim,
-                                       int*                 done_array,
-                                       const rocsparse_int* map,
-                                       rocsparse_int*       zero_pivot,
-                                       rocsparse_index_base idx_base,
-                                       int                  boost,
-                                       U                    boost_tol,
-                                       T                    boost_val)
+ROCSPARSE_DEVICE_ILF void bsrilu0_general_device(rocsparse_direction  dir,
+                                                 rocsparse_int        mb,
+                                                 const rocsparse_int* bsr_row_ptr,
+                                                 const rocsparse_int* bsr_col_ind,
+                                                 T*                   bsr_val,
+                                                 const rocsparse_int* bsr_diag_ind,
+                                                 rocsparse_int        block_dim,
+                                                 int*                 done_array,
+                                                 const rocsparse_int* map,
+                                                 rocsparse_int*       zero_pivot,
+                                                 rocsparse_index_base idx_base,
+                                                 int                  boost,
+                                                 U                    boost_tol,
+                                                 T                    boost_val)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;

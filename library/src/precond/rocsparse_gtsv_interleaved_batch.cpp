@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -106,22 +106,22 @@ rocsparse_status
     case rocsparse_gtsv_interleaved_alg_thomas:
     {
         *buffer_size = 0;
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dc1
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dx1
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // dc1
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // dx1
         break;
     }
     case rocsparse_gtsv_interleaved_alg_lu:
     {
         *buffer_size = 0;
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // u2
-        *buffer_size += sizeof(rocsparse_int) * ((m * batch_count - 1) / 256 + 1) * 256; // p
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // u2
+        *buffer_size += ((sizeof(rocsparse_int) * m * batch_count - 1) / 256 + 1) * 256; // p
         break;
     }
     case rocsparse_gtsv_interleaved_alg_default:
     case rocsparse_gtsv_interleaved_alg_qr:
     {
         *buffer_size = 0;
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // r2
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // r2
         break;
     }
     }
@@ -142,9 +142,9 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_thomas_template(rocsparse_hand
 {
     char* ptr = reinterpret_cast<char*>(temp_buffer);
     T*    dc1 = reinterpret_cast<T*>(temp_buffer);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
     T* dx1 = reinterpret_cast<T*>(reinterpret_cast<void*>(ptr));
-    //  ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    //  ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
 
     hipLaunchKernelGGL((gtsv_interleaved_batch_thomas_kernel<128>),
                        dim3(((batch_count - 1) / 128 + 1), 1, 1),
@@ -177,12 +177,12 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_lu_template(rocsparse_handle h
 {
     char* ptr = reinterpret_cast<char*>(temp_buffer);
     T*    u2  = reinterpret_cast<T*>(temp_buffer);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
     rocsparse_int* p = reinterpret_cast<rocsparse_int*>(reinterpret_cast<void*>(ptr));
-    // ptr += sizeof(rocsparse_int) * ((m * batch_count - 1) / 256 + 1) * 256;
+    // ptr += ((sizeof(rocsparse_int) * m * batch_count - 1) / 256 + 1) * 256;
 
     RETURN_IF_HIP_ERROR(
-        hipMemsetAsync(u2, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+        hipMemsetAsync(u2, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
 
     hipLaunchKernelGGL((gtsv_interleaved_batch_lu_kernel<128>),
                        dim3(((batch_count - 1) / 128 + 1), 1, 1),
@@ -215,10 +215,10 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_qr_template(rocsparse_handle h
 {
     char* ptr = reinterpret_cast<char*>(temp_buffer);
     T*    r2  = reinterpret_cast<T*>(ptr);
-    //   ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    //   ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
 
     RETURN_IF_HIP_ERROR(
-        hipMemsetAsync(r2, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+        hipMemsetAsync(r2, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
 
     hipLaunchKernelGGL((gtsv_interleaved_batch_qr_kernel<128>),
                        dim3(((batch_count - 1) / 128 + 1), 1, 1),

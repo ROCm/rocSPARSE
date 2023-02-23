@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,12 +46,14 @@ rocsparse_status rocsparse_nrminf_diff(rocsparse_handle          handle_,
                                        const floating_data_t<T>* nrm0_,
                                        bool                      MX);
 
-template <typename T, typename I, typename J>
-struct calculator_inverse_diagonal_t
+namespace
 {
+    template <typename T, typename I, typename J>
+    struct calculator_inverse_diagonal_t
+    {
 
-    template <unsigned int BLOCKSIZE, bool CONJ>
-    __launch_bounds__(BLOCKSIZE) static __global__
+        template <unsigned int BLOCKSIZE, bool CONJ>
+        ROCSPARSE_KERNEL(BLOCKSIZE)
         void kernel_inverse_diagonal(J m,
                                      const J* __restrict__ ind,
                                      const T* __restrict__ val,
@@ -61,18 +63,24 @@ struct calculator_inverse_diagonal_t
                                      const J              ptr_shift,
                                      rocsparse_index_base ptr_diag_base,
                                      rocsparse_int* __restrict__ zero_pivot)
-    {
-        const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
-        if(tid < m)
         {
-            const I k = ptr_diag[tid] - ptr_diag_base + ptr_shift;
-            const J j = ind[k] - base;
-            if(j == tid)
+            const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+            if(tid < m)
             {
-                const T local_val = (!CONJ) ? val[k] : rocsparse_conj(val[k]);
-                if(local_val != static_cast<T>(0))
+                const I k = ptr_diag[tid] - ptr_diag_base + ptr_shift;
+                const J j = ind[k] - base;
+                if(j == tid)
                 {
-                    invdiag[tid] = static_cast<T>(1) / local_val;
+                    const T local_val = (!CONJ) ? val[k] : rocsparse_conj(val[k]);
+                    if(local_val != static_cast<T>(0))
+                    {
+                        invdiag[tid] = static_cast<T>(1) / local_val;
+                    }
+                    else
+                    {
+                        atomicMin(zero_pivot, tid + base);
+                        invdiag[tid] = static_cast<T>(1);
+                    }
                 }
                 else
                 {
@@ -80,81 +88,79 @@ struct calculator_inverse_diagonal_t
                     invdiag[tid] = static_cast<T>(1);
                 }
             }
-            else
+        }
+
+        static rocsparse_status calculate(rocsparse_handle    handle,
+                                          rocsparse_operation trans,
+                                          J                   m,
+                                          I                   nnz,
+                                          const J* __restrict__ csr_ind,
+                                          const T* __restrict__ csr_val,
+                                          rocsparse_index_base csr_base,
+                                          T*                   invdiag,
+                                          const I* __restrict__ csr_diag_ind,
+                                          J                    ptr_shift,
+                                          rocsparse_index_base csr_diag_ind_base,
+                                          rocsparse_int* __restrict__ zero_pivot)
+        {
+            //
+            // Compute inverse of the diagonal.
+            //
+            static constexpr unsigned int BLOCKSIZE = 1024;
+            dim3                          blocks((m - 1) / BLOCKSIZE + 1);
+            dim3                          threads(BLOCKSIZE);
+            switch(trans)
             {
-                atomicMin(zero_pivot, tid + base);
-                invdiag[tid] = static_cast<T>(1);
+            case rocsparse_operation_transpose:
+            case rocsparse_operation_none:
+            {
+                hipLaunchKernelGGL((kernel_inverse_diagonal<BLOCKSIZE, false>),
+                                   blocks,
+                                   threads,
+                                   0,
+                                   handle->stream,
+                                   m,
+                                   csr_ind,
+                                   csr_val,
+                                   csr_base,
+                                   invdiag,
+                                   csr_diag_ind,
+                                   ptr_shift,
+                                   csr_diag_ind_base,
+                                   zero_pivot);
+                break;
             }
-        }
-    }
+            case rocsparse_operation_conjugate_transpose:
+            {
+                hipLaunchKernelGGL((kernel_inverse_diagonal<BLOCKSIZE, true>),
+                                   blocks,
+                                   threads,
+                                   0,
+                                   handle->stream,
+                                   m,
+                                   csr_ind,
+                                   csr_val,
+                                   csr_base,
+                                   invdiag,
+                                   csr_diag_ind,
+                                   ptr_shift,
+                                   csr_diag_ind_base,
+                                   zero_pivot);
+                break;
+            }
+            }
 
-    static rocsparse_status calculate(rocsparse_handle    handle,
-                                      rocsparse_operation trans,
-                                      J                   m,
-                                      I                   nnz,
-                                      const J* __restrict__ csr_ind,
-                                      const T* __restrict__ csr_val,
-                                      rocsparse_index_base csr_base,
-                                      T*                   invdiag,
-                                      const I* __restrict__ csr_diag_ind,
-                                      J                    ptr_shift,
-                                      rocsparse_index_base csr_diag_ind_base,
-                                      rocsparse_int* __restrict__ zero_pivot)
-    {
-        //
-        // Compute inverse of the diagonal.
-        //
-        static constexpr unsigned int BLOCKSIZE = 1024;
-        dim3                          blocks((m - 1) / BLOCKSIZE + 1);
-        dim3                          threads(BLOCKSIZE);
-        switch(trans)
-        {
-        case rocsparse_operation_transpose:
-        case rocsparse_operation_none:
-        {
-            hipLaunchKernelGGL((kernel_inverse_diagonal<BLOCKSIZE, false>),
-                               blocks,
-                               threads,
-                               0,
-                               handle->stream,
-                               m,
-                               csr_ind,
-                               csr_val,
-                               csr_base,
-                               invdiag,
-                               csr_diag_ind,
-                               ptr_shift,
-                               csr_diag_ind_base,
-                               zero_pivot);
-            break;
+            return rocsparse_status_success;
         }
-        case rocsparse_operation_conjugate_transpose:
-        {
-            hipLaunchKernelGGL((kernel_inverse_diagonal<BLOCKSIZE, true>),
-                               blocks,
-                               threads,
-                               0,
-                               handle->stream,
-                               m,
-                               csr_ind,
-                               csr_val,
-                               csr_base,
-                               invdiag,
-                               csr_diag_ind,
-                               ptr_shift,
-                               csr_diag_ind_base,
-                               zero_pivot);
-            break;
-        }
-        }
-
-        return rocsparse_status_success;
-    }
-};
+    };
+}
 
 template <unsigned int BLOCKSIZE, typename J, typename T>
-__launch_bounds__(BLOCKSIZE) static __global__ void kernel_add_scaled_residual(
-    J m, const T* __restrict__ r_, T* __restrict__ y_, const T* __restrict__ invdiag)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_add_scaled_residual(J m,
+                                const T* __restrict__ r_,
+                                T* __restrict__ y_,
+                                const T* __restrict__ invdiag)
 {
     const unsigned int tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)
@@ -433,6 +439,7 @@ rocsparse_status rocsparse_csritsv_solve_template(rocsparse_handle          hand
                                            sizeof(rocsparse_int),
                                            hipMemcpyDeviceToHost,
                                            handle->stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
         if(zero_pivot != std::numeric_limits<rocsparse_int>::max())
         {
             return rocsparse_status_success;

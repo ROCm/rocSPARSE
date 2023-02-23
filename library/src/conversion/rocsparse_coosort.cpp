@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,13 +99,13 @@ extern "C" rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle     h
     // for all temporary arrays
 
     // rows buffer
-    *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * nnz - 1) / 256 + 1) * 256;
     // columns buffer
-    *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * nnz - 1) / 256 + 1) * 256;
     // perm buffer
-    *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * nnz - 1) / 256 + 1) * 256;
     // segment buffer
-    *buffer_size += sizeof(rocsparse_int) * (std::max(m, n) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * std::max(m, n)) / 256 + 1) * 256;
 
     return rocsparse_status_success;
 }
@@ -167,16 +167,16 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
 
     // Permutation vector given
     rocsparse_int* work1 = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(rocsparse_int) * nnz - 1) / 256 + 1) * 256;
 
     rocsparse_int* work2 = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(rocsparse_int) * nnz - 1) / 256 + 1) * 256;
 
     rocsparse_int* work3 = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(rocsparse_int) * nnz - 1) / 256 + 1) * 256;
 
     rocsparse_int* work4 = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * (std::max(m, n) / 256 + 1) * 256;
+    ptr += ((sizeof(rocsparse_int) * std::max(m, n)) / 256 + 1) * 256;
 
     // Temporary rocprim buffer
     size_t size        = 0;

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -163,7 +163,7 @@ static rocsparse_status csrilu0(rocsparse_handle          handle_,
 
     rocsparse_csrilu0_clear(handle_, info_);
 
-    if(hipSuccess != hipFree(dbuffer))
+    if(hipSuccess != rocsparse_hipFree(dbuffer))
     {
         return rocsparse_status_memory_error;
     }
@@ -301,6 +301,7 @@ struct csritilu0_params_t
 template <typename T>
 void testing_csritilu0(const Arguments& arg)
 {
+    static constexpr bool          verbose   = false;
     static constexpr rocsparse_int s_maxiter = 1000;
     floating_data_t<T> tol = (sizeof(floating_data_t<T>) == sizeof(float)) ? 2e-7 : 5e-15;
     if(arg.numericboost)
@@ -375,7 +376,7 @@ void testing_csritilu0(const Arguments& arg)
     {
         CHECK_ROCSPARSE_ERROR(status);
     }
-    CHECK_HIP_ERROR(hipMalloc(&buffer, buffer_size));
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&buffer, buffer_size));
     rocsparse_status       status_buffer_size = status;
     device_dense_vector<T> ilu0(dA.nnz);
     if(arg.unit_check)
@@ -497,8 +498,12 @@ void testing_csritilu0(const Arguments& arg)
             {
                 if(p.maxiter != 1)
                 {
-                    std::cerr << "update the Gaussian elimination takes more than 1 iteration ( = "
-                              << p.maxiter << " )" << std::endl;
+                    if(verbose)
+                    {
+                        std::cerr
+                            << "update the Gaussian elimination takes more than 1 iteration ( = "
+                            << p.maxiter << " )" << std::endl;
+                    }
                     if((p.options & rocsparse_itilu0_option_convergence_history) > 0)
                     {
                         floating_data_t<T>* history       = new floating_data_t<T>[p.maxiter * 2];
@@ -740,7 +745,7 @@ void testing_csritilu0(const Arguments& arg)
                             "buffer_size",
                             buffer_size);
     }
-    CHECK_HIP_ERROR(hipFree(buffer));
+    CHECK_HIP_ERROR(rocsparse_hipFree(buffer));
 }
 
 #define INSTANTIATE(TYPE)                                                \

@@ -30,10 +30,10 @@
 // Compute non-zero entries per CSR row and do a block reduction over the maximum
 // Store result in a workspace for final reduction on part2
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void ell_width_kernel_part1(rocsparse_int        m,
-                                const rocsparse_int* csr_row_ptr,
-                                rocsparse_int*       workspace)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void ell_width_kernel_part1(rocsparse_int        m,
+                            const rocsparse_int* csr_row_ptr,
+                            rocsparse_int*       workspace)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
@@ -58,8 +58,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 // Part2 kernel for final reduction over the maximum CSR nnz row entries
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace)
 {
     rocsparse_int tid = hipThreadIdx_x;
 
@@ -83,15 +83,16 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 // CSR to ELL format conversion kernel
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csr2ell_kernel(rocsparse_int        m,
-                                                                  const T*             csr_val,
-                                                                  const rocsparse_int* csr_row_ptr,
-                                                                  const rocsparse_int* csr_col_ind,
-                                                                  rocsparse_index_base csr_idx_base,
-                                                                  rocsparse_int        ell_width,
-                                                                  rocsparse_int*       ell_col_ind,
-                                                                  T*                   ell_val,
-                                                                  rocsparse_index_base ell_idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2ell_kernel(rocsparse_int        m,
+                    const T*             csr_val,
+                    const rocsparse_int* csr_row_ptr,
+                    const rocsparse_int* csr_col_ind,
+                    rocsparse_index_base csr_idx_base,
+                    rocsparse_int        ell_width,
+                    rocsparse_int*       ell_col_ind,
+                    T*                   ell_val,
+                    rocsparse_index_base ell_idx_base)
 {
     rocsparse_int ai = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

@@ -27,11 +27,12 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void gpsv_strided_gather(rocsparse_int m,
-                                                                       rocsparse_int batch_count,
-                                                                       rocsparse_int batch_stride,
-                                                                       const T* __restrict__ in,
-                                                                       T* __restrict__ out)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gpsv_strided_gather(rocsparse_int m,
+                         rocsparse_int batch_count,
+                         rocsparse_int batch_stride,
+                         const T* __restrict__ in,
+                         T* __restrict__ out)
 {
     // Current batch this thread works on
     rocsparse_int b = blockIdx.x * blockDim.x + threadIdx.x;
@@ -50,19 +51,19 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void gpsv_strided_gather(rocsparse
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gpsv_interleaved_batch_householder_qr_kernel(rocsparse_int m,
-                                                      rocsparse_int batch_count,
-                                                      rocsparse_int batch_stride,
-                                                      T* __restrict__ ds,
-                                                      T* __restrict__ dl,
-                                                      T* __restrict__ d,
-                                                      T* __restrict__ du,
-                                                      T* __restrict__ dw,
-                                                      T* __restrict__ X,
-                                                      T* __restrict__ t1,
-                                                      T* __restrict__ t2,
-                                                      T* __restrict__ B)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gpsv_interleaved_batch_householder_qr_kernel(rocsparse_int m,
+                                                  rocsparse_int batch_count,
+                                                  rocsparse_int batch_stride,
+                                                  T* __restrict__ ds,
+                                                  T* __restrict__ dl,
+                                                  T* __restrict__ d,
+                                                  T* __restrict__ du,
+                                                  T* __restrict__ dw,
+                                                  T* __restrict__ X,
+                                                  T* __restrict__ t1,
+                                                  T* __restrict__ t2,
+                                                  T* __restrict__ B)
 {
     // Current batch this thread works on
     rocsparse_int b = blockIdx.x * blockDim.x + threadIdx.x;
@@ -187,18 +188,18 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gpsv_interleaved_batch_givens_qr_kernel(rocsparse_int m,
-                                                 rocsparse_int batch_count,
-                                                 rocsparse_int batch_stride,
-                                                 T* __restrict__ ds,
-                                                 T* __restrict__ dl,
-                                                 T* __restrict__ d,
-                                                 T* __restrict__ du,
-                                                 T* __restrict__ dw,
-                                                 T* __restrict__ r3,
-                                                 T* __restrict__ r4,
-                                                 T* __restrict__ x)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gpsv_interleaved_batch_givens_qr_kernel(rocsparse_int m,
+                                             rocsparse_int batch_count,
+                                             rocsparse_int batch_stride,
+                                             T* __restrict__ ds,
+                                             T* __restrict__ dl,
+                                             T* __restrict__ d,
+                                             T* __restrict__ du,
+                                             T* __restrict__ dw,
+                                             T* __restrict__ r3,
+                                             T* __restrict__ r4,
+                                             T* __restrict__ x)
 {
     rocsparse_int gid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 

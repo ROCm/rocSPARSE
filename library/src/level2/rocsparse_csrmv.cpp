@@ -555,18 +555,18 @@ template <unsigned int BLOCKSIZE,
           typename X,
           typename Y,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmvn_general_kernel(bool     conj,
-                               J        m,
-                               U        alpha_device_host,
-                               const I* csr_row_ptr_begin,
-                               const I* csr_row_ptr_end,
-                               const J* __restrict__ csr_col_ind,
-                               const A* __restrict__ csr_val,
-                               const X* __restrict__ x,
-                               U beta_device_host,
-                               Y* __restrict__ y,
-                               rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrmvn_general_kernel(bool     conj,
+                           J        m,
+                           U        alpha_device_host,
+                           const I* csr_row_ptr_begin,
+                           const I* csr_row_ptr_end,
+                           const J* __restrict__ csr_col_ind,
+                           const A* __restrict__ csr_val,
+                           const X* __restrict__ x,
+                           U beta_device_host,
+                           Y* __restrict__ y,
+                           rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
@@ -587,8 +587,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename J, typename Y, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmvt_scale_kernel(J size, U scalar_device_host, Y* __restrict__ data)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrmvt_scale_kernel(J size, U scalar_device_host, Y* __restrict__ data)
 {
     auto scalar = load_scalar_device_host(scalar_device_host);
     csrmvt_scale_device(size, scalar, data);
@@ -602,17 +602,17 @@ template <unsigned int BLOCKSIZE,
           typename X,
           typename Y,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmvt_general_kernel(bool     conj,
-                               J        m,
-                               U        alpha_device_host,
-                               const I* csr_row_ptr_begin,
-                               const I* csr_row_ptr_end,
-                               const J* __restrict__ csr_col_ind,
-                               const A* __restrict__ csr_val,
-                               const X* __restrict__ x,
-                               Y* __restrict__ y,
-                               rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrmvt_general_kernel(bool     conj,
+                           J        m,
+                           U        alpha_device_host,
+                           const I* csr_row_ptr_begin,
+                           const I* csr_row_ptr_end,
+                           const J* __restrict__ csr_col_ind,
+                           const A* __restrict__ csr_val,
+                           const X* __restrict__ x,
+                           Y* __restrict__ y,
+                           rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != 0)
@@ -638,18 +638,18 @@ template <unsigned int BLOCKSIZE,
           typename X,
           typename Y,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmvn_symm_general_kernel(bool     conj,
-                                    J        m,
-                                    U        alpha_device_host,
-                                    const I* csr_row_ptr_begin,
-                                    const I* csr_row_ptr_end,
-                                    const J* __restrict__ csr_col_ind,
-                                    const A* __restrict__ csr_val,
-                                    const X* __restrict__ x,
-                                    U beta_device_host,
-                                    Y* __restrict__ y,
-                                    rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrmvn_symm_general_kernel(bool     conj,
+                                J        m,
+                                U        alpha_device_host,
+                                const I* csr_row_ptr_begin,
+                                const I* csr_row_ptr_end,
+                                const J* __restrict__ csr_col_ind,
+                                const A* __restrict__ csr_val,
+                                const X* __restrict__ x,
+                                U beta_device_host,
+                                Y* __restrict__ y,
+                                rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
@@ -677,17 +677,17 @@ template <unsigned int BLOCKSIZE,
           typename X,
           typename Y,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrmvt_symm_general_kernel(bool     conj,
-                                    J        m,
-                                    U        alpha_device_host,
-                                    const I* csr_row_ptr_begin,
-                                    const I* csr_row_ptr_end,
-                                    const J* __restrict__ csr_col_ind,
-                                    const A* __restrict__ csr_val,
-                                    const X* __restrict__ x,
-                                    Y* __restrict__ y,
-                                    rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrmvt_symm_general_kernel(bool     conj,
+                                J        m,
+                                U        alpha_device_host,
+                                const I* csr_row_ptr_begin,
+                                const I* csr_row_ptr_end,
+                                const J* __restrict__ csr_col_ind,
+                                const A* __restrict__ csr_val,
+                                const X* __restrict__ x,
+                                Y* __restrict__ y,
+                                rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != 0)
@@ -706,20 +706,20 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <typename I, typename J, typename A, typename X, typename Y, typename U>
-__launch_bounds__(WG_SIZE) ROCSPARSE_KERNEL
-    void csrmvn_adaptive_kernel(bool conj,
-                                I    nnz,
-                                const I* __restrict__ row_blocks,
-                                unsigned int* __restrict__ wg_flags,
-                                const J* __restrict__ wg_ids,
-                                U alpha_device_host,
-                                const I* __restrict__ csr_row_ptr,
-                                const J* __restrict__ csr_col_ind,
-                                const A* __restrict__ csr_val,
-                                const X* __restrict__ x,
-                                U beta_device_host,
-                                Y* __restrict__ y,
-                                rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(WG_SIZE)
+void csrmvn_adaptive_kernel(bool conj,
+                            I    nnz,
+                            const I* __restrict__ row_blocks,
+                            unsigned int* __restrict__ wg_flags,
+                            const J* __restrict__ wg_ids,
+                            U alpha_device_host,
+                            const I* __restrict__ csr_row_ptr,
+                            const J* __restrict__ csr_col_ind,
+                            const A* __restrict__ csr_val,
+                            const X* __restrict__ x,
+                            U beta_device_host,
+                            Y* __restrict__ y,
+                            rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
@@ -748,19 +748,19 @@ template <rocsparse_int MAX_ROWS,
           typename X,
           typename Y,
           typename U>
-__launch_bounds__(WG_SIZE) ROCSPARSE_KERNEL
-    void csrmvn_symm_adaptive_kernel(bool conj,
-                                     I    nnz,
-                                     I    max_rows,
-                                     const I* __restrict__ row_blocks,
-                                     U alpha_device_host,
-                                     const I* __restrict__ csr_row_ptr,
-                                     const J* __restrict__ csr_col_ind,
-                                     const A* __restrict__ csr_val,
-                                     const X* __restrict__ x,
-                                     U beta_device_host,
-                                     Y* __restrict__ y,
-                                     rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(WG_SIZE)
+void csrmvn_symm_adaptive_kernel(bool conj,
+                                 I    nnz,
+                                 I    max_rows,
+                                 const I* __restrict__ row_blocks,
+                                 U alpha_device_host,
+                                 const I* __restrict__ csr_row_ptr,
+                                 const J* __restrict__ csr_col_ind,
+                                 const A* __restrict__ csr_val,
+                                 const X* __restrict__ x,
+                                 U beta_device_host,
+                                 Y* __restrict__ y,
+                                 rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);

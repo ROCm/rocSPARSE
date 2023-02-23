@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -90,6 +90,7 @@ include: test_csr2csr_compress.yaml
 include: test_prune_csr2csr.yaml
 include: test_prune_csr2csr_by_percentage.yaml
 include: test_identity.yaml
+include: test_inverse_permutation.yaml
 include: test_csrsort.yaml
 include: test_cscsort.yaml
 include: test_coosort.yaml
@@ -99,6 +100,10 @@ include: test_spvec_descr.yaml
 include: test_spmat_descr.yaml
 include: test_dnvec_descr.yaml
 include: test_dnmat_descr.yaml
+include: test_const_spvec_descr.yaml
+include: test_const_spmat_descr.yaml
+include: test_const_dnvec_descr.yaml
+include: test_const_dnmat_descr.yaml
 include: test_spmv_bsr.yaml
 include: test_spmv_coo.yaml
 include: test_spmv_coo_aos.yaml

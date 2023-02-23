@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # ########################################################################
-# Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -69,10 +69,11 @@ def main():
     if (len(leaks)==0):
         print('//rocsparse-memstat state: clean.')
     else:
-        print('//rocsparse-memstat state: unclean.')
+        print('//rocsparse-memstat state: unclean, leaking:')
         for j in range(len(leaks)):
-            print(f"{leaks[j]['address']:16}",end="")
-            print(f", \"{leaks[j]['tag']:16}\"")
+            print(f"mode: {leaks[j]['mode']}",end="")
+            print(f", size: {leaks[j]['nbytes']} bytes",end="")
+            print(f", location: {leaks[j]['tag']}")
     if verbose:
         print('//rocsparse-memstat  - input file :  \'' + unknown_args[0] + '\'')
 

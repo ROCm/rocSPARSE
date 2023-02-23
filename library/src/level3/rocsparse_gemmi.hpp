@@ -29,26 +29,26 @@
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gemmi_scale_kernel(rocsparse_int size, U alpha_device_host, T* __restrict__ data)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gemmi_scale_kernel(rocsparse_int size, U alpha_device_host, T* __restrict__ data)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     gemmi_scale_kernel<BLOCKSIZE>(size, alpha, data);
 }
 
 template <unsigned int BLOCKSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gemmit_kernel(rocsparse_int m,
-                       U             alpha_device_host,
-                       const T* __restrict__ A,
-                       rocsparse_int lda,
-                       const rocsparse_int* __restrict__ csr_row_ptr,
-                       const rocsparse_int* __restrict__ csr_col_ind,
-                       const T* __restrict__ csr_val,
-                       U beta_device_host,
-                       T* __restrict__ C,
-                       rocsparse_int        ldc,
-                       rocsparse_index_base base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gemmit_kernel(rocsparse_int m,
+                   U             alpha_device_host,
+                   const T* __restrict__ A,
+                   rocsparse_int lda,
+                   const rocsparse_int* __restrict__ csr_row_ptr,
+                   const rocsparse_int* __restrict__ csr_col_ind,
+                   const T* __restrict__ csr_val,
+                   U beta_device_host,
+                   T* __restrict__ C,
+                   rocsparse_int        ldc,
+                   rocsparse_index_base base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);

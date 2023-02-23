@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -123,6 +123,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_prune_csr2csr.cpp
   test_prune_csr2csr_by_percentage.cpp
   test_identity.cpp
+  test_inverse_permutation.cpp
   test_csrsort.cpp
   test_cscsort.cpp
   test_coosort.cpp
@@ -141,6 +142,10 @@ set(ROCSPARSE_TEST_SOURCES
   test_spmat_descr.cpp
   test_dnvec_descr.cpp
   test_dnmat_descr.cpp
+  test_const_spvec_descr.cpp
+  test_const_spmat_descr.cpp
+  test_const_dnvec_descr.cpp
+  test_const_dnmat_descr.cpp
   test_spmv_bsr.cpp
   test_spmv_coo.cpp
   test_spmv_coo_aos.cpp
@@ -244,6 +249,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_prune_csr2csr.cpp
 ../testings/testing_prune_csr2csr_by_percentage.cpp
 ../testings/testing_identity.cpp
+../testings/testing_inverse_permutation.cpp
 ../testings/testing_csrsort.cpp
 ../testings/testing_cscsort.cpp
 ../testings/testing_coosort.cpp
@@ -262,6 +268,10 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spmat_descr.cpp
 ../testings/testing_dnvec_descr.cpp
 ../testings/testing_dnmat_descr.cpp
+../testings/testing_const_spvec_descr.cpp
+../testings/testing_const_spmat_descr.cpp
+../testings/testing_const_dnvec_descr.cpp
+../testings/testing_const_dnmat_descr.cpp
 ../testings/testing_spmv_coo.cpp
 ../testings/testing_spmv_coo_aos.cpp
 ../testings/testing_spmv_bsr.cpp
@@ -329,6 +339,7 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_importer_rocalution.cpp
   ../common/rocsparse_importer_rocsparseio.cpp
   ../common/rocsparse_importer_matrixmarket.cpp
+  ../common/rocsparse_clients_envariables.cpp
   )
 
 add_executable(rocsparse-test rocsparse_test_main.cpp ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})
@@ -355,7 +366,7 @@ endif()
 # Add OpenMP if available
 if(OPENMP_FOUND)
 if (NOT WIN32)
-   target_link_libraries(rocsparse-test PRIVATE OpenMP::OpenMP_CXX)
+   target_link_libraries(rocsparse-test PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
   else()
    target_link_libraries(rocsparse-test PRIVATE libomp)
   endif()

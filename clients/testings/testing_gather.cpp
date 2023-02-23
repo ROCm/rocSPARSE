@@ -110,7 +110,7 @@ void testing_gather(const Arguments& arg)
 
     // Initialize data on CPU
     rocsparse_seedrand();
-    rocsparse_init_index(hx_ind, nnz, 1, size);
+    rocsparse_init_index(hx_ind, nnz, base, size + base);
     rocsparse_init<T>(hy, 1, size, 1);
 
     // Allocate device memory
@@ -183,10 +183,12 @@ void testing_gather(const Arguments& arg)
     template void testing_gather_bad_arg<ITYPE, TTYPE>(const Arguments& arg); \
     template void testing_gather<ITYPE, TTYPE>(const Arguments& arg)
 
+INSTANTIATE(int32_t, int8_t);
 INSTANTIATE(int32_t, float);
 INSTANTIATE(int32_t, double);
 INSTANTIATE(int32_t, rocsparse_float_complex);
 INSTANTIATE(int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int8_t);
 INSTANTIATE(int64_t, float);
 INSTANTIATE(int64_t, double);
 INSTANTIATE(int64_t, rocsparse_float_complex);

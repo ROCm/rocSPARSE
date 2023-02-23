@@ -29,7 +29,7 @@
 #include <rocprim/rocprim.hpp>
 
 template <rocsparse_int n, typename I>
-static __forceinline__ __device__ void count_uncolored_reduce_device(rocsparse_int tx, I* sdata)
+ROCSPARSE_DEVICE_ILF void count_uncolored_reduce_device(rocsparse_int tx, I* sdata)
 {
     __syncthreads();
     if(tx < n / 2)
@@ -46,7 +46,8 @@ __forceinline__ __device__ void count_uncolored_reduce_device<0, int32_t>(rocspa
 }
 
 template <rocsparse_int NB_X, typename J>
-__launch_bounds__(NB_X) ROCSPARSE_KERNEL void count_uncolored(
+ROCSPARSE_KERNEL(NB_X)
+void count_uncolored(
     J size, J m, J n, const J* __restrict__ colors, J* __restrict__ uncolored_per_sequence)
 {
     static constexpr J s_uncolored_value = static_cast<J>(-1);
@@ -95,7 +96,8 @@ __launch_bounds__(NB_X) ROCSPARSE_KERNEL void count_uncolored(
 }
 
 template <rocsparse_int BLOCKSIZE, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrcolor_reordering_identity(J size, J* identity)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrcolor_reordering_identity(J size, J* identity)
 {
     const J gid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(gid < size)
@@ -105,9 +107,9 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrcolor_reordering_identity(
 }
 
 template <rocsparse_int NUMCOLUMNS_PER_BLOCK, rocsparse_int WF_SIZE, typename J>
-__launch_bounds__(WF_SIZE* NUMCOLUMNS_PER_BLOCK) ROCSPARSE_KERNEL
-    void csrcolor_assign_uncolored_kernel(
-        J size, J m, J n, J shift_color, J* __restrict__ colors, J* __restrict__ index_sequence)
+ROCSPARSE_KERNEL(WF_SIZE* NUMCOLUMNS_PER_BLOCK)
+void csrcolor_assign_uncolored_kernel(
+    J size, J m, J n, J shift_color, J* __restrict__ colors, J* __restrict__ index_sequence)
 {
     static constexpr J  s_uncolored_value = static_cast<J>(-1);
     const rocsparse_int wavefront_index   = hipThreadIdx_x / WF_SIZE;

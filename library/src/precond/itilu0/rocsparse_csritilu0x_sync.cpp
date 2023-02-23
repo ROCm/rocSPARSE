@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,29 +30,29 @@
 #include <iomanip>
 
 template <int BLOCKSIZE, int WFSIZE, typename T, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
-    static void kernel_nrm_residual(const J m_,
-                                    const I nnz_,
-                                    const I* __restrict__ ptr_begin_,
-                                    const I* __restrict__ ptr_end_,
-                                    const J* __restrict__ ind_,
-                                    const T* __restrict__ val_,
-                                    const rocsparse_index_base base_,
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_nrm_residual(const J m_,
+                         const I nnz_,
+                         const I* __restrict__ ptr_begin_,
+                         const I* __restrict__ ptr_end_,
+                         const J* __restrict__ ind_,
+                         const T* __restrict__ val_,
+                         const rocsparse_index_base base_,
 
-                                    const I* __restrict__ lptr_begin_,
-                                    const I* __restrict__ lptr_end_,
-                                    const J* __restrict__ lind_,
-                                    const T* __restrict__ lval0_,
-                                    const rocsparse_index_base lbase_,
+                         const I* __restrict__ lptr_begin_,
+                         const I* __restrict__ lptr_end_,
+                         const J* __restrict__ lind_,
+                         const T* __restrict__ lval0_,
+                         const rocsparse_index_base lbase_,
 
-                                    const I* __restrict__ uptr_begin_,
-                                    const I* __restrict__ uptr_end_,
-                                    const J* __restrict__ uind_,
-                                    const T* __restrict__ uval0_,
-                                    const rocsparse_index_base ubase_,
-                                    const T* __restrict__ dval0_,
-                                    floating_data_t<T>* __restrict__ nrm_,
-                                    const floating_data_t<T>* __restrict__ nrm0_)
+                         const I* __restrict__ uptr_begin_,
+                         const I* __restrict__ uptr_end_,
+                         const J* __restrict__ uind_,
+                         const T* __restrict__ uval0_,
+                         const rocsparse_index_base ubase_,
+                         const T* __restrict__ dval0_,
+                         floating_data_t<T>* __restrict__ nrm_,
+                         const floating_data_t<T>* __restrict__ nrm0_)
 {
     __shared__ floating_data_t<T> sdata[BLOCKSIZE / WFSIZE];
     floating_data_t<T>            nrm  = static_cast<floating_data_t<T>>(0);
@@ -194,30 +194,30 @@ static void kernel_nrm_residual_dispatch(
 }
 
 template <int BLOCKSIZE, int WFSIZE, typename T, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
-    static void kernel_correction(const J m_,
-                                  const I nnz_,
-                                  const I* __restrict__ ptr_begin_,
-                                  const I* __restrict__ ptr_end_,
-                                  const J* __restrict__ ind_,
-                                  const T* __restrict__ val_,
-                                  const rocsparse_index_base base_,
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_correction(const J m_,
+                       const I nnz_,
+                       const I* __restrict__ ptr_begin_,
+                       const I* __restrict__ ptr_end_,
+                       const J* __restrict__ ind_,
+                       const T* __restrict__ val_,
+                       const rocsparse_index_base base_,
 
-                                  const I* __restrict__ lptr_begin_,
-                                  const I* __restrict__ lptr_end_,
-                                  const J* __restrict__ lind_,
-                                  const T* __restrict__ lval0_,
-                                  T* __restrict__ lval_,
-                                  const rocsparse_index_base lbase_,
+                       const I* __restrict__ lptr_begin_,
+                       const I* __restrict__ lptr_end_,
+                       const J* __restrict__ lind_,
+                       const T* __restrict__ lval0_,
+                       T* __restrict__ lval_,
+                       const rocsparse_index_base lbase_,
 
-                                  const I* __restrict__ uptr_begin_,
-                                  const I* __restrict__ uptr_end_,
-                                  const J* __restrict__ uind_,
-                                  const T* __restrict__ uval0_,
-                                  T* __restrict__ uval_,
-                                  const rocsparse_index_base ubase_,
-                                  const T* __restrict__ dval0_,
-                                  T* __restrict__ dval_)
+                       const I* __restrict__ uptr_begin_,
+                       const I* __restrict__ uptr_end_,
+                       const J* __restrict__ uind_,
+                       const T* __restrict__ uval0_,
+                       T* __restrict__ uval_,
+                       const rocsparse_index_base ubase_,
+                       const T* __restrict__ dval0_,
+                       T* __restrict__ dval_)
 {
     static constexpr unsigned int nid = BLOCKSIZE / WFSIZE;
     const J                       lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -525,7 +525,6 @@ public:
             return rocsparse_status_success;
         };
     };
-#if 1
 
     template <typename T, typename I, typename J>
     static rocsparse_status copy_unkwowns(rocsparse_handle handle_,
@@ -560,39 +559,6 @@ public:
         return rocsparse_status_success;
     }
 
-#else
-    template <typename T, typename I, typename J>
-    static rocsparse_status copy_unkwowns(rocsparse_handle handle_,
-                                          I                lnnz_,
-                                          const T*         lval0_,
-                                          T*               lval1_,
-                                          I                unnz_,
-                                          const T*         uval0_,
-                                          T*               uval1_,
-                                          J                m_,
-                                          const T*         dval0_,
-                                          T*               dval1_,
-                                          hipMemcpyKind    mode_)
-    {
-        if(hipSuccess != hipMemcpyAsync(lval1_, lval0_, sizeof(T) * lnnz_, mode_, handle_->stream))
-        {
-            return rocsparse_status_internal_error;
-        }
-
-        if(hipSuccess != hipMemcpyAsync(uval1_, uval0_, sizeof(T) * unnz_, mode_, handle_->stream))
-        {
-            return rocsparse_status_internal_error;
-        }
-        if(dval0_ != nullptr)
-        {
-            if(hipSuccess != hipMemcpyAsync(dval1_, dval0_, sizeof(T) * m_, mode_, handle_->stream))
-            {
-                return rocsparse_status_internal_error;
-            }
-        }
-        return rocsparse_status_success;
-    }
-#endif
     template <typename T, typename I, typename J>
     static rocsparse_status calculate_nrm_correction(rocsparse_handle          handle_,
                                                      J                         m_,
@@ -732,13 +698,13 @@ public:
                     //
                     // Compute norm of residual.
                     //
-                    RETURN_IF_HIP_ERROR(hipMemsetAsync(
-                        p_nrm_residual, 0, sizeof(floating_data_t<T>), handle_->stream));
+                    RETURN_IF_HIP_ERROR(
+                        hipMemsetAsync(p_nrm_residual, 0, sizeof(floating_data_t<T>), stream));
 
                     kernel_nrm_residual_dispatch<BLOCKSIZE, T, I, J>(m_,
                                                                      mean,
                                                                      handle_->wavefront_size,
-                                                                     handle_->stream,
+                                                                     stream,
                                                                      m_,
                                                                      nnz_,
                                                                      ptr_begin_,
@@ -776,7 +742,7 @@ public:
                 kernel_correction_dispatch<BLOCKSIZE, T, I, J>(m_,
                                                                mean,
                                                                handle_->wavefront_size,
-                                                               handle_->stream,
+                                                               stream,
                                                                m_,
                                                                nnz_,
                                                                ptr_begin_,
@@ -913,7 +879,7 @@ public:
                         converged    = false;
 
                         RETURN_IF_HIP_ERROR(on_device(p_iter, nmaxiter_, stream));
-
+                        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
                         return rocsparse_status_zero_pivot;
                     }
                     else
@@ -950,7 +916,7 @@ public:
             }
 
             RETURN_IF_HIP_ERROR(on_device(p_iter, (converged) ? nmaxiter_ : (&nmaxiter), stream));
-
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
             return rocsparse_status_success;
         }
     };

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -197,7 +197,7 @@ rocsparse_status rocsparse_csr2gebsr_buffer_size_template(rocsparse_handle      
     //
     // Check sizes
     //
-    if(m < 0 || n < 0 || row_block_dim < 0 || col_block_dim < 0)
+    if(m < 0 || n < 0 || row_block_dim <= 0 || col_block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
@@ -213,8 +213,9 @@ rocsparse_status rocsparse_csr2gebsr_buffer_size_template(rocsparse_handle      
     //
     // Quick return if possible
     //
-    if(m == 0 || n == 0 || row_block_dim == 0 || col_block_dim == 0)
+    if(m == 0 || n == 0)
     {
+        *buffer_size = sizeof(rocsparse_int) * 4;
         return rocsparse_status_success;
     }
 
@@ -311,7 +312,7 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
     //
     // Check sizes
     //
-    if(m < 0 || n < 0 || row_block_dim < 0 || col_block_dim < 0)
+    if(m < 0 || n < 0 || row_block_dim <= 0 || col_block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
@@ -319,7 +320,7 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
     //
     // Quick return if possible
     //
-    if(m == 0 || n == 0 || row_block_dim == 0 || col_block_dim == 0)
+    if(m == 0 || n == 0)
     {
         return rocsparse_status_success;
     }
@@ -866,15 +867,18 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
     //
     // Check sizes
     //
-    if(m < 0 || n < 0 || row_block_dim < 0 || col_block_dim < 0)
+    if(m < 0 || n < 0 || row_block_dim <= 0 || col_block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
 
+    rocsparse_int mb = (m + row_block_dim - 1) / row_block_dim;
+    rocsparse_int nb = (n + col_block_dim - 1) / col_block_dim;
+
     //
     // Quick return if possible, before checking pointer arguments.
     //
-    if(m == 0 || n == 0 || row_block_dim == 0 || col_block_dim == 0)
+    if(m == 0 || n == 0)
     {
         if(bsr_nnz_devhost != nullptr)
         {
@@ -887,6 +891,18 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
             {
                 *bsr_nnz_devhost = 0;
             }
+        }
+
+        if(bsr_row_ptr != nullptr)
+        {
+            hipLaunchKernelGGL((set_array_to_value<256>),
+                               dim3(((mb + 1) - 1) / 256 + 1),
+                               dim3(256),
+                               0,
+                               handle->stream,
+                               (mb + 1),
+                               bsr_row_ptr,
+                               static_cast<rocsparse_int>(bsr_descr->base));
         }
 
         return rocsparse_status_success;
@@ -934,9 +950,6 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
                                      bsr_row_ptr,
                                      bsr_nnz_devhost);
     }
-
-    rocsparse_int mb = (m + row_block_dim - 1) / row_block_dim;
-    rocsparse_int nb = (n + col_block_dim - 1) / col_block_dim;
 
     if(row_block_dim == 1)
     {

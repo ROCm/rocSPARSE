@@ -26,8 +26,8 @@
 
 #include "common.h"
 
-static ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_status,
-                                                    rocsparse_data_status  status)
+ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_status,
+                                             rocsparse_data_status  status)
 {
     if(status != rocsparse_data_status_success)
     {
@@ -36,18 +36,18 @@ static ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_
 }
 
 template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void check_matrix_coo_device(J       m,
-                                 J       n,
-                                 int64_t nnz,
-                                 const T* __restrict__ coo_val,
-                                 const I* __restrict__ coo_row_ind,
-                                 const J* __restrict__ coo_col_ind,
-                                 rocsparse_index_base   idx_base,
-                                 rocsparse_matrix_type  matrix_type,
-                                 rocsparse_fill_mode    uplo,
-                                 rocsparse_storage_mode storage,
-                                 rocsparse_data_status* data_status)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void check_matrix_coo_device(J       m,
+                             J       n,
+                             int64_t nnz,
+                             const T* __restrict__ coo_val,
+                             const I* __restrict__ coo_row_ind,
+                             const J* __restrict__ coo_col_ind,
+                             rocsparse_index_base   idx_base,
+                             rocsparse_matrix_type  matrix_type,
+                             rocsparse_fill_mode    uplo,
+                             rocsparse_storage_mode storage,
+                             rocsparse_data_status* data_status)
 {
     int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

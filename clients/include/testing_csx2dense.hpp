@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef TESTING_CSX2DENSE_HPP
-#define TESTING_CSX2DENSE_HPP
 
 #include <rocsparse.hpp>
 
@@ -200,16 +198,16 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
         //
         // Initialize the entire allocated memory.
         //
-        for(rocsparse_int i = 0; i < LD; ++i)
+        for(rocsparse_int j = 0; j < N; ++j)
         {
-            for(rocsparse_int j = 0; j < N; ++j)
+            for(rocsparse_int i = 0; i < LD; ++i)
             {
                 h_dense_val_ref[j * LD + i] = -1;
             }
         }
-        for(rocsparse_int i = 0; i < LD; ++i)
+        for(rocsparse_int j = 0; j < N; ++j)
         {
-            for(rocsparse_int j = 0; j < N; ++j)
+            for(rocsparse_int i = 0; i < LD; ++i)
             {
                 h_dense_val[j * LD + i] = -2;
             }
@@ -218,9 +216,9 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
         //
         // Random initialization of the matrix.
         //
-        for(rocsparse_int i = 0; i < M; ++i)
+        for(rocsparse_int j = 0; j < N; ++j)
         {
-            for(rocsparse_int j = 0; j < N; ++j)
+            for(rocsparse_int i = 0; i < M; ++i)
             {
                 h_dense_val_ref[j * LD + i] = random_generator<T>(0, 4) == 0 ? 1 : 0;
             }
@@ -386,5 +384,3 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
                             get_gpu_time_msec(gpu_time_used));
     }
 }
-
-#endif // TESTING_CSX2DENSE_HPP

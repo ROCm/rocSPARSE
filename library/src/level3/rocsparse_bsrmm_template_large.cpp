@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,22 +28,22 @@
 #include "rocsparse_csrmm.hpp"
 
 template <rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y, typename T, typename U>
-__launch_bounds__(BSR_BLOCK_DIM* BLK_SIZE_Y) ROCSPARSE_KERNEL
-    void bsrmm_large_blockdim_kernel(rocsparse_direction direction,
-                                     rocsparse_operation trans_B,
-                                     rocsparse_int       mb,
-                                     rocsparse_int       n,
-                                     U                   alpha_device_host,
-                                     const rocsparse_int* __restrict__ bsr_row_ptr,
-                                     const rocsparse_int* __restrict__ bsr_col_ind,
-                                     const T* __restrict__ bsr_val,
-                                     rocsparse_int block_dim,
-                                     const T* __restrict__ B,
-                                     rocsparse_int ldb,
-                                     U             beta_device_host,
-                                     T* __restrict__ C,
-                                     rocsparse_int        ldc,
-                                     rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BSR_BLOCK_DIM* BLK_SIZE_Y)
+void bsrmm_large_blockdim_kernel(rocsparse_direction direction,
+                                 rocsparse_operation trans_B,
+                                 rocsparse_int       mb,
+                                 rocsparse_int       n,
+                                 U                   alpha_device_host,
+                                 const rocsparse_int* __restrict__ bsr_row_ptr,
+                                 const rocsparse_int* __restrict__ bsr_col_ind,
+                                 const T* __restrict__ bsr_val,
+                                 rocsparse_int block_dim,
+                                 const T* __restrict__ B,
+                                 rocsparse_int ldb,
+                                 U             beta_device_host,
+                                 T* __restrict__ C,
+                                 rocsparse_int        ldc,
+                                 rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);

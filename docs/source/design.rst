@@ -100,7 +100,7 @@ File                        Description
 `rocsparse.h`               Includes all other API related rocSPARSE header files.
 `rocsparse-auxiliary.h`     Declares all rocSPARSE auxiliary functions, such as handle and descriptor management.
 `rocsparse-complex-types.h` Defines the rocSPARSE complex data types `rocsparse_float_complex` and `rocsparse_double_complex`.
-`rocsparse-functions.h`     Declares all rocSPARSE Sparse Linear Algebra Subroutines of Level1, 2, 3, Extra, Preconditioner and Format Conversion.
+`rocsparse-functions.h`     Declares all rocSPARSE Sparse Linear Algebra Subroutines of Level1, 2, 3, Extra, Preconditioner, Format Conversion, Reordering, and Utility.
 `rocsparse-types.h`         Defines all data types used by rocSPARSE.
 `rocsparse-version.h.in`    Provides the configured version and settings that is initially set by CMake during compilation.
 =========================== ===========

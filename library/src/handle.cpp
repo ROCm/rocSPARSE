@@ -28,7 +28,7 @@
 
 #include <hip/hip_runtime.h>
 
-ROCSPARSE_KERNEL void init_kernel(){};
+ROCSPARSE_KERNEL(1) void init_kernel(){};
 
 /*******************************************************************************
  * constructor

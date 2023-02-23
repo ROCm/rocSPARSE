@@ -27,8 +27,8 @@
 #include "handle.h"
 
 template <rocsparse_int BLOCK_SIZE, typename T>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void abs_kernel(rocsparse_int m, rocsparse_int n, const T* A, rocsparse_int lda, T* output)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void abs_kernel(rocsparse_int m, rocsparse_int n, const T* A, rocsparse_int lda, T* output)
 {
     rocsparse_int thread_id = hipThreadIdx_x + hipBlockIdx_x * BLOCK_SIZE;
 

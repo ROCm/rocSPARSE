@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -278,8 +278,7 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle          ha
     else
     {
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+            ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
     }
 
     return rocsparse_status_success;

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -119,7 +119,7 @@ rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
     if(hyb->coo_nnz > 0)
     {
         // Shift ptr by workspace size
-        ptr += sizeof(rocsparse_int) * (hyb->m / 256 + 1) * 256;
+        ptr += ((sizeof(rocsparse_int) * hyb->m) / 256 + 1) * 256;
 
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2csr(
             handle, hyb->coo_row_ind, hyb->coo_nnz, hyb->m, workspace, descr->base));
@@ -272,7 +272,7 @@ extern "C" rocsparse_status rocsparse_hyb2csr_buffer_size(rocsparse_handle      
     // COO part requires conversion buffer
     if(hyb->coo_nnz > 0)
     {
-        *buffer_size += sizeof(rocsparse_int) * (hyb->m / 256 + 1) * 256;
+        *buffer_size += ((sizeof(rocsparse_int) * hyb->m) / 256 + 1) * 256;
     }
 
     // Exclusive scan

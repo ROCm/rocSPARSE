@@ -139,13 +139,13 @@
 // clang-format on
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_transpose_and_pad_array_shared_kernel(rocsparse_int m,
-                                                    rocsparse_int m_pad,
-                                                    rocsparse_int stride,
-                                                    const T* __restrict__ input,
-                                                    T* __restrict__ output,
-                                                    T pad_value)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_transpose_and_pad_array_shared_kernel(rocsparse_int m,
+                                                rocsparse_int m_pad,
+                                                rocsparse_int stride,
+                                                const T* __restrict__ input,
+                                                T* __restrict__ output,
+                                                T pad_value)
 {
     __shared__ T stile[BLOCKSIZE];
 
@@ -178,13 +178,13 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_transpose_and_pad_array_kernel(rocsparse_int m,
-                                             rocsparse_int m_pad,
-                                             rocsparse_int stride,
-                                             const T* __restrict__ input,
-                                             T* __restrict__ output,
-                                             T pad_value)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_transpose_and_pad_array_kernel(rocsparse_int m,
+                                         rocsparse_int m_pad,
+                                         rocsparse_int stride,
+                                         const T* __restrict__ input,
+                                         T* __restrict__ output,
+                                         T pad_value)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidx = hipBlockIdx_x;
@@ -207,12 +207,12 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_transpose_back_array_kernel(rocsparse_int m,
-                                          rocsparse_int m_pad,
-                                          rocsparse_int stride,
-                                          const T* __restrict__ input,
-                                          T* __restrict__ output)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_transpose_back_array_kernel(rocsparse_int m,
+                                      rocsparse_int m_pad,
+                                      rocsparse_int stride,
+                                      const T* __restrict__ input,
+                                      T* __restrict__ output)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidx = hipBlockIdx_x;
@@ -231,17 +231,17 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_LBM_wv_kernel(rocsparse_int m_pad,
-                            rocsparse_int n,
-                            rocsparse_int ldb,
-                            const T* __restrict__ a,
-                            const T* __restrict__ b,
-                            const T* __restrict__ c,
-                            T* __restrict__ w,
-                            T* __restrict__ v,
-                            T* __restrict__ mt,
-                            rocsparse_int* __restrict__ pivot)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_LBM_wv_kernel(rocsparse_int m_pad,
+                        rocsparse_int n,
+                        rocsparse_int ldb,
+                        const T* __restrict__ a,
+                        const T* __restrict__ b,
+                        const T* __restrict__ c,
+                        T* __restrict__ w,
+                        T* __restrict__ v,
+                        T* __restrict__ mt,
+                        rocsparse_int* __restrict__ pivot)
 {
     // From Bunch-Kaufman pivoting criteria
     const double kappa = 0.5 * (sqrt(5.0) - 1.0);
@@ -378,16 +378,16 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, unsigned int COLS, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_LBM_rhs_kernel(rocsparse_int m_pad,
-                             rocsparse_int n,
-                             rocsparse_int ldb,
-                             const T* __restrict__ a,
-                             const T* __restrict__ b,
-                             const T* __restrict__ c,
-                             T* __restrict__ rhs,
-                             const T* __restrict__ mt,
-                             const rocsparse_int* __restrict__ pivot)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_LBM_rhs_kernel(rocsparse_int m_pad,
+                         rocsparse_int n,
+                         rocsparse_int ldb,
+                         const T* __restrict__ a,
+                         const T* __restrict__ b,
+                         const T* __restrict__ c,
+                         T* __restrict__ rhs,
+                         const T* __restrict__ mt,
+                         const rocsparse_int* __restrict__ pivot)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidx = hipBlockIdx_x;
@@ -892,18 +892,18 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_spike_block_level_kernel(rocsparse_int m_pad,
-                                       rocsparse_int n,
-                                       rocsparse_int ldb,
-                                       T* __restrict__ rhs,
-                                       const T* __restrict__ w,
-                                       const T* __restrict__ v,
-                                       T* __restrict__ w2,
-                                       T* __restrict__ v2,
-                                       T* __restrict__ rhs_scratch,
-                                       T* __restrict__ w_scratch,
-                                       T* __restrict__ v_scratch)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_spike_block_level_kernel(rocsparse_int m_pad,
+                                   rocsparse_int n,
+                                   rocsparse_int ldb,
+                                   T* __restrict__ rhs,
+                                   const T* __restrict__ w,
+                                   const T* __restrict__ v,
+                                   T* __restrict__ w2,
+                                   T* __restrict__ v2,
+                                   T* __restrict__ rhs_scratch,
+                                   T* __restrict__ w_scratch,
+                                   T* __restrict__ v_scratch)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidx = hipBlockIdx_x;
@@ -998,13 +998,13 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_solve_spike_grid_level_kernel(rocsparse_int m_pad,
-                                            rocsparse_int n,
-                                            rocsparse_int ldb,
-                                            T* __restrict__ rhs_scratch,
-                                            const T* __restrict__ w_scratch,
-                                            const T* __restrict__ v_scratch)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_solve_spike_grid_level_kernel(rocsparse_int m_pad,
+                                        rocsparse_int n,
+                                        rocsparse_int ldb,
+                                        T* __restrict__ rhs_scratch,
+                                        const T* __restrict__ w_scratch,
+                                        const T* __restrict__ v_scratch)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidy = hipBlockIdx_y;
@@ -1092,14 +1092,14 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_solve_spike_propagate_kernel(rocsparse_int m_pad,
-                                           rocsparse_int n,
-                                           rocsparse_int ldb,
-                                           T* __restrict__ rhs,
-                                           const T* __restrict__ w,
-                                           const T* __restrict__ v,
-                                           const T* __restrict__ rhs_scratch)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_solve_spike_propagate_kernel(rocsparse_int m_pad,
+                                       rocsparse_int n,
+                                       rocsparse_int ldb,
+                                       T* __restrict__ rhs,
+                                       const T* __restrict__ w,
+                                       const T* __restrict__ v,
+                                       const T* __restrict__ rhs_scratch)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidx = hipBlockIdx_x;
@@ -1170,13 +1170,13 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_spike_backward_substitution_kernel(rocsparse_int m_pad,
-                                                 rocsparse_int n,
-                                                 rocsparse_int ldb,
-                                                 T* __restrict__ rhs,
-                                                 const T* __restrict__ w,
-                                                 const T* __restrict__ v)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_spike_backward_substitution_kernel(rocsparse_int m_pad,
+                                             rocsparse_int n,
+                                             rocsparse_int ldb,
+                                             T* __restrict__ rhs,
+                                             const T* __restrict__ w,
+                                             const T* __restrict__ v)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidx = hipBlockIdx_x;

@@ -114,6 +114,8 @@ rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
         const ITYPE*         x_ind,                                  \
         rocsparse_index_base idx_base);
 
+INSTANTIATE(int32_t, int8_t)
+INSTANTIATE(int64_t, int8_t)
 INSTANTIATE(int32_t, int32_t)
 INSTANTIATE(int64_t, int32_t)
 INSTANTIATE(int64_t, int64_t)

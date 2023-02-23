@@ -27,18 +27,18 @@
 #include "common.h"
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsric0_2_8_unrolled_kernel(rocsparse_direction direction,
-                                    rocsparse_int       mb,
-                                    rocsparse_int       block_dim,
-                                    const rocsparse_int* __restrict__ bsr_row_ptr,
-                                    const rocsparse_int* __restrict__ bsr_col_ind,
-                                    T* __restrict__ bsr_val,
-                                    const rocsparse_int* __restrict__ bsr_diag_ind,
-                                    int* __restrict__ block_done,
-                                    const rocsparse_int* __restrict__ block_map,
-                                    rocsparse_int* __restrict__ zero_pivot,
-                                    rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsric0_2_8_unrolled_kernel(rocsparse_direction direction,
+                                rocsparse_int       mb,
+                                rocsparse_int       block_dim,
+                                const rocsparse_int* __restrict__ bsr_row_ptr,
+                                const rocsparse_int* __restrict__ bsr_col_ind,
+                                T* __restrict__ bsr_val,
+                                const rocsparse_int* __restrict__ bsr_diag_ind,
+                                int* __restrict__ block_done,
+                                const rocsparse_int* __restrict__ block_map,
+                                rocsparse_int* __restrict__ zero_pivot,
+                                rocsparse_index_base idx_base)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int tidy = hipThreadIdx_y;
@@ -418,18 +418,18 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsric0_2_8_kernel(rocsparse_direction direction,
-                           rocsparse_int       mb,
-                           rocsparse_int       block_dim,
-                           const rocsparse_int* __restrict__ bsr_row_ptr,
-                           const rocsparse_int* __restrict__ bsr_col_ind,
-                           T* __restrict__ bsr_val,
-                           const rocsparse_int* __restrict__ bsr_diag_ind,
-                           int* __restrict__ block_done,
-                           const rocsparse_int* __restrict__ block_map,
-                           rocsparse_int* __restrict__ zero_pivot,
-                           rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsric0_2_8_kernel(rocsparse_direction direction,
+                       rocsparse_int       mb,
+                       rocsparse_int       block_dim,
+                       const rocsparse_int* __restrict__ bsr_row_ptr,
+                       const rocsparse_int* __restrict__ bsr_col_ind,
+                       T* __restrict__ bsr_val,
+                       const rocsparse_int* __restrict__ bsr_diag_ind,
+                       int* __restrict__ block_done,
+                       const rocsparse_int* __restrict__ block_map,
+                       rocsparse_int* __restrict__ zero_pivot,
+                       rocsparse_index_base idx_base)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int tidy = hipThreadIdx_y;
@@ -749,18 +749,18 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsric0_9_16_kernel(rocsparse_direction direction,
-                            rocsparse_int       mb,
-                            rocsparse_int       block_dim,
-                            const rocsparse_int* __restrict__ bsr_row_ptr,
-                            const rocsparse_int* __restrict__ bsr_col_ind,
-                            T* __restrict__ bsr_val,
-                            const rocsparse_int* __restrict__ bsr_diag_ind,
-                            int* __restrict__ block_done,
-                            const rocsparse_int* __restrict__ block_map,
-                            rocsparse_int* __restrict__ zero_pivot,
-                            rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsric0_9_16_kernel(rocsparse_direction direction,
+                        rocsparse_int       mb,
+                        rocsparse_int       block_dim,
+                        const rocsparse_int* __restrict__ bsr_row_ptr,
+                        const rocsparse_int* __restrict__ bsr_col_ind,
+                        T* __restrict__ bsr_val,
+                        const rocsparse_int* __restrict__ bsr_diag_ind,
+                        int* __restrict__ block_done,
+                        const rocsparse_int* __restrict__ block_map,
+                        rocsparse_int* __restrict__ zero_pivot,
+                        rocsparse_index_base idx_base)
 {
     constexpr static unsigned int DIMX = BLOCKSIZE / BSRDIM;
     constexpr static unsigned int DIMY = BSRDIM;
@@ -1110,18 +1110,18 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsric0_17_32_kernel(rocsparse_direction direction,
-                             rocsparse_int       mb,
-                             rocsparse_int       block_dim,
-                             const rocsparse_int* __restrict__ bsr_row_ptr,
-                             const rocsparse_int* __restrict__ bsr_col_ind,
-                             T* __restrict__ bsr_val,
-                             const rocsparse_int* __restrict__ bsr_diag_ind,
-                             int* __restrict__ block_done,
-                             const rocsparse_int* __restrict__ block_map,
-                             rocsparse_int* __restrict__ zero_pivot,
-                             rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsric0_17_32_kernel(rocsparse_direction direction,
+                         rocsparse_int       mb,
+                         rocsparse_int       block_dim,
+                         const rocsparse_int* __restrict__ bsr_row_ptr,
+                         const rocsparse_int* __restrict__ bsr_col_ind,
+                         T* __restrict__ bsr_val,
+                         const rocsparse_int* __restrict__ bsr_diag_ind,
+                         int* __restrict__ block_done,
+                         const rocsparse_int* __restrict__ block_map,
+                         rocsparse_int* __restrict__ zero_pivot,
+                         rocsparse_index_base idx_base)
 {
     constexpr static unsigned int DIMX = BLOCKSIZE / BSRDIM;
     constexpr static unsigned int DIMY = BSRDIM;
@@ -1461,18 +1461,18 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsric0_binsearch_kernel(rocsparse_direction direction,
-                                 rocsparse_int       mb,
-                                 rocsparse_int       block_dim,
-                                 const rocsparse_int* __restrict__ bsr_row_ptr,
-                                 const rocsparse_int* __restrict__ bsr_col_ind,
-                                 T* __restrict__ bsr_val,
-                                 const rocsparse_int* __restrict__ bsr_diag_ind,
-                                 int* __restrict__ block_done,
-                                 const rocsparse_int* __restrict__ block_map,
-                                 rocsparse_int* __restrict__ zero_pivot,
-                                 rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsric0_binsearch_kernel(rocsparse_direction direction,
+                             rocsparse_int       mb,
+                             rocsparse_int       block_dim,
+                             const rocsparse_int* __restrict__ bsr_row_ptr,
+                             const rocsparse_int* __restrict__ bsr_col_ind,
+                             T* __restrict__ bsr_val,
+                             const rocsparse_int* __restrict__ bsr_diag_ind,
+                             int* __restrict__ block_done,
+                             const rocsparse_int* __restrict__ block_map,
+                             rocsparse_int* __restrict__ zero_pivot,
+                             rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;

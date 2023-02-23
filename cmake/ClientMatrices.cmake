@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -83,10 +83,20 @@ if(NOT CONVERT_SOURCE)
   set(CONVERT_SOURCE ${CMAKE_SOURCE_DIR}/deps/convert.cpp)
 endif()
 
+# convert relative path to absolute
+get_filename_component(PROJECT_BINARY_DIR "${PROJECT_BINARY_DIR}"
+                       ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
+get_filename_component(CMAKE_MATRICES_DIR "${CMAKE_MATRICES_DIR}"
+                       ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
+
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR})
+
 if(BUILD_ADDRESS_SANITIZER)
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -fsanitize=address -shared-libasan -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -fsanitize=address -shared-libasan -o ${PROJECT_BINARY_DIR}/mtx2csr.exe
+    RESULT_VARIABLE STATUS)
 else()
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe
+    RESULT_VARIABLE STATUS)
 endif()
 
 if(STATUS AND NOT STATUS EQUAL 0)

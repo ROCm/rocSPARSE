@@ -21,6 +21,7 @@ rocSPARSE is a library that contains basic linear algebra subroutines for sparse
 * :ref:`rocsparse_precond_functions_` describe manipulations on a matrix in sparse format to obtain a preconditioner.
 * :ref:`rocsparse_conversion_functions_` describe operations on a matrix in sparse format to obtain a different matrix format.
 * :ref:`rocsparse_reordering_functions_` describe operations on a matrix in sparse format to obtain a reordering.
+* :ref:`rocsparse_utility_functions_` describe routines useful for checking sparse matrices for valid data
 
 The code is open and hosted here: https://github.com/ROCmSoftwarePlatform/rocSPARSE
 
@@ -1125,6 +1126,7 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xgebsr2gebsr() <rocsparse_sgebsr2gebsr>`                                                             x      x      x              x
 :cpp:func:`rocsparse_Xcsr2csr_compress() <rocsparse_scsr2csr_compress>`                                                   x      x      x              x
 :cpp:func:`rocsparse_create_identity_permutation`
+:cpp:func:`rocsparse_inverse_permutation`
 :cpp:func:`rocsparse_cscsort_buffer_size`
 :cpp:func:`rocsparse_cscsort`
 :cpp:func:`rocsparse_csrsort_buffer_size`
@@ -1203,7 +1205,6 @@ Function name                             single double single complex double co
 :cpp:func:`rocsparse_spmv_ex()`           x      x      x              x
 :cpp:func:`rocsparse_spsv()`              x      x      x              x
 :cpp:func:`rocsparse_spmm()`              x      x      x              x
-:cpp:func:`rocsparse_spmm_ex()`           x      x      x              x
 :cpp:func:`rocsparse_spsm()`              x      x      x              x
 :cpp:func:`rocsparse_spgemm()`            x      x      x              x
 :cpp:func:`rocsparse_sddmm_buffer_size()` x      x      x              x
@@ -2837,6 +2838,11 @@ rocsparse_csr2csr_compress()
   :outline:
 .. doxygenfunction:: rocsparse_zcsr2csr_compress
 
+rocsparse_inverse_permutation()
+-------------------------------
+
+.. doxygenfunction:: rocsparse_inverse_permutation
+
 rocsparse_create_identity_permutation()
 ---------------------------------------
 
@@ -3068,7 +3074,7 @@ rocsparse_rocsparse_bsrpad_value()
 .. _rocsparse_reordering_functions_:
 
 Reordering Functions
-========================
+====================
 
 This module holds all sparse reordering routines.
 
@@ -3086,6 +3092,8 @@ rocsparse_csrcolor()
 .. doxygenfunction:: rocsparse_ccsrcolor
   :outline:
 .. doxygenfunction:: rocsparse_zcsrcolor
+
+.. _rocsparse_utility_functions_:
 
 Utility Functions
 =================
@@ -3294,11 +3302,6 @@ rocsparse_spmm()
 ----------------
 
 .. doxygenfunction:: rocsparse_spmm
-
-rocsparse_spmm_ex()
--------------------
-
-.. doxygenfunction:: rocsparse_spmm_ex
 
 rocsparse_spgemm()
 ------------------

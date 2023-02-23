@@ -27,7 +27,7 @@
 #include "common.h"
 
 template <rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y, typename T>
-static __device__ void
+ROCSPARSE_DEVICE_ILF void
     gebsrmm_general_blockdim_device(rocsparse_direction direction,
                                     rocsparse_operation trans_B,
                                     rocsparse_int       Mb,

@@ -25,4 +25,4 @@
 
 #include "testing_spvv.hpp"
 
-TEST_ROUTINE_WITH_CONFIG(spvv, level1, rocsparse_test_config_it, arg.M, arg.nnz, arg.baseA);
+TEST_ROUTINE_WITH_CONFIG(spvv, level1, rocsparse_test_config_ixyt, arg.M, arg.nnz, arg.baseA);

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,15 @@
 #include "rocsparse_gthr.hpp"
 
 template <typename I, typename T>
-rocsparse_status rocsparse_gather_template(rocsparse_handle      handle,
-                                           rocsparse_dnvec_descr y,
-                                           rocsparse_spvec_descr x)
+rocsparse_status rocsparse_gather_template(rocsparse_handle            handle,
+                                           rocsparse_const_dnvec_descr y,
+                                           rocsparse_spvec_descr       x)
 {
     return rocsparse_gthr_template<I, T>(handle,
                                          (I)x->nnz,
-                                         (const T*)y->values,
+                                         (const T*)y->const_values,
                                          (T*)x->val_data,
-                                         (const I*)x->idx_data,
+                                         (const I*)x->const_idx_data,
                                          x->idx_base);
 }
 
@@ -48,7 +48,7 @@ rocsparse_status rocsparse_gather_template(rocsparse_handle      handle,
  */
 
 extern "C" rocsparse_status rocsparse_gather(rocsparse_handle            handle,
-                                             const rocsparse_dnvec_descr y,
+                                             rocsparse_const_dnvec_descr y,
                                              rocsparse_spvec_descr       x)
 {
     // Check for invalid handle
@@ -73,6 +73,10 @@ extern "C" rocsparse_status rocsparse_gather(rocsparse_handle            handle,
         return rocsparse_status_not_implemented;
     }
 
+    if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_i8_r)
+    {
+        return rocsparse_gather_template<int32_t, int8_t>(handle, y, x);
+    }
     // single real ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f32_r)
     {
@@ -92,6 +96,10 @@ extern "C" rocsparse_status rocsparse_gather(rocsparse_handle            handle,
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f64_c)
     {
         return rocsparse_gather_template<int32_t, rocsparse_double_complex>(handle, y, x);
+    }
+    if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_i8_r)
+    {
+        return rocsparse_gather_template<int64_t, int8_t>(handle, y, x);
     }
     // single real ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f32_r)

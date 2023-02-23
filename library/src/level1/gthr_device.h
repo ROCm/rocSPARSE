@@ -27,8 +27,8 @@
 #include <hip/hip_runtime.h>
 
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gthr_kernel(I nnz, const T* y, T* x_val, const I* x_ind, rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gthr_kernel(I nnz, const T* y, T* x_val, const I* x_ind, rocsparse_index_base idx_base)
 {
     I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

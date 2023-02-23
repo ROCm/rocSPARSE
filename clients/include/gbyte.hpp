@@ -44,10 +44,10 @@ constexpr double axpby_gbyte_count(I nnz)
     return (nnz * sizeof(I) + (3.0 * nnz) * sizeof(T)) / 1e9;
 }
 
-template <typename T, typename I>
+template <typename X, typename Y, typename I>
 constexpr double doti_gbyte_count(I nnz)
 {
-    return (nnz * sizeof(I) + (2.0 * nnz) * sizeof(T)) / 1e9;
+    return (nnz * sizeof(I) + nnz * (sizeof(X) + sizeof(Y))) / 1e9;
 }
 
 template <typename T, typename I>
@@ -813,6 +813,12 @@ template <typename T>
 constexpr double identity_gbyte_count(rocsparse_int N)
 {
     return N * sizeof(rocsparse_int) / 1e9;
+}
+
+template <typename T>
+constexpr double inverse_permutation_gbyte_count(rocsparse_int N)
+{
+    return (sizeof(rocsparse_int) * N * 2) / 1e9;
 }
 
 template <typename T>

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@
 
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle              handle,
-                                                    const rocsparse_dnmat_descr   mat_A,
+                                                    rocsparse_const_dnmat_descr   mat_A,
                                                     rocsparse_spmat_descr         mat_B,
                                                     rocsparse_dense_to_sparse_alg alg,
                                                     size_t*                       buffer_size,
@@ -119,7 +119,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                       (I)mat_A->rows,
                                       (I)mat_A->cols,
                                       mat_B->descr,
-                                      (const T*)mat_A->values,
+                                      (const T*)mat_A->const_values,
                                       (I)mat_A->ld,
                                       (I*)temp_buffer,
                                       (I*)&mat_B->nnz);
@@ -132,7 +132,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                       (J)mat_A->rows,
                                       (J)mat_A->cols,
                                       mat_B->descr,
-                                      (const T*)mat_A->values,
+                                      (const T*)mat_A->const_values,
                                       (I)mat_A->ld,
                                       (I*)temp_buffer,
                                       (I*)&mat_B->nnz);
@@ -145,7 +145,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                       (J)mat_A->rows,
                                       (J)mat_A->cols,
                                       mat_B->descr,
-                                      (const T*)mat_A->values,
+                                      (const T*)mat_A->const_values,
                                       (I)mat_A->ld,
                                       (I*)temp_buffer,
                                       (I*)&mat_B->nnz);
@@ -160,7 +160,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                             (I)mat_A->rows,
                                             (I)mat_A->cols,
                                             mat_B->descr,
-                                            (const T*)mat_A->values,
+                                            (const T*)mat_A->const_values,
                                             (I)mat_A->ld,
                                             (I*)temp_buffer,
                                             (T*)mat_B->val_data,
@@ -176,7 +176,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                                                  (J)mat_A->rows,
                                                                  (J)mat_A->cols,
                                                                  mat_B->descr,
-                                                                 (const T*)mat_A->values,
+                                                                 (const T*)mat_A->const_values,
                                                                  (I)mat_A->ld,
                                                                  (I*)temp_buffer,
                                                                  (T*)mat_B->val_data,
@@ -192,7 +192,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                                                     (J)mat_A->rows,
                                                                     (J)mat_A->cols,
                                                                     mat_B->descr,
-                                                                    (const T*)mat_A->values,
+                                                                    (const T*)mat_A->const_values,
                                                                     (I)mat_A->ld,
                                                                     (I*)temp_buffer,
                                                                     (T*)mat_B->val_data,
@@ -210,7 +210,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
  */
 
 extern "C" rocsparse_status rocsparse_dense_to_sparse(rocsparse_handle              handle,
-                                                      const rocsparse_dnmat_descr   mat_A,
+                                                      rocsparse_const_dnmat_descr   mat_A,
                                                       rocsparse_spmat_descr         mat_B,
                                                       rocsparse_dense_to_sparse_alg alg,
                                                       size_t*                       buffer_size,
