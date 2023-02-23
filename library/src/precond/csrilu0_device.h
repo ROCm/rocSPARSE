@@ -27,18 +27,18 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH, typename T, typename U>
-__device__ void csrilu0_hash_kernel(rocsparse_int m,
-                                    const rocsparse_int* __restrict__ csr_row_ptr,
-                                    const rocsparse_int* __restrict__ csr_col_ind,
-                                    T* __restrict__ csr_val,
-                                    const rocsparse_int* __restrict__ csr_diag_ind,
-                                    int* __restrict__ done,
-                                    const rocsparse_int* __restrict__ map,
-                                    rocsparse_int* __restrict__ zero_pivot,
-                                    rocsparse_index_base idx_base,
-                                    int                  boost,
-                                    U                    boost_tol,
-                                    T                    boost_val)
+ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
+                                              const rocsparse_int* __restrict__ csr_row_ptr,
+                                              const rocsparse_int* __restrict__ csr_col_ind,
+                                              T* __restrict__ csr_val,
+                                              const rocsparse_int* __restrict__ csr_diag_ind,
+                                              int* __restrict__ done,
+                                              const rocsparse_int* __restrict__ map,
+                                              rocsparse_int* __restrict__ zero_pivot,
+                                              rocsparse_index_base idx_base,
+                                              int                  boost,
+                                              U                    boost_tol,
+                                              T                    boost_val)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -218,18 +218,18 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-__device__ void csrilu0_binsearch_kernel(rocsparse_int m_,
-                                         const rocsparse_int* __restrict__ csr_row_ptr,
-                                         const rocsparse_int* __restrict__ csr_col_ind,
-                                         T* __restrict__ csr_val,
-                                         const rocsparse_int* __restrict__ csr_diag_ind,
-                                         int* __restrict__ done,
-                                         const rocsparse_int* __restrict__ map,
-                                         rocsparse_int* __restrict__ zero_pivot,
-                                         rocsparse_index_base idx_base,
-                                         int                  boost,
-                                         U                    boost_tol,
-                                         T                    boost_val)
+ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
+                                                   const rocsparse_int* __restrict__ csr_row_ptr,
+                                                   const rocsparse_int* __restrict__ csr_col_ind,
+                                                   T* __restrict__ csr_val,
+                                                   const rocsparse_int* __restrict__ csr_diag_ind,
+                                                   int* __restrict__ done,
+                                                   const rocsparse_int* __restrict__ map,
+                                                   rocsparse_int* __restrict__ zero_pivot,
+                                                   rocsparse_index_base idx_base,
+                                                   int                  boost,
+                                                   U                    boost_tol,
+                                                   T                    boost_val)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;

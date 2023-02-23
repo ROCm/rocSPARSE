@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -110,9 +110,9 @@ void testing_coo2dense(const Arguments& arg)
 
     // // Random initialization of the matrix.
     host_vector<T> h_dense_val(LD * N);
-    for(rocsparse_int i = 0; i < LD; ++i)
+    for(rocsparse_int j = 0; j < N; ++j)
     {
-        for(rocsparse_int j = 0; j < N; ++j)
+        for(rocsparse_int i = 0; i < LD; ++i)
         {
             h_dense_val[j * LD + i] = -2;
         }

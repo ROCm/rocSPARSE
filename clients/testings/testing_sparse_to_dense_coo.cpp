@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -162,17 +162,17 @@ void testing_sparse_to_dense_coo(const Arguments& arg)
     rocsparse_seedrand();
 
     // Random initialization of the matrix.
-    for(int i = 0; i < ld; ++i)
+    for(int j = 0; j < nm; ++j)
     {
-        for(int j = 0; j < nm; ++j)
+        for(int i = 0; i < ld; ++i)
         {
             h_dense_val[j * (int)ld + i] = static_cast<T>(-2);
         }
     }
 
-    for(int i = 0; i < mn; ++i)
+    for(int j = 0; j < nm; ++j)
     {
-        for(int j = 0; j < nm; ++j)
+        for(int i = 0; i < mn; ++i)
         {
             h_dense_val[j * (int)ld + i] = random_generator<T>(0, 9);
         }

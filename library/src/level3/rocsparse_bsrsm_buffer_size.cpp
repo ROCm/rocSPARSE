@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -137,13 +137,13 @@ rocsparse_status rocsparse_bsrsm_buffer_size_template(rocsparse_handle          
     int narrays = (nrhs - 1) / ncol + 1;
 
     // int done_array
-    *buffer_size += sizeof(int) * ((size_t(mb) * narrays - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(int) * size_t(mb) * narrays - 1) / 256 + 1) * 256;
 
     // rocsparse_int workspace
-    *buffer_size += sizeof(rocsparse_int) * ((mb - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * mb - 1) / 256 + 1) * 256;
 
     // int workspace2
-    *buffer_size += sizeof(int) * ((mb - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(int) * mb - 1) / 256 + 1) * 256;
 
     size_t         rocprim_size;
     rocsparse_int* ptr  = reinterpret_cast<rocsparse_int*>(buffer_size);
@@ -161,7 +161,7 @@ rocsparse_status rocsparse_bsrsm_buffer_size_template(rocsparse_handle          
     // Additional buffer to store transpose of B, if trans_X == rocsparse_operation_none
     if(trans_X == rocsparse_operation_none)
     {
-        *buffer_size += sizeof(T) * ((size_t(mb) * block_dim * nrhs - 1) / 256 + 1) * 256;
+        *buffer_size += ((sizeof(T) * size_t(mb) * block_dim * nrhs - 1) / 256 + 1) * 256;
     }
 
     // Additional buffer to store transpose A, if transA == rocsparse_operation_transpose
@@ -174,8 +174,8 @@ rocsparse_status rocsparse_bsrsm_buffer_size_template(rocsparse_handle          
             rocprim::radix_sort_pairs(nullptr, transpose_size, dummy, dummy, nnzb, 0, 32, stream));
 
         // rocPRIM does not support in-place sorting, so we need an additional buffer
-        transpose_size += sizeof(rocsparse_int) * ((nnzb - 1) / 256 + 1) * 256;
-        transpose_size += sizeof(T) * ((size_t(nnzb) * block_dim * block_dim - 1) / 256 + 1) * 256;
+        transpose_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
+        transpose_size += ((sizeof(T) * size_t(nnzb) * block_dim * block_dim - 1) / 256 + 1) * 256;
 
         *buffer_size += transpose_size;
     }

@@ -28,8 +28,8 @@
 
 // Shift CSR offsets
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void csrsort_shift_kernel(rocsparse_int size, const rocsparse_int* in, rocsparse_int* out)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrsort_shift_kernel(rocsparse_int size, const rocsparse_int* in, rocsparse_int* out)
 {
     rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

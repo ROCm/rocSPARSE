@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -353,7 +353,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             //
             hipMemcpyAsync(
                 buffer__, &layout, sizeof(layout_t), hipMemcpyHostToDevice, handle_->stream);
-
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
             return rocsparse_status_success;
         }
 

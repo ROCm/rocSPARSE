@@ -28,7 +28,7 @@
 
 // Compute lower bound by binary search
 template <typename I, typename J>
-static inline __device__ I lower_bound(const J* arr, J key, I low, I high)
+ROCSPARSE_DEVICE_ILF I lower_bound(const J* arr, J key, I low, I high)
 {
     while(low < high)
     {
@@ -49,8 +49,8 @@ static inline __device__ I lower_bound(const J* arr, J key, I low, I high)
 
 // COO to CSR matrix conversion kernel
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coo2csr_kernel(
-    J m, I nnz, const J* coo_row_ind, I* csr_row_ptr, rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void coo2csr_kernel(J m, I nnz, const J* coo_row_ind, I* csr_row_ptr, rocsparse_index_base idx_base)
 {
     J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

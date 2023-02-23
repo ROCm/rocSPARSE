@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,10 @@ static constexpr std::size_t countof2(T (&)[N])
   TRANSFORM_ROCSPARSE_TEST_ENUM(check_matrix_gebsc)		\
   TRANSFORM_ROCSPARSE_TEST_ENUM(check_matrix_gebsr)		\
   TRANSFORM_ROCSPARSE_TEST_ENUM(check_matrix_hyb)	    \
+  TRANSFORM_ROCSPARSE_TEST_ENUM(const_dnmat_descr)      \
+  TRANSFORM_ROCSPARSE_TEST_ENUM(const_dnvec_descr)      \
+  TRANSFORM_ROCSPARSE_TEST_ENUM(const_spmat_descr)      \
+  TRANSFORM_ROCSPARSE_TEST_ENUM(const_spvec_descr)      \
   TRANSFORM_ROCSPARSE_TEST_ENUM(coo2csr)				\
   TRANSFORM_ROCSPARSE_TEST_ENUM(coo2dense)				\
   TRANSFORM_ROCSPARSE_TEST_ENUM(coomv)					\
@@ -113,6 +117,7 @@ static constexpr std::size_t countof2(T (&)[N])
   TRANSFORM_ROCSPARSE_TEST_ENUM(hyb2csr)				\
   TRANSFORM_ROCSPARSE_TEST_ENUM(hybmv)					\
   TRANSFORM_ROCSPARSE_TEST_ENUM(identity)				\
+  TRANSFORM_ROCSPARSE_TEST_ENUM(inverse_permutation)			\
   TRANSFORM_ROCSPARSE_TEST_ENUM(nnz)					\
   TRANSFORM_ROCSPARSE_TEST_ENUM(prune_csr2csr_by_percentage)		\
   TRANSFORM_ROCSPARSE_TEST_ENUM(prune_csr2csr)				\

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,14 +111,14 @@ rocsparse_status
 
     if(std::is_same<T, float>() || std::is_same<T, double>())
     {
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dt1
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dt2
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dB
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // dt1
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // dt2
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // dB
     }
     else
     {
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // r3
-        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // r4
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // r3
+        *buffer_size += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256; // r4
     }
 
     return rocsparse_status_success;
@@ -201,10 +201,10 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
     if(std::is_same<T, float>() || std::is_same<T, double>())
     {
         T* dt1 = reinterpret_cast<T*>(ptr);
-        ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
 
         T* dt2 = reinterpret_cast<T*>(ptr);
-        ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
 
         T* B = reinterpret_cast<T*>(ptr);
 
@@ -251,14 +251,14 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
     else
     {
         T* r3 = reinterpret_cast<T*>(ptr);
-        ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
         T* r4 = reinterpret_cast<T*>(ptr);
-        ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
 
         RETURN_IF_HIP_ERROR(hipMemsetAsync(
-            r3, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+            r3, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
         RETURN_IF_HIP_ERROR(hipMemsetAsync(
-            r4, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+            r4, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
 
         hipLaunchKernelGGL((gpsv_interleaved_batch_givens_qr_kernel<128>),
                            dim3(((batch_count - 1) / 128 + 1), 1, 1),

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -182,13 +182,13 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     int narrays = (nrhs - 1) / blockdim + 1;
 
     // int done_array
-    *buffer_size += sizeof(int) * ((m * narrays - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(int) * m * narrays - 1) / 256 + 1) * 256;
 
     // workspace
-    *buffer_size += sizeof(J) * ((m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(J) * m - 1) / 256 + 1) * 256;
 
     // int workspace2
-    *buffer_size += sizeof(int) * ((m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
 
     size_t rocprim_size;
     int*   ptr1 = reinterpret_cast<int*>(buffer_size);
@@ -208,7 +208,7 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     // Additional buffer to store transpose of B, if trans_B == rocsparse_operation_none
     if(trans_B == rocsparse_operation_none)
     {
-        *buffer_size += sizeof(T) * ((m * nrhs - 1) / 256 + 1) * 256;
+        *buffer_size += ((sizeof(T) * m * nrhs - 1) / 256 + 1) * 256;
     }
 
     // Additional buffer to store transpose A, if transA != rocsparse_operation_none
@@ -222,8 +222,8 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
             nullptr, transpose_size, dummy3, dummy2, nnz, 0, rocsparse_clz(m), stream));
 
         // rocPRIM does not support in-place sorting, so we need an additional buffer
-        transpose_size += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
-        transpose_size += std::max(sizeof(I), sizeof(T)) * ((nnz - 1) / 256 + 1) * 256;
+        transpose_size += ((sizeof(J) * nnz - 1) / 256 + 1) * 256;
+        transpose_size += ((std::max(sizeof(I), sizeof(T)) * nnz - 1) / 256 + 1) * 256;
 
         *buffer_size += transpose_size;
     }
@@ -551,21 +551,22 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrsm(rocsparse_operation transB,
-                                                         J                   m,
-                                                         J                   nrhs,
-                                                         U                   alpha_device_host,
-                                                         const I* __restrict__ csr_row_ptr,
-                                                         const J* __restrict__ csr_col_ind,
-                                                         const T* __restrict__ csr_val,
-                                                         T* __restrict__ B,
-                                                         J ldb,
-                                                         int* __restrict__ done_array,
-                                                         J* __restrict__ map,
-                                                         J* __restrict__ zero_pivot,
-                                                         rocsparse_index_base idx_base,
-                                                         rocsparse_fill_mode  fill_mode,
-                                                         rocsparse_diag_type  diag_type)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrsm(rocsparse_operation transB,
+           J                   m,
+           J                   nrhs,
+           U                   alpha_device_host,
+           const I* __restrict__ csr_row_ptr,
+           const J* __restrict__ csr_col_ind,
+           const T* __restrict__ csr_val,
+           T* __restrict__ B,
+           J ldb,
+           int* __restrict__ done_array,
+           J* __restrict__ map,
+           J* __restrict__ zero_pivot,
+           rocsparse_index_base idx_base,
+           rocsparse_fill_mode  fill_mode,
+           rocsparse_diag_type  diag_type)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     csrsm_device<BLOCKSIZE, WFSIZE, SLEEP>(transB,
@@ -586,8 +587,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrsm(rocsparse_operation tra
 }
 
 template <unsigned int DIM_X, unsigned int DIM_Y, typename I, typename T>
-__launch_bounds__(DIM_X* DIM_Y) ROCSPARSE_KERNEL
-    void csrsm_transpose(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
+ROCSPARSE_KERNEL(DIM_X* DIM_Y)
+void csrsm_transpose(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
 {
     dense_transpose_device<DIM_X, DIM_Y>(m, n, (T)1, A, lda, B, ldb);
 }
@@ -635,14 +636,14 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
 
     // done array
     int* done_array = reinterpret_cast<int*>(ptr);
-    ptr += sizeof(int) * ((m * narrays - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(int) * m * narrays - 1) / 256 + 1) * 256;
 
     // Temporary array to store transpose of B
     T* Bt = B;
     if(trans_B == rocsparse_operation_none)
     {
         Bt = reinterpret_cast<T*>(ptr);
-        ptr += sizeof(T) * ((m * nrhs - 1) / 256 + 1) * 256;
+        ptr += ((sizeof(T) * m * nrhs - 1) / 256 + 1) * 256;
     }
 
     // Temporary array to store transpose of A
@@ -669,9 +670,6 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
         static const J max = std::numeric_limits<J>::max();
         RETURN_IF_HIP_ERROR(
             hipMemcpyAsync(info->zero_pivot, &max, sizeof(J), hipMemcpyHostToDevice, stream));
-
-        // Wait for device transfer to finish
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     }
 
     // Leading dimension

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,8 +49,9 @@ static rocsparse_status preprocess_dispatch(rocsparse_itilu0_alg alg_, P&&... pa
     }
     case rocsparse_itilu0_alg_sync_split_fusion:
     {
-        return rocsparse_csritilu0_driver_t<
-            rocsparse_itilu0_alg_sync_split_fusion>::preprocess<I, J>::run(parameters...);
+        // Fall back to the sync split algorithm.
+        return rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::preprocess<I, J>::run(
+            parameters...);
     }
     }
 

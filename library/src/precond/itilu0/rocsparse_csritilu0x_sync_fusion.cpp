@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,39 +30,39 @@
 #include <iomanip>
 
 template <int BLOCKSIZE, int WFSIZE, typename T, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
-    static void kernel(bool               stopping_criteria,
-                       bool               compute_nrm_corr,
-                       bool               compute_nrm_residual,
-                       const J            niter_,
-                       J*                 niter__,
-                       floating_data_t<T> tol_,
-                       const J            m_,
-                       const I            nnz_,
-                       const I* __restrict__ ptr_begin_,
-                       const I* __restrict__ ptr_end_,
-                       const J* __restrict__ ind_,
-                       const T* __restrict__ val_,
-                       const rocsparse_index_base base_,
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel(bool               stopping_criteria,
+            bool               compute_nrm_corr,
+            bool               compute_nrm_residual,
+            const J            niter_,
+            J*                 niter__,
+            floating_data_t<T> tol_,
+            const J            m_,
+            const I            nnz_,
+            const I* __restrict__ ptr_begin_,
+            const I* __restrict__ ptr_end_,
+            const J* __restrict__ ind_,
+            const T* __restrict__ val_,
+            const rocsparse_index_base base_,
 
-                       const I* __restrict__ lptr_begin_,
-                       const I* __restrict__ lptr_end_,
-                       const J* __restrict__ lind_,
-                       T* __restrict__ lval0_,
-                       T* __restrict__ lval_,
-                       const rocsparse_index_base lbase_,
+            const I* __restrict__ lptr_begin_,
+            const I* __restrict__ lptr_end_,
+            const J* __restrict__ lind_,
+            T* __restrict__ lval0_,
+            T* __restrict__ lval_,
+            const rocsparse_index_base lbase_,
 
-                       const I* __restrict__ uptr_begin_,
-                       const I* __restrict__ uptr_end_,
-                       const J* __restrict__ uind_,
-                       T* __restrict__ uval0_,
-                       T* __restrict__ uval_,
-                       const rocsparse_index_base ubase_,
-                       T* __restrict__ dval0_,
-                       T* __restrict__ dval_,
-                       floating_data_t<T>* __restrict__ nrms_corr,
-                       floating_data_t<T>* __restrict__ nrms_residual,
-                       const floating_data_t<T>* __restrict__ nrm0)
+            const I* __restrict__ uptr_begin_,
+            const I* __restrict__ uptr_end_,
+            const J* __restrict__ uind_,
+            T* __restrict__ uval0_,
+            T* __restrict__ uval_,
+            const rocsparse_index_base ubase_,
+            T* __restrict__ dval0_,
+            T* __restrict__ dval_,
+            floating_data_t<T>* __restrict__ nrms_corr,
+            floating_data_t<T>* __restrict__ nrms_residual,
+            const floating_data_t<T>* __restrict__ nrm0)
 {
 
     static constexpr unsigned int nid  = BLOCKSIZE / WFSIZE;
@@ -397,31 +397,31 @@ static void
 }
 
 template <int BLOCKSIZE, int WFSIZE, typename T, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
-    static void kernel_freerun(const J niter_,
-                               const J m_,
-                               const I nnz_,
-                               const I* __restrict__ ptr_begin_,
-                               const I* __restrict__ ptr_end_,
-                               const J* __restrict__ ind_,
-                               const T* __restrict__ val_,
-                               const rocsparse_index_base base_,
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_freerun(const J niter_,
+                    const J m_,
+                    const I nnz_,
+                    const I* __restrict__ ptr_begin_,
+                    const I* __restrict__ ptr_end_,
+                    const J* __restrict__ ind_,
+                    const T* __restrict__ val_,
+                    const rocsparse_index_base base_,
 
-                               const I* __restrict__ lptr_begin_,
-                               const I* __restrict__ lptr_end_,
-                               const J* __restrict__ lind_,
-                               T* __restrict__ lval0_,
-                               T* __restrict__ lval_,
-                               const rocsparse_index_base lbase_,
+                    const I* __restrict__ lptr_begin_,
+                    const I* __restrict__ lptr_end_,
+                    const J* __restrict__ lind_,
+                    T* __restrict__ lval0_,
+                    T* __restrict__ lval_,
+                    const rocsparse_index_base lbase_,
 
-                               const I* __restrict__ uptr_begin_,
-                               const I* __restrict__ uptr_end_,
-                               const J* __restrict__ uind_,
-                               T* __restrict__ uval0_,
-                               T* __restrict__ uval_,
-                               const rocsparse_index_base ubase_,
-                               T* __restrict__ dval0_,
-                               T* __restrict__ dval_)
+                    const I* __restrict__ uptr_begin_,
+                    const I* __restrict__ uptr_end_,
+                    const J* __restrict__ uind_,
+                    T* __restrict__ uval0_,
+                    T* __restrict__ uval_,
+                    const rocsparse_index_base ubase_,
+                    T* __restrict__ dval0_,
+                    T* __restrict__ dval_)
 {
     static constexpr unsigned int nid = BLOCKSIZE / WFSIZE;
     const J                       lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -653,6 +653,10 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                     return rocsparse_status_internal_error;
                 }
             }
+
+            //
+            // No stream synchronization needed here,
+            //
             return rocsparse_status_success;
         }
     };
@@ -1143,7 +1147,9 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                     nrm_indicator_previous = nrm_indicator;
                 }
             }
+
             RETURN_IF_HIP_ERROR(on_device(p_iter, (converged) ? nmaxiter_ : (&nmaxiter), stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
             return rocsparse_status_success;
         }
     };

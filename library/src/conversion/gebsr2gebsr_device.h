@@ -27,20 +27,20 @@
 #include "common.h"
 
 template <rocsparse_int BLOCK_SIZE, rocsparse_int WF_SEGMENT_SIZE>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void gebsr2gebsr_nnz_fast_kernel(rocsparse_int        mb_A,
-                                     rocsparse_int        nb_A,
-                                     rocsparse_index_base base_A,
-                                     const rocsparse_int* __restrict__ bsr_row_ptr_A,
-                                     const rocsparse_int* __restrict__ bsr_col_ind_A,
-                                     rocsparse_int        row_block_dim_A,
-                                     rocsparse_int        col_block_dim_A,
-                                     rocsparse_int        mb_C,
-                                     rocsparse_int        nb_C,
-                                     rocsparse_index_base base_C,
-                                     rocsparse_int* __restrict__ bsr_row_ptr_C,
-                                     rocsparse_int row_block_dim_C,
-                                     rocsparse_int col_block_dim_C)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void gebsr2gebsr_nnz_fast_kernel(rocsparse_int        mb_A,
+                                 rocsparse_int        nb_A,
+                                 rocsparse_index_base base_A,
+                                 const rocsparse_int* __restrict__ bsr_row_ptr_A,
+                                 const rocsparse_int* __restrict__ bsr_col_ind_A,
+                                 rocsparse_int        row_block_dim_A,
+                                 rocsparse_int        col_block_dim_A,
+                                 rocsparse_int        mb_C,
+                                 rocsparse_int        nb_C,
+                                 rocsparse_index_base base_C,
+                                 rocsparse_int* __restrict__ bsr_row_ptr_C,
+                                 rocsparse_int row_block_dim_C,
+                                 rocsparse_int col_block_dim_C)
 {
     constexpr rocsparse_int SEGMENTS_PER_BLOCK = (BLOCK_SIZE / WF_SEGMENT_SIZE);
 
@@ -121,23 +121,23 @@ template <rocsparse_direction DIRECTION,
           rocsparse_int       BLOCK_SIZE,
           rocsparse_int       WF_SEGMENT_SIZE,
           typename T>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void gebsr2gebsr_fast_kernel(rocsparse_int        mb_A,
-                                 rocsparse_int        nb_A,
-                                 rocsparse_index_base base_A,
-                                 const T* __restrict__ bsr_val_A,
-                                 const rocsparse_int* __restrict__ bsr_row_ptr_A,
-                                 const rocsparse_int* __restrict__ bsr_col_ind_A,
-                                 rocsparse_int        row_block_dim_A,
-                                 rocsparse_int        col_block_dim_A,
-                                 rocsparse_int        mb_C,
-                                 rocsparse_int        nb_C,
-                                 rocsparse_index_base base_C,
-                                 T* __restrict__ bsr_val_C,
-                                 rocsparse_int* __restrict__ bsr_row_ptr_C,
-                                 rocsparse_int* __restrict__ bsr_col_ind_C,
-                                 rocsparse_int row_block_dim_C,
-                                 rocsparse_int col_block_dim_C)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void gebsr2gebsr_fast_kernel(rocsparse_int        mb_A,
+                             rocsparse_int        nb_A,
+                             rocsparse_index_base base_A,
+                             const T* __restrict__ bsr_val_A,
+                             const rocsparse_int* __restrict__ bsr_row_ptr_A,
+                             const rocsparse_int* __restrict__ bsr_col_ind_A,
+                             rocsparse_int        row_block_dim_A,
+                             rocsparse_int        col_block_dim_A,
+                             rocsparse_int        mb_C,
+                             rocsparse_int        nb_C,
+                             rocsparse_index_base base_C,
+                             T* __restrict__ bsr_val_C,
+                             rocsparse_int* __restrict__ bsr_row_ptr_C,
+                             rocsparse_int* __restrict__ bsr_col_ind_C,
+                             rocsparse_int row_block_dim_C,
+                             rocsparse_int col_block_dim_C)
 {
     constexpr rocsparse_int SEGMENTS_PER_BLOCK = (BLOCK_SIZE / WF_SEGMENT_SIZE);
 
@@ -267,10 +267,10 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gebsr2gebsr_compute_nnz_total_kernel(rocsparse_int mb,
-                                              const rocsparse_int* __restrict__ bsr_row_ptr,
-                                              rocsparse_int* __restrict__ nnz_total_dev_host_ptr)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gebsr2gebsr_compute_nnz_total_kernel(rocsparse_int mb,
+                                          const rocsparse_int* __restrict__ bsr_row_ptr,
+                                          rocsparse_int* __restrict__ nnz_total_dev_host_ptr)
 {
     rocsparse_int thread_id = hipThreadIdx_x + hipBlockDim_x * hipBlockIdx_x;
 
@@ -281,10 +281,10 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <rocsparse_int BLOCK_SIZE>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void gebsr2gebsr_fill_row_ptr_kernel(rocsparse_int        mb,
-                                         rocsparse_index_base base_C,
-                                         rocsparse_int* __restrict__ bsr_row_ptr_C)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void gebsr2gebsr_fill_row_ptr_kernel(rocsparse_int        mb,
+                                     rocsparse_index_base base_C,
+                                     rocsparse_int* __restrict__ bsr_row_ptr_C)
 {
     rocsparse_int thread_id = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
 

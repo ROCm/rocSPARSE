@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -145,6 +145,9 @@ int main(int argc, char* argv[])
     HIP_CHECK(hipMemcpy(dx, hx, sizeof(double) * nb * bsr_dim, hipMemcpyHostToDevice));
     HIP_CHECK(hipMemcpy(dy, hy, sizeof(double) * mb * bsr_dim, hipMemcpyHostToDevice));
 
+    rocsparse_mat_info info;
+    ROCSPARSE_CHECK(rocsparse_create_mat_info(&info));
+
     // Call dbsrmv to perform y = alpha * A x + beta * y
     ROCSPARSE_CHECK(rocsparse_dbsrmv(handle,
                                      dir,
@@ -158,6 +161,7 @@ int main(int argc, char* argv[])
                                      dbsr_row_ptr,
                                      dbsr_col_ind,
                                      bsr_dim,
+                                     info,
                                      dx,
                                      &beta,
                                      dy));
@@ -177,6 +181,7 @@ int main(int argc, char* argv[])
     // Clear rocSPARSE
     ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descr));
     ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_info(info));
 
     // Clear device memory
     HIP_CHECK(hipFree(dbsr_row_ptr));

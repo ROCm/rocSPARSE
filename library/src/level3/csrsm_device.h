@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,21 +32,21 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__device__ void csrsm_device(rocsparse_operation transB,
-                             J                   m,
-                             J                   nrhs,
-                             T                   alpha,
-                             const I* __restrict__ csr_row_ptr,
-                             const J* __restrict__ csr_col_ind,
-                             const T* __restrict__ csr_val,
-                             T* __restrict__ B,
-                             J ldb,
-                             int* __restrict__ done_array,
-                             J* __restrict__ map,
-                             J* __restrict__ zero_pivot,
-                             rocsparse_index_base idx_base,
-                             rocsparse_fill_mode  fill_mode,
-                             rocsparse_diag_type  diag_type)
+ROCSPARSE_DEVICE_ILF void csrsm_device(rocsparse_operation transB,
+                                       J                   m,
+                                       J                   nrhs,
+                                       T                   alpha,
+                                       const I* __restrict__ csr_row_ptr,
+                                       const J* __restrict__ csr_col_ind,
+                                       const T* __restrict__ csr_val,
+                                       T* __restrict__ B,
+                                       J ldb,
+                                       int* __restrict__ done_array,
+                                       J* __restrict__ map,
+                                       J* __restrict__ zero_pivot,
+                                       rocsparse_index_base idx_base,
+                                       rocsparse_fill_mode  fill_mode,
+                                       rocsparse_diag_type  diag_type)
 {
     // Index into the row map
     J idx = hipBlockIdx_x % m;
@@ -231,11 +231,11 @@ __device__ void csrsm_device(rocsparse_operation transB,
         B[idx_B] = local_sum;
     }
 
-    // Wait for all threads to finish writing into global memory before we mark the row "done"
-    __syncthreads();
-
     // Make sure B is written to global memory before setting row is done flag
     __threadfence();
+
+    // Wait for all threads to finish the threadfence before we mark the row "done"
+    __syncthreads();
 
     if(hipThreadIdx_x == 0)
     {

@@ -28,7 +28,7 @@
 
 // Scale kernel for beta != 1.0
 template <unsigned int BLOCKSIZE, typename I, typename Y, typename T>
-static ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, Y* __restrict__ data)
+ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, Y* __restrict__ data)
 {
     I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -51,17 +51,17 @@ static ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, Y* __restric
 // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
 // 'Segmented operations for sparse matrix computation on vector multiprocessors'
 template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
-                                                               I       nloops,
-                                                               T       alpha,
-                                                               const I* __restrict__ coo_row_ind,
-                                                               const I* __restrict__ coo_col_ind,
-                                                               const A* __restrict__ coo_val,
-                                                               const X* __restrict__ x,
-                                                               Y* __restrict__ y,
-                                                               I* __restrict__ row_block_red,
-                                                               T* __restrict__ val_block_red,
-                                                               rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
+                                                        I       nloops,
+                                                        T       alpha,
+                                                        const I* __restrict__ coo_row_ind,
+                                                        const I* __restrict__ coo_col_ind,
+                                                        const A* __restrict__ coo_val,
+                                                        const X* __restrict__ x,
+                                                        Y* __restrict__ y,
+                                                        I* __restrict__ row_block_red,
+                                                        T* __restrict__ val_block_red,
+                                                        rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
 
@@ -195,7 +195,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
 
 // Segmented block reduction kernel
 template <unsigned int BLOCKSIZE, typename I, typename T>
-static ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* rows, T* vals)
+ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* rows, T* vals)
 {
     int tid = hipThreadIdx_x;
 
@@ -219,11 +219,10 @@ static ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* rows, T* vals)
 
 // Do the final block reduction of the block reduction buffers back into global memory
 template <unsigned int BLOCKSIZE, typename I, typename Y, typename T>
-static ROCSPARSE_DEVICE_ILF void
-    coomvn_segmented_loops_reduce_device(I nblocks,
-                                         const I* __restrict__ row_block_red,
-                                         const T* __restrict__ val_block_red,
-                                         Y* __restrict__ y)
+ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_reduce_device(I nblocks,
+                                                               const I* __restrict__ row_block_red,
+                                                               const T* __restrict__ val_block_red,
+                                                               Y* __restrict__ y)
 {
     int tid = hipThreadIdx_x;
 
@@ -261,16 +260,16 @@ static ROCSPARSE_DEVICE_ILF void
 // 'Segmented operations for sparse matrix computation on vector multiprocessors' for array
 // of structure format (AoS)
 template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
-                                                                   I       nloops,
-                                                                   T       alpha,
-                                                                   const I* __restrict__ coo_ind,
-                                                                   const A* __restrict__ coo_val,
-                                                                   const X* __restrict__ x,
-                                                                   Y* __restrict__ y,
-                                                                   I* __restrict__ row_block_red,
-                                                                   T* __restrict__ val_block_red,
-                                                                   rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
+                                                            I       nloops,
+                                                            T       alpha,
+                                                            const I* __restrict__ coo_ind,
+                                                            const A* __restrict__ coo_val,
+                                                            const X* __restrict__ x,
+                                                            Y* __restrict__ y,
+                                                            I* __restrict__ row_block_red,
+                                                            T* __restrict__ val_block_red,
+                                                            rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
 
@@ -409,14 +408,14 @@ template <unsigned int BLOCKSIZE,
           typename X,
           typename Y,
           typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
-                                                            T       alpha,
-                                                            const I* __restrict__ coo_row_ind,
-                                                            const I* __restrict__ coo_col_ind,
-                                                            const A* __restrict__ coo_val,
-                                                            const X* __restrict__ x,
-                                                            Y* __restrict__ y,
-                                                            rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
+                                                     T       alpha,
+                                                     const I* __restrict__ coo_row_ind,
+                                                     const I* __restrict__ coo_col_ind,
+                                                     const A* __restrict__ coo_val,
+                                                     const X* __restrict__ x,
+                                                     Y* __restrict__ y,
+                                                     rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
 
@@ -553,13 +552,13 @@ template <unsigned int BLOCKSIZE,
           typename X,
           typename Y,
           typename T>
-static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
-                                                                T       alpha,
-                                                                const I* __restrict__ coo_ind,
-                                                                const A* __restrict__ coo_val,
-                                                                const X* __restrict__ x,
-                                                                Y* __restrict__ y,
-                                                                rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
+                                                         T       alpha,
+                                                         const I* __restrict__ coo_ind,
+                                                         const A* __restrict__ coo_val,
+                                                         const X* __restrict__ x,
+                                                         Y* __restrict__ y,
+                                                         rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
 
@@ -687,15 +686,15 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
 }
 
 template <typename I, typename A, typename X, typename Y, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvt_device(rocsparse_operation  trans,
-                                               int64_t              nnz,
-                                               T                    alpha,
-                                               const I*             coo_row_ind,
-                                               const I*             coo_col_ind,
-                                               const A*             coo_val,
-                                               const X*             x,
-                                               Y*                   y,
-                                               rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void coomvt_device(rocsparse_operation  trans,
+                                        int64_t              nnz,
+                                        T                    alpha,
+                                        const I*             coo_row_ind,
+                                        const I*             coo_col_ind,
+                                        const A*             coo_val,
+                                        const X*             x,
+                                        Y*                   y,
+                                        rocsparse_index_base idx_base)
 {
     int64_t gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -713,14 +712,14 @@ static ROCSPARSE_DEVICE_ILF void coomvt_device(rocsparse_operation  trans,
 }
 
 template <typename I, typename A, typename X, typename Y, typename T>
-static ROCSPARSE_DEVICE_ILF void coomvt_aos_device(rocsparse_operation  trans,
-                                                   int64_t              nnz,
-                                                   T                    alpha,
-                                                   const I*             coo_ind,
-                                                   const A*             coo_val,
-                                                   const X*             x,
-                                                   Y*                   y,
-                                                   rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void coomvt_aos_device(rocsparse_operation  trans,
+                                            int64_t              nnz,
+                                            T                    alpha,
+                                            const I*             coo_ind,
+                                            const A*             coo_val,
+                                            const X*             x,
+                                            Y*                   y,
+                                            rocsparse_index_base idx_base)
 {
     int64_t gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 

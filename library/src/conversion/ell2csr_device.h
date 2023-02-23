@@ -29,21 +29,21 @@
 #include <hip/hip_runtime.h>
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void ell2csr_index_base(rocsparse_int* __restrict__ nnz)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void ell2csr_index_base(rocsparse_int* __restrict__ nnz)
 {
     --(*nnz);
 }
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void ell2csr_nnz_per_row(rocsparse_int m,
-                             rocsparse_int n,
-                             rocsparse_int ell_width,
-                             const rocsparse_int* __restrict__ ell_col_ind,
-                             rocsparse_index_base ell_base,
-                             rocsparse_int* __restrict__ csr_row_ptr,
-                             rocsparse_index_base csr_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void ell2csr_nnz_per_row(rocsparse_int m,
+                         rocsparse_int n,
+                         rocsparse_int ell_width,
+                         const rocsparse_int* __restrict__ ell_col_ind,
+                         rocsparse_index_base ell_base,
+                         rocsparse_int* __restrict__ csr_row_ptr,
+                         rocsparse_index_base csr_base)
 {
     rocsparse_int ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 
@@ -78,17 +78,17 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void ell2csr_fill(rocsparse_int m,
-                      rocsparse_int n,
-                      rocsparse_int ell_width,
-                      const rocsparse_int* __restrict__ ell_col_ind,
-                      const T* __restrict__ ell_val,
-                      rocsparse_index_base ell_base,
-                      const rocsparse_int* __restrict__ csr_row_ptr,
-                      rocsparse_int* __restrict__ csr_col_ind,
-                      T* __restrict__ csr_val,
-                      rocsparse_index_base csr_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void ell2csr_fill(rocsparse_int m,
+                  rocsparse_int n,
+                  rocsparse_int ell_width,
+                  const rocsparse_int* __restrict__ ell_col_ind,
+                  const T* __restrict__ ell_val,
+                  rocsparse_index_base ell_base,
+                  const rocsparse_int* __restrict__ csr_row_ptr,
+                  rocsparse_int* __restrict__ csr_col_ind,
+                  T* __restrict__ csr_val,
+                  rocsparse_index_base csr_base)
 {
     rocsparse_int ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 

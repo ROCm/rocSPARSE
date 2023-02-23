@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,10 @@
 
 #include "rocsparse_prune_csr2csr_by_percentage.hpp"
 #include "definitions.h"
+#include "rocsparse_nnz_compress.hpp"
 #include "utility.h"
 
 #include "csr2csr_compress_device.h"
-#include "nnz_compress_device.h"
 #include "prune_csr2csr_by_percentage_device.h"
 #include <rocprim/rocprim.hpp>
 
@@ -37,38 +37,19 @@ template <rocsparse_int BLOCK_SIZE,
           rocsparse_int WF_SIZE,
           typename T,
           typename U>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void nnz_compress_kernel(rocsparse_int        m,
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void csr2csr_compress_kernel(rocsparse_int        m,
+                             rocsparse_int        n,
                              rocsparse_index_base idx_base_A,
                              const T* __restrict__ csr_val_A,
                              const rocsparse_int* __restrict__ csr_row_ptr_A,
-                             rocsparse_int* __restrict__ nnz_per_row,
+                             const rocsparse_int* __restrict__ csr_col_ind_A,
+                             rocsparse_int        nnz_A,
+                             rocsparse_index_base idx_base_C,
+                             T* __restrict__ csr_val_C,
+                             const rocsparse_int* __restrict__ csr_row_ptr_C,
+                             rocsparse_int* __restrict__ csr_col_ind_C,
                              U threshold_device_host)
-{
-    auto threshold = load_scalar_device_host(threshold_device_host);
-    nnz_compress_device<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>(
-        m, idx_base_A, csr_val_A, csr_row_ptr_A, nnz_per_row, threshold);
-}
-
-template <rocsparse_int BLOCK_SIZE,
-          rocsparse_int SEGMENTS_PER_BLOCK,
-          rocsparse_int SEGMENT_SIZE,
-          rocsparse_int WF_SIZE,
-          typename T,
-          typename U>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void csr2csr_compress_kernel(rocsparse_int        m,
-                                 rocsparse_int        n,
-                                 rocsparse_index_base idx_base_A,
-                                 const T* __restrict__ csr_val_A,
-                                 const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                 const rocsparse_int* __restrict__ csr_col_ind_A,
-                                 rocsparse_int        nnz_A,
-                                 rocsparse_index_base idx_base_C,
-                                 T* __restrict__ csr_val_C,
-                                 const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                 rocsparse_int* __restrict__ csr_col_ind_C,
-                                 U threshold_device_host)
 {
     auto threshold = load_scalar_device_host(threshold_device_host);
     csr2csr_compress_device<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>(m,
@@ -83,50 +64,6 @@ __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
                                                                                    csr_row_ptr_C,
                                                                                    csr_col_ind_C,
                                                                                    threshold);
-}
-
-template <rocsparse_int BLOCK_SIZE, rocsparse_int SEGMENT_SIZE, rocsparse_int WF_SIZE, typename T>
-void nnz_compress(rocsparse_handle     handle,
-                  rocsparse_int        m,
-                  rocsparse_index_base idx_base_A,
-                  const T* __restrict__ csr_val_A,
-                  const rocsparse_int* __restrict__ csr_row_ptr_A,
-                  rocsparse_int* __restrict__ nnz_per_row,
-                  const T* threshold)
-{
-    constexpr rocsparse_int SEGMENTS_PER_BLOCK = BLOCK_SIZE / SEGMENT_SIZE;
-    rocsparse_int           grid_size          = (m + SEGMENTS_PER_BLOCK - 1) / SEGMENTS_PER_BLOCK;
-
-    if(handle->pointer_mode == rocsparse_pointer_mode_device)
-    {
-        hipLaunchKernelGGL(
-            (nnz_compress_kernel<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>),
-            dim3(grid_size),
-            dim3(BLOCK_SIZE),
-            0,
-            handle->stream,
-            m,
-            idx_base_A,
-            csr_val_A,
-            csr_row_ptr_A,
-            nnz_per_row,
-            threshold);
-    }
-    else
-    {
-        hipLaunchKernelGGL(
-            (nnz_compress_kernel<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>),
-            dim3(grid_size),
-            dim3(BLOCK_SIZE),
-            0,
-            handle->stream,
-            m,
-            idx_base_A,
-            csr_val_A,
-            csr_row_ptr_A,
-            nnz_per_row,
-            *threshold);
-    }
 }
 
 template <rocsparse_int BLOCK_SIZE, rocsparse_int SEGMENT_SIZE, rocsparse_int WF_SIZE, typename T>
@@ -365,25 +302,16 @@ rocsparse_status
     {
         if(nnz_total_dev_host_ptr != nullptr && csr_row_ptr_C != nullptr)
         {
-            rocsparse_pointer_mode mode;
-            rocsparse_status       status = rocsparse_get_pointer_mode(handle, &mode);
-            if(rocsparse_status_success != status)
-            {
-                return status;
-            }
-
-            constexpr rocsparse_int block_size = 1024;
-            rocsparse_int           grid_size  = (m + block_size - 1) / block_size;
-            hipLaunchKernelGGL((fill_row_ptr_device<block_size>),
-                               dim3(grid_size),
-                               dim3(block_size),
+            hipLaunchKernelGGL((set_array_to_value<256>),
+                               dim3(m / 256 + 1),
+                               dim3(256),
                                0,
                                stream,
-                               m,
-                               csr_descr_C->base,
-                               csr_row_ptr_C);
+                               (m + 1),
+                               csr_row_ptr_C,
+                               static_cast<rocsparse_int>(csr_descr_C->base));
 
-            if(rocsparse_pointer_mode_device == mode)
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
                 RETURN_IF_HIP_ERROR(hipMemsetAsync(
                     nnz_total_dev_host_ptr, 0, sizeof(rocsparse_int), handle->stream));
@@ -423,20 +351,29 @@ rocsparse_status
     T* output = reinterpret_cast<T*>(temp_buffer);
 
     // Compute absolute value of csr_val_A and store in first half of output array
-    {
-        dim3 grid((nnz_A - 1) / 256 + 1);
-        dim3 threads(256);
-
-        hipLaunchKernelGGL(
-            (abs_kernel<256, T>), grid, threads, 0, stream, nnz_A, csr_val_A, output);
-    }
+    hipLaunchKernelGGL((abs_kernel<256, T>),
+                       dim3((nnz_A - 1) / 256 + 1),
+                       dim3(256),
+                       0,
+                       stream,
+                       nnz_A,
+                       csr_val_A,
+                       output);
 
     // Determine amount of temporary storage needed for rocprim sort and inclusive scan and allocate if necessary
     size_t temp_storage_size_bytes_sort = 0;
     size_t temp_storage_size_bytes_scan = 0;
 
-    RETURN_IF_HIP_ERROR(rocprim::radix_sort_keys(
-        nullptr, temp_storage_size_bytes_sort, output, (output + nnz_A), nnz_A));
+    unsigned int startbit = 0;
+    unsigned int endbit   = 8 * sizeof(T);
+    RETURN_IF_HIP_ERROR(rocprim::radix_sort_keys(nullptr,
+                                                 temp_storage_size_bytes_sort,
+                                                 output,
+                                                 (output + nnz_A),
+                                                 nnz_A,
+                                                 startbit,
+                                                 endbit,
+                                                 handle->stream));
 
     RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
                                                 temp_storage_size_bytes_scan,
@@ -465,166 +402,44 @@ rocsparse_status
     }
 
     // perform sort on first half of output array and store result in second half of output array
-    rocprim::radix_sort_keys(
-        temp_storage_ptr, temp_storage_size_bytes, output, (output + nnz_A), nnz_A);
+    rocprim::radix_sort_keys(temp_storage_ptr,
+                             temp_storage_size_bytes_sort,
+                             output,
+                             (output + nnz_A),
+                             nnz_A,
+                             startbit,
+                             endbit,
+                             handle->stream);
 
-    // Determine threshold on host or device
-    T  h_threshold;
-    T* threshold = nullptr;
-    if(handle->pointer_mode == rocsparse_pointer_mode_device)
-    {
-        threshold = &output[nnz_A + pos];
-    }
-    else
-    {
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &h_threshold, &output[nnz_A + pos], sizeof(T), hipMemcpyDeviceToHost, handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+    // Copy threshold to host
+    T h_threshold;
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+        &h_threshold, &output[nnz_A + pos], sizeof(T), hipMemcpyDeviceToHost, handle->stream));
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-        threshold = &h_threshold;
-    }
-
-    constexpr rocsparse_int block_size = 1024;
-
-    // Mean number of elements per row in the input CSR matrix
-    rocsparse_int mean_nnz_per_row = nnz_A / m;
-
-    // A wavefront is divided into segments of size 2, 4, 8, 16, or 32 threads (or 64 in the case of 64
-    // thread wavefronts) depending on the mean number of elements per CSR matrix row. Each row in the
-    // matrix is then handled by a single segment.
-    if(handle->wavefront_size == 32)
-    {
-        if(mean_nnz_per_row < 4)
-        {
-            nnz_compress<block_size, 2, 32>(handle,
-                                            m,
-                                            csr_descr_A->base,
-                                            csr_val_A,
-                                            csr_row_ptr_A,
-                                            &csr_row_ptr_C[1],
-                                            threshold);
-        }
-        else if(mean_nnz_per_row < 8)
-        {
-            nnz_compress<block_size, 4, 32>(handle,
-                                            m,
-                                            csr_descr_A->base,
-                                            csr_val_A,
-                                            csr_row_ptr_A,
-                                            &csr_row_ptr_C[1],
-                                            threshold);
-        }
-        else if(mean_nnz_per_row < 16)
-        {
-            nnz_compress<block_size, 8, 32>(handle,
-                                            m,
-                                            csr_descr_A->base,
-                                            csr_val_A,
-                                            csr_row_ptr_A,
-                                            &csr_row_ptr_C[1],
-                                            threshold);
-        }
-        else if(mean_nnz_per_row < 32)
-        {
-            nnz_compress<block_size, 16, 32>(handle,
-                                             m,
-                                             csr_descr_A->base,
-                                             csr_val_A,
-                                             csr_row_ptr_A,
-                                             &csr_row_ptr_C[1],
-                                             threshold);
-        }
-        else
-        {
-            nnz_compress<block_size, 32, 32>(handle,
-                                             m,
-                                             csr_descr_A->base,
-                                             csr_val_A,
-                                             csr_row_ptr_A,
-                                             &csr_row_ptr_C[1],
-                                             threshold);
-        }
-    }
-    else if(handle->wavefront_size == 64)
-    {
-        if(mean_nnz_per_row < 4)
-        {
-            nnz_compress<block_size, 2, 64>(handle,
-                                            m,
-                                            csr_descr_A->base,
-                                            csr_val_A,
-                                            csr_row_ptr_A,
-                                            &csr_row_ptr_C[1],
-                                            threshold);
-        }
-        else if(mean_nnz_per_row < 8)
-        {
-            nnz_compress<block_size, 4, 64>(handle,
-                                            m,
-                                            csr_descr_A->base,
-                                            csr_val_A,
-                                            csr_row_ptr_A,
-                                            &csr_row_ptr_C[1],
-                                            threshold);
-        }
-        else if(mean_nnz_per_row < 16)
-        {
-            nnz_compress<block_size, 8, 64>(handle,
-                                            m,
-                                            csr_descr_A->base,
-                                            csr_val_A,
-                                            csr_row_ptr_A,
-                                            &csr_row_ptr_C[1],
-                                            threshold);
-        }
-        else if(mean_nnz_per_row < 32)
-        {
-            nnz_compress<block_size, 16, 64>(handle,
-                                             m,
-                                             csr_descr_A->base,
-                                             csr_val_A,
-                                             csr_row_ptr_A,
-                                             &csr_row_ptr_C[1],
-                                             threshold);
-        }
-        else if(mean_nnz_per_row < 64)
-        {
-            nnz_compress<block_size, 32, 64>(handle,
-                                             m,
-                                             csr_descr_A->base,
-                                             csr_val_A,
-                                             csr_row_ptr_A,
-                                             &csr_row_ptr_C[1],
-                                             threshold);
-        }
-        else
-        {
-            nnz_compress<block_size, 64, 64>(handle,
-                                             m,
-                                             csr_descr_A->base,
-                                             csr_val_A,
-                                             csr_row_ptr_A,
-                                             &csr_row_ptr_C[1],
-                                             threshold);
-        }
-    }
-    else
-    {
-        return rocsparse_status_arch_mismatch;
-    }
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_nnz_compress_template(handle,
+                                                              m,
+                                                              csr_descr_A,
+                                                              csr_val_A,
+                                                              csr_row_ptr_A,
+                                                              &csr_row_ptr_C[1],
+                                                              nnz_total_dev_host_ptr,
+                                                              h_threshold));
 
     // Store threshold at first entry in output array
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
         output, &output[nnz_A + pos], sizeof(T), hipMemcpyDeviceToDevice, handle->stream));
 
     // Compute csr_row_ptr_C with the right index base.
-    rocsparse_int first_value = csr_descr_C->base;
-    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-        csr_row_ptr_C, &first_value, sizeof(rocsparse_int), hipMemcpyHostToDevice, handle->stream));
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(csr_row_ptr_C,
+                                       &csr_descr_C->base,
+                                       sizeof(rocsparse_int),
+                                       hipMemcpyHostToDevice,
+                                       handle->stream));
 
     // Perform actual inclusive sum
     RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(temp_storage_ptr,
-                                                temp_storage_size_bytes,
+                                                temp_storage_size_bytes_scan,
                                                 csr_row_ptr_C,
                                                 csr_row_ptr_C,
                                                 m + 1,
@@ -634,30 +449,6 @@ rocsparse_status
     if(temp_alloc == true)
     {
         RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(temp_storage_ptr, handle->stream));
-    }
-
-    // compute nnz_total_dev_host_ptr
-    if(handle->pointer_mode == rocsparse_pointer_mode_device)
-    {
-        hipLaunchKernelGGL((compute_nnz_from_row_ptr_array_kernel<1>),
-                           dim3(1),
-                           dim3(1),
-                           0,
-                           stream,
-                           m,
-                           csr_row_ptr_C,
-                           nnz_total_dev_host_ptr);
-    }
-    else
-    {
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(nnz_total_dev_host_ptr,
-                                           &csr_row_ptr_C[m],
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyDeviceToHost,
-                                           handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-
-        *nnz_total_dev_host_ptr -= csr_descr_C->base;
     }
 
     return rocsparse_status_success;
@@ -801,7 +592,6 @@ rocsparse_status
                                            hipMemcpyDeviceToHost,
                                            handle->stream));
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-
         threshold = &h_threshold;
     }
 

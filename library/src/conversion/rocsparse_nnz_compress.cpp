@@ -34,13 +34,13 @@ template <rocsparse_int BLOCK_SIZE,
           rocsparse_int SEGMENT_SIZE,
           rocsparse_int WF_SIZE,
           typename T>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void nnz_compress_kernel(rocsparse_int        m,
-                             rocsparse_index_base idx_base_A,
-                             const T* __restrict__ csr_val_A,
-                             const rocsparse_int* __restrict__ csr_row_ptr_A,
-                             rocsparse_int* __restrict__ nnz_per_row,
-                             T threshold)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void nnz_compress_kernel(rocsparse_int        m,
+                         rocsparse_index_base idx_base_A,
+                         const T* __restrict__ csr_val_A,
+                         const rocsparse_int* __restrict__ csr_row_ptr_A,
+                         rocsparse_int* __restrict__ nnz_per_row,
+                         T threshold)
 {
     nnz_compress_device<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>(
         m, idx_base_A, csr_val_A, csr_row_ptr_A, nnz_per_row, threshold);

@@ -171,6 +171,18 @@ public:
 
 int main(int argc, char** argv)
 {
+    // Get version
+    rocsparse_handle handle;
+    rocsparse_create_handle(&handle);
+
+    int  ver;
+    char rev[64];
+
+    rocsparse_get_version(handle, &ver);
+    rocsparse_get_git_rev(handle, rev);
+
+    rocsparse_destroy_handle(handle);
+
     // Get user device id from command line
     int dev = 0;
 
@@ -179,6 +191,15 @@ int main(int argc, char** argv)
         if(strcmp(argv[i], "--device") == 0 && argc > i + 1)
         {
             dev = atoi(argv[i + 1]);
+        }
+
+        if(strcmp(argv[i], "--version") == 0)
+        {
+            // Print version and exit, if requested
+            std::cout << "rocSPARSE version: " << ver / 100000 << "." << ver / 100 % 1000 << "."
+                      << ver % 100 << "-" << rev << std::endl;
+
+            return 0;
         }
     }
 
@@ -231,19 +252,8 @@ int main(int argc, char** argv)
               << std::endl;
 
     // Print version
-    rocsparse_handle handle;
-    rocsparse_create_handle(&handle);
-
-    int  ver;
-    char rev[64];
-
-    rocsparse_get_version(handle, &ver);
-    rocsparse_get_git_rev(handle, rev);
-
     std::cout << "rocSPARSE version: " << ver / 100000 << "." << ver / 100 % 1000 << "."
               << ver % 100 << "-" << rev << std::endl;
-
-    rocsparse_destroy_handle(handle);
 
     // Set data file path
     rocsparse_parse_data(argc, argv, rocsparse_exepath() + "rocsparse_test.data");

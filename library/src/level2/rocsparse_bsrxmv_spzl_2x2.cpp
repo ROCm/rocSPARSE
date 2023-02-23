@@ -33,19 +33,19 @@ template <unsigned int BLOCKSIZE,
           typename A,
           typename X,
           typename Y>
-__device__ void bsrxmvn_2x2_device(J                   mb,
-                                   rocsparse_direction dir,
-                                   T                   alpha,
-                                   J                   size_of_mask,
-                                   const J* __restrict__ bsr_mask_ptr,
-                                   const I* __restrict__ bsr_row_ptr,
-                                   const I* __restrict__ bsr_end_ptr,
-                                   const J* __restrict__ bsr_col_ind,
-                                   const A* __restrict__ bsr_val,
-                                   const X* __restrict__ x,
-                                   T beta,
-                                   Y* __restrict__ y,
-                                   rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void bsrxmvn_2x2_device(J                   mb,
+                                             rocsparse_direction dir,
+                                             T                   alpha,
+                                             J                   size_of_mask,
+                                             const J* __restrict__ bsr_mask_ptr,
+                                             const I* __restrict__ bsr_row_ptr,
+                                             const I* __restrict__ bsr_end_ptr,
+                                             const J* __restrict__ bsr_col_ind,
+                                             const A* __restrict__ bsr_val,
+                                             const X* __restrict__ x,
+                                             T beta,
+                                             Y* __restrict__ y,
+                                             rocsparse_index_base idx_base)
 {
     // BSR block dimension
     static constexpr int BSRDIM = 2;
@@ -150,20 +150,20 @@ template <unsigned int BLOCKSIZE,
           typename X,
           typename Y,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void bsrxmvn_2x2_kernel(J                   mb,
-                            rocsparse_direction dir,
-                            U                   alpha_device_host,
-                            J                   size_of_mask,
-                            const J* __restrict__ bsr_mask_ptr,
-                            const I* __restrict__ bsr_row_ptr,
-                            const I* __restrict__ bsr_end_ptr,
-                            const J* __restrict__ bsr_col_ind,
-                            const A* __restrict__ bsr_val,
-                            const X* __restrict__ x,
-                            U beta_device_host,
-                            Y* __restrict__ y,
-                            rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrxmvn_2x2_kernel(J                   mb,
+                        rocsparse_direction dir,
+                        U                   alpha_device_host,
+                        J                   size_of_mask,
+                        const J* __restrict__ bsr_mask_ptr,
+                        const I* __restrict__ bsr_row_ptr,
+                        const I* __restrict__ bsr_end_ptr,
+                        const J* __restrict__ bsr_col_ind,
+                        const A* __restrict__ bsr_val,
+                        const X* __restrict__ x,
+                        U beta_device_host,
+                        Y* __restrict__ y,
+                        rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);

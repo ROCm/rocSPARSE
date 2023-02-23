@@ -123,7 +123,7 @@ void testing_rot(const Arguments& arg)
 
     // Initialize data on CPU
     rocsparse_seedrand();
-    rocsparse_init_index(hx_ind, nnz, 1, size);
+    rocsparse_init_index(hx_ind, nnz, base, size + base);
     rocsparse_init_exact<T>(hx_val_1, 1, nnz, 1);
     rocsparse_init_exact<T>(hy_1, 1, size, 1);
     rocsparse_init_exact<T>(hc, 1, 1, 1);

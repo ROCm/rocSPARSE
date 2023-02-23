@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -140,6 +140,7 @@ rocsparse_status rocsparse_importer_rocalution::import_sparse_csx(
     this->m_info_csx.in = new std::ifstream(this->m_filename, std::ios::in | std::ios::binary);
     if(!this->m_info_csx.in->is_open())
     {
+        std::cerr << "cannot open file '" << this->m_filename << "'" << std::endl;
         return rocsparse_status_internal_error;
     }
     std::string header;

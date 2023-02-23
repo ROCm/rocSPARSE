@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,10 @@
 #include "common.h"
 #include "handle.h"
 
-static __global__ void nnz_total_device_kernel(rocsparse_int m,
-                                               const rocsparse_int* __restrict__ csr_row_ptr,
-                                               rocsparse_int* __restrict__ nnz_total_dev_host_ptr)
+ROCSPARSE_KERNEL(1)
+void nnz_total_device_kernel(rocsparse_int m,
+                             const rocsparse_int* __restrict__ csr_row_ptr,
+                             rocsparse_int* __restrict__ nnz_total_dev_host_ptr)
 {
     if(hipThreadIdx_x == 0)
     {
@@ -37,12 +38,12 @@ static __global__ void nnz_total_device_kernel(rocsparse_int m,
 }
 
 template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename T>
-static __device__ void prune_dense2csr_nnz_device(rocsparse_int m,
-                                                  rocsparse_int n,
-                                                  const T* __restrict__ A,
-                                                  rocsparse_int lda,
-                                                  T             threshold,
-                                                  rocsparse_int* __restrict__ nnz_per_row)
+ROCSPARSE_DEVICE_ILF void prune_dense2csr_nnz_device(rocsparse_int m,
+                                                     rocsparse_int n,
+                                                     const T* __restrict__ A,
+                                                     rocsparse_int lda,
+                                                     T             threshold,
+                                                     rocsparse_int* __restrict__ nnz_per_row)
 {
     rocsparse_int thread_id = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x;
     rocsparse_int tx        = thread_id % DIM_X;
@@ -67,8 +68,9 @@ static __device__ void prune_dense2csr_nnz_device(rocsparse_int m,
             {
                 for(rocsparse_int j = 0; j < 4; ++j)
                 {
-                    if(rocsparse_abs(A[ind + k * DIM_X + (col + j) * lda]) > threshold)
-                        res_A[k] += 1;
+                    res_A[k] += (rocsparse_abs(A[ind + k * DIM_X + (col + j) * lda]) > threshold)
+                                    ? 1
+                                    : 0;
                 }
             }
         }
@@ -117,15 +119,15 @@ static __device__ void prune_dense2csr_nnz_device(rocsparse_int m,
 }
 
 template <rocsparse_int NUMROWS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
-static __device__ void prune_dense2csr_device(rocsparse_index_base base,
-                                              rocsparse_int        m,
-                                              rocsparse_int        n,
-                                              const T* __restrict__ dense_val,
-                                              rocsparse_int ld,
-                                              T             threshold,
-                                              T* __restrict__ csr_val,
-                                              const rocsparse_int* __restrict__ csr_row_ptr,
-                                              rocsparse_int* __restrict__ csr_col_ind)
+ROCSPARSE_DEVICE_ILF void prune_dense2csr_device(rocsparse_index_base base,
+                                                 rocsparse_int        m,
+                                                 rocsparse_int        n,
+                                                 const T* __restrict__ dense_val,
+                                                 rocsparse_int ld,
+                                                 T             threshold,
+                                                 T* __restrict__ csr_val,
+                                                 const rocsparse_int* __restrict__ csr_row_ptr,
+                                                 rocsparse_int* __restrict__ csr_col_ind)
 {
     const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE,
                         lane_index      = hipThreadIdx_x % WF_SIZE;

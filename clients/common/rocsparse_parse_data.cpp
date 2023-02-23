@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,8 @@ namespace fs = std::experimental::filesystem;
 #include <sys/wait.h>
 #include <unistd.h>
 #endif
+
+#include "rocsparse_clients_envariables.hpp"
 
 // Parse YAML data
 static std::string rocsparse_parse_yaml(const std::string& yaml)
@@ -142,6 +144,20 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
                 std::cout << "\n"
                           << argv[0] << " [ --data <path> | --yaml <path> ] <options> ...\n"
                           << std::endl;
+
+                std::cout << "" << std::endl;
+                std::cout << "Specific environment variables:" << std::endl;
+                for(const auto v : rocsparse_clients_envariables::s_var_bool_all)
+                {
+                    std::cout << rocsparse_clients_envariables::get_name(v) << " "
+                              << rocsparse_clients_envariables::get_description(v) << std::endl;
+                }
+                for(const auto v : rocsparse_clients_envariables::s_var_string_all)
+                {
+                    std::cout << rocsparse_clients_envariables::get_name(v) << " "
+                              << rocsparse_clients_envariables::get_description(v) << std::endl;
+                }
+                std::cout << "" << std::endl;
             }
         }
     }

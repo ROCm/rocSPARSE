@@ -44,8 +44,8 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_coomv_aos_alg value_)
 };
 
 template <unsigned int BLOCKSIZE, typename I, typename Y, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void coomv_scale(I size, U beta_device_host, Y* __restrict__ data)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void coomv_scale(I size, U beta_device_host, Y* __restrict__ data)
 {
     auto beta = load_scalar_device_host(beta_device_host);
     if(beta != 1)
@@ -61,17 +61,17 @@ template <unsigned int BLOCKSIZE,
           typename Y,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void coomvn_aos_segmented_loops(int64_t nnz,
-                                    I       nloops,
-                                    U       alpha_device_host,
-                                    const I* __restrict__ coo_ind,
-                                    const A* __restrict__ coo_val,
-                                    const X* __restrict__ x,
-                                    Y* __restrict__ y,
-                                    I* __restrict__ row_block_red,
-                                    T* __restrict__ val_block_red,
-                                    rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void coomvn_aos_segmented_loops(int64_t nnz,
+                                I       nloops,
+                                U       alpha_device_host,
+                                const I* __restrict__ coo_ind,
+                                const A* __restrict__ coo_val,
+                                const X* __restrict__ x,
+                                Y* __restrict__ y,
+                                I* __restrict__ row_block_red,
+                                T* __restrict__ val_block_red,
+                                rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != 0)
@@ -82,12 +82,12 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename Y, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void coomvn_segmented_loops_reduce(I nblocks,
-                                       U alpha_device_host,
-                                       const I* __restrict__ row_block_red,
-                                       const T* __restrict__ val_block_red,
-                                       Y* __restrict__ y)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void coomvn_segmented_loops_reduce(I nblocks,
+                                   U alpha_device_host,
+                                   const I* __restrict__ row_block_red,
+                                   const T* __restrict__ val_block_red,
+                                   Y* __restrict__ y)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != 0)
@@ -103,14 +103,14 @@ template <unsigned int BLOCKSIZE,
           typename X,
           typename Y,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void coomvn_aos_atomic_loops(int64_t nnz,
-                                 U       alpha_device_host,
-                                 const I* __restrict__ coo_ind,
-                                 const A* __restrict__ coo_val,
-                                 const X* __restrict__ x,
-                                 Y* __restrict__ y,
-                                 rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void coomvn_aos_atomic_loops(int64_t nnz,
+                             U       alpha_device_host,
+                             const I* __restrict__ coo_ind,
+                             const A* __restrict__ coo_val,
+                             const X* __restrict__ x,
+                             Y* __restrict__ y,
+                             rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != 0)
@@ -121,14 +121,15 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvt_aos_kernel(rocsparse_operation trans,
-                                                                     int64_t             nnz,
-                                                                     U alpha_device_host,
-                                                                     const I* __restrict__ coo_ind,
-                                                                     const A* __restrict__ coo_val,
-                                                                     const X* __restrict__ x,
-                                                                     Y* __restrict__ y,
-                                                                     rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void coomvt_aos_kernel(rocsparse_operation trans,
+                       int64_t             nnz,
+                       U                   alpha_device_host,
+                       const I* __restrict__ coo_ind,
+                       const A* __restrict__ coo_val,
+                       const X* __restrict__ x,
+                       Y* __restrict__ y,
+                       rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != 0)

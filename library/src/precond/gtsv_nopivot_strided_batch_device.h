@@ -42,14 +42,14 @@
 
 // Cyclic reduction algorithm using shared memory
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_nopivot_strided_batch_cr_pow2_shared_kernel(rocsparse_int m,
-                                                          rocsparse_int batch_count,
-                                                          rocsparse_int batch_stride,
-                                                          const T* __restrict__ dl,
-                                                          const T* __restrict__ d,
-                                                          const T* __restrict__ du,
-                                                          T* __restrict__ x)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_nopivot_strided_batch_cr_pow2_shared_kernel(rocsparse_int m,
+                                                      rocsparse_int batch_count,
+                                                      rocsparse_int batch_stride,
+                                                      const T* __restrict__ dl,
+                                                      const T* __restrict__ d,
+                                                      const T* __restrict__ du,
+                                                      T* __restrict__ x)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int bid = hipBlockIdx_x;
@@ -154,14 +154,14 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 // Parallel cyclic reduction algorithm using shared memory
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_nopivot_strided_batch_pcr_pow2_shared_kernel(rocsparse_int m,
-                                                           rocsparse_int batch_count,
-                                                           rocsparse_int batch_stride,
-                                                           const T* __restrict__ dl,
-                                                           const T* __restrict__ d,
-                                                           const T* __restrict__ du,
-                                                           T* __restrict__ x)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_nopivot_strided_batch_pcr_pow2_shared_kernel(rocsparse_int m,
+                                                       rocsparse_int batch_count,
+                                                       rocsparse_int batch_stride,
+                                                       const T* __restrict__ dl,
+                                                       const T* __restrict__ d,
+                                                       const T* __restrict__ du,
+                                                       T* __restrict__ x)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int bid = hipBlockIdx_x;
@@ -234,14 +234,14 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 // Combined Parallel cyclic reduction and cyclic reduction algorithm using shared memory
 template <unsigned int BLOCKSIZE, unsigned int PCR_SIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_nopivot_strided_batch_crpcr_pow2_shared_kernel(rocsparse_int m,
-                                                             rocsparse_int batch_count,
-                                                             rocsparse_int batch_stride,
-                                                             const T* __restrict__ dl,
-                                                             const T* __restrict__ d,
-                                                             const T* __restrict__ du,
-                                                             T* __restrict__ x)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_nopivot_strided_batch_crpcr_pow2_shared_kernel(rocsparse_int m,
+                                                         rocsparse_int batch_count,
+                                                         rocsparse_int batch_stride,
+                                                         const T* __restrict__ dl,
+                                                         const T* __restrict__ d,
+                                                         const T* __restrict__ du,
+                                                         T* __restrict__ x)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int bid = hipBlockIdx_x;
@@ -416,14 +416,14 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 // Parallel cyclic reduction algorithm
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_nopivot_strided_batch_pcr_shared_kernel(rocsparse_int m,
-                                                      rocsparse_int batch_count,
-                                                      rocsparse_int batch_stride,
-                                                      const T* __restrict__ dl,
-                                                      const T* __restrict__ d,
-                                                      const T* __restrict__ du,
-                                                      T* __restrict__ x)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_nopivot_strided_batch_pcr_shared_kernel(rocsparse_int m,
+                                                  rocsparse_int batch_count,
+                                                  rocsparse_int batch_stride,
+                                                  const T* __restrict__ dl,
+                                                  const T* __restrict__ d,
+                                                  const T* __restrict__ du,
+                                                  T* __restrict__ x)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int bid = hipBlockIdx_x;
@@ -509,19 +509,19 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 // Parallel cyclic reduction algorithm using global memory for partitioning large matrices into
 // multiple small ones that can be solved in parallel in stage 2
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_nopivot_strided_batch_pcr_pow2_stage1_kernel(rocsparse_int stride,
-                                                           rocsparse_int m,
-                                                           rocsparse_int batch_count,
-                                                           rocsparse_int batch_stride,
-                                                           const T* __restrict__ a0,
-                                                           const T* __restrict__ b0,
-                                                           const T* __restrict__ c0,
-                                                           const T* __restrict__ rhs0,
-                                                           T* __restrict__ a1,
-                                                           T* __restrict__ b1,
-                                                           T* __restrict__ c1,
-                                                           T* __restrict__ rhs1)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_nopivot_strided_batch_pcr_pow2_stage1_kernel(rocsparse_int stride,
+                                                       rocsparse_int m,
+                                                       rocsparse_int batch_count,
+                                                       rocsparse_int batch_stride,
+                                                       const T* __restrict__ a0,
+                                                       const T* __restrict__ b0,
+                                                       const T* __restrict__ c0,
+                                                       const T* __restrict__ rhs0,
+                                                       T* __restrict__ a1,
+                                                       T* __restrict__ b1,
+                                                       T* __restrict__ c1,
+                                                       T* __restrict__ rhs1)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidx = hipBlockIdx_x;
@@ -582,15 +582,15 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 // Cyclic reduction algorithm using shared memory to solve multiple small matrices produced from
 // stage 1 above in parallel
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_nopivot_strided_batch_cr_pow2_stage2_kernel(rocsparse_int m,
-                                                          rocsparse_int batch_count,
-                                                          rocsparse_int batch_stride,
-                                                          const T* __restrict__ a,
-                                                          const T* __restrict__ b,
-                                                          const T* __restrict__ c,
-                                                          const T* __restrict__ rhs,
-                                                          T* __restrict__ x)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_nopivot_strided_batch_cr_pow2_stage2_kernel(rocsparse_int m,
+                                                      rocsparse_int batch_count,
+                                                      rocsparse_int batch_stride,
+                                                      const T* __restrict__ a,
+                                                      const T* __restrict__ b,
+                                                      const T* __restrict__ c,
+                                                      const T* __restrict__ rhs,
+                                                      T* __restrict__ x)
 {
     rocsparse_int tid = hipThreadIdx_x;
 
@@ -711,19 +711,19 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 // Parallel cyclic reduction algorithm using global memory for partitioning large matrices into
 // multiple small ones that can be solved in parallel in stage 2
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_nopivot_strided_batch_pcr_stage1_kernel(rocsparse_int stride,
-                                                      rocsparse_int m,
-                                                      rocsparse_int batch_count,
-                                                      rocsparse_int batch_stride,
-                                                      const T* __restrict__ a0,
-                                                      const T* __restrict__ b0,
-                                                      const T* __restrict__ c0,
-                                                      const T* __restrict__ rhs0,
-                                                      T* __restrict__ a1,
-                                                      T* __restrict__ b1,
-                                                      T* __restrict__ c1,
-                                                      T* __restrict__ rhs1)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_nopivot_strided_batch_pcr_stage1_kernel(rocsparse_int stride,
+                                                  rocsparse_int m,
+                                                  rocsparse_int batch_count,
+                                                  rocsparse_int batch_stride,
+                                                  const T* __restrict__ a0,
+                                                  const T* __restrict__ b0,
+                                                  const T* __restrict__ c0,
+                                                  const T* __restrict__ rhs0,
+                                                  T* __restrict__ a1,
+                                                  T* __restrict__ b1,
+                                                  T* __restrict__ c1,
+                                                  T* __restrict__ rhs1)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidx = hipBlockIdx_x;
@@ -769,15 +769,15 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 // Parallel cyclic reduction algorithm using shared memory to solve multiple small matrices produced from
 // stage 1 above in parallel
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_nopivot_strided_batch_pcr_stage2_kernel(rocsparse_int m,
-                                                      rocsparse_int batch_count,
-                                                      rocsparse_int batch_stride,
-                                                      const T* __restrict__ a,
-                                                      const T* __restrict__ b,
-                                                      const T* __restrict__ c,
-                                                      const T* __restrict__ rhs,
-                                                      T* __restrict__ x)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gtsv_nopivot_strided_batch_pcr_stage2_kernel(rocsparse_int m,
+                                                  rocsparse_int batch_count,
+                                                  rocsparse_int batch_stride,
+                                                  const T* __restrict__ a,
+                                                  const T* __restrict__ b,
+                                                  const T* __restrict__ c,
+                                                  const T* __restrict__ rhs,
+                                                  T* __restrict__ x)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int gid = hipGridDim_x * tid + hipBlockIdx_x;

@@ -28,11 +28,12 @@
 
 // CSR to COO matrix conversion kernel
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csr2coo_kernel(J        m,
-                                                                  const I* csr_row_ptr_begin,
-                                                                  const I* csr_row_ptr_end,
-                                                                  J*       coo_row_ind,
-                                                                  rocsparse_index_base idx_base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2coo_kernel(J                    m,
+                    const I*             csr_row_ptr_begin,
+                    const I*             csr_row_ptr_end,
+                    J*                   coo_row_ind,
+                    rocsparse_index_base idx_base)
 {
     J tid = hipThreadIdx_x;
     J lid = tid & (WF_SIZE - 1);

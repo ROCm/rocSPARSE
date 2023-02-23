@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,8 @@ rocsparse_status rocsparse_inclusive_scan(rocsparse_handle handle, J m_, I* ptr_
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMalloc(&temp_storage_ptr, temp_storage_size_bytes));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync(&temp_storage_ptr, temp_storage_size_bytes, handle->stream));
         temp_alloc = true;
     }
 
@@ -63,7 +64,7 @@ rocsparse_status rocsparse_inclusive_scan(rocsparse_handle handle, J m_, I* ptr_
 
     if(temp_alloc)
     {
-        RETURN_IF_HIP_ERROR(hipFree(temp_storage_ptr));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(temp_storage_ptr, handle->stream));
     }
 
     return rocsparse_status_success;
@@ -164,26 +165,26 @@ ROCSPARSE_DEVICE_ILF void device_calculate(const J i,
 }
 
 template <int BLOCKSIZE, int WFSIZE, bool RESIDUAL, typename T, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void kernel_calculate(const J m_,
-                          const I nnz_,
-                          const I* __restrict__ ptr_begin_,
-                          const I* __restrict__ ptr_end_,
-                          const J* __restrict__ ind_,
-                          const T* __restrict__ val_,
-                          const rocsparse_index_base base_,
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_calculate(const J m_,
+                      const I nnz_,
+                      const I* __restrict__ ptr_begin_,
+                      const I* __restrict__ ptr_end_,
+                      const J* __restrict__ ind_,
+                      const T* __restrict__ val_,
+                      const rocsparse_index_base base_,
 
-                          const I* __restrict__ lptr_begin_,
-                          const I* __restrict__ lptr_end_,
-                          const J* __restrict__ lind_,
+                      const I* __restrict__ lptr_begin_,
+                      const I* __restrict__ lptr_end_,
+                      const J* __restrict__ lind_,
 
-                          const I* __restrict__ uptr_begin_,
-                          const I* __restrict__ uptr_end_,
-                          const J* __restrict__ uind_,
-                          const I* __restrict__ uperm_,
-                          T* __restrict__ ilu0_,
-                          floating_data_t<T>*       nrm_,
-                          const floating_data_t<T>* nrm0_)
+                      const I* __restrict__ uptr_begin_,
+                      const I* __restrict__ uptr_end_,
+                      const J* __restrict__ uind_,
+                      const I* __restrict__ uperm_,
+                      T* __restrict__ ilu0_,
+                      floating_data_t<T>*       nrm_,
+                      const floating_data_t<T>* nrm0_)
 {
     static constexpr unsigned int nid = BLOCKSIZE / WFSIZE;
     const J                       lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -318,25 +319,25 @@ static void kernel_calculate_dispatch(
 }
 
 template <int BLOCKSIZE, int WFSIZE, bool RESIDUAL, typename T, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void kernel_calculate_coo(const J m_,
-                              const I nnz_,
-                              const J* __restrict__ row_,
-                              const J* __restrict__ col_,
-                              const T* __restrict__ val_,
-                              const rocsparse_index_base base_,
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_calculate_coo(const J m_,
+                          const I nnz_,
+                          const J* __restrict__ row_,
+                          const J* __restrict__ col_,
+                          const T* __restrict__ val_,
+                          const rocsparse_index_base base_,
 
-                              const I* __restrict__ lptr_begin_,
-                              const I* __restrict__ lptr_end_,
-                              const J* __restrict__ lind_,
+                          const I* __restrict__ lptr_begin_,
+                          const I* __restrict__ lptr_end_,
+                          const J* __restrict__ lind_,
 
-                              const I* __restrict__ uptr_begin_,
-                              const I* __restrict__ uptr_end_,
-                              const J* __restrict__ uind_,
-                              const I* __restrict__ uperm_,
-                              T* __restrict__ ilu0_,
-                              floating_data_t<T>*       nrm_,
-                              const floating_data_t<T>* nrm0_)
+                          const I* __restrict__ uptr_begin_,
+                          const I* __restrict__ uptr_end_,
+                          const J* __restrict__ uind_,
+                          const I* __restrict__ uperm_,
+                          T* __restrict__ ilu0_,
+                          floating_data_t<T>*       nrm_,
+                          const floating_data_t<T>* nrm0_)
 {
     static constexpr int num = 64;
 
@@ -861,13 +862,13 @@ private:
 // Calculate the array lptr_end.
 //
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void kernel_compute_lptr_end(J m_,
-                                 const I* __restrict__ ptr_begin_,
-                                 const I* __restrict__ ptr_end_,
-                                 const J* __restrict__ ind_,
-                                 rocsparse_index_base base_,
-                                 I* __restrict__ lptr_end_)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_compute_lptr_end(J m_,
+                             const I* __restrict__ ptr_begin_,
+                             const I* __restrict__ ptr_end_,
+                             const J* __restrict__ ind_,
+                             rocsparse_index_base base_,
+                             I* __restrict__ lptr_end_)
 {
     const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
     if(i < m_)
@@ -913,16 +914,16 @@ static void kernel_compute_lptr_end_dispatch(J           target_size_,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void kernel_compute_coo(J m_,
-                            const I* __restrict__ ptr_begin_,
-                            const I* __restrict__ ptr_end_,
-                            const J* __restrict__ ind_,
-                            rocsparse_index_base base_,
-                            const I* __restrict__ coo_ptr_,
-                            J* __restrict__ coo_row_ind_,
-                            J* __restrict__ coo_col_ind_,
-                            I* __restrict__ coo_perm_)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_compute_coo(J m_,
+                        const I* __restrict__ ptr_begin_,
+                        const I* __restrict__ ptr_end_,
+                        const J* __restrict__ ind_,
+                        rocsparse_index_base base_,
+                        const I* __restrict__ coo_ptr_,
+                        J* __restrict__ coo_row_ind_,
+                        J* __restrict__ coo_col_ind_,
+                        I* __restrict__ coo_perm_)
 {
     const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
     if(i < m_)
@@ -967,12 +968,12 @@ static void
 // Calculate the array ucsr_ptr.
 //
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void kernel_initialize_ucsr_ptr(J m_,
-                                    const I* __restrict__ ptr_begin_,
-                                    const I* __restrict__ ptr_end_,
-                                    I* __restrict__ ucsr_ptr_,
-                                    rocsparse_index_base base_)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_initialize_ucsr_ptr(J m_,
+                                const I* __restrict__ ptr_begin_,
+                                const I* __restrict__ ptr_end_,
+                                I* __restrict__ ucsr_ptr_,
+                                rocsparse_index_base base_)
 {
     const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
     if(i < m_)
@@ -1015,14 +1016,14 @@ static void kernel_initialize_ucsr_ptr_dispatch(J           target_size_,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void kernel_compute_unnz(J m_,
-                             const I* __restrict__ ptr_begin_,
-                             const I* __restrict__ ptr_end_,
-                             const J* __restrict__ ind_,
-                             rocsparse_index_base base_,
-                             I* __restrict__ nnz_,
-                             I* __restrict__ nnz_diag_)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_compute_unnz(J m_,
+                         const I* __restrict__ ptr_begin_,
+                         const I* __restrict__ ptr_end_,
+                         const J* __restrict__ ind_,
+                         rocsparse_index_base base_,
+                         I* __restrict__ nnz_,
+                         I* __restrict__ nnz_diag_)
 {
     __shared__ I data[BLOCKSIZE];
     const I      i        = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
@@ -1105,8 +1106,8 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
         {
 
             using layout_t = buffer_layout_inplace_t;
-            hipMemcpyAsync(
-                &layout_, buffer_, sizeof(layout_t), hipMemcpyDeviceToHost, handle_->stream);
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                &layout_, buffer_, sizeof(layout_t), hipMemcpyDeviceToHost, handle_->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
             void*  p_buffer      = layout_.get_pointer(layout_t::buffer);
             size_t p_buffer_size = layout_.get_size(layout_t::buffer);
@@ -1120,25 +1121,17 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             p_buffer = convergence_info.init(handle_, p_buffer);
             J options;
 
-            if(hipSuccess
-               != hipMemcpyAsync(&options,
-                                 convergence_info.info.options,
-                                 sizeof(J),
-                                 hipMemcpyDeviceToHost,
-                                 handle_->stream))
-            {
-                return rocsparse_status_internal_error;
-            }
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&options,
+                                               convergence_info.info.options,
+                                               sizeof(J),
+                                               hipMemcpyDeviceToHost,
+                                               handle_->stream));
 
-            if(hipSuccess
-               != hipMemcpyAsync(niter_,
-                                 convergence_info.info.iter,
-                                 sizeof(J),
-                                 hipMemcpyDeviceToHost,
-                                 handle_->stream))
-            {
-                return rocsparse_status_internal_error;
-            }
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(niter_,
+                                               convergence_info.info.iter,
+                                               sizeof(J),
+                                               hipMemcpyDeviceToHost,
+                                               handle_->stream));
 
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
 
@@ -1158,29 +1151,24 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
 
             if(compute_nrm_corr)
             {
-                if(hipSuccess
-                   != hipMemcpyAsync(data_,
-                                     convergence_info.log_mxcorr,
-                                     sizeof(floating_data_t<T>) * niter,
-                                     hipMemcpyDeviceToHost,
-                                     handle_->stream))
-                {
-                    return rocsparse_status_internal_error;
-                }
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(data_,
+                                                   convergence_info.log_mxcorr,
+                                                   sizeof(floating_data_t<T>) * niter,
+                                                   hipMemcpyDeviceToHost,
+                                                   handle_->stream));
             }
 
             if(compute_nrm_residual)
             {
-                if(hipSuccess
-                   != hipMemcpyAsync(data_ + niter,
-                                     convergence_info.log_mxresidual,
-                                     sizeof(floating_data_t<T>) * niter,
-                                     hipMemcpyDeviceToHost,
-                                     handle_->stream))
-                {
-                    return rocsparse_status_internal_error;
-                }
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(data_ + niter,
+                                                   convergence_info.log_mxresidual,
+                                                   sizeof(floating_data_t<T>) * niter,
+                                                   hipMemcpyDeviceToHost,
+                                                   handle_->stream));
             }
+            //
+            // No synchronization needed here.
+            //
             return rocsparse_status_success;
         }
 
@@ -1216,7 +1204,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
 
             size_t buffer_size = 0;
             // quick compute of unnz.
-            hipMemsetAsync(handle_->buffer, 0, sizeof(I), handle_->stream);
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(handle_->buffer, 0, sizeof(I), handle_->stream));
             kernel_compute_unnz_dispatch<BLOCKSIZE, I, J>(m_,
                                                           handle_->wavefront_size,
                                                           handle_->stream,
@@ -1287,7 +1275,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
         {
             void* __restrict__ buffer_ = buffer__;
             // quick compute of unnz.
-            hipMemsetAsync(handle_->buffer, 0, sizeof(I) * 2, handle_->stream);
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(handle_->buffer, 0, sizeof(I) * 2, handle_->stream));
             kernel_compute_unnz_dispatch<BLOCKSIZE, I, J>(m_,
                                                           handle_->wavefront_size,
                                                           handle_->stream,
@@ -1356,7 +1344,8 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             {
                 if(sizeof(J) * unnz > handle_->buffer_size)
                 {
-                    RETURN_IF_HIP_ERROR(hipMalloc(&csc_col_ind, sizeof(J) * unnz));
+
+                    rocsparse_hipMallocAsync(&csc_col_ind, sizeof(J) * unnz, handle_->stream);
                 }
                 else
                 {
@@ -1411,7 +1400,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             size_t buffer_size;
             rocsparse_coosort_buffer_size(handle_, m_, m_, unnz, (I*)0x4, (I*)0x4, &buffer_size);
 
-            RETURN_IF_HIP_ERROR(hipMalloc(&buffer, buffer_size));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(&buffer, buffer_size, handle_->stream));
 
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_coosort_by_column(
                 handle_, m_, m_, unnz, p_uind, csc_col_ind, p_uperm, buffer));
@@ -1419,14 +1408,14 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             //
             // Free buffer.
             //
-            hipFree(buffer);
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(buffer, handle_->stream));
 
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse_coo2csr_template(handle_, csc_col_ind, unnz, m_, p_uptr, base_));
 
             if(p_coo_row_ind == nullptr && csc_col_ind != handle_->buffer)
             {
-                hipFree(csc_col_ind);
+                RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(csc_col_ind, handle_->stream));
             }
 
             if(use_coo_format)
@@ -1442,7 +1431,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
 
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
                 buffer__, &layout, sizeof(layout_t), hipMemcpyHostToDevice, handle_->stream));
-
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
             return rocsparse_status_success;
         }
     };
@@ -1471,8 +1460,8 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             //
             using layout_t = buffer_layout_inplace_t;
             layout_t layout;
-            hipMemcpyAsync(
-                &layout, buffer_, sizeof(layout), hipMemcpyDeviceToHost, handle_->stream);
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                &layout, buffer_, sizeof(layout), hipMemcpyDeviceToHost, handle_->stream));
             buffer_ = (void*)(((double*)buffer_) + layout_t::get_sizeof_double());
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
 
@@ -1495,61 +1484,59 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             //
             // Compute expert routine.
             //
-            rocsparse_status status;
-            const bool       compute_residual
+
+            const bool compute_residual
                 = (options_ & rocsparse_itilu0_option_compute_nrm_residual) > 0;
 
             if(compute_residual)
             {
-                status = compute_iter<BLOCKSIZE, T, I, J>::run(handle_,
-                                                               options_,
-                                                               nmaxiter_,
-                                                               tol_,
-                                                               m_,
-                                                               nnz_,
-                                                               ptr_,
-                                                               ptr_ + 1,
-                                                               p_coo_row_ind,
-                                                               ind_,
-                                                               val_,
-                                                               base_,
-                                                               p_lptr_begin,
-                                                               p_lptr_end,
-                                                               ind_,
+                RETURN_IF_ROCSPARSE_ERROR((compute_iter<BLOCKSIZE, T, I, J>::run)(handle_,
+                                                                                  options_,
+                                                                                  nmaxiter_,
+                                                                                  tol_,
+                                                                                  m_,
+                                                                                  nnz_,
+                                                                                  ptr_,
+                                                                                  ptr_ + 1,
+                                                                                  p_coo_row_ind,
+                                                                                  ind_,
+                                                                                  val_,
+                                                                                  base_,
+                                                                                  p_lptr_begin,
+                                                                                  p_lptr_end,
+                                                                                  ind_,
 
-                                                               p_uptr_begin,
-                                                               p_uptr_end,
-                                                               p_uind,
-                                                               p_uperm,
-                                                               sol_,
-                                                               p_buffer_size,
-                                                               p_buffer);
-                RETURN_IF_ROCSPARSE_ERROR(status);
+                                                                                  p_uptr_begin,
+                                                                                  p_uptr_end,
+                                                                                  p_uind,
+                                                                                  p_uperm,
+                                                                                  sol_,
+                                                                                  p_buffer_size,
+                                                                                  p_buffer));
             }
             else
             {
-                status = compute_iter<BLOCKSIZE, T, I, J>::light_run(handle_,
-                                                                     options_,
-                                                                     nmaxiter_[0],
-                                                                     m_,
-                                                                     nnz_,
-                                                                     ptr_,
-                                                                     ptr_ + 1,
-                                                                     p_coo_row_ind,
-                                                                     ind_,
-                                                                     val_,
-                                                                     base_,
-                                                                     p_lptr_begin,
-                                                                     p_lptr_end,
-                                                                     ind_,
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (compute_iter<BLOCKSIZE, T, I, J>::light_run)(handle_,
+                                                                  options_,
+                                                                  nmaxiter_[0],
+                                                                  m_,
+                                                                  nnz_,
+                                                                  ptr_,
+                                                                  ptr_ + 1,
+                                                                  p_coo_row_ind,
+                                                                  ind_,
+                                                                  val_,
+                                                                  base_,
+                                                                  p_lptr_begin,
+                                                                  p_lptr_end,
+                                                                  ind_,
 
-                                                                     p_uptr_begin,
-                                                                     p_uptr_end,
-                                                                     p_uind,
-                                                                     p_uperm,
-                                                                     sol_);
-
-                RETURN_IF_ROCSPARSE_ERROR(status);
+                                                                  p_uptr_begin,
+                                                                  p_uptr_end,
+                                                                  p_uind,
+                                                                  p_uperm,
+                                                                  sol_));
             }
             return rocsparse_status_success;
         }

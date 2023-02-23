@@ -34,17 +34,17 @@ template <unsigned int BLOCKSIZE,
           typename X,
           typename Y,
           typename T>
-static ROCSPARSE_DEVICE_ILF void csrmvn_general_device(bool                 conj,
-                                                       J                    m,
-                                                       T                    alpha,
-                                                       const I*             row_offset_begin,
-                                                       const I*             row_offset_end,
-                                                       const J*             csr_col_ind,
-                                                       const A*             csr_val,
-                                                       const X*             x,
-                                                       T                    beta,
-                                                       Y*                   y,
-                                                       rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void csrmvn_general_device(bool                 conj,
+                                                J                    m,
+                                                T                    alpha,
+                                                const I*             row_offset_begin,
+                                                const I*             row_offset_end,
+                                                const J*             csr_col_ind,
+                                                const A*             csr_val,
+                                                const X*             x,
+                                                T                    beta,
+                                                Y*                   y,
+                                                rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
 
@@ -87,7 +87,7 @@ static ROCSPARSE_DEVICE_ILF void csrmvn_general_device(bool                 conj
 }
 
 template <typename J, typename Y, typename T>
-static ROCSPARSE_DEVICE_ILF void csrmvt_scale_device(J size, T scalar, Y* data)
+ROCSPARSE_DEVICE_ILF void csrmvt_scale_device(J size, T scalar, Y* data)
 {
     J idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -107,16 +107,16 @@ template <unsigned int BLOCKSIZE,
           typename X,
           typename Y,
           typename T>
-static ROCSPARSE_DEVICE_ILF void csrmvt_general_device(bool                 conj,
-                                                       J                    m,
-                                                       T                    alpha,
-                                                       const I*             csr_row_ptr_begin,
-                                                       const I*             csr_row_ptr_end,
-                                                       const J*             csr_col_ind,
-                                                       const A*             csr_val,
-                                                       const X*             x,
-                                                       Y*                   y,
-                                                       rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void csrmvt_general_device(bool                 conj,
+                                                J                    m,
+                                                T                    alpha,
+                                                const I*             csr_row_ptr_begin,
+                                                const I*             csr_row_ptr_end,
+                                                const J*             csr_col_ind,
+                                                const A*             csr_val,
+                                                const X*             x,
+                                                Y*                   y,
+                                                rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
 
@@ -140,8 +140,7 @@ static ROCSPARSE_DEVICE_ILF void csrmvt_general_device(bool                 conj
 }
 
 template <typename I, typename T>
-static ROCSPARSE_DEVICE_ILF T
-    sum2_reduce(T cur_sum, T* partial, int lid, I max_size, int reduc_size)
+ROCSPARSE_DEVICE_ILF T sum2_reduce(T cur_sum, T* partial, int lid, I max_size, int reduc_size)
 {
     if(max_size > reduc_size)
     {
@@ -162,19 +161,19 @@ template <rocsparse_int BLOCKSIZE,
           typename X,
           typename Y,
           typename T>
-static ROCSPARSE_DEVICE_ILF void csrmvn_adaptive_device(bool                 conj,
-                                                        I                    nnz,
-                                                        const I*             row_blocks,
-                                                        unsigned int*        wg_flags,
-                                                        const J*             wg_ids,
-                                                        T                    alpha,
-                                                        const I*             csr_row_ptr,
-                                                        const J*             csr_col_ind,
-                                                        const A*             csr_val,
-                                                        const X*             x,
-                                                        T                    beta,
-                                                        Y*                   y,
-                                                        rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void csrmvn_adaptive_device(bool                 conj,
+                                                 I                    nnz,
+                                                 const I*             row_blocks,
+                                                 unsigned int*        wg_flags,
+                                                 const J*             wg_ids,
+                                                 T                    alpha,
+                                                 const I*             csr_row_ptr,
+                                                 const J*             csr_col_ind,
+                                                 const A*             csr_val,
+                                                 const X*             x,
+                                                 T                    beta,
+                                                 Y*                   y,
+                                                 rocsparse_index_base idx_base)
 {
     __shared__ T partialSums[BLOCKSIZE];
 

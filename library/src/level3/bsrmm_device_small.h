@@ -27,19 +27,20 @@
 #include "common.h"
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE, rocsparse_int BSR_BLOCK_DIM, typename T>
-static __device__ void bsrmmnn_small_blockdim_device(rocsparse_direction direction,
-                                                     rocsparse_int       Mb,
-                                                     rocsparse_int       N,
-                                                     T                   alpha,
-                                                     const rocsparse_int* __restrict__ bsr_row_ptr,
-                                                     const rocsparse_int* __restrict__ bsr_col_ind,
-                                                     const T* __restrict__ bsr_val,
-                                                     const T* __restrict__ B,
-                                                     rocsparse_int ldb,
-                                                     T             beta,
-                                                     T* __restrict__ C,
-                                                     rocsparse_int        ldc,
-                                                     rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void
+    bsrmmnn_small_blockdim_device(rocsparse_direction direction,
+                                  rocsparse_int       Mb,
+                                  rocsparse_int       N,
+                                  T                   alpha,
+                                  const rocsparse_int* __restrict__ bsr_row_ptr,
+                                  const rocsparse_int* __restrict__ bsr_col_ind,
+                                  const T* __restrict__ bsr_val,
+                                  const T* __restrict__ B,
+                                  rocsparse_int ldb,
+                                  T             beta,
+                                  T* __restrict__ C,
+                                  rocsparse_int        ldc,
+                                  rocsparse_index_base idx_base)
 {
     constexpr rocsparse_int PADDED_BSR_BLOCK_DIM = (BSR_BLOCK_DIM + 1);
 
@@ -205,19 +206,20 @@ static __device__ void bsrmmnn_small_blockdim_device(rocsparse_direction directi
 }
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE, rocsparse_int BSR_BLOCK_DIM, typename T>
-static __device__ void bsrmmnt_small_blockdim_device(rocsparse_direction direction,
-                                                     rocsparse_int       Mb,
-                                                     rocsparse_int       N,
-                                                     T                   alpha,
-                                                     const rocsparse_int* __restrict__ bsr_row_ptr,
-                                                     const rocsparse_int* __restrict__ bsr_col_ind,
-                                                     const T* __restrict__ bsr_val,
-                                                     const T* __restrict__ B,
-                                                     rocsparse_int ldb,
-                                                     T             beta,
-                                                     T* __restrict__ C,
-                                                     rocsparse_int        ldc,
-                                                     rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void
+    bsrmmnt_small_blockdim_device(rocsparse_direction direction,
+                                  rocsparse_int       Mb,
+                                  rocsparse_int       N,
+                                  T                   alpha,
+                                  const rocsparse_int* __restrict__ bsr_row_ptr,
+                                  const rocsparse_int* __restrict__ bsr_col_ind,
+                                  const T* __restrict__ bsr_val,
+                                  const T* __restrict__ B,
+                                  rocsparse_int ldb,
+                                  T             beta,
+                                  T* __restrict__ C,
+                                  rocsparse_int        ldc,
+                                  rocsparse_index_base idx_base)
 {
     constexpr rocsparse_int PADDED_BSR_BLOCK_DIM = (BSR_BLOCK_DIM + 1);
 

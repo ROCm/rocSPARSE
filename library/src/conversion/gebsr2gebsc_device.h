@@ -27,14 +27,14 @@
 #include <hip/hip_runtime.h>
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gebsr2gebsc_permute_kernel(rocsparse_int        nnzb,
-                                    rocsparse_int        linsize_block,
-                                    const rocsparse_int* in1,
-                                    const T*             in2,
-                                    const rocsparse_int* map,
-                                    rocsparse_int*       out1,
-                                    T*                   out2)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void gebsr2gebsc_permute_kernel(rocsparse_int        nnzb,
+                                rocsparse_int        linsize_block,
+                                const rocsparse_int* in1,
+                                const T*             in2,
+                                const rocsparse_int* map,
+                                rocsparse_int*       out1,
+                                T*                   out2)
 {
     rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

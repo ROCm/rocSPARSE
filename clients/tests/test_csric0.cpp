@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,4 +26,5 @@
 
 #include "testing_csric0.hpp"
 
-TEST_ROUTINE(csric0, precond, arg.M, arg.transA, arg.baseA, arg.apol, arg.spol, arg.matrix);
+TEST_ROUTINE(
+    csric0, precond, arg.M, arg.transA, arg.baseA, arg.apol, arg.spol, arg.matrix, arg.graph_test);

@@ -292,6 +292,7 @@ constexpr const char* rocsparse_routine::to_string() const
 #include "testing_gebsr2gebsr.hpp"
 #include "testing_hyb2csr.hpp"
 #include "testing_identity.hpp"
+#include "testing_inverse_permutation.hpp"
 #include "testing_nnz.hpp"
 #include "testing_prune_csr2csr.hpp"
 #include "testing_prune_csr2csr_by_percentage.hpp"
@@ -344,6 +345,20 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         }                                     \
     }
 
+#define DEFINE_CASE_IXYT_X(value, testingf)   \
+    case value:                               \
+    {                                         \
+        try                                   \
+        {                                     \
+            testingf<I, T, T, T>(arg);        \
+            return rocsparse_status_success;  \
+        }                                     \
+        catch(const rocsparse_status& status) \
+        {                                     \
+            return status;                    \
+        }                                     \
+    }
+
 #define DEFINE_CASE_IAXYT_X(value, testingf)  \
     case value:                               \
     {                                         \
@@ -374,6 +389,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
 
 #define DEFINE_CASE_IT(value) DEFINE_CASE_IT_X(value, testing_##value)
 #define DEFINE_CASE_IJT(value) DEFINE_CASE_IJT_X(value, testing_##value)
+#define DEFINE_CASE_IXYT(value) DEFINE_CASE_IXYT_X(value, testing_##value)
 #define DEFINE_CASE_IAXYT(value) DEFINE_CASE_IAXYT_X(value, testing_##value)
 #define DEFINE_CASE_IJAXYT(value) DEFINE_CASE_IJAXYT_X(value, testing_##value)
 #define IS_T_REAL (std::is_same<T, double>() || std::is_same<T, float>())
@@ -549,6 +565,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_T(hybmv);
         DEFINE_CASE_T(hyb2csr);
         DEFINE_CASE_T_FLOAT_ONLY(identity);
+        DEFINE_CASE_T_FLOAT_ONLY(inverse_permutation);
         DEFINE_CASE_T(nnz);
         DEFINE_CASE_T_REAL_ONLY(prune_csr2csr);
         DEFINE_CASE_T_REAL_ONLY(prune_csr2csr_by_percentage);

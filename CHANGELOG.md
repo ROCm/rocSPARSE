@@ -2,6 +2,23 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
+## rocSPARSE 2.5.2
+### Added
+- Added rocsparse_inverse_permutation
+- Added mixed precisions for SpVV
+- Added uniform int8 precision for Gather and Scatter
+### Changed
+- Removed old deprecated rocsparse_spmv, deprecated current rocsparse_spmv_ex, and added new rocsparse_spmv routine
+- Removed old deprecated rocsparse_xbsrmv routines, deprecated current rocsparse_xbsrmv_ex routines, and added new rocsparse_xbsrmv routines
+- Removed old deprecated rocsparse_spmm_ex routine
+- doti, dotci, spvv, and csr2ell now require calling hipStreamSynchronize after when using host pointer mode
+### Improved
+- Optimization to doti routine
+- Fixed a bug in csrsm and bsrsm
+- Fixed a bug in rocsparse-bench, where SpMV algorithm was not taken into account in CSR format
+### Known Issues
+- In csritlu0, the algorithm rocsparse_itilu0_alg_sync_split_fusion has some accuracy issues to investigate with XNACK enabled. The fallback is rocsparse_itilu0_alg_sync_split.
+
 ## rocSPARSE 2.5.1 for ROCm 5.5.0
 ### Added
 - Added bsrgemm and spgemm for BSR format
@@ -20,6 +37,8 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Fixes to documentation
 - Fixes a bug in COO SpMV gridsize
 - Fixes a bug in SpMM gridsize when using very large matrices
+### Known Issues
+- none
 
 ## rocSPARSE 2.4.0 for ROCm 5.4.0
 ### Added
@@ -136,7 +155,6 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - coo2dense and dense2coo
 - generic API including axpby, gather, scatter, rot, spvv, spmv, spgemm, sparsetodense, densetosparse
 - support for mixed indexing types in matrix formats
-
 
 ## rocSPARSE 1.18.4 for ROCm 4.0.0
 ### Added

@@ -27,7 +27,7 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, typename T>
-__device__ void gemmi_scale_kernel(rocsparse_int size, T alpha, T* __restrict__ data)
+ROCSPARSE_DEVICE_ILF void gemmi_scale_kernel(rocsparse_int size, T alpha, T* __restrict__ data)
 {
     rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -40,17 +40,17 @@ __device__ void gemmi_scale_kernel(rocsparse_int size, T alpha, T* __restrict__ 
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__device__ void gemmit_kernel(rocsparse_int m,
-                              T             alpha,
-                              const T* __restrict__ A,
-                              rocsparse_int lda,
-                              const rocsparse_int* __restrict__ csr_row_ptr,
-                              const rocsparse_int* __restrict__ csr_col_ind,
-                              const T* __restrict__ csr_val,
-                              T beta,
-                              T* __restrict__ C,
-                              rocsparse_int        ldc,
-                              rocsparse_index_base base)
+ROCSPARSE_DEVICE_ILF void gemmit_kernel(rocsparse_int m,
+                                        T             alpha,
+                                        const T* __restrict__ A,
+                                        rocsparse_int lda,
+                                        const rocsparse_int* __restrict__ csr_row_ptr,
+                                        const rocsparse_int* __restrict__ csr_col_ind,
+                                        const T* __restrict__ csr_val,
+                                        T beta,
+                                        T* __restrict__ C,
+                                        rocsparse_int        ldc,
+                                        rocsparse_index_base base)
 {
     rocsparse_int row = hipBlockIdx_y;
     rocsparse_int col = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;

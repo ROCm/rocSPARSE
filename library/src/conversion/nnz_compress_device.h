@@ -29,10 +29,10 @@
 #include "common.h"
 
 template <rocsparse_int BLOCK_SIZE>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void compute_nnz_from_row_ptr_array_kernel(rocsparse_int m,
-                                               const rocsparse_int* __restrict__ csr_row_ptr,
-                                               rocsparse_int* nnz)
+ROCSPARSE_KERNEL(BLOCK_SIZE)
+void compute_nnz_from_row_ptr_array_kernel(rocsparse_int m,
+                                           const rocsparse_int* __restrict__ csr_row_ptr,
+                                           rocsparse_int* nnz)
 {
     rocsparse_int thread_id = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
 
@@ -47,12 +47,12 @@ template <rocsparse_int BLOCK_SIZE,
           rocsparse_int SEGMENT_SIZE,
           rocsparse_int WF_SIZE,
           typename T>
-__device__ void nnz_compress_device(rocsparse_int        m,
-                                    rocsparse_index_base idx_base_A,
-                                    const T* __restrict__ csr_val_A,
-                                    const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                    rocsparse_int* __restrict__ nnz_per_row,
-                                    T tol)
+ROCSPARSE_DEVICE_ILF void nnz_compress_device(rocsparse_int        m,
+                                              rocsparse_index_base idx_base_A,
+                                              const T* __restrict__ csr_val_A,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                              rocsparse_int* __restrict__ nnz_per_row,
+                                              T tol)
 {
     const rocsparse_int segment_id      = hipThreadIdx_x / SEGMENT_SIZE;
     const rocsparse_int segment_lane_id = hipThreadIdx_x % SEGMENT_SIZE;

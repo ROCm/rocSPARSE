@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -123,6 +123,13 @@ void unit_check_general(int64_t                         M,
 
 template <>
 void unit_check_general(
+    int64_t M, int64_t N, const int8_t* A, int64_t LDA, const int8_t* B, int64_t LDB)
+{
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_EQ);
+}
+
+template <>
+void unit_check_general(
     int64_t M, int64_t N, const int32_t* A, int64_t LDA, const int32_t* B, int64_t LDB)
 {
     ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_EQ);
@@ -155,6 +162,18 @@ void unit_check_enum(const rocsparse_order a, const rocsparse_order b)
 
 template <>
 void unit_check_enum(const rocsparse_direction a, const rocsparse_direction b)
+{
+    ASSERT_TRUE(a == b);
+}
+
+template <>
+void unit_check_enum(const rocsparse_datatype a, const rocsparse_datatype b)
+{
+    ASSERT_TRUE(a == b);
+}
+
+template <>
+void unit_check_enum(const rocsparse_indextype a, const rocsparse_indextype b)
 {
     ASSERT_TRUE(a == b);
 }

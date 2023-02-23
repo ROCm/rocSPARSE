@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -156,12 +156,12 @@ void host_axpby(I                    size,
                 T*                   y,
                 rocsparse_index_base base);
 
-template <typename I, typename T>
+template <typename I, typename X, typename Y, typename T>
 void host_doti(
-    I nnz, const T* x_val, const I* x_ind, const T* y, T* result, rocsparse_index_base base);
-template <typename I, typename T>
+    I nnz, const X* x_val, const I* x_ind, const Y* y, T* result, rocsparse_index_base base);
+template <typename I, typename X, typename Y, typename T>
 void host_dotci(
-    I nnz, const T* x_val, const I* x_ind, const T* y, T* result, rocsparse_index_base base);
+    I nnz, const X* x_val, const I* x_ind, const Y* y, T* result, rocsparse_index_base base);
 template <typename I, typename T>
 void host_gthr(I nnz, const T* y, T* x_val, const I* x_ind, rocsparse_index_base base);
 template <typename T>
@@ -1003,6 +1003,36 @@ void host_csr_to_csc(J                    M,
                      std::vector<T>&      csc_val,
                      rocsparse_action     action,
                      rocsparse_index_base base);
+
+template <typename T>
+void host_bsr_to_csr(rocsparse_direction               direction,
+                     rocsparse_int                     mb,
+                     rocsparse_int                     nb,
+                     rocsparse_int                     nnzb,
+                     const std::vector<T>&             bsr_val,
+                     const std::vector<rocsparse_int>& bsr_row_ptr,
+                     const std::vector<rocsparse_int>& bsr_col_ind,
+                     rocsparse_int                     block_dim,
+                     rocsparse_index_base              bsr_base,
+                     std::vector<T>&                   csr_val,
+                     std::vector<rocsparse_int>&       csr_row_ptr,
+                     std::vector<rocsparse_int>&       csr_col_ind,
+                     rocsparse_index_base              csr_base);
+
+template <typename T>
+void host_csr_to_bsr(rocsparse_direction               direction,
+                     rocsparse_int                     m,
+                     rocsparse_int                     n,
+                     rocsparse_int                     nnz,
+                     const std::vector<T>&             csr_val,
+                     const std::vector<rocsparse_int>& csr_row_ptr,
+                     const std::vector<rocsparse_int>& csr_col_ind,
+                     rocsparse_int                     block_dim,
+                     rocsparse_index_base              csr_base,
+                     std::vector<T>&                   bsr_val,
+                     std::vector<rocsparse_int>&       bsr_row_ptr,
+                     std::vector<rocsparse_int>&       bsr_col_ind,
+                     rocsparse_index_base              bsr_base);
 
 template <typename T>
 void host_gebsr_to_gebsc(rocsparse_int                     Mb,

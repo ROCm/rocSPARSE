@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +28,14 @@
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) static __global__
-    void kernel_count_missing_diagonal(J m,
-                                       const I* __restrict__ ptr_diag_,
-                                       J ptr_shift_,
-                                       const J* __restrict__ ind_,
-                                       rocsparse_index_base base_,
-                                       J* __restrict__ count,
-                                       rocsparse_int* __restrict__ position)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_count_missing_diagonal(J m,
+                                   const I* __restrict__ ptr_diag_,
+                                   J ptr_shift_,
+                                   const J* __restrict__ ind_,
+                                   rocsparse_index_base base_,
+                                   J* __restrict__ count,
+                                   rocsparse_int* __restrict__ position)
 {
     const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)
@@ -51,13 +51,13 @@ __launch_bounds__(BLOCKSIZE) static __global__
 }
 
 template <rocsparse_fill_mode FILL_MODE, unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) static __global__
-    void kernel_count_missing_diagonal2(J m,
-                                        const I* __restrict__ ptr_,
-                                        const J* __restrict__ ind_,
-                                        rocsparse_index_base base_,
-                                        J* __restrict__ count,
-                                        rocsparse_int* __restrict__ position)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_count_missing_diagonal2(J m,
+                                    const I* __restrict__ ptr_,
+                                    const J* __restrict__ ind_,
+                                    rocsparse_index_base base_,
+                                    J* __restrict__ count,
+                                    rocsparse_int* __restrict__ position)
 {
     const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)
@@ -74,12 +74,12 @@ __launch_bounds__(BLOCKSIZE) static __global__
 }
 
 template <rocsparse_fill_mode FILL_MODE, unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) static __global__
-    void kernel_count_diagonal_triangular(J m,
-                                          const I* __restrict__ ptr_,
-                                          const J* __restrict__ ind_,
-                                          rocsparse_index_base base_,
-                                          J* __restrict__ count)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_count_diagonal_triangular(J m,
+                                      const I* __restrict__ ptr_,
+                                      const J* __restrict__ ind_,
+                                      rocsparse_index_base base_,
+                                      J* __restrict__ count)
 {
     const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)
@@ -94,11 +94,12 @@ __launch_bounds__(BLOCKSIZE) static __global__
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) static __global__ void kernel_ptr_end_unit(J m,
-                                                                        const I* __restrict__ ptr_,
-                                                                        const J* __restrict__ ind_,
-                                                                        I* __restrict__ ptr_end,
-                                                                        rocsparse_index_base base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_ptr_end_unit(J m,
+                         const I* __restrict__ ptr_,
+                         const J* __restrict__ ind_,
+                         I* __restrict__ ptr_end,
+                         rocsparse_index_base base)
 {
     const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)
@@ -116,12 +117,12 @@ __launch_bounds__(BLOCKSIZE) static __global__ void kernel_ptr_end_unit(J m,
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) static __global__
-    void kernel_ptr_end_non_unit(J m,
-                                 const I* __restrict__ ptr_,
-                                 const J* __restrict__ ind_,
-                                 I* __restrict__ ptr_end,
-                                 rocsparse_index_base base)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void kernel_ptr_end_non_unit(J m,
+                             const I* __restrict__ ptr_,
+                             const J* __restrict__ ind_,
+                             I* __restrict__ ptr_end,
+                             rocsparse_index_base base)
 {
     unsigned int tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)
@@ -154,7 +155,8 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
     // Allocate buffer to hold zero pivot
     if(zero_pivot[0] == nullptr)
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)zero_pivot, sizeof(rocsparse_int)));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync((void**)zero_pivot, sizeof(rocsparse_int), handle->stream));
     }
 
     // Initialize zero pivot
@@ -190,7 +192,8 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
             info->ptr_end_indextype = rocsparse_indextype_i64;
         }
         info->ptr_end_size = m;
-        RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&info->ptr_end, sizeof(I) * m));
+        RETURN_IF_HIP_ERROR(
+            rocsparse_hipMallocAsync(&info->ptr_end, sizeof(I) * m, handle->stream));
         info->is_submatrix = true;
 
         //
@@ -323,7 +326,7 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
                                            sizeof(J),
                                            hipMemcpyDeviceToHost,
                                            handle->stream));
-        hipStreamSynchronize(handle->stream);
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
         if(count_missing_diagonal > 0)
         {
@@ -388,7 +391,7 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
                                                        sizeof(J),
                                                        hipMemcpyDeviceToHost,
                                                        handle->stream));
-                    hipStreamSynchronize(handle->stream);
+                    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
                 }
 
                 if(count_diagonal > 0)

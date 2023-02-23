@@ -27,7 +27,7 @@
 #include "common.h"
 
 template <typename I, typename T>
-static __device__ void gemvi_scale_kernel(I m, T scalar, T* x)
+ROCSPARSE_DEVICE_ILF void gemvi_scale_kernel(I m, T scalar, T* x)
 {
     I gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -38,17 +38,17 @@ static __device__ void gemvi_scale_kernel(I m, T scalar, T* x)
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename T>
-static __device__ void gemvi_device(I                    m,
-                                    I                    n,
-                                    T                    alpha,
-                                    const T*             A,
-                                    I                    lda,
-                                    I                    nnz,
-                                    const T*             x_val,
-                                    const I*             x_ind,
-                                    T                    beta,
-                                    T*                   y,
-                                    rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void gemvi_device(I                    m,
+                                       I                    n,
+                                       T                    alpha,
+                                       const T*             A,
+                                       I                    lda,
+                                       I                    nnz,
+                                       const T*             x_val,
+                                       const I*             x_ind,
+                                       T                    beta,
+                                       T*                   y,
+                                       rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;

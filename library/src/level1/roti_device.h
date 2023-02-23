@@ -27,7 +27,7 @@
 #include <hip/hip_runtime.h>
 
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__device__ void
+ROCSPARSE_DEVICE_ILF void
     roti_device(I nnz, T* x_val, const I* x_ind, T* y, T c, T s, rocsparse_index_base idx_base)
 {
     I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;

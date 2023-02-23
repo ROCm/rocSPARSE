@@ -30,17 +30,17 @@
 
 // General GEBSRMV that works for any GEBSR block dimensions
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T>
-__device__ void gebsrmvn_general_device(rocsparse_direction dir,
-                                        T                   alpha,
-                                        const rocsparse_int* __restrict__ bsr_row_ptr,
-                                        const rocsparse_int* __restrict__ bsr_col_ind,
-                                        const T* __restrict__ bsr_val,
-                                        rocsparse_int row_block_dim,
-                                        rocsparse_int col_block_dim,
-                                        const T* __restrict__ x,
-                                        T beta,
-                                        T* __restrict__ y,
-                                        rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void gebsrmvn_general_device(rocsparse_direction dir,
+                                                  T                   alpha,
+                                                  const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                  const rocsparse_int* __restrict__ bsr_col_ind,
+                                                  const T* __restrict__ bsr_val,
+                                                  rocsparse_int row_block_dim,
+                                                  rocsparse_int col_block_dim,
+                                                  const T* __restrict__ x,
+                                                  T beta,
+                                                  T* __restrict__ y,
+                                                  rocsparse_index_base idx_base)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -106,16 +106,16 @@ __device__ void gebsrmvn_general_device(rocsparse_direction dir,
 
 // GEBSRMV kernel for GEBSR block dimension of 1 x n
 template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
-__device__ void gebsrmvn_1xn_device(rocsparse_int       mb,
-                                    rocsparse_direction dir,
-                                    T                   alpha,
-                                    const rocsparse_int* __restrict__ bsr_row_ptr,
-                                    const rocsparse_int* __restrict__ bsr_col_ind,
-                                    const T* __restrict__ bsr_val,
-                                    const T* __restrict__ x,
-                                    T beta,
-                                    T* __restrict__ y,
-                                    rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void gebsrmvn_1xn_device(rocsparse_int       mb,
+                                              rocsparse_direction dir,
+                                              T                   alpha,
+                                              const rocsparse_int* __restrict__ bsr_row_ptr,
+                                              const rocsparse_int* __restrict__ bsr_col_ind,
+                                              const T* __restrict__ bsr_val,
+                                              const T* __restrict__ x,
+                                              T beta,
+                                              T* __restrict__ y,
+                                              rocsparse_index_base idx_base)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -174,16 +174,16 @@ __device__ void gebsrmvn_1xn_device(rocsparse_int       mb,
 
 // GEBSRMV kernel for GEBSR block dimension of 2 x n
 template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
-__device__ void gebsrmvn_2xn_device(rocsparse_int       mb,
-                                    rocsparse_direction dir,
-                                    T                   alpha,
-                                    const rocsparse_int* __restrict__ bsr_row_ptr,
-                                    const rocsparse_int* __restrict__ bsr_col_ind,
-                                    const T* __restrict__ bsr_val,
-                                    const T* __restrict__ x,
-                                    T beta,
-                                    T* __restrict__ y,
-                                    rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void gebsrmvn_2xn_device(rocsparse_int       mb,
+                                              rocsparse_direction dir,
+                                              T                   alpha,
+                                              const rocsparse_int* __restrict__ bsr_row_ptr,
+                                              const rocsparse_int* __restrict__ bsr_col_ind,
+                                              const T* __restrict__ bsr_val,
+                                              const T* __restrict__ x,
+                                              T beta,
+                                              T* __restrict__ y,
+                                              rocsparse_index_base idx_base)
 {
     // GEBSR block dimension
     static constexpr int ROWBSRDIM = 2;
@@ -276,16 +276,16 @@ __device__ void gebsrmvn_2xn_device(rocsparse_int       mb,
 
 // GEBSRMV kernel for GEBSR block dimension of 3 x n
 template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
-__device__ void gebsrmvn_3xn_device(rocsparse_int       mb,
-                                    rocsparse_direction dir,
-                                    T                   alpha,
-                                    const rocsparse_int* __restrict__ bsr_row_ptr,
-                                    const rocsparse_int* __restrict__ bsr_col_ind,
-                                    const T* __restrict__ bsr_val,
-                                    const T* __restrict__ x,
-                                    T beta,
-                                    T* __restrict__ y,
-                                    rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void gebsrmvn_3xn_device(rocsparse_int       mb,
+                                              rocsparse_direction dir,
+                                              T                   alpha,
+                                              const rocsparse_int* __restrict__ bsr_row_ptr,
+                                              const rocsparse_int* __restrict__ bsr_col_ind,
+                                              const T* __restrict__ bsr_val,
+                                              const T* __restrict__ x,
+                                              T beta,
+                                              T* __restrict__ y,
+                                              rocsparse_index_base idx_base)
 {
     // GEBSR block dimension
     static constexpr int ROWBSRDIM = 3;
@@ -389,16 +389,16 @@ __device__ void gebsrmvn_3xn_device(rocsparse_int       mb,
 
 // GEBSRMV kernel for GEBSR block dimension of 4 x n
 template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
-__device__ void gebsrmvn_4xn_device(rocsparse_int       mb,
-                                    rocsparse_direction dir,
-                                    T                   alpha,
-                                    const rocsparse_int* __restrict__ bsr_row_ptr,
-                                    const rocsparse_int* __restrict__ bsr_col_ind,
-                                    const T* __restrict__ bsr_val,
-                                    const T* __restrict__ x,
-                                    T beta,
-                                    T* __restrict__ y,
-                                    rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void gebsrmvn_4xn_device(rocsparse_int       mb,
+                                              rocsparse_direction dir,
+                                              T                   alpha,
+                                              const rocsparse_int* __restrict__ bsr_row_ptr,
+                                              const rocsparse_int* __restrict__ bsr_col_ind,
+                                              const T* __restrict__ bsr_val,
+                                              const T* __restrict__ x,
+                                              T beta,
+                                              T* __restrict__ y,
+                                              rocsparse_index_base idx_base)
 {
     // GEBSR block dimension
     static constexpr int ROWBSRDIM = 4;
@@ -512,16 +512,16 @@ __device__ void gebsrmvn_4xn_device(rocsparse_int       mb,
 
 // GEBSRMV kernel for GEBSR block dimension of m x n where m and n <= 8
 template <unsigned int BLOCKSIZE, unsigned int ROWBSRDIM, unsigned int COLBSRDIM, typename T>
-__device__ void gebsrmvn_mxn_device(rocsparse_int       mb,
-                                    rocsparse_direction dir,
-                                    T                   alpha,
-                                    const rocsparse_int* __restrict__ bsr_row_ptr,
-                                    const rocsparse_int* __restrict__ bsr_col_ind,
-                                    const T* __restrict__ bsr_val,
-                                    const T* __restrict__ x,
-                                    T beta,
-                                    T* __restrict__ y,
-                                    rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void gebsrmvn_mxn_device(rocsparse_int       mb,
+                                              rocsparse_direction dir,
+                                              T                   alpha,
+                                              const rocsparse_int* __restrict__ bsr_row_ptr,
+                                              const rocsparse_int* __restrict__ bsr_col_ind,
+                                              const T* __restrict__ bsr_val,
+                                              const T* __restrict__ x,
+                                              T beta,
+                                              T* __restrict__ y,
+                                              rocsparse_index_base idx_base)
 {
     // BSR block lane id
     rocsparse_int lid = hipThreadIdx_x % COLBSRDIM;
@@ -715,16 +715,16 @@ __device__ void gebsrmvn_mxn_device(rocsparse_int       mb,
 
 // GEBSRMV kernel for GEBSR block dimension of m x n where m and n <= 16
 template <unsigned int BLOCKSIZE, unsigned int ROWBSRDIM, unsigned int COLBSRDIM, typename T>
-__device__ void gebsrmvn_mxn_16_device(rocsparse_int       mb,
-                                       rocsparse_direction dir,
-                                       T                   alpha,
-                                       const rocsparse_int* __restrict__ bsr_row_ptr,
-                                       const rocsparse_int* __restrict__ bsr_col_ind,
-                                       const T* __restrict__ bsr_val,
-                                       const T* __restrict__ x,
-                                       T beta,
-                                       T* __restrict__ y,
-                                       rocsparse_index_base idx_base)
+ROCSPARSE_DEVICE_ILF void gebsrmvn_mxn_16_device(rocsparse_int       mb,
+                                                 rocsparse_direction dir,
+                                                 T                   alpha,
+                                                 const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                 const rocsparse_int* __restrict__ bsr_col_ind,
+                                                 const T* __restrict__ bsr_val,
+                                                 const T* __restrict__ x,
+                                                 T beta,
+                                                 T* __restrict__ y,
+                                                 rocsparse_index_base idx_base)
 {
     // BSR block lane id
     rocsparse_int lid = hipThreadIdx_x % COLBSRDIM;

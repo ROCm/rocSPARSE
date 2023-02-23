@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,20 +37,21 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrsv_kernel(J m,
-                                                                U alpha_device_host,
-                                                                const I* __restrict__ csr_row_ptr,
-                                                                const J* __restrict__ csr_col_ind,
-                                                                const T* __restrict__ csr_val,
-                                                                const T* __restrict__ x,
-                                                                T* __restrict__ y,
-                                                                int* __restrict__ done_array,
-                                                                J* __restrict__ map,
-                                                                int offset,
-                                                                J* __restrict__ zero_pivot,
-                                                                rocsparse_index_base idx_base,
-                                                                rocsparse_fill_mode  fill_mode,
-                                                                rocsparse_diag_type  diag_type)
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrsv_kernel(J m,
+                  U alpha_device_host,
+                  const I* __restrict__ csr_row_ptr,
+                  const J* __restrict__ csr_col_ind,
+                  const T* __restrict__ csr_val,
+                  const T* __restrict__ x,
+                  T* __restrict__ y,
+                  int* __restrict__ done_array,
+                  J* __restrict__ map,
+                  int offset,
+                  J* __restrict__ zero_pivot,
+                  rocsparse_index_base idx_base,
+                  rocsparse_fill_mode  fill_mode,
+                  rocsparse_diag_type  diag_type)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     csrsv_device<BLOCKSIZE, WF_SIZE, SLEEP>(m,
@@ -95,7 +96,7 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
 
     // done array
     int* done_array = reinterpret_cast<int*>(ptr);
-    ptr += sizeof(int) * ((m - 1) / 256 + 1) * 256;
+    ptr += ((sizeof(int) * m - 1) / 256 + 1) * 256;
 
     // Initialize buffers
     RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * m, stream));
@@ -115,12 +116,9 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
     // If diag type is unit, re-initialize zero pivot to remove structural zeros
     if(descr->diag_type == rocsparse_diag_type_unit)
     {
-        static J max = std::numeric_limits<J>::max();
+        static const J max = std::numeric_limits<J>::max();
         RETURN_IF_HIP_ERROR(
             hipMemcpyAsync(info->zero_pivot, &max, sizeof(J), hipMemcpyHostToDevice, stream));
-
-        // Wait for device transfer to finish
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     }
 
     // Pointers to differentiate between transpose mode
