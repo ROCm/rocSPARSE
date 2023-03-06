@@ -211,7 +211,6 @@ rocsparse_status rocsparse_csxsldu_preprocess_template(rocsparse_handle     hand
                                  : buffer)
               : uptr_;
 
-    rocsparse_status status;
     switch(dir_)
     {
     case rocsparse_direction_row:
