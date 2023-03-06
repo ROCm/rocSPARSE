@@ -71,11 +71,28 @@ __device__ __forceinline__ double rocsparse_ldg(const double* ptr) { return __ld
 __device__ __forceinline__ rocsparse_float_complex rocsparse_ldg(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__ldg((const float*)ptr), __ldg((const float*)ptr + 1)); }
 __device__ __forceinline__ rocsparse_double_complex rocsparse_ldg(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__ldg((const double*)ptr), __ldg((const double*)ptr + 1)); }
 
-__device__ __forceinline__ int32_t rocsparse_fma(int32_t p, int32_t q, int32_t r) { return fma(p, q, r); }
+
+template <typename T>
+__device__ __forceinline__ T rocsparse_fma(T p, T q, T r);
+
+template <>
+__device__ __forceinline__ int32_t rocsparse_fma(int32_t p, int32_t q, int32_t r) { return p * q + r; }
+
+template <>
+__device__ __forceinline__ int64_t rocsparse_fma(int64_t p, int64_t q, int64_t r) { return p * q + r; }
+
+template <>
 __device__ __forceinline__ float rocsparse_fma(float p, float q, float r) { return fma(p, q, r); }
+
+template <>
 __device__ __forceinline__ double rocsparse_fma(double p, double q, double r) { return fma(p, q, r); }
+
+template <>
 __device__ __forceinline__ rocsparse_float_complex rocsparse_fma(rocsparse_float_complex p, rocsparse_float_complex q, rocsparse_float_complex r) { return std::fma(p, q, r); }
+
+template <>
 __device__ __forceinline__ rocsparse_double_complex rocsparse_fma(rocsparse_double_complex p, rocsparse_double_complex q, rocsparse_double_complex r) { return std::fma(p, q, r); }
+
 
 __device__ __forceinline__ float rocsparse_abs(float x) { return x < 0.0f ? -x : x; }
 __device__ __forceinline__ double rocsparse_abs(double x) { return x < 0.0 ? -x : x; }
@@ -208,11 +225,6 @@ __device__ __forceinline__ T conj_val(T val, bool conj)
     return conj ? rocsparse_conj(val) : val;
 }
 
-template <typename T>
-__device__ __forceinline__ T rocsparse_fma(T p, T q, T r)
-{
-    return rocsparse_fma(p, q, r);
-}
 
 // Block reduce kernel computing block sum
 template <unsigned int BLOCKSIZE, typename T>

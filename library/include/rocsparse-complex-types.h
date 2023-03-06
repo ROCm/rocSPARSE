@@ -200,7 +200,7 @@ private:
 
     static __forceinline__ __device__ __host__ float fma(float p, float q, float r)
     {
-        return ::fma(p, q, r);
+        return ::fmaf(p, q, r);
     }
 
     static __forceinline__ __device__ __host__ double fma(double p, double q, double r)
