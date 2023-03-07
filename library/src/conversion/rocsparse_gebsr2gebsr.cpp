@@ -510,6 +510,7 @@ extern "C" rocsparse_status rocsparse_gebsr2csr_nnz(rocsparse_handle          ha
                                                     const rocsparse_mat_descr csr_descr,
                                                     rocsparse_int*            csr_row_ptr,
                                                     rocsparse_int*            csr_col_ind)
+try
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -688,6 +689,10 @@ extern "C" rocsparse_status rocsparse_gebsr2csr_nnz(rocsparse_handle          ha
 
     return rocsparse_status_success;
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          handle,
                                                       rocsparse_direction       dir,
@@ -705,6 +710,7 @@ extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          
                                                       rocsparse_int             col_block_dim_C,
                                                       rocsparse_int* nnz_total_dev_host_ptr,
                                                       void*          temp_buffer)
+try
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -985,6 +991,10 @@ extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          
 
     return rocsparse_status_success;
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_sgebsr2gebsr_buffer_size(rocsparse_handle          handle,
                                                                rocsparse_direction       dir,
@@ -1000,6 +1010,7 @@ extern "C" rocsparse_status rocsparse_sgebsr2gebsr_buffer_size(rocsparse_handle 
                                                                rocsparse_int        row_block_dim_C,
                                                                rocsparse_int        col_block_dim_C,
                                                                size_t*              buffer_size)
+try
 {
     return rocsparse_gebsr2gebsr_buffer_size_template(handle,
                                                       dir,
@@ -1016,6 +1027,10 @@ extern "C" rocsparse_status rocsparse_sgebsr2gebsr_buffer_size(rocsparse_handle 
                                                       col_block_dim_C,
                                                       buffer_size);
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_dgebsr2gebsr_buffer_size(rocsparse_handle          handle,
                                                                rocsparse_direction       dir,
@@ -1031,6 +1046,7 @@ extern "C" rocsparse_status rocsparse_dgebsr2gebsr_buffer_size(rocsparse_handle 
                                                                rocsparse_int        row_block_dim_C,
                                                                rocsparse_int        col_block_dim_C,
                                                                size_t*              buffer_size)
+try
 {
     return rocsparse_gebsr2gebsr_buffer_size_template(handle,
                                                       dir,
@@ -1046,6 +1062,10 @@ extern "C" rocsparse_status rocsparse_dgebsr2gebsr_buffer_size(rocsparse_handle 
                                                       row_block_dim_C,
                                                       col_block_dim_C,
                                                       buffer_size);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status
@@ -1063,6 +1083,7 @@ extern "C" rocsparse_status
                                        rocsparse_int                  row_block_dim_C,
                                        rocsparse_int                  col_block_dim_C,
                                        size_t*                        buffer_size)
+try
 {
     return rocsparse_gebsr2gebsr_buffer_size_template(handle,
                                                       dir,
@@ -1078,6 +1099,10 @@ extern "C" rocsparse_status
                                                       row_block_dim_C,
                                                       col_block_dim_C,
                                                       buffer_size);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status
@@ -1095,6 +1120,7 @@ extern "C" rocsparse_status
                                        rocsparse_int                   row_block_dim_C,
                                        rocsparse_int                   col_block_dim_C,
                                        size_t*                         buffer_size)
+try
 {
     return rocsparse_gebsr2gebsr_buffer_size_template(handle,
                                                       dir,
@@ -1110,6 +1136,10 @@ extern "C" rocsparse_status
                                                       row_block_dim_C,
                                                       col_block_dim_C,
                                                       buffer_size);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_sgebsr2gebsr(rocsparse_handle          handle,
@@ -1130,6 +1160,7 @@ extern "C" rocsparse_status rocsparse_sgebsr2gebsr(rocsparse_handle          han
                                                    rocsparse_int             row_block_dim_C,
                                                    rocsparse_int             col_block_dim_C,
                                                    void*                     temp_buffer)
+try
 {
     return rocsparse_gebsr2gebsr_template(handle,
                                           dir,
@@ -1149,6 +1180,10 @@ extern "C" rocsparse_status rocsparse_sgebsr2gebsr(rocsparse_handle          han
                                           row_block_dim_C,
                                           col_block_dim_C,
                                           temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_dgebsr2gebsr(rocsparse_handle          handle,
@@ -1169,6 +1204,7 @@ extern "C" rocsparse_status rocsparse_dgebsr2gebsr(rocsparse_handle          han
                                                    rocsparse_int             row_block_dim_C,
                                                    rocsparse_int             col_block_dim_C,
                                                    void*                     temp_buffer)
+try
 {
     return rocsparse_gebsr2gebsr_template(handle,
                                           dir,
@@ -1188,6 +1224,10 @@ extern "C" rocsparse_status rocsparse_dgebsr2gebsr(rocsparse_handle          han
                                           row_block_dim_C,
                                           col_block_dim_C,
                                           temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_cgebsr2gebsr(rocsparse_handle               handle,
@@ -1208,6 +1248,7 @@ extern "C" rocsparse_status rocsparse_cgebsr2gebsr(rocsparse_handle             
                                                    rocsparse_int                  row_block_dim_C,
                                                    rocsparse_int                  col_block_dim_C,
                                                    void*                          temp_buffer)
+try
 {
     return rocsparse_gebsr2gebsr_template(handle,
                                           dir,
@@ -1228,6 +1269,10 @@ extern "C" rocsparse_status rocsparse_cgebsr2gebsr(rocsparse_handle             
                                           col_block_dim_C,
                                           temp_buffer);
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_zgebsr2gebsr(rocsparse_handle                handle,
                                                    rocsparse_direction             dir,
@@ -1247,6 +1292,7 @@ extern "C" rocsparse_status rocsparse_zgebsr2gebsr(rocsparse_handle             
                                                    rocsparse_int                   row_block_dim_C,
                                                    rocsparse_int                   col_block_dim_C,
                                                    void*                           temp_buffer)
+try
 {
     return rocsparse_gebsr2gebsr_template(handle,
                                           dir,
@@ -1266,4 +1312,8 @@ extern "C" rocsparse_status rocsparse_zgebsr2gebsr(rocsparse_handle             
                                           row_block_dim_C,
                                           col_block_dim_C,
                                           temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

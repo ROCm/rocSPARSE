@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -291,6 +291,7 @@ rocsparse_status rocsparse_bsrsm_analysis_template(rocsparse_handle          han
                                      rocsparse_analysis_policy analysis,    \
                                      rocsparse_solve_policy    solve,       \
                                      void*                     temp_buffer) \
+    try                                                                     \
     {                                                                       \
         return rocsparse_bsrsm_analysis_template(handle,                    \
                                                  dir,                       \
@@ -308,6 +309,10 @@ rocsparse_status rocsparse_bsrsm_analysis_template(rocsparse_handle          han
                                                  analysis,                  \
                                                  solve,                     \
                                                  temp_buffer);              \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_sbsrsm_analysis, float);

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -180,8 +180,13 @@ extern "C" rocsparse_status rocsparse_saxpyi(rocsparse_handle     handle,
                                              const rocsparse_int* x_ind,
                                              float*               y,
                                              rocsparse_index_base idx_base)
+try
 {
     return rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_daxpyi(rocsparse_handle     handle,
@@ -191,8 +196,13 @@ extern "C" rocsparse_status rocsparse_daxpyi(rocsparse_handle     handle,
                                              const rocsparse_int* x_ind,
                                              double*              y,
                                              rocsparse_index_base idx_base)
+try
 {
     return rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_caxpyi(rocsparse_handle               handle,
@@ -202,8 +212,13 @@ extern "C" rocsparse_status rocsparse_caxpyi(rocsparse_handle               hand
                                              const rocsparse_int*           x_ind,
                                              rocsparse_float_complex*       y,
                                              rocsparse_index_base           idx_base)
+try
 {
     return rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_zaxpyi(rocsparse_handle                handle,
@@ -213,6 +228,11 @@ extern "C" rocsparse_status rocsparse_zaxpyi(rocsparse_handle                han
                                              const rocsparse_int*            x_ind,
                                              rocsparse_double_complex*       y,
                                              rocsparse_index_base            idx_base)
+try
 {
     return rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

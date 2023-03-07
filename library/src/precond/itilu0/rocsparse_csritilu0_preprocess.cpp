@@ -202,6 +202,7 @@ extern "C" rocsparse_status rocsparse_csritilu0_preprocess(rocsparse_handle     
                                                            rocsparse_datatype   datatype_,
                                                            size_t               buffer_size_,
                                                            void*                buffer_)
+try
 {
     return rocsparse_csritilu0_preprocess_impl<rocsparse_int, rocsparse_int>(handle_,
                                                                              alg_,
@@ -215,4 +216,8 @@ extern "C" rocsparse_status rocsparse_csritilu0_preprocess(rocsparse_handle     
                                                                              datatype_,
                                                                              buffer_size_,
                                                                              buffer_);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

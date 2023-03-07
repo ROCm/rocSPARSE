@@ -780,6 +780,7 @@ INSTANTIATE_MIXED(rocsparse_double_complex,
                                      const rocsparse_int*      bsr_col_ind, \
                                      rocsparse_int             block_dim,   \
                                      rocsparse_mat_info        info)        \
+    try                                                                     \
     {                                                                       \
         return rocsparse_bsrmv_analysis_template(handle,                    \
                                                  dir,                       \
@@ -793,6 +794,10 @@ INSTANTIATE_MIXED(rocsparse_double_complex,
                                                  bsr_col_ind,               \
                                                  block_dim,                 \
                                                  info);                     \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_sbsrmv_analysis, float);
@@ -820,6 +825,7 @@ C_IMPL(rocsparse_zbsrmv_analysis, rocsparse_double_complex);
                                      const TYPE*               x,           \
                                      const TYPE*               beta,        \
                                      TYPE*                     y)           \
+    try                                                                     \
     {                                                                       \
         return rocsparse_bsrmv_template(handle,                             \
                                         dir,                                \
@@ -837,6 +843,10 @@ C_IMPL(rocsparse_zbsrmv_analysis, rocsparse_double_complex);
                                         x,                                  \
                                         beta,                               \
                                         y);                                 \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_sbsrmv, float);
@@ -847,6 +857,11 @@ C_IMPL(rocsparse_zbsrmv, rocsparse_double_complex);
 #undef C_IMPL
 
 extern "C" rocsparse_status rocsparse_bsrmv_clear(rocsparse_handle handle, rocsparse_mat_info info)
+try
 {
     return rocsparse_csrmv_clear(handle, info);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

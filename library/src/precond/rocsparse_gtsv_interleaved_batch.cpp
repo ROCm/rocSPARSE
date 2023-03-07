@@ -350,9 +350,14 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_template(rocsparse_handle     
                                      rocsparse_int                  batch_count,   \
                                      rocsparse_int                  batch_stride,  \
                                      size_t*                        buffer_size)   \
+    try                                                                            \
     {                                                                              \
         return rocsparse_gtsv_interleaved_batch_buffer_size_template(              \
             handle, alg, m, dl, d, du, x, batch_count, batch_stride, buffer_size); \
+    }                                                                              \
+    catch(...)                                                                     \
+    {                                                                              \
+        return exception_to_rocsparse_status();                                    \
     }
 
 C_IMPL(rocsparse_sgtsv_interleaved_batch_buffer_size, float);
@@ -373,9 +378,14 @@ C_IMPL(rocsparse_zgtsv_interleaved_batch_buffer_size, rocsparse_double_complex);
                                      rocsparse_int                  batch_count,   \
                                      rocsparse_int                  batch_stride,  \
                                      void*                          temp_buffer)   \
+    try                                                                            \
     {                                                                              \
         return rocsparse_gtsv_interleaved_batch_template(                          \
             handle, alg, m, dl, d, du, x, batch_count, batch_stride, temp_buffer); \
+    }                                                                              \
+    catch(...)                                                                     \
+    {                                                                              \
+        return exception_to_rocsparse_status();                                    \
     }
 
 C_IMPL(rocsparse_sgtsv_interleaved_batch, float);

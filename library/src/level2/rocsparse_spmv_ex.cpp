@@ -38,6 +38,7 @@ extern "C" rocsparse_status rocsparse_spmv_ex(rocsparse_handle            handle
                                               rocsparse_spmv_stage        stage,
                                               size_t*                     buffer_size,
                                               void*                       temp_buffer)
+try
 {
     // Check for invalid handle
     RETURN_IF_INVALID_HANDLE(handle);
@@ -58,4 +59,8 @@ extern "C" rocsparse_status rocsparse_spmv_ex(rocsparse_handle            handle
 
     return rocsparse_spmv(
         handle, trans, alpha, mat, x, beta, y, compute_type, alg, stage, buffer_size, temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

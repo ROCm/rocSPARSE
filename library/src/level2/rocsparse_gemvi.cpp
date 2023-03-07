@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -325,9 +325,14 @@ extern "C" {
                            rocsparse_int       n,           \
                            rocsparse_int       nnz,         \
                            size_t*             buffer_size) \
+    try                                                     \
     {                                                       \
         *buffer_size = 4;                                   \
         return rocsparse_status_success;                    \
+    }                                                       \
+    catch(...)                                              \
+    {                                                       \
+        return exception_to_rocsparse_status();             \
     }
 
 // C-implementations

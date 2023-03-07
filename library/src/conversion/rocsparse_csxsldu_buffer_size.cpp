@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,8 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "rocsparse_csxsldu.hpp"
+#include "utility.h"
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse_csxsldu_buffer_size_template(rocsparse_handle     handle_,
@@ -98,6 +98,7 @@ INSTANTIATE(rocsparse_double_complex);
                                      rocsparse_diag_type  udiag_,                          \
                                      rocsparse_direction  udir_,                           \
                                      size_t*              buffer_size_)                    \
+    try                                                                                    \
     {                                                                                      \
         return rocsparse_csxsldu_buffer_size_template<TYPE, rocsparse_int, rocsparse_int>( \
             handle_,                                                                       \
@@ -114,6 +115,10 @@ INSTANTIATE(rocsparse_double_complex);
             udiag_,                                                                        \
             udir_,                                                                         \
             buffer_size_);                                                                 \
+    }                                                                                      \
+    catch(...)                                                                             \
+    {                                                                                      \
+        return exception_to_rocsparse_status();                                            \
     }
 
 C_IMPL(rocsparse_scsxsldu_buffer_size, float);

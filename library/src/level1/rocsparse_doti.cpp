@@ -178,8 +178,13 @@ extern "C" rocsparse_status rocsparse_sdoti(rocsparse_handle     handle,
                                             const float*         y,
                                             float*               result,
                                             rocsparse_index_base idx_base)
+try
 {
     return rocsparse_doti_template(handle, nnz, x_val, x_ind, y, result, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_ddoti(rocsparse_handle     handle,
@@ -189,8 +194,13 @@ extern "C" rocsparse_status rocsparse_ddoti(rocsparse_handle     handle,
                                             const double*        y,
                                             double*              result,
                                             rocsparse_index_base idx_base)
+try
 {
     return rocsparse_doti_template(handle, nnz, x_val, x_ind, y, result, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_cdoti(rocsparse_handle               handle,
@@ -200,8 +210,13 @@ extern "C" rocsparse_status rocsparse_cdoti(rocsparse_handle               handl
                                             const rocsparse_float_complex* y,
                                             rocsparse_float_complex*       result,
                                             rocsparse_index_base           idx_base)
+try
 {
     return rocsparse_doti_template(handle, nnz, x_val, x_ind, y, result, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_zdoti(rocsparse_handle                handle,
@@ -211,6 +226,11 @@ extern "C" rocsparse_status rocsparse_zdoti(rocsparse_handle                hand
                                             const rocsparse_double_complex* y,
                                             rocsparse_double_complex*       result,
                                             rocsparse_index_base            idx_base)
+try
 {
     return rocsparse_doti_template(handle, nnz, x_val, x_ind, y, result, idx_base);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

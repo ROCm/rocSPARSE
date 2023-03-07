@@ -548,6 +548,7 @@ extern "C" rocsparse_status
                                                          const rocsparse_int*      csr_col_ind,
                                                          rocsparse_mat_info        info,
                                                          size_t*                   buffer_size)
+try
 {
     return rocsparse_prune_dense2csr_by_percentage_buffer_size_template(handle,
                                                                         m,
@@ -561,6 +562,10 @@ extern "C" rocsparse_status
                                                                         csr_col_ind,
                                                                         info,
                                                                         buffer_size);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status
@@ -576,6 +581,7 @@ extern "C" rocsparse_status
                                                          const rocsparse_int*      csr_col_ind,
                                                          rocsparse_mat_info        info,
                                                          size_t*                   buffer_size)
+try
 {
     return rocsparse_prune_dense2csr_by_percentage_buffer_size_template(handle,
                                                                         m,
@@ -590,6 +596,10 @@ extern "C" rocsparse_status
                                                                         info,
                                                                         buffer_size);
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status
     rocsparse_sprune_dense2csr_nnz_by_percentage(rocsparse_handle          handle,
@@ -603,6 +613,7 @@ extern "C" rocsparse_status
                                                  rocsparse_int*            nnz_total_dev_host_ptr,
                                                  rocsparse_mat_info        info,
                                                  void*                     temp_buffer)
+try
 {
     return rocsparse_prune_dense2csr_nnz_by_percentage_template(handle,
                                                                 m,
@@ -615,6 +626,10 @@ extern "C" rocsparse_status
                                                                 nnz_total_dev_host_ptr,
                                                                 info,
                                                                 temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status
@@ -629,6 +644,7 @@ extern "C" rocsparse_status
                                                  rocsparse_int*            nnz_total_dev_host_ptr,
                                                  rocsparse_mat_info        info,
                                                  void*                     temp_buffer)
+try
 {
     return rocsparse_prune_dense2csr_nnz_by_percentage_template(handle,
                                                                 m,
@@ -641,6 +657,10 @@ extern "C" rocsparse_status
                                                                 nnz_total_dev_host_ptr,
                                                                 info,
                                                                 temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status
@@ -656,6 +676,7 @@ extern "C" rocsparse_status
                                              rocsparse_int*            csr_col_ind,
                                              rocsparse_mat_info        info,
                                              void*                     temp_buffer)
+try
 {
     return rocsparse_prune_dense2csr_by_percentage_template(handle,
                                                             m,
@@ -669,6 +690,10 @@ extern "C" rocsparse_status
                                                             csr_col_ind,
                                                             info,
                                                             temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status
@@ -684,6 +709,7 @@ extern "C" rocsparse_status
                                              rocsparse_int*            csr_col_ind,
                                              rocsparse_mat_info        info,
                                              void*                     temp_buffer)
+try
 {
     return rocsparse_prune_dense2csr_by_percentage_template(handle,
                                                             m,
@@ -697,4 +723,8 @@ extern "C" rocsparse_status
                                                             csr_col_ind,
                                                             info,
                                                             temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

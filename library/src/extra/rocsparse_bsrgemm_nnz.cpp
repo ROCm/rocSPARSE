@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -218,6 +218,7 @@ extern "C" rocsparse_status rocsparse_bsrgemm_nnzb(rocsparse_handle          han
                                                    rocsparse_int*            nnzb_C,
                                                    const rocsparse_mat_info  info_C,
                                                    void*                     temp_buffer)
+try
 {
     return rocsparse_bsrgemm_nnzb_template(handle,
                                            dir,
@@ -244,4 +245,8 @@ extern "C" rocsparse_status rocsparse_bsrgemm_nnzb(rocsparse_handle          han
                                            nnzb_C,
                                            info_C,
                                            temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

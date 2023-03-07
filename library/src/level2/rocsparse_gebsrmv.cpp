@@ -483,6 +483,7 @@ rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle,
                                      const TYPE*               x,             \
                                      const TYPE*               beta,          \
                                      TYPE*                     y)             \
+    try                                                                       \
     {                                                                         \
         return rocsparse_gebsrmv_template(handle,                             \
                                           dir,                                \
@@ -500,6 +501,10 @@ rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle,
                                           x,                                  \
                                           beta,                               \
                                           y);                                 \
+    }                                                                         \
+    catch(...)                                                                \
+    {                                                                         \
+        return exception_to_rocsparse_status();                               \
     }
 
 C_IMPL(rocsparse_sgebsrmv, float);

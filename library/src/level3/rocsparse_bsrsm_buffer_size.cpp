@@ -204,6 +204,7 @@ rocsparse_status rocsparse_bsrsm_buffer_size_template(rocsparse_handle          
                                      rocsparse_int             block_dim,   \
                                      rocsparse_mat_info        info,        \
                                      size_t*                   buffer_size) \
+    try                                                                     \
     {                                                                       \
         return rocsparse_bsrsm_buffer_size_template(handle,                 \
                                                     dir,                    \
@@ -219,6 +220,10 @@ rocsparse_status rocsparse_bsrsm_buffer_size_template(rocsparse_handle          
                                                     block_dim,              \
                                                     info,                   \
                                                     buffer_size);           \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_sbsrsm_buffer_size, float);

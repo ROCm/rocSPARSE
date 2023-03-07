@@ -831,6 +831,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      T*                        y,                 \
                                      rocsparse_solve_policy    policy,            \
                                      void*                     temp_buffer)       \
+    try                                                                           \
     {                                                                             \
         return rocsparse_csritsv_solve_impl(handle,                               \
                                             host_nmaxiter,                        \
@@ -849,6 +850,10 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                             y,                                    \
                                             policy,                               \
                                             temp_buffer);                         \
+    }                                                                             \
+    catch(...)                                                                    \
+    {                                                                             \
+        return exception_to_rocsparse_status();                                   \
     }
 
 C_IMPL(rocsparse_scsritsv_solve, float);

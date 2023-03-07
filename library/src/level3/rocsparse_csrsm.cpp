@@ -1202,6 +1202,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
 extern "C" rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle   handle,
                                                        rocsparse_mat_info info,
                                                        rocsparse_int*     position)
+try
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -1288,8 +1289,13 @@ extern "C" rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle   handle
 
     return rocsparse_status_success;
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsparse_mat_info info)
+try
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -1318,6 +1324,10 @@ extern "C" rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsp
     info->csrsm_upper_info = nullptr;
 
     return rocsparse_status_success;
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE)                            \
@@ -1375,6 +1385,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      rocsparse_mat_info        info,        \
                                      rocsparse_solve_policy    policy,      \
                                      size_t*                   buffer_size) \
+    try                                                                     \
     {                                                                       \
         return rocsparse_csrsm_buffer_size_template(handle,                 \
                                                     trans_A,                \
@@ -1392,6 +1403,10 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                                     info,                   \
                                                     policy,                 \
                                                     buffer_size);           \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_scsrsm_buffer_size, int32_t, int32_t, float);
@@ -1458,6 +1473,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      rocsparse_analysis_policy analysis,    \
                                      rocsparse_solve_policy    solve,       \
                                      void*                     temp_buffer) \
+    try                                                                     \
     {                                                                       \
         return rocsparse_csrsm_analysis_template(handle,                    \
                                                  trans_A,                   \
@@ -1476,6 +1492,10 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                                  analysis,                  \
                                                  solve,                     \
                                                  temp_buffer);              \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_scsrsm_analysis, int32_t, int32_t, float);
@@ -1539,6 +1559,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      rocsparse_mat_info        info,        \
                                      rocsparse_solve_policy    policy,      \
                                      void*                     temp_buffer) \
+    try                                                                     \
     {                                                                       \
         return rocsparse_csrsm_solve_template(handle,                       \
                                               trans_A,                      \
@@ -1556,6 +1577,10 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                               info,                         \
                                               policy,                       \
                                               temp_buffer);                 \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_scsrsm_solve, int32_t, int32_t, float);
