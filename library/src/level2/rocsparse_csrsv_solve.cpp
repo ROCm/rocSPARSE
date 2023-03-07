@@ -442,6 +442,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      TYPE*                     y,           \
                                      rocsparse_solve_policy    policy,      \
                                      void*                     temp_buffer) \
+    try                                                                     \
     {                                                                       \
         return rocsparse_csrsv_solve_template(handle,                       \
                                               trans,                        \
@@ -457,6 +458,10 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                               y,                            \
                                               policy,                       \
                                               temp_buffer);                 \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_scsrsv_solve, float);

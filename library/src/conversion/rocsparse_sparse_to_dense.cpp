@@ -158,6 +158,7 @@ extern "C" rocsparse_status rocsparse_sparse_to_dense(rocsparse_handle          
                                                       rocsparse_sparse_to_dense_alg alg,
                                                       size_t*                       buffer_size,
                                                       void*                         temp_buffer)
+try
 {
     // Check for invalid handle
     RETURN_IF_INVALID_HANDLE(handle);
@@ -219,4 +220,8 @@ extern "C" rocsparse_status rocsparse_sparse_to_dense(rocsparse_handle          
     }
 
     return rocsparse_status_not_implemented;
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

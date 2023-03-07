@@ -181,6 +181,7 @@ extern "C" rocsparse_status rocsparse_sddmm_buffer_size(rocsparse_handle        
                                                         rocsparse_datatype          compute_type,
                                                         rocsparse_sddmm_alg         alg,
                                                         size_t*                     buffer_size)
+try
 {
     // Check for invalid handle
     RETURN_IF_INVALID_HANDLE(handle);
@@ -257,6 +258,10 @@ extern "C" rocsparse_status rocsparse_sddmm_buffer_size(rocsparse_handle        
         compute_type,
         alg,
         buffer_size);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 template <rocsparse_format FORMAT, typename I, typename J, typename T, typename... Ts>
@@ -411,6 +416,7 @@ extern "C" rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle         
                                                        rocsparse_datatype          compute_type,
                                                        rocsparse_sddmm_alg         alg,
                                                        void*                       temp_buffer)
+try
 {
     // Check for invalid handle
     RETURN_IF_INVALID_HANDLE(handle);
@@ -491,6 +497,10 @@ extern "C" rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle         
         compute_type,
         alg,
         temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 template <rocsparse_format FORMAT, typename I, typename J, typename T, typename... Ts>
@@ -643,6 +653,7 @@ extern "C" rocsparse_status rocsparse_sddmm(rocsparse_handle            handle,
                                             rocsparse_datatype          compute_type,
                                             rocsparse_sddmm_alg         alg,
                                             void*                       temp_buffer)
+try
 {
     // Check for invalid handle
     RETURN_IF_INVALID_HANDLE(handle);
@@ -722,4 +733,8 @@ extern "C" rocsparse_status rocsparse_sddmm(rocsparse_handle            handle,
         compute_type,
         alg,
         temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

@@ -383,6 +383,7 @@ rocsparse_status rocsparse_gebsr2gebsc_buffer_size_template(rocsparse_handle    
                                      rocsparse_int        row_block_dim,  \
                                      rocsparse_int        col_block_dim,  \
                                      size_t*              p_buffer_size)  \
+    try                                                                   \
     {                                                                     \
         return rocsparse_gebsr2gebsc_buffer_size_template(handle,         \
                                                           mb,             \
@@ -394,6 +395,10 @@ rocsparse_status rocsparse_gebsr2gebsc_buffer_size_template(rocsparse_handle    
                                                           row_block_dim,  \
                                                           col_block_dim,  \
                                                           p_buffer_size); \
+    }                                                                     \
+    catch(...)                                                            \
+    {                                                                     \
+        return exception_to_rocsparse_status();                           \
     }
 
 C_IMPL(rocsparse_sgebsr2gebsc_buffer_size, float);
@@ -422,6 +427,7 @@ C_IMPL(rocsparse_zgebsr2gebsc_buffer_size, rocsparse_double_complex);
                                      rocsparse_action     copy_values,   \
                                      rocsparse_index_base idx_base,      \
                                      void*                buffer)        \
+    try                                                                  \
     {                                                                    \
         return rocsparse_gebsr2gebsc_template(handle,                    \
                                               mb,                        \
@@ -438,6 +444,10 @@ C_IMPL(rocsparse_zgebsr2gebsc_buffer_size, rocsparse_double_complex);
                                               copy_values,               \
                                               idx_base,                  \
                                               buffer);                   \
+    }                                                                    \
+    catch(...)                                                           \
+    {                                                                    \
+        return exception_to_rocsparse_status();                          \
     }
 
 C_IMPL(rocsparse_sgebsr2gebsc, float);

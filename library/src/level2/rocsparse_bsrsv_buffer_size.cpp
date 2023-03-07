@@ -46,6 +46,7 @@
                                      rocsparse_int             block_dim,                          \
                                      rocsparse_mat_info        info,                               \
                                      size_t*                   buffer_size)                        \
+    try                                                                                            \
     {                                                                                              \
         /* Check direction */                                                                      \
         if(rocsparse_enum_utils::is_invalid(dir))                                                  \
@@ -78,6 +79,10 @@
         }                                                                                          \
                                                                                                    \
         return stat;                                                                               \
+    }                                                                                              \
+    catch(...)                                                                                     \
+    {                                                                                              \
+        return exception_to_rocsparse_status();                                                    \
     }
 
 C_IMPL(rocsparse_sbsrsv_buffer_size, float);

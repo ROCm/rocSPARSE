@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,8 +142,13 @@ INSTANTIATE(int64_t, rocsparse_double_complex)
                                      TYPE*                x_val,                \
                                      const rocsparse_int* x_ind,                \
                                      rocsparse_index_base idx_base)             \
+    try                                                                         \
     {                                                                           \
         return rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base); \
+    }                                                                           \
+    catch(...)                                                                  \
+    {                                                                           \
+        return exception_to_rocsparse_status();                                 \
     }
 
 C_IMPL(rocsparse_sgthr, float);

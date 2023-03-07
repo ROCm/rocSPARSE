@@ -579,9 +579,14 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle     h
                                                           const rocsparse_int* csr_col_ind,
                                                           rocsparse_action     copy_values,
                                                           size_t*              buffer_size)
+try
 {
     return rocsparse_csr2csc_buffer_size_impl(
         handle, m, n, nnz, csr_row_ptr, csr_col_ind, copy_values, buffer_size);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_scsr2csc(rocsparse_handle     handle,
@@ -597,6 +602,7 @@ extern "C" rocsparse_status rocsparse_scsr2csc(rocsparse_handle     handle,
                                                rocsparse_action     copy_values,
                                                rocsparse_index_base idx_base,
                                                void*                temp_buffer)
+try
 {
     return rocsparse_csr2csc_impl(handle,
                                   m,
@@ -611,6 +617,10 @@ extern "C" rocsparse_status rocsparse_scsr2csc(rocsparse_handle     handle,
                                   copy_values,
                                   idx_base,
                                   temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_dcsr2csc(rocsparse_handle     handle,
@@ -626,6 +636,7 @@ extern "C" rocsparse_status rocsparse_dcsr2csc(rocsparse_handle     handle,
                                                rocsparse_action     copy_values,
                                                rocsparse_index_base idx_base,
                                                void*                temp_buffer)
+try
 {
     return rocsparse_csr2csc_impl(handle,
                                   m,
@@ -640,6 +651,10 @@ extern "C" rocsparse_status rocsparse_dcsr2csc(rocsparse_handle     handle,
                                   copy_values,
                                   idx_base,
                                   temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_ccsr2csc(rocsparse_handle               handle,
@@ -655,6 +670,7 @@ extern "C" rocsparse_status rocsparse_ccsr2csc(rocsparse_handle               ha
                                                rocsparse_action               copy_values,
                                                rocsparse_index_base           idx_base,
                                                void*                          temp_buffer)
+try
 {
     return rocsparse_csr2csc_impl(handle,
                                   m,
@@ -670,6 +686,10 @@ extern "C" rocsparse_status rocsparse_ccsr2csc(rocsparse_handle               ha
                                   idx_base,
                                   temp_buffer);
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_zcsr2csc(rocsparse_handle                handle,
                                                rocsparse_int                   m,
@@ -684,6 +704,7 @@ extern "C" rocsparse_status rocsparse_zcsr2csc(rocsparse_handle                h
                                                rocsparse_action                copy_values,
                                                rocsparse_index_base            idx_base,
                                                void*                           temp_buffer)
+try
 {
     return rocsparse_csr2csc_impl(handle,
                                   m,
@@ -698,4 +719,8 @@ extern "C" rocsparse_status rocsparse_zcsr2csc(rocsparse_handle                h
                                   copy_values,
                                   idx_base,
                                   temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

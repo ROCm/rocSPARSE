@@ -738,6 +738,7 @@ extern "C" rocsparse_status
                                          const rocsparse_int*      csr_row_ptr_C,
                                          const rocsparse_int*      csr_col_ind_C,
                                          size_t*                   buffer_size)
+try
 {
     return rocsparse_prune_csr2csr_buffer_size_template(handle,
                                                         m,
@@ -753,6 +754,10 @@ extern "C" rocsparse_status
                                                         csr_row_ptr_C,
                                                         csr_col_ind_C,
                                                         buffer_size);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status
@@ -770,6 +775,7 @@ extern "C" rocsparse_status
                                          const rocsparse_int*      csr_row_ptr_C,
                                          const rocsparse_int*      csr_col_ind_C,
                                          size_t*                   buffer_size)
+try
 {
     return rocsparse_prune_csr2csr_buffer_size_template(handle,
                                                         m,
@@ -786,6 +792,10 @@ extern "C" rocsparse_status
                                                         csr_col_ind_C,
                                                         buffer_size);
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_sprune_csr2csr_nnz(rocsparse_handle          handle,
                                                          rocsparse_int             m,
@@ -800,6 +810,7 @@ extern "C" rocsparse_status rocsparse_sprune_csr2csr_nnz(rocsparse_handle       
                                                          rocsparse_int*            csr_row_ptr_C,
                                                          rocsparse_int* nnz_total_dev_host_ptr,
                                                          void*          temp_buffer)
+try
 {
     return rocsparse_prune_csr2csr_nnz_template(handle,
                                                 m,
@@ -815,6 +826,10 @@ extern "C" rocsparse_status rocsparse_sprune_csr2csr_nnz(rocsparse_handle       
                                                 nnz_total_dev_host_ptr,
                                                 temp_buffer);
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_dprune_csr2csr_nnz(rocsparse_handle          handle,
                                                          rocsparse_int             m,
@@ -829,6 +844,7 @@ extern "C" rocsparse_status rocsparse_dprune_csr2csr_nnz(rocsparse_handle       
                                                          rocsparse_int*            csr_row_ptr_C,
                                                          rocsparse_int* nnz_total_dev_host_ptr,
                                                          void*          temp_buffer)
+try
 {
     return rocsparse_prune_csr2csr_nnz_template(handle,
                                                 m,
@@ -843,6 +859,10 @@ extern "C" rocsparse_status rocsparse_dprune_csr2csr_nnz(rocsparse_handle       
                                                 csr_row_ptr_C,
                                                 nnz_total_dev_host_ptr,
                                                 temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_sprune_csr2csr(rocsparse_handle          handle,
@@ -859,6 +879,7 @@ extern "C" rocsparse_status rocsparse_sprune_csr2csr(rocsparse_handle          h
                                                      const rocsparse_int*      csr_row_ptr_C,
                                                      rocsparse_int*            csr_col_ind_C,
                                                      void*                     temp_buffer)
+try
 {
     return rocsparse_prune_csr2csr_template(handle,
                                             m,
@@ -875,6 +896,10 @@ extern "C" rocsparse_status rocsparse_sprune_csr2csr(rocsparse_handle          h
                                             csr_col_ind_C,
                                             temp_buffer);
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status rocsparse_dprune_csr2csr(rocsparse_handle          handle,
                                                      rocsparse_int             m,
@@ -890,6 +915,7 @@ extern "C" rocsparse_status rocsparse_dprune_csr2csr(rocsparse_handle          h
                                                      const rocsparse_int*      csr_row_ptr_C,
                                                      rocsparse_int*            csr_col_ind_C,
                                                      void*                     temp_buffer)
+try
 {
     return rocsparse_prune_csr2csr_template(handle,
                                             m,
@@ -905,4 +931,8 @@ extern "C" rocsparse_status rocsparse_dprune_csr2csr(rocsparse_handle          h
                                             csr_row_ptr_C,
                                             csr_col_ind_C,
                                             temp_buffer);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

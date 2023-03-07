@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -986,6 +986,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      const TYPE*               beta,        \
                                      TYPE*                     C,           \
                                      rocsparse_int             ldc)         \
+    try                                                                     \
     {                                                                       \
         return rocsparse_csrmm_template(handle,                             \
                                         trans_A,                            \
@@ -1016,6 +1017,10 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                         0,                                  \
                                         nullptr,                            \
                                         false);                             \
+    }                                                                       \
+    catch(...)                                                              \
+    {                                                                       \
+        return exception_to_rocsparse_status();                             \
     }
 
 C_IMPL(rocsparse_scsrmm, float);

@@ -727,6 +727,7 @@ extern "C" rocsparse_status rocsparse_bsrgeam_nnzb(rocsparse_handle          han
                                                    const rocsparse_mat_descr descr_C,
                                                    rocsparse_int*            bsr_row_ptr_C,
                                                    rocsparse_int*            nnzb_C)
+try
 {
     // Check direction
     if(rocsparse_enum_utils::is_invalid(dir))
@@ -755,6 +756,10 @@ extern "C" rocsparse_status rocsparse_bsrgeam_nnzb(rocsparse_handle          han
                                  bsr_row_ptr_C,
                                  nnzb_C);
 }
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 #define C_IMPL(NAME, TYPE)                                                    \
     extern "C" rocsparse_status NAME(rocsparse_handle          handle,        \
@@ -778,6 +783,7 @@ extern "C" rocsparse_status rocsparse_bsrgeam_nnzb(rocsparse_handle          han
                                      TYPE*                     bsr_val_C,     \
                                      const rocsparse_int*      bsr_row_ptr_C, \
                                      rocsparse_int*            bsr_col_ind_C) \
+    try                                                                       \
     {                                                                         \
         return rocsparse_bsrgeam_template(handle,                             \
                                           dir,                                \
@@ -800,6 +806,10 @@ extern "C" rocsparse_status rocsparse_bsrgeam_nnzb(rocsparse_handle          han
                                           bsr_val_C,                          \
                                           bsr_row_ptr_C,                      \
                                           bsr_col_ind_C);                     \
+    }                                                                         \
+    catch(...)                                                                \
+    {                                                                         \
+        return exception_to_rocsparse_status();                               \
     }
 
 C_IMPL(rocsparse_sbsrgeam, float);

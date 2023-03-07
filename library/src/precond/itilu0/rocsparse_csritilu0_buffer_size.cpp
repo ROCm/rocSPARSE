@@ -186,7 +186,12 @@ extern "C" rocsparse_status rocsparse_csritilu0_buffer_size(rocsparse_handle    
                                                             rocsparse_index_base base_,
                                                             rocsparse_datatype   datatype_,
                                                             size_t* __restrict__ buffer_size_)
+try
 {
     return rocsparse_csritilu0_buffer_size_impl<rocsparse_int, rocsparse_int>(
         handle_, alg_, options_, nmaxiter_, m_, nnz_, ptr_, ind_, base_, datatype_, buffer_size_);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }

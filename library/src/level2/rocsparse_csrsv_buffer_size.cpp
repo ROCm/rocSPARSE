@@ -213,9 +213,14 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      const rocsparse_int*      csr_col_ind,                      \
                                      rocsparse_mat_info        info,                             \
                                      size_t*                   buffer_size)                      \
+    try                                                                                          \
     {                                                                                            \
         return rocsparse_csrsv_buffer_size_template(                                             \
             handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size); \
+    }                                                                                            \
+    catch(...)                                                                                   \
+    {                                                                                            \
+        return exception_to_rocsparse_status();                                                  \
     }
 
 C_IMPL(rocsparse_scsrsv_buffer_size, float);

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -417,9 +417,14 @@ extern "C" rocsparse_status rocsparse_snnz_compress(rocsparse_handle          ha
                                                     rocsparse_int*            nnz_per_row,
                                                     rocsparse_int*            nnz_C,
                                                     float                     tol)
+try
 {
     return rocsparse_nnz_compress_template(
         handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_dnnz_compress(rocsparse_handle          handle,
@@ -430,9 +435,14 @@ extern "C" rocsparse_status rocsparse_dnnz_compress(rocsparse_handle          ha
                                                     rocsparse_int*            nnz_per_row,
                                                     rocsparse_int*            nnz_C,
                                                     double                    tol)
+try
 {
     return rocsparse_nnz_compress_template(
         handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_cnnz_compress(rocsparse_handle               handle,
@@ -443,9 +453,14 @@ extern "C" rocsparse_status rocsparse_cnnz_compress(rocsparse_handle            
                                                     rocsparse_int*                 nnz_per_row,
                                                     rocsparse_int*                 nnz_C,
                                                     rocsparse_float_complex        tol)
+try
 {
     return rocsparse_nnz_compress_template(
         handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status rocsparse_znnz_compress(rocsparse_handle                handle,
@@ -456,7 +471,12 @@ extern "C" rocsparse_status rocsparse_znnz_compress(rocsparse_handle            
                                                     rocsparse_int*                  nnz_per_row,
                                                     rocsparse_int*                  nnz_C,
                                                     rocsparse_double_complex        tol)
+try
 {
     return rocsparse_nnz_compress_template(
         handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
 }
