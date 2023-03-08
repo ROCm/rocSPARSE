@@ -4535,8 +4535,8 @@ void host_csrgeam(rocsparse_int        M,
             perm[j] = j;
         }
 
-        rocsparse_int* col_entry = &col[row_begin];
-        T*             val_entry = &val[row_begin];
+        rocsparse_int* col_entry = col.data() + row_begin;
+        T*             val_entry = val.data() + row_begin;
 
         std::sort(perm.begin(), perm.end(), [&](const rocsparse_int& a, const rocsparse_int& b) {
             return col_entry[a] <= col_entry[b];
@@ -4848,8 +4848,8 @@ void host_csrgemm(J                    M,
             perm[j] = j;
         }
 
-        J* col_entry = &col[row_begin];
-        T* val_entry = &val[row_begin];
+        J* col_entry = col.data() + row_begin;
+        T* val_entry = val.data() + row_begin;
 
         std::sort(perm.begin(), perm.end(), [&](const J& a, const J& b) {
             return col_entry[a] <= col_entry[b];

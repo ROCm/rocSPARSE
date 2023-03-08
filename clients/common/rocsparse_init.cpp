@@ -471,7 +471,7 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
 
         if(nnz_in_row > 0)
         {
-            std::sort(&col_ind[begin], &col_ind[begin + nnz_in_row]);
+            std::sort(col_ind.data() + begin, col_ind.data() + begin + nnz_in_row);
         }
     }
 
