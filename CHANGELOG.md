@@ -2,6 +2,10 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
+## rocSPARSE 2.5.2 for ROCm 5.6.0
+### Improved
+- Fixed a memory leak in csritsv
+
 ## rocSPARSE 2.5.1 for ROCm 5.5.0
 ### Added
 - Added bsrgemm and spgemm for BSR format
