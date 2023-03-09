@@ -300,6 +300,12 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_hyb_partition&
 }
 
 template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_check_spmat_stage& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spmv_stage& p)
 {
     return rocsparse_status_invalid_value;
@@ -483,6 +489,12 @@ template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_solve_policy& p)
 {
     p = (rocsparse_solve_policy)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_check_spmat_stage& p)
+{
+    p = (rocsparse_check_spmat_stage)-1;
 }
 
 template <>

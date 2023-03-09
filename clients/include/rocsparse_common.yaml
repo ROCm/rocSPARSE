@@ -132,6 +132,8 @@ Datatypes:
         rocsparse_format_csr: 2
         rocsparse_format_csc: 3
         rocsparse_format_ell: 4
+        rocsparse_format_bell: 5
+        rocsparse_format_bsr: 6
   - rocsparse_itilu0_alg:
       bases: [c_int ]
       attr:

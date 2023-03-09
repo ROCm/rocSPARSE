@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -579,6 +579,20 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spitsv_alg value_)
     switch(value_)
     {
     case rocsparse_spitsv_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_check_spmat_stage value_)
+{
+    switch(value_)
+    {
+    case rocsparse_check_spmat_stage_buffer_size:
+    case rocsparse_check_spmat_stage_compute:
     {
         return false;
     }

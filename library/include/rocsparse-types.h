@@ -572,6 +572,19 @@ typedef enum rocsparse_gtsv_interleaved_alg_
 } rocsparse_gtsv_interleaved_alg;
 
 /*! \ingroup types_module
+ *  \brief List of check_matrix stages.
+ *
+ *  \details
+ *  This is a list of possible stages during check_matrix computation. Typical order is
+ *  rocsparse_check_spmat_stage_buffer_size, rocsparse_check_spmat_stage_compute.
+ */
+typedef enum rocsparse_check_spmat_stage_
+{
+    rocsparse_check_spmat_stage_buffer_size = 0, /**< Returns the required buffer size. */
+    rocsparse_check_spmat_stage_compute     = 1, /**< Performs check. */
+} rocsparse_check_spmat_stage;
+
+/*! \ingroup types_module
  *  \brief List of SpMV stages.
  *
  *  \details
