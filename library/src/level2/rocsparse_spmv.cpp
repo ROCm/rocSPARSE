@@ -215,7 +215,7 @@ static rocsparse_status rocsparse_spmv_alg2coomv_aos_alg(rocsparse_spmv_alg     
     return rocsparse_status_invalid_value;
 }
 
-static rocsparse_indextype determine_I_index_type(rocsparse_const_spmat_descr mat)
+rocsparse_indextype determine_I_index_type(rocsparse_const_spmat_descr mat)
 {
     switch(mat->format)
     {
@@ -235,7 +235,7 @@ static rocsparse_indextype determine_I_index_type(rocsparse_const_spmat_descr ma
     }
 }
 
-static rocsparse_indextype determine_J_index_type(rocsparse_const_spmat_descr mat)
+rocsparse_indextype determine_J_index_type(rocsparse_const_spmat_descr mat)
 {
     switch(mat->format)
     {

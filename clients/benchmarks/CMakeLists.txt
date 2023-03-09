@@ -172,6 +172,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_check_matrix_gebsc.cpp
 ../testings/testing_check_matrix_ell.cpp
 ../testings/testing_check_matrix_hyb.cpp
+../testings/testing_check_spmat.cpp
 ../testings/testing_bsrpad_value.cpp
 )
 

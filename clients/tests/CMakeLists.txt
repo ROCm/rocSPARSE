@@ -186,6 +186,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_check_matrix_csc.cpp
   test_check_matrix_ell.cpp
   test_check_matrix_hyb.cpp
+  test_check_spmat.cpp
   test_bsrpad_value.cpp
 )
 
@@ -312,6 +313,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_check_matrix_csc.cpp
 ../testings/testing_check_matrix_ell.cpp
 ../testings/testing_check_matrix_hyb.cpp
+../testings/testing_check_spmat.cpp
 ../testings/testing_bsrpad_value.cpp
   )
 

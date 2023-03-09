@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -224,4 +224,5 @@ set(rocsparse_source
   src/util/rocsparse_check_matrix_coo.cpp
   src/util/rocsparse_check_matrix_ell.cpp
   src/util/rocsparse_check_matrix_hyb.cpp
+  src/util/rocsparse_check_spmat.cpp
 )

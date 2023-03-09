@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,20 +40,20 @@
 
 #define RETURN_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                           \
     {                                                                         \
-        hipError_t TMP_STATUS_FOR_CHECK = INPUT_STATUS_FOR_CHECK;             \
+        const hipError_t TMP_STATUS_FOR_CHECK = INPUT_STATUS_FOR_CHECK;       \
         if(TMP_STATUS_FOR_CHECK != hipSuccess)                                \
         {                                                                     \
             return get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK); \
         }                                                                     \
     }
 
-#define RETURN_IF_ROCSPARSE_ERROR(INPUT_STATUS_FOR_CHECK)               \
-    {                                                                   \
-        rocsparse_status TMP_STATUS_FOR_CHECK = INPUT_STATUS_FOR_CHECK; \
-        if(TMP_STATUS_FOR_CHECK != rocsparse_status_success)            \
-        {                                                               \
-            return TMP_STATUS_FOR_CHECK;                                \
-        }                                                               \
+#define RETURN_IF_ROCSPARSE_ERROR(INPUT_STATUS_FOR_CHECK)                     \
+    {                                                                         \
+        const rocsparse_status TMP_STATUS_FOR_CHECK = INPUT_STATUS_FOR_CHECK; \
+        if(TMP_STATUS_FOR_CHECK != rocsparse_status_success)                  \
+        {                                                                     \
+            return TMP_STATUS_FOR_CHECK;                                      \
+        }                                                                     \
     }
 
 #define THROW_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                           \
