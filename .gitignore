@@ -45,3 +45,10 @@ _build
 # matrices
 *.csr
 *.mtx
+
+# documentation artifacts
+_build/
+_images/
+_static/
+_templates/
+_toc.yml
