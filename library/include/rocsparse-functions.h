@@ -15294,22 +15294,22 @@ rocsparse_status rocsparse_spgemm(rocsparse_handle            handle,
 *  \f$\beta\f$. The final result is stored in the sparse \f$m \times n\f$ matrix \f$C\f$,
 *  such that
 *  \f[
-*    C := \alpha ( opA(A) \cdot opB(B) ) \cdot spy(C) + \beta C,
+*    C := \alpha ( op(A) \cdot op(B) ) \cdot spy(C) + \beta C,
 *  \f]
 *  with
 *  \f[
 *    op(A) = \left\{
 *    \begin{array}{ll}
-*        A,   & \text{if opA == rocsparse_operation_none} \\
-*        A^T,   & \text{if opA == rocsparse_operation_transpose} \\
+*        A,   & \text{if op(A) == rocsparse_operation_none} \\
+*        A^T,   & \text{if op(A) == rocsparse_operation_transpose} \\
 *    \end{array}
 *    \right.
 *  \f],
 *  \f[
 *    op(B) = \left\{
 *    \begin{array}{ll}
-*        B,   & \text{if opB == rocsparse_operation_none} \\
-*        B^T,   & \text{if opB == rocsparse_operation_transpose} \\
+*        B,   & \text{if op(B) == rocsparse_operation_none} \\
+*        B^T,   & \text{if op(B) == rocsparse_operation_transpose} \\
 *    \end{array}
 *    \right.
 *  \f]
@@ -15317,7 +15317,7 @@ rocsparse_status rocsparse_spgemm(rocsparse_handle            handle,
 *  \f[
 *    spy(C)_ij = \left\{
 *    \begin{array}{ll}
-*        1 \text{if i == j},   & 0 \text{if i != j} \\
+*        1 \text{ if i == j},   & 0 \text{ if i != j} \\
 *    \end{array}
 *    \right.
 *  \f]
