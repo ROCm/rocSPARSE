@@ -12,10 +12,3 @@ In the following, three separate chapters are available:
   * :ref:`design_document`: The Design Document is targeted to advanced users / developers that want to understand, modify or extend the functionality of the rocSPARSE library.
     To embed rocSPARSE into your project, it is not required to read the Design Document.
   * :ref:`API <api>`: This is a list of API functions provided by rocSPARSE.
-
-.. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
-   usermanual
-   design
