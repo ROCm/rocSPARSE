@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,10 +51,10 @@ ROCSPARSE_DEVICE_ILF void bsrxmvn_2x2_device(J                   mb,
     static constexpr int BSRDIM = 2;
 
     // Lane id
-    J lid = hipThreadIdx_x & (WFSIZE - 1);
+    const J lid = hipThreadIdx_x & (WFSIZE - 1);
 
     // Wavefront id
-    J wid = hipThreadIdx_x / WFSIZE;
+    const J wid = hipThreadIdx_x / WFSIZE;
 
     // Each thread block processes (BLOCKSIZE / WFSIZE) BSR rows
     J row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
@@ -77,47 +77,57 @@ ROCSPARSE_DEVICE_ILF void bsrxmvn_2x2_device(J                   mb,
     }
 
     // BSR row entry and exit point
-    I row_begin = bsr_row_ptr[row] - idx_base;
-    I row_end   = (bsr_end_ptr == nullptr) ? (bsr_row_ptr[row + 1] - idx_base)
-                                           : (bsr_end_ptr[row] - idx_base);
+    const I row_begin = bsr_row_ptr[row] - idx_base;
+    const I row_end   = (bsr_end_ptr == nullptr) ? (bsr_row_ptr[row + 1] - idx_base)
+                                                 : (bsr_end_ptr[row] - idx_base);
 
     // BSR block row accumulator
     T sum0 = static_cast<T>(0);
     T sum1 = static_cast<T>(0);
 
+    static constexpr unsigned int VALOFFSET    = BSRDIM * BSRDIM * WFSIZE;
+    static constexpr size_t       longSQBSRDIM = BSRDIM * BSRDIM;
+
     // Loop over all BSR blocks in the current row where each lane
     // processes a BSR block
-    if(dir == rocsparse_direction_column)
     {
-        for(I j = row_begin + lid; j < row_end; j += WFSIZE)
+        I        j    = row_begin + lid;
+        const A* bval = bsr_val + longSQBSRDIM * j;
+        if(dir == rocsparse_direction_column)
         {
-            // Column index into x vector
-            J col = (bsr_col_ind[j] - idx_base) * BSRDIM;
+            for(; j < row_end; j += WFSIZE)
+            {
+                // Column index into x vector
+                const J col = (bsr_col_ind[j] - idx_base) * BSRDIM;
 
-            // Compute the sum of the two rows within the BSR blocks of the current
-            // BSR row
-            sum0 = rocsparse_fma<T>(bsr_val[BSRDIM * BSRDIM * j + 0], x[col + 0], sum0);
-            sum1 = rocsparse_fma<T>(bsr_val[BSRDIM * BSRDIM * j + 1], x[col + 0], sum1);
+                // Compute the sum of the two rows within the BSR blocks of the current
+                // BSR row
+                sum0 = rocsparse_fma<T>(bval[0], x[col + 0], sum0);
+                sum1 = rocsparse_fma<T>(bval[1], x[col + 0], sum1);
 
-            sum0 = rocsparse_fma<T>(bsr_val[BSRDIM * BSRDIM * j + 2], x[col + 1], sum0);
-            sum1 = rocsparse_fma<T>(bsr_val[BSRDIM * BSRDIM * j + 3], x[col + 1], sum1);
+                sum0 = rocsparse_fma<T>(bval[2], x[col + 1], sum0);
+                sum1 = rocsparse_fma<T>(bval[3], x[col + 1], sum1);
+
+                bval += VALOFFSET;
+            }
         }
-    }
-    else
-    {
-        for(I j = row_begin + lid; j < row_end; j += WFSIZE)
+        else
         {
-            // Do not exceed the row
-            // Column index into x vector
-            J col = (bsr_col_ind[j] - idx_base) * BSRDIM;
+            for(; j < row_end; j += WFSIZE)
+            {
+                // Do not exceed the row
+                // Column index into x vector
+                const J col = (bsr_col_ind[j] - idx_base) * BSRDIM;
 
-            // Compute the sum of the two rows within the BSR blocks of the current
-            // BSR row
-            sum0 = rocsparse_fma<T>(bsr_val[BSRDIM * BSRDIM * j + 0], x[col + 0], sum0);
-            sum0 = rocsparse_fma<T>(bsr_val[BSRDIM * BSRDIM * j + 1], x[col + 1], sum0);
+                // Compute the sum of the two rows within the BSR blocks of the current
+                // BSR row
+                sum0 = rocsparse_fma<T>(bval[0], x[col + 0], sum0);
+                sum0 = rocsparse_fma<T>(bval[1], x[col + 1], sum0);
 
-            sum1 = rocsparse_fma<T>(bsr_val[BSRDIM * BSRDIM * j + 2], x[col + 0], sum1);
-            sum1 = rocsparse_fma<T>(bsr_val[BSRDIM * BSRDIM * j + 3], x[col + 1], sum1);
+                sum1 = rocsparse_fma<T>(bval[2], x[col + 0], sum1);
+                sum1 = rocsparse_fma<T>(bval[3], x[col + 1], sum1);
+                bval += VALOFFSET;
+            }
         }
     }
 
