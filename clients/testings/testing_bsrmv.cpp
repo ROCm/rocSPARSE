@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -214,11 +214,21 @@ void testing_bsrmv(const Arguments& arg)
     //
     host_gebsr_matrix<T>   hA;
     device_gebsr_matrix<T> dA;
-
-    matrix_factory.init_bsr(hA, dA, mb, nb, base);
-
-    M = dA.mb * dA.row_block_dim;
-    N = dA.nb * dA.col_block_dim;
+    if(strcmp(arg.category, "stress"))
+    {
+        matrix_factory.init_bsr(hA, dA, mb, nb, base);
+    }
+    else
+    {
+        int32_t block_row_dim = arg.row_block_dimA;
+        int32_t block_col_dim = arg.col_block_dimA;
+        matrix_factory.init_gebsr(hA, M, N, block_row_dim, block_col_dim, base);
+        dA(hA);
+    }
+    mb = dA.mb;
+    nb = dA.nb;
+    M  = dA.mb * dA.row_block_dim;
+    N  = dA.nb * dA.col_block_dim;
 
     host_dense_matrix<T> hx(N, 1), hy(M, 1);
 

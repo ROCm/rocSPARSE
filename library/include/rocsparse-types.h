@@ -376,7 +376,8 @@ typedef enum rocsparse_status_
     rocsparse_status_zero_pivot              = 9, /**< encountered zero pivot. */
     rocsparse_status_not_initialized         = 10, /**< descriptor has not been initialized. */
     rocsparse_status_type_mismatch           = 11, /**< index types do not match. */
-    rocsparse_status_requires_sorted_storage = 12 /**< sorted storage required. */
+    rocsparse_status_requires_sorted_storage = 12, /**< sorted storage required. */
+    rocsparse_status_thrown_exception        = 13 /**< exception being thrown. */
 } rocsparse_status;
 
 /*! \ingroup types_module
