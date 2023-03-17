@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -662,9 +662,9 @@ void rocsparse_init_gebsr_laplace2d(std::vector<I>&      row_ptr,
 {
     rocsparse_init_csr_laplace2d(row_ptr, col_ind, val, dim_x, dim_y, Mb, Nb, nnzb, base);
 
-    I nvalues = nnzb * row_block_dim * col_block_dim;
+    const size_t nvalues = size_t(nnzb) * row_block_dim * col_block_dim;
     val.resize(nvalues);
-    for(I i = 0; i < nvalues; ++i)
+    for(size_t i = 0; i < nvalues; ++i)
     {
         val[i] = random_generator<T>();
     }
@@ -821,9 +821,9 @@ void rocsparse_init_gebsr_laplace3d(std::vector<I>&      row_ptr,
 {
     rocsparse_init_csr_laplace3d(row_ptr, col_ind, val, dim_x, dim_y, dim_z, Mb, Nb, nnzb, base);
 
-    I nvalues = nnzb * row_block_dim * col_block_dim;
+    const size_t nvalues = size_t(nnzb) * row_block_dim * col_block_dim;
     val.resize(nvalues);
-    for(I i = 0; i < nvalues; ++i)
+    for(size_t i = 0; i < nvalues; ++i)
     {
         val[i] = random_generator<T>();
     }
@@ -902,9 +902,9 @@ void rocsparse_init_gebsr_mtx(const char*          filename,
     //this->init_csr(bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
     rocsparse_init_csr_mtx(filename, bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
 
-    I nvalues = nnzb * row_block_dim * col_block_dim;
+    const size_t nvalues = size_t(nnzb) * row_block_dim * col_block_dim;
     bsr_val.resize(nvalues);
-    for(I i = 0; i < nvalues; ++i)
+    for(size_t i = 0; i < nvalues; ++i)
     {
         bsr_val[i] = random_generator<T>();
     }
@@ -966,9 +966,9 @@ void rocsparse_init_gebsr_rocalution(const char*          filename,
     rocsparse_init_csr_rocalution(filename, row_ptr, col_ind, val, Mb, Nb, nnzb, base);
 
     // Then temporarily skip the values.
-    I nvalues = nnzb * row_block_dim * col_block_dim;
+    const size_t nvalues = size_t(nnzb) * row_block_dim * col_block_dim;
     val.resize(nvalues);
-    for(I i = 0; i < nvalues; ++i)
+    for(size_t i = 0; i < nvalues; ++i)
     {
         val[i] = random_generator<T>();
     }
@@ -1218,18 +1218,18 @@ void rocsparse_init_gebsr_random(std::vector<I>&            row_ptr,
     rocsparse_init_csr_random(
         row_ptr, col_ind, val, Mb, Nb, nnzb, base, init_kind, full_rank, to_int);
 
-    I nvalues = nnzb * row_block_dim * col_block_dim;
+    const size_t nvalues = size_t(nnzb) * row_block_dim * col_block_dim;
     val.resize(nvalues);
     if(to_int)
     {
-        for(I i = 0; i < nvalues; ++i)
+        for(size_t i = 0; i < nvalues; ++i)
         {
             val[i] = random_generator_exact<T>();
         }
     }
     else
     {
-        for(I i = 0; i < nvalues; ++i)
+        for(size_t i = 0; i < nvalues; ++i)
         {
             val[i] = random_generator<T>();
         }
@@ -1363,10 +1363,10 @@ void rocsparse_init_gebsr_tridiagonal(std::vector<I>&      row_ptr,
 {
     rocsparse_init_csr_tridiagonal(row_ptr, col_ind, val, Mb, Nb, nnzb, base, l, u);
 
-    I nvalues = nnzb * row_block_dim * col_block_dim;
+    const size_t nvalues = size_t(nnzb) * row_block_dim * col_block_dim;
     val.resize(nvalues);
 
-    for(I i = 0; i < nvalues; ++i)
+    for(size_t i = 0; i < nvalues; ++i)
     {
         val[i] = random_generator<T>();
     }
@@ -1524,11 +1524,9 @@ void rocsparse_init_gebsr_pentadiagonal(std::vector<I>&      row_ptr,
                                         J                    uu)
 {
     rocsparse_init_csr_pentadiagonal(row_ptr, col_ind, val, Mb, Nb, nnzb, base, ll, l, u, uu);
-
-    I nvalues = nnzb * row_block_dim * col_block_dim;
+    const size_t nvalues = size_t(nnzb) * row_block_dim * col_block_dim;
     val.resize(nvalues);
-
-    for(I i = 0; i < nvalues; ++i)
+    for(size_t i = 0; i < nvalues; ++i)
     {
         val[i] = random_generator<T>();
     }

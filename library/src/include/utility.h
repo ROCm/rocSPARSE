@@ -263,7 +263,7 @@ catch(const std::bad_alloc&)
 }
 catch(...)
 {
-    return rocsparse_status_internal_error;
+    return rocsparse_status_thrown_exception;
 }
 
 // For host scalars
