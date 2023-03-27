@@ -21298,6 +21298,17 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *  |-------------------------|--------------------------|--------------------------|
 *  \endverbatim
 *
+*  Mixed-regular real precisions
+*  \verbatim
+*  |----------------------------|----------------------------|
+*  |              A             |    X / Y / compute_type    |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f32_r  |  rocsparse_datatype_f64_r  |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f32_c  |  rocsparse_datatype_f64_c  |
+*  |----------------------------|----------------------------|
+*  \endverbatim
+*
 *  Mixed-regular Complex precisions
 *  \verbatim
 *  |----------------------------|----------------------------|
@@ -21566,6 +21577,17 @@ ROCSPARSE_EXPORT rocsparse_status rocsparse_spmv(rocsparse_handle            han
 *  |----------------------------------------------------|
 *  |             rocsparse_datatype_f64_c               |
 *  |----------------------------------------------------|
+*  \endverbatim
+*
+*  Mixed-regular real precisions
+*  \verbatim
+*  |----------------------------|----------------------------|
+*  |              A             |    X / Y / compute_type    |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f32_r  |  rocsparse_datatype_f64_r  |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f32_c  |  rocsparse_datatype_f64_c  |
+*  |----------------------------|----------------------------|
 *  \endverbatim
 *
 *  Mixed precisions:

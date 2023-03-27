@@ -749,6 +749,11 @@ rocsparse_status rocsparse_spmv_dynamic_dispatch(rocsparse_indextype itype,
     {                                                                                       \
         return rocsparse_spmv_template<CTYPE, ITYPE, JTYPE, double, double, double>(ts...); \
     }                                                                                       \
+    else if(atype == rocsparse_datatype_f32_r && xtype == rocsparse_datatype_f64_r          \
+            && xtype == ytype)                                                              \
+    {                                                                                       \
+        return rocsparse_spmv_template<CTYPE, ITYPE, JTYPE, float, double, double>(ts...);  \
+    }                                                                                       \
     else                                                                                    \
     {                                                                                       \
         return rocsparse_status_not_implemented;                                            \
@@ -796,6 +801,16 @@ rocsparse_status rocsparse_spmv_dynamic_dispatch(rocsparse_indextype itype,
                                        ITYPE,                                      \
                                        JTYPE,                                      \
                                        double,                                     \
+                                       rocsparse_double_complex,                   \
+                                       rocsparse_double_complex>(ts...);           \
+    }                                                                              \
+    else if(atype == rocsparse_datatype_f32_c && xtype == rocsparse_datatype_f64_c \
+            && xtype == ytype)                                                     \
+    {                                                                              \
+        return rocsparse_spmv_template<CTYPE,                                      \
+                                       ITYPE,                                      \
+                                       JTYPE,                                      \
+                                       rocsparse_float_complex,                    \
                                        rocsparse_double_complex,                   \
                                        rocsparse_double_complex>(ts...);           \
     }                                                                              \

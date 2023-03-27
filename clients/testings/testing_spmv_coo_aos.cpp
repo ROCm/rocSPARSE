@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,8 +63,24 @@ INSTANTIATE_MIXED(
     int32_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
 INSTANTIATE_MIXED(
     int64_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
+
+INSTANTIATE_MIXED(int32_t, float, double, double, double);
+INSTANTIATE_MIXED(int64_t, float, double, double, double);
+
 INSTANTIATE_MIXED(
     int32_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
 INSTANTIATE_MIXED(
     int64_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
+
+INSTANTIATE_MIXED(int32_t,
+                  rocsparse_float_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_MIXED(int64_t,
+                  rocsparse_float_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+
 void testing_spmv_coo_aos_extra(const Arguments& arg) {}

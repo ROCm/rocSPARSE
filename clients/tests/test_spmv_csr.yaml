@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -412,6 +412,38 @@ Tests:
   category: quick
   function: spmv_csr
   indextype: *i32i32_i64i32_i64i64
+  precision: *float32_float64_float64_float64
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  matrix_type: [rocsparse_matrix_type_general]
+  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  filename: [bmwcra_1,
+             amazon0312,
+             sme3Dc]
+
+- name: spmv_csr
+  category: pre_checkin
+  function: spmv_csr
+  indextype: *i32i32_i64i32_i64i64
+  precision: *float32_float64_float64_float64
+  M: [34, 104, 343, 5196]
+  N: [57, 109, 458, 3425]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  matrix_type: [rocsparse_matrix_type_general]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive]
+
+
+- name: spmv_csr_file
+  category: quick
+  function: spmv_csr
+  indextype: *i32i32_i64i32_i64i64
   precision: *int8_int8_int32_int32_axyt_precision
   M: 1
   N: 1
@@ -438,6 +470,40 @@ Tests:
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_general]
   spmv_alg: [rocsparse_spmv_alg_csr_adaptive]
+
+
+- name: spmv_csr
+  category: pre_checkin
+  function: spmv_csr
+  indextype: *i32i32_i64i32_i64i64
+  precision: *cmplx32_cmplx64_cmplx64_cmplx64
+  M: [16, 78, 294, 482, 68302]
+  N: [16, 93, 297, 657, 46342]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  matrix_type: [rocsparse_matrix_type_general]
+  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+
+- name: spmv_csr_file
+  category: nightly
+  function: spmv_csr
+  indextype: *i32i32_i64i32_i64i64
+  precision: *cmplx32_cmplx64_cmplx64_cmplx64
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  matrix_type: [rocsparse_matrix_type_general]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive]
+  filename: [Chebyshev4,
+             shipsec1,
+             scircuit]
+
+
 
 - name: spmv_csr
   category: pre_checkin
