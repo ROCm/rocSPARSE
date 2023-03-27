@@ -7,6 +7,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Added rocsparse_inverse_permutation
 - Added mixed precisions for SpVV
 - Added uniform int8 precision for Gather and Scatter
+- Added more mixed precisions for SpMV, (matrix: float, vectors: double, calculation: double) and (matrix: rocsparse_float_complex, vectors: rocsparse_double_complex, calculation: rocsparse_double_complex)
 ### Changed
 - Removed old deprecated rocsparse_spmv, deprecated current rocsparse_spmv_ex, and added new rocsparse_spmv routine
 - Removed old deprecated rocsparse_xbsrmv routines, deprecated current rocsparse_xbsrmv_ex routines, and added new rocsparse_xbsrmv routines

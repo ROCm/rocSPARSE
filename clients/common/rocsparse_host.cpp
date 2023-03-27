@@ -8929,7 +8929,7 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                              rocsparse_index_base  base,             \
                              rocsparse_matrix_type matrix_type,      \
                              rocsparse_spmv_alg    algo,             \
-                             bool                  force_conj);
+                             bool                  force_conj)
 
 #define INSTANTIATE_IAXYT(ITYPE, ATYPE, XTYPE, YTYPE, TTYPE)   \
     template void host_coomv(rocsparse_operation  trans,       \
@@ -9064,6 +9064,11 @@ INSTANTIATE_IJAXYT(int64_t, int64_t, int8_t, int8_t, int32_t, int32_t);
 INSTANTIATE_IJAXYT(int32_t, int32_t, int8_t, int8_t, float, float);
 INSTANTIATE_IJAXYT(int64_t, int32_t, int8_t, int8_t, float, float);
 INSTANTIATE_IJAXYT(int64_t, int64_t, int8_t, int8_t, float, float);
+
+INSTANTIATE_IJAXYT(int32_t, int32_t, float, double, double, double);
+INSTANTIATE_IJAXYT(int64_t, int32_t, float, double, double, double);
+INSTANTIATE_IJAXYT(int64_t, int64_t, float, double, double, double);
+
 INSTANTIATE_IJAXYT(int32_t,
                    int32_t,
                    float,
@@ -9100,6 +9105,26 @@ INSTANTIATE_IJAXYT(int64_t,
                    rocsparse_double_complex,
                    rocsparse_double_complex,
                    rocsparse_double_complex);
+
+INSTANTIATE_IJAXYT(int32_t,
+                   int32_t,
+                   rocsparse_float_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int32_t,
+                   rocsparse_float_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int64_t,
+                   rocsparse_float_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+
 INSTANTIATE_IJAXYT(int32_t, int32_t, float, float, float, float);
 INSTANTIATE_IJAXYT(int64_t, int32_t, float, float, float, float);
 INSTANTIATE_IJAXYT(int64_t, int64_t, float, float, float, float);
@@ -9151,10 +9176,22 @@ INSTANTIATE_IAXYT(
     int32_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
 INSTANTIATE_IAXYT(
     int64_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
+INSTANTIATE_IAXYT(int32_t, float, double, double, double);
+INSTANTIATE_IAXYT(int64_t, float, double, double, double);
 INSTANTIATE_IAXYT(
     int32_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
 INSTANTIATE_IAXYT(
     int64_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
+INSTANTIATE_IAXYT(int32_t,
+                  rocsparse_float_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_IAXYT(int64_t,
+                  rocsparse_float_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
 INSTANTIATE_IAXYT(int32_t, float, float, float, float);
 INSTANTIATE_IAXYT(int64_t, float, float, float, float);
 INSTANTIATE_IAXYT(int32_t, double, double, double, double);

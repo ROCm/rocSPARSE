@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -355,6 +355,11 @@ INSTANTIATE_MIXED(rocsparse_float_complex,
                   float,
                   rocsparse_float_complex,
                   rocsparse_float_complex);
+
+INSTANTIATE_MIXED(double, int32_t, int32_t, float, double, double);
+INSTANTIATE_MIXED(double, int64_t, int32_t, float, double, double);
+INSTANTIATE_MIXED(double, int64_t, int64_t, float, double, double);
+
 INSTANTIATE_MIXED(rocsparse_double_complex,
                   int32_t,
                   int32_t,
@@ -373,4 +378,24 @@ INSTANTIATE_MIXED(rocsparse_double_complex,
                   double,
                   rocsparse_double_complex,
                   rocsparse_double_complex);
+
+INSTANTIATE_MIXED(rocsparse_double_complex,
+                  int32_t,
+                  int32_t,
+                  rocsparse_float_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_MIXED(rocsparse_double_complex,
+                  int64_t,
+                  int32_t,
+                  rocsparse_float_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_MIXED(rocsparse_double_complex,
+                  int64_t,
+                  int64_t,
+                  rocsparse_float_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+
 #undef INSTANTIATE_MIXED
