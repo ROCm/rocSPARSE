@@ -10352,50 +10352,51 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                            TTYPE*               A,                   \
                                                            ITYPE                ld);
 
-#define INSTANTIATE5(ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE)  \
-    template void host_bsrmv(rocsparse_direction  dir,          \
-                             rocsparse_operation  trans,        \
-                             JTYPE                mb,           \
-                             JTYPE                nb,           \
-                             ITYPE                nnzb,         \
-                             TTYPE                alpha,        \
-                             const ITYPE*         bsr_row_ptr,  \
-                             const JTYPE*         bsr_col_ind,  \
-                             const ATYPE*         bsr_val,      \
-                             JTYPE                bsr_dim,      \
-                             const XTYPE*         x,            \
-                             TTYPE                beta,         \
-                             YTYPE*               y,            \
-                             rocsparse_index_base base);        \
-    template void host_cscmv(rocsparse_operation   trans,       \
-                             JTYPE                 M,           \
-                             JTYPE                 N,           \
-                             ITYPE                 nnz,         \
-                             TTYPE                 alpha,       \
-                             const ITYPE*          csc_col_ptr, \
-                             const JTYPE*          csc_row_ind, \
-                             const ATYPE*          csc_val,     \
-                             const XTYPE*          x,           \
-                             TTYPE                 beta,        \
-                             YTYPE*                y,           \
-                             rocsparse_index_base  base,        \
-                             rocsparse_matrix_type matrix_type, \
-                             rocsparse_spmv_alg    algo);          \
-    template void host_csrmv(rocsparse_operation   trans,       \
-                             JTYPE                 M,           \
-                             JTYPE                 N,           \
-                             ITYPE                 nnz,         \
-                             TTYPE                 alpha,       \
-                             const ITYPE*          csr_row_ptr, \
-                             const JTYPE*          csr_col_ind, \
-                             const ATYPE*          csr_val,     \
-                             const XTYPE*          x,           \
-                             TTYPE                 beta,        \
-                             YTYPE*                y,           \
-                             rocsparse_index_base  base,        \
-                             rocsparse_matrix_type matrix_type, \
-                             rocsparse_spmv_alg    algo,        \
-                             bool                  force_conj);
+#define INSTANTIATE_IJAXYT(ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE) \
+    template void host_bsrmv(rocsparse_direction  dir,               \
+                             rocsparse_operation  trans,             \
+                             JTYPE                mb,                \
+                             JTYPE                nb,                \
+                             ITYPE                nnzb,              \
+                             TTYPE                alpha,             \
+                             const ITYPE*         bsr_row_ptr,       \
+                             const JTYPE*         bsr_col_ind,       \
+                             const ATYPE*         bsr_val,           \
+                             JTYPE                bsr_dim,           \
+                             const XTYPE*         x,                 \
+                             TTYPE                beta,              \
+                             YTYPE*               y,                 \
+                             rocsparse_index_base base);             \
+    template void host_cscmv(rocsparse_operation   trans,            \
+                             JTYPE                 M,                \
+                             JTYPE                 N,                \
+                             ITYPE                 nnz,              \
+                             TTYPE                 alpha,            \
+                             const ITYPE*          csc_col_ptr,      \
+                             const JTYPE*          csc_row_ind,      \
+                             const ATYPE*          csc_val,          \
+                             const XTYPE*          x,                \
+                             TTYPE                 beta,             \
+                             YTYPE*                y,                \
+                             rocsparse_index_base  base,             \
+                             rocsparse_matrix_type matrix_type,      \
+                             rocsparse_spmv_alg    algo);               \
+    template void host_csrmv(rocsparse_operation   trans,            \
+                             JTYPE                 M,                \
+                             JTYPE                 N,                \
+                             ITYPE                 nnz,              \
+                             TTYPE                 alpha,            \
+                             const ITYPE*          csr_row_ptr,      \
+                             const JTYPE*          csr_col_ind,      \
+                             const ATYPE*          csr_val,          \
+                             const XTYPE*          x,                \
+                             TTYPE                 beta,             \
+                             YTYPE*                y,                \
+                             rocsparse_index_base  base,             \
+                             rocsparse_matrix_type matrix_type,      \
+                             rocsparse_spmv_alg    algo,             \
+                             bool                  force_conj)
+
 
 #define INSTANTIATE6(ITYPE, ATYPE, XTYPE, YTYPE, TTYPE)        \
     template void host_coomv(rocsparse_operation  trans,       \
@@ -10485,103 +10486,142 @@ INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, double);
 INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, rocsparse_double_complex);
 
-INSTANTIATE5(int32_t, int32_t, int8_t, int8_t, int32_t, int32_t);
-INSTANTIATE5(int64_t, int32_t, int8_t, int8_t, int32_t, int32_t);
-INSTANTIATE5(int64_t, int64_t, int8_t, int8_t, int32_t, int32_t);
-INSTANTIATE5(int32_t, int32_t, int8_t, int8_t, float, float);
-INSTANTIATE5(int64_t, int32_t, int8_t, int8_t, float, float);
-INSTANTIATE5(int64_t, int64_t, int8_t, int8_t, float, float);
-INSTANTIATE5(int32_t,
-             int32_t,
-             float,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int64_t,
-             int32_t,
-             float,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int64_t,
-             int64_t,
-             float,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int32_t,
-             int32_t,
-             double,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
-INSTANTIATE5(int64_t,
-             int32_t,
-             double,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
-INSTANTIATE5(int64_t,
-             int64_t,
-             double,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
-INSTANTIATE5(int32_t, int32_t, float, float, float, float);
-INSTANTIATE5(int64_t, int32_t, float, float, float, float);
-INSTANTIATE5(int64_t, int64_t, float, float, float, float);
-INSTANTIATE5(int32_t, int32_t, double, double, double, double);
-INSTANTIATE5(int64_t, int32_t, double, double, double, double);
-INSTANTIATE5(int64_t, int64_t, double, double, double, double);
-INSTANTIATE5(int32_t,
-             int32_t,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int64_t,
-             int32_t,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int64_t,
-             int64_t,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex,
-             rocsparse_float_complex);
-INSTANTIATE5(int32_t,
-             int32_t,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
-INSTANTIATE5(int64_t,
-             int32_t,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
-INSTANTIATE5(int64_t,
-             int64_t,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex,
-             rocsparse_double_complex);
+
 
 INSTANTIATE6(int32_t, int8_t, int8_t, int32_t, int32_t);
 INSTANTIATE6(int64_t, int8_t, int8_t, int32_t, int32_t);
 INSTANTIATE6(int32_t, int8_t, int8_t, float, float);
 INSTANTIATE6(int64_t, int8_t, int8_t, float, float);
-INSTANTIATE6(
-    int32_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
-INSTANTIATE6(
-    int64_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
-INSTANTIATE6(
-    int32_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
-INSTANTIATE6(
-    int64_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
+INSTANTIATE6(int32_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
+
+
+INSTANTIATE_IJAXYT(int32_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_IJAXYT(int64_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_IJAXYT(int64_t, int64_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_IJAXYT(int32_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE_IJAXYT(int64_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE_IJAXYT(int64_t, int64_t, int8_t, int8_t, float, float);
+
+INSTANTIATE_IJAXYT(int32_t, int32_t, float, double, double, double);
+INSTANTIATE_IJAXYT(int64_t, int32_t, float, double, double, double);
+INSTANTIATE_IJAXYT(int64_t, int64_t, float, double, double, double);
+
+INSTANTIATE_IJAXYT(int32_t,
+                   int32_t,
+                   float,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int32_t,
+                   float,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int64_t,
+                   float,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int32_t,
+                   int32_t,
+                   double,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int32_t,
+                   double,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int64_t,
+                   double,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+
+INSTANTIATE_IJAXYT(int32_t,
+                   int32_t,
+                   rocsparse_float_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int32_t,
+                   rocsparse_float_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int64_t,
+                   rocsparse_float_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+
+INSTANTIATE_IJAXYT(int32_t, int32_t, float, float, float, float);
+INSTANTIATE_IJAXYT(int64_t, int32_t, float, float, float, float);
+INSTANTIATE_IJAXYT(int64_t, int64_t, float, float, float, float);
+INSTANTIATE_IJAXYT(int32_t, int32_t, double, double, double, double);
+INSTANTIATE_IJAXYT(int64_t, int32_t, double, double, double, double);
+INSTANTIATE_IJAXYT(int64_t, int64_t, double, double, double, double);
+INSTANTIATE_IJAXYT(int32_t,
+                   int32_t,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int32_t,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int64_t,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex,
+                   rocsparse_float_complex);
+INSTANTIATE_IJAXYT(int32_t,
+                   int32_t,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int32_t,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+INSTANTIATE_IJAXYT(int64_t,
+                   int64_t,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex,
+                   rocsparse_double_complex);
+
+INSTANTIATE_IAXYT(int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_IAXYT(int64_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_IAXYT(int32_t, int8_t, int8_t, float, float);
+INSTANTIATE_IAXYT(int64_t, int8_t, int8_t, float, float);
+INSTANTIATE_IAXYT(int32_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
+INSTANTIATE_IAXYT(int32_t, float, double, double, double);
+INSTANTIATE_IAXYT(int64_t, float, double, double, double);
+INSTANTIATE_IAXYT(int32_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
+
+
+INSTANTIATE6(int64_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
+INSTANTIATE6(int32_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
+
+
+INSTANTIATE6(int64_t, double, rocsparse_double_complex, rocsparse_double_complex, rocsparse_double_complex);
+
+
 INSTANTIATE6(int32_t, float, float, float, float);
 INSTANTIATE6(int64_t, float, float, float, float);
 INSTANTIATE6(int32_t, double, double, double, double);
@@ -10606,3 +10646,39 @@ INSTANTIATE6(int64_t,
              rocsparse_double_complex,
              rocsparse_double_complex,
              rocsparse_double_complex);
+
+INSTANTIATE_IAXYT(int32_t,
+                  rocsparse_float_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_IAXYT(int64_t,
+                  rocsparse_float_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_IAXYT(int32_t, float, float, float, float);
+INSTANTIATE_IAXYT(int64_t, float, float, float, float);
+INSTANTIATE_IAXYT(int32_t, double, double, double, double);
+INSTANTIATE_IAXYT(int64_t, double, double, double, double);
+INSTANTIATE_IAXYT(int32_t,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_IAXYT(int64_t,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex,
+                  rocsparse_float_complex);
+INSTANTIATE_IAXYT(int32_t,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+INSTANTIATE_IAXYT(int64_t,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex,
+                  rocsparse_double_complex);
+

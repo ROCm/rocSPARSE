@@ -60,7 +60,9 @@ class rocsparse_complex_num
 public:
     __device__ __host__ rocsparse_complex_num(void)                         = default;
     __device__ __host__ rocsparse_complex_num(const rocsparse_complex_num&) = default;
-    __device__ __host__ rocsparse_complex_num(rocsparse_complex_num&&)      = default;
+    template <typename U>
+    __device__ __host__ rocsparse_complex_num(const rocsparse_complex_num<U>& a);
+    __device__ __host__ rocsparse_complex_num(rocsparse_complex_num&&) = default;
     __device__ __host__ rocsparse_complex_num& operator=(const rocsparse_complex_num& rhs)
         = default;
     __device__ __host__ rocsparse_complex_num& operator=(rocsparse_complex_num&& rhs) = default;
@@ -278,6 +280,15 @@ template class rocsparse_complex_num_check<double>;
 // rocSPARSE complex data types
 using rocsparse_float_complex  = rocsparse_complex_num<float>;
 using rocsparse_double_complex = rocsparse_complex_num<double>;
+
+template <typename T>
+template <typename U>
+__device__ __host__
+    rocsparse_complex_num<T>::rocsparse_complex_num(const rocsparse_complex_num<U>& a)
+    : x(std::real(a))
+    , y(std::imag(a))
+{
+}
 
 #endif /* __cplusplus < 201402L || (!defined(__HIPCC__)) */
 
