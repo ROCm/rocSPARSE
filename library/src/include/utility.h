@@ -75,13 +75,16 @@ static inline void rocsparse_one(const rocsparse_handle handle, rocsparse_double
 }
 
 template <typename T>
-ROCSPARSE_KERNEL __launch_bounds__(1) void rocsparse_assign_kernel(T* dest, T value) {
+ROCSPARSE_KERNEL(1)
+void rocsparse_assign_kernel(T* dest, T value)
+{
     *dest = value;
 }
 
 // Set a single value on the device from the host asynchronously.
 template <typename T>
-static inline hipError_t rocsparse_assign_async(T* dest, T value, hipStream_t stream) {
+static inline hipError_t rocsparse_assign_async(T* dest, T value, hipStream_t stream)
+{
     // Use a kernel instead of memcpy, because memcpy is synchronous if the source is not in
     // pinned memory.
     // Memset lacks a 64bit option, but would involve a similar implicit kernel anyways.
