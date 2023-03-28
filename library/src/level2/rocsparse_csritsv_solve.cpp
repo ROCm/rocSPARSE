@@ -262,12 +262,10 @@ rocsparse_status rocsparse_csritsv_solve_template(rocsparse_handle          hand
         }
         else
         {
-            const rocsparse_int b = (rocsparse_int)descr->base;
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->zero_pivot,
-                                               &b,
-                                               sizeof(rocsparse_int),
-                                               hipMemcpyHostToDevice,
-                                               handle->stream));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_assign_async(static_cast<rocsparse_int*>(info->zero_pivot),
+                                       (rocsparse_int)descr->base,
+                                       handle->stream));
             return rocsparse_status_success;
         }
     }

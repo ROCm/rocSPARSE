@@ -185,9 +185,7 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)&info->row_map, sizeof(J) * m, stream));
 
     // Initialize zero pivot
-    static const J max = std::numeric_limits<J>::max();
-    RETURN_IF_HIP_ERROR(
-        hipMemcpyAsync(*zero_pivot, &max, sizeof(J), hipMemcpyHostToDevice, stream));
+    RETURN_IF_HIP_ERROR(rocsparse_assign_async(*zero_pivot, std::numeric_limits<J>::max(), stream));
 
     // Determine gcnArch and ASIC revision
     int gcnArch = handle->properties.gcnArch;
