@@ -47,29 +47,37 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
     {
         if(mat->format == rocsparse_format_csr)
         {
-            return rocsparse_csrsv_buffer_size_template(handle,
-                                                        trans,
-                                                        (J)mat->rows,
-                                                        (I)mat->nnz,
-                                                        mat->descr,
-                                                        (const T*)mat->const_val_data,
-                                                        (const I*)mat->const_row_data,
-                                                        (const J*)mat->const_col_data,
-                                                        mat->info,
-                                                        buffer_size);
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_csrsv_buffer_size_template(handle,
+                                                     trans,
+                                                     (J)mat->rows,
+                                                     (I)mat->nnz,
+                                                     mat->descr,
+                                                     (const T*)mat->const_val_data,
+                                                     (const I*)mat->const_row_data,
+                                                     (const J*)mat->const_col_data,
+                                                     mat->info,
+                                                     buffer_size));
+
+            *buffer_size = std::max(static_cast<size_t>(4), *buffer_size);
+            return rocsparse_status_success;
         }
         else if(mat->format == rocsparse_format_coo)
         {
-            return rocsparse_coosv_buffer_size_template(handle,
-                                                        trans,
-                                                        (I)mat->rows,
-                                                        mat->nnz,
-                                                        mat->descr,
-                                                        (const T*)mat->const_val_data,
-                                                        (const I*)mat->const_row_data,
-                                                        (const I*)mat->const_col_data,
-                                                        mat->info,
-                                                        buffer_size);
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_coosv_buffer_size_template(handle,
+                                                     trans,
+                                                     (I)mat->rows,
+                                                     mat->nnz,
+                                                     mat->descr,
+                                                     (const T*)mat->const_val_data,
+                                                     (const I*)mat->const_row_data,
+                                                     (const I*)mat->const_col_data,
+                                                     mat->info,
+                                                     buffer_size));
+
+            *buffer_size = std::max(static_cast<size_t>(4), *buffer_size);
+            return rocsparse_status_success;
         }
         else
         {

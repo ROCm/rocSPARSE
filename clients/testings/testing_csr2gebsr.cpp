@@ -54,8 +54,11 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
     size_t*                   buffer_size     = (size_t*)0x4;
     void*                     temp_buffer     = (void*)0x4;
 
-    int       nargs_to_exclude   = 1;
-    const int args_to_exclude[1] = {6};
+    int       nargs_to_exclude_nnz   = 2;
+    const int args_to_exclude_nnz[2] = {6, 12};
+
+    int       nargs_to_exclude_solve   = 1;
+    const int args_to_exclude_solve[1] = {14};
 
 #define PARAMS_BUFFER_SIZE                                                                         \
     handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, csr_col_ind, row_block_dim, col_block_dim, \
@@ -67,8 +70,10 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
     handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, csr_col_ind, bsr_descr, bsr_val, \
         bsr_row_ptr, bsr_col_ind, row_block_dim, col_block_dim, temp_buffer
     auto_testing_bad_arg(rocsparse_csr2gebsr_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_csr2gebsr_nnz, nargs_to_exclude, args_to_exclude, PARAMS_NNZ);
-    auto_testing_bad_arg(rocsparse_csr2gebsr<T>, PARAMS);
+    auto_testing_bad_arg(
+        rocsparse_csr2gebsr_nnz, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
+    auto_testing_bad_arg(
+        rocsparse_csr2gebsr<T>, nargs_to_exclude_solve, args_to_exclude_solve, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(
         rocsparse_set_mat_storage_mode(csr_descr, rocsparse_storage_mode_unsorted));

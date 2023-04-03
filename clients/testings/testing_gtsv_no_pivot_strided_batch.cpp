@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,11 +45,25 @@ void testing_gtsv_no_pivot_strided_batch_bad_arg(const Arguments& arg)
     size_t*          buffer_size  = (size_t*)0x4;
     void*            temp_buffer  = (void*)0x4;
 
+    int       nargs_to_exclude_solve   = 1;
+    const int args_to_exclude_solve[1] = {8};
+
 #define PARAMS_BUFFER_SIZE handle, m, dl, d, du, x1, batch_count, batch_stride, buffer_size
 #define PARAMS_SOLVE handle, m, dl, d, du, x2, batch_count, batch_stride, temp_buffer
 
     auto_testing_bad_arg(rocsparse_gtsv_no_pivot_strided_batch_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_gtsv_no_pivot_strided_batch<T>, PARAMS_SOLVE);
+    auto_testing_bad_arg(rocsparse_gtsv_no_pivot_strided_batch<T>,
+                         nargs_to_exclude_solve,
+                         args_to_exclude_solve,
+                         PARAMS_SOLVE);
+
+    // m > 512
+    {
+        batch_stride = m = 513;
+        temp_buffer      = (void*)nullptr;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot_strided_batch<T>(PARAMS_SOLVE),
+                                rocsparse_status_invalid_pointer);
+    }
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_SOLVE

@@ -218,7 +218,7 @@ rocsparse_status rocsparse_prune_csr2csr_buffer_size_template(rocsparse_handle  
         return rocsparse_status_invalid_pointer;
     }
 
-    *buffer_size = 4;
+    *buffer_size = 0;
 
     return rocsparse_status_success;
 }
@@ -319,7 +319,7 @@ rocsparse_status rocsparse_prune_csr2csr_nnz_template(rocsparse_handle          
 
     // Check pointer arguments
     if(csr_row_ptr_A == nullptr || csr_row_ptr_C == nullptr || nnz_total_dev_host_ptr == nullptr
-       || threshold == nullptr || temp_buffer == nullptr)
+       || threshold == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -472,8 +472,7 @@ rocsparse_status rocsparse_prune_csr2csr_template(rocsparse_handle          hand
     }
 
     // Check pointer arguments
-    if(csr_row_ptr_A == nullptr || csr_row_ptr_C == nullptr || threshold == nullptr
-       || temp_buffer == nullptr)
+    if(csr_row_ptr_A == nullptr || csr_row_ptr_C == nullptr || threshold == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

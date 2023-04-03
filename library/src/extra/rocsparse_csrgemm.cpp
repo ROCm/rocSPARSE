@@ -925,8 +925,7 @@ static inline rocsparse_status rocsparse_csrgemm_multadd_template(rocsparse_hand
     // Check valid pointers
     if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
        || csr_row_ptr_B == nullptr || descr_D == nullptr || csr_row_ptr_D == nullptr
-       || descr_C == nullptr || csr_row_ptr_C == nullptr || temp_buffer == nullptr
-       || alpha == nullptr || beta == nullptr)
+       || descr_C == nullptr || csr_row_ptr_C == nullptr || alpha == nullptr || beta == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -1066,6 +1065,11 @@ static inline rocsparse_status rocsparse_csrgemm_multadd_template(rocsparse_hand
                                                temp_buffer);
     }
 
+    if(temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Perform gemm calculation
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
@@ -1173,7 +1177,7 @@ static inline rocsparse_status rocsparse_csrgemm_mult_template(rocsparse_handle 
     // Check valid pointers
     if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
        || csr_row_ptr_B == nullptr || descr_C == nullptr || csr_row_ptr_C == nullptr
-       || temp_buffer == nullptr || alpha == nullptr)
+       || alpha == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -1243,6 +1247,11 @@ static inline rocsparse_status rocsparse_csrgemm_mult_template(rocsparse_handle 
     if(m == 0 || n == 0 || k == 0 || nnz_A == 0 || nnz_B == 0)
     {
         return rocsparse_status_success;
+    }
+
+    if(temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
     }
 
     if((trans_A != rocsparse_operation_none) || (trans_B != rocsparse_operation_none))
@@ -1356,7 +1365,7 @@ static inline rocsparse_status rocsparse_csrgemm_scal_template(rocsparse_handle 
 
     // Check valid pointers
     if(descr_D == nullptr || csr_row_ptr_D == nullptr || descr_C == nullptr
-       || csr_row_ptr_C == nullptr || temp_buffer == nullptr || beta == nullptr)
+       || csr_row_ptr_C == nullptr || beta == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

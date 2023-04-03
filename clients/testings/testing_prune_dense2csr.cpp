@@ -52,9 +52,16 @@ void testing_prune_dense2csr_bad_arg(const Arguments& arg)
     size_t*                   buffer_size            = &h_buffer_size;
     void*                     temp_buffer            = (void*)0x4;
 
-    int       nargs_to_exclude   = 1;
-    const int args_to_exclude[1] = {5};
-    const T*  threshold          = &h_threshold;
+    int       nargs_to_exclude_buffer_size   = 1;
+    const int args_to_exclude_buffer_size[1] = {5};
+
+    int       nargs_to_exclude_nnz   = 2;
+    const int args_to_exclude_nnz[2] = {5, 9};
+
+    int       nargs_to_exclude_solve   = 2;
+    const int args_to_exclude_solve[2] = {5, 10};
+
+    const T* threshold = &h_threshold;
 
 #define PARAMS_BUFFER_SIZE \
     handle, m, n, A, ld, threshold, descr, csr_val, csr_row_ptr, csr_col_ind, buffer_size
@@ -62,12 +69,13 @@ void testing_prune_dense2csr_bad_arg(const Arguments& arg)
     handle, m, n, A, ld, threshold, descr, csr_row_ptr, nnz_total_dev_host_ptr, temp_buffer
 #define PARAMS handle, m, n, A, ld, threshold, descr, csr_val, csr_row_ptr, csr_col_ind, temp_buffer
     auto_testing_bad_arg(rocsparse_prune_dense2csr_buffer_size<T>,
-                         nargs_to_exclude,
-                         args_to_exclude,
+                         nargs_to_exclude_buffer_size,
+                         args_to_exclude_buffer_size,
                          PARAMS_BUFFER_SIZE);
     auto_testing_bad_arg(
-        rocsparse_prune_dense2csr_nnz<T>, nargs_to_exclude, args_to_exclude, PARAMS_NNZ);
-    auto_testing_bad_arg(rocsparse_prune_dense2csr<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+        rocsparse_prune_dense2csr_nnz<T>, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
+    auto_testing_bad_arg(
+        rocsparse_prune_dense2csr<T>, nargs_to_exclude_solve, args_to_exclude_solve, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_buffer_size<T>(PARAMS_BUFFER_SIZE),

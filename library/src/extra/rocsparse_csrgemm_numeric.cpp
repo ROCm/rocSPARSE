@@ -1659,12 +1659,40 @@ inline rocsparse_status rocsparse_csrgemm_numeric_template_impl(rocsparse_handle
 {
     const bool mul = info_C->csrgemm_info->mul;
     const bool add = info_C->csrgemm_info->add;
-    const int  s   = (mul && add) ? 0 : (mul && !add) ? 1 : (!mul && add) ? 2 : 3;
 
-    switch(s)
+    if(mul && add)
     {
-    case 0:
-    {
+        if((k == 0 || nnz_A == 0 || nnz_B == 0) && (nnz_D == 0))
+        {
+            ROCSPARSE_RETURN_STATUS(success);
+        }
+
+        // k == 0 || nnz_A == 0 || nnz_B == 0 - scale D with beta
+        if(k == 0 || nnz_A == 0 || nnz_B == 0)
+        {
+            return rocsparse_csrgemm_numeric_scal_template(handle,
+                                                           m,
+                                                           n,
+                                                           beta_device_host,
+                                                           descr_D,
+                                                           nnz_D,
+                                                           csr_val_D,
+                                                           csr_row_ptr_D,
+                                                           csr_col_ind_D,
+                                                           descr_C,
+                                                           nnz_C,
+                                                           csr_val_C,
+                                                           csr_row_ptr_C,
+                                                           csr_col_ind_C,
+                                                           info_C,
+                                                           temp_buffer);
+        }
+
+        if(temp_buffer == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
         return rocsparse_csrgemm_numeric_calc_template(handle,
                                                        trans_A,
                                                        trans_B,
@@ -1696,8 +1724,19 @@ inline rocsparse_status rocsparse_csrgemm_numeric_template_impl(rocsparse_handle
                                                        info_C,
                                                        temp_buffer);
     }
-    case 1:
+
+    if(mul && !add)
     {
+        if(k == 0 || nnz_A == 0 || nnz_B == 0)
+        {
+            ROCSPARSE_RETURN_STATUS(success);
+        }
+
+        if(temp_buffer == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
         return rocsparse_csrgemm_numeric_calc_template(handle,
                                                        trans_A,
                                                        trans_B,
@@ -1729,8 +1768,14 @@ inline rocsparse_status rocsparse_csrgemm_numeric_template_impl(rocsparse_handle
                                                        info_C,
                                                        temp_buffer);
     }
-    case 2:
+
+    if(!mul && add)
     {
+        if(nnz_D == 0)
+        {
+            ROCSPARSE_RETURN_STATUS(success);
+        }
+
         return rocsparse_csrgemm_numeric_scal_template(handle,
                                                        m,
                                                        n,
@@ -1748,31 +1793,13 @@ inline rocsparse_status rocsparse_csrgemm_numeric_template_impl(rocsparse_handle
                                                        info_C,
                                                        temp_buffer);
     }
-    case 3:
+
+    if(!mul && !add)
     {
-        if(mul && add && ((k == 0 || nnz_A == 0 || nnz_B == 0) && (nnz_D == 0)))
-        {
-            ROCSPARSE_RETURN_STATUS(success);
-        }
-
-        if(mul && !add && (k == 0 || nnz_A == 0 || nnz_B == 0))
-        {
-            ROCSPARSE_RETURN_STATUS(success);
-        }
-
-        if(!mul && add && (nnz_D == 0))
-        {
-            ROCSPARSE_RETURN_STATUS(success);
-        }
-
-        if(!mul && !add)
-        {
-            ROCSPARSE_RETURN_STATUS(success);
-        }
-        return rocsparse_status_internal_error;
+        ROCSPARSE_RETURN_STATUS(success);
     }
-    }
-    return rocsparse_status_internal_error;
+
+    ROCSPARSE_RETURN_STATUS(internal_error);
 }
 
 template <typename I, typename J, typename T>
@@ -1955,14 +1982,6 @@ rocsparse_status rocsparse_csrgemm_numeric_log_and_detect_bad_arg(rocsparse_hand
         ROCSPARSE_RETURN_STATUS(invalid_pointer);
     }
     if((nnz_D == 0) && (csr_col_ind_D != nullptr || csr_val_D != nullptr))
-    {
-        ROCSPARSE_RETURN_STATUS(invalid_pointer);
-    }
-
-    //
-    // Check buffer.
-    //
-    if(temp_buffer == nullptr)
     {
         ROCSPARSE_RETURN_STATUS(invalid_pointer);
     }

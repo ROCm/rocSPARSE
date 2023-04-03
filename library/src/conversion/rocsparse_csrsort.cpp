@@ -73,8 +73,7 @@ try
     // Quick return if possible
     if(m == 0 || n == 0 || nnz == 0)
     {
-        // Do not return 0 as buffer size
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
 
@@ -147,7 +146,7 @@ try
     }
 
     // Check pointer arguments
-    if(csr_row_ptr == nullptr || temp_buffer == nullptr)
+    if(csr_row_ptr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -161,6 +160,11 @@ try
     if(m == 0 || n == 0 || nnz == 0)
     {
         return rocsparse_status_success;
+    }
+
+    if(temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
     }
 
     // Stream

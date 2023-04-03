@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,9 +50,12 @@ void testing_gemvi_bad_arg(const Arguments& arg)
     T*                   y      = (T*)0x4;
     void*                buffer = (void*)0x4;
 
+    int       nargs_to_exclude   = 1;
+    const int args_to_exclude[1] = {13};
+
 #define PARAMS handle, trans, m, n, alpha, A, lda, nnz, x_val, x_ind, beta, y, base, buffer
 
-    auto_testing_bad_arg(rocsparse_gemvi<T>, PARAMS);
+    auto_testing_bad_arg(rocsparse_gemvi<T>, nargs_to_exclude, args_to_exclude, PARAMS);
 
     {
         auto tmp = trans;

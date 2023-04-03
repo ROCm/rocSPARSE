@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -191,12 +191,12 @@ void testing_bsrgemm_bad_arg(const Arguments& arg)
     {
         // In this scenario matrices A == B == nullptr and D != nullptr
         int nargs_to_exclude_buffer_size = 9;
-        int nargs_to_exclude_nnzb        = 8;
-        int nargs_to_exclude             = 11;
+        int nargs_to_exclude_nnzb        = 9;
+        int nargs_to_exclude             = 12;
 
         const int args_to_exclude_buffer_size[9] = {8, 9, 10, 11, 12, 13, 14, 15, 16};
-        const int args_to_exclude_nnzb[8]        = {8, 9, 10, 11, 12, 13, 14, 15};
-        const int args_to_exclude[11]            = {8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+        const int args_to_exclude_nnzb[9]        = {8, 9, 10, 11, 12, 13, 14, 15, 24};
+        const int args_to_exclude[12]            = {8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 30};
 
         const T* alpha = (const T*)nullptr;
         const T* beta  = &h_beta;

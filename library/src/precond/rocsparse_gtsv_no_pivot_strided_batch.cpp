@@ -196,8 +196,7 @@ rocsparse_status
     // Quick return if possible
     if(batch_count == 0)
     {
-        // Do not return 0 as buffer size
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
 
@@ -221,8 +220,7 @@ rocsparse_status
 
     if(m <= 512)
     {
-        // Do not return 0 as buffer size
-        *buffer_size = 4;
+        *buffer_size = 0;
     }
     else
     {
@@ -489,7 +487,7 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_template(rocsparse_handle
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(temp_buffer == nullptr)
+    else if(m > 512 && temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

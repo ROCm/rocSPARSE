@@ -720,7 +720,7 @@ rocsparse_status rocsparse_csritsv_solve_impl(rocsparse_handle          handle,
     {
         return rocsparse_status_invalid_pointer;
     }
-    if(m > 0 && temp_buffer == nullptr)
+    if(m > 0 && nnz > 0 && temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

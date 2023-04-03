@@ -342,13 +342,14 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
         {
             if(false == info->is_submatrix)
             {
-                RETURN_IF_HIP_ERROR(hipMemsetAsync(temp_buffer, 0, sizeof(J), handle->stream));
                 J count_diagonal = 0;
                 if(nnz > 0)
                 {
                     //
                     // We nned to check diagonal element are not present.
                     //
+                    RETURN_IF_HIP_ERROR(hipMemsetAsync(temp_buffer, 0, sizeof(J), handle->stream));
+
                     dim3 blocks((m - 1) / BLOCKSIZE + 1);
                     dim3 threads(BLOCKSIZE);
                     if(fill_mode == rocsparse_fill_mode_lower)
@@ -566,7 +567,7 @@ rocsparse_status rocsparse_csritsv_analysis_impl(rocsparse_handle          handl
         return rocsparse_status_invalid_pointer;
     }
 
-    if(m > 0 && temp_buffer == nullptr)
+    if(m > 0 && nnz > 0 && temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

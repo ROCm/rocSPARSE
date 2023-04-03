@@ -110,7 +110,7 @@ rocsparse_status rocsparse_gebsr2gebsc_template(rocsparse_handle     handle,
     }
 
     // Check pointer arguments
-    if(bsr_row_ptr == nullptr || bsc_col_ptr == nullptr || temp_buffer == nullptr)
+    if(bsr_row_ptr == nullptr || bsc_col_ptr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -164,6 +164,11 @@ rocsparse_status rocsparse_gebsr2gebsc_template(rocsparse_handle     handle,
                            static_cast<rocsparse_int>(idx_base));
 
         return rocsparse_status_success;
+    }
+
+    if(temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
     }
 
     unsigned int startbit = 0;
@@ -318,8 +323,7 @@ rocsparse_status rocsparse_gebsr2gebsc_buffer_size_template(rocsparse_handle    
     // Quick return if possible
     if(mb == 0 || nb == 0)
     {
-        // Do not return 0 as buffer size
-        *p_buffer_size = 4;
+        *p_buffer_size = 0;
         return rocsparse_status_success;
     }
 
@@ -358,12 +362,6 @@ rocsparse_status rocsparse_gebsr2gebsc_buffer_size_template(rocsparse_handle    
     *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
     *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
     *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
-
-    // Do not return 0 as size
-    if(*p_buffer_size == 0)
-    {
-        *p_buffer_size = 4;
-    }
 
     return rocsparse_status_success;
 }

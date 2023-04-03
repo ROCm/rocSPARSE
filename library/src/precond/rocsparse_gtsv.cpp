@@ -70,8 +70,7 @@ rocsparse_status rocsparse_gtsv_buffer_size_template(rocsparse_handle handle,
     // Quick return if possible
     if(n == 0)
     {
-        // Do not return 0 as buffer size
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
 
