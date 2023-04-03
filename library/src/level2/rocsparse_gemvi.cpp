@@ -241,8 +241,8 @@ rocsparse_status rocsparse_gemvi_template(rocsparse_handle     handle,
     // Check invalid pointers
     if(m > 0 && n > 0 && nnz > 0)
     {
-        if(A == nullptr || x_val == nullptr || x_ind == nullptr || alpha_device_host == nullptr
-           || temp_buffer == nullptr)
+        // Allow temp_buffer to be nullptr
+        if(A == nullptr || x_val == nullptr || x_ind == nullptr || alpha_device_host == nullptr)
         {
             return rocsparse_status_invalid_pointer;
         }
@@ -327,7 +327,7 @@ extern "C" {
                            size_t*             buffer_size) \
     try                                                     \
     {                                                       \
-        *buffer_size = 4;                                   \
+        *buffer_size = 0;                                   \
         return rocsparse_status_success;                    \
     }                                                       \
     catch(...)                                              \

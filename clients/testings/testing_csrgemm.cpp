@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -187,15 +187,17 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
     {
         // In this scenario matrices A == B == nullptr and D != nullptr
         int nargs_to_exclude_buffer_size = 9;
-        int nargs_to_exclude_nnz         = 8;
-        int nargs_to_exclude             = 11;
+        int nargs_to_exclude_nnz         = 9;
+        int nargs_to_exclude             = 12;
 
         const int args_to_exclude_buffer_size[9] = {6, 7, 8, 9, 10, 11, 12, 13, 14};
-        const int args_to_exclude_nnz[8]         = {6, 7, 8, 9, 10, 11, 12, 13};
-        const int args_to_exclude[11]            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+        const int args_to_exclude_nnz[9]         = {6, 7, 8, 9, 10, 11, 12, 13, 22};
+        const int args_to_exclude[12]            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 28};
 
         const T* alpha = (const T*)nullptr;
         const T* beta  = &h_beta;
+
+        temp_buffer = (void*)nullptr;
 
         // A matrix
         const rocsparse_mat_descr descr_A       = (const rocsparse_mat_descr) nullptr;
@@ -226,6 +228,8 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
             rocsparse_csrgemm_nnz, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
 
         auto_testing_bad_arg(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+
+        temp_buffer = (void*)0x4;
     }
 
     // ###############################################

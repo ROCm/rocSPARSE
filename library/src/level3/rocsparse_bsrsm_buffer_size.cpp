@@ -103,7 +103,7 @@ rocsparse_status rocsparse_bsrsm_buffer_size_template(rocsparse_handle          
     // Quick return if possible
     if(mb == 0 || nrhs == 0)
     {
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
 

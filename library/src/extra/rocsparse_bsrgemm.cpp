@@ -2345,8 +2345,7 @@ static inline rocsparse_status rocsparse_bsrgemm_multadd_template(rocsparse_hand
     // Check valid pointers
     if(descr_A == nullptr || bsr_row_ptr_A == nullptr || descr_B == nullptr
        || bsr_row_ptr_B == nullptr || descr_D == nullptr || bsr_row_ptr_D == nullptr
-       || descr_C == nullptr || bsr_row_ptr_C == nullptr || temp_buffer == nullptr
-       || alpha == nullptr || beta == nullptr)
+       || descr_C == nullptr || bsr_row_ptr_C == nullptr || alpha == nullptr || beta == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -2605,7 +2604,7 @@ static inline rocsparse_status rocsparse_bsrgemm_mult_template(rocsparse_handle 
     // Check valid pointers
     if(descr_A == nullptr || bsr_row_ptr_A == nullptr || descr_B == nullptr
        || bsr_row_ptr_B == nullptr || descr_C == nullptr || bsr_row_ptr_C == nullptr
-       || temp_buffer == nullptr || alpha == nullptr)
+       || alpha == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -2796,7 +2795,7 @@ static inline rocsparse_status rocsparse_bsrgemm_scal_template(rocsparse_handle 
 
     // Check valid pointers
     if(descr_D == nullptr || bsr_row_ptr_D == nullptr || descr_C == nullptr
-       || bsr_row_ptr_C == nullptr || temp_buffer == nullptr || beta == nullptr)
+       || bsr_row_ptr_C == nullptr || beta == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -3027,6 +3026,11 @@ rocsparse_status rocsparse_bsrgemm_template(rocsparse_handle          handle,
     if(mb == 0 || nb == 0)
     {
         return rocsparse_status_success;
+    }
+
+    if(nnzb_A > 0 && temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
     }
 
     if(block_dim == 1)

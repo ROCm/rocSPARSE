@@ -201,6 +201,11 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
         return rocsparse_status_success;
     }
 
+    if(temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     return rocsparse_csr2csc_core(handle,
                                   m,
                                   n,
@@ -290,8 +295,7 @@ rocsparse_status rocsparse_csr2csc_impl(rocsparse_handle     handle,
     }
 
     // Check pointer arguments
-    if((m > 0 && csr_row_ptr == nullptr) || (n > 0 && csc_col_ptr == nullptr)
-       || temp_buffer == nullptr)
+    if((m > 0 && csr_row_ptr == nullptr) || (n > 0 && csc_col_ptr == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -440,11 +444,6 @@ rocsparse_status rocsparse_csr2csc_buffer_size_core(rocsparse_handle handle,
     *buffer_size += ((std::max(sizeof(I), sizeof(J)) * nnz - 1) / 256 + 1) * 256;
     *buffer_size += ((std::max(sizeof(I), sizeof(J)) * nnz - 1) / 256 + 1) * 256;
 
-    // Do not return 0 as size
-    if(*buffer_size == 0)
-    {
-        *buffer_size = 4;
-    }
     return rocsparse_status_success;
 }
 
@@ -461,8 +460,7 @@ rocsparse_status rocsparse_csr2csc_buffer_size_template(rocsparse_handle handle,
     // Quick return if possible
     if(m == 0 || n == 0 || nnz == 0)
     {
-        // Do not return 0 as buffer size
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
 

@@ -134,7 +134,7 @@ rocsparse_status rocsparse_gebsr2gebsr_buffer_size_template(rocsparse_handle    
     {
         if(row_block_dim_C <= 32)
         {
-            *buffer_size = 4;
+            *buffer_size = 0;
         }
         else
         {
@@ -174,7 +174,7 @@ rocsparse_status rocsparse_gebsr2gebsr_buffer_size_template(rocsparse_handle    
 
     if(row_block_dim_C <= 32)
     {
-        *buffer_size = 4;
+        *buffer_size = 0;
     }
     else
     {
@@ -279,7 +279,12 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
     }
 
     // Check pointer arguments
-    if(bsr_row_ptr_A == nullptr || bsr_row_ptr_C == nullptr || temp_buffer == nullptr)
+    if(bsr_row_ptr_A == nullptr || bsr_row_ptr_C == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(row_block_dim_C > 32 && temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -807,8 +812,12 @@ try
 
     // Check pointer arguments
     if(bsr_row_ptr_A == nullptr || bsr_col_ind_A == nullptr || bsr_row_ptr_C == nullptr
-       || descr_A == nullptr || descr_C == nullptr || nnz_total_dev_host_ptr == nullptr
-       || temp_buffer == nullptr)
+       || descr_A == nullptr || descr_C == nullptr || nnz_total_dev_host_ptr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(row_block_dim_C > 32 && temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

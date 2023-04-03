@@ -1817,10 +1817,6 @@ rocsparse_status
         ROCSPARSE_RETURN_STATUS(invalid_pointer);
     }
 
-    if(temp_buffer == nullptr)
-    {
-        ROCSPARSE_RETURN_STATUS(invalid_pointer);
-    }
     return rocsparse_status_success;
 }
 
@@ -1921,11 +1917,35 @@ rocsparse_status rocsparse_csrgemm_symbolic_template(rocsparse_handle          h
         csr_col_ind_B = nullptr;
     }
 
-    const int s = (mul) ? 0 : (add) ? 1 : 2;
-    switch(s)
+    if(mul && add)
     {
-    case 0:
-    {
+        if((k == 0 || nnz_A == 0 || nnz_B == 0) && (nnz_D == 0))
+        {
+            ROCSPARSE_RETURN_STATUS(success);
+        }
+
+        // k == 0 || nnz_A == 0 || nnz_B == 0 - scale D with beta
+        if(k == 0 || nnz_A == 0 || nnz_B == 0)
+        {
+            return rocsparse_csrgemm_symbolic_scal_template(handle,
+                                                            m,
+                                                            n,
+                                                            descr_D,
+                                                            nnz_D,
+                                                            csr_row_ptr_D,
+                                                            csr_col_ind_D,
+                                                            descr_C,
+                                                            nnz_C,
+                                                            csr_row_ptr_C,
+                                                            csr_col_ind_C,
+                                                            info_C,
+                                                            temp_buffer);
+        }
+
+        if(temp_buffer == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
 
         status = rocsparse_csrgemm_symbolic_calc_preprocess_template(
             handle, m, csr_row_ptr_C, temp_buffer);
@@ -1959,8 +1979,59 @@ rocsparse_status rocsparse_csrgemm_symbolic_template(rocsparse_handle          h
                                                         info_C,
                                                         temp_buffer);
     }
-    case 1:
+
+    if(mul && !add)
     {
+        if(k == 0 || nnz_A == 0 || nnz_B == 0)
+        {
+            ROCSPARSE_RETURN_STATUS(success);
+        }
+
+        if(temp_buffer == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        status = rocsparse_csrgemm_symbolic_calc_preprocess_template(
+            handle, m, csr_row_ptr_C, temp_buffer);
+        if(status != rocsparse_status_success)
+        {
+            return status;
+        }
+
+        return rocsparse_csrgemm_symbolic_calc_template(handle,
+                                                        trans_A,
+                                                        trans_B,
+                                                        m,
+                                                        n,
+                                                        k,
+                                                        descr_A,
+                                                        nnz_A,
+                                                        csr_row_ptr_A,
+                                                        csr_col_ind_A,
+                                                        descr_B,
+                                                        nnz_B,
+                                                        csr_row_ptr_B,
+                                                        csr_col_ind_B,
+                                                        descr_D,
+                                                        nnz_D,
+                                                        csr_row_ptr_D,
+                                                        csr_col_ind_D,
+                                                        descr_C,
+                                                        nnz_C,
+                                                        csr_row_ptr_C,
+                                                        csr_col_ind_C,
+                                                        info_C,
+                                                        temp_buffer);
+    }
+
+    if(!mul && add)
+    {
+        if(nnz_D == 0)
+        {
+            ROCSPARSE_RETURN_STATUS(success);
+        }
+
         return rocsparse_csrgemm_symbolic_scal_template(handle,
                                                         m,
                                                         n,
@@ -1975,33 +2046,13 @@ rocsparse_status rocsparse_csrgemm_symbolic_template(rocsparse_handle          h
                                                         info_C,
                                                         temp_buffer);
     }
-    case 2:
+
+    if(!mul && !add)
     {
-        if(mul && add && ((k == 0 || nnz_A == 0 || nnz_B == 0) && (nnz_D == 0)))
-        {
-            ROCSPARSE_RETURN_STATUS(success);
-        }
-
-        if(mul && !add && (k == 0 || nnz_A == 0 || nnz_B == 0))
-        {
-            ROCSPARSE_RETURN_STATUS(success);
-        }
-
-        if(!mul && add && (nnz_D == 0))
-        {
-            ROCSPARSE_RETURN_STATUS(success);
-        }
-
-        if(!mul && !add)
-        {
-            ROCSPARSE_RETURN_STATUS(success);
-        }
-
-        ROCSPARSE_RETURN_STATUS(internal_error);
-    }
+        ROCSPARSE_RETURN_STATUS(success);
     }
 
-    ROCSPARSE_RETURN_STATUS(success);
+    ROCSPARSE_RETURN_STATUS(internal_error);
 }
 
 #define INSTANTIATE(ITYPE, JTYPE)                                                \

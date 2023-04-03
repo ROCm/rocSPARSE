@@ -1396,11 +1396,16 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             //
             tmp = nullptr;
 
-            void*  buffer;
+            void*  buffer = nullptr;
             size_t buffer_size;
-            rocsparse_coosort_buffer_size(handle_, m_, m_, unnz, (I*)0x4, (I*)0x4, &buffer_size);
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_coosort_buffer_size(
+                handle_, m_, m_, unnz, (I*)0x4, (I*)0x4, &buffer_size));
 
-            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(&buffer, buffer_size, handle_->stream));
+            if(buffer_size > 0)
+            {
+                RETURN_IF_HIP_ERROR(
+                    rocsparse_hipMallocAsync(&buffer, buffer_size, handle_->stream));
+            }
 
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_coosort_by_column(
                 handle_, m_, m_, unnz, p_uind, csc_col_ind, p_uperm, buffer));
@@ -1408,7 +1413,10 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             //
             // Free buffer.
             //
-            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(buffer, handle_->stream));
+            if(buffer_size > 0)
+            {
+                RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(buffer, handle_->stream));
+            }
 
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse_coo2csr_template(handle_, csc_col_ind, unnz, m_, p_uptr, base_));

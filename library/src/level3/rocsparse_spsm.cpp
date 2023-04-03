@@ -48,7 +48,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
     {
         if(matA->format == rocsparse_format_csr)
         {
-            return rocsparse_csrsm_buffer_size_template(
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsm_buffer_size_template(
                 handle,
                 trans_A,
                 trans_B,
@@ -64,11 +64,14 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 (J)matB->ld,
                 matA->info,
                 rocsparse_solve_policy_auto,
-                buffer_size);
+                buffer_size));
+
+            *buffer_size = std::max(static_cast<size_t>(4), *buffer_size);
+            return rocsparse_status_success;
         }
         else if(matA->format == rocsparse_format_coo)
         {
-            return rocsparse_coosm_buffer_size_template(
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_coosm_buffer_size_template(
                 handle,
                 trans_A,
                 trans_B,
@@ -84,7 +87,10 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 (I)matB->ld,
                 matA->info,
                 rocsparse_solve_policy_auto,
-                buffer_size);
+                buffer_size));
+
+            *buffer_size = std::max(static_cast<size_t>(4), *buffer_size);
+            return rocsparse_status_success;
         }
         else
         {

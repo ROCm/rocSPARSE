@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,11 +45,23 @@ void testing_gtsv_no_pivot_bad_arg(const Arguments& arg)
     size_t*          buffer_size = (size_t*)0x4;
     void*            temp_buffer = (void*)0x4;
 
+    int       nargs_to_exclude_solve   = 1;
+    const int args_to_exclude_solve[1] = {8};
+
 #define PARAMS_BUFFER_SIZE handle, m, n, dl, d, du, B1, ldb, buffer_size
 #define PARAMS_SOLVE handle, m, n, dl, d, du, B2, ldb, temp_buffer
 
     auto_testing_bad_arg(rocsparse_gtsv_no_pivot_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_gtsv_no_pivot<T>, PARAMS_SOLVE);
+    auto_testing_bad_arg(
+        rocsparse_gtsv_no_pivot<T>, nargs_to_exclude_solve, args_to_exclude_solve, PARAMS_SOLVE);
+
+    // m > 512
+    {
+        ldb = m     = 513;
+        temp_buffer = (void*)nullptr;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot<T>(PARAMS_SOLVE),
+                                rocsparse_status_invalid_pointer);
+    }
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_SOLVE

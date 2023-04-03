@@ -197,19 +197,23 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
     {
         if(temp_buffer == nullptr)
         {
-            return rocsparse_spgemm_template<I, J, T>(handle,
-                                                      trans_A,
-                                                      trans_B,
-                                                      alpha,
-                                                      A,
-                                                      B,
-                                                      beta,
-                                                      D,
-                                                      C,
-                                                      alg,
-                                                      rocsparse_spgemm_stage_buffer_size,
-                                                      buffer_size,
-                                                      temp_buffer);
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse_spgemm_template<I, J, T>(handle,
+                                                    trans_A,
+                                                    trans_B,
+                                                    alpha,
+                                                    A,
+                                                    B,
+                                                    beta,
+                                                    D,
+                                                    C,
+                                                    alg,
+                                                    rocsparse_spgemm_stage_buffer_size,
+                                                    buffer_size,
+                                                    temp_buffer)));
+
+            *buffer_size = std::max(static_cast<size_t>(4), *buffer_size);
+            return rocsparse_status_success;
         }
         else if(C->nnz == 0)
         {

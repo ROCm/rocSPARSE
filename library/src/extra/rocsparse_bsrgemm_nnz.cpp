@@ -126,6 +126,11 @@ rocsparse_status rocsparse_bsrgemm_nnzb_template(rocsparse_handle          handl
         return rocsparse_status_invalid_pointer;
     }
 
+    if(nnzb_A > 0 && temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     return rocsparse_csrgemm_nnz_template(handle,
                                           trans_A,
                                           trans_B,

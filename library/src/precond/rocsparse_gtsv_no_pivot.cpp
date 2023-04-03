@@ -126,8 +126,7 @@ rocsparse_status rocsparse_gtsv_no_pivot_buffer_size_template(rocsparse_handle h
     // Quick return if possible
     if(n == 0)
     {
-        // Do not return 0 as buffer size
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
 
@@ -151,8 +150,7 @@ rocsparse_status rocsparse_gtsv_no_pivot_buffer_size_template(rocsparse_handle h
 
     if(m <= 512)
     {
-        // Do not return 0 as buffer size
-        *buffer_size = 4;
+        *buffer_size = 0;
     }
     else
     {
@@ -622,7 +620,7 @@ rocsparse_status rocsparse_gtsv_no_pivot_template(rocsparse_handle handle,
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(temp_buffer == nullptr)
+    else if(m > 512 && temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

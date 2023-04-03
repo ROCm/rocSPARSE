@@ -42,7 +42,7 @@ rocsparse_status rocsparse_csritsv_buffer_size_template(rocsparse_handle        
     // Quick return if possible
     if(m == 0 || nnz == 0)
     {
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
 

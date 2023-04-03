@@ -590,18 +590,22 @@ rocsparse_status rocsparse_spmm_template_auto(rocsparse_handle            handle
 {
     if(temp_buffer == nullptr)
     {
-        return rocsparse_spmm_template<I, J, T>(handle,
-                                                trans_A,
-                                                trans_B,
-                                                alpha,
-                                                mat_A,
-                                                mat_B,
-                                                beta,
-                                                mat_C,
-                                                alg,
-                                                rocsparse_spmm_stage_buffer_size,
-                                                buffer_size,
-                                                temp_buffer);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spmm_template<I, J, T>)(handle,
+                                               trans_A,
+                                               trans_B,
+                                               alpha,
+                                               mat_A,
+                                               mat_B,
+                                               beta,
+                                               mat_C,
+                                               alg,
+                                               rocsparse_spmm_stage_buffer_size,
+                                               buffer_size,
+                                               temp_buffer));
+
+        *buffer_size = std::max(static_cast<size_t>(4), *buffer_size);
+        return rocsparse_status_success;
     }
     else
     {

@@ -144,7 +144,7 @@ static inline rocsparse_status
     // m == 0 || n == 0 - do nothing
     if(m == 0 || n == 0)
     {
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
 
@@ -307,7 +307,7 @@ static inline rocsparse_status
     if(m == 0 || n == 0 || k == 0 || nnz_A == 0 || nnz_B == 0)
     {
         // Do not return 0 as buffer size
-        *buffer_size = 4;
+        *buffer_size = 0;
 
         return rocsparse_status_success;
     }
@@ -412,7 +412,7 @@ static inline rocsparse_status
     }
 
     // No buffer requirements for matrix scaling
-    *buffer_size = 4;
+    *buffer_size = 0;
 
     return rocsparse_status_success;
 }
@@ -517,7 +517,7 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
             info_C->csrgemm_info->add = false;
             if(false == info_C->csrgemm_info->mul)
             {
-                *buffer_size = 4;
+                *buffer_size = 0;
                 return rocsparse_status_success;
             }
         }
@@ -525,7 +525,7 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
 
     if(m == 0)
     {
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
 
@@ -616,7 +616,7 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_scal(rocsparse_handle      
     }
 
     // Check valid pointers
-    if(descr_D == nullptr || descr_C == nullptr || nnz_C == nullptr || temp_buffer == nullptr)
+    if(descr_D == nullptr || descr_C == nullptr || nnz_C == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -1272,7 +1272,7 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_multadd(rocsparse_handle   
 
     // Check valid pointers
     if(descr_A == nullptr || descr_B == nullptr || descr_D == nullptr || descr_C == nullptr
-       || nnz_C == nullptr || temp_buffer == nullptr)
+       || nnz_C == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -1399,6 +1399,11 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_multadd(rocsparse_handle   
                                           temp_buffer);
     }
 
+    if(temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Perform nnz calculation
     return rocsparse_csrgemm_nnz_calc(handle,
                                       trans_A,
@@ -1507,7 +1512,7 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_mult(rocsparse_handle      
     hipStream_t stream = handle->stream;
 
     // Quick return if possible
-    if(m == 0 || n == 0 || k == 0)
+    if(m == 0 || n == 0 || k == 0 || nnz_A == 0 || nnz_B == 0)
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
