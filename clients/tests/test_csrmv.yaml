@@ -226,20 +226,6 @@ Tests:
 - name: csrmv_file
   category: quick
   function: csrmv
-  precision: *single_double_precisions_complex
-  M: 1
-  N: 1
-  alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_file_rocalution]
-  matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
-  filename: [qc2534]
-
-- name: csrmv_file
-  category: quick
-  function: csrmv
   precision: *double_only_precisions_complex
   M: 1
   N: 1
@@ -249,7 +235,8 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_general]
   spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
-  filename: [rma10]
+  filename: [rma10,
+             qc2534]
 
 - name: csrmv_file
   category: pre_checkin
@@ -361,7 +348,20 @@ Tests:
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_symmetric]
   uplo: [rocsparse_fill_mode_lower]
-  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive]
+
+- name: csrmv
+  category: nightly
+  function: csrmv
+  precision: *single_double_precisions
+  M_N: *M_N_range_nightly
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  matrix_type: [rocsparse_matrix_type_symmetric]
+  uplo: [rocsparse_fill_mode_lower]
+  spmv_alg: [rocsparse_spmv_alg_csr_stream]
 
 - name: csrmv_file
   category: quick

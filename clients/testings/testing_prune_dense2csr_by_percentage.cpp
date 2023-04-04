@@ -177,7 +177,7 @@ void testing_prune_dense2csr_by_percentage(const Arguments& arg)
     {
         for(rocsparse_int i = 0; i < M; ++i)
         {
-            h_A[j * LDA + i] = random_generator_normal<T>();
+            h_A[j * LDA + i] = random_cached_generator_normal<T>();
         }
     }
 

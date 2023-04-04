@@ -281,7 +281,7 @@ inline void rocsparse_init_gebsr_matrix_from_csr(rocsparse_matrix_factory<T>& ma
 
             for(rocsparse_int k = start; k < end; k++)
             {
-                T val = random_generator<T>();
+                T val = random_cached_generator<T>();
                 for(rocsparse_int c = 0; c < col_block_dim; ++c)
                 {
                     for(rocsparse_int r = 0; r < row_block_dim; ++r)
@@ -305,7 +305,7 @@ inline void rocsparse_init_gebsr_matrix_from_csr(rocsparse_matrix_factory<T>& ma
 
             for(rocsparse_int k = start; k < end; k++)
             {
-                T val = random_generator<T>();
+                T val = random_cached_generator<T>();
                 for(rocsparse_int r = 0; r < row_block_dim; ++r)
                 {
                     for(rocsparse_int c = 0; c < col_block_dim; ++c)

@@ -201,7 +201,7 @@ Tests:
   baseB: [rocsparse_index_base_zero]
   baseC: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [bmwcra_1,
+  filename: [scircuit,
              sme3Dc,
              shipsec1,
              rma10]

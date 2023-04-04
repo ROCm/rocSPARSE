@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -166,7 +166,7 @@ void testing_nnz(const Arguments& arg)
     {
         for(rocsparse_int j = 0; j < N; ++j)
         {
-            h_A[j * LD + i] = random_generator<T>(0, 4);
+            h_A[j * LD + i] = random_cached_generator<T>(0, 4);
         }
     }
 

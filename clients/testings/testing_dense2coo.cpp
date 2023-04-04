@@ -109,7 +109,7 @@ void testing_dense2coo(const Arguments& arg)
     {
         for(rocsparse_int i = 0; i < M; ++i)
         {
-            h_dense_val[j * LD + i] = random_generator<T>(0, 4);
+            h_dense_val[j * LD + i] = random_cached_generator<T>(0, 4);
         }
     }
 

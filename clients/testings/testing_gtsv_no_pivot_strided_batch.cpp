@@ -117,9 +117,9 @@ void testing_gtsv_no_pivot_strided_batch(const Arguments& arg)
     {
         for(rocsparse_int i = 0; i < m; ++i)
         {
-            hdl[j * batch_stride + i] = random_generator<T>(1, 8);
-            hd[j * batch_stride + i]  = random_generator<T>(17, 32);
-            hdu[j * batch_stride + i] = random_generator<T>(1, 8);
+            hdl[j * batch_stride + i] = random_cached_generator<T>(1, 8);
+            hd[j * batch_stride + i]  = random_cached_generator<T>(17, 32);
+            hdu[j * batch_stride + i] = random_cached_generator<T>(1, 8);
         }
 
         hdl[j * batch_stride + 0]     = static_cast<T>(0);
@@ -133,7 +133,7 @@ void testing_gtsv_no_pivot_strided_batch(const Arguments& arg)
     {
         for(rocsparse_int i = 0; i < m; ++i)
         {
-            hx[j * batch_stride + i] = random_generator<T>(-10, 10);
+            hx[j * batch_stride + i] = random_cached_generator<T>(-10, 10);
         }
     }
 

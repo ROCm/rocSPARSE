@@ -320,6 +320,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 
 set(ROCSPARSE_CLIENTS_COMMON
   ../common/utility.cpp
+  ../common/rocsparse_random.cpp
   ../common/rocsparse_check.cpp
   ../common/rocsparse_parse_data.cpp
   ../common/rocsparse_enum.cpp
