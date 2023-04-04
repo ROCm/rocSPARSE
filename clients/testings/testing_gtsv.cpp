@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,9 +99,9 @@ void testing_gtsv(const Arguments& arg)
     // initialize tri-diagonal matrix
     for(rocsparse_int i = 0; i < m; ++i)
     {
-        hdl[i] = random_generator<T>(1, 8);
-        hd[i]  = random_generator<T>(10, 20);
-        hdu[i] = random_generator<T>(1, 8);
+        hdl[i] = random_cached_generator<T>(1, 8);
+        hd[i]  = random_cached_generator<T>(10, 20);
+        hdu[i] = random_cached_generator<T>(1, 8);
     }
 
     hdl[0]     = static_cast<T>(0);
@@ -114,7 +114,7 @@ void testing_gtsv(const Arguments& arg)
     {
         for(rocsparse_int i = 0; i < m; ++i)
         {
-            hB[j * ldb + i] = random_generator<T>(-10, 10);
+            hB[j * ldb + i] = random_cached_generator<T>(-10, 10);
         }
     }
 

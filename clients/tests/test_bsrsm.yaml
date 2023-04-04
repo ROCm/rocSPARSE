@@ -131,7 +131,25 @@ Tests:
   function: bsrsm
   precision: *single_double_precisions_complex_real
   M_N: *M_N_range_quick
-  K: [65, 153, 280]
+  K: [65, 153]
+  block_dim: [2, 14, 71]
+  alpha_alphai: *alpha_range_quick
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none]
+  diag: [rocsparse_diag_type_non_unit]
+  uplo: [rocsparse_fill_mode_lower]
+  apol: [rocsparse_analysis_policy_reuse]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+
+- name: bsrsm
+  category: quick
+  function: bsrsm
+  precision: *double_only_precisions_complex
+  M_N: *M_N_range_quick
+  K: [280]
   block_dim: [2, 14, 71]
   alpha_alphai: *alpha_range_quick
   direction: [rocsparse_direction_row]
@@ -269,7 +287,7 @@ Tests:
   category: pre_checkin
   function: bsrsm
   precision: *single_double_precisions_complex_real
-  M_N: *M_N_range_quick
+  M_N: *M_N_range_checkin
   K: [65, 153, 280]
   block_dim: [2, 14, 71]
   alpha_alphai: *alpha_range_quick

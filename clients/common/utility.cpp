@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-#include "rocsparse_random.hpp"
+
 #include "utility.hpp"
 
 #include <chrono>
@@ -44,44 +44,6 @@ namespace fs = std::experimental::filesystem;
 #else
 #include <fcntl.h>
 #endif
-
-// Random number generator
-// Note: We do not use random_device to initialize the RNG, because we want
-// repeatability in case of test failure. TODO: Add seed as an optional CLI
-// argument, and print the seed on output, to ensure repeatability.
-rocsparse_rng_t rocsparse_rng(69069);
-rocsparse_rng_t rocsparse_rng_nan(69069);
-rocsparse_rng_t rocsparse_seed(rocsparse_rng);
-
-void rocsparse_rng_set(rocsparse_rng_t a)
-{
-    rocsparse_rng = a;
-}
-
-void rocsparse_seed_set(rocsparse_rng_t a)
-{
-    rocsparse_seed = a;
-}
-
-void rocsparse_rng_nan_set(rocsparse_rng_t a)
-{
-    rocsparse_rng_nan = a;
-}
-
-rocsparse_rng_t& rocsparse_rng_get()
-{
-    return rocsparse_rng;
-}
-
-rocsparse_rng_t& rocsparse_seed_get()
-{
-    return rocsparse_seed;
-}
-
-rocsparse_rng_t& rocsparse_rng_nan_get()
-{
-    return rocsparse_rng_nan;
-}
 
 /* ============================================================================================ */
 // Return path of this executable

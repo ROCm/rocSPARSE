@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,11 +113,11 @@ void testing_gpsv_interleaved_batch(const Arguments& arg)
     {
         for(rocsparse_int i = 0; i < m; ++i)
         {
-            hds[batch_stride * i + b] = random_generator<T>(1, 8);
-            hdl[batch_stride * i + b] = random_generator<T>(1, 8);
-            hd[batch_stride * i + b]  = random_generator<T>(17, 32);
-            hdu[batch_stride * i + b] = random_generator<T>(1, 8);
-            hdw[batch_stride * i + b] = random_generator<T>(1, 8);
+            hds[batch_stride * i + b] = random_cached_generator<T>(1, 8);
+            hdl[batch_stride * i + b] = random_cached_generator<T>(1, 8);
+            hd[batch_stride * i + b]  = random_cached_generator<T>(17, 32);
+            hdu[batch_stride * i + b] = random_cached_generator<T>(1, 8);
+            hdw[batch_stride * i + b] = random_cached_generator<T>(1, 8);
         }
 
         hds[batch_stride * 0 + b]       = static_cast<T>(0);
@@ -135,7 +135,7 @@ void testing_gpsv_interleaved_batch(const Arguments& arg)
     {
         for(rocsparse_int i = 0; i < m; ++i)
         {
-            hx[batch_stride * i + b] = random_generator<T>(-10, 10);
+            hx[batch_stride * i + b] = random_cached_generator<T>(-10, 10);
         }
     }
 

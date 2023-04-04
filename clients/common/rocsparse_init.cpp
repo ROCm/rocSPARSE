@@ -181,22 +181,13 @@ template <typename T>
 void rocsparse_init_exact(
     T* A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count, int a, int b)
 {
-    constexpr size_t RANDOM_CACHE_SIZE = 1024;
-
-    std::vector<T> random(RANDOM_CACHE_SIZE);
-    for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
-    {
-        random[i] = random_generator_exact<T>(a, b);
-    }
-
     for(size_t i_batch = 0; i_batch < batch_count; i_batch++)
     {
         for(size_t j = 0; j < N; ++j)
         {
             for(size_t i = 0; i < M; ++i)
             {
-                A[i + j * lda + i_batch * stride]
-                    = random[(i * 17 + j * lda * 59 + i_batch * stride * 83) % RANDOM_CACHE_SIZE];
+                A[i + j * lda + i_batch * stride] = random_cached_generator_exact<T>(a, b);
             }
         }
     }
@@ -206,22 +197,13 @@ template <typename T>
 void rocsparse_init(
     T* A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count, T a, T b)
 {
-    constexpr size_t RANDOM_CACHE_SIZE = 1024;
-
-    std::vector<T> random(RANDOM_CACHE_SIZE);
-    for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
-    {
-        random[i] = random_generator<T>(a, b);
-    }
-
     for(size_t i_batch = 0; i_batch < batch_count; i_batch++)
     {
         for(size_t j = 0; j < N; ++j)
         {
             for(size_t i = 0; i < M; ++i)
             {
-                A[i + j * lda + i_batch * stride]
-                    = random[(i * 17 + j * lda * 59 + i_batch * stride * 83) % RANDOM_CACHE_SIZE];
+                A[i + j * lda + i_batch * stride] = random_cached_generator<T>(a, b);
             }
         }
     }
@@ -257,7 +239,7 @@ void rocsparse_init_index(std::vector<I>& x, size_t nnz, size_t start, size_t en
 
     while(num < nnz)
     {
-        I val = random_generator<I>(start, end - 1);
+        I val = random_generator_exact<I>(start, end - 1);
         if(!check[val - start])
         {
             x[num++]           = val;
@@ -283,7 +265,7 @@ void rocsparse_init_alternating_sign(
         for(size_t i = 0; i < M; ++i)
             for(size_t j = 0; j < N; ++j)
             {
-                auto value                        = random_generator_exact<T>();
+                auto value                        = random_cached_generator_exact<T>();
                 A[i + j * lda + i_batch * stride] = (i ^ j) & 1 ? value : -value;
             }
 }
@@ -371,7 +353,7 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
 
     for(I k = 0; k < M; k++)
     {
-        I nnz_in_row = std::min(random_generator<I>(0, 2 * avg_nnz_per_row), N);
+        I nnz_in_row = std::min(random_cached_generator_exact<I>(0, 2 * avg_nnz_per_row), N);
         nnz_in_row   = (I)std::min(remaining_nnz, (int64_t)nnz_in_row);
 
         count[k] += nnz_in_row;
@@ -382,11 +364,11 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
     // Sprinkle any remaining non-zeros amoung the rows
     for(int64_t k = 0; k < remaining_nnz; ++k)
     {
-        I   i       = random_generator<I>(0, M - 1);
+        I   i       = random_generator_exact<I>(0, M - 1);
         int maxiter = 0;
         while(count[i] >= N && maxiter++ < 10)
         {
-            i = random_generator<I>(0, M - 1);
+            i = random_generator_exact<I>(0, M - 1);
         }
         if(maxiter >= 10)
         {
@@ -443,7 +425,7 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
         // shuffle permutation
         for(I k = 0; k < nnz_in_row; ++k)
         {
-            std::swap(random[k], random[random_generator<I>(0, bmax - bmin)]);
+            std::swap(random[k], random[random_generator_exact<I>(0, bmax - bmin)]);
         }
 
         if(full_rank)
@@ -485,65 +467,40 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
         }
     }
 
-    constexpr size_t RANDOM_CACHE_SIZE = 1024;
-
     if(to_int)
     {
-        std::vector<T> random(RANDOM_CACHE_SIZE);
-        for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
-        {
-            random[i] = random_generator_exact<T>();
-        }
-
         // Sample random values
         for(int64_t i = 0; i < nnz; ++i)
         {
-            val[i] = random[i % RANDOM_CACHE_SIZE];
+            val[i] = random_cached_generator_exact<T>();
         }
     }
     else
     {
         if(full_rank)
         {
-            std::vector<T> random_off_diag(RANDOM_CACHE_SIZE);
-            std::vector<T> random_diag1(RANDOM_CACHE_SIZE);
-            std::vector<T> random_diag2(RANDOM_CACHE_SIZE);
-            for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
-            {
-                random_off_diag[i] = random_generator<T>(static_cast<T>(-0.5), static_cast<T>(0.5));
-                random_diag1[i]    = random_generator<T>(static_cast<T>(4.0), static_cast<T>(8.0));
-                random_diag2[i]
-                    = random_generator<T>(static_cast<T>(-1.0e-2), static_cast<T>(1.0e-2));
-            }
-
-            // Sample random off-diagonal values
             for(int64_t i = 0; i < nnz; ++i)
             {
                 if(row_ind[i] == col_ind[i])
                 {
                     // Sample diagonal values
-                    val[i] = random_diag1[i % RANDOM_CACHE_SIZE];
-                    val[i] += val[i] * random_diag2[i % RANDOM_CACHE_SIZE];
+                    val[i] = random_cached_generator<T>(static_cast<T>(4.0), static_cast<T>(8.0));
+                    val[i] += val[i]
+                              * random_cached_generator<T>(static_cast<T>(-1.0e-2),
+                                                           static_cast<T>(1.0e-2));
                 }
                 else
                 {
                     // Samples off-diagonal values
-                    val[i] = random_off_diag[i % RANDOM_CACHE_SIZE];
+                    val[i] = random_cached_generator<T>(static_cast<T>(-0.5), static_cast<T>(0.5));
                 }
             }
         }
         else
         {
-            std::vector<T> random(RANDOM_CACHE_SIZE);
-            for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
-            {
-                random[i] = random_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
-            }
-
-            // Sample random values
             for(int64_t i = 0; i < nnz; ++i)
             {
-                val[i] = random[i % RANDOM_CACHE_SIZE];
+                val[i] = random_cached_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
             }
         }
     }
@@ -666,7 +623,7 @@ void rocsparse_init_gebsr_laplace2d(std::vector<I>&      row_ptr,
     val.resize(nvalues);
     for(size_t i = 0; i < nvalues; ++i)
     {
-        val[i] = random_generator<T>();
+        val[i] = random_cached_generator<T>();
     }
 }
 
@@ -825,7 +782,7 @@ void rocsparse_init_gebsr_laplace3d(std::vector<I>&      row_ptr,
     val.resize(nvalues);
     for(size_t i = 0; i < nvalues; ++i)
     {
-        val[i] = random_generator<T>();
+        val[i] = random_cached_generator<T>();
     }
 }
 
@@ -906,7 +863,7 @@ void rocsparse_init_gebsr_mtx(const char*          filename,
     bsr_val.resize(nvalues);
     for(size_t i = 0; i < nvalues; ++i)
     {
-        bsr_val[i] = random_generator<T>();
+        bsr_val[i] = random_cached_generator<T>();
     }
 }
 
@@ -970,7 +927,7 @@ void rocsparse_init_gebsr_rocalution(const char*          filename,
     val.resize(nvalues);
     for(size_t i = 0; i < nvalues; ++i)
     {
-        val[i] = random_generator<T>();
+        val[i] = random_cached_generator<T>();
     }
 }
 
@@ -1224,14 +1181,14 @@ void rocsparse_init_gebsr_random(std::vector<I>&            row_ptr,
     {
         for(size_t i = 0; i < nvalues; ++i)
         {
-            val[i] = random_generator_exact<T>();
+            val[i] = random_cached_generator_exact<T>();
         }
     }
     else
     {
         for(size_t i = 0; i < nvalues; ++i)
         {
-            val[i] = random_generator<T>();
+            val[i] = random_cached_generator<T>();
         }
     }
 }
@@ -1261,16 +1218,6 @@ void rocsparse_init_coo_tridiagonal(std::vector<I>&      row_ind,
         return;
     }
 
-    constexpr size_t RANDOM_CACHE_SIZE = 1024;
-
-    std::vector<T> random(RANDOM_CACHE_SIZE);
-    std::vector<T> random_diag(RANDOM_CACHE_SIZE);
-    for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
-    {
-        random[i]      = random_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
-        random_diag[i] = random_generator<T>(static_cast<T>(2.0), static_cast<T>(4.0));
-    }
-
     int64_t l_length = std::min((M + l), N);
     int64_t d_length = std::min(M, N);
     int64_t u_length = std::min((N - u), M);
@@ -1292,7 +1239,7 @@ void rocsparse_init_coo_tridiagonal(std::vector<I>&      row_ind,
         {
             row_ind[index] = i + base;
             col_ind[index] = l_col + base;
-            val[index]     = random[index % RANDOM_CACHE_SIZE];
+            val[index]     = random_cached_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
             index++;
         }
 
@@ -1300,7 +1247,7 @@ void rocsparse_init_coo_tridiagonal(std::vector<I>&      row_ind,
         {
             row_ind[index] = i + base;
             col_ind[index] = d_col + base;
-            val[index]     = random_diag[index % RANDOM_CACHE_SIZE];
+            val[index]     = random_cached_generator<T>(static_cast<T>(2.0), static_cast<T>(4.0));
             index++;
         }
 
@@ -1308,7 +1255,7 @@ void rocsparse_init_coo_tridiagonal(std::vector<I>&      row_ind,
         {
             row_ind[index] = i + base;
             col_ind[index] = u_col + base;
-            val[index]     = random[index % RANDOM_CACHE_SIZE];
+            val[index]     = random_cached_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
             index++;
         }
     }
@@ -1368,7 +1315,7 @@ void rocsparse_init_gebsr_tridiagonal(std::vector<I>&      row_ptr,
 
     for(size_t i = 0; i < nvalues; ++i)
     {
-        val[i] = random_generator<T>();
+        val[i] = random_cached_generator<T>();
     }
 }
 
@@ -1399,16 +1346,6 @@ void rocsparse_init_coo_pentadiagonal(std::vector<I>&      row_ind,
         return;
     }
 
-    constexpr size_t RANDOM_CACHE_SIZE = 1024;
-
-    std::vector<T> random(RANDOM_CACHE_SIZE);
-    std::vector<T> random_diag(RANDOM_CACHE_SIZE);
-    for(size_t i = 0; i < RANDOM_CACHE_SIZE; i++)
-    {
-        random[i]      = random_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
-        random_diag[i] = random_generator<T>(static_cast<T>(4.0), static_cast<T>(6.0));
-    }
-
     int64_t l_length  = std::min((M + l), N);
     int64_t ll_length = std::min((M + ll), N);
     int64_t d_length  = std::min(M, N);
@@ -1434,7 +1371,7 @@ void rocsparse_init_coo_pentadiagonal(std::vector<I>&      row_ind,
         {
             row_ind[index] = i + base;
             col_ind[index] = ll_col + base;
-            val[index]     = random[index % RANDOM_CACHE_SIZE];
+            val[index]     = random_cached_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
             index++;
         }
 
@@ -1442,7 +1379,7 @@ void rocsparse_init_coo_pentadiagonal(std::vector<I>&      row_ind,
         {
             row_ind[index] = i + base;
             col_ind[index] = l_col + base;
-            val[index]     = random[index % RANDOM_CACHE_SIZE];
+            val[index]     = random_cached_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
             index++;
         }
 
@@ -1450,7 +1387,7 @@ void rocsparse_init_coo_pentadiagonal(std::vector<I>&      row_ind,
         {
             row_ind[index] = i + base;
             col_ind[index] = d_col + base;
-            val[index]     = random_diag[index % RANDOM_CACHE_SIZE];
+            val[index]     = random_cached_generator<T>(static_cast<T>(4.0), static_cast<T>(6.0));
             index++;
         }
 
@@ -1458,7 +1395,7 @@ void rocsparse_init_coo_pentadiagonal(std::vector<I>&      row_ind,
         {
             row_ind[index] = i + base;
             col_ind[index] = u_col + base;
-            val[index]     = random[index % RANDOM_CACHE_SIZE];
+            val[index]     = random_cached_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
             index++;
         }
 
@@ -1466,7 +1403,7 @@ void rocsparse_init_coo_pentadiagonal(std::vector<I>&      row_ind,
         {
             row_ind[index] = i + base;
             col_ind[index] = uu_col + base;
-            val[index]     = random[index % RANDOM_CACHE_SIZE];
+            val[index]     = random_cached_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
             index++;
         }
     }
@@ -1528,7 +1465,7 @@ void rocsparse_init_gebsr_pentadiagonal(std::vector<I>&      row_ptr,
     val.resize(nvalues);
     for(size_t i = 0; i < nvalues; ++i)
     {
-        val[i] = random_generator<T>();
+        val[i] = random_cached_generator<T>();
     }
 }
 

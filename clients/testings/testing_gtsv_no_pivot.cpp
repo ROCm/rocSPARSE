@@ -113,9 +113,9 @@ void testing_gtsv_no_pivot(const Arguments& arg)
     // initialize tri-diagonal matrix
     for(rocsparse_int i = 0; i < m; ++i)
     {
-        hdl[i] = random_generator<T>(1, 8);
-        hd[i]  = random_generator<T>(17, 32);
-        hdu[i] = random_generator<T>(1, 8);
+        hdl[i] = random_cached_generator<T>(1, 8);
+        hd[i]  = random_cached_generator<T>(17, 32);
+        hdu[i] = random_cached_generator<T>(1, 8);
     }
 
     hdl[0]     = 0.0f;
@@ -128,7 +128,7 @@ void testing_gtsv_no_pivot(const Arguments& arg)
     {
         for(rocsparse_int i = 0; i < m; ++i)
         {
-            hB[j * ldb + i] = random_generator<T>(-10, 10);
+            hB[j * ldb + i] = random_cached_generator<T>(-10, 10);
         }
     }
 

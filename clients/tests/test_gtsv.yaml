@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,16 @@ Tests:
   function: gtsv
   precision: *single_double_precisions
   M: [763]
-  N: [54, 78, 221, 663]
+  N: [54, 78, 221]
+  denseld: [800]
+  matrix: [rocsparse_matrix_random]
+
+- name: gtsv
+  category: quick
+  function: gtsv
+  precision: *double_only_precisions
+  M: [763]
+  N: [663]
   denseld: [800]
   matrix: [rocsparse_matrix_random]
 

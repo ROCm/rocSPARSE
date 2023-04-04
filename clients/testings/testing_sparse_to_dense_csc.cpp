@@ -198,7 +198,7 @@ void testing_sparse_to_dense_csc(const Arguments& arg)
     {
         for(int i = 0; i < mn; ++i)
         {
-            h_dense_val[j * (int)ld + i] = random_generator<T>(0, 9);
+            h_dense_val[j * (int)ld + i] = random_cached_generator<T>(0, 9);
         }
     }
 

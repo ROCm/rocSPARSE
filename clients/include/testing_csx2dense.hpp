@@ -220,7 +220,7 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
         {
             for(rocsparse_int i = 0; i < M; ++i)
             {
-                h_dense_val_ref[j * LD + i] = random_generator<T>(0, 4) == 0 ? 1 : 0;
+                h_dense_val_ref[j * LD + i] = random_cached_generator<T>(0, 4) == 0 ? 1 : 0;
             }
         }
     }

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -105,9 +105,9 @@ void testing_gtsv_interleaved_batch(const Arguments& arg)
     {
         for(rocsparse_int j = 0; j < batch_stride; ++j)
         {
-            hdl[i * batch_stride + j] = random_generator<T>(1, 8);
-            hd[i * batch_stride + j]  = random_generator<T>(17, 32);
-            hdu[i * batch_stride + j] = random_generator<T>(1, 8);
+            hdl[i * batch_stride + j] = random_cached_generator<T>(1, 8);
+            hd[i * batch_stride + j]  = random_cached_generator<T>(17, 32);
+            hdu[i * batch_stride + j] = random_cached_generator<T>(1, 8);
         }
 
         if(i == 0)
@@ -133,7 +133,7 @@ void testing_gtsv_interleaved_batch(const Arguments& arg)
     {
         for(rocsparse_int j = 0; j < batch_stride; j++)
         {
-            hx[i * batch_stride + j] = random_generator<T>(-10, 10);
+            hx[i * batch_stride + j] = random_cached_generator<T>(-10, 10);
         }
     }
 
