@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,13 @@
 
 #include "common.h"
 
-template <rocsparse_int BELL_BLOCK_DIM, rocsparse_int BLK_SIZE_Y, typename T, typename I>
+template <rocsparse_int BELL_BLOCK_DIM,
+          rocsparse_int BLK_SIZE_Y,
+          typename T,
+          typename I,
+          typename A,
+          typename B,
+          typename C>
 ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation trans_A,
                                                          rocsparse_operation trans_B,
                                                          rocsparse_order     order_B,
@@ -38,11 +44,11 @@ ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation tra
                                                          I                   bell_cols,
                                                          I                   block_dim,
                                                          const I* __restrict__ bell_col_ind,
-                                                         const T* __restrict__ bell_val,
-                                                         const T* __restrict__ B,
+                                                         const A* __restrict__ bell_val,
+                                                         const B* __restrict__ dense_B,
                                                          I ldb,
                                                          T beta,
-                                                         T* __restrict__ C,
+                                                         C* __restrict__ dense_C,
                                                          I                    ldc,
                                                          rocsparse_index_base idx_base)
 {
@@ -51,8 +57,8 @@ ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation tra
     const I block_row  = hipBlockIdx_x;
     const I bell_width = (block_row < Mb) ? (bell_cols / block_dim) : 0;
 
-    __shared__ T shared_B[BELL_BLOCK_DIM * BLK_SIZE_Y];
-    __shared__ T shared_A[BELL_BLOCK_DIM * BELL_BLOCK_DIM];
+    __shared__ B shared_B[BELL_BLOCK_DIM * BLK_SIZE_Y];
+    __shared__ A shared_A[BELL_BLOCK_DIM * BELL_BLOCK_DIM];
 
     const I global_col = tidy + hipBlockIdx_y * BLK_SIZE_Y;
     const I colB       = global_col * ldb;
@@ -79,28 +85,29 @@ ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation tra
                    || (trans_B != rocsparse_operation_none && order_B != rocsparse_order_column))
                 {
                     shared_B[BELL_BLOCK_DIM * tidy + tidx]
-                        = (is_B_valid) ? B[block_dim * block_col + (tidx + y) + colB]
-                                       : static_cast<T>(0);
+                        = (is_B_valid) ? dense_B[block_dim * block_col + (tidx + y) + colB]
+                                       : static_cast<B>(0);
                 }
                 else
                 {
                     shared_B[BELL_BLOCK_DIM * tidy + tidx]
-                        = (is_B_valid) ? B[global_col + ldb * (block_dim * block_col + (tidx + y))]
-                                       : static_cast<T>(0);
+                        = (is_B_valid)
+                              ? dense_B[global_col + ldb * (block_dim * block_col + (tidx + y))]
+                              : static_cast<B>(0);
                 }
                 if(dir_A == rocsparse_direction_row)
                 {
                     shared_A[BELL_BLOCK_DIM * tidy + tidx]
                         = (is_A_valid) ? bell_val[block_dim * block_dim * ell_idx
                                                   + block_dim * (tidx + x) + (tidy + y)]
-                                       : static_cast<T>(0);
+                                       : static_cast<A>(0);
                 }
                 else
                 {
                     shared_A[BELL_BLOCK_DIM * tidy + tidx]
                         = (is_A_valid) ? bell_val[block_dim * block_dim * ell_idx
                                                   + block_dim * (tidy + y) + (tidx + x)]
-                                       : static_cast<T>(0);
+                                       : static_cast<A>(0);
                 }
 
                 __syncthreads();
@@ -112,9 +119,10 @@ ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation tra
                     {
                         for(I l = 0; l < BELL_BLOCK_DIM; l++)
                         {
-                            sum = rocsparse_fma(rocsparse_conj(shared_A[BELL_BLOCK_DIM * l + tidx]),
-                                                rocsparse_conj(shared_B[BELL_BLOCK_DIM * tidy + l]),
-                                                sum);
+                            sum = rocsparse_fma<T>(
+                                rocsparse_conj(shared_A[BELL_BLOCK_DIM * l + tidx]),
+                                rocsparse_conj(shared_B[BELL_BLOCK_DIM * tidy + l]),
+                                sum);
                         }
                     }
                     else if((trans_A != rocsparse_operation_conjugate_transpose)
@@ -122,9 +130,10 @@ ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation tra
                     {
                         for(I l = 0; l < BELL_BLOCK_DIM; l++)
                         {
-                            sum = rocsparse_fma(shared_A[BELL_BLOCK_DIM * l + tidx],
-                                                rocsparse_conj(shared_B[BELL_BLOCK_DIM * tidy + l]),
-                                                sum);
+                            sum = rocsparse_fma<T>(
+                                shared_A[BELL_BLOCK_DIM * l + tidx],
+                                rocsparse_conj(shared_B[BELL_BLOCK_DIM * tidy + l]),
+                                sum);
                         }
                     }
                     else if((trans_A == rocsparse_operation_conjugate_transpose)
@@ -132,18 +141,19 @@ ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation tra
                     {
                         for(I l = 0; l < BELL_BLOCK_DIM; l++)
                         {
-                            sum = rocsparse_fma(rocsparse_conj(shared_A[BELL_BLOCK_DIM * l + tidx]),
-                                                shared_B[BELL_BLOCK_DIM * tidy + l],
-                                                sum);
+                            sum = rocsparse_fma<T>(
+                                rocsparse_conj(shared_A[BELL_BLOCK_DIM * l + tidx]),
+                                shared_B[BELL_BLOCK_DIM * tidy + l],
+                                sum);
                         }
                     }
                     else
                     {
                         for(I l = 0; l < BELL_BLOCK_DIM; l++)
                         {
-                            sum = rocsparse_fma(shared_A[BELL_BLOCK_DIM * l + tidx],
-                                                shared_B[BELL_BLOCK_DIM * tidy + l],
-                                                sum);
+                            sum = rocsparse_fma<T>(shared_A[BELL_BLOCK_DIM * l + tidx],
+                                                   shared_B[BELL_BLOCK_DIM * tidy + l],
+                                                   sum);
                         }
                     }
                 }
@@ -158,11 +168,11 @@ ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation tra
         {
             if(beta == static_cast<T>(0))
             {
-                C[shift_C] = alpha * sum;
+                dense_C[shift_C] = alpha * sum;
             }
             else
             {
-                C[shift_C] = rocsparse_fma(beta, C[shift_C], alpha * sum);
+                dense_C[shift_C] = rocsparse_fma(beta, dense_C[shift_C], alpha * sum);
             }
         }
     }

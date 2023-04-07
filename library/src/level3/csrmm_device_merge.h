@@ -33,6 +33,9 @@ template <unsigned int BLOCKSIZE,
           bool         TRANSB,
           typename I,
           typename J,
+          typename A,
+          typename B,
+          typename C,
           typename T>
 ROCSPARSE_DEVICE_ILF void csrmmnn_merge_main_device(bool conj_A,
                                                     bool conj_B,
@@ -47,11 +50,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_merge_main_device(bool conj_A,
                                                     const J* __restrict__ row_limits,
                                                     const I* __restrict__ csr_row_ptr,
                                                     const J* __restrict__ csr_col_ind,
-                                                    const T* __restrict__ csr_val,
-                                                    const T* __restrict__ B,
+                                                    const A* __restrict__ csr_val,
+                                                    const B* __restrict__ dense_B,
                                                     J ldb,
                                                     T beta,
-                                                    T* __restrict__ C,
+                                                    C* __restrict__ dense_C,
                                                     J                    ldc,
                                                     rocsparse_order      order,
                                                     rocsparse_index_base idx_base)
@@ -103,11 +106,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_merge_main_device(bool conj_A,
 
             if(!TRANSB)
             {
-                valB[i] = v * conj_val(B[c + ldb * (colB + lid)], conj_B);
+                valB[i] = v * conj_val(dense_B[c + ldb * (colB + lid)], conj_B);
             }
             else
             {
-                valB[i] = v * conj_val(B[ldb * c + colB + lid], conj_B);
+                valB[i] = v * conj_val(dense_B[ldb * c + colB + lid], conj_B);
             }
         }
 
@@ -152,14 +155,14 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_merge_main_device(bool conj_A,
                 {
                     for(J i = 0; i < WF_SIZE; ++i)
                     {
-                        C[row_ind + ldc * (colB + i)] += valB[i];
+                        dense_C[row_ind + ldc * (colB + i)] += valB[i];
                     }
                 }
                 else
                 {
                     for(J i = 0; i < WF_SIZE; ++i)
                     {
-                        C[colB + i + ldc * row_ind] += valB[i];
+                        dense_C[colB + i + ldc * row_ind] += valB[i];
                     }
                 }
             }
@@ -185,6 +188,9 @@ template <unsigned int BLOCKSIZE,
           bool         TRANSB,
           typename I,
           typename J,
+          typename A,
+          typename B,
+          typename C,
           typename T>
 ROCSPARSE_DEVICE_ILF void csrmmnn_merge_remainder_device(bool conj_A,
                                                          bool conj_B,
@@ -199,11 +205,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_merge_remainder_device(bool conj_A,
                                                          const J* __restrict__ row_limits,
                                                          const I* __restrict__ csr_row_ptr,
                                                          const J* __restrict__ csr_col_ind,
-                                                         const T* __restrict__ csr_val,
-                                                         const T* __restrict__ B,
+                                                         const A* __restrict__ csr_val,
+                                                         const B* __restrict__ dense_B,
                                                          J ldb,
                                                          T beta,
-                                                         T* __restrict__ C,
+                                                         C* __restrict__ dense_C,
                                                          J                    ldc,
                                                          rocsparse_order      order,
                                                          rocsparse_index_base idx_base)
@@ -252,12 +258,12 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_merge_remainder_device(bool conj_A,
 
         if(!TRANSB)
         {
-            valB[i] = (colB + lid) < N ? v * conj_val(B[c + ldb * (colB + lid)], conj_B)
+            valB[i] = (colB + lid) < N ? v * conj_val(dense_B[c + ldb * (colB + lid)], conj_B)
                                        : static_cast<T>(0);
         }
         else
         {
-            valB[i] = (colB + lid) < N ? v * conj_val(B[ldb * c + (colB + lid)], conj_B)
+            valB[i] = (colB + lid) < N ? v * conj_val(dense_B[ldb * c + (colB + lid)], conj_B)
                                        : static_cast<T>(0);
         }
     }
@@ -307,7 +313,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_merge_remainder_device(bool conj_A,
                 {
                     if((colB + i) < N)
                     {
-                        C[row_ind + ldc * (colB + i)] += valB[i];
+                        dense_C[row_ind + ldc * (colB + i)] += valB[i];
                     }
                 }
             }
@@ -317,7 +323,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_merge_remainder_device(bool conj_A,
                 {
                     if((colB + i) < N)
                     {
-                        C[colB + i + ldc * row_ind] += valB[i];
+                        dense_C[colB + i + ldc * row_ind] += valB[i];
                     }
                 }
             }
@@ -366,7 +372,7 @@ ROCSPARSE_KERNEL(BLOCKSIZE)
 void csrmmnn_general_block_reduce(I nblocks,
                                   const J* __restrict__ row_block_red,
                                   const T* __restrict__ val_block_red,
-                                  T*              C,
+                                  T*              dense_C,
                                   J               ldc,
                                   rocsparse_order order)
 {
@@ -402,11 +408,11 @@ void csrmmnn_general_block_reduce(I nblocks,
         {
             if(order == rocsparse_order_column)
             {
-                C[row + ldc * col] = C[row + ldc * col] + shared_val[tid];
+                dense_C[row + ldc * col] = dense_C[row + ldc * col] + shared_val[tid];
             }
             else
             {
-                C[col + ldc * row] = C[col + ldc * row] + shared_val[tid];
+                dense_C[col + ldc * row] = dense_C[col + ldc * row] + shared_val[tid];
             }
         }
 
@@ -415,9 +421,9 @@ void csrmmnn_general_block_reduce(I nblocks,
 }
 
 // Scale kernel for beta != 1.0
-template <unsigned int BLOCKSIZE, typename I, typename T>
+template <unsigned int BLOCKSIZE, typename I, typename C, typename T>
 ROCSPARSE_DEVICE_ILF void
-    csrmmnn_merge_scale_device(I m, I n, T beta, T* __restrict__ data, I ld, rocsparse_order order)
+    csrmmnn_merge_scale_device(I m, I n, T beta, C* __restrict__ data, I ld, rocsparse_order order)
 {
     I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -429,9 +435,9 @@ ROCSPARSE_DEVICE_ILF void
     I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
     I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
 
-    if(beta == static_cast<T>(0))
+    if(beta == 0)
     {
-        data[lid + ld * wid] = static_cast<T>(0);
+        data[lid + ld * wid] = 0;
     }
     else
     {
@@ -485,9 +491,12 @@ template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           unsigned int LOOPS,
           bool         TRANSB,
+          typename T,
           typename I,
           typename J,
-          typename T>
+          typename A,
+          typename B,
+          typename C>
 ROCSPARSE_DEVICE_ILF void csrmmnt_merge_main_device(bool conj_A,
                                                     bool conj_B,
                                                     J    ncol,
@@ -499,10 +508,10 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_main_device(bool conj_A,
                                                     const J* __restrict__ row_limits,
                                                     const I* __restrict__ csr_row_ptr,
                                                     const J* __restrict__ csr_col_ind,
-                                                    const T* __restrict__ csr_val,
-                                                    const T* __restrict__ B,
+                                                    const A* __restrict__ csr_val,
+                                                    const B* __restrict__ dense_B,
                                                     J ldb,
-                                                    T* __restrict__ C,
+                                                    C* __restrict__ dense_C,
                                                     J                    ldc,
                                                     rocsparse_order      order,
                                                     rocsparse_index_base idx_base)
@@ -559,14 +568,15 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_main_device(bool conj_A,
                 {
                     for(J p = 0; p < LOOPS; p++)
                     {
-                        atomicAdd(&C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
+                        atomicAdd(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
+                                  alpha * sum[p]);
                     }
                 }
                 else
                 {
                     for(J p = 0; p < LOOPS; p++)
                     {
-                        atomicAdd(&C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
+                        atomicAdd(&dense_C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
                     }
                 }
 
@@ -582,16 +592,16 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_main_device(bool conj_A,
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
-                    sum[p] = rocsparse_fma(
-                        v, conj_val(B[c * ldb + colB + p * WF_SIZE], conj_B), sum[p]);
+                    sum[p] = rocsparse_fma<T>(
+                        v, conj_val(dense_B[c * ldb + colB + p * WF_SIZE], conj_B), sum[p]);
                 }
             }
             else
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
-                    sum[p] = rocsparse_fma(
-                        v, conj_val(B[(colB + p * WF_SIZE) * ldb + c], conj_B), sum[p]);
+                    sum[p] = rocsparse_fma<T>(
+                        v, conj_val(dense_B[(colB + p * WF_SIZE) * ldb + c], conj_B), sum[p]);
                 }
             }
         }
@@ -600,14 +610,14 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_main_device(bool conj_A,
         {
             for(J p = 0; p < LOOPS; p++)
             {
-                atomicAdd(&C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
+                atomicAdd(&dense_C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
             }
         }
         else
         {
             for(J p = 0; p < LOOPS; p++)
             {
-                atomicAdd(&C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
+                atomicAdd(&dense_C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
             }
         }
     }
@@ -616,9 +626,12 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_main_device(bool conj_A,
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           bool         TRANSB,
+          typename T,
           typename I,
           typename J,
-          typename T>
+          typename A,
+          typename B,
+          typename C>
 ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
                                                          bool conj_B,
                                                          J    ncol_offset,
@@ -630,10 +643,10 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
                                                          const J* __restrict__ row_limits,
                                                          const I* __restrict__ csr_row_ptr,
                                                          const J* __restrict__ csr_col_ind,
-                                                         const T* __restrict__ csr_val,
-                                                         const T* __restrict__ B,
+                                                         const A* __restrict__ csr_val,
+                                                         const B* __restrict__ dense_B,
                                                          J ldb,
-                                                         T* __restrict__ C,
+                                                         C* __restrict__ dense_C,
                                                          J                    ldc,
                                                          rocsparse_order      order,
                                                          rocsparse_index_base idx_base)
@@ -693,11 +706,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&C[colB * ldc + current_row], alpha * sum);
+                        atomicAdd(&dense_C[colB * ldc + current_row], alpha * sum);
                     }
                     else
                     {
-                        atomicAdd(&C[current_row * ldc + colB], alpha * sum);
+                        atomicAdd(&dense_C[current_row * ldc + colB], alpha * sum);
                     }
                 }
 
@@ -710,11 +723,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
             {
                 if(TRANSB)
                 {
-                    sum = rocsparse_fma(v, conj_val(B[c * ldb + colB], conj_B), sum);
+                    sum = rocsparse_fma<T>(v, conj_val(dense_B[c * ldb + colB], conj_B), sum);
                 }
                 else
                 {
-                    sum = rocsparse_fma(v, conj_val(B[colB * ldb + c], conj_B), sum);
+                    sum = rocsparse_fma<T>(v, conj_val(dense_B[colB * ldb + c], conj_B), sum);
                 }
             }
         }
@@ -753,11 +766,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&C[(l + swid) * ldc + current_row], alpha * sum);
+                        atomicAdd(&dense_C[(l + swid) * ldc + current_row], alpha * sum);
                     }
                     else
                     {
-                        atomicAdd(&C[current_row * ldc + (l + swid)], alpha * sum);
+                        atomicAdd(&dense_C[current_row * ldc + (l + swid)], alpha * sum);
                     }
                 }
             }
@@ -771,11 +784,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&C[(l + swid) * ldc + current_row], alpha * sum);
+                        atomicAdd(&dense_C[(l + swid) * ldc + current_row], alpha * sum);
                     }
                     else
                     {
-                        atomicAdd(&C[current_row * ldc + (l + swid)], alpha * sum);
+                        atomicAdd(&dense_C[current_row * ldc + (l + swid)], alpha * sum);
                     }
                 }
             }

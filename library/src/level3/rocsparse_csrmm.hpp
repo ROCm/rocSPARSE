@@ -33,7 +33,7 @@ typedef enum rocsparse_csrmm_alg_
     rocsparse_csrmm_alg_merge
 } rocsparse_csrmm_alg;
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A>
 rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          handle,
                                                       rocsparse_operation       trans_A,
                                                       rocsparse_csrmm_alg       alg,
@@ -42,12 +42,12 @@ rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          
                                                       J                         k,
                                                       I                         nnz,
                                                       const rocsparse_mat_descr descr,
-                                                      const T*                  csr_val,
+                                                      const A*                  csr_val,
                                                       const I*                  csr_row_ptr,
                                                       const J*                  csr_col_ind,
                                                       size_t*                   buffer_size);
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A>
 rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_csrmm_alg       alg,
@@ -56,12 +56,12 @@ rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          han
                                                    J                         k,
                                                    I                         nnz,
                                                    const rocsparse_mat_descr descr,
-                                                   const T*                  csr_val,
+                                                   const A*                  csr_val,
                                                    const I*                  csr_row_ptr,
                                                    const J*                  csr_col_ind,
                                                    void*                     temp_buffer);
 
-template <typename I, typename J, typename T, typename U>
+template <typename T, typename I, typename J, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
                                                    rocsparse_operation trans_A,
                                                    rocsparse_operation trans_B,
@@ -76,22 +76,22 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
                                                    I columns_values_batch_stride_A,
                                                    U alpha_device_host,
                                                    const rocsparse_mat_descr descr,
-                                                   const T*                  csr_val,
+                                                   const A*                  csr_val,
                                                    const I*                  csr_row_ptr,
                                                    const J*                  csr_col_ind,
-                                                   const T*                  B,
+                                                   const B*                  dense_B,
                                                    J                         ldb,
                                                    J                         batch_count_B,
                                                    I                         batch_stride_B,
                                                    U                         beta_device_host,
-                                                   T*                        C,
+                                                   C*                        dense_C,
                                                    J                         ldc,
                                                    J                         batch_count_C,
                                                    I                         batch_stride_C,
                                                    void*                     temp_buffer,
                                                    bool                      force_conj_A);
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A, typename B, typename C>
 rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_A,
                                           rocsparse_operation       trans_B,
@@ -107,15 +107,15 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           I                         columns_values_batch_stride_A,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T*                  csr_val,
+                                          const A*                  csr_val,
                                           const I*                  csr_row_ptr,
                                           const J*                  csr_col_ind,
-                                          const T*                  B,
+                                          const B*                  dense_B,
                                           J                         ldb,
                                           J                         batch_count_B,
                                           I                         batch_stride_B,
                                           const T*                  beta,
-                                          T*                        C,
+                                          C*                        dense_C,
                                           J                         ldc,
                                           J                         batch_count_C,
                                           I                         batch_stride_C,
