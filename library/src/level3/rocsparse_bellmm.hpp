@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ typedef enum rocsparse_bellmm_alg_
     rocsparse_bellmm_alg_default = 0,
 } rocsparse_bellmm_alg;
 
-template <typename T, typename I = rocsparse_int>
+template <typename T, typename I, typename A, typename B, typename C>
 rocsparse_status rocsparse_bellmm_template_buffer_size(rocsparse_handle          handle,
                                                        rocsparse_operation       trans_A,
                                                        rocsparse_operation       trans_B,
@@ -46,15 +46,15 @@ rocsparse_status rocsparse_bellmm_template_buffer_size(rocsparse_handle         
                                                        const T*                  alpha,
                                                        const rocsparse_mat_descr descr,
                                                        const I*                  bell_col_ind,
-                                                       const T*                  bell_val,
-                                                       const T*                  B,
+                                                       const A*                  bell_val,
+                                                       const B*                  dense_B,
                                                        I                         ldb,
                                                        const T*                  beta,
-                                                       T*                        C,
+                                                       C*                        dense_C,
                                                        I                         ldc,
                                                        size_t*                   buffer_size);
 
-template <typename T, typename I = rocsparse_int>
+template <typename T, typename I, typename A, typename B, typename C>
 rocsparse_status rocsparse_bellmm_template_preprocess(rocsparse_handle          handle,
                                                       rocsparse_operation       trans_A,
                                                       rocsparse_operation       trans_B,
@@ -69,15 +69,15 @@ rocsparse_status rocsparse_bellmm_template_preprocess(rocsparse_handle          
                                                       const T*                  alpha,
                                                       const rocsparse_mat_descr descr,
                                                       const I*                  bell_col_ind,
-                                                      const T*                  bell_val,
-                                                      const T*                  B,
+                                                      const A*                  bell_val,
+                                                      const B*                  dense_B,
                                                       I                         ldb,
                                                       const T*                  beta,
-                                                      T*                        C,
+                                                      C*                        dense_C,
                                                       I                         ldc,
                                                       void*                     temp_buffer);
 
-template <typename T, typename I = rocsparse_int>
+template <typename T, typename I, typename A, typename B, typename C>
 rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                            rocsparse_operation       trans_A,
                                            rocsparse_operation       trans_B,
@@ -94,13 +94,13 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                            const T*                  alpha,
                                            const rocsparse_mat_descr descr,
                                            const I*                  bell_col_ind,
-                                           const T*                  bell_val,
-                                           const T*                  B,
+                                           const A*                  bell_val,
+                                           const B*                  dense_B,
                                            I                         ldb,
                                            I                         batch_count_B,
                                            I                         batch_stride_B,
                                            const T*                  beta,
-                                           T*                        C,
+                                           C*                        dense_C,
                                            I                         ldc,
                                            I                         batch_count_C,
                                            I                         batch_stride_C,

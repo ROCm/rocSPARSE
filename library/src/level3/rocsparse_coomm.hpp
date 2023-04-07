@@ -34,7 +34,7 @@ typedef enum rocsparse_coomm_alg_
     rocsparse_coomm_alg_segmented_atomic
 } rocsparse_coomm_alg;
 
-template <typename I, typename T>
+template <typename T, typename I, typename A>
 rocsparse_status rocsparse_coomm_buffer_size_template(rocsparse_handle          handle,
                                                       rocsparse_operation       trans_A,
                                                       rocsparse_coomm_alg       alg,
@@ -44,12 +44,12 @@ rocsparse_status rocsparse_coomm_buffer_size_template(rocsparse_handle          
                                                       int64_t                   nnz,
                                                       I                         batch_count,
                                                       const rocsparse_mat_descr descr,
-                                                      const T*                  coo_val,
+                                                      const A*                  coo_val,
                                                       const I*                  coo_row_ind,
                                                       const I*                  coo_col_ind,
                                                       size_t*                   buffer_size);
 
-template <typename I, typename T>
+template <typename T, typename I, typename A>
 rocsparse_status rocsparse_coomm_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_coomm_alg       alg,
@@ -58,12 +58,12 @@ rocsparse_status rocsparse_coomm_analysis_template(rocsparse_handle          han
                                                    I                         k,
                                                    int64_t                   nnz,
                                                    const rocsparse_mat_descr descr,
-                                                   const T*                  coo_val,
+                                                   const A*                  coo_val,
                                                    const I*                  coo_row_ind,
                                                    const I*                  coo_col_ind,
                                                    void*                     temp_buffer);
 
-template <typename I, typename T, typename U>
+template <typename T, typename I, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_operation       trans_B,
@@ -77,21 +77,21 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                    I                         batch_stride_A,
                                                    U                         alpha_device_host,
                                                    const rocsparse_mat_descr descr,
-                                                   const T*                  coo_val,
+                                                   const A*                  coo_val,
                                                    const I*                  coo_row_ind,
                                                    const I*                  coo_col_ind,
-                                                   const T*                  B,
+                                                   const B*                  dense_B,
                                                    I                         ldb,
                                                    I                         batch_count_B,
                                                    I                         batch_stride_B,
                                                    U                         beta_device_host,
-                                                   T*                        C,
+                                                   C*                        dense_C,
                                                    I                         ldc,
                                                    I                         batch_count_C,
                                                    I                         batch_stride_C,
                                                    void*                     temp_buffer);
 
-template <typename I, typename T>
+template <typename T, typename I, typename A, typename B, typename C>
 rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_A,
                                           rocsparse_operation       trans_B,
@@ -106,15 +106,15 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                           I                         batch_stride_A,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T*                  coo_val,
+                                          const A*                  coo_val,
                                           const I*                  coo_row_ind,
                                           const I*                  coo_col_ind,
-                                          const T*                  B,
+                                          const B*                  dense_B,
                                           I                         ldb,
                                           I                         batch_count_B,
                                           I                         batch_stride_B,
                                           const T*                  beta,
-                                          T*                        C,
+                                          C*                        dense_C,
                                           I                         ldc,
                                           I                         batch_count_C,
                                           I                         batch_stride_C,

@@ -35,6 +35,9 @@ template <unsigned int BLOCKSIZE,
           bool         TRANSB,
           typename I,
           typename J,
+          typename A,
+          typename B,
+          typename C,
           typename T,
           typename U>
 ROCSPARSE_KERNEL(BLOCKSIZE)
@@ -51,11 +54,11 @@ void csrmmnn_merge_main_kernel(bool conj_A,
                                const J* __restrict__ row_limits,
                                const I* __restrict__ csr_row_ptr,
                                const J* __restrict__ csr_col_ind,
-                               const T* __restrict__ csr_val,
-                               const T* __restrict__ B,
+                               const A* __restrict__ csr_val,
+                               const B* __restrict__ dense_B,
                                J ldb,
                                U beta_device_host,
-                               T* __restrict__ C,
+                               C* __restrict__ dense_C,
                                J                    ldc,
                                rocsparse_order      order,
                                rocsparse_index_base idx_base)
@@ -63,7 +66,7 @@ void csrmmnn_merge_main_kernel(bool conj_A,
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
 
-    if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
+    if(alpha == 0 && beta == 1)
     {
         row_block_red[hipBlockIdx_x] = -1;
         return;
@@ -83,10 +86,10 @@ void csrmmnn_merge_main_kernel(bool conj_A,
                                                           csr_row_ptr,
                                                           csr_col_ind,
                                                           csr_val,
-                                                          B,
+                                                          dense_B,
                                                           ldb,
                                                           beta,
-                                                          C,
+                                                          dense_C,
                                                           ldc,
                                                           order,
                                                           idx_base);
@@ -97,6 +100,9 @@ template <unsigned int BLOCKSIZE,
           bool         TRANSB,
           typename I,
           typename J,
+          typename A,
+          typename B,
+          typename C,
           typename T,
           typename U>
 ROCSPARSE_KERNEL(BLOCKSIZE)
@@ -113,11 +119,11 @@ void csrmmnn_merge_remainder_kernel(bool conj_A,
                                     const J* __restrict__ row_limits,
                                     const I* __restrict__ csr_row_ptr,
                                     const J* __restrict__ csr_col_ind,
-                                    const T* __restrict__ csr_val,
-                                    const T* __restrict__ B,
+                                    const A* __restrict__ csr_val,
+                                    const B* __restrict__ dense_B,
                                     J ldb,
                                     U beta_device_host,
-                                    T* __restrict__ C,
+                                    C* __restrict__ dense_C,
                                     J                    ldc,
                                     rocsparse_order      order,
                                     rocsparse_index_base idx_base)
@@ -125,7 +131,7 @@ void csrmmnn_merge_remainder_kernel(bool conj_A,
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
 
-    if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
+    if(alpha == 0 && beta == 1)
     {
         row_block_red[hipBlockIdx_x] = -1;
         return;
@@ -145,10 +151,10 @@ void csrmmnn_merge_remainder_kernel(bool conj_A,
                                                                csr_row_ptr,
                                                                csr_col_ind,
                                                                csr_val,
-                                                               B,
+                                                               dense_B,
                                                                ldb,
                                                                beta,
-                                                               C,
+                                                               dense_C,
                                                                ldc,
                                                                order,
                                                                idx_base);
@@ -158,9 +164,12 @@ template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           unsigned int LOOPS,
           bool         TRANSB,
+          typename T,
           typename I,
           typename J,
-          typename T,
+          typename A,
+          typename B,
+          typename C,
           typename U>
 ROCSPARSE_KERNEL(BLOCKSIZE)
 void csrmmnt_merge_main_kernel(bool conj_A,
@@ -174,42 +183,45 @@ void csrmmnt_merge_main_kernel(bool conj_A,
                                const J* __restrict__ row_limits,
                                const I* __restrict__ csr_row_ptr,
                                const J* __restrict__ csr_col_ind,
-                               const T* __restrict__ csr_val,
-                               const T* __restrict__ B,
+                               const A* __restrict__ csr_val,
+                               const B* __restrict__ dense_B,
                                J ldb,
-                               T* __restrict__ C,
+                               C* __restrict__ dense_C,
                                J                    ldc,
                                rocsparse_order      order,
                                rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
 
-    csrmmnt_merge_main_device<BLOCKSIZE, WF_SIZE, LOOPS, TRANSB>(conj_A,
-                                                                 conj_B,
-                                                                 ncol,
-                                                                 m,
-                                                                 n,
-                                                                 k,
-                                                                 nnz,
-                                                                 alpha,
-                                                                 row_limits,
-                                                                 csr_row_ptr,
-                                                                 csr_col_ind,
-                                                                 csr_val,
-                                                                 B,
-                                                                 ldb,
-                                                                 C,
-                                                                 ldc,
-                                                                 order,
-                                                                 idx_base);
+    csrmmnt_merge_main_device<BLOCKSIZE, WF_SIZE, LOOPS, TRANSB, T>(conj_A,
+                                                                    conj_B,
+                                                                    ncol,
+                                                                    m,
+                                                                    n,
+                                                                    k,
+                                                                    nnz,
+                                                                    alpha,
+                                                                    row_limits,
+                                                                    csr_row_ptr,
+                                                                    csr_col_ind,
+                                                                    csr_val,
+                                                                    dense_B,
+                                                                    ldb,
+                                                                    dense_C,
+                                                                    ldc,
+                                                                    order,
+                                                                    idx_base);
 }
 
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           bool         TRANSB,
+          typename T,
           typename I,
           typename J,
-          typename T,
+          typename A,
+          typename B,
+          typename C,
           typename U>
 ROCSPARSE_KERNEL(BLOCKSIZE)
 void csrmmnt_merge_remainder_kernel(bool conj_A,
@@ -223,10 +235,10 @@ void csrmmnt_merge_remainder_kernel(bool conj_A,
                                     const J* __restrict__ row_limits,
                                     const I* __restrict__ csr_row_ptr,
                                     const J* __restrict__ csr_col_ind,
-                                    const T* __restrict__ csr_val,
-                                    const T* __restrict__ B,
+                                    const A* __restrict__ csr_val,
+                                    const B* __restrict__ dense_B,
                                     J ldb,
-                                    T* __restrict__ C,
+                                    C* __restrict__ dense_C,
                                     J                    ldc,
                                     rocsparse_order      order,
                                     rocsparse_index_base idx_base)
@@ -245,27 +257,27 @@ void csrmmnt_merge_remainder_kernel(bool conj_A,
                                                                csr_row_ptr,
                                                                csr_col_ind,
                                                                csr_val,
-                                                               B,
+                                                               dense_B,
                                                                ldb,
-                                                               C,
+                                                               dense_C,
                                                                ldc,
                                                                order,
                                                                idx_base);
 }
 
-template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+template <unsigned int BLOCKSIZE, typename I, typename C, typename U>
 ROCSPARSE_KERNEL(BLOCKSIZE)
 void csrmmnn_merge_scale(
-    I m, I n, U beta_device_host, T* __restrict__ data, I ld, rocsparse_order order)
+    I m, I n, U beta_device_host, C* __restrict__ data, I ld, rocsparse_order order)
 {
     auto beta = load_scalar_device_host(beta_device_host);
-    if(beta != static_cast<T>(1))
+    if(beta != 1)
     {
         csrmmnn_merge_scale_device<BLOCKSIZE>(m, n, beta, data, ld, order);
     }
 }
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A>
 rocsparse_status rocsparse_csrmm_buffer_size_template_merge(rocsparse_handle          handle,
                                                             rocsparse_operation       trans_A,
                                                             rocsparse_csrmm_alg       alg,
@@ -274,7 +286,7 @@ rocsparse_status rocsparse_csrmm_buffer_size_template_merge(rocsparse_handle    
                                                             J                         k,
                                                             I                         nnz,
                                                             const rocsparse_mat_descr descr,
-                                                            const T*                  csr_val,
+                                                            const A*                  csr_val,
                                                             const I*                  csr_row_ptr,
                                                             const J*                  csr_col_ind,
                                                             size_t*                   buffer_size)
@@ -301,7 +313,7 @@ rocsparse_status rocsparse_csrmm_buffer_size_template_merge(rocsparse_handle    
     }
 }
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A>
 rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle          handle,
                                                          rocsparse_operation       trans_A,
                                                          rocsparse_csrmm_alg       alg,
@@ -310,7 +322,7 @@ rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle       
                                                          J                         k,
                                                          I                         nnz,
                                                          const rocsparse_mat_descr descr,
-                                                         const T*                  csr_val,
+                                                         const A*                  csr_val,
                                                          const I*                  csr_row_ptr,
                                                          const J*                  csr_col_ind,
                                                          void*                     temp_buffer)
@@ -365,10 +377,10 @@ rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle       
                        csr_row_ptr,                                               \
                        csr_col_ind,                                               \
                        csr_val,                                                   \
-                       B,                                                         \
+                       dense_B,                                                   \
                        ldb,                                                       \
                        beta_device_host,                                          \
-                       C,                                                         \
+                       dense_C,                                                   \
                        ldc,                                                       \
                        order,                                                     \
                        descr->base);
@@ -393,10 +405,10 @@ rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle       
                        csr_row_ptr,                                                    \
                        csr_col_ind,                                                    \
                        csr_val,                                                        \
-                       B,                                                              \
+                       dense_B,                                                        \
                        ldb,                                                            \
                        beta_device_host,                                               \
-                       C,                                                              \
+                       dense_C,                                                        \
                        ldc,                                                            \
                        order,                                                          \
                        descr->base);
@@ -404,9 +416,12 @@ rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle       
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           bool         TRANSB,
+          typename T,
           typename I,
           typename J,
-          typename T,
+          typename A,
+          typename B,
+          typename C,
           typename U>
 rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
                                         bool                      conj_A,
@@ -418,13 +433,13 @@ rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
                                         I                         nnz,
                                         U                         alpha_device_host,
                                         const rocsparse_mat_descr descr,
-                                        const T*                  csr_val,
+                                        const A*                  csr_val,
                                         const I*                  csr_row_ptr,
                                         const J*                  csr_col_ind,
-                                        const T*                  B,
+                                        const B*                  dense_B,
                                         J                         ldb,
                                         U                         beta_device_host,
-                                        T*                        C,
+                                        C*                        dense_C,
                                         J                         ldc,
                                         void*                     temp_buffer)
 {
@@ -437,7 +452,7 @@ rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
                        m,
                        n,
                        beta_device_host,
-                       C,
+                       dense_C,
                        ldc,
                        order);
 
@@ -510,69 +525,72 @@ rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
                        nblocks,
                        row_block_red,
                        val_block_red,
-                       C,
+                       dense_C,
                        ldc,
                        order);
 
     return rocsparse_status_success;
 }
 
-#define LAUNCH_CSRMMNT_MERGE_MAIN_KERNEL(CSRMMNT_DIM, WF_SIZE, LOOPS, TRANSB)            \
-    hipLaunchKernelGGL((csrmmnt_merge_main_kernel<CSRMMNT_DIM, WF_SIZE, LOOPS, TRANSB>), \
-                       dim3((nnz - 1) / CSRMMNT_DIM + 1),                                \
-                       dim3(CSRMMNT_DIM),                                                \
-                       0,                                                                \
-                       handle->stream,                                                   \
-                       conj_A,                                                           \
-                       conj_B,                                                           \
-                       main,                                                             \
-                       m,                                                                \
-                       n,                                                                \
-                       k,                                                                \
-                       nnz,                                                              \
-                       alpha_device_host,                                                \
-                       row_limits,                                                       \
-                       csr_row_ptr,                                                      \
-                       csr_col_ind,                                                      \
-                       csr_val,                                                          \
-                       B,                                                                \
-                       ldb,                                                              \
-                       C,                                                                \
-                       ldc,                                                              \
-                       order,                                                            \
+#define LAUNCH_CSRMMNT_MERGE_MAIN_KERNEL(CSRMMNT_DIM, WF_SIZE, LOOPS, TRANSB)               \
+    hipLaunchKernelGGL((csrmmnt_merge_main_kernel<CSRMMNT_DIM, WF_SIZE, LOOPS, TRANSB, T>), \
+                       dim3((nnz - 1) / CSRMMNT_DIM + 1),                                   \
+                       dim3(CSRMMNT_DIM),                                                   \
+                       0,                                                                   \
+                       handle->stream,                                                      \
+                       conj_A,                                                              \
+                       conj_B,                                                              \
+                       main,                                                                \
+                       m,                                                                   \
+                       n,                                                                   \
+                       k,                                                                   \
+                       nnz,                                                                 \
+                       alpha_device_host,                                                   \
+                       row_limits,                                                          \
+                       csr_row_ptr,                                                         \
+                       csr_col_ind,                                                         \
+                       csr_val,                                                             \
+                       dense_B,                                                             \
+                       ldb,                                                                 \
+                       dense_C,                                                             \
+                       ldc,                                                                 \
+                       order,                                                               \
                        descr->base);
 
-#define LAUNCH_CSRMMNT_MERGE_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE, TRANSB)            \
-    hipLaunchKernelGGL((csrmmnt_merge_remainder_kernel<CSRMMNT_DIM, WF_SIZE, TRANSB>), \
-                       dim3((nnz - 1) / CSRMMNT_DIM + 1),                              \
-                       dim3(CSRMMNT_DIM),                                              \
-                       0,                                                              \
-                       handle->stream,                                                 \
-                       conj_A,                                                         \
-                       conj_B,                                                         \
-                       main,                                                           \
-                       m,                                                              \
-                       n,                                                              \
-                       k,                                                              \
-                       nnz,                                                            \
-                       alpha_device_host,                                              \
-                       row_limits,                                                     \
-                       csr_row_ptr,                                                    \
-                       csr_col_ind,                                                    \
-                       csr_val,                                                        \
-                       B,                                                              \
-                       ldb,                                                            \
-                       C,                                                              \
-                       ldc,                                                            \
-                       order,                                                          \
+#define LAUNCH_CSRMMNT_MERGE_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE, TRANSB)               \
+    hipLaunchKernelGGL((csrmmnt_merge_remainder_kernel<CSRMMNT_DIM, WF_SIZE, TRANSB, T>), \
+                       dim3((nnz - 1) / CSRMMNT_DIM + 1),                                 \
+                       dim3(CSRMMNT_DIM),                                                 \
+                       0,                                                                 \
+                       handle->stream,                                                    \
+                       conj_A,                                                            \
+                       conj_B,                                                            \
+                       main,                                                              \
+                       m,                                                                 \
+                       n,                                                                 \
+                       k,                                                                 \
+                       nnz,                                                               \
+                       alpha_device_host,                                                 \
+                       row_limits,                                                        \
+                       csr_row_ptr,                                                       \
+                       csr_col_ind,                                                       \
+                       csr_val,                                                           \
+                       dense_B,                                                           \
+                       ldb,                                                               \
+                       dense_C,                                                           \
+                       ldc,                                                               \
+                       order,                                                             \
                        descr->base);
 
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           bool         TRANSB,
+          typename T,
           typename I,
           typename J,
-          typename T,
+          typename A,
+          typename B,
+          typename C,
           typename U>
 rocsparse_status csrmmnt_merge_dispatch(rocsparse_handle          handle,
                                         bool                      conj_A,
@@ -584,13 +602,13 @@ rocsparse_status csrmmnt_merge_dispatch(rocsparse_handle          handle,
                                         I                         nnz,
                                         U                         alpha_device_host,
                                         const rocsparse_mat_descr descr,
-                                        const T*                  csr_val,
+                                        const A*                  csr_val,
                                         const I*                  csr_row_ptr,
                                         const J*                  csr_col_ind,
-                                        const T*                  B,
+                                        const B*                  dense_B,
                                         J                         ldb,
                                         U                         beta_device_host,
-                                        T*                        C,
+                                        C*                        dense_C,
                                         J                         ldc,
                                         void*                     temp_buffer)
 {
@@ -603,7 +621,7 @@ rocsparse_status csrmmnt_merge_dispatch(rocsparse_handle          handle,
                        m,
                        n,
                        beta_device_host,
-                       C,
+                       dense_C,
                        ldc,
                        order);
 
@@ -673,7 +691,7 @@ rocsparse_status csrmmnt_merge_dispatch(rocsparse_handle          handle,
     return rocsparse_status_success;
 }
 
-template <typename I, typename J, typename T, typename U>
+template <typename T, typename I, typename J, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle,
                                                 rocsparse_operation       trans_A,
                                                 rocsparse_operation       trans_B,
@@ -684,13 +702,13 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                 I                         nnz,
                                                 U                         alpha_device_host,
                                                 const rocsparse_mat_descr descr,
-                                                const T*                  csr_val,
+                                                const A*                  csr_val,
                                                 const I*                  csr_row_ptr,
                                                 const J*                  csr_col_ind,
-                                                const T*                  B,
+                                                const B*                  dense_B,
                                                 J                         ldb,
                                                 U                         beta_device_host,
-                                                T*                        C,
+                                                C*                        dense_C,
                                                 J                         ldc,
                                                 void*                     temp_buffer,
                                                 bool                      force_conj_A)
@@ -707,47 +725,47 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
         {
             if(handle->wavefront_size == 32)
             {
-                return csrmmnn_merge_dispatch<NNZ_PER_BLOCK, 32, false>(handle,
-                                                                        conj_A,
-                                                                        conj_B,
-                                                                        order,
-                                                                        m,
-                                                                        n,
-                                                                        k,
-                                                                        nnz,
-                                                                        alpha_device_host,
-                                                                        descr,
-                                                                        csr_val,
-                                                                        csr_row_ptr,
-                                                                        csr_col_ind,
-                                                                        B,
-                                                                        ldb,
-                                                                        beta_device_host,
-                                                                        C,
-                                                                        ldc,
-                                                                        temp_buffer);
+                return csrmmnn_merge_dispatch<NNZ_PER_BLOCK, 32, false, T>(handle,
+                                                                           conj_A,
+                                                                           conj_B,
+                                                                           order,
+                                                                           m,
+                                                                           n,
+                                                                           k,
+                                                                           nnz,
+                                                                           alpha_device_host,
+                                                                           descr,
+                                                                           csr_val,
+                                                                           csr_row_ptr,
+                                                                           csr_col_ind,
+                                                                           dense_B,
+                                                                           ldb,
+                                                                           beta_device_host,
+                                                                           dense_C,
+                                                                           ldc,
+                                                                           temp_buffer);
             }
             else if(handle->wavefront_size == 64)
             {
-                return csrmmnn_merge_dispatch<NNZ_PER_BLOCK, 64, false>(handle,
-                                                                        conj_A,
-                                                                        conj_B,
-                                                                        order,
-                                                                        m,
-                                                                        n,
-                                                                        k,
-                                                                        nnz,
-                                                                        alpha_device_host,
-                                                                        descr,
-                                                                        csr_val,
-                                                                        csr_row_ptr,
-                                                                        csr_col_ind,
-                                                                        B,
-                                                                        ldb,
-                                                                        beta_device_host,
-                                                                        C,
-                                                                        ldc,
-                                                                        temp_buffer);
+                return csrmmnn_merge_dispatch<NNZ_PER_BLOCK, 64, false, T>(handle,
+                                                                           conj_A,
+                                                                           conj_B,
+                                                                           order,
+                                                                           m,
+                                                                           n,
+                                                                           k,
+                                                                           nnz,
+                                                                           alpha_device_host,
+                                                                           descr,
+                                                                           csr_val,
+                                                                           csr_row_ptr,
+                                                                           csr_col_ind,
+                                                                           dense_B,
+                                                                           ldb,
+                                                                           beta_device_host,
+                                                                           dense_C,
+                                                                           ldc,
+                                                                           temp_buffer);
             }
         }
         else if((order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
@@ -757,47 +775,47 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
         {
             if(handle->wavefront_size == 32)
             {
-                return csrmmnt_merge_dispatch<NNZ_PER_BLOCK, 32, true>(handle,
-                                                                       conj_A,
-                                                                       conj_B,
-                                                                       order,
-                                                                       m,
-                                                                       n,
-                                                                       k,
-                                                                       nnz,
-                                                                       alpha_device_host,
-                                                                       descr,
-                                                                       csr_val,
-                                                                       csr_row_ptr,
-                                                                       csr_col_ind,
-                                                                       B,
-                                                                       ldb,
-                                                                       beta_device_host,
-                                                                       C,
-                                                                       ldc,
-                                                                       temp_buffer);
+                return csrmmnt_merge_dispatch<NNZ_PER_BLOCK, 32, true, T>(handle,
+                                                                          conj_A,
+                                                                          conj_B,
+                                                                          order,
+                                                                          m,
+                                                                          n,
+                                                                          k,
+                                                                          nnz,
+                                                                          alpha_device_host,
+                                                                          descr,
+                                                                          csr_val,
+                                                                          csr_row_ptr,
+                                                                          csr_col_ind,
+                                                                          dense_B,
+                                                                          ldb,
+                                                                          beta_device_host,
+                                                                          dense_C,
+                                                                          ldc,
+                                                                          temp_buffer);
             }
             else if(handle->wavefront_size == 64)
             {
-                return csrmmnt_merge_dispatch<NNZ_PER_BLOCK, 64, true>(handle,
-                                                                       conj_A,
-                                                                       conj_B,
-                                                                       order,
-                                                                       m,
-                                                                       n,
-                                                                       k,
-                                                                       nnz,
-                                                                       alpha_device_host,
-                                                                       descr,
-                                                                       csr_val,
-                                                                       csr_row_ptr,
-                                                                       csr_col_ind,
-                                                                       B,
-                                                                       ldb,
-                                                                       beta_device_host,
-                                                                       C,
-                                                                       ldc,
-                                                                       temp_buffer);
+                return csrmmnt_merge_dispatch<NNZ_PER_BLOCK, 64, true, T>(handle,
+                                                                          conj_A,
+                                                                          conj_B,
+                                                                          order,
+                                                                          m,
+                                                                          n,
+                                                                          k,
+                                                                          nnz,
+                                                                          alpha_device_host,
+                                                                          descr,
+                                                                          csr_val,
+                                                                          csr_row_ptr,
+                                                                          csr_col_ind,
+                                                                          dense_B,
+                                                                          ldb,
+                                                                          beta_device_host,
+                                                                          dense_C,
+                                                                          ldc,
+                                                                          temp_buffer);
             }
         }
     }
@@ -805,109 +823,216 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
     return rocsparse_status_not_implemented;
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                  \
-    template rocsparse_status rocsparse_csrmm_buffer_size_template_merge( \
-        rocsparse_handle          handle,                                 \
-        rocsparse_operation       trans_A,                                \
-        rocsparse_csrmm_alg       alg,                                    \
-        JTYPE                     m,                                      \
-        JTYPE                     n,                                      \
-        JTYPE                     k,                                      \
-        ITYPE                     nnz,                                    \
-        const rocsparse_mat_descr descr,                                  \
-        const TTYPE*              csr_val,                                \
-        const ITYPE*              csr_row_ptr,                            \
-        const JTYPE*              csr_col_ind,                            \
+#define INSTANTIATE_BUFFER_SIZE(TTYPE, ITYPE, JTYPE, ATYPE)                      \
+    template rocsparse_status rocsparse_csrmm_buffer_size_template_merge<TTYPE>( \
+        rocsparse_handle          handle,                                        \
+        rocsparse_operation       trans_A,                                       \
+        rocsparse_csrmm_alg       alg,                                           \
+        JTYPE                     m,                                             \
+        JTYPE                     n,                                             \
+        JTYPE                     k,                                             \
+        ITYPE                     nnz,                                           \
+        const rocsparse_mat_descr descr,                                         \
+        const ATYPE*              csr_val,                                       \
+        const ITYPE*              csr_row_ptr,                                   \
+        const JTYPE*              csr_col_ind,                                   \
         size_t*                   buffer_size)
 
-INSTANTIATE(int32_t, int32_t, float);
-INSTANTIATE(int32_t, int32_t, double);
-INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int32_t, float);
-INSTANTIATE(int64_t, int32_t, double);
-INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int64_t, float);
-INSTANTIATE(int64_t, int64_t, double);
-INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
-#undef INSTANTIATE
+// Uniform precisions
+INSTANTIATE_BUFFER_SIZE(float, int32_t, int32_t, float);
+INSTANTIATE_BUFFER_SIZE(float, int64_t, int32_t, float);
+INSTANTIATE_BUFFER_SIZE(float, int64_t, int64_t, float);
+INSTANTIATE_BUFFER_SIZE(double, int32_t, int32_t, double);
+INSTANTIATE_BUFFER_SIZE(double, int64_t, int32_t, double);
+INSTANTIATE_BUFFER_SIZE(double, int64_t, int64_t, double);
+INSTANTIATE_BUFFER_SIZE(rocsparse_float_complex, int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE_BUFFER_SIZE(rocsparse_float_complex, int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE_BUFFER_SIZE(rocsparse_float_complex, int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE_BUFFER_SIZE(rocsparse_double_complex, int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE_BUFFER_SIZE(rocsparse_double_complex, int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE_BUFFER_SIZE(rocsparse_double_complex, int64_t, int64_t, rocsparse_double_complex);
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                               \
-    template rocsparse_status rocsparse_csrmm_analysis_template_merge( \
-        rocsparse_handle          handle,                              \
-        rocsparse_operation       trans_A,                             \
-        rocsparse_csrmm_alg       alg,                                 \
-        JTYPE                     m,                                   \
-        JTYPE                     n,                                   \
-        JTYPE                     k,                                   \
-        ITYPE                     nnz,                                 \
-        const rocsparse_mat_descr descr,                               \
-        const TTYPE*              csr_val,                             \
-        const ITYPE*              csr_row_ptr,                         \
-        const JTYPE*              csr_col_ind,                         \
+// Mixed precisions
+INSTANTIATE_BUFFER_SIZE(int32_t, int32_t, int32_t, int8_t);
+INSTANTIATE_BUFFER_SIZE(int32_t, int64_t, int32_t, int8_t);
+INSTANTIATE_BUFFER_SIZE(int32_t, int64_t, int64_t, int8_t);
+INSTANTIATE_BUFFER_SIZE(float, int32_t, int32_t, int8_t);
+INSTANTIATE_BUFFER_SIZE(float, int64_t, int32_t, int8_t);
+INSTANTIATE_BUFFER_SIZE(float, int64_t, int64_t, int8_t);
+#undef INSTANTIATE_BUFFER_SIZE
+
+#define INSTANTIATE_ANALYSIS(TTYPE, ITYPE, JTYPE, ATYPE)                      \
+    template rocsparse_status rocsparse_csrmm_analysis_template_merge<TTYPE>( \
+        rocsparse_handle          handle,                                     \
+        rocsparse_operation       trans_A,                                    \
+        rocsparse_csrmm_alg       alg,                                        \
+        JTYPE                     m,                                          \
+        JTYPE                     n,                                          \
+        JTYPE                     k,                                          \
+        ITYPE                     nnz,                                        \
+        const rocsparse_mat_descr descr,                                      \
+        const ATYPE*              csr_val,                                    \
+        const ITYPE*              csr_row_ptr,                                \
+        const JTYPE*              csr_col_ind,                                \
         void*                     temp_buffer)
 
-INSTANTIATE(int32_t, int32_t, float);
-INSTANTIATE(int32_t, int32_t, double);
-INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int32_t, float);
-INSTANTIATE(int64_t, int32_t, double);
-INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int64_t, float);
-INSTANTIATE(int64_t, int64_t, double);
-INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
-#undef INSTANTIATE
+// Uniform precisions
+INSTANTIATE_ANALYSIS(float, int32_t, int32_t, float);
+INSTANTIATE_ANALYSIS(float, int64_t, int32_t, float);
+INSTANTIATE_ANALYSIS(float, int64_t, int64_t, float);
+INSTANTIATE_ANALYSIS(double, int32_t, int32_t, double);
+INSTANTIATE_ANALYSIS(double, int64_t, int32_t, double);
+INSTANTIATE_ANALYSIS(double, int64_t, int64_t, double);
+INSTANTIATE_ANALYSIS(rocsparse_float_complex, int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE_ANALYSIS(rocsparse_float_complex, int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE_ANALYSIS(rocsparse_float_complex, int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE_ANALYSIS(rocsparse_double_complex, int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE_ANALYSIS(rocsparse_double_complex, int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE_ANALYSIS(rocsparse_double_complex, int64_t, int64_t, rocsparse_double_complex);
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE, UTYPE)                                                     \
-    template rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle    handle,            \
-                                                             rocsparse_operation trans_A,           \
-                                                             rocsparse_operation trans_B,           \
-                                                             rocsparse_order     order,             \
-                                                             JTYPE               m,                 \
-                                                             JTYPE               n,                 \
-                                                             JTYPE               k,                 \
-                                                             ITYPE               nnz,               \
-                                                             UTYPE               alpha_device_host, \
-                                                             const rocsparse_mat_descr descr,       \
-                                                             const TTYPE*              csr_val,     \
-                                                             const ITYPE*              csr_row_ptr, \
-                                                             const JTYPE*              csr_col_ind, \
-                                                             const TTYPE*              B,           \
-                                                             JTYPE                     ldb,         \
-                                                             UTYPE  beta_device_host,               \
-                                                             TTYPE* C,                              \
-                                                             JTYPE  ldc,                            \
-                                                             void*  temp_buffer,                    \
-                                                             bool   force_conj_A)
+// Mixed precisions
+INSTANTIATE_ANALYSIS(int32_t, int32_t, int32_t, int8_t);
+INSTANTIATE_ANALYSIS(int32_t, int64_t, int32_t, int8_t);
+INSTANTIATE_ANALYSIS(int32_t, int64_t, int64_t, int8_t);
+INSTANTIATE_ANALYSIS(float, int32_t, int32_t, int8_t);
+INSTANTIATE_ANALYSIS(float, int64_t, int32_t, int8_t);
+INSTANTIATE_ANALYSIS(float, int64_t, int64_t, int8_t);
+#undef INSTANTIATE_ANALYSIS
 
-INSTANTIATE(int32_t, int32_t, float, float);
-INSTANTIATE(int32_t, int32_t, double, double);
-INSTANTIATE(int32_t, int32_t, rocsparse_float_complex, rocsparse_float_complex);
-INSTANTIATE(int32_t, int32_t, rocsparse_double_complex, rocsparse_double_complex);
-INSTANTIATE(int64_t, int32_t, float, float);
-INSTANTIATE(int64_t, int32_t, double, double);
-INSTANTIATE(int64_t, int32_t, rocsparse_float_complex, rocsparse_float_complex);
-INSTANTIATE(int64_t, int32_t, rocsparse_double_complex, rocsparse_double_complex);
-INSTANTIATE(int64_t, int64_t, float, float);
-INSTANTIATE(int64_t, int64_t, double, double);
-INSTANTIATE(int64_t, int64_t, rocsparse_float_complex, rocsparse_float_complex);
-INSTANTIATE(int64_t, int64_t, rocsparse_double_complex, rocsparse_double_complex);
+#define INSTANTIATE(TTYPE, ITYPE, JTYPE, ATYPE, BTYPE, CTYPE, UTYPE) \
+    template rocsparse_status rocsparse_csrmm_template_merge<TTYPE>( \
+        rocsparse_handle          handle,                            \
+        rocsparse_operation       trans_A,                           \
+        rocsparse_operation       trans_B,                           \
+        rocsparse_order           order,                             \
+        JTYPE                     m,                                 \
+        JTYPE                     n,                                 \
+        JTYPE                     k,                                 \
+        ITYPE                     nnz,                               \
+        UTYPE                     alpha_device_host,                 \
+        const rocsparse_mat_descr descr,                             \
+        const ATYPE*              csr_val,                           \
+        const ITYPE*              csr_row_ptr,                       \
+        const JTYPE*              csr_col_ind,                       \
+        const BTYPE*              dense_B,                           \
+        JTYPE                     ldb,                               \
+        UTYPE                     beta_device_host,                  \
+        CTYPE*                    dense_C,                           \
+        JTYPE                     ldc,                               \
+        void*                     temp_buffer,                       \
+        bool                      force_conj_A)
 
-INSTANTIATE(int32_t, int32_t, float, const float*);
-INSTANTIATE(int32_t, int32_t, double, const double*);
-INSTANTIATE(int32_t, int32_t, rocsparse_float_complex, const rocsparse_float_complex*);
-INSTANTIATE(int32_t, int32_t, rocsparse_double_complex, const rocsparse_double_complex*);
-INSTANTIATE(int64_t, int32_t, float, const float*);
-INSTANTIATE(int64_t, int32_t, double, const double*);
-INSTANTIATE(int64_t, int32_t, rocsparse_float_complex, const rocsparse_float_complex*);
-INSTANTIATE(int64_t, int32_t, rocsparse_double_complex, const rocsparse_double_complex*);
-INSTANTIATE(int64_t, int64_t, float, const float*);
-INSTANTIATE(int64_t, int64_t, double, const double*);
-INSTANTIATE(int64_t, int64_t, rocsparse_float_complex, const rocsparse_float_complex*);
-INSTANTIATE(int64_t, int64_t, rocsparse_double_complex, const rocsparse_double_complex*);
+// Uniform precisions
+INSTANTIATE(float, int32_t, int32_t, float, float, float, float);
+INSTANTIATE(float, int64_t, int32_t, float, float, float, float);
+INSTANTIATE(float, int64_t, int64_t, float, float, float, float);
+INSTANTIATE(double, int32_t, int32_t, double, double, double, double);
+INSTANTIATE(double, int64_t, int32_t, double, double, double, double);
+INSTANTIATE(double, int64_t, int64_t, double, double, double, double);
+INSTANTIATE(rocsparse_float_complex,
+            int32_t,
+            int32_t,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex);
+INSTANTIATE(rocsparse_float_complex,
+            int64_t,
+            int32_t,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex);
+INSTANTIATE(rocsparse_float_complex,
+            int64_t,
+            int64_t,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex);
+INSTANTIATE(rocsparse_double_complex,
+            int32_t,
+            int32_t,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex);
+INSTANTIATE(rocsparse_double_complex,
+            int64_t,
+            int32_t,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex);
+INSTANTIATE(rocsparse_double_complex,
+            int64_t,
+            int64_t,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex);
+
+INSTANTIATE(float, int32_t, int32_t, float, float, float, const float*);
+INSTANTIATE(float, int64_t, int32_t, float, float, float, const float*);
+INSTANTIATE(float, int64_t, int64_t, float, float, float, const float*);
+INSTANTIATE(double, int32_t, int32_t, double, double, double, const double*);
+INSTANTIATE(double, int64_t, int32_t, double, double, double, const double*);
+INSTANTIATE(double, int64_t, int64_t, double, double, double, const double*);
+INSTANTIATE(rocsparse_float_complex,
+            int32_t,
+            int32_t,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            const rocsparse_float_complex*);
+INSTANTIATE(rocsparse_float_complex,
+            int64_t,
+            int32_t,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            const rocsparse_float_complex*);
+INSTANTIATE(rocsparse_float_complex,
+            int64_t,
+            int64_t,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            const rocsparse_float_complex*);
+INSTANTIATE(rocsparse_double_complex,
+            int32_t,
+            int32_t,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            const rocsparse_double_complex*);
+INSTANTIATE(rocsparse_double_complex,
+            int64_t,
+            int32_t,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            const rocsparse_double_complex*);
+INSTANTIATE(rocsparse_double_complex,
+            int64_t,
+            int64_t,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            const rocsparse_double_complex*);
+
+// Mixed Precisions
+INSTANTIATE(int32_t, int32_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE(int32_t, int64_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE(int32_t, int64_t, int64_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE(float, int32_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE(float, int64_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE(float, int64_t, int64_t, int8_t, int8_t, float, float);
+
+INSTANTIATE(int32_t, int32_t, int32_t, int8_t, int8_t, int32_t, const int32_t*);
+INSTANTIATE(int32_t, int64_t, int32_t, int8_t, int8_t, int32_t, const int32_t*);
+INSTANTIATE(int32_t, int64_t, int64_t, int8_t, int8_t, int32_t, const int32_t*);
+INSTANTIATE(float, int32_t, int32_t, int8_t, int8_t, float, const float*);
+INSTANTIATE(float, int64_t, int32_t, int8_t, int8_t, float, const float*);
+INSTANTIATE(float, int64_t, int64_t, int8_t, int8_t, float, const float*);
 #undef INSTANTIATE

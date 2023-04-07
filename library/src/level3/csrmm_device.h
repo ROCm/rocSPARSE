@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,14 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          typename T,
+          typename I,
+          typename J,
+          typename A,
+          typename B,
+          typename C>
 ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
                                                  bool conj_B,
                                                  J    M,
@@ -38,12 +45,12 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
                                                  T    alpha,
                                                  const I* __restrict__ csr_row_ptr,
                                                  const J* __restrict__ csr_col_ind,
-                                                 const T* __restrict__ csr_val,
-                                                 const T* __restrict__ B,
+                                                 const A* __restrict__ csr_val,
+                                                 const B* __restrict__ dense_B,
                                                  J ldb,
                                                  I batch_stride_B,
                                                  T beta,
-                                                 T* __restrict__ C,
+                                                 C* __restrict__ dense_C,
                                                  J                    ldc,
                                                  I                    batch_stride_C,
                                                  rocsparse_order      order,
@@ -98,9 +105,9 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
         {
             for(J i = 0; i < WF_SIZE; ++i)
             {
-                sum = rocsparse_fma(
+                sum = rocsparse_fma<T>(
                     shared_val[wid][i],
-                    conj_val(B[shared_col[wid][i] + colB + batch_stride_B * batch], conj_B),
+                    conj_val(dense_B[shared_col[wid][i] + colB + batch_stride_B * batch], conj_B),
                     sum);
             }
         }
@@ -112,24 +119,24 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
         {
             if(order == rocsparse_order_column)
             {
-                C[row + col * ldc + batch_stride_C * batch] = alpha * sum;
+                dense_C[row + col * ldc + batch_stride_C * batch] = alpha * sum;
             }
             else
             {
-                C[row * ldc + col + batch_stride_C * batch] = alpha * sum;
+                dense_C[row * ldc + col + batch_stride_C * batch] = alpha * sum;
             }
         }
         else
         {
             if(order == rocsparse_order_column)
             {
-                C[row + col * ldc + batch_stride_C * batch]
-                    = rocsparse_fma(beta, C[row + col * ldc + batch_stride_C * batch], alpha * sum);
+                dense_C[row + col * ldc + batch_stride_C * batch] = rocsparse_fma<T>(
+                    beta, dense_C[row + col * ldc + batch_stride_C * batch], alpha * sum);
             }
             else
             {
-                C[row * ldc + col + batch_stride_C * batch]
-                    = rocsparse_fma(beta, C[row * ldc + col + batch_stride_C * batch], alpha * sum);
+                dense_C[row * ldc + col + batch_stride_C * batch] = rocsparse_fma<T>(
+                    beta, dense_C[row * ldc + col + batch_stride_C * batch], alpha * sum);
             }
         }
     }
@@ -138,9 +145,12 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           unsigned int LOOPS,
+          typename T,
           typename I,
           typename J,
-          typename T>
+          typename A,
+          typename B,
+          typename C>
 ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
                                                       bool conj_B,
                                                       J    offset,
@@ -154,12 +164,12 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
                                                       T    alpha,
                                                       const I* __restrict__ csr_row_ptr,
                                                       const J* __restrict__ csr_col_ind,
-                                                      const T* __restrict__ csr_val,
-                                                      const T* __restrict__ B,
+                                                      const A* __restrict__ csr_val,
+                                                      const B* __restrict__ dense_B,
                                                       J ldb,
                                                       I batch_stride_B,
                                                       T beta,
-                                                      T* __restrict__ C,
+                                                      C* __restrict__ dense_C,
                                                       J                    ldc,
                                                       I                    batch_stride_C,
                                                       rocsparse_order      order,
@@ -229,11 +239,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
 
                 for(J p = 0; p < LOOPS; p++)
                 {
-                    sum[p] = rocsparse_fma(
-                        sv,
-                        conj_val(rocsparse_ldg(B + col + p * WF_SIZE + sc + batch_stride_B * batch),
-                                 conj_B),
-                        sum[p]);
+                    sum[p] = rocsparse_fma<T>(sv,
+                                              conj_val(rocsparse_ldg(dense_B + col + p * WF_SIZE
+                                                                     + sc + batch_stride_B * batch),
+                                                       conj_B),
+                                              sum[p]);
                 }
             }
         }
@@ -244,14 +254,16 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
-                    C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch] = alpha * sum[p];
+                    dense_C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch]
+                        = alpha * sum[p];
                 }
             }
             else
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
-                    C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch] = alpha * sum[p];
+                    dense_C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch]
+                        = alpha * sum[p];
                 }
             }
         }
@@ -261,27 +273,36 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
-                    C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch]
-                        = rocsparse_fma(beta,
-                                        C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch],
-                                        alpha * sum[p]);
+                    dense_C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch]
+                        = rocsparse_fma<T>(
+                            beta,
+                            dense_C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch],
+                            alpha * sum[p]);
                 }
             }
             else
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
-                    C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch]
-                        = rocsparse_fma(beta,
-                                        C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch],
-                                        alpha * sum[p]);
+                    dense_C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch]
+                        = rocsparse_fma<T>(
+                            beta,
+                            dense_C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch],
+                            alpha * sum[p]);
                 }
             }
         }
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          typename T,
+          typename I,
+          typename J,
+          typename A,
+          typename B,
+          typename C>
 ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
                                                            bool conj_B,
                                                            J    offset,
@@ -295,12 +316,12 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
                                                            T    alpha,
                                                            const I* __restrict__ csr_row_ptr,
                                                            const J* __restrict__ csr_col_ind,
-                                                           const T* __restrict__ csr_val,
-                                                           const T* __restrict__ B,
+                                                           const A* __restrict__ csr_val,
+                                                           const B* __restrict__ dense_B,
                                                            J ldb,
                                                            I batch_stride_B,
                                                            T beta,
-                                                           T* __restrict__ C,
+                                                           C* __restrict__ dense_C,
                                                            J                    ldc,
                                                            I                    batch_stride_C,
                                                            rocsparse_order      order,
@@ -361,11 +382,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
             {
                 for(J i = 0; i < WF_SIZE; ++i)
                 {
-                    sum = rocsparse_fma(shared_val[wid][i],
-                                        conj_val(rocsparse_ldg(B + col + shared_col[wid][i]
-                                                               + batch_stride_B * batch),
-                                                 conj_B),
-                                        sum);
+                    sum = rocsparse_fma<T>(shared_val[wid][i],
+                                           conj_val(rocsparse_ldg(dense_B + col + shared_col[wid][i]
+                                                                  + batch_stride_B * batch),
+                                                    conj_B),
+                                           sum);
                 }
             }
         }
@@ -376,24 +397,24 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
             {
                 if(order == rocsparse_order_column)
                 {
-                    C[row + col * ldc + batch_stride_C * batch] = alpha * sum;
+                    dense_C[row + col * ldc + batch_stride_C * batch] = alpha * sum;
                 }
                 else
                 {
-                    C[row * ldc + col + batch_stride_C * batch] = alpha * sum;
+                    dense_C[row * ldc + col + batch_stride_C * batch] = alpha * sum;
                 }
             }
             else
             {
                 if(order == rocsparse_order_column)
                 {
-                    C[row + col * ldc + batch_stride_C * batch] = rocsparse_fma(
-                        beta, C[row + col * ldc + batch_stride_C * batch], alpha * sum);
+                    dense_C[row + col * ldc + batch_stride_C * batch] = rocsparse_fma<T>(
+                        beta, dense_C[row + col * ldc + batch_stride_C * batch], alpha * sum);
                 }
                 else
                 {
-                    C[row * ldc + col + batch_stride_C * batch] = rocsparse_fma(
-                        beta, C[row * ldc + col + batch_stride_C * batch], alpha * sum);
+                    dense_C[row * ldc + col + batch_stride_C * batch] = rocsparse_fma<T>(
+                        beta, dense_C[row * ldc + col + batch_stride_C * batch], alpha * sum);
                 }
             }
         }
@@ -428,7 +449,14 @@ ROCSPARSE_DEVICE_ILF void csrmm_scale_device(
 // See Y. Tao et al., "Atomic reduction based sparse matrix-transpose vector multiplication on GPUs,"
 // 2014 20th IEEE International Conference on Parallel and Distributed Systems (ICPADS), 2014, pp. 987-992,
 // doi: 10.1109/PADSW.2014.7097920.
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          typename T,
+          typename I,
+          typename J,
+          typename A,
+          typename B,
+          typename C>
 ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
                                                  bool conj_B,
                                                  J    M,
@@ -440,12 +468,12 @@ ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
                                                  T    alpha,
                                                  const I* __restrict__ csr_row_ptr,
                                                  const J* __restrict__ csr_col_ind,
-                                                 const T* __restrict__ csr_val,
-                                                 const T* __restrict__ B,
+                                                 const A* __restrict__ csr_val,
+                                                 const B* __restrict__ dense_B,
                                                  J ldb,
                                                  I batch_stride_B,
                                                  T beta,
-                                                 T* __restrict__ C,
+                                                 C* __restrict__ dense_C,
                                                  J                    ldc,
                                                  I                    batch_stride_C,
                                                  rocsparse_order      order,
@@ -469,8 +497,8 @@ ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
     J colB = cid * ldb;
 
     __shared__ T shared_B[BLOCKSIZE / WF_SIZE][WF_SIZE];
-    shared_B[wid][lid]
-        = (cid < N) ? conj_val(B[row + colB + batch_stride_B * batch], conj_B) : static_cast<T>(0);
+    shared_B[wid][lid] = (cid < N) ? conj_val(dense_B[row + colB + batch_stride_B * batch], conj_B)
+                                   : static_cast<T>(0);
 
     __threadfence_block();
     I row_start = csr_row_ptr[row + offsets_batch_stride_A * batch] - idx_base;
@@ -485,16 +513,18 @@ ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(&C[col + (i + hipBlockIdx_y * WF_SIZE) * ldc + batch_stride_C * batch],
-                          val * shared_B[wid][i]);
+                atomicAdd(
+                    &dense_C[col + (i + hipBlockIdx_y * WF_SIZE) * ldc + batch_stride_C * batch],
+                    val * shared_B[wid][i]);
             }
         }
         else
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(&C[col * ldc + (i + hipBlockIdx_y * WF_SIZE) + batch_stride_C * batch],
-                          val * shared_B[wid][i]);
+                atomicAdd(
+                    &dense_C[col * ldc + (i + hipBlockIdx_y * WF_SIZE) + batch_stride_C * batch],
+                    val * shared_B[wid][i]);
             }
         }
     }
@@ -503,7 +533,14 @@ ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
 // See Y. Tao et al., "Atomic reduction based sparse matrix-transpose vector multiplication on GPUs,"
 // 2014 20th IEEE International Conference on Parallel and Distributed Systems (ICPADS), 2014, pp. 987-992,
 // doi: 10.1109/PADSW.2014.7097920.
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          typename T,
+          typename I,
+          typename J,
+          typename A,
+          typename B,
+          typename C>
 ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
                                                  bool conj_B,
                                                  J    M,
@@ -515,12 +552,12 @@ ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
                                                  T    alpha,
                                                  const I* __restrict__ csr_row_ptr,
                                                  const J* __restrict__ csr_col_ind,
-                                                 const T* __restrict__ csr_val,
-                                                 const T* __restrict__ B,
+                                                 const A* __restrict__ csr_val,
+                                                 const B* __restrict__ dense_B,
                                                  J ldb,
                                                  I batch_stride_B,
                                                  T beta,
-                                                 T* __restrict__ C,
+                                                 C* __restrict__ dense_C,
                                                  J                    ldc,
                                                  I                    batch_stride_C,
                                                  rocsparse_order      order,
@@ -543,8 +580,9 @@ ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
 
     __shared__ T shared_B[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
-    shared_B[wid][lid] = (cid < N) ? conj_val(B[ldb * row + cid + batch_stride_B * batch], conj_B)
-                                   : static_cast<T>(0);
+    shared_B[wid][lid] = (cid < N)
+                             ? conj_val(dense_B[ldb * row + cid + batch_stride_B * batch], conj_B)
+                             : static_cast<T>(0);
 
     __threadfence_block();
     I row_start = csr_row_ptr[row + offsets_batch_stride_A * batch] - idx_base;
@@ -559,16 +597,18 @@ ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(&C[col + (i + hipBlockIdx_y * WF_SIZE) * ldc + batch_stride_C * batch],
-                          val * shared_B[wid][i]);
+                atomicAdd(
+                    &dense_C[col + (i + hipBlockIdx_y * WF_SIZE) * ldc + batch_stride_C * batch],
+                    val * shared_B[wid][i]);
             }
         }
         else
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(&C[col * ldc + (i + hipBlockIdx_y * WF_SIZE) + batch_stride_C * batch],
-                          val * shared_B[wid][i]);
+                atomicAdd(
+                    &dense_C[col * ldc + (i + hipBlockIdx_y * WF_SIZE) + batch_stride_C * batch],
+                    val * shared_B[wid][i]);
             }
         }
     }

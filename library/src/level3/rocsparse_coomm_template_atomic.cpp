@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,11 @@ template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           unsigned int LOOPS,
           bool         TRANSB,
+          typename T,
           typename I,
-          typename T>
+          typename A,
+          typename B,
+          typename C>
 ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
                                                      bool    conj_B,
                                                      I       ncol,
@@ -40,10 +43,10 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
                                                      T       alpha,
                                                      const I* __restrict__ coo_row_ind,
                                                      const I* __restrict__ coo_col_ind,
-                                                     const T* __restrict__ coo_val,
-                                                     const T* __restrict__ B,
+                                                     const A* __restrict__ coo_val,
+                                                     const B* __restrict__ dense_B,
                                                      I ldb,
-                                                     T* __restrict__ C,
+                                                     C* __restrict__ dense_C,
                                                      I                    ldc,
                                                      rocsparse_order      order,
                                                      rocsparse_index_base idx_base)
@@ -76,14 +79,15 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
                 {
                     for(I p = 0; p < LOOPS; p++)
                     {
-                        atomicAdd(&C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
+                        atomicAdd(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
+                                  alpha * sum[p]);
                     }
                 }
                 else
                 {
                     for(I p = 0; p < LOOPS; p++)
                     {
-                        atomicAdd(&C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
+                        atomicAdd(&dense_C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
                     }
                 }
 
@@ -99,16 +103,16 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
             {
                 for(I p = 0; p < LOOPS; p++)
                 {
-                    sum[p] = rocsparse_fma(
-                        v, conj_val(B[c * ldb + colB + p * WF_SIZE], conj_B), sum[p]);
+                    sum[p] = rocsparse_fma<T>(
+                        v, conj_val(dense_B[c * ldb + colB + p * WF_SIZE], conj_B), sum[p]);
                 }
             }
             else
             {
                 for(I p = 0; p < LOOPS; p++)
                 {
-                    sum[p] = rocsparse_fma(
-                        v, conj_val(B[(colB + p * WF_SIZE) * ldb + c], conj_B), sum[p]);
+                    sum[p] = rocsparse_fma<T>(
+                        v, conj_val(dense_B[(colB + p * WF_SIZE) * ldb + c], conj_B), sum[p]);
                 }
             }
         }
@@ -117,20 +121,27 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
         {
             for(I p = 0; p < LOOPS; p++)
             {
-                atomicAdd(&C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
+                atomicAdd(&dense_C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
             }
         }
         else
         {
             for(I p = 0; p < LOOPS; p++)
             {
-                atomicAdd(&C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
+                atomicAdd(&dense_C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
             }
         }
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool TRANSB, typename I, typename T>
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          bool         TRANSB,
+          typename T,
+          typename I,
+          typename A,
+          typename B,
+          typename C>
 ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                                                           bool    conj_B,
                                                           I       ncol_offset,
@@ -139,10 +150,10 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                                                           T       alpha,
                                                           const I* __restrict__ coo_row_ind,
                                                           const I* __restrict__ coo_col_ind,
-                                                          const T* __restrict__ coo_val,
-                                                          const T* __restrict__ B,
+                                                          const A* __restrict__ coo_val,
+                                                          const B* __restrict__ dense_B,
                                                           I ldb,
-                                                          T* __restrict__ C,
+                                                          C* __restrict__ dense_C,
                                                           I                    ldc,
                                                           rocsparse_order      order,
                                                           rocsparse_index_base idx_base)
@@ -178,11 +189,11 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&C[colB * ldc + current_row], sum);
+                        atomicAdd(&dense_C[colB * ldc + current_row], sum);
                     }
                     else
                     {
-                        atomicAdd(&C[current_row * ldc + colB], sum);
+                        atomicAdd(&dense_C[current_row * ldc + colB], sum);
                     }
                 }
 
@@ -195,11 +206,11 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
             {
                 if(TRANSB)
                 {
-                    sum = rocsparse_fma(v, conj_val(B[c * ldb + colB], conj_B), sum);
+                    sum = rocsparse_fma<T>(v, conj_val(dense_B[c * ldb + colB], conj_B), sum);
                 }
                 else
                 {
-                    sum = rocsparse_fma(v, conj_val(B[colB * ldb + c], conj_B), sum);
+                    sum = rocsparse_fma<T>(v, conj_val(dense_B[colB * ldb + c], conj_B), sum);
                 }
             }
         }
@@ -238,11 +249,11 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&C[(l + swid) * ldc + current_row], sum);
+                        atomicAdd(&dense_C[(l + swid) * ldc + current_row], sum);
                     }
                     else
                     {
-                        atomicAdd(&C[current_row * ldc + (l + swid)], sum);
+                        atomicAdd(&dense_C[current_row * ldc + (l + swid)], sum);
                     }
                 }
             }
@@ -256,11 +267,11 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&C[(l + swid) * ldc + current_row], sum);
+                        atomicAdd(&dense_C[(l + swid) * ldc + current_row], sum);
                     }
                     else
                     {
-                        atomicAdd(&C[current_row * ldc + (l + swid)], sum);
+                        atomicAdd(&dense_C[current_row * ldc + (l + swid)], sum);
                     }
                 }
             }
@@ -268,7 +279,13 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
     }
 }
 
-template <unsigned int BLOCKSIZE, bool TRANSB, typename I, typename T>
+template <unsigned int BLOCKSIZE,
+          bool         TRANSB,
+          typename T,
+          typename I,
+          typename A,
+          typename B,
+          typename C>
 ROCSPARSE_DEVICE_ILF void coommtn_atomic_device(bool                 conj_A,
                                                 bool                 conj_B,
                                                 int64_t              nnz,
@@ -276,10 +293,10 @@ ROCSPARSE_DEVICE_ILF void coommtn_atomic_device(bool                 conj_A,
                                                 T                    alpha,
                                                 const I*             coo_row_ind,
                                                 const I*             coo_col_ind,
-                                                const T*             coo_val,
-                                                const T*             B,
+                                                const A*             coo_val,
+                                                const B*             dense_B,
                                                 I                    ldb,
-                                                T*                   C,
+                                                C*                   dense_C,
                                                 I                    ldc,
                                                 rocsparse_order      order,
                                                 rocsparse_index_base idx_base)
@@ -299,20 +316,20 @@ ROCSPARSE_DEVICE_ILF void coommtn_atomic_device(bool                 conj_A,
 
     if(TRANSB)
     {
-        bval = conj_val(B[ldb * row + hipBlockIdx_y], conj_B);
+        bval = conj_val(dense_B[ldb * row + hipBlockIdx_y], conj_B);
     }
     else
     {
-        bval = conj_val(B[hipBlockIdx_y * ldb + row], conj_B);
+        bval = conj_val(dense_B[hipBlockIdx_y * ldb + row], conj_B);
     }
 
     if(order == rocsparse_order_column)
     {
-        atomicAdd(&C[hipBlockIdx_y * ldc + col], alpha * (val * bval));
+        atomicAdd(&dense_C[hipBlockIdx_y * ldc + col], alpha * (val * bval));
     }
     else
     {
-        atomicAdd(&C[col * ldc + hipBlockIdx_y], alpha * (val * bval));
+        atomicAdd(&dense_C[col * ldc + hipBlockIdx_y], alpha * (val * bval));
     }
 }
 
@@ -320,8 +337,11 @@ template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           unsigned int LOOPS,
           bool         TRANSB,
-          typename I,
           typename T,
+          typename I,
+          typename A,
+          typename B,
+          typename C,
           typename U>
 ROCSPARSE_KERNEL(BLOCKSIZE)
 void coommnn_atomic_main(bool    conj_A,
@@ -333,11 +353,11 @@ void coommnn_atomic_main(bool    conj_A,
                          U       alpha_device_host,
                          const I* __restrict__ coo_row_ind,
                          const I* __restrict__ coo_col_ind,
-                         const T* __restrict__ coo_val,
-                         const T* __restrict__ B,
+                         const A* __restrict__ coo_val,
+                         const B* __restrict__ dense_B,
                          I ldb,
                          I batch_stride_B,
-                         T* __restrict__ C,
+                         C* __restrict__ dense_C,
                          I                    ldc,
                          I                    batch_stride_C,
                          rocsparse_order      order,
@@ -356,9 +376,9 @@ void coommnn_atomic_main(bool    conj_A,
             load_pointer(coo_row_ind, hipBlockIdx_y, batch_stride_A),
             load_pointer(coo_col_ind, hipBlockIdx_y, batch_stride_A),
             load_pointer(coo_val, hipBlockIdx_y, batch_stride_A),
-            load_pointer(B, hipBlockIdx_y, batch_stride_B),
+            load_pointer(dense_B, hipBlockIdx_y, batch_stride_B),
             ldb,
-            load_pointer(C, hipBlockIdx_y, batch_stride_C),
+            load_pointer(dense_C, hipBlockIdx_y, batch_stride_C),
             ldc,
             order,
             idx_base);
@@ -368,8 +388,11 @@ void coommnn_atomic_main(bool    conj_A,
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           bool         TRANSB,
-          typename I,
           typename T,
+          typename I,
+          typename A,
+          typename B,
+          typename C,
           typename U>
 ROCSPARSE_KERNEL(BLOCKSIZE)
 void coommnn_atomic_remainder(bool    conj_A,
@@ -381,11 +404,11 @@ void coommnn_atomic_remainder(bool    conj_A,
                               U       alpha_device_host,
                               const I* __restrict__ coo_row_ind,
                               const I* __restrict__ coo_col_ind,
-                              const T* __restrict__ coo_val,
-                              const T* __restrict__ B,
+                              const A* __restrict__ coo_val,
+                              const B* __restrict__ dense_B,
                               I ldb,
                               I batch_stride_B,
-                              T* __restrict__ C,
+                              C* __restrict__ dense_C,
                               I                    ldc,
                               I                    batch_stride_C,
                               rocsparse_order      order,
@@ -405,16 +428,23 @@ void coommnn_atomic_remainder(bool    conj_A,
             load_pointer(coo_row_ind, hipBlockIdx_y, batch_stride_A),
             load_pointer(coo_col_ind, hipBlockIdx_y, batch_stride_A),
             load_pointer(coo_val, hipBlockIdx_y, batch_stride_A),
-            load_pointer(B, hipBlockIdx_y, batch_stride_B),
+            load_pointer(dense_B, hipBlockIdx_y, batch_stride_B),
             ldb,
-            load_pointer(C, hipBlockIdx_y, batch_stride_C),
+            load_pointer(dense_C, hipBlockIdx_y, batch_stride_C),
             ldc,
             order,
             idx_base);
     }
 }
 
-template <unsigned int BLOCKSIZE, bool TRANSB, typename I, typename T, typename U>
+template <unsigned int BLOCKSIZE,
+          bool         TRANSB,
+          typename T,
+          typename I,
+          typename A,
+          typename B,
+          typename C,
+          typename U>
 ROCSPARSE_KERNEL(BLOCKSIZE)
 void coommtn_atomic_main(bool    conj_A,
                          bool    conj_B,
@@ -424,11 +454,11 @@ void coommtn_atomic_main(bool    conj_A,
                          U       alpha_device_host,
                          const I* __restrict__ coo_row_ind,
                          const I* __restrict__ coo_col_ind,
-                         const T* __restrict__ coo_val,
-                         const T* __restrict__ B,
+                         const A* __restrict__ coo_val,
+                         const B* __restrict__ dense_B,
                          I ldb,
                          I batch_stride_B,
-                         T* __restrict__ C,
+                         C* __restrict__ dense_C,
                          I                    ldc,
                          I                    batch_stride_C,
                          rocsparse_order      order,
@@ -446,70 +476,73 @@ void coommtn_atomic_main(bool    conj_A,
             load_pointer(coo_row_ind, hipBlockIdx_z, batch_stride_A),
             load_pointer(coo_col_ind, hipBlockIdx_z, batch_stride_A),
             load_pointer(coo_val, hipBlockIdx_z, batch_stride_A),
-            load_pointer(B, hipBlockIdx_z, batch_stride_B),
+            load_pointer(dense_B, hipBlockIdx_z, batch_stride_B),
             ldb,
-            load_pointer(C, hipBlockIdx_z, batch_stride_C),
+            load_pointer(dense_C, hipBlockIdx_z, batch_stride_C),
             ldc,
             order,
             idx_base);
     }
 }
 
-#define LAUNCH_COOMMNN_ATOMIC_MAIN_KERNEL(COOMMNN_DIM, WF_SIZE, LOOPS, TRANSB)     \
-    hipLaunchKernelGGL((coommnn_atomic_main<COOMMNN_DIM, WF_SIZE, LOOPS, TRANSB>), \
-                       dim3((nnz - 1) / COOMMNN_DIM + 1, batch_count_C),           \
-                       dim3(COOMMNN_DIM),                                          \
-                       0,                                                          \
-                       handle->stream,                                             \
-                       conj_A,                                                     \
-                       conj_B,                                                     \
-                       main,                                                       \
-                       nnz,                                                        \
-                       n,                                                          \
-                       batch_stride_A,                                             \
-                       alpha_device_host,                                          \
-                       coo_row_ind,                                                \
-                       coo_col_ind,                                                \
-                       coo_val,                                                    \
-                       B,                                                          \
-                       ldb,                                                        \
-                       batch_stride_B,                                             \
-                       C,                                                          \
-                       ldc,                                                        \
-                       batch_stride_C,                                             \
-                       order,                                                      \
+#define LAUNCH_COOMMNN_ATOMIC_MAIN_KERNEL(COOMMNN_DIM, WF_SIZE, LOOPS, TRANSB)        \
+    hipLaunchKernelGGL((coommnn_atomic_main<COOMMNN_DIM, WF_SIZE, LOOPS, TRANSB, T>), \
+                       dim3((nnz - 1) / COOMMNN_DIM + 1, batch_count_C),              \
+                       dim3(COOMMNN_DIM),                                             \
+                       0,                                                             \
+                       handle->stream,                                                \
+                       conj_A,                                                        \
+                       conj_B,                                                        \
+                       main,                                                          \
+                       nnz,                                                           \
+                       n,                                                             \
+                       batch_stride_A,                                                \
+                       alpha_device_host,                                             \
+                       coo_row_ind,                                                   \
+                       coo_col_ind,                                                   \
+                       coo_val,                                                       \
+                       dense_B,                                                       \
+                       ldb,                                                           \
+                       batch_stride_B,                                                \
+                       dense_C,                                                       \
+                       ldc,                                                           \
+                       batch_stride_C,                                                \
+                       order,                                                         \
                        descr->base);
 
-#define LAUNCH_COOMMNN_ATOMIC_REMAINDER_KERNEL(COOMMNN_DIM, WF_SIZE, TRANSB)     \
-    hipLaunchKernelGGL((coommnn_atomic_remainder<COOMMNN_DIM, WF_SIZE, TRANSB>), \
-                       dim3((nnz - 1) / COOMMNN_DIM + 1, batch_count_C),         \
-                       dim3(COOMMNN_DIM),                                        \
-                       0,                                                        \
-                       handle->stream,                                           \
-                       conj_A,                                                   \
-                       conj_B,                                                   \
-                       main,                                                     \
-                       n,                                                        \
-                       nnz,                                                      \
-                       batch_stride_A,                                           \
-                       alpha_device_host,                                        \
-                       coo_row_ind,                                              \
-                       coo_col_ind,                                              \
-                       coo_val,                                                  \
-                       B,                                                        \
-                       ldb,                                                      \
-                       batch_stride_B,                                           \
-                       C,                                                        \
-                       ldc,                                                      \
-                       batch_stride_C,                                           \
-                       order,                                                    \
+#define LAUNCH_COOMMNN_ATOMIC_REMAINDER_KERNEL(COOMMNN_DIM, WF_SIZE, TRANSB)        \
+    hipLaunchKernelGGL((coommnn_atomic_remainder<COOMMNN_DIM, WF_SIZE, TRANSB, T>), \
+                       dim3((nnz - 1) / COOMMNN_DIM + 1, batch_count_C),            \
+                       dim3(COOMMNN_DIM),                                           \
+                       0,                                                           \
+                       handle->stream,                                              \
+                       conj_A,                                                      \
+                       conj_B,                                                      \
+                       main,                                                        \
+                       n,                                                           \
+                       nnz,                                                         \
+                       batch_stride_A,                                              \
+                       alpha_device_host,                                           \
+                       coo_row_ind,                                                 \
+                       coo_col_ind,                                                 \
+                       coo_val,                                                     \
+                       dense_B,                                                     \
+                       ldb,                                                         \
+                       batch_stride_B,                                              \
+                       dense_C,                                                     \
+                       ldc,                                                         \
+                       batch_stride_C,                                              \
+                       order,                                                       \
                        descr->base);
 
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           bool         TRANSB,
-          typename I,
           typename T,
+          typename I,
+          typename A,
+          typename B,
+          typename C,
           typename U>
 rocsparse_status coommnn_atomic_dispatch(rocsparse_handle          handle,
                                          bool                      conj_A,
@@ -523,15 +556,15 @@ rocsparse_status coommnn_atomic_dispatch(rocsparse_handle          handle,
                                          I                         batch_stride_A,
                                          U                         alpha_device_host,
                                          const rocsparse_mat_descr descr,
-                                         const T*                  coo_val,
+                                         const A*                  coo_val,
                                          const I*                  coo_row_ind,
                                          const I*                  coo_col_ind,
-                                         const T*                  B,
+                                         const B*                  dense_B,
                                          I                         ldb,
                                          I                         batch_count_B,
                                          I                         batch_stride_B,
                                          U                         beta_device_host,
-                                         T*                        C,
+                                         C*                        dense_C,
                                          I                         ldc,
                                          I                         batch_count_C,
                                          I                         batch_stride_C)
@@ -599,7 +632,7 @@ rocsparse_status coommnn_atomic_dispatch(rocsparse_handle          handle,
     return rocsparse_status_success;
 }
 
-template <typename I, typename T, typename U>
+template <typename T, typename I, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handle,
                                                  rocsparse_operation       trans_A,
                                                  rocsparse_operation       trans_B,
@@ -612,15 +645,15 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                                  I                         batch_stride_A,
                                                  U                         alpha_device_host,
                                                  const rocsparse_mat_descr descr,
-                                                 const T*                  coo_val,
+                                                 const A*                  coo_val,
                                                  const I*                  coo_row_ind,
                                                  const I*                  coo_col_ind,
-                                                 const T*                  B,
+                                                 const B*                  dense_B,
                                                  I                         ldb,
                                                  I                         batch_count_B,
                                                  I                         batch_stride_B,
                                                  U                         beta_device_host,
-                                                 T*                        C,
+                                                 C*                        dense_C,
                                                  I                         ldc,
                                                  I                         batch_count_C,
                                                  I                         batch_stride_C)
@@ -637,57 +670,57 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
         {
             if(handle->wavefront_size == 32)
             {
-                return coommnn_atomic_dispatch<256, 32, false>(handle,
-                                                               conj_A,
-                                                               conj_B,
-                                                               order,
-                                                               m,
-                                                               n,
-                                                               k,
-                                                               nnz,
-                                                               batch_count_A,
-                                                               batch_stride_A,
-                                                               alpha_device_host,
-                                                               descr,
-                                                               coo_val,
-                                                               coo_row_ind,
-                                                               coo_col_ind,
-                                                               B,
-                                                               ldb,
-                                                               batch_count_B,
-                                                               batch_stride_B,
-                                                               beta_device_host,
-                                                               C,
-                                                               ldc,
-                                                               batch_count_C,
-                                                               batch_stride_C);
+                return coommnn_atomic_dispatch<256, 32, false, T>(handle,
+                                                                  conj_A,
+                                                                  conj_B,
+                                                                  order,
+                                                                  m,
+                                                                  n,
+                                                                  k,
+                                                                  nnz,
+                                                                  batch_count_A,
+                                                                  batch_stride_A,
+                                                                  alpha_device_host,
+                                                                  descr,
+                                                                  coo_val,
+                                                                  coo_row_ind,
+                                                                  coo_col_ind,
+                                                                  dense_B,
+                                                                  ldb,
+                                                                  batch_count_B,
+                                                                  batch_stride_B,
+                                                                  beta_device_host,
+                                                                  dense_C,
+                                                                  ldc,
+                                                                  batch_count_C,
+                                                                  batch_stride_C);
             }
             else if(handle->wavefront_size == 64)
             {
-                return coommnn_atomic_dispatch<256, 64, false>(handle,
-                                                               conj_A,
-                                                               conj_B,
-                                                               order,
-                                                               m,
-                                                               n,
-                                                               k,
-                                                               nnz,
-                                                               batch_count_A,
-                                                               batch_stride_A,
-                                                               alpha_device_host,
-                                                               descr,
-                                                               coo_val,
-                                                               coo_row_ind,
-                                                               coo_col_ind,
-                                                               B,
-                                                               ldb,
-                                                               batch_count_B,
-                                                               batch_stride_B,
-                                                               beta_device_host,
-                                                               C,
-                                                               ldc,
-                                                               batch_count_C,
-                                                               batch_stride_C);
+                return coommnn_atomic_dispatch<256, 64, false, T>(handle,
+                                                                  conj_A,
+                                                                  conj_B,
+                                                                  order,
+                                                                  m,
+                                                                  n,
+                                                                  k,
+                                                                  nnz,
+                                                                  batch_count_A,
+                                                                  batch_stride_A,
+                                                                  alpha_device_host,
+                                                                  descr,
+                                                                  coo_val,
+                                                                  coo_row_ind,
+                                                                  coo_col_ind,
+                                                                  dense_B,
+                                                                  ldb,
+                                                                  batch_count_B,
+                                                                  batch_stride_B,
+                                                                  beta_device_host,
+                                                                  dense_C,
+                                                                  ldc,
+                                                                  batch_count_C,
+                                                                  batch_stride_C);
             }
             else
             {
@@ -701,57 +734,57 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
         {
             if(handle->wavefront_size == 32)
             {
-                return coommnn_atomic_dispatch<256, 32, true>(handle,
-                                                              conj_A,
-                                                              conj_B,
-                                                              order,
-                                                              m,
-                                                              n,
-                                                              k,
-                                                              nnz,
-                                                              batch_count_A,
-                                                              batch_stride_A,
-                                                              alpha_device_host,
-                                                              descr,
-                                                              coo_val,
-                                                              coo_row_ind,
-                                                              coo_col_ind,
-                                                              B,
-                                                              ldb,
-                                                              batch_count_B,
-                                                              batch_stride_B,
-                                                              beta_device_host,
-                                                              C,
-                                                              ldc,
-                                                              batch_count_C,
-                                                              batch_stride_C);
+                return coommnn_atomic_dispatch<256, 32, true, T>(handle,
+                                                                 conj_A,
+                                                                 conj_B,
+                                                                 order,
+                                                                 m,
+                                                                 n,
+                                                                 k,
+                                                                 nnz,
+                                                                 batch_count_A,
+                                                                 batch_stride_A,
+                                                                 alpha_device_host,
+                                                                 descr,
+                                                                 coo_val,
+                                                                 coo_row_ind,
+                                                                 coo_col_ind,
+                                                                 dense_B,
+                                                                 ldb,
+                                                                 batch_count_B,
+                                                                 batch_stride_B,
+                                                                 beta_device_host,
+                                                                 dense_C,
+                                                                 ldc,
+                                                                 batch_count_C,
+                                                                 batch_stride_C);
             }
             else if(handle->wavefront_size == 64)
             {
-                return coommnn_atomic_dispatch<256, 64, true>(handle,
-                                                              conj_A,
-                                                              conj_B,
-                                                              order,
-                                                              m,
-                                                              n,
-                                                              k,
-                                                              nnz,
-                                                              batch_count_A,
-                                                              batch_stride_A,
-                                                              alpha_device_host,
-                                                              descr,
-                                                              coo_val,
-                                                              coo_row_ind,
-                                                              coo_col_ind,
-                                                              B,
-                                                              ldb,
-                                                              batch_count_B,
-                                                              batch_stride_B,
-                                                              beta_device_host,
-                                                              C,
-                                                              ldc,
-                                                              batch_count_C,
-                                                              batch_stride_C);
+                return coommnn_atomic_dispatch<256, 64, true, T>(handle,
+                                                                 conj_A,
+                                                                 conj_B,
+                                                                 order,
+                                                                 m,
+                                                                 n,
+                                                                 k,
+                                                                 nnz,
+                                                                 batch_count_A,
+                                                                 batch_stride_A,
+                                                                 alpha_device_host,
+                                                                 descr,
+                                                                 coo_val,
+                                                                 coo_row_ind,
+                                                                 coo_col_ind,
+                                                                 dense_B,
+                                                                 ldb,
+                                                                 batch_count_B,
+                                                                 batch_stride_B,
+                                                                 beta_device_host,
+                                                                 dense_C,
+                                                                 ldc,
+                                                                 batch_count_C,
+                                                                 batch_stride_C);
             }
             else
             {
@@ -765,7 +798,7 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
         {
-            hipLaunchKernelGGL((coommtn_atomic_main<256, false>),
+            hipLaunchKernelGGL((coommtn_atomic_main<256, false, T>),
                                dim3((nnz - 1) / 256 + 1, n, batch_count_C),
                                dim3(256),
                                0,
@@ -779,10 +812,10 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                coo_row_ind,
                                coo_col_ind,
                                coo_val,
-                               B,
+                               dense_B,
                                ldb,
                                batch_stride_B,
-                               C,
+                               dense_C,
                                ldc,
                                batch_stride_C,
                                order,
@@ -793,7 +826,7 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                 || (order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
                 || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
-            hipLaunchKernelGGL((coommtn_atomic_main<256, true>),
+            hipLaunchKernelGGL((coommtn_atomic_main<256, true, T>),
                                dim3((nnz - 1) / 256 + 1, n, batch_count_C),
                                dim3(256),
                                0,
@@ -807,10 +840,10 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                coo_row_ind,
                                coo_col_ind,
                                coo_val,
-                               B,
+                               dense_B,
                                ldb,
                                batch_stride_B,
-                               C,
+                               dense_C,
                                ldc,
                                batch_stride_C,
                                order,
@@ -824,51 +857,100 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, TTYPE, UTYPE)                                            \
-    template rocsparse_status rocsparse_coomm_template_atomic<ITYPE, TTYPE, UTYPE>( \
-        rocsparse_handle          handle,                                           \
-        rocsparse_operation       trans_A,                                          \
-        rocsparse_operation       trans_B,                                          \
-        rocsparse_order           order,                                            \
-        ITYPE                     m,                                                \
-        ITYPE                     n,                                                \
-        ITYPE                     k,                                                \
-        int64_t                   nnz,                                              \
-        ITYPE                     batch_count_A,                                    \
-        ITYPE                     batch_stride_A,                                   \
-        UTYPE                     alpha_device_host,                                \
-        const rocsparse_mat_descr descr,                                            \
-        const TTYPE*              coo_val,                                          \
-        const ITYPE*              coo_row_ind,                                      \
-        const ITYPE*              coo_col_ind,                                      \
-        const TTYPE*              B,                                                \
-        ITYPE                     ldb,                                              \
-        ITYPE                     batch_count_B,                                    \
-        ITYPE                     batch_stride_B,                                   \
-        UTYPE                     beta_device_host,                                 \
-        TTYPE*                    C,                                                \
-        ITYPE                     ldc,                                              \
-        ITYPE                     batch_count_C,                                    \
+#define INSTANTIATE(TTYPE, ITYPE, ATYPE, BTYPE, CTYPE, UTYPE)         \
+    template rocsparse_status rocsparse_coomm_template_atomic<TTYPE>( \
+        rocsparse_handle          handle,                             \
+        rocsparse_operation       trans_A,                            \
+        rocsparse_operation       trans_B,                            \
+        rocsparse_order           order,                              \
+        ITYPE                     m,                                  \
+        ITYPE                     n,                                  \
+        ITYPE                     k,                                  \
+        int64_t                   nnz,                                \
+        ITYPE                     batch_count_A,                      \
+        ITYPE                     batch_stride_A,                     \
+        UTYPE                     alpha_device_host,                  \
+        const rocsparse_mat_descr descr,                              \
+        const ATYPE*              coo_val,                            \
+        const ITYPE*              coo_row_ind,                        \
+        const ITYPE*              coo_col_ind,                        \
+        const BTYPE*              dense_B,                            \
+        ITYPE                     ldb,                                \
+        ITYPE                     batch_count_B,                      \
+        ITYPE                     batch_stride_B,                     \
+        UTYPE                     beta_device_host,                   \
+        CTYPE*                    dense_C,                            \
+        ITYPE                     ldc,                                \
+        ITYPE                     batch_count_C,                      \
         ITYPE                     batch_stride_C);
 
-INSTANTIATE(int32_t, float, float);
-INSTANTIATE(int32_t, double, double);
-INSTANTIATE(int32_t, rocsparse_float_complex, rocsparse_float_complex);
-INSTANTIATE(int32_t, rocsparse_double_complex, rocsparse_double_complex);
+// Uniform precisions
+INSTANTIATE(float, int32_t, float, float, float, float);
+INSTANTIATE(float, int64_t, float, float, float, float);
+INSTANTIATE(double, int32_t, double, double, double, double);
+INSTANTIATE(double, int64_t, double, double, double, double);
+INSTANTIATE(rocsparse_float_complex,
+            int32_t,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex);
+INSTANTIATE(rocsparse_float_complex,
+            int64_t,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex);
+INSTANTIATE(rocsparse_double_complex,
+            int32_t,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex);
+INSTANTIATE(rocsparse_double_complex,
+            int64_t,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex);
 
-INSTANTIATE(int64_t, float, float);
-INSTANTIATE(int64_t, double, double);
-INSTANTIATE(int64_t, rocsparse_float_complex, rocsparse_float_complex);
-INSTANTIATE(int64_t, rocsparse_double_complex, rocsparse_double_complex);
+INSTANTIATE(float, int32_t, float, float, float, const float*);
+INSTANTIATE(float, int64_t, float, float, float, const float*);
+INSTANTIATE(double, int32_t, double, double, double, const double*);
+INSTANTIATE(double, int64_t, double, double, double, const double*);
+INSTANTIATE(rocsparse_float_complex,
+            int32_t,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            const rocsparse_float_complex*);
+INSTANTIATE(rocsparse_float_complex,
+            int64_t,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            rocsparse_float_complex,
+            const rocsparse_float_complex*);
+INSTANTIATE(rocsparse_double_complex,
+            int32_t,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            const rocsparse_double_complex*);
+INSTANTIATE(rocsparse_double_complex,
+            int64_t,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            rocsparse_double_complex,
+            const rocsparse_double_complex*);
 
-INSTANTIATE(int32_t, float, const float*);
-INSTANTIATE(int32_t, double, const double*);
-INSTANTIATE(int32_t, rocsparse_float_complex, const rocsparse_float_complex*);
-INSTANTIATE(int32_t, rocsparse_double_complex, const rocsparse_double_complex*);
+// Mixed Precisions
+INSTANTIATE(int32_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE(int32_t, int64_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE(float, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE(float, int64_t, int8_t, int8_t, float, float);
 
-INSTANTIATE(int64_t, float, const float*);
-INSTANTIATE(int64_t, double, const double*);
-INSTANTIATE(int64_t, rocsparse_float_complex, const rocsparse_float_complex*);
-INSTANTIATE(int64_t, rocsparse_double_complex, const rocsparse_double_complex*);
-
+INSTANTIATE(int32_t, int32_t, int8_t, int8_t, int32_t, const int32_t*);
+INSTANTIATE(int32_t, int64_t, int8_t, int8_t, int32_t, const int32_t*);
+INSTANTIATE(float, int32_t, int8_t, int8_t, float, const float*);
+INSTANTIATE(float, int64_t, int8_t, int8_t, float, const float*);
 #undef INSTANTIATE

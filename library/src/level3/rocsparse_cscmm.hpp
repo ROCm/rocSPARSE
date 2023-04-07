@@ -28,7 +28,7 @@
 
 #include "rocsparse_csrmm.hpp"
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A>
 rocsparse_status rocsparse_cscmm_buffer_size_template(rocsparse_handle          handle,
                                                       rocsparse_operation       trans_A,
                                                       rocsparse_csrmm_alg       alg,
@@ -37,12 +37,12 @@ rocsparse_status rocsparse_cscmm_buffer_size_template(rocsparse_handle          
                                                       J                         k,
                                                       I                         nnz,
                                                       const rocsparse_mat_descr descr,
-                                                      const T*                  csc_val,
+                                                      const A*                  csc_val,
                                                       const I*                  csc_col_ptr,
                                                       const J*                  csc_row_ind,
                                                       size_t*                   buffer_size);
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A>
 rocsparse_status rocsparse_cscmm_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_csrmm_alg       alg,
@@ -51,12 +51,12 @@ rocsparse_status rocsparse_cscmm_analysis_template(rocsparse_handle          han
                                                    J                         k,
                                                    I                         nnz,
                                                    const rocsparse_mat_descr descr,
-                                                   const T*                  csc_val,
+                                                   const A*                  csc_val,
                                                    const I*                  csc_col_ptr,
                                                    const J*                  csc_row_ind,
                                                    void*                     temp_buffer);
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J, typename A, typename B, typename C>
 rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_A,
                                           rocsparse_operation       trans_B,
@@ -72,15 +72,15 @@ rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                           I                         rows_values_batch_stride_A,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T*                  csc_val,
+                                          const A*                  csc_val,
                                           const I*                  csc_col_ptr,
                                           const J*                  csc_row_ind,
-                                          const T*                  B,
+                                          const B*                  dense_B,
                                           J                         ldb,
                                           J                         batch_count_B,
                                           I                         batch_stride_B,
                                           const T*                  beta,
-                                          T*                        C,
+                                          C*                        dense_C,
                                           J                         ldc,
                                           J                         batch_count_C,
                                           I                         batch_stride_C,
