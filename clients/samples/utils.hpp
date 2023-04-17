@@ -33,7 +33,7 @@
 //
 //
 
-#include <rocsparse.h>
+#include <rocsparse/rocsparse.h>
 #include <stdlib.h>
 #include <vector>
 
