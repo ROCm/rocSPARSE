@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include <iostream>
-#include <rocsparse.h>
+#include <rocsparse/rocsparse.h>
 #include <stdio.h>
 
 #define ROCSPARSE_CHECK(stat)                                                        \
