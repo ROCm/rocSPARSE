@@ -22,7 +22,7 @@ backcall==0.2.0
     # via ipython
 beautifulsoup4==4.11.1
     # via pydata-sphinx-theme
-breathe==4.31.0
+breathe==4.35.0
     # via -r docs/requirements.in
 certifi==2022.12.7
     # via requests
