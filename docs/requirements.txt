@@ -176,7 +176,7 @@ snowballstemmer==2.2.0
     # via sphinx
 soupsieve==2.3.2.post1
     # via beautifulsoup4
-sphinx==4.3.1
+sphinx==4.5.0
     # via
     #   -r docs/requirements.in
     #   breathe
@@ -239,6 +239,3 @@ wcwidth==0.2.5
     # via prompt-toolkit
 zipp==3.11.0
     # via importlib-metadata
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools
