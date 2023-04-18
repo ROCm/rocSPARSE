@@ -4,6 +4,8 @@
 #
 #    pip-compile docs/source/requirements.in
 #
+accessible-pygments==0.0.4
+    # via pydata-sphinx-theme
 alabaster==0.7.12
     # via sphinx
 asttokens==2.2.0
@@ -13,7 +15,9 @@ attrs==22.1.0
     #   jsonschema
     #   jupyter-cache
 babel==2.10.3
-    # via sphinx
+    # via
+    #   pydata-sphinx-theme
+    #   sphinx
 backcall==0.2.0
     # via ipython
 beautifulsoup4==4.11.1
@@ -136,11 +140,13 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
     # via stack-data
-pydata-sphinx-theme==0.8.1
+pydata-sphinx-theme==0.13.3
     # via sphinx-book-theme
 pygments==2.12.0
     # via
+    #   accessible-pygments
     #   ipython
+    #   pydata-sphinx-theme
     #   sphinx
 pyparsing==3.0.9
     # via packaging
@@ -155,7 +161,6 @@ pyyaml==6.0
     #   jupyter-cache
     #   myst-nb
     #   myst-parser
-    #   sphinx-book-theme
     #   sphinx-external-toc
 pyzmq==24.0.1
     # via
@@ -182,7 +187,7 @@ sphinx==4.3.1
     #   sphinx-copybutton
     #   sphinx-design
     #   sphinx-external-toc
-sphinx-book-theme==0.3.3
+sphinx-book-theme==1.0.1
     # via -r docs/requirements.in
 sphinx-copybutton==0.5.2
     # via -r docs/requirements.in
@@ -225,6 +230,7 @@ typing-extensions==4.4.0
     # via
     #   myst-nb
     #   myst-parser
+    #   pydata-sphinx-theme
 uc-micro-py==1.0.1
     # via linkify-it-py
 urllib3==1.26.11
