@@ -186,7 +186,7 @@ sphinx-book-theme==0.3.3
     # via -r docs/requirements.in
 sphinx-copybutton==0.5.2
     # via -r docs/requirements.in
-sphinx-design==0.3.0
+sphinx-design==0.4.1
     # via -r docs/requirements.in
 sphinx-external-toc==0.3.1
     # via -r docs/requirements.in
