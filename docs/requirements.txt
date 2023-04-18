@@ -36,7 +36,7 @@ debugpy==1.6.4
     # via ipykernel
 decorator==5.1.1
     # via ipython
-docutils==0.16
+docutils==0.17.1
     # via
     #   -r docs/requirements.in
     #   breathe
