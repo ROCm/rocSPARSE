@@ -99,7 +99,7 @@ mdit-py-plugins==0.3.1
     # via myst-parser
 mdurl==0.1.2
     # via markdown-it-py
-myst-nb==0.17.1
+myst-nb==0.17.2
     # via -r docs/requirements.in
 myst-parser[linkify]==0.18.1
     # via
