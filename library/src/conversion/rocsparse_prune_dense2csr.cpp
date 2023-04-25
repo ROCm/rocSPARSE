@@ -265,6 +265,7 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
     rocsparse_int first_value = descr->base;
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
         csr_row_ptr, &first_value, sizeof(rocsparse_int), hipMemcpyHostToDevice, handle->stream));
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
     // Obtain rocprim buffer size
     size_t temp_storage_bytes = 0;
