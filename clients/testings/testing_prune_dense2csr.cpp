@@ -83,11 +83,12 @@ void testing_prune_dense2csr_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_prune_dense2csr(const Arguments& arg)
 {
-    rocsparse_int        M         = arg.M;
-    rocsparse_int        N         = arg.N;
-    rocsparse_int        LDA       = arg.denseld;
-    rocsparse_index_base base      = arg.baseA;
-    T                    threshold = static_cast<T>(arg.threshold);
+    rocsparse_int        M    = arg.M;
+    rocsparse_int        N    = arg.N;
+    rocsparse_int        LDA  = arg.denseld;
+    rocsparse_index_base base = arg.baseA;
+
+    host_scalar<T> h_threshold(arg.threshold);
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
@@ -98,13 +99,12 @@ void testing_prune_dense2csr(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || LDA < M)
+    if(LDA < M)
     {
         EXPECT_ROCSPARSE_STATUS(
             rocsparse_prune_dense2csr<T>(
                 handle, M, N, nullptr, LDA, nullptr, descr, nullptr, nullptr, nullptr, nullptr),
-            (M < 0 || N < 0 || LDA < M) ? rocsparse_status_invalid_size : rocsparse_status_success);
+            rocsparse_status_invalid_size);
 
         return;
     }
@@ -118,22 +118,24 @@ void testing_prune_dense2csr(const Arguments& arg)
     device_vector<rocsparse_int> d_nnz_total_dev_host_ptr(1);
     device_vector<rocsparse_int> d_csr_row_ptr(M + 1);
 
+    device_scalar<T> d_threshold(h_threshold);
+
     // Initialize a random matrix.
     rocsparse_seedrand();
 
     // Initialize the entire allocated memory.
-    for(rocsparse_int i = 0; i < LDA; ++i)
+    for(rocsparse_int j = 0; j < N; ++j)
     {
-        for(rocsparse_int j = 0; j < N; ++j)
+        for(rocsparse_int i = 0; i < LDA; ++i)
         {
             h_A[j * LDA + i] = -1;
         }
     }
 
     // Random initialization of the matrix.
-    for(rocsparse_int i = 0; i < M; ++i)
+    for(rocsparse_int j = 0; j < N; ++j)
     {
-        for(rocsparse_int j = 0; j < N; ++j)
+        for(rocsparse_int i = 0; i < M; ++i)
         {
             h_A[j * LDA + i] = random_generator_normal<T>();
         }
@@ -144,15 +146,10 @@ void testing_prune_dense2csr(const Arguments& arg)
 
     size_t buffer_size = 0;
     CHECK_ROCSPARSE_ERROR(rocsparse_prune_dense2csr_buffer_size<T>(
-        handle, M, N, d_A, LDA, &threshold, descr, nullptr, d_csr_row_ptr, nullptr, &buffer_size));
+        handle, M, N, d_A, LDA, h_threshold, descr, nullptr, d_csr_row_ptr, nullptr, &buffer_size));
 
     T* d_temp_buffer = nullptr;
     CHECK_HIP_ERROR(rocsparse_hipMalloc(&d_temp_buffer, buffer_size));
-
-    T* d_threshold = nullptr;
-    CHECK_HIP_ERROR(rocsparse_hipMalloc(&d_threshold, sizeof(T)));
-
-    CHECK_HIP_ERROR(hipMemcpy(d_threshold, &threshold, sizeof(T), hipMemcpyHostToDevice));
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
     CHECK_ROCSPARSE_ERROR(rocsparse_prune_dense2csr_nnz<T>(handle,
@@ -160,7 +157,7 @@ void testing_prune_dense2csr(const Arguments& arg)
                                                            N,
                                                            d_A,
                                                            LDA,
-                                                           &threshold,
+                                                           h_threshold,
                                                            descr,
                                                            d_csr_row_ptr,
                                                            h_nnz_total_dev_host_ptr,
@@ -178,27 +175,25 @@ void testing_prune_dense2csr(const Arguments& arg)
                                                            d_nnz_total_dev_host_ptr,
                                                            d_temp_buffer));
 
+    host_vector<rocsparse_int> h_nnz_total_copied_from_device(1);
+    CHECK_HIP_ERROR(hipMemcpy(h_nnz_total_copied_from_device,
+                              d_nnz_total_dev_host_ptr,
+                              sizeof(rocsparse_int),
+                              hipMemcpyDeviceToHost));
+    h_nnz_total_dev_host_ptr.unit_check(h_nnz_total_copied_from_device);
+
     device_vector<rocsparse_int> d_csr_col_ind(h_nnz_total_dev_host_ptr[0]);
     device_vector<T>             d_csr_val(h_nnz_total_dev_host_ptr[0]);
 
     if(arg.unit_check)
     {
-        host_vector<rocsparse_int> h_nnz_total_copied_from_device(1);
-        CHECK_HIP_ERROR(hipMemcpy(h_nnz_total_copied_from_device,
-                                  d_nnz_total_dev_host_ptr,
-                                  sizeof(rocsparse_int),
-                                  hipMemcpyDeviceToHost));
-
-        h_nnz_total_dev_host_ptr.unit_check(h_nnz_total_copied_from_device);
-
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_prune_dense2csr<T>(handle,
                                                                     M,
                                                                     N,
                                                                     d_A,
                                                                     LDA,
-                                                                    &threshold,
+                                                                    h_threshold,
                                                                     descr,
                                                                     d_csr_val,
                                                                     d_csr_row_ptr,
@@ -230,7 +225,7 @@ void testing_prune_dense2csr(const Arguments& arg)
                              h_A,
                              LDA,
                              base,
-                             threshold,
+                             *h_threshold,
                              h_nnz_cpu[0],
                              h_csr_val_cpu,
                              h_csr_row_ptr_cpu,
@@ -257,7 +252,7 @@ void testing_prune_dense2csr(const Arguments& arg)
                                                                N,
                                                                d_A,
                                                                LDA,
-                                                               &threshold,
+                                                               h_threshold,
                                                                descr,
                                                                d_csr_val,
                                                                d_csr_row_ptr,
@@ -275,7 +270,7 @@ void testing_prune_dense2csr(const Arguments& arg)
                                                                N,
                                                                d_A,
                                                                LDA,
-                                                               &threshold,
+                                                               h_threshold,
                                                                descr,
                                                                d_csr_val,
                                                                d_csr_row_ptr,
@@ -297,7 +292,7 @@ void testing_prune_dense2csr(const Arguments& arg)
                             "nnz",
                             h_nnz_total_dev_host_ptr[0],
                             "threshold",
-                            threshold,
+                            *h_threshold,
                             s_timing_info_bandwidth,
                             gpu_gbyte,
                             s_timing_info_time,

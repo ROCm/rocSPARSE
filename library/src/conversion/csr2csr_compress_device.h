@@ -120,27 +120,6 @@ template <rocsparse_int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void fill_row_ptr_device(rocsparse_int        m,
                              rocsparse_index_base idx_base_C,
-                             rocsparse_int* __restrict__ csr_row_ptr_C)
-{
-    rocsparse_int tid = hipThreadIdx_x + hipBlockIdx_x * BLOCK_SIZE;
-
-    if(tid >= m)
-    {
-        return;
-    }
-
-    csr_row_ptr_C[tid + 1] = idx_base_C;
-
-    if(tid == 0)
-    {
-        csr_row_ptr_C[0] = idx_base_C;
-    }
-}
-
-template <rocsparse_int BLOCK_SIZE>
-__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
-    void fill_row_ptr_device(rocsparse_int        m,
-                             rocsparse_index_base idx_base_C,
                              const rocsparse_int* __restrict__ nnz_per_row,
                              rocsparse_int* __restrict__ csr_row_ptr_C)
 {

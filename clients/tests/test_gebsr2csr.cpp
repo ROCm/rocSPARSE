@@ -35,4 +35,5 @@ TEST_ROUTINE(gebsr2csr,
              arg.direction,
              arg.baseA,
              arg.baseB,
-             arg.matrix);
+             arg.matrix,
+             arg.graph_test);

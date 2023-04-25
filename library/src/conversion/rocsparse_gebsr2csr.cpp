@@ -464,25 +464,6 @@ rocsparse_status rocsparse_gebsr2csr_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    if(bsr_val == nullptr && bsr_col_ind == nullptr)
-    {
-        rocsparse_int start = 0;
-        rocsparse_int end   = 0;
-
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-
-        rocsparse_int nnzb = (end - start);
-
-        if(nnzb != 0)
-        {
-            return rocsparse_status_invalid_pointer;
-        }
-    }
-
     // Check the description type of the matrix.
     if(rocsparse_matrix_type_general != bsr_descr->type
        || rocsparse_matrix_type_general != csr_descr->type)

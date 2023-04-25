@@ -1005,6 +1005,36 @@ void host_csr_to_csc(J                    M,
                      rocsparse_index_base base);
 
 template <typename T>
+void host_bsr_to_csr(rocsparse_direction               direction,
+                     rocsparse_int                     mb,
+                     rocsparse_int                     nb,
+                     rocsparse_int                     nnzb,
+                     const std::vector<T>&             bsr_val,
+                     const std::vector<rocsparse_int>& bsr_row_ptr,
+                     const std::vector<rocsparse_int>& bsr_col_ind,
+                     rocsparse_int                     block_dim,
+                     rocsparse_index_base              bsr_base,
+                     std::vector<T>&                   csr_val,
+                     std::vector<rocsparse_int>&       csr_row_ptr,
+                     std::vector<rocsparse_int>&       csr_col_ind,
+                     rocsparse_index_base              csr_base);
+
+template <typename T>
+void host_csr_to_bsr(rocsparse_direction               direction,
+                     rocsparse_int                     m,
+                     rocsparse_int                     n,
+                     rocsparse_int                     nnz,
+                     const std::vector<T>&             csr_val,
+                     const std::vector<rocsparse_int>& csr_row_ptr,
+                     const std::vector<rocsparse_int>& csr_col_ind,
+                     rocsparse_int                     block_dim,
+                     rocsparse_index_base              csr_base,
+                     std::vector<T>&                   bsr_val,
+                     std::vector<rocsparse_int>&       bsr_row_ptr,
+                     std::vector<rocsparse_int>&       bsr_col_ind,
+                     rocsparse_index_base              bsr_base);
+
+template <typename T>
 void host_gebsr_to_gebsc(rocsparse_int                     Mb,
                          rocsparse_int                     Nb,
                          rocsparse_int                     nnzb,

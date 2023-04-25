@@ -26,4 +26,4 @@
 
 #include "testing_coo2dense.hpp"
 
-TEST_ROUTINE(coo2dense, conversion, arg.M, arg.N, arg.denseld, arg.baseA);
+TEST_ROUTINE(coo2dense, conversion, arg.M, arg.N, arg.denseld, arg.baseA, arg.graph_test);
