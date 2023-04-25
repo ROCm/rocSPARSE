@@ -86,7 +86,7 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  threshold: [0.3, 0.45, 0.77, -0.1]
+  percentage: [100.0, 88.0]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
