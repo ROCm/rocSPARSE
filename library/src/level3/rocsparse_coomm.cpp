@@ -190,7 +190,7 @@ rocsparse_status rocsparse_coomm_buffer_size_template(rocsparse_handle          
     case rocsparse_coomm_alg_default:
     case rocsparse_coomm_alg_atomic:
     {
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
 
@@ -212,7 +212,7 @@ rocsparse_status rocsparse_coomm_buffer_size_template(rocsparse_handle          
 
     case rocsparse_coomm_alg_segmented_atomic:
     {
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
     }
@@ -292,11 +292,6 @@ rocsparse_status rocsparse_coomm_analysis_template(rocsparse_handle          han
         return rocsparse_status_success;
     }
 
-    if(temp_buffer == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
     // All must be null (zero matrix) or none null
     if(!(coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr)
        && !(coo_val != nullptr && coo_row_ind != nullptr && coo_col_ind != nullptr))
@@ -319,6 +314,11 @@ rocsparse_status rocsparse_coomm_analysis_template(rocsparse_handle          han
 
     case rocsparse_coomm_alg_segmented:
     {
+        if(temp_buffer == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
         return rocsparse_status_success;
     }
 
@@ -505,6 +505,11 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
         {
         case rocsparse_operation_none:
         {
+            if(temp_buffer == nullptr)
+            {
+                return rocsparse_status_invalid_pointer;
+            }
+
             return rocsparse_coomm_template_segmented<T>(handle,
                                                          trans_A,
                                                          trans_B,

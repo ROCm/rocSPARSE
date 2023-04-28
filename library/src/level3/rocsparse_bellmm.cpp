@@ -116,7 +116,7 @@ rocsparse_status rocsparse_bellmm_template_buffer_size(rocsparse_handle         
                                                        I                         ldc,
                                                        size_t*                   buffer_size)
 {
-    *buffer_size = 4;
+    *buffer_size = 0;
     return rocsparse_status_success;
 }
 

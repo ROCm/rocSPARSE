@@ -170,7 +170,7 @@ rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          
     case rocsparse_csrmm_alg_default:
     case rocsparse_csrmm_alg_row_split:
     {
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
     }
@@ -264,7 +264,7 @@ rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          han
     }
 
     // Check pointer arguments
-    if(csr_row_ptr == nullptr || temp_buffer == nullptr)
+    if(csr_row_ptr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
