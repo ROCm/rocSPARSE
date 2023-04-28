@@ -307,7 +307,7 @@ rocsparse_status rocsparse_csrmm_buffer_size_template_merge(rocsparse_handle    
     case rocsparse_operation_transpose:
     case rocsparse_operation_conjugate_transpose:
     {
-        *buffer_size = 4;
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
     }
@@ -331,6 +331,11 @@ rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle       
     {
     case rocsparse_operation_none:
     {
+        if(temp_buffer == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
         char* ptr        = reinterpret_cast<char*>(temp_buffer);
         J*    row_limits = reinterpret_cast<J*>(ptr);
 
@@ -719,6 +724,11 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
     // Run different csrmm kernels
     if(trans_A == rocsparse_operation_none)
     {
+        if(temp_buffer == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
         if((order == rocsparse_order_column && trans_B == rocsparse_operation_none)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
