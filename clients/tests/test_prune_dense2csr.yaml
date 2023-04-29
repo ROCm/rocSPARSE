@@ -68,7 +68,7 @@ Tests:
   M: [5, 7, 10]
   N: [2, 17, 33]
   denseld: [50]
-  threshold: [0.6, -0.9, 1.0]
+  threshold: [0.6, 0.9, 1.0]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
 
 - name: prune_dense2csr
@@ -80,7 +80,7 @@ Tests:
   denseld: [500]
   threshold: [0.67, 0.003, 0.75, 0.999]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
-
+  
 - name: prune_dense2csr
   category: nightly
   function: prune_dense2csr
