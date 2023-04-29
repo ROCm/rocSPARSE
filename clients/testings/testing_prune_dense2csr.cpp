@@ -300,7 +300,6 @@ void testing_prune_dense2csr(const Arguments& arg)
     }
 
     CHECK_HIP_ERROR(rocsparse_hipFree(d_temp_buffer));
-    CHECK_HIP_ERROR(rocsparse_hipFree(d_threshold));
 }
 
 #define INSTANTIATE(TYPE)                                                      \
