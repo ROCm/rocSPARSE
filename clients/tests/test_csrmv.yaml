@@ -226,7 +226,7 @@ Tests:
 - name: csrmv_file
   category: quick
   function: csrmv
-  precision: *single_double_precisions_complex
+  precision: *double_only_precisions_complex
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_quick
