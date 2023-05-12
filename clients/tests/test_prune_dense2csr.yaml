@@ -35,18 +35,18 @@ Tests:
   category: quick
   function: prune_dense2csr
   precision: *single_double_precisions
-  M: [0, 3, 8, 13, 64, 256]
-  N: [0, 3, 8, 13, 64, 256]
+  M: [3, 8, 13, 64, 256]
+  N: [3, 8, 13, 64, 256]
   denseld: [-8, 64, 512]
-  threshold: [0.1, -0.5, 1.2]
+  threshold: [0.1, 0.5, 1.2]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
 
 - name: prune_dense2csr
   category: pre_checkin
   function: prune_dense2csr
   precision: *single_double_precisions
-  M: [-1, 0, 531, 1000]
-  N: [-3, 0, 241, 1000]
+  M: [531, 1000]
+  N: [241, 1000]
   denseld: [100, 1000, 2000]
   threshold: [0.5, 0.0, 0.9, 0.001]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
@@ -58,7 +58,7 @@ Tests:
   M: [2000, 4000, 8000]
   N: [2000, 4000]
   denseld: [ 8000 ]
-  threshold: [0.7, 0.2, 0.33, -0.5]
+  threshold: [0.7, 0.2, 0.33, 0.5]
   baseA: [rocsparse_index_base_zero]
 
 - name: prune_dense2csr
@@ -68,7 +68,7 @@ Tests:
   M: [5, 7, 10]
   N: [2, 17, 33]
   denseld: [50]
-  threshold: [0.6, -0.9, 1.0]
+  threshold: [0.6, 0.9, 1.0]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
 
 - name: prune_dense2csr
@@ -80,7 +80,7 @@ Tests:
   denseld: [500]
   threshold: [0.67, 0.003, 0.75, 0.999]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
-
+  
 - name: prune_dense2csr
   category: nightly
   function: prune_dense2csr
@@ -88,5 +88,5 @@ Tests:
   M: [1000]
   N: [1000]
   denseld: [ 1000 ]
-  threshold: [0.4, 0.25, 0.23, -0.3]
+  threshold: [0.4, 0.25, 0.23, 0.3]
   baseA: [rocsparse_index_base_one]

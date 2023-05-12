@@ -67,8 +67,9 @@ static __device__ void prune_dense2csr_nnz_device(rocsparse_int m,
             {
                 for(rocsparse_int j = 0; j < 4; ++j)
                 {
-                    if(rocsparse_abs(A[ind + k * DIM_X + (col + j) * lda]) > threshold)
-                        res_A[k] += 1;
+                    res_A[k] += (rocsparse_abs(A[ind + k * DIM_X + (col + j) * lda]) > threshold)
+                                    ? 1
+                                    : 0;
                 }
             }
         }

@@ -52,6 +52,17 @@ Tests:
   storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: coo2dense
+  category: pre_checkin
+  function: coo2dense
+  precision: *single_double_precisions_complex_real
+  M: [0, 531, 1000]
+  N: [0, 241, 1000]
+  denseld: [100, 1000, 2000]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  graph_test: true
+
+- name: coo2dense
   category: nightly
   function: coo2dense
   precision: *single_double_precisions_complex_real

@@ -35,9 +35,9 @@ Tests:
   category: quick
   function: prune_csr2csr
   precision: *single_double_precisions
-  M: [-1, 0, 1, 10, 325, 1107]
-  N: [-1, 0, 1, 33, 435, 1089]
-  threshold: [-0.001, 0.1, -0.5]
+  M: [0, 1, 10, 325, 1107]
+  N: [0, 1, 33, 435, 1089]
+  threshold: [0.001, 0.1, 0.5]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
@@ -75,7 +75,7 @@ Tests:
   precision: *single_double_precisions
   M: [20245, 50677, 82859]
   N: [12909, 40232, 88180]
-  threshold: [0.1, 0.2, 0.33, -0.5]
+  threshold: [0.1, 0.2, 0.33, 0.5]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   baseB: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
@@ -86,7 +86,7 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  threshold: [0.3, 0.45, 0.77, -0.1]
+  threshold: [0.3, 0.45, 0.77, 0.1]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]

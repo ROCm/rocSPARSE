@@ -183,13 +183,13 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
     }
 
     // Check sizes
-    if(m < 0 || n < 0 || block_dim < 0)
+    if(m < 0 || n < 0 || block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(m == 0 || n == 0 || block_dim == 0)
+    if(m == 0 || n == 0)
     {
         return rocsparse_status_success;
     }
@@ -496,13 +496,16 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
     }
 
     // Check sizes
-    if(m < 0 || n < 0 || block_dim < 0)
+    if(m < 0 || n < 0 || block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
 
+    rocsparse_int mb = (m + block_dim - 1) / block_dim;
+    rocsparse_int nb = (n + block_dim - 1) / block_dim;
+
     // Quick return if possible
-    if(m == 0 || n == 0 || block_dim == 0)
+    if(m == 0 || n == 0)
     {
         if(bsr_nnz != nullptr)
         {
@@ -517,6 +520,18 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
             }
         }
 
+        if(bsr_row_ptr != nullptr)
+        {
+            hipLaunchKernelGGL((set_array_to_value<256>),
+                               dim3(((mb + 1) - 1) / 256 + 1),
+                               dim3(256),
+                               0,
+                               handle->stream,
+                               (mb + 1),
+                               bsr_row_ptr,
+                               static_cast<rocsparse_int>(bsr_descr->base));
+        }
+
         return rocsparse_status_success;
     }
 
@@ -525,9 +540,6 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
     {
         return rocsparse_status_invalid_pointer;
     }
-
-    rocsparse_int mb = (m + block_dim - 1) / block_dim;
-    rocsparse_int nb = (n + block_dim - 1) / block_dim;
 
     if(csr_col_ind == nullptr)
     {

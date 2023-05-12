@@ -130,6 +130,24 @@ Tests:
              nos6,
              scircuit]
 
+- name: gebsr2csr_file
+  category: pre_checkin
+  function: gebsr2csr
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  row_block_dimA: [2, 3, 16]
+  col_block_dimA: [4]
+  baseA: [rocsparse_index_base_one]
+  baseB: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mac_econ_fwd500,
+             nos2,
+             nos4,
+             nos6,
+             scircuit]
+  graph_test: true
+
 - name: gebsr2csr
   category: nightly
   function: gebsr2csr

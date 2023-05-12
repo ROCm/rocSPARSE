@@ -84,6 +84,28 @@ void testing_prune_dense2csr_by_percentage_bad_arg(const Arguments& arg)
                             rocsparse_status_not_implemented);
     EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_by_percentage<T>(PARAMS),
                             rocsparse_status_not_implemented);
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
+
+    // Check percentage being less than 0
+    percentage = -10;
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_prune_dense2csr_by_percentage_buffer_size<T>(PARAMS_BUFFER_SIZE),
+        rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_nnz_by_percentage<T>(PARAMS_NNZ),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_by_percentage<T>(PARAMS),
+                            rocsparse_status_invalid_size);
+
+    // Check percentage being greater than 100
+    percentage = 110;
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_prune_dense2csr_by_percentage_buffer_size<T>(PARAMS_BUFFER_SIZE),
+        rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_nnz_by_percentage<T>(PARAMS_NNZ),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_by_percentage<T>(PARAMS),
+                            rocsparse_status_invalid_size);
 #undef PARAMS
 #undef PARAMS_NNZ
 #undef PARAMS_BUFFER_SIZE
@@ -110,25 +132,21 @@ void testing_prune_dense2csr_by_percentage(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || LDA < M || percentage < 0.0 || percentage > 100.0)
+    if(LDA < M)
     {
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_prune_dense2csr_by_percentage<T>(handle,
-                                                       M,
-                                                       N,
-                                                       nullptr,
-                                                       LDA,
-                                                       percentage,
-                                                       descr,
-                                                       nullptr,
-                                                       nullptr,
-                                                       nullptr,
-                                                       info,
-                                                       nullptr),
-            (M < 0 || N < 0 || LDA < M || percentage < 0.0 || percentage > 100.0)
-                ? rocsparse_status_invalid_size
-                : rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_by_percentage<T>(handle,
+                                                                           M,
+                                                                           N,
+                                                                           nullptr,
+                                                                           LDA,
+                                                                           percentage,
+                                                                           descr,
+                                                                           nullptr,
+                                                                           nullptr,
+                                                                           nullptr,
+                                                                           info,
+                                                                           nullptr),
+                                rocsparse_status_invalid_size);
 
         return;
     }
@@ -209,19 +227,19 @@ void testing_prune_dense2csr_by_percentage(const Arguments& arg)
                                                                          info,
                                                                          d_temp_buffer));
 
+    host_vector<rocsparse_int> h_nnz_total_copied_from_device(1);
+    CHECK_HIP_ERROR(hipMemcpy(h_nnz_total_copied_from_device,
+                              d_nnz_total_dev_host_ptr,
+                              sizeof(rocsparse_int),
+                              hipMemcpyDeviceToHost));
+
+    h_nnz_total_dev_host_ptr.unit_check(h_nnz_total_copied_from_device);
+
     device_vector<rocsparse_int> d_csr_col_ind(h_nnz_total_dev_host_ptr[0]);
     device_vector<T>             d_csr_val(h_nnz_total_dev_host_ptr[0]);
 
     if(arg.unit_check)
     {
-        host_vector<rocsparse_int> h_nnz_total_copied_from_device(1);
-        CHECK_HIP_ERROR(hipMemcpy(h_nnz_total_copied_from_device,
-                                  d_nnz_total_dev_host_ptr,
-                                  sizeof(rocsparse_int),
-                                  hipMemcpyDeviceToHost));
-
-        h_nnz_total_dev_host_ptr.unit_check(h_nnz_total_copied_from_device);
-
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_prune_dense2csr_by_percentage<T>(handle,
                                                                                   M,

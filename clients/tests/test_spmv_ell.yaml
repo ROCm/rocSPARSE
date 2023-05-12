@@ -170,8 +170,20 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mplate,
-             Chevron3]
+  filename: [Chevron3]
+
+- name: spmv_ell_file
+  category: pre_checkin
+  function: spmv_ell
+  indextype: *i32_i64
+  precision: *double_only_precisions_complex
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mplate]
 
 - name: spmv_ell_file
   category: nightly
