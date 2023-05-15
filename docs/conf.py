@@ -6,8 +6,11 @@
 
 from rocm_docs import ROCmDocs
 
+
+external_toc_path = "./sphinx/_toc.yml"
+
 docs_core = ROCmDocs("rocSPARSE Documentation")
-docs_core.run_doxygen()
+docs_core.run_doxygen(doxygen_root="doxygen", doxygen_path="doxygen/docBin/xml")
 docs_core.setup()
 
 for sphinx_var in ROCmDocs.SPHINX_VARS:
