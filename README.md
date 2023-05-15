@@ -1,10 +1,21 @@
 # rocSPARSE
+
 rocSPARSE exposes a common interface that provides Basic Linear Algebra Subroutines for sparse computation implemented on top of AMD's Radeon Open eCosystem Platform [ROCm][] runtime and toolchains. rocSPARSE is created using the [HIP][] programming language and optimized for AMD's latest discrete GPUs.
 
 ## Documentation
+
 The latest rocSPARSE documentation and API description can be found [here][] or downloaded as [pdf][].
 
+Run the commands below to build documentation locally:
+
+```
+cd docs
+pip3 install -r sphinx/requirements.txt
+python3 -m sphinx -T -E -b html -d _build/doctrees -D language=en . _build/html
+```
+
 ## Requirements
+
 * Git
 * CMake (3.5 or later)
 * AMD [ROCm] 3.5 platform or later
@@ -18,6 +29,7 @@ Optional:
 ## Quickstart rocSPARSE build and install
 
 #### Install script
+
 You can build rocSPARSE using the *install.sh* script
 ```
 # Clone rocSPARSE using git
@@ -37,6 +49,7 @@ cd rocSPARSE
 ```
 
 #### CMake
+
 All compiler specifications are determined automatically. The compilation process can be performed by
 ```
 # Clone rocSPARSE using git
@@ -62,6 +75,7 @@ make
 ```
 
 ## Unit tests
+
 To run unit tests, rocSPARSE has to be built with option -DBUILD_CLIENTS_TESTS=ON.
 ```
 # Go to rocSPARSE build directory
@@ -72,6 +86,7 @@ cd rocSPARSE; cd build/release
 ```
 
 ## Benchmarks
+
 To run benchmarks, rocSPARSE has to be built with option -DBUILD_CLIENTS_BENCHMARKS=ON.
 ```
 # Go to rocSPARSE build directory
@@ -82,9 +97,11 @@ cd rocSPARSE/build/release
 ```
 
 ## Support
+
 Please use [the issue tracker][] for bugs and feature requests.
 
 ## License
+
 The [license file][] can be found in the main repository.
 
 [ROCm]: https://github.com/RadeonOpenCompute/ROCm

@@ -1,12 +1,8 @@
-.. _design_document:
+.. _design:
 
 ********************
 Design Documentation
 ********************
-
-.. toctree::
-   :maxdepth: 3
-   :caption: Contents:
 
 Design and Philosophy
 =====================

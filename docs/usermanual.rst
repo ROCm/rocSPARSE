@@ -1,12 +1,8 @@
-.. _user_manual:
+.. _usermanual:
 
 ***********
 User Manual
 ***********
-
-.. toctree::
-   :maxdepth: 3
-   :caption: Contents:
 
 Introduction
 ============
