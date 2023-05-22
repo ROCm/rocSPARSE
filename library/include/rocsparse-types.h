@@ -295,7 +295,7 @@ typedef enum rocsparse_fill_mode_
  *  \details
  *  The \ref rocsparse_storage_mode indicates whether the matrix is stored sorted or not.
  *  For a given \ref rocsparse_mat_descr, the \ref rocsparse_storage_mode can be set
- *  using rocsparse_set_storage_mode(). The current \ref rocsparse_storage_mode of a
+ *  using rocsparse_set_mat_storage_mode(). The current \ref rocsparse_storage_mode of a
  *  matrix can be obtained by rocsparse_get_mat_storage_mode().
  */
 typedef enum rocsparse_storage_mode_
