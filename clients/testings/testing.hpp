@@ -29,6 +29,7 @@
 #include "rocsparse_check.hpp"
 #include "rocsparse_graph.hpp"
 #include "rocsparse_matrix_factory.hpp"
+#include "rocsparse_vector_utils.hpp"
 #include "utility.hpp"
 #include <rocsparse.hpp>
 template <typename T>

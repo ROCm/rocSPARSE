@@ -633,6 +633,11 @@ void testing_bsrgemm(const Arguments& arg)
 
     if(arg.unit_check)
     {
+        // normalize
+        rocsparse_vector_utils<T>::normalize(h_A.val);
+
+        d_A.val.transfer_from(h_A.val);
+
         // Host calculation
         rocsparse_int out_nnzb;
 

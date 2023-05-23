@@ -326,6 +326,7 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_enum.cpp
   ../common/rocsparse_init.cpp
   ../common/rocsparse_host.cpp
+  ../common/rocsparse_vector_utils.cpp
   ../common/rocsparse_matrix_factory.cpp
   ../common/rocsparse_matrix_factory_laplace2d.cpp
   ../common/rocsparse_matrix_factory_laplace3d.cpp
