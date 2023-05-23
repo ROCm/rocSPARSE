@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -249,6 +249,10 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      value<int>(&this->b_part)->default_value(0),
      "0 = rocsparse_hyb_partition_auto, 1 = rocsparse_hyb_partition_user,\n"
      "2 = rocsparse_hyb_partition_max, (default: 0)")
+
+    ("hybellwidth",
+     value<uint32_t>(&this->algo)->default_value(0),
+     "ell width to use when hybpart is set to rocsparse_hyb_partition_user (=1), (default: 0)")
 
     ("matrix_type",
      value<int>(&this->b_matrix_type)->default_value(0),
