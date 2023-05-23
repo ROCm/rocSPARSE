@@ -1051,6 +1051,8 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                                            handle_->stream);
                         }
 
+                        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
+
                         if(compute_nrm_residual && compute_nrm_corr)
                         {
                             nrm_indicator = std::max(nrm_residual, nrm_corr);

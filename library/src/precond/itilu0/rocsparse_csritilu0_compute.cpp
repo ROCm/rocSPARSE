@@ -48,12 +48,8 @@ static rocsparse_status compute_dispatch(rocsparse_itilu0_alg alg_, P&&... param
     }
     case rocsparse_itilu0_alg_sync_split_fusion:
     {
-        // Fall back to the sync split algorithm.
-        std::cerr << "// rocSPARSE.WARNING: algorithm sync_split_fusion is temporarily disabled "
-                     "and replaced with sync_split"
-                  << std::endl;
-        return rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::compute<T, I, J>::run(
-            parameters...);
+        return rocsparse_csritilu0_driver_t<
+            rocsparse_itilu0_alg_sync_split_fusion>::compute<T, I, J>::run(parameters...);
     }
     }
 
