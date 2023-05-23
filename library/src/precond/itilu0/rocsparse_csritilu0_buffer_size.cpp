@@ -49,9 +49,8 @@ static rocsparse_status buffer_size_dispatch(rocsparse_itilu0_alg alg_, P&&... p
     }
     case rocsparse_itilu0_alg_sync_split_fusion:
     {
-        // Fall back to the sync split algorithm.
         return rocsparse_csritilu0_driver_t<
-            rocsparse_itilu0_alg_sync_split>::buffer_size<I, J>::run(parameters...);
+            rocsparse_itilu0_alg_sync_split_fusion>::buffer_size<I, J>::run(parameters...);
     }
     }
     return rocsparse_status_invalid_value;
