@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,7 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_importer_rocalution.cpp
   ../common/rocsparse_importer_rocsparseio.cpp
   ../common/rocsparse_importer_matrixmarket.cpp
+  ../common/rocsparse_clients_envariables.cpp
 )
 
 

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 * ************************************************************************ */
 #pragma once
 
+#include "rocsparse_clients_envariables.hpp"
 #include <iostream>
 #include <sstream>
 #include <string.h>
@@ -573,6 +574,19 @@ private:
 public:
     static void help(std::ostream& out)
     {
+        out << "" << std::endl;
+        out << "Specific environment variables:" << std::endl;
+        for(const auto v : rocsparse_clients_envariables::s_var_bool_all)
+        {
+            out << rocsparse_clients_envariables::get_name(v) << " "
+                << rocsparse_clients_envariables::get_description(v) << std::endl;
+        }
+        for(const auto v : rocsparse_clients_envariables::s_var_string_all)
+        {
+            out << rocsparse_clients_envariables::get_name(v) << " "
+                << rocsparse_clients_envariables::get_description(v) << std::endl;
+        }
+        out << "" << std::endl;
         out << "Benchmarks options:" << std::endl;
         out << "--bench-x          flag to preceed the main option " << std::endl;
         out << "--bench-o          output JSON file, (default = a.json)" << std::endl;
