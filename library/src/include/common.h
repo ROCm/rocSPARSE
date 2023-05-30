@@ -961,7 +961,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 template <unsigned int BLOCKSIZE, typename I, typename T>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-void memset2d_kernel(I m, I n, T value, T* __restrict__ data, I ld, rocsparse_order order)
+    void memset2d_kernel(I m, I n, T value, T* __restrict__ data, I ld, rocsparse_order order)
 {
     I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

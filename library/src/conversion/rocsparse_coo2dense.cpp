@@ -26,7 +26,6 @@
 
 #include "rocsparse_coo2dense.hpp"
 
-
 #include "common.h"
 #include "coo2dense_device.h"
 

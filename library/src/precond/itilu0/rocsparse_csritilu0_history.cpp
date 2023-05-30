@@ -48,9 +48,8 @@ static rocsparse_status history_dispatch(rocsparse_itilu0_alg alg_, P&&... param
     }
     case rocsparse_itilu0_alg_sync_split_fusion:
     {
-        // Fall back to the sync split algorithm.
-        return rocsparse_csritilu0_driver_t<
-            rocsparse_itilu0_alg_sync_split>::history<floating_data_t<T>, J>::run(parameters...);
+        return rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
+            history<floating_data_t<T>, J>::run(parameters...);
     }
     }
 

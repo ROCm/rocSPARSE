@@ -68,7 +68,6 @@ void testing_bsr2csr_bad_arg(const Arguments& arg)
     // Check block_dim == 0
     block_dim = 0;
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(PARAMS), rocsparse_status_invalid_size);
-    
 #undef PARAMS
 }
 
