@@ -9957,7 +9957,6 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                      std::vector<rocsparse_int>&           coo_row_ind,
                                      std::vector<rocsparse_int>&           coo_col_ind,
                                      std::vector<rocsparse_float_complex>& coo_val);
-                                     
 #define INSTANTIATE1(TYPE)                                                             \
     template void host_bsr_to_csr<TYPE>(rocsparse_direction               direction,   \
                                         rocsparse_int                     mb,          \
@@ -9985,14 +9984,14 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                         std::vector<rocsparse_int>&       bsr_row_ptr, \
                                         std::vector<rocsparse_int>&       bsr_col_ind, \
                                         rocsparse_index_base              bsr_base);                \
-    template void host_bsrpad_value<TYPE>(rocsparse_int m,                  \
-                                          rocsparse_int mb,                 \
-                                          rocsparse_int nnzb,               \
-                                          rocsparse_int block_dim,          \
-                                          TYPE          value,              \
-                                          TYPE * bsr_val,                   \
-                                          const rocsparse_int* bsr_row_ptr, \
-                                          const rocsparse_int* bsr_col_ind, \
+    template void host_bsrpad_value<TYPE>(rocsparse_int m,                             \
+                                          rocsparse_int mb,                            \
+                                          rocsparse_int nnzb,                          \
+                                          rocsparse_int block_dim,                     \
+                                          TYPE          value,                         \
+                                          TYPE * bsr_val,                              \
+                                          const rocsparse_int* bsr_row_ptr,            \
+                                          const rocsparse_int* bsr_col_ind,            \
                                           rocsparse_index_base bsr_base);
 
 #define INSTANTIATE2(ITYPE, TTYPE)                                                               \
