@@ -21112,19 +21112,21 @@ rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
 *  \endcode
 */
 /**@{*/
-ROCSPARSE_EXPORT rocsparse_status rocsparse_spmm_ex(rocsparse_handle            handle,
-                                                    rocsparse_operation         trans_A,
-                                                    rocsparse_operation         trans_B,
-                                                    const void*                 alpha,
-                                                    const rocsparse_spmat_descr mat_A,
-                                                    const rocsparse_dnmat_descr mat_B,
-                                                    const void*                 beta,
-                                                    const rocsparse_dnmat_descr mat_C,
-                                                    rocsparse_datatype          compute_type,
-                                                    rocsparse_spmm_alg          alg,
-                                                    rocsparse_spmm_stage        stage,
-                                                    size_t*                     buffer_size,
-                                                    void*                       temp_buffer);
+__attribute__((deprecated("This function is deprecated and will be removed in a future release. "
+                          "Use rocsparse_spmm_ex instead."))) ROCSPARSE_EXPORT rocsparse_status
+    rocsparse_spmm_ex(rocsparse_handle            handle,
+                      rocsparse_operation         trans_A,
+                      rocsparse_operation         trans_B,
+                      const void*                 alpha,
+                      const rocsparse_spmat_descr mat_A,
+                      const rocsparse_dnmat_descr mat_B,
+                      const void*                 beta,
+                      const rocsparse_dnmat_descr mat_C,
+                      rocsparse_datatype          compute_type,
+                      rocsparse_spmm_alg          alg,
+                      rocsparse_spmm_stage        stage,
+                      size_t*                     buffer_size,
+                      void*                       temp_buffer);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spmm(rocsparse_handle            handle,
                                 rocsparse_operation         trans_A,
