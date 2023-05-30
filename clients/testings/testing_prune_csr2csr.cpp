@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -128,7 +128,7 @@ void testing_prune_csr2csr(const Arguments& arg)
     device_vector<rocsparse_int> d_csr_row_ptr_A(M + 1);
     device_vector<rocsparse_int> d_csr_col_ind_A(nnz_A);
     device_vector<T>             d_csr_val_A(nnz_A);
-    device_scalar<T> d_threshold(h_threshold);
+    device_scalar<T>             d_threshold(h_threshold);
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
