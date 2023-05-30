@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -352,14 +352,17 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
             }
 
             void* buffer_conversion;
-            RETURN_IF_HIP_ERROR(hipMalloc(&buffer_conversion, buffer_size));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&buffer_conversion, buffer_size, handle_->stream));
 
             J* tmp_ind;
-            RETURN_IF_HIP_ERROR(hipMalloc(&tmp_ind, sizeof(J) * unnz_));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&tmp_ind, sizeof(J) * unnz_, handle_->stream));
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
                 tmp_ind, uind_, sizeof(J) * (unnz_), hipMemcpyDeviceToDevice, handle_->stream));
             T* tmp_val;
-            RETURN_IF_HIP_ERROR(hipMalloc(&tmp_val, sizeof(T) * unnz_));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&tmp_val, sizeof(T) * unnz_, handle_->stream));
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
                 tmp_val, uval_, sizeof(T) * (unnz_), hipMemcpyDeviceToDevice, handle_->stream));
             I* tmp_uptr = uptr;
@@ -384,9 +387,9 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
 #endif
                 return status;
             }
-            RETURN_IF_HIP_ERROR(hipFree(buffer_conversion));
-            hipFree(tmp_val);
-            hipFree(tmp_ind);
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(buffer_conversion));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(tmp_val));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(tmp_ind));
         }
     }
 
@@ -432,15 +435,18 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
             }
 
             void* buffer_conversion;
-            RETURN_IF_HIP_ERROR(hipMalloc(&buffer_conversion, buffer_size));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&buffer_conversion, buffer_size, handle_->stream));
 
             J* tmp_ind;
-            RETURN_IF_HIP_ERROR(hipMalloc(&tmp_ind, sizeof(J) * lnnz_));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&tmp_ind, sizeof(J) * lnnz_, handle_->stream));
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
                 tmp_ind, lind_, sizeof(J) * (lnnz_), hipMemcpyDeviceToDevice, handle_->stream));
 
             T* tmp_val;
-            RETURN_IF_HIP_ERROR(hipMalloc(&tmp_val, sizeof(T) * lnnz_));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&tmp_val, sizeof(T) * lnnz_, handle_->stream));
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
                 tmp_val, lval_, sizeof(T) * (lnnz_), hipMemcpyDeviceToDevice, handle_->stream));
 
@@ -467,9 +473,9 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
 #endif
                 return status;
             }
-            RETURN_IF_HIP_ERROR(hipFree(buffer_conversion));
-            hipFree(tmp_val);
-            hipFree(tmp_ind);
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(buffer_conversion));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(tmp_val));
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(tmp_ind));
         }
     }
 
