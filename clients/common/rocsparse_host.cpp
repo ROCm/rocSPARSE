@@ -9957,34 +9957,34 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                      std::vector<rocsparse_int>&           coo_row_ind,
                                      std::vector<rocsparse_int>&           coo_col_ind,
                                      std::vector<rocsparse_float_complex>& coo_val);
-
-#define INSTANTIATE1(TYPE)                                                  \
-    template void host_bsr_to_csr<TYPE>(rocsparse_direction               direction,  \
-                                        rocsparse_int                     mb,                   \
-                                        rocsparse_int                     nb,                    \
-                                        rocsparse_int                     nnzb,                  \
-                                        const std::vector<TYPE>&             bsr_val,             \
-                                        const std::vector<rocsparse_int>& bsr_row_ptr,            \
-                                        const std::vector<rocsparse_int>& bsr_col_ind,            \
-                                        rocsparse_int                     block_dim,              \
-                                        rocsparse_index_base              bsr_base,                \
-                                        std::vector<TYPE>&                   csr_val,              \
-                                        std::vector<rocsparse_int>&       csr_row_ptr,             \
-                                        std::vector<rocsparse_int>&       csr_col_ind,              \
+                                     
+#define INSTANTIATE1(TYPE)                                                             \
+    template void host_bsr_to_csr<TYPE>(rocsparse_direction               direction,   \
+                                        rocsparse_int                     mb,          \
+                                        rocsparse_int                     nb,          \
+                                        rocsparse_int                     nnzb,        \
+                                        const std::vector<TYPE>&          bsr_val,     \
+                                        const std::vector<rocsparse_int>& bsr_row_ptr, \
+                                        const std::vector<rocsparse_int>& bsr_col_ind, \
+                                        rocsparse_int                     block_dim,   \
+                                        rocsparse_index_base              bsr_base,    \
+                                        std::vector<TYPE>&                csr_val,     \
+                                        std::vector<rocsparse_int>&       csr_row_ptr, \
+                                        std::vector<rocsparse_int>&       csr_col_ind, \
                                         rocsparse_index_base              csr_base);                \
-    template void host_csr_to_bsr<TYPE>(rocsparse_direction               direction,      \
-                                        rocsparse_int                     m,                        \
-                                        rocsparse_int                     n,                        \
-                                        rocsparse_int                     nnz,                      \
-                                        const std::vector<TYPE>&             csr_val,               \
-                                        const std::vector<rocsparse_int>& csr_row_ptr,              \
-                                        const std::vector<rocsparse_int>& csr_col_ind,             \
-                                        rocsparse_int                     block_dim,               \
-                                        rocsparse_index_base              csr_base,                \
-                                        std::vector<TYPE>&                   bsr_val,              \
-                                        std::vector<rocsparse_int>&       bsr_row_ptr,             \
-                                        std::vector<rocsparse_int>&       bsr_col_ind,             \
-                                        rocsparse_index_base              bsr_base);               \
+    template void host_csr_to_bsr<TYPE>(rocsparse_direction               direction,   \
+                                        rocsparse_int                     m,           \
+                                        rocsparse_int                     n,           \
+                                        rocsparse_int                     nnz,         \
+                                        const std::vector<TYPE>&          csr_val,     \
+                                        const std::vector<rocsparse_int>& csr_row_ptr, \
+                                        const std::vector<rocsparse_int>& csr_col_ind, \
+                                        rocsparse_int                     block_dim,   \
+                                        rocsparse_index_base              csr_base,    \
+                                        std::vector<TYPE>&                bsr_val,     \
+                                        std::vector<rocsparse_int>&       bsr_row_ptr, \
+                                        std::vector<rocsparse_int>&       bsr_col_ind, \
+                                        rocsparse_index_base              bsr_base);                \
     template void host_bsrpad_value<TYPE>(rocsparse_int m,                  \
                                           rocsparse_int mb,                 \
                                           rocsparse_int nnzb,               \
