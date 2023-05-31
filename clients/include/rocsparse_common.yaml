@@ -237,6 +237,8 @@ Real precisions: &real_precisions
     { a_type: f32_r, b_type: f32_r, c_type: f32_r, x_type: f32_r, y_type: f32_r, compute_type: f32_r }
   - &double_precision
     { a_type: f64_r, b_type: f64_r, c_type: f64_r, x_type: f64_r, y_type: f64_r, compute_type: f64_r }
+  - &float32_float64_float64_float64
+    { a_type: f32_r, x_type: f64_r, y_type: f64_r, compute_type: f64_r }
 
 Complex precisions: &complex_precisions
   - &float32_cmplx32_cmplx32_cmplx32_precision
@@ -247,6 +249,8 @@ Complex precisions: &complex_precisions
     { a_type: f32_c, b_type: f32_c, c_type: f32_c, x_type: f32_c, y_type: f32_c, compute_type: f32_c }
   - &double_precision_complex
     { a_type: f64_c, b_type: f64_c, c_type: f64_c, x_type: f64_c, y_type: f64_c, compute_type: f64_c }
+  - &cmplx32_cmplx64_cmplx64_cmplx64
+    { a_type: f32_c, x_type: f64_c, y_type: f64_c, compute_type: f64_c }
 
 C precisions real: &single_only_precisions
   - *single_precision

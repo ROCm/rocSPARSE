@@ -259,6 +259,39 @@ Tests:
 #
 # mixed precision
 #
+- name: spmv_coo_file
+  category: quick
+  function: spmv_coo
+  indextype: *i32_i64
+  precision: *float32_float64_float64_float64
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo]
+  filename: [bmwcra_1,
+             amazon0312,
+             sme3Dc]
+
+- name: spmv_coo
+  category: pre_checkin
+  function: spmv_coo
+  indextype: *i32_i64
+  precision: *float32_float64_float64_float64
+  M: [34, 104, 343, 5196]
+  N: [57, 109, 458, 3425]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo_atomic]
+
+
+
 
 - name: spmv_coo_file
   category: quick
@@ -290,6 +323,41 @@ Tests:
   matrix: [rocsparse_matrix_random]
   storage: [rocsparse_storage_mode_sorted]
   spmv_alg: [rocsparse_spmv_alg_coo_atomic]
+
+
+- name: spmv_coo
+  category: pre_checkin
+  function: spmv_coo
+  indextype: *i32_i64
+  precision: *cmplx32_cmplx64_cmplx64_cmplx64
+  M: [16, 78, 294, 482, 68302]
+  N: [16, 93, 297, 657, 46342]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo]
+
+- name: spmv_coo_file
+  category: nightly
+  function: spmv_coo
+  indextype: *i32_i64
+  precision: *cmplx32_cmplx64_cmplx64_cmplx64
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted]
+  spmv_alg: [rocsparse_spmv_alg_coo_atomic]
+  filename: [Chebyshev4,
+             shipsec1,
+             scircuit]
+
+
+
 
 - name: spmv_coo
   category: pre_checkin

@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -20193,6 +20193,17 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *  |-------------------------|--------------------------|--------------------------|
 *  \endverbatim
 *
+*  Mixed-regular real precisions
+*  \verbatim
+*  |----------------------------|----------------------------|
+*  |              A             |    X / Y / compute_type    |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f32_r  |  rocsparse_datatype_f64_r  |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f32_c  |  rocsparse_datatype_f64_c  |
+*  |----------------------------|----------------------------|
+*  \endverbatim
+*
 *  Mixed-regular Complex precisions
 *  \verbatim
 *  |----------------------------|----------------------------|
@@ -20310,6 +20321,17 @@ __attribute__((deprecated("This function is deprecated and will be removed in a 
 *  |----------------------------------------------------|
 *  |             rocsparse_datatype_f64_c               |
 *  |----------------------------------------------------|
+*  \endverbatim
+*
+*  Mixed-regular real precisions
+*  \verbatim
+*  |----------------------------|----------------------------|
+*  |              A             |    X / Y / compute_type    |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f32_r  |  rocsparse_datatype_f64_r  |
+*  |----------------------------|----------------------------|
+*  |  rocsparse_datatype_f32_c  |  rocsparse_datatype_f64_c  |
+*  |----------------------------|----------------------------|
 *  \endverbatim
 *
 *  Mixed precisions:
