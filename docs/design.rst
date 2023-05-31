@@ -26,12 +26,6 @@ For this purpose, routines that require a temporary storage buffer offer a speci
 Contributing
 ============
 
-Contribution License Agreement
-------------------------------
-
-#. The code I am contributing is mine, and I have the right to license it.
-#. By submitting a pull request for this project I am granting you a license to distribute said code under the MIT License for the project.
-
 How to contribute
 -----------------
 Our code contriubtion guidelines closely follows the model of GitHub pull-requests. This repository follows the git flow workflow, which dictates a /master branch where releases are cut, and a /develop branch which serves as an integration branch for new code.
