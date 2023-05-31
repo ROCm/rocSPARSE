@@ -2,6 +2,14 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
+## rocSPARSE 2.5.3 for ROCm 5.7.0
+### Added
+- Added more mixed precisions for SpMV, (matrix: float, vectors: double, calculation: double) and (matrix: rocsparse_float_complex, vectors: rocsparse_double_complex, calculation: rocsparse_double_complex)
+### Improved
+- Fixed a bug in csrsm and bsrsm
+### Known Issues
+In csritlu0, the algorithm rocsparse_itilu0_alg_sync_split_fusion has some accuracy issues to investigate with XNACK enabled. The fallback is rocsparse_itilu0_alg_sync_split.
+
 ## rocSPARSE 2.5.2 for ROCm 5.6.0
 ### Improved
 - Fixed a memory leak in csritsv
