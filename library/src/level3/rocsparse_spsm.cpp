@@ -157,13 +157,14 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
         // copy B to C and perform in-place using C
         if(matB->rows > 0 && matB->cols > 0)
         {
-            hipMemcpy2D(matC->values,
-                        matC->ld * sizeof(T),
-                        matB->values,
-                        matB->ld * sizeof(T),
-                        (J)matB->rows * sizeof(T),
-                        (J)matB->cols,
-                        hipMemcpyDeviceToDevice);
+            hipMemcpy2DAsync(matC->values,
+                             matC->ld * sizeof(T),
+                             matB->values,
+                             matB->ld * sizeof(T),
+                             (J)matB->rows * sizeof(T),
+                             (J)matB->cols,
+                             hipMemcpyDeviceToDevice,
+                             handle->stream);
         }
 
         if(matA->format == rocsparse_format_csr)
