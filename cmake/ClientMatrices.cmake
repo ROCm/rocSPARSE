@@ -121,7 +121,7 @@ foreach(i RANGE 0 ${len1})
       if(DEFINED ENV{ROCSPARSE_TEST_MIRROR} AND NOT $ENV{ROCSPARSE_TEST_MIRROR} STREQUAL "")
         message("-- Downloading and extracting test matrix ${m}.tar.gz from user specified test mirror: $ENV{ROCSPARSE_TEST_MIRROR}")
         file(DOWNLOAD $ENV{ROCSPARSE_TEST_MIRROR}/${mat}.tar.gz ${CMAKE_MATRICES_DIR}/${mat}.tar.gz
-             INACTIVITY_TIMEOUT 3
+             INACTIVITY_TIMEOUT 10
              STATUS DL)
 
         list(GET DL 0 stat)
@@ -133,7 +133,7 @@ foreach(i RANGE 0 ${len1})
       else()
         message("-- Downloading and extracting test matrix ${m}.tar.gz")
         file(DOWNLOAD https://sparse.tamu.edu/MM/${m}.tar.gz ${CMAKE_MATRICES_DIR}/${mat}.tar.gz
-             INACTIVITY_TIMEOUT 3
+             INACTIVITY_TIMEOUT 10
              STATUS DL)
 
         list(GET DL 0 stat)
@@ -143,7 +143,7 @@ foreach(i RANGE 0 ${len1})
           message("-- Timeout has been reached, trying mirror ...")
           # Try again using ufl links
           file(DOWNLOAD https://www.cise.ufl.edu/research/sparse/MM/${m}.tar.gz ${CMAKE_MATRICES_DIR}/${mat}.tar.gz
-               INACTIVITY_TIMEOUT 3
+               INACTIVITY_TIMEOUT 10
                STATUS DL)
 
           list(GET DL 0 stat)
