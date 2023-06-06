@@ -125,8 +125,7 @@ static rocsparse_status csrilu0(rocsparse_handle          handle_,
         return status;
     }
 
-    void* dbuffer;
-    rocsparse_hipMalloc(&dbuffer, buffer_size);
+    device_dense_vector<char> dbuffer(buffer_size);
     status = rocsparse_set_pointer_mode(handle_, rocsparse_pointer_mode_host);
     if(status != rocsparse_status_success)
     {
@@ -163,10 +162,6 @@ static rocsparse_status csrilu0(rocsparse_handle          handle_,
 
     rocsparse_csrilu0_clear(handle_, info_);
 
-    if(hipSuccess != rocsparse_hipFree(dbuffer))
-    {
-        return rocsparse_status_memory_error;
-    }
     return rocsparse_status_success;
 }
 
@@ -348,9 +343,9 @@ void testing_csritilu0(const Arguments& arg)
     //
     device_csr_matrix<T> dA(hA);
 
-    p.maxiter          = s_maxiter;
-    size_t buffer_size = 0;
-    void*  buffer{};
+    p.maxiter                             = s_maxiter;
+    size_t                    buffer_size = 0;
+    device_dense_vector<char> buffer;
 
     status = rocsparse_csritilu0_buffer_size(handle,
                                              p.alg,
@@ -376,7 +371,8 @@ void testing_csritilu0(const Arguments& arg)
     {
         CHECK_ROCSPARSE_ERROR(status);
     }
-    CHECK_HIP_ERROR(rocsparse_hipMalloc(&buffer, buffer_size));
+
+    buffer.resize(buffer_size);
     rocsparse_status       status_buffer_size = status;
     device_dense_vector<T> ilu0(dA.nnz);
     if(arg.unit_check)
@@ -745,7 +741,6 @@ void testing_csritilu0(const Arguments& arg)
                             "buffer_size",
                             buffer_size);
     }
-    CHECK_HIP_ERROR(rocsparse_hipFree(buffer));
 }
 
 #define INSTANTIATE(TYPE)                                                \
