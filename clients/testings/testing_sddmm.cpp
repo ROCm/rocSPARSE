@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,13 +61,13 @@ void testing_sddmm_bad_arg(const Arguments& arg)
     }
     case rocsparse_format_bell:
     {
-        std::cerr << "rocsparse_status_not_implemented" << std::endl;
+        std::cerr << "testing_sddmm not_implemented for bell format." << std::endl;
         exit(1);
         return;
     }
     case rocsparse_format_bsr:
     {
-        std::cerr << "rocsparse_status_not_implemented" << std::endl;
+        std::cerr << "testing_sddmm not_implemented for bsr format." << std::endl;
         exit(1);
         return;
     }
@@ -110,12 +110,14 @@ void testing_sddmm(const Arguments& arg)
         testing_sddmm_dispatch<rocsparse_format_ell, I, I, T>::testing_sddmm(arg);
         return;
     }
+
     case rocsparse_format_bell:
     {
         std::cerr << "rocsparse_status_not_implemented" << std::endl;
         exit(1);
         return;
     }
+
     case rocsparse_format_bsr:
     {
         std::cerr << "rocsparse_status_not_implemented" << std::endl;

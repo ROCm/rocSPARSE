@@ -153,9 +153,7 @@ namespace
                     }
                 }
 
-                const bool from_file = (arg.matrix == rocsparse_matrix_file_rocalution
-                                        || arg.matrix == rocsparse_matrix_file_mtx);
-
+                const bool         from_file = rocsparse_arguments_has_datafile(arg);
                 std::ostringstream s;
                 switch(traits_t::s_dispatch)
                 {

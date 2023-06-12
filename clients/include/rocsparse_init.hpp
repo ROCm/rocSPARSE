@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -251,6 +251,82 @@ void rocsparse_init_gebsr_mtx(const char*          filename,
                               J                    row_block_dim,
                               J                    col_block_dim,
                               rocsparse_index_base base);
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from smtx file in CSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_csr_smtx(const char*          filename,
+                             std::vector<I>&      csr_row_ptr,
+                             std::vector<J>&      csr_col_ind,
+                             std::vector<T>&      csr_val,
+                             J&                   M,
+                             J&                   N,
+                             I&                   nnz,
+                             rocsparse_index_base base);
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from smtx file in COO format */
+template <typename I, typename T>
+void rocsparse_init_coo_smtx(const char*          filename,
+                             std::vector<I>&      coo_row_ind,
+                             std::vector<I>&      coo_col_ind,
+                             std::vector<T>&      coo_val,
+                             I&                   M,
+                             I&                   N,
+                             int64_t&             nnz,
+                             rocsparse_index_base base);
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from smtx file in GEBSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_smtx(const char*          filename,
+                               std::vector<I>&      bsr_row_ptr,
+                               std::vector<J>&      bsr_col_ind,
+                               std::vector<T>&      bsr_val,
+                               J&                   Mb,
+                               J&                   Nb,
+                               I&                   nnzb,
+                               J                    row_block_dim,
+                               J                    col_block_dim,
+                               rocsparse_index_base base);
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from bsmtx file in CSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_csr_bsmtx(const char*          filename,
+                              std::vector<I>&      csr_row_ptr,
+                              std::vector<J>&      csr_col_ind,
+                              std::vector<T>&      csr_val,
+                              J&                   M,
+                              J&                   N,
+                              I&                   nnz,
+                              rocsparse_index_base base);
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from bsmtx file in COO format */
+template <typename I, typename T>
+void rocsparse_init_coo_bsmtx(const char*          filename,
+                              std::vector<I>&      coo_row_ind,
+                              std::vector<I>&      coo_col_ind,
+                              std::vector<T>&      coo_val,
+                              I&                   M,
+                              I&                   N,
+                              int64_t&             nnz,
+                              rocsparse_index_base base);
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from bsmtx file in GEBSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_bsmtx(const char*          filename,
+                                std::vector<I>&      bsr_row_ptr,
+                                std::vector<J>&      bsr_col_ind,
+                                std::vector<T>&      bsr_val,
+                                J&                   Mb,
+                                J&                   Nb,
+                                I&                   nnzb,
+                                J                    row_block_dim,
+                                J                    col_block_dim,
+                                rocsparse_index_base base);
 
 /* ==================================================================================== */
 /*! \brief  Read matrix from binary file in rocALUTION format */

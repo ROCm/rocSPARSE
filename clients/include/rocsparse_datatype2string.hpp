@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,11 +55,13 @@ typedef enum rocsparse_matrix_init_
     rocsparse_matrix_laplace_2d       = 1, /**< Initialize 2D laplacian matrix */
     rocsparse_matrix_laplace_3d       = 2, /**< Initialize 3D laplacian matrix */
     rocsparse_matrix_file_mtx         = 3, /**< Read from .mtx (matrix market) file */
-    rocsparse_matrix_file_rocalution  = 4, /**< Read from .csr (rocALUTION) file */
-    rocsparse_matrix_zero             = 5, /**< Generates zero matrix */
-    rocsparse_matrix_file_rocsparseio = 6, /**< Read from .bin (rocSPARSEIO) file */
-    rocsparse_matrix_tridiagonal      = 7, /**< Initialize tridiagonal matrix */
-    rocsparse_matrix_pentadiagonal    = 8 /**< Initialize pentadiagonal matrix */
+    rocsparse_matrix_file_smtx        = 4, /**< Read from .smtx (machine learning csr) file */
+    rocsparse_matrix_file_bsmtx       = 5, /**< Read from .bsmtx (machine learning bsr) file */
+    rocsparse_matrix_file_rocalution  = 6, /**< Read from .csr (rocALUTION) file */
+    rocsparse_matrix_zero             = 7, /**< Generates zero matrix */
+    rocsparse_matrix_file_rocsparseio = 8, /**< Read from .bin (rocSPARSEIO) file */
+    rocsparse_matrix_tridiagonal      = 9, /**< Initialize tridiagonal matrix */
+    rocsparse_matrix_pentadiagonal    = 10 /**< Initialize pentadiagonal matrix */
 } rocsparse_matrix_init;
 
 constexpr auto rocsparse_matrix2string(rocsparse_matrix_init matrix)
@@ -74,6 +76,10 @@ constexpr auto rocsparse_matrix2string(rocsparse_matrix_init matrix)
         return "L3D";
     case rocsparse_matrix_file_mtx:
         return "mtx";
+    case rocsparse_matrix_file_smtx:
+        return "smtx";
+    case rocsparse_matrix_file_bsmtx:
+        return "bsmtx";
     case rocsparse_matrix_file_rocalution:
         return "csr";
     case rocsparse_matrix_zero:

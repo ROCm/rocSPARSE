@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,6 +82,14 @@ public:
 template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
 using rocsparse_matrix_factory_mtx
     = rocsparse_matrix_factory_file<rocsparse_matrix_file_mtx, T, I, J>;
+
+template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
+using rocsparse_matrix_factory_smtx
+    = rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx, T, I, J>;
+
+template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
+using rocsparse_matrix_factory_bsmtx
+    = rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx, T, I, J>;
 
 template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
 using rocsparse_matrix_factory_rocalution
