@@ -108,6 +108,14 @@ public:
             rocsparse_rng_nan_get());
     }
 
+    // Random char
+    explicit operator char()
+    {
+        return (char)std::uniform_int_distribution<int>(std::numeric_limits<char>::min(),
+                                                        std::numeric_limits<char>::max())(
+            rocsparse_rng_nan_get());
+    }
+
     // Random NaN double
     explicit operator double()
     {
