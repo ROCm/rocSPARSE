@@ -162,17 +162,25 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      value<std::string>(&this->b_matrixmarket)->default_value(""), "read from matrix "
      "market (.mtx) format. This will override parameters -m, -n, and -z.")
 
+    ("smtx",
+     value<std::string>(&this->b_mlcsr)->default_value(""), "read from machine "
+     "learning CSR (.smtx) format. This will override parameters -m, -n, and -z.")
+
+    ("bsmtx",
+     value<std::string>(&this->b_mlbsr)->default_value(""), "read from machine "
+     "learning BSR (.bsmtx) format. This will override parameters -m, -n, and -z.")
+
     ("rocalution",
      value<std::string>(&this->b_rocalution)->default_value(""),
-     "read from rocalution matrix binary file. This will override parameter --mtx")
+     "read from rocalution matrix binary file.")
 
     ("rocsparseio",
      value<std::string>(&this->b_rocsparseio)->default_value(""),
-     "read from rocsparseio matrix binary file. This will override parameter --rocalution")
+     "read from rocsparseio matrix binary file.")
 
     ("file",
      value<std::string>(&this->b_file)->default_value(""),
-     "read from file with file extension detection. This will override parameters --rocsparseio,rocalution,mtx")
+     "read from file with file extension detection.")
 
     ("dimx",
      value<rocsparse_int>(&this->dimx)->default_value(0), "assemble "
@@ -393,13 +401,27 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
     return -1;
   }
 
-  if(this->b_format != rocsparse_format_csr && this->b_format != rocsparse_format_coo
-     && this->b_format != rocsparse_format_coo_aos && this->b_format != rocsparse_format_ell
-     && this->b_format != rocsparse_format_csc)
-  {
-    std::cerr << "Invalid value for --format" << std::endl;
-    return -1;
-  }
+  { bool is_format_invalid = true;
+    switch(this->b_format)
+      {
+      case rocsparse_format_csr:
+      case rocsparse_format_coo:
+      case rocsparse_format_ell:
+      case rocsparse_format_csc:
+      case rocsparse_format_coo_aos:
+      case rocsparse_format_bell:
+      case rocsparse_format_bsr:
+	{
+	  is_format_invalid = false;
+	  break;
+	}
+      }
+
+    if(is_format_invalid)
+      {
+	std::cerr << "Invalid value for --format" << std::endl;
+	return -1;
+      } }
 
   if (rocsparse_itilu0_alg_t::is_invalid(this->b_itilu0_alg))
     {
@@ -533,6 +555,16 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   {
     strcpy(this->filename, this->b_matrixmarket.c_str());
     this->matrix = rocsparse_matrix_file_mtx;
+  }
+  else if(this->b_mlcsr != "")
+  {
+    strcpy(this->filename, this->b_mlcsr.c_str());
+    this->matrix = rocsparse_matrix_file_smtx;
+  }
+  else if(this->b_mlbsr != "")
+  {
+    strcpy(this->filename, this->b_mlbsr.c_str());
+    this->matrix = rocsparse_matrix_file_bsmtx;
   }
   else if(this->ll == 0 && this->l != 0 && this->u != 0 && this->uu == 0)
   {
@@ -672,13 +704,27 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
     return -1;
   }
 
-  if(this->b_format != rocsparse_format_csr && this->b_format != rocsparse_format_coo
-     && this->b_format != rocsparse_format_coo_aos && this->b_format != rocsparse_format_ell
-     && this->b_format != rocsparse_format_csc)
-  {
-    std::cerr << "Invalid value for --format" << std::endl;
-    return -1;
-  }
+  { bool is_format_invalid = true;
+    switch(this->b_format)
+      {
+      case rocsparse_format_csr:
+      case rocsparse_format_coo:
+      case rocsparse_format_ell:
+      case rocsparse_format_csc:
+      case rocsparse_format_coo_aos:
+      case rocsparse_format_bell:
+      case rocsparse_format_bsr:
+	{
+	  is_format_invalid = false;
+	  break;
+	}
+      }
+
+    if(is_format_invalid)
+      {
+	std::cerr << "Invalid value for --format" << std::endl;
+	return -1;
+      } }
 
   if(this->b_spmv_alg != rocsparse_spmv_alg_default
        && this->b_spmv_alg != rocsparse_spmv_alg_coo
@@ -809,6 +855,16 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
   {
     strcpy(this->filename, b_matrixmarket.c_str());
     this->matrix = rocsparse_matrix_file_mtx;
+  }
+  else if(b_mlcsr != "")
+  {
+    strcpy(this->filename, b_mlcsr.c_str());
+    this->matrix = rocsparse_matrix_file_smtx;
+  }
+  else if(b_mlbsr != "")
+  {
+    strcpy(this->filename, b_mlbsr.c_str());
+    this->matrix = rocsparse_matrix_file_bsmtx;
   }
   else
   {

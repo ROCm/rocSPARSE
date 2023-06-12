@@ -140,6 +140,22 @@ rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments&    
         break;
     }
 
+    case rocsparse_matrix_file_smtx:
+    {
+        std::string full_filename;
+        get_matrix_full_filename(full_filename, arg.filename, ".smtx", arg.timing);
+        this->m_instance = new rocsparse_matrix_factory_smtx<T, I, J>(full_filename.c_str());
+        break;
+    }
+
+    case rocsparse_matrix_file_bsmtx:
+    {
+        std::string full_filename;
+        get_matrix_full_filename(full_filename, arg.filename, ".bsmtx", arg.timing);
+        this->m_instance = new rocsparse_matrix_factory_bsmtx<T, I, J>(full_filename.c_str());
+        break;
+    }
+
     case rocsparse_matrix_zero:
     {
         this->m_instance = new rocsparse_matrix_factory_zero<T, I, J>();

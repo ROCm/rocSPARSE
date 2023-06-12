@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,8 @@ public:
 
 private:
     std::string   b_matrixmarket{};
+    std::string   b_mlcsr{};
+    std::string   b_mlbsr{};
     std::string   b_rocalution{};
     std::string   b_rocsparseio{};
     std::string   b_file{};

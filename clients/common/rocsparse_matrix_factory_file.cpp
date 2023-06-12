@@ -79,6 +79,18 @@ struct rocsparse_init_file_traits<rocsparse_matrix_file_mtx>
 };
 
 template <>
+struct rocsparse_init_file_traits<rocsparse_matrix_file_smtx>
+{
+    using importer_t = rocsparse_importer_mlcsr;
+};
+
+template <>
+struct rocsparse_init_file_traits<rocsparse_matrix_file_bsmtx>
+{
+    using importer_t = rocsparse_importer_mlbsr;
+};
+
+template <>
 struct rocsparse_init_file_traits<rocsparse_matrix_file_rocsparseio>
 {
     using importer_t = rocsparse_importer_rocsparseio;
@@ -259,6 +271,34 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_gebsr(
                                  base);
         break;
     }
+    case rocsparse_matrix_file_smtx:
+    {
+        rocsparse_init_gebsr_smtx(this->m_filename.c_str(),
+                                  bsr_row_ptr,
+                                  bsr_col_ind,
+                                  bsr_val,
+                                  Mb,
+                                  Nb,
+                                  nnzb,
+                                  row_block_dim,
+                                  col_block_dim,
+                                  base);
+        break;
+    }
+    case rocsparse_matrix_file_bsmtx:
+    {
+        rocsparse_init_gebsr_bsmtx(this->m_filename.c_str(),
+                                   bsr_row_ptr,
+                                   bsr_col_ind,
+                                   bsr_val,
+                                   Mb,
+                                   Nb,
+                                   nnzb,
+                                   row_block_dim,
+                                   col_block_dim,
+                                   base);
+        break;
+    }
     case rocsparse_matrix_file_rocalution:
     {
         spec<T, I, J>::init_gebsr_rocalution(*this,
@@ -351,6 +391,16 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_csr(
         rocsparse_init_csr_mtx(this->m_filename.c_str(), row_ptr, col_ind, val, M, N, nnz, base);
         break;
     }
+    case rocsparse_matrix_file_smtx:
+    {
+        rocsparse_init_csr_smtx(this->m_filename.c_str(), row_ptr, col_ind, val, M, N, nnz, base);
+        break;
+    }
+    case rocsparse_matrix_file_bsmtx:
+    {
+        rocsparse_init_csr_bsmtx(this->m_filename.c_str(), row_ptr, col_ind, val, M, N, nnz, base);
+        break;
+    }
     }
 
     switch(matrix_type)
@@ -434,6 +484,20 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_coo(
     case rocsparse_matrix_file_mtx:
     {
         rocsparse_init_coo_mtx(this->m_filename.c_str(), row_ind, col_ind, val, M, N, nnz, base);
+
+        break;
+    }
+
+    case rocsparse_matrix_file_smtx:
+    {
+        rocsparse_init_coo_smtx(this->m_filename.c_str(), row_ind, col_ind, val, M, N, nnz, base);
+
+        break;
+    }
+
+    case rocsparse_matrix_file_bsmtx:
+    {
+        rocsparse_init_coo_bsmtx(this->m_filename.c_str(), row_ind, col_ind, val, M, N, nnz, base);
 
         break;
     }
@@ -658,6 +722,100 @@ template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_rocsparseio,
                                               int64_t,
                                               int32_t>;
 template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_rocsparseio,
+                                              rocsparse_double_complex,
+                                              int64_t,
+                                              int64_t>;
+
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx, int8_t, int32_t, int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx, int8_t, int64_t, int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx, int8_t, int64_t, int64_t>;
+
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx, float, int32_t, int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx, float, int64_t, int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx, float, int64_t, int64_t>;
+
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx, double, int32_t, int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx, double, int64_t, int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx, double, int64_t, int64_t>;
+
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx,
+                                              rocsparse_float_complex,
+                                              int32_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx,
+                                              rocsparse_float_complex,
+                                              int64_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx,
+                                              rocsparse_float_complex,
+                                              int64_t,
+                                              int64_t>;
+
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx,
+                                              rocsparse_double_complex,
+                                              int32_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx,
+                                              rocsparse_double_complex,
+                                              int64_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_smtx,
+                                              rocsparse_double_complex,
+                                              int64_t,
+                                              int64_t>;
+
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
+                                              int8_t,
+                                              int32_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
+                                              int8_t,
+                                              int64_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
+                                              int8_t,
+                                              int64_t,
+                                              int64_t>;
+
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx, float, int32_t, int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx, float, int64_t, int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx, float, int64_t, int64_t>;
+
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
+                                              double,
+                                              int32_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
+                                              double,
+                                              int64_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
+                                              double,
+                                              int64_t,
+                                              int64_t>;
+
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
+                                              rocsparse_float_complex,
+                                              int32_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
+                                              rocsparse_float_complex,
+                                              int64_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
+                                              rocsparse_float_complex,
+                                              int64_t,
+                                              int64_t>;
+
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
+                                              rocsparse_double_complex,
+                                              int32_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
+                                              rocsparse_double_complex,
+                                              int64_t,
+                                              int32_t>;
+template struct rocsparse_matrix_factory_file<rocsparse_matrix_file_bsmtx,
                                               rocsparse_double_complex,
                                               int64_t,
                                               int64_t>;

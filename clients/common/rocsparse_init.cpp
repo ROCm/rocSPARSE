@@ -856,9 +856,223 @@ void rocsparse_init_gebsr_mtx(const char*          filename,
                               J                    col_block_dim,
                               rocsparse_index_base base)
 {
-    //this->init_csr(bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
+    // this->init_csr(bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
     rocsparse_init_csr_mtx(filename, bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
 
+    const size_t nvalues = size_t(nnzb) * row_block_dim * col_block_dim;
+    bsr_val.resize(nvalues);
+    for(size_t i = 0; i < nvalues; ++i)
+    {
+        bsr_val[i] = random_cached_generator<T>();
+    }
+}
+
+/* ==================================================================================== */
+/*! \brief  Read matrix from smtx file in CSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_csr_smtx(const char*          filename,
+                             std::vector<I>&      csr_row_ptr,
+                             std::vector<J>&      csr_col_ind,
+                             std::vector<T>&      csr_val,
+                             J&                   M,
+                             J&                   N,
+                             I&                   nnz,
+                             rocsparse_index_base base)
+{
+
+    rocsparse_importer_mlcsr importer(filename);
+    const rocsparse_status   status
+        = rocsparse_import_sparse_csr(importer, csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base);
+
+    for(size_t i = 0; i < nnz; ++i)
+    {
+        csr_val[i] = random_cached_generator<T>();
+    }
+
+    CHECK_ROCSPARSE_THROW_ERROR(status);
+}
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from smtx file in COO format */
+template <typename I, typename T>
+void rocsparse_init_coo_smtx(const char*          filename,
+                             std::vector<I>&      coo_row_ind,
+                             std::vector<I>&      coo_col_ind,
+                             std::vector<T>&      coo_val,
+                             I&                   M,
+                             I&                   N,
+                             int64_t&             nnz,
+                             rocsparse_index_base base)
+{
+    std::vector<int64_t> csr_row_ptr;
+    rocsparse_init_csr_smtx<int64_t, I, T>(
+        filename, csr_row_ptr, coo_col_ind, coo_val, M, N, nnz, base);
+    coo_row_ind.resize(nnz);
+    host_csr_to_coo(M, nnz, csr_row_ptr, coo_row_ind, base);
+}
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from smtx file in GEBSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_smtx(const char*          filename,
+                               std::vector<I>&      bsr_row_ptr,
+                               std::vector<J>&      bsr_col_ind,
+                               std::vector<T>&      bsr_val,
+                               J&                   Mb,
+                               J&                   Nb,
+                               I&                   nnzb,
+                               J                    row_block_dim,
+                               J                    col_block_dim,
+                               rocsparse_index_base base)
+{
+
+    rocsparse_importer_mlcsr importer(filename);
+    const rocsparse_status   status = rocsparse_import_sparse_csr(
+        importer, bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
+
+    CHECK_ROCSPARSE_THROW_ERROR(status);
+
+    const size_t nvalues = size_t(nnzb) * row_block_dim * col_block_dim;
+    bsr_val.resize(nvalues);
+
+    for(size_t i = 0; i < nvalues; ++i)
+    {
+        bsr_val[i] = random_cached_generator<T>();
+    }
+}
+
+/* ==================================================================================== */
+/*! \brief  Read matrix from smtx file in CSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_csr_bsmtx(const char*          filename,
+                              std::vector<I>&      csr_row_ptr,
+                              std::vector<J>&      csr_col_ind,
+                              std::vector<T>&      csr_val,
+                              J&                   M,
+                              J&                   N,
+                              I&                   nnz,
+                              rocsparse_index_base base)
+{
+    std::vector<I> bsr_row_ptr;
+    std::vector<J> bsr_col_ind;
+    std::vector<T> bsr_val;
+
+    J Mb;
+    J Nb;
+    I nnzb;
+    J row_block_dim;
+    J col_block_dim;
+
+    rocsparse_importer_mlbsr importer(filename);
+    rocsparse_direction      import_dir = {};
+    const rocsparse_status   status     = rocsparse_import_sparse_gebsr(importer,
+                                                                  bsr_row_ptr,
+                                                                  bsr_col_ind,
+                                                                  bsr_val,
+                                                                  import_dir,
+                                                                  Mb,
+                                                                  Nb,
+                                                                  nnzb,
+                                                                  row_block_dim,
+                                                                  col_block_dim,
+                                                                  base);
+
+    CHECK_ROCSPARSE_THROW_ERROR(status);
+    nnz = nnzb * row_block_dim * col_block_dim;
+    M   = Mb * row_block_dim;
+    N   = Nb * col_block_dim;
+
+    csr_row_ptr.resize(M + 1);
+    csr_col_ind.resize(nnz);
+    csr_val.resize(nnz);
+
+    csr_row_ptr[0] = base;
+    for(size_t i = 0; i < Mb; ++i)
+    {
+        const size_t nnz_in_row = (bsr_row_ptr[i + 1] - bsr_row_ptr[i]) * col_block_dim;
+        for(rocsparse_int k = 0; k < row_block_dim; ++k)
+        {
+            const size_t row     = i * row_block_dim + k;
+            csr_row_ptr[row + 1] = csr_row_ptr[row] + nnz_in_row;
+        }
+    }
+
+    for(J i = 0; i < Mb; ++i)
+    {
+        const I start = bsr_row_ptr[i] - base;
+        const I end   = bsr_row_ptr[i + 1] - base;
+        for(I k = start; k < end; ++k)
+        {
+            const J j = bsr_col_ind[k] - base;
+            for(J r = 0; r < row_block_dim; ++r)
+            {
+                for(J c = 0; c < col_block_dim; ++c)
+                {
+                    const J col   = col_block_dim * j + c;
+                    const I index = start * row_block_dim * col_block_dim
+                                    + (end - start) * col_block_dim * r
+                                    + (k - start) * col_block_dim + c;
+                    csr_col_ind[index] = col + base;
+                }
+            }
+        }
+    }
+
+    for(size_t i = 0; i < nnz; ++i)
+    {
+        csr_val[i] = random_cached_generator<T>();
+    }
+}
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from smtx file in COO format */
+template <typename I, typename T>
+void rocsparse_init_coo_bsmtx(const char*          filename,
+                              std::vector<I>&      coo_row_ind,
+                              std::vector<I>&      coo_col_ind,
+                              std::vector<T>&      coo_val,
+                              I&                   M,
+                              I&                   N,
+                              int64_t&             nnz,
+                              rocsparse_index_base base)
+{
+    std::vector<int64_t> csr_row_ptr;
+    rocsparse_init_csr_bsmtx<int64_t, I, T>(
+        filename, csr_row_ptr, coo_col_ind, coo_val, M, N, nnz, base);
+    coo_row_ind.resize(nnz);
+    host_csr_to_coo(M, nnz, csr_row_ptr, coo_row_ind, base);
+}
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from smtx file in GEBSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_bsmtx(const char*          filename,
+                                std::vector<I>&      bsr_row_ptr,
+                                std::vector<J>&      bsr_col_ind,
+                                std::vector<T>&      bsr_val,
+                                J&                   Mb,
+                                J&                   Nb,
+                                I&                   nnzb,
+                                J                    row_block_dim,
+                                J                    col_block_dim,
+                                rocsparse_index_base base)
+{
+
+    rocsparse_importer_mlbsr importer(filename);
+    rocsparse_direction      import_dir = {};
+    const rocsparse_status   status     = rocsparse_import_sparse_gebsr(importer,
+                                                                  bsr_row_ptr,
+                                                                  bsr_col_ind,
+                                                                  bsr_val,
+                                                                  import_dir,
+                                                                  Mb,
+                                                                  Nb,
+                                                                  nnzb,
+                                                                  row_block_dim,
+                                                                  col_block_dim,
+                                                                  base);
+
+    CHECK_ROCSPARSE_THROW_ERROR(status);
     const size_t nvalues = size_t(nnzb) * row_block_dim * col_block_dim;
     bsr_val.resize(nvalues);
     for(size_t i = 0; i < nvalues; ++i)
@@ -1599,6 +1813,22 @@ void rocsparse_init_gebsr_pentadiagonal(std::vector<I>&      row_ptr,
                                                        ITYPE&               N,                  \
                                                        int64_t&             nnz,                \
                                                        rocsparse_index_base base);              \
+    template void rocsparse_init_coo_smtx<ITYPE, TTYPE>(const char*          filename,          \
+                                                        std::vector<ITYPE>&  coo_row_ind,       \
+                                                        std::vector<ITYPE>&  coo_col_ind,       \
+                                                        std::vector<TTYPE>&  coo_val,           \
+                                                        ITYPE&               M,                 \
+                                                        ITYPE&               N,                 \
+                                                        int64_t&             nnz,               \
+                                                        rocsparse_index_base base);             \
+    template void rocsparse_init_coo_bsmtx<ITYPE, TTYPE>(const char*          filename,         \
+                                                         std::vector<ITYPE>&  coo_row_ind,      \
+                                                         std::vector<ITYPE>&  coo_col_ind,      \
+                                                         std::vector<TTYPE>&  coo_val,          \
+                                                         ITYPE&               M,                \
+                                                         ITYPE&               N,                \
+                                                         int64_t&             nnz,              \
+                                                         rocsparse_index_base base);            \
     template void rocsparse_init_coo_rocalution<ITYPE, TTYPE>(const char*          filename,    \
                                                               std::vector<ITYPE>&  row_ind,     \
                                                               std::vector<ITYPE>&  col_ind,     \
@@ -1676,6 +1906,22 @@ void rocsparse_init_gebsr_pentadiagonal(std::vector<I>&      row_ptr,
                                                               JTYPE&               N,                \
                                                               ITYPE&               nnz,              \
                                                               rocsparse_index_base base);            \
+    template void rocsparse_init_csr_smtx<ITYPE, JTYPE, TTYPE>(const char*          filename,        \
+                                                               std::vector<ITYPE>&  csr_row_ptr,     \
+                                                               std::vector<JTYPE>&  csr_col_ind,     \
+                                                               std::vector<TTYPE>&  csr_val,         \
+                                                               JTYPE&               M,               \
+                                                               JTYPE&               N,               \
+                                                               ITYPE&               nnz,             \
+                                                               rocsparse_index_base base);           \
+    template void rocsparse_init_csr_bsmtx<ITYPE, JTYPE, TTYPE>(const char*          filename,       \
+                                                                std::vector<ITYPE>&  csr_row_ptr,    \
+                                                                std::vector<JTYPE>&  csr_col_ind,    \
+                                                                std::vector<TTYPE>&  csr_val,        \
+                                                                JTYPE&               M,              \
+                                                                JTYPE&               N,              \
+                                                                ITYPE&               nnz,            \
+                                                                rocsparse_index_base base);          \
     template void rocsparse_init_csr_rocalution<ITYPE, JTYPE, TTYPE>(const char*          filename,  \
                                                                      std::vector<ITYPE>&  row_ptr,   \
                                                                      std::vector<JTYPE>&  col_ind,   \
@@ -1764,6 +2010,26 @@ void rocsparse_init_gebsr_pentadiagonal(std::vector<I>&      row_ptr,
                                                                 JTYPE                row_block_dim,  \
                                                                 JTYPE                col_block_dim,  \
                                                                 rocsparse_index_base base);          \
+    template void rocsparse_init_gebsr_smtx<ITYPE, JTYPE, TTYPE>(const char*          filename,      \
+                                                                 std::vector<ITYPE>&  bsr_row_ptr,   \
+                                                                 std::vector<JTYPE>&  bsr_col_ind,   \
+                                                                 std::vector<TTYPE>&  bsr_val,       \
+                                                                 JTYPE&               Mb,            \
+                                                                 JTYPE&               Nb,            \
+                                                                 ITYPE&               nnzb,          \
+                                                                 JTYPE                row_block_dim, \
+                                                                 JTYPE                col_block_dim, \
+                                                                 rocsparse_index_base base);         \
+    template void rocsparse_init_gebsr_bsmtx<ITYPE, JTYPE, TTYPE>(const char*         filename,      \
+                                                                  std::vector<ITYPE>& bsr_row_ptr,   \
+                                                                  std::vector<JTYPE>& bsr_col_ind,   \
+                                                                  std::vector<TTYPE>& bsr_val,       \
+                                                                  JTYPE&              Mb,            \
+                                                                  JTYPE&              Nb,            \
+                                                                  ITYPE&              nnzb,          \
+                                                                  JTYPE               row_block_dim, \
+                                                                  JTYPE               col_block_dim, \
+                                                                  rocsparse_index_base base);        \
     template void rocsparse_init_gebsr_rocalution<ITYPE, JTYPE, TTYPE>(                              \
         const char*          filename,                                                               \
         std::vector<ITYPE>&  row_ptr,                                                                \
