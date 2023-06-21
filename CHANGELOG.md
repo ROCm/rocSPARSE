@@ -2,9 +2,10 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## rocSPARSE 2.5.3 for ROCm 5.7.0
+## rocSPARSE 2.5.4 for ROCm 5.7.0
 ### Added
 - Added more mixed precisions for SpMV, (matrix: float, vectors: double, calculation: double) and (matrix: rocsparse_float_complex, vectors: rocsparse_double_complex, calculation: rocsparse_double_complex)
+- Added support for gfx940, gfx941 and gfx942
 ### Improved
 - Fixed a bug in csrsm and bsrsm
 ### Known Issues
