@@ -60,6 +60,7 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_importer_rocsparseio.cpp
   ../common/rocsparse_importer_matrixmarket.cpp
   ../common/rocsparse_clients_envariables.cpp
+  ../common/rocsparse_clients_matrices_dir.cpp
 )
 
 
