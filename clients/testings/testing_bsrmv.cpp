@@ -212,7 +212,7 @@ void testing_bsrmv(const Arguments& arg)
     //
     // Declare and initialize matrices.
     //
-    host_gebsr_matrix<T>   hA;
+    host_gebsr_matrix<T>   hA(dir, mb, nb, 0, block_dim, block_dim, base);
     device_gebsr_matrix<T> dA;
     if(strcmp(arg.category, "stress"))
     {
