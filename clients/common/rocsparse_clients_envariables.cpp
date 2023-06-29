@@ -132,7 +132,7 @@ public:
     //
     // Return the unique instance.
     //
-    static rocsparse_clients_envariables_impl& Instance();
+    static const rocsparse_clients_envariables_impl& Instance();
 
 private:
     ~rocsparse_clients_envariables_impl()                                         = default;
@@ -226,7 +226,7 @@ private:
     }
 };
 
-rocsparse_clients_envariables_impl& rocsparse_clients_envariables_impl::Instance()
+const rocsparse_clients_envariables_impl& rocsparse_clients_envariables_impl::Instance()
 {
     static rocsparse_clients_envariables_impl instance;
     return instance;
