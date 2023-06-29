@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_parse_data.hpp"
+#include "rocsparse_clients_matrices_dir.hpp"
 #include "rocsparse_data.hpp"
 #include "utility.hpp"
 
@@ -96,7 +97,7 @@ static std::string rocsparse_parse_yaml(const std::string& yaml)
 #endif
 }
 
-// Parse --data and --yaml command-line arguments
+// Parse --data and --yaml command-line arguments, -- matrices-dir and optionally memstat-report
 bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_file)
 {
     std::string filename;
@@ -135,15 +136,26 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
             memory_report_filename = argv[++i];
         }
 #endif
+        else if(!strcmp(argv[i], "--matrices-dir"))
+        {
+            if(!argv[i + 1] || !argv[i + 1][0])
+            {
+                std::cerr << "The " << argv[i] << " option requires an argument" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            rocsparse_clients_matrices_dir_set(argv[++i]);
+        }
         else
         {
             *argv_p++ = argv[i];
             if(!help && (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")))
             {
                 help = true;
-                std::cout << "\n"
-                          << argv[0] << " [ --data <path> | --yaml <path> ] <options> ...\n"
-                          << std::endl;
+                std::cout
+                    << "\n"
+                    << argv[0]
+                    << " [ --data <path> | --yaml <path> ] [--matrices-dir <path>] <options> ...\n"
+                    << std::endl;
 
                 std::cout << "" << std::endl;
                 std::cout << "Specific environment variables:" << std::endl;

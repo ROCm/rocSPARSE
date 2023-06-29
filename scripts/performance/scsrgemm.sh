@@ -8,6 +8,7 @@ function display_help()
     echo "    [-h|--help] prints this help message"
     echo "    [-d|--device] select device"
     echo "    [-p|--path] path to rocsparse-bench"
+    echo "    [-d|--matrices-dir] directory of matrix files, this option discards the environment variable MATRICES_DIR. "
     echo "    [-n|--sizen] number of dense columns"
 }
 
@@ -36,10 +37,19 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
+if [[ ( ${MATRICES_DIR} == "" ) ]];then
+    matrices_dir=./matrices
+else
+    matrices_dir=${MATRICES_DIR}
+fi
+
 eval set -- "${GETOPT_PARSE}"
 
 while true; do
     case "${1}" in
+        -d|--matrices-dir)
+            matrices_dir=${2}
+            shift 2 ;;
         -h|--help)
             display_help
             exit 0
@@ -74,7 +84,9 @@ fi
 logname=scsrgemm_$(date +'%Y%m%d%H%M%S').log
 truncate -s 0 $logname
 
+which=`ls $matrices_dir/*.csr`
+filenames=`for i in $which;do basename $i;done`
 # Run csrgemm for all matrices available
-for filename in ./matrices/*.csr; do
-    $bench -f csrgemm --precision s --device $dev --sizen $sizen --alpha 1 --iters 200 --rocalution $filename 2>&1 | tee -a $logname
+for filename in $filenames; do
+    $bench --matrices-dir $matrices_dir -f csrgemm --precision s --device $dev --sizen $sizen --alpha 1 --iters 200 --rocalution $filename 2>&1 | tee -a $logname
 done

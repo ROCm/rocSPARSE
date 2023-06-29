@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -192,8 +192,7 @@ int main(int argc, char** argv)
         {
             dev = atoi(argv[i + 1]);
         }
-
-        if(strcmp(argv[i], "--version") == 0)
+        else if(strcmp(argv[i], "--version") == 0)
         {
             // Print version and exit, if requested
             std::cout << "rocSPARSE version: " << ver / 100000 << "." << ver / 100 % 1000 << "."

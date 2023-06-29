@@ -23,7 +23,9 @@
 * ************************************************************************ */
 
 #include "rocsparse_arguments_config.hpp"
+#include "rocsparse_clients_matrices_dir.hpp"
 #include "rocsparse_enum.hpp"
+
 rocsparse_arguments_config::rocsparse_arguments_config()
 {
     //
@@ -181,6 +183,10 @@ void rocsparse_arguments_config::set_description(options_description& desc)
     ("file",
      value<std::string>(&this->b_file)->default_value(""),
      "read from file with file extension detection.")
+
+    ("matrices-dir",
+     value<std::string>(&this->b_matrices_dir)->default_value(""),
+     "Specify the matrix source directory.")
 
     ("dimx",
      value<rocsparse_int>(&this->dimx)->default_value(0), "assemble "
@@ -528,6 +534,11 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
     }
 #endif
 
+  if(this->b_matrices_dir != "")
+  {
+    rocsparse_clients_matrices_dir_set(this->b_matrices_dir.c_str());
+  }
+
   // rocALUTION parameter overrides filename parameter
   if(this->b_file != "")
   {
@@ -808,7 +819,13 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
   this->spmm_alg = (rocsparse_spmm_alg)this->b_spmm_alg;
   this->gtsv_interleaved_alg = (rocsparse_gtsv_interleaved_alg)this->b_gtsv_interleaved_alg;
 
+  if(this->b_matrices_dir != "")
+  {
+    rocsparse_clients_matrices_dir_set(this->b_matrices_dir.c_str());
+  }
+
   // rocALUTION parameter overrides filename parameter
+
   if(b_file != "")
   {
     strcpy(this->filename, b_file.c_str());

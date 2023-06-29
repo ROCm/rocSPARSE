@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,7 @@
  *
  * ************************************************************************ */
 
-#include "test.hpp"
+#pragma once
 
-#include "testing_csricsv.hpp"
-
-TEST_ROUTINE(csricsv, extra, arg.apol, arg.spol, arg.baseA, arg.matrix);
+const char* rocsparse_clients_matrices_dir_get(bool use_default_path);
+void        rocsparse_clients_matrices_dir_set(const char* path);

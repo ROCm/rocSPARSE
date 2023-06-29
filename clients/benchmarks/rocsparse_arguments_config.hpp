@@ -45,6 +45,7 @@ private:
     std::string   b_rocalution{};
     std::string   b_rocsparseio{};
     std::string   b_file{};
+    std::string   b_matrices_dir{};
     char          b_transA{};
     char          b_transB{};
     int           b_baseA{};

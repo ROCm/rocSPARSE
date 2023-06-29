@@ -346,6 +346,7 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_importer_mlbsr.cpp
   ../common/rocsparse_importer_mlcsr.cpp
   ../common/rocsparse_clients_envariables.cpp
+  ../common/rocsparse_clients_matrices_dir.cpp
   )
 
 add_executable(rocsparse-test rocsparse_test_main.cpp ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})
