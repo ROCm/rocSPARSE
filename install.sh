@@ -139,7 +139,7 @@ install_packages( )
   local library_dependencies_centos=( "devtoolset-7-gcc-gfortran" "epel-release" "make" "cmake3" "gcc-c++" "rpm-build" )
   local library_dependencies_centos8=( "gcc-gfortran" "epel-release" "make" "cmake3" "gcc-c++" "rpm-build" "numactl-libs" )
   local library_dependencies_fedora=( "gcc-gfortran" "make" "cmake" "gcc-c++" "libcxx-devel" "rpm-build" "numactl-libs" )
-  local library_dependencies_sles=( "gcc-fortran" "make" "cmake" "gcc-c++" "libcxxtools9" "rpm-build" )
+  local library_dependencies_sles=( "gcc-fortran" "make" "cmake" "gcc-c++" "rpm-build" )
 
   local client_dependencies_ubuntu=( "python3" "python3-yaml" )
   local client_dependencies_centos=( "python36" "python3-pip" )
@@ -157,6 +157,19 @@ install_packages( )
       client_dependencies_centos8+=( "python3-pyyaml" )
     else
       client_dependencies_centos8+=( "PyYAML" )
+    fi
+  fi
+
+  if [[ ( "${ID}" == "sles" ) ]]; then
+    if [[ -f /etc/os-release ]]; then
+      . /etc/os-release
+
+      function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+      if [[ $(version $VERSION_ID) -ge $(version 15.4) ]]; then
+          library_dependencies_sles+=( "libcxxtools10" )
+      else
+          library_dependencies_sles+=( "libcxxtools9" )
+      fi
     fi
   fi
 
