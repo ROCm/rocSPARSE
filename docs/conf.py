@@ -7,6 +7,8 @@
 from rocm_docs import ROCmDocs
 
 
+external_projects_current_project = "rocalution"
+
 external_toc_path = "./sphinx/_toc.yml"
 
 docs_core = ROCmDocs("rocSPARSE Documentation")
