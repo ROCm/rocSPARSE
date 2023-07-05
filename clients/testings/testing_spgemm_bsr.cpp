@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,14 +39,15 @@ void testing_spgemm_bsr_bad_arg(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
 
-    rocsparse_handle handle = local_handle;
-    J                mb     = safe_size;
-    J                nb     = safe_size;
-    J                kb     = safe_size;
-    I                nnzb_A = safe_size;
-    I                nnzb_B = safe_size;
-    I                nnzb_C = safe_size;
-    I                nnzb_D = safe_size;
+    rocsparse_handle handle    = local_handle;
+    J                mb        = safe_size;
+    J                nb        = safe_size;
+    J                kb        = safe_size;
+    I                nnzb_A    = safe_size;
+    I                nnzb_B    = safe_size;
+    I                nnzb_C    = safe_size;
+    I                nnzb_D    = safe_size;
+    J                block_dim = safe_size;
 
     void* bsr_row_ptr_A = (void*)0x4;
     void* bsr_col_ind_A = (void*)0x4;
@@ -61,6 +62,7 @@ void testing_spgemm_bsr_bad_arg(const Arguments& arg)
     void* bsr_col_ind_D = (void*)0x4;
     void* bsr_val_D     = (void*)0x4;
 
+    rocsparse_direction    dir     = rocsparse_direction_row;
     rocsparse_operation    trans_A = rocsparse_operation_none;
     rocsparse_operation    trans_B = rocsparse_operation_none;
     rocsparse_index_base   base    = rocsparse_index_base_zero;
@@ -76,6 +78,8 @@ void testing_spgemm_bsr_bad_arg(const Arguments& arg)
     rocsparse_local_spmat local_mat_A(mb,
                                       kb,
                                       nnzb_A,
+                                      dir,
+                                      block_dim,
                                       bsr_row_ptr_A,
                                       bsr_col_ind_A,
                                       bsr_val_A,
@@ -87,6 +91,8 @@ void testing_spgemm_bsr_bad_arg(const Arguments& arg)
     rocsparse_local_spmat local_mat_B(kb,
                                       nb,
                                       nnzb_B,
+                                      dir,
+                                      block_dim,
                                       bsr_row_ptr_B,
                                       bsr_col_ind_B,
                                       bsr_val_B,
@@ -98,6 +104,8 @@ void testing_spgemm_bsr_bad_arg(const Arguments& arg)
     rocsparse_local_spmat local_mat_C(mb,
                                       nb,
                                       nnzb_C,
+                                      dir,
+                                      block_dim,
                                       bsr_row_ptr_C,
                                       bsr_col_ind_C,
                                       bsr_val_C,
@@ -109,6 +117,8 @@ void testing_spgemm_bsr_bad_arg(const Arguments& arg)
     rocsparse_local_spmat local_mat_D(mb,
                                       nb,
                                       nnzb_D,
+                                      dir,
+                                      block_dim,
                                       bsr_row_ptr_D,
                                       bsr_col_ind_D,
                                       bsr_val_D,
