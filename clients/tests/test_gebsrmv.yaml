@@ -386,8 +386,39 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [amazon0312,
-             shipsec1,
              webbase-1M]
+
+- name: gebsrmv_file
+  category: nightly
+  hardware: [gfx900, gfx906, gfx908, gfx90a, gfx1030]
+  function: gebsrmv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  row_block_dimA: [4]
+  col_block_dimA: [2, 5, 8]
+  alpha_beta: *alpha_beta_range_1
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [shipsec1]
+
+- name: gebsrmv_file
+  category: nightly
+  hardware: [gfx940]
+  function: gebsrmv
+  precision: *double_only_precisions
+  M: 1
+  N: 1
+  row_block_dimA: [4]
+  col_block_dimA: [2, 5, 8]
+  alpha_beta: *alpha_beta_range_1
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [shipsec1]
 
 - name: gebsrmv_file
   category: nightly
