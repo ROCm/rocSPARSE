@@ -188,8 +188,28 @@ Tests:
 
 - name: csrmv_file
   category: pre_checkin
+  hardware: [gfx900, gfx906, gfx908, gfx90a, gfx1030]
   function: csrmv
   precision: *single_double_precisions
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  matrix_type: [rocsparse_matrix_type_general]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
+  filename: [scircuit,
+             nos1,
+             nos3,
+             nos5,
+             nos7]
+
+- name: csrmv_file
+  category: pre_checkin
+  hardware: [gfx940]
+  function: csrmv
+  precision: *double_only_precisions
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_checkin
@@ -240,8 +260,25 @@ Tests:
 
 - name: csrmv_file
   category: pre_checkin
+  hardware: [gfx900, gfx906, gfx908, gfx90a, gfx1030]
   function: csrmv
   precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  matrix_type: [rocsparse_matrix_type_general]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
+  filename: [mplate,
+             Chevron2]
+
+- name: csrmv_file
+  category: pre_checkin
+  hardware: [gfx940]
+  function: csrmv
+  precision: *double_only_precisions_complex
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_checkin

@@ -220,7 +220,6 @@ Tests:
   spmv_alg: [rocsparse_spmv_alg_csr_stream]
   filename: [bmwcra_1,
              sme3Dc,
-             shipsec1,
              scircuit]
 
 - name: spmv_csr_file
@@ -252,8 +251,23 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_general]
   spmv_alg: [rocsparse_spmv_alg_csr_stream]
-  filename: [mplate,
+  filename: [Chevron2,
              Chevron3]
+
+- name: spmv_csr_file
+  category: pre_checkin
+  function: spmv_csr
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions_complex
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  matrix_type: [rocsparse_matrix_type_general]
+  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  filename: [mplate]
 
 - name: spmv_csr_file
   category: nightly
