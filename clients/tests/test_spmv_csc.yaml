@@ -252,6 +252,7 @@ Tests:
 
 - name: spmv_csc
   category: quick
+  hardware: [gfx900, gfx906, gfx908, gfx90a, gfx1030]
   function: spmv_csc
   indextype: *i32i32_i64i32_i64i64
   precision: *single_double_precisions_complex_real
@@ -263,6 +264,23 @@ Tests:
   matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
   uplo: [rocsparse_fill_mode_lower]
   spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
+
+- name: spmv_csc
+  category: quick
+  hardware: [gfx940]
+  function: spmv_csc
+  indextype: *i32i32_i64i32_i64i64
+  precision: *single_double_precisions_complex_real
+  M_N: *M_N_range_quick
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
+  uplo: [rocsparse_fill_mode_lower]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
+
+
 
 - name: spmv_csc
   category: pre_checkin
