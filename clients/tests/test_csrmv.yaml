@@ -261,7 +261,7 @@ Tests:
              amazon0312,
              ASIC_320k,
              sme3Dc,
-             shipsec1]
+             mac_econ_fwd500]
 
 - name: csrmv_file
   category: quick
