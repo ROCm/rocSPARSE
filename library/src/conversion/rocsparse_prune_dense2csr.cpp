@@ -107,7 +107,7 @@ rocsparse_status rocsparse_prune_dense2csr_buffer_size_template(rocsparse_handle
     // Check matrix sorting mode
     if(descr->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check sizes
@@ -179,7 +179,7 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
     // Check matrix sorting mode
     if(descr->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check sizes
@@ -381,7 +381,7 @@ rocsparse_status rocsparse_prune_dense2csr_template(rocsparse_handle          ha
     // Check matrix sorting mode
     if(descr->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check sizes

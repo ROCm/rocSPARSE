@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ void testing_csr2hyb_bad_arg(const Arguments& arg)
     auto_testing_bad_arg(rocsparse_csr2hyb<T>, nargs_to_exclude, args_to_exclude, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(PARAMS), rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(PARAMS), rocsparse_status_requires_sorted_storage);
 #undef PARAMS
 }
 

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -169,11 +169,11 @@ void testing_bsrsm_bad_arg(const Arguments& arg)
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_buffer_size<T>(PARAMS_BUFFER_SIZE),
-                            rocsparse_status_not_implemented);
+                            rocsparse_status_requires_sorted_storage);
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_analysis<T>(PARAMS_ANALYSIS),
-                            rocsparse_status_not_implemented);
+                            rocsparse_status_requires_sorted_storage);
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_solve<T>(PARAMS_SOLVE),
-                            rocsparse_status_not_implemented);
+                            rocsparse_status_requires_sorted_storage);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
 
 #undef PARAMS_BUFFER_SIZE

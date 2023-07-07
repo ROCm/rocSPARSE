@@ -89,11 +89,11 @@ void testing_prune_csr2csr_by_percentage_bad_arg(const Arguments& arg)
         rocsparse_set_mat_storage_mode(csr_descr_C, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(
         rocsparse_prune_csr2csr_by_percentage_buffer_size<T>(PARAMS_BUFFER_SIZE),
-        rocsparse_status_not_implemented);
+        rocsparse_status_requires_sorted_storage);
     EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(PARAMS_NNZ),
-                            rocsparse_status_not_implemented);
+                            rocsparse_status_requires_sorted_storage);
     EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(PARAMS),
-                            rocsparse_status_not_implemented);
+                            rocsparse_status_requires_sorted_storage);
 
     CHECK_ROCSPARSE_ERROR(
         rocsparse_set_mat_storage_mode(csr_descr_A, rocsparse_storage_mode_sorted));

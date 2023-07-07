@@ -61,7 +61,8 @@ void testing_gebsr2csr_bad_arg(const Arguments& arg)
         rocsparse_set_mat_storage_mode(bsr_descr, rocsparse_storage_mode_unsorted));
     CHECK_ROCSPARSE_ERROR(
         rocsparse_set_mat_storage_mode(csr_descr, rocsparse_storage_mode_unsorted));
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2csr<T>(PARAMS), rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2csr<T>(PARAMS),
+                            rocsparse_status_requires_sorted_storage);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(bsr_descr, rocsparse_storage_mode_sorted));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(csr_descr, rocsparse_storage_mode_sorted));

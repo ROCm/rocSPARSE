@@ -112,7 +112,7 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
     // Check matrix sorting mode
     if(descr->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check sizes

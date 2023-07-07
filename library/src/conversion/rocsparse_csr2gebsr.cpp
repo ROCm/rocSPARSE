@@ -191,7 +191,7 @@ rocsparse_status rocsparse_csr2gebsr_buffer_size_template(rocsparse_handle      
     // Check matrix sorting mode
     if(csr_descr->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     //
@@ -306,7 +306,7 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
     if(csr_descr->storage_mode != rocsparse_storage_mode_sorted
        || bsr_descr->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     //
@@ -858,11 +858,11 @@ try
     // Check matrix sorting mode
     if(csr_descr->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
     if(bsr_descr->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     //

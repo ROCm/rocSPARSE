@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,7 +89,7 @@ rocsparse_status rocsparse_coosm_buffer_size_template(rocsparse_handle          
     // Check matrix sorting mode
     if(descr->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check operation type
@@ -294,7 +294,7 @@ rocsparse_status rocsparse_coosm_analysis_template(rocsparse_handle          han
     // Check matrix sorting mode
     if(descr->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check analysis policy
@@ -492,7 +492,7 @@ rocsparse_status rocsparse_coosm_solve_template(rocsparse_handle          handle
     // Check matrix sorting mode
     if(descr->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check sizes

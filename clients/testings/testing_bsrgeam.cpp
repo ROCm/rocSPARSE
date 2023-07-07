@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,12 +88,16 @@ void testing_bsrgeam_bad_arg(const Arguments& arg)
             EXPECT_ROCSPARSE_STATUS(rocsparse_bsrgeam<T>(PARAMS), rocsparse_status_not_implemented);
         }
     }
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_A, rocsparse_matrix_type_general));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_B, rocsparse_matrix_type_general));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_C, rocsparse_matrix_type_general));
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_A, rocsparse_storage_mode_unsorted));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_B, rocsparse_storage_mode_unsorted));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_C, rocsparse_storage_mode_unsorted));
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrgeam_nnzb(PARAMS_NNZB), rocsparse_status_not_implemented);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrgeam<T>(PARAMS), rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrgeam_nnzb(PARAMS_NNZB),
+                            rocsparse_status_requires_sorted_storage);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrgeam<T>(PARAMS), rocsparse_status_requires_sorted_storage);
 
 #undef PARAMS
 #undef PARAMS_NNZB

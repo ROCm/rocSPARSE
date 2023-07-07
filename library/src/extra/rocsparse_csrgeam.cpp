@@ -216,7 +216,7 @@ rocsparse_status rocsparse_csrgeam_template(rocsparse_handle          handle,
        || descr_B->storage_mode != rocsparse_storage_mode_sorted
        || descr_C->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check valid sizes
@@ -402,7 +402,7 @@ try
        || descr_B->storage_mode != rocsparse_storage_mode_sorted
        || descr_C->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check valid sizes

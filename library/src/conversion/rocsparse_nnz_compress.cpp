@@ -85,7 +85,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
     // Check matrix sorting mode
     if(descr_A->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check sizes

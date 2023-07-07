@@ -90,10 +90,11 @@ void testing_prune_csr2csr_bad_arg(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(
         rocsparse_set_mat_storage_mode(csr_descr_C, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_buffer_size<T>(PARAMS_BUFFER_SIZE),
-                            rocsparse_status_not_implemented);
+                            rocsparse_status_requires_sorted_storage);
     EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(PARAMS_NNZ),
-                            rocsparse_status_not_implemented);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(PARAMS), rocsparse_status_not_implemented);
+                            rocsparse_status_requires_sorted_storage);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(PARAMS),
+                            rocsparse_status_requires_sorted_storage);
 #undef PARAMS
 #undef PARAMS_NNZ
 #undef PARAMS_BUFFER_SIZE
