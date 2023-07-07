@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -74,10 +74,8 @@ void testing_spmm_bell(const Arguments& arg)
 
     I Mb = -1, Nb = -1, Kb = -1;
 
-    host_scalar<T> h_alpha, h_beta;
-
-    *h_alpha = arg.get_alpha<T>();
-    *h_beta  = arg.get_beta<T>();
+    host_scalar<T> h_alpha(arg.get_alpha<T>());
+    host_scalar<T> h_beta(arg.get_beta<T>());
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);

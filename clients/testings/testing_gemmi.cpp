@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -86,10 +86,8 @@ void testing_gemmi(const Arguments& arg)
     rocsparse_storage_mode      storage = arg.storage;
     rocsparse_matrix_factory<T> matrix_factory(arg);
 
-    host_scalar<T> h_alpha;
-    host_scalar<T> h_beta;
-    *h_alpha = arg.get_alpha<T>();
-    *h_beta  = arg.get_beta<T>();
+    host_scalar<T> h_alpha(arg.get_alpha<T>());
+    host_scalar<T> h_beta(arg.get_beta<T>());
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);

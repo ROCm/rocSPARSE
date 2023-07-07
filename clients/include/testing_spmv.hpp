@@ -633,70 +633,17 @@ public:
 #define PARAMS(alpha_, A_, x_, beta_, y_, stage) \
     handle, trans, alpha_, A_, x_, beta_, y_, ttype, alg, stage, &buffer_size, dbuffer
 
-        // Argument sanity check before allocating invalid memory
-
-        // Allocate memory on device
-        // Pointer mode
-
-        // Check structures
-        // Check SpMV when structures can be created
-        if(M <= 0 || N <= 0 || (matrix_type == rocsparse_matrix_type_symmetric && M != N)
-           || (matrix_type == rocsparse_matrix_type_triangular && M != N))
-        {
-            if(M == 0 || N == 0)
-            {
-                CHECK_ROCSPARSE_ERROR(
-                    rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-                device_sparse_matrix<A> dA;
-                device_dense_matrix<X>  dx;
-                device_dense_matrix<Y>  dy;
-
-                rocsparse_local_spmat matA(dA);
-                rocsparse_local_dnvec x(dx);
-                rocsparse_local_dnvec y(dy);
-
-                EXPECT_ROCSPARSE_STATUS(
-                    rocsparse_spmat_set_attribute(
-                        matA, rocsparse_spmat_matrix_type, &matrix_type, sizeof(matrix_type)),
-                    rocsparse_status_success);
-
-                EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_attribute(
-                                            matA, rocsparse_spmat_fill_mode, &uplo, sizeof(uplo)),
-                                        rocsparse_status_success);
-
-                EXPECT_ROCSPARSE_STATUS(
-                    rocsparse_spmat_set_attribute(
-                        matA, rocsparse_spmat_storage_mode, &storage, sizeof(storage)),
-                    rocsparse_status_success);
-
-                size_t buffer_size;
-                void*  dbuffer = nullptr;
-                EXPECT_ROCSPARSE_STATUS(
-                    rocsparse_spmv(
-                        PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_buffer_size)),
-                    rocsparse_status_success);
-                CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, 10));
-                EXPECT_ROCSPARSE_STATUS(
-                    rocsparse_spmv(
-                        PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_compute)),
-                    rocsparse_status_success);
-                CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
-                return;
-            }
-            return;
-        }
-        // Wavefront size
-        int dev;
-        hipGetDevice(&dev);
-
-        hipDeviceProp_t prop;
-        hipGetDeviceProperties(&prop, dev);
-
         //
         // INITIALIZATE THE SPARSE MATRIX
         //
         host_sparse_matrix<A> hA;
         {
+            int dev;
+            hipGetDevice(&dev);
+
+            hipDeviceProp_t prop;
+            hipGetDeviceProperties(&prop, dev);
+
             const bool has_datafile = rocsparse_arguments_has_datafile(arg);
             bool       to_int       = false;
             to_int |= (prop.warpSize == 32);
@@ -836,6 +783,5 @@ public:
         }
 
         CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
-        return;
     }
 };

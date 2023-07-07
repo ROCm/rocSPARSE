@@ -103,6 +103,13 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
     }
     trans = rocsparse_operation_none;
 
+    // block_dim == 0
+    block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex_analysis<T>(PARAMS_ANALYSIS),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex<T>(PARAMS), rocsparse_status_invalid_size);
+    block_dim = safe_size;
+
 #undef PARAMS_ANALYSIS
 #undef PARAMS
 
@@ -169,34 +176,15 @@ void testing_bsrmv(const Arguments& arg)
     rocsparse_local_mat_info info;
 
     // BSR dimensions
-    rocsparse_int mb = (block_dim > 0) ? (M + block_dim - 1) / block_dim : 0;
-    rocsparse_int nb = (block_dim > 0) ? (N + block_dim - 1) / block_dim : 0;
-    // Argument sanity check before allocating invalid memory
+    rocsparse_int mb = (M + block_dim - 1) / block_dim;
+    rocsparse_int nb = (N + block_dim - 1) / block_dim;
+
 #define PARAMS_ANALYSIS(A_)                                                                  \
     handle, A_.block_direction, trans, A_.mb, A_.nb, A_.nnzb, descr, A_.val, A_.ptr, A_.ind, \
         A_.row_block_dim, info
 #define PARAMS(alpha_, A_, x_, beta_, y_)                                                    \
     handle, A_.block_direction, trans, A_.mb, A_.nb, A_.nnzb, alpha_, descr, A_.val, A_.ptr, \
         A_.ind, A_.row_block_dim, info, x_, beta_, y_
-
-    if(mb == 0 || nb == 0 || M == 0 || N == 0 || block_dim == 0)
-    {
-        device_gebsr_matrix<T> dA;
-        dA.block_direction = dir;
-        dA.mb              = mb;
-        dA.nb              = nb;
-        dA.nnzb            = 10;
-        dA.row_block_dim   = block_dim;
-        dA.col_block_dim   = block_dim;
-
-        device_dense_matrix<T> dx;
-        device_dense_matrix<T> dy;
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
-                                rocsparse_status_success);
-        return;
-    }
 
     // Wavefront size
     int dev;

@@ -79,6 +79,15 @@ void testing_bsric0_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0<T>(PARAMS), rocsparse_status_requires_sorted_storage);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
 
+    // block_dim == 0
+    block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0_analysis<T>(PARAMS_ANALYSIS),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0<T>(PARAMS), rocsparse_status_invalid_size);
+    block_dim = safe_size;
+
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_ANALYSIS
 #undef PARAMS
@@ -152,13 +161,8 @@ void testing_bsric0(const Arguments& arg)
     rocsparse_index_base      base      = arg.baseA;
     rocsparse_direction       direction = arg.direction;
 
-    rocsparse_int Mb = -1;
-    rocsparse_int Nb = -1;
-    if(block_dim > 0)
-    {
-        Mb = (M + block_dim - 1) / block_dim;
-        Nb = (N + block_dim - 1) / block_dim;
-    }
+    rocsparse_int Mb = (M + block_dim - 1) / block_dim;
+    rocsparse_int Nb = (N + block_dim - 1) / block_dim;
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
@@ -171,68 +175,6 @@ void testing_bsric0(const Arguments& arg)
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
-
-    // Argument sanity check before allocating invalid memory
-    if(Mb <= 0 || block_dim <= 0)
-    {
-        static const size_t safe_size = 100;
-        size_t              buffer_size;
-        rocsparse_int       pivot;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dbsr_row_ptr(safe_size);
-        device_vector<rocsparse_int> dbsr_col_ind(safe_size);
-        device_vector<T>             dbsr_val(safe_size);
-        device_vector<T>             dbuffer(safe_size);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0_buffer_size<T>(handle,
-                                                                direction,
-                                                                Mb,
-                                                                safe_size,
-                                                                descr,
-                                                                dbsr_val,
-                                                                dbsr_row_ptr,
-                                                                dbsr_col_ind,
-                                                                safe_size,
-                                                                info,
-                                                                &buffer_size),
-                                (Mb < 0 || block_dim <= 0) ? rocsparse_status_invalid_size
-                                                           : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0_analysis<T>(handle,
-                                                             direction,
-                                                             Mb,
-                                                             safe_size,
-                                                             descr,
-                                                             dbsr_val,
-                                                             dbsr_row_ptr,
-                                                             dbsr_col_ind,
-                                                             safe_size,
-                                                             info,
-                                                             apol,
-                                                             spol,
-                                                             dbuffer),
-                                (Mb < 0 || block_dim <= 0) ? rocsparse_status_invalid_size
-                                                           : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0<T>(handle,
-                                                    direction,
-                                                    Mb,
-                                                    safe_size,
-                                                    descr,
-                                                    dbsr_val,
-                                                    dbsr_row_ptr,
-                                                    dbsr_col_ind,
-                                                    safe_size,
-                                                    info,
-                                                    spol,
-                                                    dbuffer),
-                                (Mb < 0 || block_dim <= 0) ? rocsparse_status_invalid_size
-                                                           : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0_zero_pivot(handle, info, &pivot),
-                                rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0_clear(handle, info), rocsparse_status_success);
-
-        return;
-    }
 
     // Non-squared matrices are not supported
     if(M != N)

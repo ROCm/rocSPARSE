@@ -308,18 +308,11 @@ void testing_bsrmm(const Arguments& arg)
     rocsparse_direction  direction = arg.direction;
     rocsparse_index_base base      = arg.baseA;
 
-    rocsparse_int Mb = -1;
-    rocsparse_int Kb = -1;
-    if(block_dim > 0)
-    {
-        Mb = (M + block_dim - 1) / block_dim;
-        Kb = (K + block_dim - 1) / block_dim;
-    }
+    rocsparse_int Mb = (M + block_dim - 1) / block_dim;
+    rocsparse_int Kb = (K + block_dim - 1) / block_dim;
 
-    host_scalar<T> h_alpha, h_beta;
-
-    *h_alpha = arg.get_alpha<T>();
-    *h_beta  = arg.get_beta<T>();
+    host_scalar<T> h_alpha(arg.get_alpha<T>());
+    host_scalar<T> h_beta(arg.get_beta<T>());
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
@@ -330,36 +323,6 @@ void testing_bsrmm(const Arguments& arg)
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-    // Argument sanity check before allocating invalid memory
-    if(Mb <= 0 || N <= 0 || Kb <= 0 || block_dim <= 0)
-    {
-        static const size_t safe_size = 100;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(handle,
-                                                   direction,
-                                                   transA,
-                                                   transB,
-                                                   Mb,
-                                                   N,
-                                                   Kb,
-                                                   safe_size,
-                                                   h_alpha,
-                                                   descr,
-                                                   nullptr,
-                                                   nullptr,
-                                                   nullptr,
-                                                   block_dim,
-                                                   nullptr,
-                                                   safe_size,
-                                                   h_beta,
-                                                   nullptr,
-                                                   safe_size),
-                                (Mb < 0 || N < 0 || Kb < 0 || block_dim <= 0)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
-        return;
-    }
 
     // Allocate host memory for output BSR matrix
     rocsparse_matrix_factory<T> matrix_factory(arg);

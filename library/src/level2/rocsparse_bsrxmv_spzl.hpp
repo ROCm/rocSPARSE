@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,79 @@
 #include "utility.h"
 
 #include "common.h"
+
+template <unsigned int BLOCKSIZE, typename I, typename T>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrxmv_scale_array(I mb,
+                        I size_of_mask,
+                        I block_dim,
+                        const I* __restrict__ bsr_mask_ptr,
+                        T* __restrict__ y,
+                        T                    beta,
+                        rocsparse_index_base idx_base)
+{
+    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+    // Do not run out of bounds
+    if(bsr_mask_ptr == nullptr)
+    {
+        if(idx >= block_dim * mb)
+        {
+            return;
+        }
+
+        y[idx] *= beta;
+    }
+    else
+    {
+        if(idx >= block_dim * size_of_mask)
+        {
+            return;
+        }
+
+        I shift = (bsr_mask_ptr[idx / block_dim] - idx_base) * block_dim;
+
+        y[shift + (idx % block_dim)] *= beta;
+    }
+}
+
+template <unsigned int BLOCKSIZE, typename I, typename T>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void bsrxmv_scale_array(I mb,
+                        I size_of_mask,
+                        I block_dim,
+                        const I* __restrict__ bsr_mask_ptr,
+                        T* __restrict__ y,
+                        const T*             beta,
+                        rocsparse_index_base idx_base)
+{
+    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+    if(*beta != static_cast<T>(1))
+    {
+        // Do not run out of bounds
+        if(bsr_mask_ptr == nullptr)
+        {
+            if(idx >= block_dim * mb)
+            {
+                return;
+            }
+
+            y[idx] *= (*beta);
+        }
+        else
+        {
+            if(idx >= block_dim * size_of_mask)
+            {
+                return;
+            }
+
+            I shift = (bsr_mask_ptr[idx / block_dim] - idx_base) * block_dim;
+
+            y[shift + (idx % block_dim)] *= (*beta);
+        }
+    }
+}
 
 template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 void bsrxmvn_2x2(rocsparse_handle     handle,

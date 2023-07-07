@@ -89,13 +89,13 @@ rocsparse_status rocsparse_bsrmv_analysis_template(rocsparse_handle          han
     }
 
     // Check sizes
-    if(mb < 0 || nb < 0 || nnzb < 0 || block_dim < 0)
+    if(mb < 0 || nb < 0 || nnzb < 0 || block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(mb == 0 || nb == 0 || block_dim == 0)
+    if(mb == 0 || nb == 0 || nnzb == 0)
     {
         return rocsparse_status_success;
     }
@@ -505,7 +505,7 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
     //
     // Check sizes
     //
-    if(mb < 0 || nb < 0 || nnzb < 0 || block_dim < 0)
+    if(mb < 0 || nb < 0 || nnzb < 0 || block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
@@ -513,8 +513,41 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
     //
     // Quick return if possible
     //
-    if(mb == 0 || nb == 0 || block_dim == 0)
+    if(mb == 0 || nb == 0 || nnzb == 0)
     {
+        // matrix never accessed however still need to update y vector
+        rocsparse_int ysize = (trans == rocsparse_operation_none) ? block_dim * mb : block_dim * nb;
+        if(ysize > 0)
+        {
+            if(y == nullptr && beta_device_host == nullptr)
+            {
+                return rocsparse_status_invalid_pointer;
+            }
+
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
+            {
+                hipLaunchKernelGGL((scale_array<256>),
+                                   dim3((ysize - 1) / 256 + 1),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   ysize,
+                                   y,
+                                   beta_device_host);
+            }
+            else
+            {
+                hipLaunchKernelGGL((scale_array<256>),
+                                   dim3((ysize - 1) / 256 + 1),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   ysize,
+                                   y,
+                                   *beta_device_host);
+            }
+        }
+
         return rocsparse_status_success;
     }
 

@@ -49,7 +49,6 @@ Definitions:
     - { M: 923, N: 923 }
 
   - &M_N_range_checkin
-    - { M: -1,   N: -1 }
     - { M: 0,    N: 0 }
     - { M: 64,  N: 64 }
     - { M: 255,  N: 255 }

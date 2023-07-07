@@ -121,6 +121,13 @@ void testing_bsrsv_bad_arg(const Arguments& arg)
                             rocsparse_status_requires_sorted_storage);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
 
+    // block_dim == 0
+    block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_analysis<T>(PARAMS_ANALYSIS),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_solve<T>(PARAMS_SOLVE), rocsparse_status_invalid_size);
+    block_dim = safe_size;
+
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_ANALYSIS
 #undef PARAMS_SOLVE
@@ -209,53 +216,10 @@ void testing_bsrsv(const Arguments& arg)
     handle, dir, trans, A_.mb, A_.nnzb, alpha_, descr, A_.val, A_.ptr, A_.ind, A_.row_block_dim, \
         info, x_, y_, spol, dbuffer
 
-    // Set matrix diag type
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(descr, diag));
-
-    // Set matrix fill mode
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_fill_mode(descr, uplo));
-
-    // Set matrix index base
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
-
     // BSR dimensions
-    const size_t  safe_size = 16;
-    rocsparse_int mb        = (block_dim > 0) ? ((M + block_dim - 1) / block_dim) : safe_size;
-    rocsparse_int nb        = (block_dim > 0) ? ((N + block_dim - 1) / block_dim) : safe_size;
+    rocsparse_int mb = (M + block_dim - 1) / block_dim;
+    rocsparse_int nb = (N + block_dim - 1) / block_dim;
 
-    // Argument sanity check before allocating invalid memory
-    if(mb <= 0 || nb <= 0 || M <= 0 || N <= 0 || block_dim <= 0)
-    {
-        rocsparse_int          pivot;
-        size_t                 buffer_size;
-        device_vector<T>       dx, dy, dbuffer;
-        device_gebsr_matrix<T> dA;
-        dA.mb            = mb;
-        dA.nb            = nb;
-        dA.nnzb          = 10;
-        dA.row_block_dim = block_dim;
-        dA.col_block_dim = block_dim;
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_buffer_size<T>(PARAMS_BUFFER_SIZE(dA)),
-                                (mb < 0 || nb < 0 || block_dim < 0) ? rocsparse_status_invalid_size
-                                                                    : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_analysis<T>(PARAMS_ANALYSIS(dA)),
-                                (mb < 0 || nb < 0 || block_dim < 0) ? rocsparse_status_invalid_size
-                                                                    : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)),
-                                (mb < 0 || nb < 0 || block_dim < 0) ? rocsparse_status_invalid_size
-                                                                    : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_zero_pivot(handle, info, &pivot),
-                                rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_clear(handle, info), rocsparse_status_success);
-        return;
-    }
     // Allocate host memory for matrix
     host_gebsr_matrix<T>   hA;
     device_gebsr_matrix<T> dA;
@@ -275,7 +239,6 @@ void testing_bsrsv(const Arguments& arg)
     // Allocate host memory for vectors
     host_dense_matrix<T> hx(M, 1);
     rocsparse_matrix_utils::init_exact(hx);
-    //    rocsparse_init<T>(hx.val,hx.m,1,1,0,1,static_cast<T>(-1),static_cast<T>(1));
 
     device_dense_matrix<T>     dx(hx), dy(M, 1);
     host_scalar<rocsparse_int> h_analysis_pivot, h_solve_pivot;
@@ -323,9 +286,9 @@ void testing_bsrsv(const Arguments& arg)
             //
             // Call before analysis
             //
-            EXPECT_ROCSPARSE_STATUS(
-                testing::rocsparse_bsrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)),
-                rocsparse_status_invalid_pointer);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)),
+                                    (M == 0) ? rocsparse_status_success
+                                             : rocsparse_status_invalid_pointer);
 
             // Call it twice.
             CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
@@ -374,9 +337,9 @@ void testing_bsrsv(const Arguments& arg)
             //
             // Call before analysis
             //
-            EXPECT_ROCSPARSE_STATUS(
-                testing::rocsparse_bsrsv_solve<T>(PARAMS_SOLVE(d_alpha, dA, dx, dy)),
-                rocsparse_status_invalid_pointer);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)),
+                                    (M == 0) ? rocsparse_status_success
+                                             : rocsparse_status_invalid_pointer);
 
             // Call it twice.
             CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_analysis<T>(PARAMS_ANALYSIS(dA)));

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,15 +53,21 @@ void testing_bsrpad_value_bad_arg(const Arguments& arg)
 
     auto_testing_bad_arg(rocsparse_bsrpad_value<T>, nargs_to_exclude, args_to_exclude, PARAMS);
 
+    // block_dim * mb > m
     mb = 3;
     m  = block_dim * mb + 1;
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrpad_value<T>(PARAMS), rocsparse_status_invalid_size);
-    mb = m = safe_size;
 
+    // block_dim * mb < m
     mb = 3;
     m  = block_dim * (mb - 1);
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrpad_value<T>(PARAMS), rocsparse_status_invalid_size);
-    mb = m = safe_size;
+
+    // block_dim == 0
+    block_dim = 0;
+    mb        = 3;
+    m         = block_dim * mb;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrpad_value<T>(PARAMS), rocsparse_status_invalid_size);
 
 #undef PARAMS
 }
@@ -80,11 +86,10 @@ void testing_bsrpad_value(const Arguments& arg)
     rocsparse_storage_mode storage   = arg.storage;
     T                      value     = 1;
 
-    rocsparse_int Mb = -1;
-    if(block_dim > 0)
-    {
-        Mb = (M + block_dim - 1) / block_dim;
-    }
+    assert(M >= 0);
+    assert(block_dim > 0);
+
+    rocsparse_int Mb = (M + block_dim - 1) / block_dim;
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
@@ -100,33 +105,6 @@ void testing_bsrpad_value(const Arguments& arg)
 
     // Set matrix storage mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(bsr_descr, storage));
-
-    // Argument sanity check before allocating invalid memory
-    if(Mb <= 0 || block_dim <= 0 || Mb * block_dim < M)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dbsr_row_ptr(safe_size);
-        device_vector<rocsparse_int> dbsr_col_ind(safe_size);
-        device_vector<T>             dbsr_val(safe_size);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrpad_value<T>(handle,
-                                                          M,
-                                                          Mb,
-                                                          safe_size,
-                                                          block_dim,
-                                                          value,
-                                                          bsr_descr,
-                                                          dbsr_val,
-                                                          dbsr_row_ptr,
-                                                          dbsr_col_ind),
-                                (Mb < 0 || block_dim <= 0 || Mb * block_dim < M)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
-        return;
-    }
 
     // Allocate device memory
     device_gebsr_matrix<T> dbsr;

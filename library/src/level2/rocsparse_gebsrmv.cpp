@@ -366,14 +366,48 @@ rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle,
     }
 
     // Check sizes
-    if(mb < 0 || nb < 0 || nnzb < 0 || row_block_dim < 0 || col_block_dim < 0)
+    if(mb < 0 || nb < 0 || nnzb < 0 || row_block_dim <= 0 || col_block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(mb == 0 || nb == 0 || row_block_dim == 0 || col_block_dim == 0)
+    if(mb == 0 || nb == 0)
     {
+        // matrix never accessed however still need to update y vector
+        rocsparse_int ysize
+            = (trans == rocsparse_operation_none) ? row_block_dim * mb : col_block_dim * nb;
+        if(ysize > 0)
+        {
+            if(y == nullptr && beta == nullptr)
+            {
+                return rocsparse_status_invalid_pointer;
+            }
+
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
+            {
+                hipLaunchKernelGGL((scale_array<256>),
+                                   dim3((ysize - 1) / 256 + 1),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   ysize,
+                                   y,
+                                   beta);
+            }
+            else
+            {
+                hipLaunchKernelGGL((scale_array<256>),
+                                   dim3((ysize - 1) / 256 + 1),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   ysize,
+                                   y,
+                                   *beta);
+            }
+        }
+
         return rocsparse_status_success;
     }
 

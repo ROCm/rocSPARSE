@@ -79,6 +79,15 @@ void testing_bsrilu0_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(PARAMS), rocsparse_status_requires_sorted_storage);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
 
+    // block_dim == 0
+    block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_analysis<T>(PARAMS_ANALYSIS),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(PARAMS), rocsparse_status_invalid_size);
+    block_dim = safe_size;
+
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_ANALYSIS
 #undef PARAMS
@@ -157,13 +166,8 @@ void testing_bsrilu0(const Arguments& arg)
 
     T h_boost_val = arg.get_boostval<T>();
 
-    rocsparse_int Mb = -1;
-    rocsparse_int Nb = -1;
-    if(block_dim > 0)
-    {
-        Mb = (M + block_dim - 1) / block_dim;
-        Nb = (N + block_dim - 1) / block_dim;
-    }
+    rocsparse_int Mb = (M + block_dim - 1) / block_dim;
+    rocsparse_int Nb = (N + block_dim - 1) / block_dim;
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
@@ -176,62 +180,6 @@ void testing_bsrilu0(const Arguments& arg)
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
-
-    // Argument sanity check before allocating invalid memory
-    if(Mb <= 0 || block_dim <= 0)
-    {
-        static const size_t safe_size = 100;
-        size_t              buffer_size;
-        rocsparse_int       pivot;
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_buffer_size<T>(handle,
-                                                                 direction,
-                                                                 Mb,
-                                                                 safe_size,
-                                                                 descr,
-                                                                 nullptr,
-                                                                 nullptr,
-                                                                 nullptr,
-                                                                 safe_size,
-                                                                 info,
-                                                                 &buffer_size),
-                                (Mb < 0 || block_dim <= 0) ? rocsparse_status_invalid_size
-                                                           : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_analysis<T>(handle,
-                                                              direction,
-                                                              Mb,
-                                                              safe_size,
-                                                              descr,
-                                                              nullptr,
-                                                              nullptr,
-                                                              nullptr,
-                                                              safe_size,
-                                                              info,
-                                                              apol,
-                                                              spol,
-                                                              nullptr),
-                                (Mb < 0 || block_dim <= 0) ? rocsparse_status_invalid_size
-                                                           : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(handle,
-                                                     direction,
-                                                     Mb,
-                                                     safe_size,
-                                                     descr,
-                                                     nullptr,
-                                                     nullptr,
-                                                     nullptr,
-                                                     safe_size,
-                                                     info,
-                                                     spol,
-                                                     nullptr),
-                                (Mb < 0 || block_dim <= 0) ? rocsparse_status_invalid_size
-                                                           : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_zero_pivot(handle, info, &pivot),
-                                rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_clear(handle, info), rocsparse_status_success);
-
-        return;
-    }
 
     if(M != N)
     {

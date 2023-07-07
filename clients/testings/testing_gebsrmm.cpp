@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,9 +93,28 @@ void testing_gebsrmm_bad_arg(const Arguments& arg)
     // CHECK NOT IMPLEMENTED CASE
     //
     {
-        trans_B = rocsparse_operation_conjugate_transpose;
+        auto tmp = trans_B;
+        trans_B  = rocsparse_operation_conjugate_transpose;
         EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_not_implemented);
+        trans_B = tmp;
     }
+
+    // row_block_dim == 0
+    row_block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+    row_block_dim = safe_size;
+
+    // col_block_dim == 0
+    col_block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+    col_block_dim = safe_size;
+
+    // row_block_dim == 0 && col_block_dim == 0
+    row_block_dim = 0;
+    col_block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+    row_block_dim = safe_size;
+    col_block_dim = safe_size;
 
     //
     // Testing wrong leading dimensions.
@@ -290,18 +309,11 @@ void testing_gebsrmm(const Arguments& arg)
     rocsparse_direction  direction     = arg.direction;
     rocsparse_index_base base          = arg.baseA;
 
-    rocsparse_int Mb = -1;
-    rocsparse_int Kb = -1;
+    rocsparse_int Mb = (M + row_block_dim - 1) / row_block_dim;
+    rocsparse_int Kb = (K + col_block_dim - 1) / col_block_dim;
 
-    if(row_block_dim > 0 && col_block_dim > 0)
-    {
-        Mb = (M + row_block_dim - 1) / row_block_dim;
-        Kb = (K + col_block_dim - 1) / col_block_dim;
-    }
-
-    host_scalar<T> h_alpha, h_beta;
-    *h_alpha = arg.get_alpha<T>();
-    *h_beta  = arg.get_beta<T>();
+    host_scalar<T> h_alpha(arg.get_alpha<T>());
+    host_scalar<T> h_beta(arg.get_beta<T>());
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
@@ -313,50 +325,13 @@ void testing_gebsrmm(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-    // Argument sanity check before allocating invalid memory
-    if(Mb <= 0 || N <= 0 || Kb <= 0 || row_block_dim <= 0 || col_block_dim <= 0)
-    {
-        static const size_t safe_size    = 100;
-        rocsparse_int*      dbsr_row_ptr = (rocsparse_int*)0x4;
-        rocsparse_int*      dbsr_col_ind = (rocsparse_int*)0x4;
-        T*                  dbsr_val     = (T*)0x4;
-        T*                  dB           = (T*)0x4;
-        T*                  dC           = (T*)0x4;
-
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_gebsrmm<T>(handle,
-                                 direction,
-                                 transA,
-                                 transB,
-                                 Mb,
-                                 N,
-                                 Kb,
-                                 safe_size,
-                                 h_alpha,
-                                 descr,
-                                 dbsr_val,
-                                 dbsr_row_ptr,
-                                 dbsr_col_ind,
-                                 row_block_dim,
-                                 col_block_dim,
-                                 dB,
-                                 safe_size,
-                                 h_beta,
-                                 dC,
-                                 safe_size),
-            (Mb < 0 || N < 0 || Kb < 0 || row_block_dim <= 0 || col_block_dim <= 0)
-                ? rocsparse_status_invalid_size
-                : rocsparse_status_success);
-        return;
-    }
-
 #define PARAMS(alpha, A, B, beta, C)                                                         \
     handle, A.block_direction, transA, transB, A.mb, C.n, A.nb, A.nnzb, alpha, descr, A.val, \
         A.ptr, A.ind, A.row_block_dim, A.col_block_dim, B, B.ld, beta, C, C.ld
 
     host_gebsr_matrix<T>        hA;
     rocsparse_matrix_factory<T> matrix_factory(arg);
-    matrix_factory.init_gebsr_spezial(hA, Mb, Kb);
+    matrix_factory.init_gebsr(hA, Mb, Kb, row_block_dim, col_block_dim, base);
 
     M = hA.mb * hA.row_block_dim;
     K = hA.nb * hA.col_block_dim;
