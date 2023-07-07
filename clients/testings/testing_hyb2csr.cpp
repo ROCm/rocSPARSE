@@ -62,8 +62,8 @@ void testing_hyb2csr_bad_arg(const Arguments& arg)
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_hyb2csr_buffer_size(PARAMS_BUFFER_SIZE),
-                            rocsparse_status_not_implemented);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_hyb2csr<T>(PARAMS), rocsparse_status_not_implemented);
+                            rocsparse_status_requires_sorted_storage);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_hyb2csr<T>(PARAMS), rocsparse_status_requires_sorted_storage);
 #undef PARAMS
 #undef PARAMS_BUFFER_SIZE
 }

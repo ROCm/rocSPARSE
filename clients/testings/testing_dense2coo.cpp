@@ -50,7 +50,8 @@ void testing_dense2coo_bad_arg(const Arguments& arg)
     auto_testing_bad_arg(rocsparse_dense2coo<T>, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(PARAMS), rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(PARAMS),
+                            rocsparse_status_requires_sorted_storage);
 #undef PARAMS
 }
 

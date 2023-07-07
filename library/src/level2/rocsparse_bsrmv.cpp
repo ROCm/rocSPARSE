@@ -372,9 +372,14 @@ rocsparse_status rocsparse_bsrmv_adaptive_template_dispatch(rocsparse_handle    
                                                             U  beta_device_host,
                                                             Y* y)
 {
-    if(trans != rocsparse_operation_none || descr->storage_mode != rocsparse_storage_mode_sorted)
+    if(trans != rocsparse_operation_none)
     {
         return rocsparse_status_not_implemented;
+    }
+
+    if(descr->storage_mode != rocsparse_storage_mode_sorted)
+    {
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // block_dim == 1 is the CSR case

@@ -180,11 +180,11 @@ rocsparse_status rocsparse_prune_csr2csr_buffer_size_template(rocsparse_handle  
     // Check matrix sorting mode
     if(csr_descr_A->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
     if(csr_descr_C->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check sizes
@@ -274,11 +274,11 @@ rocsparse_status rocsparse_prune_csr2csr_nnz_template(rocsparse_handle          
     // Check matrix sorting mode
     if(csr_descr_A->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
     if(csr_descr_C->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check sizes
@@ -452,11 +452,11 @@ rocsparse_status rocsparse_prune_csr2csr_template(rocsparse_handle          hand
     // Check matrix sorting mode
     if(csr_descr_A->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
     if(csr_descr_C->storage_mode != rocsparse_storage_mode_sorted)
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_requires_sorted_storage;
     }
 
     // Check sizes

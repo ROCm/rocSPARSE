@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,9 +67,9 @@ void testing_csr2csr_compress_bad_arg(const Arguments& arg)
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_A, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_nnz_compress<T>(PARAMS_NNZ),
-                            rocsparse_status_not_implemented);
+                            rocsparse_status_requires_sorted_storage);
     EXPECT_ROCSPARSE_STATUS(rocsparse_csr2csr_compress<T>(PARAMS),
-                            rocsparse_status_not_implemented);
+                            rocsparse_status_requires_sorted_storage);
 
 #undef PARAMS
 #undef PARAMS_NNZ
