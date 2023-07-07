@@ -166,6 +166,7 @@ Tests:
 
 - name: spmv_csr_file
   category: nightly
+  hardware: [gfx900, gfx906, gfx908, gfx90a, gfx1030]
   function: spmv_csr
   indextype: *i32i32_i64i32_i64i64
   precision: *single_double_precisions
@@ -183,6 +184,42 @@ Tests:
              Chebyshev4,
              sme3Dc,
              shipsec1,
+             scircuit]
+
+- name: spmv_csr_file
+  category: nightly
+  hardware: [gfx940]
+  function: spmv_csr
+  indextype: *i32i32_i64i32_i64i64
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  matrix_type: [rocsparse_matrix_type_general]
+  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  filename: [bibd_22_8,
+             amazon0312,
+             Chebyshev4]
+
+- name: spmv_csr_file
+  category: nightly
+  hardware: [gfx940]
+  function: spmv_csr
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  matrix_type: [rocsparse_matrix_type_general]
+  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  filename: [bmwcra_1,
+             sme3Dc,
              scircuit]
 
 - name: spmv_csr_file
@@ -214,8 +251,23 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_general]
   spmv_alg: [rocsparse_spmv_alg_csr_stream]
-  filename: [mplate,
+  filename: [Chevron2,
              Chevron3]
+
+- name: spmv_csr_file
+  category: pre_checkin
+  function: spmv_csr
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions_complex
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  matrix_type: [rocsparse_matrix_type_general]
+  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  filename: [mplate]
 
 - name: spmv_csr_file
   category: nightly
@@ -253,12 +305,28 @@ Tests:
 
 - name: spmv_csr
   category: quick
+  hardware: [gfx900, gfx906, gfx908, gfx90a, gfx1030]
   function: spmv_csr
   indextype: *i32i32_i64i32_i64i64
   precision: *single_double_precisions_complex_real
   M_N: *M_N_range_quick
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
+  uplo: [rocsparse_fill_mode_lower]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
+
+- name: spmv_csr
+  category: quick
+  hardware: [gfx940]
+  function: spmv_csr
+  indextype: *i32i32_i64i32_i64i64
+  precision: *single_double_precisions_complex_real
+  M_N: *M_N_range_quick
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]

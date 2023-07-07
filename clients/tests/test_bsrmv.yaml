@@ -146,8 +146,28 @@ Tests:
 
 - name: bsrmv_file
   category: pre_checkin
+  hardware: [gfx900, gfx906, gfx908, gfx90a, gfx1030]
   function: bsrmv
   precision: *single_double_precisions
+  M: 1
+  N: 1
+  block_dim: [2, 15]
+  alpha_beta: *alpha_beta_range_checkin
+  direction: [rocsparse_direction_column]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  filename: [scircuit,
+             nos3,
+             nos5,
+             nos7]
+
+- name: bsrmv_file
+  category: pre_checkin
+  hardware: [gfx940]
+  function: bsrmv
+  precision: *double_only_precisions
   M: 1
   N: 1
   block_dim: [2, 15]
@@ -270,6 +290,7 @@ Tests:
 
 - name: bsrmv_file
   category: nightly
+  hardware: [gfx900, gfx906, gfx908, gfx90a, gfx1030]
   function: bsrmv
   precision: *single_double_precisions
   M: 1
@@ -286,6 +307,41 @@ Tests:
              sme3Dc,
              shipsec1,
              webbase-1M]
+             
+- name: bsrmv_file
+  category: nightly
+  hardware: [gfx940]
+  function: bsrmv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  block_dim: [2, 12]
+  alpha_beta: *alpha_beta_range_nightly
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  filename: [amazon0312,
+             Chebyshev4,
+             webbase-1M]
+
+- name: bsrmv_file
+  category: nightly
+  hardware: [gfx940]
+  function: bsrmv
+  precision: *double_only_precisions
+  M: 1
+  N: 1
+  block_dim: [2, 12]
+  alpha_beta: *alpha_beta_range_nightly
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  filename: [sme3Dc,
+             shipsec1]
 
 - name: bsrmv_file
   category: nightly
