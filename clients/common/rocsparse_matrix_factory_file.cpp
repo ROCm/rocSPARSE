@@ -153,7 +153,7 @@ struct spec
             bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base, matrix_type, uplo, storage);
 
         // Then temporarily skip the values.
-        I nvalues = nnzb * row_block_dim * col_block_dim;
+        size_t nvalues = size_t(nnzb) * row_block_dim * col_block_dim;
         bsr_val.resize(nvalues);
         for(I i = 0; i < nvalues; ++i)
         {

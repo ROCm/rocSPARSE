@@ -27,6 +27,7 @@
 #include "../level2/rocsparse_gebsrmv.hpp"
 #include "rocsparse_bsrmm.hpp"
 
+#include "common.h"
 #include "utility.h"
 
 template <typename T, typename U>
@@ -337,6 +338,48 @@ rocsparse_status rocsparse_gebsrmm_template(rocsparse_handle          handle,
     // Quick return if possible
     if(mb == 0 || n == 0 || kb == 0)
     {
+        // matrix never accessed however still need to update C matrix
+        rocsparse_int m      = row_block_dim * mb;
+        rocsparse_int C_size = m * n;
+        if(C_size > 0)
+        {
+            if(C == nullptr && beta == nullptr)
+            {
+                return rocsparse_status_invalid_pointer;
+            }
+
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
+            {
+                hipLaunchKernelGGL((scale_array_2d<256>),
+                                   dim3((C_size - 1) / 256 + 1),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   m,
+                                   n,
+                                   ldc,
+                                   0,
+                                   C,
+                                   beta,
+                                   rocsparse_order_column);
+            }
+            else
+            {
+                hipLaunchKernelGGL((scale_array_2d<256>),
+                                   dim3((C_size - 1) / 256 + 1),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   m,
+                                   n,
+                                   ldc,
+                                   0,
+                                   C,
+                                   *beta,
+                                   rocsparse_order_column);
+            }
+        }
+
         return rocsparse_status_success;
     }
 

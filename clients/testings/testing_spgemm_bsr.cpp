@@ -279,15 +279,9 @@ void testing_spgemm_bsr(const Arguments& arg)
     rocsparse_spgemm_alg  alg       = arg.spgemm_alg;
     static constexpr bool full_rank = false;
 
-    J Mb = -1;
-    J Nb = -1;
-    J Kb = -1;
-    if(block_dim > 0)
-    {
-        Mb = (M + block_dim - 1) / block_dim;
-        Nb = (N + block_dim - 1) / block_dim;
-        Kb = (K + block_dim - 1) / block_dim;
-    }
+    J Mb = (M + block_dim - 1) / block_dim;
+    J Nb = (N + block_dim - 1) / block_dim;
+    J Kb = (K + block_dim - 1) / block_dim;
 
     T h_alpha = arg.get_alpha<T>();
     T h_beta  = arg.get_beta<T>();

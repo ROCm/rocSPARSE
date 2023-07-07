@@ -97,37 +97,6 @@ void testing_ellmv(const Arguments& arg)
 #define PARAMS(alpha_, A_, x_, beta_, y_) \
     handle, trans, A_.m, A_.n, alpha_, descr, A_.val, A_.ind, A_.width, x_, beta_, y_
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
-    {
-
-        static const size_t safe_size = 100;
-
-        device_ell_matrix<T> dA;
-        device_vector<T>     dx, dy;
-
-        dA.m     = M;
-        dA.n     = N;
-        dA.nnz   = safe_size;
-        dA.width = safe_size;
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_ellmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
-            ((M < 0 || N < 0 || dA.width < 0) || ((M == 0 || N == 0) && dA.width != 0))
-                ? rocsparse_status_invalid_size
-                : rocsparse_status_success);
-
-        dA.width = 0;
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_ellmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
-            ((M < 0 || N < 0 || dA.width < 0) || ((M == 0 || N == 0) && dA.width != 0))
-                ? rocsparse_status_invalid_size
-                : rocsparse_status_success);
-
-        return;
-    }
-
     rocsparse_matrix_factory<T> matrix_factory(arg);
 
     host_ell_matrix<T> hA;

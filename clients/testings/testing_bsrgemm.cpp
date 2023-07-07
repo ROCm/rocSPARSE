@@ -390,15 +390,9 @@ void testing_bsrgemm(const Arguments& arg)
     rocsparse_index_base  baseD     = arg.baseD;
     static constexpr bool full_rank = false;
 
-    rocsparse_int Mb = -1;
-    rocsparse_int Nb = -1;
-    rocsparse_int Kb = -1;
-    if(block_dim > 0)
-    {
-        Mb = (M + block_dim - 1) / block_dim;
-        Nb = (N + block_dim - 1) / block_dim;
-        Kb = (K + block_dim - 1) / block_dim;
-    }
+    rocsparse_int Mb = (M + block_dim - 1) / block_dim;
+    rocsparse_int Nb = (N + block_dim - 1) / block_dim;
+    rocsparse_int Kb = (K + block_dim - 1) / block_dim;
 
     T v_alpha = arg.get_alpha<T>(), v_beta = arg.get_beta<T>();
 
@@ -485,45 +479,6 @@ void testing_bsrgemm(const Arguments& arg)
         *h_beta = v_beta;
         break;
     }
-    }
-
-    // Argument sanity check before allocating invalid memory
-    if((Mb <= 0 || Nb <= 0 || Kb <= 0 || block_dim <= 0)
-       || scenario == testing_bsrgemm_scenario_none)
-    {
-        device_gebsr_matrix<T> d_A, d_B, d_C, d_D;
-        d_A.define(dir, Mb, Kb, 0, block_dim, block_dim, baseA);
-        d_B.define(dir, Kb, Nb, 0, block_dim, block_dim, baseB);
-        d_C.define(dir, Mb, Nb, 0, block_dim, block_dim, baseC);
-        d_D.define(dir, Mb, Nb, 0, block_dim, block_dim, baseD);
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        size_t           buffer_size;
-        rocsparse_int    nnzb;
-        rocsparse_status status_1 = rocsparse_bsrgemm_buffer_size<T>(
-            PARAMS_BUFFER_SIZE(h_alpha, h_beta, d_A, d_B, d_C, d_D, buffer_size));
-        rocsparse_status status_2 = rocsparse_bsrgemm_nnzb(PARAMS_NNZB(d_A, d_B, d_C, d_D, &nnzb));
-        rocsparse_status status_3
-            = rocsparse_bsrgemm<T>(PARAMS(h_alpha, h_beta, d_A, d_B, d_C, d_D));
-
-        EXPECT_ROCSPARSE_STATUS(
-            status_1,
-            (Mb < 0 || Nb < 0 || Kb < 0 || block_dim <= 0) ? rocsparse_status_invalid_size
-            : scenario == testing_bsrgemm_scenario_none    ? rocsparse_status_invalid_pointer
-                                                           : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(
-            status_2,
-            (Mb < 0 || Nb < 0 || Kb < 0 || block_dim <= 0) ? rocsparse_status_invalid_size
-            : scenario == testing_bsrgemm_scenario_none    ? rocsparse_status_invalid_pointer
-                                                           : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(
-            status_3,
-            (Mb < 0 || Nb < 0 || Kb < 0 || block_dim <= 0) ? rocsparse_status_invalid_size
-            : scenario == testing_bsrgemm_scenario_none    ? rocsparse_status_invalid_pointer
-                                                           : rocsparse_status_success);
-        return;
     }
 
     // Declare host and device objects.

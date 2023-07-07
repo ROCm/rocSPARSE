@@ -254,12 +254,10 @@ void testing_bsrsm(const Arguments& arg)
     rocsparse_index_base      base      = arg.baseA;
 
     // BSR dimension
-    rocsparse_int mb = (block_dim > 0) ? (m + block_dim - 1) / block_dim : -1;
+    rocsparse_int mb = (m + block_dim - 1) / block_dim;
 
     // Scalar
-    host_scalar<T> h_alpha;
-
-    *h_alpha = arg.get_alpha<T>();
+    host_scalar<T> h_alpha(arg.get_alpha<T>());
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
@@ -278,84 +276,6 @@ void testing_bsrsm(const Arguments& arg)
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
-
-    // Argument sanity check before allocating invalid memory
-    if(mb <= 0 || nrhs <= 0)
-    {
-        static const size_t safe_size = 100;
-        size_t              buffer_size;
-        rocsparse_int       pivot;
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_buffer_size<T>(handle,
-                                                               dir,
-                                                               trans_A,
-                                                               trans_X,
-                                                               mb,
-                                                               nrhs,
-                                                               safe_size,
-                                                               descr,
-                                                               nullptr,
-                                                               nullptr,
-                                                               nullptr,
-                                                               block_dim,
-                                                               info,
-                                                               &buffer_size),
-                                (mb < 0 || nrhs < 0 || block_dim <= 0)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_analysis<T>(handle,
-                                                            dir,
-                                                            trans_A,
-                                                            trans_X,
-                                                            mb,
-                                                            nrhs,
-                                                            safe_size,
-                                                            descr,
-                                                            nullptr,
-                                                            nullptr,
-                                                            nullptr,
-                                                            block_dim,
-                                                            info,
-                                                            apol,
-                                                            spol,
-                                                            nullptr),
-                                (mb < 0 || nrhs < 0 || block_dim <= 0)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_solve<T>(handle,
-                                                         dir,
-                                                         trans_A,
-                                                         trans_X,
-                                                         mb,
-                                                         nrhs,
-                                                         safe_size,
-                                                         h_alpha,
-                                                         descr,
-                                                         nullptr,
-                                                         nullptr,
-                                                         nullptr,
-                                                         block_dim,
-                                                         info,
-                                                         nullptr,
-                                                         safe_size,
-                                                         nullptr,
-                                                         safe_size,
-                                                         spol,
-                                                         nullptr),
-                                (mb < 0 || nrhs < 0 || block_dim <= 0)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_zero_pivot(handle, info, &pivot),
-                                rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_clear(handle, info), rocsparse_status_success);
-
-        return;
-    }
 
     // Allocate host memory for BSR matrix A
     rocsparse_matrix_factory<T> matrix_factory(arg);

@@ -90,6 +90,10 @@ void testing_bsrxmv_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrxmv<T>(PARAMS), rocsparse_status_requires_sorted_storage);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
 
+    // block_dim == 0
+    block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrxmv<T>(PARAMS), rocsparse_status_invalid_size);
+    block_dim = safe_size;
 #undef PARAMS
 
     // Additional tests for invalid zero matrices
@@ -150,31 +154,6 @@ void testing_bsrxmv(const Arguments& arg)
 
     size_of_mask = (mb > 0) ? random_generator<rocsparse_int>(0, mb - 1) : 0;
 
-    if(mb <= 0 || nb <= 0 || M <= 0 || N <= 0 || block_dim <= 0 || size_of_mask == 0)
-    {
-        device_gebsr_matrix<T> dA;
-        dA.block_direction = dir;
-        dA.mb              = mb;
-        dA.nb              = nb;
-        dA.nnzb            = 10;
-        dA.row_block_dim   = block_dim;
-        dA.col_block_dim   = block_dim;
-
-        device_dense_matrix<T> dx;
-        device_dense_matrix<T> dy;
-
-        rocsparse_int* dbsr_mask_ptr = nullptr;
-        rocsparse_int* dbsr_row_ptr  = nullptr;
-        rocsparse_int* dbsr_end_ptr  = nullptr;
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrxmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
-                                (mb < 0 || nb < 0 || block_dim < 0) ? rocsparse_status_invalid_size
-                                                                    : rocsparse_status_success);
-
-        return;
-    }
-
     // Wavefront size
     int dev;
     CHECK_HIP_ERROR(hipGetDevice(&dev));
@@ -221,12 +200,10 @@ void testing_bsrxmv(const Arguments& arg)
     host_dense_vector<rocsparse_int> hbsr_mask_ptr(size_of_mask);
 
     {
-
         //
         // Unique random integer values.
         //
-        rocsparse_int* marker;
-        rocsparse_hipHostMalloc(&marker, mb * sizeof(rocsparse_int));
+        host_dense_vector<rocsparse_int> marker(mb);
         for(rocsparse_int i = 0; i < mb; ++i)
         {
             marker[i] = 0;
@@ -234,14 +211,15 @@ void testing_bsrxmv(const Arguments& arg)
         rocsparse_int count = 0;
         for(rocsparse_int i = 0; i < mb; ++i)
         {
+            if(count == size_of_mask)
+            {
+                break;
+            }
+
             marker[i] = random_generator<rocsparse_int>(0, 1);
             if(marker[i] > 0)
             {
                 ++count;
-            }
-            if(count == size_of_mask)
-            {
-                break;
             }
         }
 
@@ -274,8 +252,6 @@ void testing_bsrxmv(const Arguments& arg)
                 hbsr_mask_ptr[count++] = i + hA.base;
             }
         }
-
-        rocsparse_hipHostFree(marker);
     }
 
     device_dense_vector<rocsparse_int> dbsr_mask_ptr(hbsr_mask_ptr);

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,6 +64,30 @@ void testing_check_matrix_gebsr_bad_arg(const Arguments& arg)
                          PARAMS_BUFFER_SIZE);
     auto_testing_bad_arg(
         rocsparse_check_matrix_gebsr<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+
+    // row_block_dim == 0
+    row_block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_check_matrix_gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_check_matrix_gebsr<T>(PARAMS), rocsparse_status_invalid_size);
+    row_block_dim = 2;
+
+    // col_block_dim == 0
+    col_block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_check_matrix_gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_check_matrix_gebsr<T>(PARAMS), rocsparse_status_invalid_size);
+    col_block_dim = 2;
+
+    // row_block_dim == 0 && col_block_dim == 0
+    row_block_dim = 0;
+    col_block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_check_matrix_gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_check_matrix_gebsr<T>(PARAMS), rocsparse_status_invalid_size);
+    row_block_dim = 2;
+    col_block_dim = 2;
+
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS
 }

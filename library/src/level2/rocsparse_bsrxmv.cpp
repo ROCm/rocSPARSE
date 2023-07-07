@@ -319,7 +319,7 @@ rocsparse_status rocsparse_bsrxmv_template(rocsparse_handle          handle,
     //
     // Check sizes
     //
-    if(mb < 0 || nb < 0 || nnzb < 0 || block_dim < 0 || size_of_mask < 0)
+    if(mb < 0 || nb < 0 || nnzb < 0 || block_dim <= 0 || size_of_mask < 0)
     {
         return rocsparse_status_invalid_size;
     }
@@ -327,8 +327,49 @@ rocsparse_status rocsparse_bsrxmv_template(rocsparse_handle          handle,
     //
     // Quick return if possible
     //
-    if(mb == 0 || nb == 0 || block_dim == 0 || size_of_mask == 0)
+    if(mb == 0 || nb == 0)
     {
+        // matrix never accessed however still need to update y vector
+        rocsparse_int ysize = (bsr_mask_ptr == nullptr) ? block_dim * mb : block_dim * size_of_mask;
+        if(ysize > 0)
+        {
+            if(y == nullptr && beta_device_host == nullptr)
+            {
+                return rocsparse_status_invalid_pointer;
+            }
+
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
+            {
+                hipLaunchKernelGGL((bsrxmv_scale_array<256>),
+                                   dim3((ysize - 1) / 256 + 1),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   mb,
+                                   size_of_mask,
+                                   block_dim,
+                                   bsr_mask_ptr,
+                                   y,
+                                   beta_device_host,
+                                   descr->base);
+            }
+            else
+            {
+                hipLaunchKernelGGL((bsrxmv_scale_array<256>),
+                                   dim3((ysize - 1) / 256 + 1),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   mb,
+                                   size_of_mask,
+                                   block_dim,
+                                   bsr_mask_ptr,
+                                   y,
+                                   *beta_device_host,
+                                   descr->base);
+            }
+        }
+
         return rocsparse_status_success;
     }
 
@@ -352,8 +393,8 @@ rocsparse_status rocsparse_bsrxmv_template(rocsparse_handle          handle,
     //
     // Check the rest of pointer arguments
     //
-    if(bsr_mask_ptr == nullptr || bsr_row_ptr == nullptr || bsr_end_ptr == nullptr || x == nullptr
-       || y == nullptr)
+    if((size_of_mask > 0 && bsr_mask_ptr == nullptr) || bsr_row_ptr == nullptr
+       || bsr_end_ptr == nullptr || x == nullptr || y == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

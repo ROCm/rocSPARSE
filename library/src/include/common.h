@@ -927,6 +927,58 @@ void scale_array(I m, T* __restrict__ array, const T* value)
     }
 }
 
+// Scale 2d array by value
+template <unsigned int BLOCKSIZE, typename I, typename T>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void scale_array_2d(I m, I n, I ld, I stride, T* __restrict__ array, T value, rocsparse_order order)
+{
+    I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    I batch = hipBlockIdx_y;
+
+    if(gid >= m * n)
+    {
+        return;
+    }
+
+    I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
+    I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
+
+    if(value == static_cast<T>(0))
+    {
+        array[lid + ld * wid + stride * batch] = static_cast<T>(0);
+    }
+    else
+    {
+        array[lid + ld * wid + stride * batch] *= value;
+    }
+}
+
+template <unsigned int BLOCKSIZE, typename I, typename T>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void scale_array_2d(
+    I m, I n, I ld, I stride, T* __restrict__ array, const T* value, rocsparse_order order)
+{
+    I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    I batch = hipBlockIdx_y;
+
+    if(gid >= m * n)
+    {
+        return;
+    }
+
+    I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
+    I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
+
+    if((*value) == static_cast<T>(0))
+    {
+        array[lid + ld * wid + stride * batch] = static_cast<T>(0);
+    }
+    else
+    {
+        array[lid + ld * wid + stride * batch] *= (*value);
+    }
+}
+
 // conjugate values in array
 template <unsigned int BLOCKSIZE, typename I, typename T>
 ROCSPARSE_KERNEL(BLOCKSIZE)

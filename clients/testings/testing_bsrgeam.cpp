@@ -92,6 +92,16 @@ void testing_bsrgeam_bad_arg(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_B, rocsparse_matrix_type_general));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_C, rocsparse_matrix_type_general));
 
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_A, rocsparse_matrix_type_general));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_B, rocsparse_matrix_type_general));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_C, rocsparse_matrix_type_general));
+
+    // Check block_dim == 0
+    block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrgeam_nnzb(PARAMS_NNZB), rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrgeam<T>(PARAMS), rocsparse_status_invalid_size);
+    block_dim = safe_size;
+
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_A, rocsparse_storage_mode_unsorted));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_B, rocsparse_storage_mode_unsorted));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_C, rocsparse_storage_mode_unsorted));
@@ -117,13 +127,8 @@ void testing_bsrgeam(const Arguments& arg)
     rocsparse_matrix_factory<T>        matrix_factory(arg, arg.timing ? false : true, full_rank);
     rocsparse_matrix_factory_random<T> matrix_factory_random(full_rank);
 
-    rocsparse_int Mb = -1;
-    rocsparse_int Nb = -1;
-    if(block_dim > 0)
-    {
-        Mb = (M + block_dim - 1) / block_dim;
-        Nb = (N + block_dim - 1) / block_dim;
-    }
+    rocsparse_int Mb = (M + block_dim - 1) / block_dim;
+    rocsparse_int Nb = (N + block_dim - 1) / block_dim;
 
     host_scalar<T> h_alpha(arg.get_alpha<T>());
     host_scalar<T> h_beta(arg.get_beta<T>());
@@ -141,74 +146,6 @@ void testing_bsrgeam(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descrB, baseB));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descrC, baseC));
 
-    // Argument sanity check before allocating invalid memory
-    if(Mb <= 0 || Nb <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        device_vector<rocsparse_int> dbsr_row_ptr_A;
-        device_vector<rocsparse_int> dbsr_col_ind_A;
-        device_vector<T>             dbsr_val_A;
-        device_vector<rocsparse_int> dbsr_row_ptr_B;
-        device_vector<rocsparse_int> dbsr_col_ind_B;
-        device_vector<T>             dbsr_val_B;
-        device_vector<rocsparse_int> dbsr_row_ptr_C;
-        device_vector<rocsparse_int> dbsr_col_ind_C;
-        device_vector<T>             dbsr_val_C;
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        rocsparse_int nnzb_C;
-
-        rocsparse_status status_1 = rocsparse_bsrgeam_nnzb(handle,
-                                                           dir,
-                                                           Mb,
-                                                           Nb,
-                                                           block_dim,
-                                                           descrA,
-                                                           safe_size,
-                                                           dbsr_row_ptr_A,
-                                                           dbsr_col_ind_A,
-                                                           descrB,
-                                                           safe_size,
-                                                           dbsr_row_ptr_B,
-                                                           dbsr_col_ind_B,
-                                                           descrC,
-                                                           dbsr_row_ptr_C,
-                                                           &nnzb_C);
-        rocsparse_status status_2 = rocsparse_bsrgeam<T>(handle,
-                                                         dir,
-                                                         Mb,
-                                                         Nb,
-                                                         block_dim,
-                                                         h_alpha,
-                                                         descrA,
-                                                         safe_size,
-                                                         dbsr_val_A,
-                                                         dbsr_row_ptr_A,
-                                                         dbsr_col_ind_A,
-                                                         h_beta,
-                                                         descrB,
-                                                         safe_size,
-                                                         dbsr_val_B,
-                                                         dbsr_row_ptr_B,
-                                                         dbsr_col_ind_B,
-                                                         descrC,
-                                                         dbsr_val_C,
-                                                         dbsr_row_ptr_C,
-                                                         dbsr_col_ind_C);
-
-        // alpha == nullptr && beta != nullptr
-        EXPECT_ROCSPARSE_STATUS(status_1,
-                                (Mb < 0 || Nb < 0) ? rocsparse_status_invalid_size
-                                                   : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(status_2,
-                                (Mb < 0 || Nb < 0) ? rocsparse_status_invalid_size
-                                                   : rocsparse_status_success);
-
-        return;
-    }
-
     // Allocate host memory for matrices
     host_vector<rocsparse_int> hbsr_row_ptr_A;
     host_vector<rocsparse_int> hbsr_col_ind_A;
@@ -218,8 +155,8 @@ void testing_bsrgeam(const Arguments& arg)
     host_vector<T>             hbsr_val_B;
 
     // Sample matrix
-    rocsparse_int nnzb_A = 4;
-    rocsparse_int nnzb_B = 4;
+    rocsparse_int nnzb_A;
+    rocsparse_int nnzb_B;
     rocsparse_int hnnzb_C_gold;
     rocsparse_int hnnzb_C_1;
     rocsparse_int hnnzb_C_2;
@@ -246,10 +183,10 @@ void testing_bsrgeam(const Arguments& arg)
     // Allocate device memory
     device_vector<rocsparse_int> dbsr_row_ptr_A(Mb + 1);
     device_vector<rocsparse_int> dbsr_col_ind_A(nnzb_A);
-    device_vector<T>             dbsr_val_A(block_dim * block_dim * nnzb_A);
+    device_vector<T>             dbsr_val_A(size_t(nnzb_A) * block_dim * block_dim);
     device_vector<rocsparse_int> dbsr_row_ptr_B(Mb + 1);
     device_vector<rocsparse_int> dbsr_col_ind_B(nnzb_B);
-    device_vector<T>             dbsr_val_B(block_dim * block_dim * nnzb_B);
+    device_vector<T>             dbsr_val_B(size_t(nnzb_B) * block_dim * block_dim);
     device_scalar<T>             d_alpha(h_alpha);
     device_scalar<T>             d_beta(h_beta);
     device_vector<rocsparse_int> dbsr_row_ptr_C_1(Mb + 1);
@@ -345,8 +282,8 @@ void testing_bsrgeam(const Arguments& arg)
         // Allocate device memory for C
         device_vector<rocsparse_int> dbsr_col_ind_C_1(hnnzb_C_1);
         device_vector<rocsparse_int> dbsr_col_ind_C_2(hnnzb_C_2);
-        device_vector<T>             dbsr_val_C_1(block_dim * block_dim * hnnzb_C_1);
-        device_vector<T>             dbsr_val_C_2(block_dim * block_dim * hnnzb_C_2);
+        device_vector<T>             dbsr_val_C_1(size_t(hnnzb_C_1) * block_dim * block_dim);
+        device_vector<T>             dbsr_val_C_2(size_t(hnnzb_C_2) * block_dim * block_dim);
 
         // Perform matrix matrix multiplication
 
@@ -401,8 +338,8 @@ void testing_bsrgeam(const Arguments& arg)
         // Copy output to host
         host_vector<rocsparse_int> hbsr_col_ind_C_1(hnnzb_C_1);
         host_vector<rocsparse_int> hbsr_col_ind_C_2(hnnzb_C_2);
-        host_vector<T>             hbsr_val_C_1(block_dim * block_dim * hnnzb_C_1);
-        host_vector<T>             hbsr_val_C_2(block_dim * block_dim * hnnzb_C_2);
+        host_vector<T>             hbsr_val_C_1(size_t(hnnzb_C_1) * block_dim * block_dim);
+        host_vector<T>             hbsr_val_C_2(size_t(hnnzb_C_2) * block_dim * block_dim);
 
         hbsr_col_ind_C_1.transfer_from(dbsr_col_ind_C_1);
         hbsr_col_ind_C_2.transfer_from(dbsr_col_ind_C_2);
@@ -411,7 +348,7 @@ void testing_bsrgeam(const Arguments& arg)
 
         // CPU bsrgemm
         host_vector<rocsparse_int> hbsr_col_ind_C_gold(hnnzb_C_gold);
-        host_vector<T>             hbsr_val_C_gold(block_dim * block_dim * hnnzb_C_gold);
+        host_vector<T>             hbsr_val_C_gold(size_t(hnnzb_C_gold) * block_dim * block_dim);
         host_bsrgeam<T>(dir,
                         Mb,
                         Nb,

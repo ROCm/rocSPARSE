@@ -862,12 +862,12 @@ struct traits_init_hyb<T,
         nnz = hA.nnz;
 
         // ELL width limit
-        rocsparse_int width_limit = 2 * (hA.nnz - 1) / M + 1;
+        rocsparse_int width_limit = (M != 0) ? (2 * (hA.nnz - 1) / M + 1) : 0;
 
         // Limit ELL user width
         if(part == rocsparse_hyb_partition_user)
         {
-            user_ell_width *= (hA.nnz / M);
+            user_ell_width *= (M != 0) ? (hA.nnz / M) : 0;
             user_ell_width = std::min(width_limit, user_ell_width);
         }
 

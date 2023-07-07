@@ -101,6 +101,22 @@ void testing_gebsrmv_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmv<T>(PARAMS), rocsparse_status_requires_sorted_storage);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
 
+    // row_block_dim == 0
+    row_block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmv<T>(PARAMS), rocsparse_status_invalid_size);
+    row_block_dim = safe_size;
+
+    // col_block_dim == 0
+    col_block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmv<T>(PARAMS), rocsparse_status_invalid_size);
+    col_block_dim = safe_size;
+
+    // row_block_dim == 0 && col_block_dim == 0
+    row_block_dim = 0;
+    col_block_dim = 0;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmv<T>(PARAMS), rocsparse_status_invalid_size);
+    row_block_dim = safe_size;
+    col_block_dim = safe_size;
 #undef PARAMS
 
     // Additional tests for invalid zero matrices
@@ -142,43 +158,6 @@ void testing_gebsrmv(const Arguments& arg)
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
-
-    // BSR dimensions
-
-    // Argument sanity check before allocating invalid memory
-#define PARAMS(alpha_, A_, x_, beta_, y_)                                                    \
-    handle, A_.block_direction, trans, A_.mb, A_.nb, A_.nnzb, alpha_, descr, A_.val, A_.ptr, \
-        A_.ind, A_.row_block_dim, A_.col_block_dim, x_, beta_, y_
-
-    {
-        rocsparse_int row_block_dim = arg.row_block_dimA;
-        rocsparse_int col_block_dim = arg.col_block_dimA;
-        rocsparse_int mb = (row_block_dim > 0) ? (M + row_block_dim - 1) / row_block_dim : 0;
-        rocsparse_int nb = (col_block_dim > 0) ? (N + col_block_dim - 1) / col_block_dim : 0;
-        if(mb <= 0 || nb <= 0 || M <= 0 || N <= 0 || row_block_dim <= 0 || col_block_dim <= 0)
-        {
-
-            rocsparse_direction dir = arg.direction;
-
-            device_gebsr_matrix<T> dA;
-            dA.block_direction = dir;
-            dA.mb              = mb;
-            dA.nb              = nb;
-            dA.nnzb            = 10;
-            dA.row_block_dim   = row_block_dim;
-            dA.col_block_dim   = col_block_dim;
-
-            device_dense_matrix<T> dx;
-            device_dense_matrix<T> dy;
-
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-            EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
-                                    (mb < 0 || nb < 0 || row_block_dim < 0 || col_block_dim < 0)
-                                        ? rocsparse_status_invalid_size
-                                        : rocsparse_status_success);
-            return;
-        }
-    }
 
     // Wavefront size
     int dev;

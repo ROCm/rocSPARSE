@@ -132,8 +132,7 @@ void testing_csrsm(const Arguments& arg)
     static constexpr bool       full_rank = true;
     rocsparse_matrix_factory<T> matrix_factory(arg, false, full_rank);
 
-    host_scalar<T> h_alpha;
-    *h_alpha = arg.get_alpha<T>();
+    host_scalar<T> h_alpha(arg.get_alpha<T>());
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);

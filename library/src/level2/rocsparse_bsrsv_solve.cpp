@@ -549,13 +549,13 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
     }
 
     // Check sizes
-    if(mb < 0 || nnzb < 0 || block_dim < 0)
+    if(mb < 0 || nnzb < 0 || block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(mb == 0 || block_dim == 0)
+    if(mb == 0)
     {
         return rocsparse_status_success;
     }

@@ -82,13 +82,8 @@ void testing_bsr2csr(const Arguments& arg)
     rocsparse_direction  direction = arg.direction;
     rocsparse_int        block_dim = arg.block_dim;
 
-    rocsparse_int Mb = -1;
-    rocsparse_int Nb = -1;
-    if(block_dim > 0)
-    {
-        Mb = (M + block_dim - 1) / block_dim;
-        Nb = (N + block_dim - 1) / block_dim;
-    }
+    rocsparse_int Mb = (M + block_dim - 1) / block_dim;
+    rocsparse_int Nb = (N + block_dim - 1) / block_dim;
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);

@@ -137,6 +137,7 @@ void host_bsrmv(rocsparse_direction  dir,
                 I                    nnzb,
                 T                    alpha,
                 const I*             bsr_row_ptr,
+                const I*             bsr_end_ptr,
                 const J*             bsr_col_ind,
                 const A*             bsr_val,
                 J                    bsr_dim,
@@ -163,7 +164,7 @@ void host_bsrmv(rocsparse_direction  dir,
 
     if(bsr_dim == 2)
     {
-        I blocks_per_row = nnzb / mb;
+        I blocks_per_row = (mb != 0) ? (nnzb / mb) : 0;
 
         if(blocks_per_row < 8)
         {
@@ -205,7 +206,7 @@ void host_bsrmv(rocsparse_direction  dir,
     for(J row = 0; row < mb; ++row)
     {
         I row_begin = bsr_row_ptr[row] - base;
-        I row_end   = bsr_row_ptr[row + 1] - base;
+        I row_end   = bsr_end_ptr[row] - base;
 
         if(bsr_dim == 2)
         {
@@ -346,6 +347,39 @@ void host_bsrmv(rocsparse_direction  dir,
     }
 }
 
+template <typename T, typename I, typename J, typename A, typename X, typename Y>
+void host_bsrmv(rocsparse_direction  dir,
+                rocsparse_operation  trans,
+                J                    mb,
+                J                    nb,
+                I                    nnzb,
+                T                    alpha,
+                const I*             bsr_row_ptr,
+                const J*             bsr_col_ind,
+                const A*             bsr_val,
+                J                    bsr_dim,
+                const X*             x,
+                T                    beta,
+                Y*                   y,
+                rocsparse_index_base base)
+{
+    return host_bsrmv(dir,
+                      trans,
+                      mb,
+                      nb,
+                      nnzb,
+                      alpha,
+                      bsr_row_ptr,
+                      bsr_row_ptr + 1,
+                      bsr_col_ind,
+                      bsr_val,
+                      bsr_dim,
+                      x,
+                      beta,
+                      y,
+                      base);
+}
+
 template <typename T>
 void host_bsrxmv(rocsparse_direction  dir,
                  rocsparse_operation  trans,
@@ -365,6 +399,25 @@ void host_bsrxmv(rocsparse_direction  dir,
                  T*                   y,
                  rocsparse_index_base base)
 {
+    if(bsr_mask_ptr == nullptr)
+    {
+        return host_bsrmv(dir,
+                          trans,
+                          mb,
+                          nb,
+                          nnzb,
+                          alpha,
+                          bsr_row_ptr,
+                          bsr_end_ptr,
+                          bsr_col_ind,
+                          bsr_val,
+                          bsr_dim,
+                          x,
+                          beta,
+                          y,
+                          base);
+    }
+
     // Quick return
     if(alpha == static_cast<T>(0))
     {
@@ -387,7 +440,7 @@ void host_bsrxmv(rocsparse_direction  dir,
 
     if(bsr_dim == 2)
     {
-        rocsparse_int blocks_per_row = nnzb / mb;
+        rocsparse_int blocks_per_row = (mb != 0) ? (nnzb / mb) : 0;
 
         if(blocks_per_row < 8)
         {
@@ -610,7 +663,7 @@ void host_gebsrmv(rocsparse_direction  dir,
 
     if(row_block_dim == 2 || row_block_dim == 3 || row_block_dim == 4)
     {
-        rocsparse_int blocks_per_row = nnzb / mb;
+        rocsparse_int blocks_per_row = (mb != 0) ? (nnzb / mb) : 0;
 
         if(blocks_per_row < 8)
         {
@@ -5407,8 +5460,11 @@ void host_bsrilu0(rocsparse_direction               dir,
     std::vector<rocsparse_int> diag_offset(mb);
     std::vector<rocsparse_int> nnz_entries(mb, -1);
 
-    // First diagonal block is index 0
-    diag_offset[0] = 0;
+    if(mb > 0)
+    {
+        // First diagonal block is index 0
+        diag_offset[0] = 0;
+    }
 
     // Loop over all BSR rows
     for(rocsparse_int i = 0; i < mb; ++i)
@@ -8887,6 +8943,21 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                                            ITYPE                ld);
 
 #define INSTANTIATE_IJAXYT(ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE) \
+    template void host_bsrmv(rocsparse_direction  dir,               \
+                             rocsparse_operation  trans,             \
+                             JTYPE                mb,                \
+                             JTYPE                nb,                \
+                             ITYPE                nnzb,              \
+                             TTYPE                alpha,             \
+                             const ITYPE*         bsr_row_ptr,       \
+                             const ITYPE*         bsr_end_ptr,       \
+                             const JTYPE*         bsr_col_ind,       \
+                             const ATYPE*         bsr_val,           \
+                             JTYPE                bsr_dim,           \
+                             const XTYPE*         x,                 \
+                             TTYPE                beta,              \
+                             YTYPE*               y,                 \
+                             rocsparse_index_base base);             \
     template void host_bsrmv(rocsparse_direction  dir,               \
                              rocsparse_operation  trans,             \
                              JTYPE                mb,                \
