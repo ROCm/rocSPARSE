@@ -70,7 +70,8 @@ void testing_spmm_bell(const Arguments& arg)
     rocsparse_direction  direction = arg.direction;
     rocsparse_index_base base      = arg.baseA;
     rocsparse_spmm_alg   alg       = arg.spmm_alg;
-    rocsparse_order      order     = arg.order;
+    rocsparse_order      order_B   = arg.orderB;
+    rocsparse_order      order_C   = arg.orderC;
 
     I Mb = -1, Nb = -1, Kb = -1;
 
@@ -107,18 +108,18 @@ void testing_spmm_bell(const Arguments& arg)
                                 itype,
                                 base,
                                 ttype);
-        I                     ldb = order == rocsparse_order_column
+        I                     ldb = order_B == rocsparse_order_column
                                         ? (trans_B == rocsparse_operation_none ? 2 * K : 2 * N)
                                         : (trans_B == rocsparse_operation_none ? 2 * N : 2 * K);
 
         I nrow_B = trans_B == rocsparse_operation_none ? K : N;
         I ncol_B = trans_B == rocsparse_operation_none ? N : K;
 
-        I                     ldc    = order == rocsparse_order_column ? 2 * M : 2 * N;
+        I                     ldc    = order_C == rocsparse_order_column ? 2 * M : 2 * N;
         I                     nrow_C = M;
         I                     ncol_C = N;
-        rocsparse_local_dnmat B(nrow_B, ncol_B, ldb, (void*)0x4, ttype, order);
-        rocsparse_local_dnmat C(nrow_C, ncol_C, ldc, (void*)0x4, ttype, order);
+        rocsparse_local_dnmat B(nrow_B, ncol_B, ldb, (void*)0x4, ttype, order_B);
+        rocsparse_local_dnmat C(nrow_C, ncol_C, ldc, (void*)0x4, ttype, order_C);
 
         void*  dbuffer     = nullptr;
         size_t buffer_size = sizeof(I);
@@ -221,9 +222,9 @@ void testing_spmm_bell(const Arguments& arg)
                             ttype);
 
     rocsparse_local_dnmat B(
-        dB.m, dB.n, (order == rocsparse_order_column) ? dB.m : dB.n, dB, ttype, order);
+        dB.m, dB.n, (order_B == rocsparse_order_column) ? dB.m : dB.n, dB, ttype, order_B);
     rocsparse_local_dnmat C(
-        dC.m, dC.n, (order == rocsparse_order_column) ? dC.m : dC.n, dC, ttype, order);
+        dC.m, dC.n, (order_C == rocsparse_order_column) ? dC.m : dC.n, dC, ttype, order_C);
 
     // Query SpMM buffer
     size_t buffer_size;
@@ -354,11 +355,12 @@ void testing_spmm_bell(const Arguments& arg)
                              coo_col,
                              coo_val,
                              hB,
-                             (order == rocsparse_order_column) ? hB.m : hB.n,
+                             (order_B == rocsparse_order_column) ? hB.m : hB.n,
+                             order_B,
                              *h_beta,
                              hC,
-                             (order == rocsparse_order_column) ? hC.m : hC.n,
-                             order,
+                             (order_C == rocsparse_order_column) ? hC.m : hC.n,
+                             order_C,
                              base);
 
             delete[] coo_val;

@@ -35,8 +35,6 @@ template <rocsparse_int BELL_BLOCK_DIM,
           typename C>
 ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation trans_A,
                                                          rocsparse_operation trans_B,
-                                                         rocsparse_order     order_B,
-                                                         rocsparse_order     order_C,
                                                          rocsparse_direction dir_A,
                                                          I                   Mb,
                                                          I                   N,
@@ -46,10 +44,12 @@ ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation tra
                                                          const I* __restrict__ bell_col_ind,
                                                          const A* __restrict__ bell_val,
                                                          const B* __restrict__ dense_B,
-                                                         I ldb,
-                                                         T beta,
+                                                         I               ldb,
+                                                         rocsparse_order order_B,
+                                                         T               beta,
                                                          C* __restrict__ dense_C,
                                                          I                    ldc,
+                                                         rocsparse_order      order_C,
                                                          rocsparse_index_base idx_base)
 {
     const I tidx       = hipThreadIdx_x;

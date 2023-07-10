@@ -60,7 +60,7 @@ void csrmmnn_merge_main_kernel(bool conj_A,
                                U beta_device_host,
                                C* __restrict__ dense_C,
                                J                    ldc,
-                               rocsparse_order      order,
+                               rocsparse_order      order_C,
                                rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -91,7 +91,7 @@ void csrmmnn_merge_main_kernel(bool conj_A,
                                                           beta,
                                                           dense_C,
                                                           ldc,
-                                                          order,
+                                                          order_C,
                                                           idx_base);
 }
 
@@ -125,7 +125,7 @@ void csrmmnn_merge_remainder_kernel(bool conj_A,
                                     U beta_device_host,
                                     C* __restrict__ dense_C,
                                     J                    ldc,
-                                    rocsparse_order      order,
+                                    rocsparse_order      order_C,
                                     rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -156,7 +156,7 @@ void csrmmnn_merge_remainder_kernel(bool conj_A,
                                                                beta,
                                                                dense_C,
                                                                ldc,
-                                                               order,
+                                                               order_C,
                                                                idx_base);
 }
 
@@ -188,7 +188,7 @@ void csrmmnt_merge_main_kernel(bool conj_A,
                                J ldb,
                                C* __restrict__ dense_C,
                                J                    ldc,
-                               rocsparse_order      order,
+                               rocsparse_order      order_C,
                                rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -209,7 +209,7 @@ void csrmmnt_merge_main_kernel(bool conj_A,
                                                                     ldb,
                                                                     dense_C,
                                                                     ldc,
-                                                                    order,
+                                                                    order_C,
                                                                     idx_base);
 }
 
@@ -240,7 +240,7 @@ void csrmmnt_merge_remainder_kernel(bool conj_A,
                                     J ldb,
                                     C* __restrict__ dense_C,
                                     J                    ldc,
-                                    rocsparse_order      order,
+                                    rocsparse_order      order_C,
                                     rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -261,7 +261,7 @@ void csrmmnt_merge_remainder_kernel(bool conj_A,
                                                                ldb,
                                                                dense_C,
                                                                ldc,
-                                                               order,
+                                                               order_C,
                                                                idx_base);
 }
 
@@ -387,7 +387,7 @@ rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle       
                        beta_device_host,                                          \
                        dense_C,                                                   \
                        ldc,                                                       \
-                       order,                                                     \
+                       order_C,                                                   \
                        descr->base);
 
 #define LAUNCH_CSRMMNN_MERGE_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE, TRANSB)            \
@@ -415,7 +415,7 @@ rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle       
                        beta_device_host,                                               \
                        dense_C,                                                        \
                        ldc,                                                            \
-                       order,                                                          \
+                       order_C,                                                        \
                        descr->base);
 
 template <unsigned int BLOCKSIZE,
@@ -431,7 +431,6 @@ template <unsigned int BLOCKSIZE,
 rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
                                         bool                      conj_A,
                                         bool                      conj_B,
-                                        rocsparse_order           order,
                                         J                         m,
                                         J                         n,
                                         J                         k,
@@ -446,6 +445,7 @@ rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
                                         U                         beta_device_host,
                                         C*                        dense_C,
                                         J                         ldc,
+                                        rocsparse_order           order_C,
                                         void*                     temp_buffer)
 {
     // Scale C with beta
@@ -459,7 +459,7 @@ rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
                        beta_device_host,
                        dense_C,
                        ldc,
-                       order);
+                       order_C);
 
     I nblocks = (nnz - 1) / NNZ_PER_BLOCK + 1;
 
@@ -532,7 +532,7 @@ rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
                        val_block_red,
                        dense_C,
                        ldc,
-                       order);
+                       order_C);
 
     return rocsparse_status_success;
 }
@@ -559,7 +559,7 @@ rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
                        ldb,                                                                 \
                        dense_C,                                                             \
                        ldc,                                                                 \
-                       order,                                                               \
+                       order_C,                                                             \
                        descr->base);
 
 #define LAUNCH_CSRMMNT_MERGE_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE, TRANSB)               \
@@ -584,7 +584,7 @@ rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
                        ldb,                                                               \
                        dense_C,                                                           \
                        ldc,                                                               \
-                       order,                                                             \
+                       order_C,                                                           \
                        descr->base);
 
 template <unsigned int BLOCKSIZE,
@@ -600,7 +600,6 @@ template <unsigned int BLOCKSIZE,
 rocsparse_status csrmmnt_merge_dispatch(rocsparse_handle          handle,
                                         bool                      conj_A,
                                         bool                      conj_B,
-                                        rocsparse_order           order,
                                         J                         m,
                                         J                         n,
                                         J                         k,
@@ -615,6 +614,7 @@ rocsparse_status csrmmnt_merge_dispatch(rocsparse_handle          handle,
                                         U                         beta_device_host,
                                         C*                        dense_C,
                                         J                         ldc,
+                                        rocsparse_order           order_C,
                                         void*                     temp_buffer)
 {
     // Scale C with beta
@@ -628,7 +628,7 @@ rocsparse_status csrmmnt_merge_dispatch(rocsparse_handle          handle,
                        beta_device_host,
                        dense_C,
                        ldc,
-                       order);
+                       order_C);
 
     char* ptr        = reinterpret_cast<char*>(temp_buffer);
     J*    row_limits = reinterpret_cast<J*>(ptr);
@@ -700,7 +700,6 @@ template <typename T, typename I, typename J, typename A, typename B, typename C
 rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle,
                                                 rocsparse_operation       trans_A,
                                                 rocsparse_operation       trans_B,
-                                                rocsparse_order           order,
                                                 J                         m,
                                                 J                         n,
                                                 J                         k,
@@ -712,9 +711,11 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                 const J*                  csr_col_ind,
                                                 const B*                  dense_B,
                                                 J                         ldb,
+                                                rocsparse_order           order_B,
                                                 U                         beta_device_host,
                                                 C*                        dense_C,
                                                 J                         ldc,
+                                                rocsparse_order           order_C,
                                                 void*                     temp_buffer,
                                                 bool                      force_conj_A)
 {
@@ -729,16 +730,16 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
             return rocsparse_status_invalid_pointer;
         }
 
-        if((order == rocsparse_order_column && trans_B == rocsparse_operation_none)
-           || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
-           || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
+        if((order_B == rocsparse_order_column && trans_B == rocsparse_operation_none)
+           || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
+           || (order_B == rocsparse_order_row
+               && trans_B == rocsparse_operation_conjugate_transpose))
         {
             if(handle->wavefront_size == 32)
             {
                 return csrmmnn_merge_dispatch<NNZ_PER_BLOCK, 32, false, T>(handle,
                                                                            conj_A,
                                                                            conj_B,
-                                                                           order,
                                                                            m,
                                                                            n,
                                                                            k,
@@ -753,6 +754,7 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                                            beta_device_host,
                                                                            dense_C,
                                                                            ldc,
+                                                                           order_C,
                                                                            temp_buffer);
             }
             else if(handle->wavefront_size == 64)
@@ -760,7 +762,6 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                 return csrmmnn_merge_dispatch<NNZ_PER_BLOCK, 64, false, T>(handle,
                                                                            conj_A,
                                                                            conj_B,
-                                                                           order,
                                                                            m,
                                                                            n,
                                                                            k,
@@ -775,20 +776,20 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                                            beta_device_host,
                                                                            dense_C,
                                                                            ldc,
+                                                                           order_C,
                                                                            temp_buffer);
             }
         }
-        else if((order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
-                || (order == rocsparse_order_column
+        else if((order_B == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
+                || (order_B == rocsparse_order_column
                     && trans_B == rocsparse_operation_conjugate_transpose)
-                || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
+                || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
             if(handle->wavefront_size == 32)
             {
                 return csrmmnt_merge_dispatch<NNZ_PER_BLOCK, 32, true, T>(handle,
                                                                           conj_A,
                                                                           conj_B,
-                                                                          order,
                                                                           m,
                                                                           n,
                                                                           k,
@@ -803,6 +804,7 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                                           beta_device_host,
                                                                           dense_C,
                                                                           ldc,
+                                                                          order_C,
                                                                           temp_buffer);
             }
             else if(handle->wavefront_size == 64)
@@ -810,7 +812,6 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                 return csrmmnt_merge_dispatch<NNZ_PER_BLOCK, 64, true, T>(handle,
                                                                           conj_A,
                                                                           conj_B,
-                                                                          order,
                                                                           m,
                                                                           n,
                                                                           k,
@@ -825,6 +826,7 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                                           beta_device_host,
                                                                           dense_C,
                                                                           ldc,
+                                                                          order_C,
                                                                           temp_buffer);
             }
         }
@@ -914,7 +916,6 @@ INSTANTIATE_ANALYSIS(float, int64_t, int64_t, int8_t);
         rocsparse_handle          handle,                            \
         rocsparse_operation       trans_A,                           \
         rocsparse_operation       trans_B,                           \
-        rocsparse_order           order,                             \
         JTYPE                     m,                                 \
         JTYPE                     n,                                 \
         JTYPE                     k,                                 \
@@ -926,9 +927,11 @@ INSTANTIATE_ANALYSIS(float, int64_t, int64_t, int8_t);
         const JTYPE*              csr_col_ind,                       \
         const BTYPE*              dense_B,                           \
         JTYPE                     ldb,                               \
+        rocsparse_order           order_B,                           \
         UTYPE                     beta_device_host,                  \
         CTYPE*                    dense_C,                           \
         JTYPE                     ldc,                               \
+        rocsparse_order           order_C,                           \
         void*                     temp_buffer,                       \
         bool                      force_conj_A)
 

@@ -54,7 +54,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_main_device(bool    conj_A,
                                                         C* __restrict__ dense_C,
                                                         I                    ldc,
                                                         I                    batch_stride_C,
-                                                        rocsparse_order      order,
+                                                        rocsparse_order      order_C,
                                                         rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -138,7 +138,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_main_device(bool    conj_A,
             }
             else if(prevrow >= 0)
             {
-                if(order == rocsparse_order_column)
+                if(order_C == rocsparse_order_column)
                 {
                     for(I i = 0; i < WF_SIZE; ++i)
                     {
@@ -195,7 +195,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_main_device(bool    conj_A,
         {
             if(row_ind != shared_row[tid + 1] && row_ind >= 0)
             {
-                if(order == rocsparse_order_column)
+                if(order_C == rocsparse_order_column)
                 {
                     for(I i = 0; i < WF_SIZE; ++i)
                     {
@@ -254,7 +254,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_remainder_device(bool    conj_A,
                                                              C* __restrict__ dense_C,
                                                              I                    ldc,
                                                              I                    batch_stride_C,
-                                                             rocsparse_order      order,
+                                                             rocsparse_order      order_C,
                                                              rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -344,7 +344,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_remainder_device(bool    conj_A,
             }
             else if(prevrow >= 0)
             {
-                if(order == rocsparse_order_column)
+                if(order_C == rocsparse_order_column)
                 {
                     for(I i = 0; i < WF_SIZE; ++i)
                     {
@@ -407,7 +407,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_remainder_device(bool    conj_A,
         {
             if(row_ind != shared_row[tid + 1] && row_ind >= 0)
             {
-                if(order == rocsparse_order_column)
+                if(order_C == rocsparse_order_column)
                 {
                     for(I i = 0; i < WF_SIZE; ++i)
                     {
@@ -481,7 +481,7 @@ void coommnn_general_block_reduce(I n,
                                   C*              dense_C,
                                   I               ldc,
                                   I               batch_stride_C,
-                                  rocsparse_order order)
+                                  rocsparse_order order_C)
 {
     int tid   = hipThreadIdx_x;
     int batch = hipBlockIdx_z;
@@ -514,7 +514,7 @@ void coommnn_general_block_reduce(I n,
 
         if(row != rowp1 && row >= 0)
         {
-            if(order == rocsparse_order_column)
+            if(order_C == rocsparse_order_column)
             {
                 dense_C[row + ldc * col + batch_stride_C * batch] += shared_val[tid];
             }
@@ -558,7 +558,7 @@ void coommnn_segmented_main_kernel(bool    conj_A,
                                    C* __restrict__ dense_C,
                                    I                    ldc,
                                    I                    batch_stride_C,
-                                   rocsparse_order      order,
+                                   rocsparse_order      order_C,
                                    rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -584,7 +584,7 @@ void coommnn_segmented_main_kernel(bool    conj_A,
                                                                          dense_C,
                                                                          ldc,
                                                                          batch_stride_C,
-                                                                         order,
+                                                                         order_C,
                                                                          idx_base);
     }
 }
@@ -620,7 +620,7 @@ void coommnn_segmented_remainder_kernel(bool    conj_A,
                                         C* __restrict__ dense_C,
                                         I                    ldc,
                                         I                    batch_stride_C,
-                                        rocsparse_order      order,
+                                        rocsparse_order      order_C,
                                         rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -647,7 +647,7 @@ void coommnn_segmented_remainder_kernel(bool    conj_A,
                                                                               dense_C,
                                                                               ldc,
                                                                               batch_stride_C,
-                                                                              order,
+                                                                              order_C,
                                                                               idx_base);
     }
 }
@@ -703,7 +703,7 @@ rocsparse_status rocsparse_coomm_buffer_size_template_segmented(rocsparse_handle
                        dense_C,                                                              \
                        ldc,                                                                  \
                        batch_stride_C,                                                       \
-                       order,                                                                \
+                       order_C,                                                              \
                        descr->base);
 
 #define LAUNCH_COOMMNN_SEGMENTED_REMAINDER_KERNEL(COOMMNN_DIM, WF_SIZE, LOOPS, TRANSB)            \
@@ -732,14 +732,13 @@ rocsparse_status rocsparse_coomm_buffer_size_template_segmented(rocsparse_handle
                        dense_C,                                                                   \
                        ldc,                                                                       \
                        batch_stride_C,                                                            \
-                       order,                                                                     \
+                       order_C,                                                                   \
                        descr->base);
 
 template <typename T, typename I, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          handle,
                                                     rocsparse_operation       trans_A,
                                                     rocsparse_operation       trans_B,
-                                                    rocsparse_order           order,
                                                     I                         m,
                                                     I                         n,
                                                     I                         k,
@@ -755,11 +754,13 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
                                                     I                         ldb,
                                                     I                         batch_count_B,
                                                     I                         batch_stride_B,
+                                                    rocsparse_order           order_B,
                                                     U                         beta_device_host,
                                                     C*                        dense_C,
                                                     I                         ldc,
                                                     I                         batch_count_C,
                                                     I                         batch_stride_C,
+                                                    rocsparse_order           order_C,
                                                     void*                     temp_buffer)
 {
     bool conj_A = (trans_A == rocsparse_operation_conjugate_transpose);
@@ -789,9 +790,10 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
             ((sizeof(I) * nblocks * batch_count_C - 1) / COOMMN_DIM + 1) * COOMMN_DIM,
             stream));
 
-        if((order == rocsparse_order_column && trans_B == rocsparse_operation_none)
-           || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
-           || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
+        if((order_B == rocsparse_order_column && trans_B == rocsparse_operation_none)
+           || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
+           || (order_B == rocsparse_order_row
+               && trans_B == rocsparse_operation_conjugate_transpose))
         {
             I main      = 0;
             I remainder = 0;
@@ -845,10 +847,10 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
                 }
             }
         }
-        else if((order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
-                || (order == rocsparse_order_column
+        else if((order_B == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
+                || (order_B == rocsparse_order_column
                     && trans_B == rocsparse_operation_conjugate_transpose)
-                || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
+                || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
             I main      = 0;
             I remainder = 0;
@@ -917,7 +919,7 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
                            dense_C,
                            ldc,
                            batch_stride_C,
-                           order);
+                           order_C);
     }
     else
     {
@@ -963,7 +965,6 @@ INSTANTIATE_BUFFER_SIZE(float, int64_t, int8_t);
         rocsparse_handle          handle,                                \
         rocsparse_operation       trans_A,                               \
         rocsparse_operation       trans_B,                               \
-        rocsparse_order           order,                                 \
         ITYPE                     m,                                     \
         ITYPE                     n,                                     \
         ITYPE                     k,                                     \
@@ -979,11 +980,13 @@ INSTANTIATE_BUFFER_SIZE(float, int64_t, int8_t);
         ITYPE                     ldb,                                   \
         ITYPE                     batch_count_B,                         \
         ITYPE                     batch_stride_B,                        \
+        rocsparse_order           order_B,                               \
         UTYPE                     beta_device_host,                      \
         CTYPE*                    dense_C,                               \
         ITYPE                     ldc,                                   \
         ITYPE                     batch_count_C,                         \
         ITYPE                     batch_stride_C,                        \
+        rocsparse_order           order_C,                               \
         void*                     temp_buffer);
 
 // Uniform precisions

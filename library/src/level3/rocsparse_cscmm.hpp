@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,8 +60,6 @@ template <typename T, typename I, typename J, typename A, typename B, typename C
 rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_A,
                                           rocsparse_operation       trans_B,
-                                          rocsparse_order           order_B,
-                                          rocsparse_order           order_C,
                                           rocsparse_csrmm_alg       alg,
                                           J                         m,
                                           J                         n,
@@ -79,9 +77,11 @@ rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                           J                         ldb,
                                           J                         batch_count_B,
                                           I                         batch_stride_B,
+                                          rocsparse_order           order_B,
                                           const T*                  beta,
                                           C*                        dense_C,
                                           J                         ldc,
                                           J                         batch_count_C,
                                           I                         batch_stride_C,
+                                          rocsparse_order           order_C,
                                           void*                     temp_buffer);

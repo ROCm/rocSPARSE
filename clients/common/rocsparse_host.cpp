@@ -2582,10 +2582,11 @@ void host_csrmm(J                    M,
                 const T*             csr_val_A,
                 const T*             B,
                 J                    ldb,
+                rocsparse_order      order_B,
                 T                    beta,
                 T*                   C,
                 J                    ldc,
-                rocsparse_order      order,
+                rocsparse_order      order_C,
                 rocsparse_index_base base,
                 bool                 force_conj_A)
 {
@@ -2609,10 +2610,11 @@ void host_csrmm(J                    M,
                 for(I k = row_begin; k < row_end; ++k)
                 {
                     J idx_B = 0;
-                    if((transB == rocsparse_operation_none && order == rocsparse_order_column)
-                       || (transB == rocsparse_operation_transpose && order == rocsparse_order_row)
+                    if((transB == rocsparse_operation_none && order_B == rocsparse_order_column)
+                       || (transB == rocsparse_operation_transpose
+                           && order_B == rocsparse_order_row)
                        || (transB == rocsparse_operation_conjugate_transpose
-                           && order == rocsparse_order_row))
+                           && order_B == rocsparse_order_row))
                     {
                         idx_B = (csr_col_ind_A[k] - base + j * ldb);
                     }
@@ -2624,7 +2626,7 @@ void host_csrmm(J                    M,
                     sum = std::fma(conj_val(csr_val_A[k], conj_A), conj_val(B[idx_B], conj_B), sum);
                 }
 
-                J idx_C = (order == rocsparse_order_column) ? i + j * ldc : i * ldc + j;
+                J idx_C = (order_C == rocsparse_order_column) ? i + j * ldc : i * ldc + j;
 
                 if(beta == static_cast<T>(0))
                 {
@@ -2644,7 +2646,7 @@ void host_csrmm(J                    M,
         {
             for(J j = 0; j < N; ++j)
             {
-                J idx_C  = (order == rocsparse_order_column) ? i + j * ldc : i * ldc + j;
+                J idx_C  = (order_C == rocsparse_order_column) ? i + j * ldc : i * ldc + j;
                 C[idx_C] = beta * C[idx_C];
             }
         }
@@ -2663,10 +2665,11 @@ void host_csrmm(J                    M,
 
                     J idx_B = 0;
 
-                    if((transB == rocsparse_operation_none && order == rocsparse_order_column)
-                       || (transB == rocsparse_operation_transpose && order == rocsparse_order_row)
+                    if((transB == rocsparse_operation_none && order_B == rocsparse_order_column)
+                       || (transB == rocsparse_operation_transpose
+                           && order_B == rocsparse_order_row)
                        || (transB == rocsparse_operation_conjugate_transpose
-                           && order == rocsparse_order_row))
+                           && order_B == rocsparse_order_row))
                     {
                         idx_B = (i + j * ldb);
                     }
@@ -2675,7 +2678,7 @@ void host_csrmm(J                    M,
                         idx_B = (j + i * ldb);
                     }
 
-                    J idx_C = (order == rocsparse_order_column) ? col + j * ldc : col * ldc + j;
+                    J idx_C = (order_C == rocsparse_order_column) ? col + j * ldc : col * ldc + j;
 
                     C[idx_C] += alpha * val * conj_val(B[idx_B], conj_B);
                 }
@@ -2701,12 +2704,13 @@ void host_csrmm_batched(J                    M,
                         J                    ldb,
                         J                    batch_count_B,
                         I                    batch_stride_B,
+                        rocsparse_order      order_B,
                         T                    beta,
                         T*                   C,
                         J                    ldc,
                         J                    batch_count_C,
                         I                    batch_stride_C,
-                        rocsparse_order      order,
+                        rocsparse_order      order_C,
                         rocsparse_index_base base,
                         bool                 force_conj_A)
 {
@@ -2734,10 +2738,11 @@ void host_csrmm_batched(J                    M,
                        csr_val_A,
                        B + batch_stride_B * i,
                        ldb,
+                       order_B,
                        beta,
                        C + batch_stride_C * i,
                        ldc,
-                       order,
+                       order_C,
                        base,
                        force_conj_A);
         }
@@ -2757,10 +2762,11 @@ void host_csrmm_batched(J                    M,
                        csr_val_A + columns_values_batch_stride_A * i,
                        B,
                        ldb,
+                       order_B,
                        beta,
                        C + batch_stride_C * i,
                        ldc,
-                       order,
+                       order_C,
                        base,
                        force_conj_A);
         }
@@ -2780,10 +2786,11 @@ void host_csrmm_batched(J                    M,
                        csr_val_A + columns_values_batch_stride_A * i,
                        B + batch_stride_B * i,
                        ldb,
+                       order_B,
                        beta,
                        C + batch_stride_C * i,
                        ldc,
-                       order,
+                       order_C,
                        base,
                        force_conj_A);
         }
@@ -2803,10 +2810,11 @@ void host_coomm(I                    M,
                 const T*             coo_val_A,
                 const T*             B,
                 I                    ldb,
+                rocsparse_order      order_B,
                 T                    beta,
                 T*                   C,
                 I                    ldc,
-                rocsparse_order      order,
+                rocsparse_order      order_C,
                 rocsparse_index_base base)
 {
     bool conj_A = (transA == rocsparse_operation_conjugate_transpose);
@@ -2821,8 +2829,8 @@ void host_coomm(I                    M,
 #endif
             for(I i = 0; i < M; ++i)
             {
-                int64_t idx_C = (order == rocsparse_order_column) ? i + j * (int64_t)ldc
-                                                                  : i * (int64_t)ldc + j;
+                int64_t idx_C = (order_C == rocsparse_order_column) ? i + j * (int64_t)ldc
+                                                                    : i * (int64_t)ldc + j;
                 C[idx_C] *= beta;
             }
         }
@@ -2838,12 +2846,12 @@ void host_coomm(I                    M,
                 I col = coo_col_ind_A[i] - base;
                 T val = alpha * coo_val_A[i];
 
-                int64_t idx_C = (order == rocsparse_order_column) ? row + j * (int64_t)ldc
-                                                                  : row * (int64_t)ldc + j;
+                int64_t idx_C = (order_C == rocsparse_order_column) ? row + j * (int64_t)ldc
+                                                                    : row * (int64_t)ldc + j;
 
                 int64_t idx_B = 0;
-                if((transB == rocsparse_operation_none && order == rocsparse_order_column)
-                   || (transB != rocsparse_operation_none && order != rocsparse_order_column))
+                if((transB == rocsparse_operation_none && order_B == rocsparse_order_column)
+                   || (transB != rocsparse_operation_none && order_B != rocsparse_order_column))
                 {
                     idx_B = (col + j * (int64_t)ldb);
                 }
@@ -2865,8 +2873,8 @@ void host_coomm(I                    M,
 #endif
             for(I i = 0; i < K; ++i)
             {
-                int64_t idx_C = (order == rocsparse_order_column) ? i + j * (int64_t)ldc
-                                                                  : i * (int64_t)ldc + j;
+                int64_t idx_C = (order_C == rocsparse_order_column) ? i + j * (int64_t)ldc
+                                                                    : i * (int64_t)ldc + j;
                 C[idx_C] *= beta;
             }
         }
@@ -2882,12 +2890,12 @@ void host_coomm(I                    M,
                 I col = coo_col_ind_A[i] - base;
                 T val = alpha * conj_val(coo_val_A[i], conj_A);
 
-                int64_t idx_C = (order == rocsparse_order_column) ? col + j * (int64_t)ldc
-                                                                  : col * (int64_t)ldc + j;
+                int64_t idx_C = (order_C == rocsparse_order_column) ? col + j * (int64_t)ldc
+                                                                    : col * (int64_t)ldc + j;
 
                 int64_t idx_B = 0;
-                if((transB == rocsparse_operation_none && order == rocsparse_order_column)
-                   || (transB != rocsparse_operation_none && order != rocsparse_order_column))
+                if((transB == rocsparse_operation_none && order_B == rocsparse_order_column)
+                   || (transB != rocsparse_operation_none && order_B != rocsparse_order_column))
                 {
                     idx_B = (row + j * (int64_t)ldb);
                 }
@@ -2919,12 +2927,13 @@ void host_coomm_batched(I                    M,
                         I                    ldb,
                         I                    batch_count_B,
                         int64_t              batch_stride_B,
+                        rocsparse_order      order_B,
                         T                    beta,
                         T*                   C,
                         I                    ldc,
                         I                    batch_count_C,
                         int64_t              batch_stride_C,
-                        rocsparse_order      order,
+                        rocsparse_order      order_C,
                         rocsparse_index_base base)
 {
     bool Ci_A_Bi  = (batch_count_A == 1 && batch_count_B == batch_count_C);
@@ -2952,10 +2961,11 @@ void host_coomm_batched(I                    M,
                        coo_val_A,
                        B + batch_stride_B * i,
                        ldb,
+                       order_B,
                        beta,
                        C + batch_stride_C * i,
                        ldc,
-                       order,
+                       order_C,
                        base);
         }
     }
@@ -2975,10 +2985,11 @@ void host_coomm_batched(I                    M,
                        coo_val_A + batch_stride_A * i,
                        B,
                        ldb,
+                       order_B,
                        beta,
                        C + batch_stride_C * i,
                        ldc,
-                       order,
+                       order_C,
                        base);
         }
     }
@@ -2998,10 +3009,11 @@ void host_coomm_batched(I                    M,
                        coo_val_A + batch_stride_A * i,
                        B + batch_stride_B * i,
                        ldb,
+                       order_B,
                        beta,
                        C + batch_stride_C * i,
                        ldc,
-                       order,
+                       order_C,
                        base);
         }
     }
@@ -3018,11 +3030,12 @@ void host_cscmm(J                   M,
                 const J* __restrict csc_row_ind_A,
                 const T* __restrict csc_val_A,
                 const T* __restrict B,
-                J ldb,
-                T beta,
+                J               ldb,
+                rocsparse_order order_B,
+                T               beta,
                 T* __restrict C,
                 J                    ldc,
-                rocsparse_order      order,
+                rocsparse_order      order_C,
                 rocsparse_index_base base)
 {
     switch(transA)
@@ -3040,10 +3053,11 @@ void host_cscmm(J                   M,
                           csc_val_A,
                           B,
                           ldb,
+                          order_B,
                           beta,
                           C,
                           ldc,
-                          order,
+                          order_C,
                           base,
                           false);
     }
@@ -3060,10 +3074,11 @@ void host_cscmm(J                   M,
                           csc_val_A,
                           B,
                           ldb,
+                          order_B,
                           beta,
                           C,
                           ldc,
-                          order,
+                          order_C,
                           base,
                           false);
     }
@@ -3080,10 +3095,11 @@ void host_cscmm(J                   M,
                           csc_val_A,
                           B,
                           ldb,
+                          order_B,
                           beta,
                           C,
                           ldc,
-                          order,
+                          order_C,
                           base,
                           true);
     }
@@ -3107,12 +3123,13 @@ void host_cscmm_batched(J                    M,
                         J                    ldb,
                         J                    batch_count_B,
                         I                    batch_stride_B,
+                        rocsparse_order      order_B,
                         T                    beta,
                         T*                   C,
                         J                    ldc,
                         J                    batch_count_C,
                         I                    batch_stride_C,
-                        rocsparse_order      order,
+                        rocsparse_order      order_C,
                         rocsparse_index_base base)
 {
     switch(transA)
@@ -3135,12 +3152,13 @@ void host_cscmm_batched(J                    M,
                                   ldb,
                                   batch_count_B,
                                   batch_stride_B,
+                                  order_B,
                                   beta,
                                   C,
                                   ldc,
                                   batch_count_C,
                                   batch_stride_C,
-                                  order,
+                                  order_C,
                                   base,
                                   false);
     }
@@ -3162,12 +3180,13 @@ void host_cscmm_batched(J                    M,
                                   ldb,
                                   batch_count_B,
                                   batch_stride_B,
+                                  order_B,
                                   beta,
                                   C,
                                   ldc,
                                   batch_count_C,
                                   batch_stride_C,
-                                  order,
+                                  order_C,
                                   base,
                                   false);
     }
@@ -3189,12 +3208,13 @@ void host_cscmm_batched(J                    M,
                                   ldb,
                                   batch_count_B,
                                   batch_stride_B,
+                                  order_B,
                                   beta,
                                   C,
                                   ldc,
                                   batch_count_C,
                                   batch_stride_C,
-                                  order,
+                                  order_C,
                                   base,
                                   true);
     }
@@ -8645,10 +8665,11 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                            const TTYPE*         coo_val_A,               \
                                            const TTYPE*         B,                       \
                                            ITYPE                ldb,                     \
+                                           rocsparse_order      order_B,                 \
                                            TTYPE                beta,                    \
                                            TTYPE*               C,                       \
                                            ITYPE                ldc,                     \
-                                           rocsparse_order      order,                   \
+                                           rocsparse_order      order_C,                 \
                                            rocsparse_index_base base);                   \
     template void host_coomm_batched<TTYPE, ITYPE>(ITYPE                M,               \
                                                    ITYPE                N,               \
@@ -8666,12 +8687,13 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                                    ITYPE                ldb,             \
                                                    ITYPE                batch_count_B,   \
                                                    int64_t              batch_stride_B,  \
+                                                   rocsparse_order      order_B,         \
                                                    TTYPE                beta,            \
                                                    TTYPE*               C,               \
                                                    ITYPE                ldc,             \
                                                    ITYPE                batch_count_C,   \
                                                    int64_t              batch_stride_C,  \
-                                                   rocsparse_order      order,           \
+                                                   rocsparse_order      order_C,         \
                                                    rocsparse_index_base base);           \
     template void host_coosm<ITYPE, TTYPE>(ITYPE                M,                       \
                                            ITYPE                nrhs,                    \
@@ -8742,10 +8764,11 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                                   const TTYPE*         csr_val_A,              \
                                                   const TTYPE*         B,                      \
                                                   JTYPE                ldb,                    \
+                                                  rocsparse_order      order_B,                \
                                                   TTYPE                beta,                   \
                                                   TTYPE*               C,                      \
                                                   JTYPE                ldc,                    \
-                                                  rocsparse_order      order,                  \
+                                                  rocsparse_order      order_C,                \
                                                   rocsparse_index_base base,                   \
                                                   bool                 force_conj_A);                          \
     template void host_csrmm_batched<TTYPE, ITYPE, JTYPE>(JTYPE M,                             \
@@ -8764,12 +8787,13 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                                           JTYPE                ldb,            \
                                                           JTYPE                batch_count_B,  \
                                                           ITYPE                batch_stride_B, \
+                                                          rocsparse_order      order_B,        \
                                                           TTYPE                beta,           \
                                                           TTYPE*               C,              \
                                                           JTYPE                ldc,            \
                                                           JTYPE                batch_count_C,  \
                                                           ITYPE                batch_stride_C, \
-                                                          rocsparse_order      order,          \
+                                                          rocsparse_order      order_C,        \
                                                           rocsparse_index_base base,           \
                                                           bool                 force_conj_A);                  \
     template void host_cscmm<TTYPE, ITYPE, JTYPE>(JTYPE                M,                      \
@@ -8783,10 +8807,11 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                                   const TTYPE*         csc_val_A,              \
                                                   const TTYPE*         B,                      \
                                                   JTYPE                ldb,                    \
+                                                  rocsparse_order      order_B,                \
                                                   TTYPE                beta,                   \
                                                   TTYPE*               C,                      \
                                                   JTYPE                ldc,                    \
-                                                  rocsparse_order      order,                  \
+                                                  rocsparse_order      order_C,                \
                                                   rocsparse_index_base base);                  \
     template void host_cscmm_batched<TTYPE, ITYPE, JTYPE>(JTYPE M,                             \
                                                           JTYPE N,                             \
@@ -8804,12 +8829,13 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                                           JTYPE                ldb,            \
                                                           JTYPE                batch_count_B,  \
                                                           ITYPE                batch_stride_B, \
+                                                          rocsparse_order      order_B,        \
                                                           TTYPE                beta,           \
                                                           TTYPE*               C,              \
                                                           JTYPE                ldc,            \
                                                           JTYPE                batch_count_C,  \
                                                           ITYPE                batch_stride_C, \
-                                                          rocsparse_order      order,          \
+                                                          rocsparse_order      order_C,        \
                                                           rocsparse_index_base base);          \
     template void host_csrsm<ITYPE, JTYPE, TTYPE>(JTYPE                M,                      \
                                                   JTYPE                nrhs,                   \

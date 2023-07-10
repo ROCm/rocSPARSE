@@ -36,8 +36,6 @@ template <rocsparse_int BELL_BLOCK_DIM,
 ROCSPARSE_KERNEL(BELL_BLOCK_DIM* BLK_SIZE_Y)
 void bellmm_general_blockdim_kernel(rocsparse_operation trans_A,
                                     rocsparse_operation trans_B,
-                                    rocsparse_order     order_B,
-                                    rocsparse_order     order_C,
                                     rocsparse_direction dir_A,
                                     I                   Mb,
                                     I                   N,
@@ -47,10 +45,12 @@ void bellmm_general_blockdim_kernel(rocsparse_operation trans_A,
                                     const I* __restrict__ bell_col_ind,
                                     const A* __restrict__ bell_val,
                                     const B* __restrict__ dense_B,
-                                    I ldb,
-                                    U beta_device_host,
+                                    I               ldb,
+                                    rocsparse_order order_B,
+                                    U               beta_device_host,
                                     C* __restrict__ dense_C,
                                     I                    ldc,
+                                    rocsparse_order      order_C,
                                     rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -63,8 +63,6 @@ void bellmm_general_blockdim_kernel(rocsparse_operation trans_A,
 
     bellmm_general_blockdim_device<BELL_BLOCK_DIM, BLK_SIZE_Y, T>(trans_A,
                                                                   trans_B,
-                                                                  order_B,
-                                                                  order_C,
                                                                   dir_A,
                                                                   Mb,
                                                                   N,
@@ -75,9 +73,11 @@ void bellmm_general_blockdim_kernel(rocsparse_operation trans_A,
                                                                   bell_val,
                                                                   dense_B,
                                                                   ldb,
+                                                                  order_B,
                                                                   beta,
                                                                   dense_C,
                                                                   ldc,
+                                                                  order_C,
                                                                   idx_base);
 }
 
@@ -85,8 +85,6 @@ template <typename T, typename I, typename A, typename B, typename C, typename U
 rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_operation       trans_B,
-                                                   rocsparse_order           order_B,
-                                                   rocsparse_order           order_C,
                                                    rocsparse_direction       dir_A,
                                                    I                         mb,
                                                    I                         n,
@@ -99,9 +97,11 @@ rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          han
                                                    const A*                  bell_val,
                                                    const B*                  dense_B,
                                                    I                         ldb,
+                                                   rocsparse_order           order_B,
                                                    U                         beta,
                                                    C*                        dense_C,
-                                                   I                         ldc)
+                                                   I                         ldc,
+                                                   rocsparse_order           order_C)
 {
     hipStream_t stream = handle->stream;
     dim3        bellmm_blocks((mb - 1) / 1 + 1, (n - 1) / 32 + 1);
@@ -117,8 +117,6 @@ rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          han
                        stream,
                        trans_A,
                        trans_B,
-                       order_B,
-                       order_C,
                        dir_A,
                        mb,
                        n,
@@ -129,9 +127,11 @@ rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          han
                        bell_val,
                        dense_B,
                        ldb,
+                       order_B,
                        beta,
                        dense_C,
                        ldc,
+                       order_C,
                        descr->base);
 
     return rocsparse_status_success;
@@ -142,8 +142,6 @@ rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          han
         rocsparse_handle          handle,                               \
         rocsparse_operation       trans_A,                              \
         rocsparse_operation       trans_B,                              \
-        rocsparse_order           order_B,                              \
-        rocsparse_order           order_C,                              \
         rocsparse_direction       dir_A,                                \
         ITYPE                     mb,                                   \
         ITYPE                     n,                                    \
@@ -156,9 +154,11 @@ rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          han
         const ATYPE*              bell_val,                             \
         const BTYPE*              dense_B,                              \
         ITYPE                     ldb,                                  \
+        rocsparse_order           order_B,                              \
         UTYPE                     beta,                                 \
         CTYPE*                    dense_C,                              \
-        ITYPE                     ldc)
+        ITYPE                     ldc,                                  \
+        rocsparse_order           order_C)
 
 INSTANTIATE(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t);
 INSTANTIATE(int32_t, int64_t, int32_t, int32_t, int32_t, int32_t);

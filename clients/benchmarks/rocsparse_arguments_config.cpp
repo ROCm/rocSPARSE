@@ -73,6 +73,8 @@ rocsparse_arguments_config::rocsparse_arguments_config()
         this->spol           = static_cast<rocsparse_solve_policy>(0);
         this->direction      = static_cast<rocsparse_direction>(0);
         this->order          = static_cast<rocsparse_order>(0);
+        this->orderB         = static_cast<rocsparse_order>(0);
+        this->orderC         = static_cast<rocsparse_order>(0);
         this->format         = static_cast<rocsparse_format>(0);
 
         this->itilu0_alg          = rocsparse_itilu0_alg_default;
@@ -332,6 +334,14 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      value<rocsparse_int>(&this->b_order)->default_value(rocsparse_order_column),
      "Indicates whether a dense matrix is laid out in column-major storage: 1, or row-major storage 0 (default: 1)")
 
+    ("orderB",
+     value<rocsparse_int>(&this->b_orderB)->default_value(rocsparse_order_column),
+     "Indicates whether a dense matrix is laid out in column-major storage: 1, or row-major storage 0 (default: 1)")
+
+    ("orderC",
+     value<rocsparse_int>(&this->b_orderC)->default_value(rocsparse_order_column),
+     "Indicates whether a dense matrix is laid out in column-major storage: 1, or row-major storage 0 (default: 1)")
+
     ("format",
      value<rocsparse_int>(&this->b_format)->default_value(rocsparse_format_coo),
      "Indicates whether a sparse matrix is laid out in coo format: 0, coo_aos format: 1, csr format: 2, csc format: 3 or ell format: 4 (default:0)")
@@ -404,6 +414,18 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   if(this->b_order != rocsparse_order_row && this->b_order != rocsparse_order_column)
   {
     std::cerr << "Invalid value for --order" << std::endl;
+    return -1;
+  }
+
+  if(this->b_orderB != rocsparse_order_row && this->b_orderB != rocsparse_order_column)
+  {
+    std::cerr << "Invalid value for --orderB" << std::endl;
+    return -1;
+  }
+
+  if(this->b_orderC != rocsparse_order_row && this->b_orderC != rocsparse_order_column)
+  {
+    std::cerr << "Invalid value for --orderC" << std::endl;
     return -1;
   }
 
@@ -519,6 +541,8 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   this->direction
     = (this->b_dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
   this->order  = (this->b_order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
+  this->orderB  = (this->b_orderB == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
+  this->orderC  = (this->b_orderC == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
   this->format = (rocsparse_format)this->b_format;
   this->spmv_alg = (rocsparse_spmv_alg)this->b_spmv_alg;
   this->itilu0_alg = (rocsparse_itilu0_alg)this->b_itilu0_alg;
@@ -715,6 +739,18 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
     return -1;
   }
 
+  if(this->b_orderB != rocsparse_order_row && this->b_orderB != rocsparse_order_column)
+  {
+    std::cerr << "Invalid value for --orderB" << std::endl;
+    return -1;
+  }
+
+  if(this->b_orderC != rocsparse_order_row && this->b_orderC != rocsparse_order_column)
+  {
+    std::cerr << "Invalid value for --orderC" << std::endl;
+    return -1;
+  }
+
   { bool is_format_invalid = true;
     switch(this->b_format)
       {
@@ -814,6 +850,8 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
   this->direction
     = (b_dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
   this->order  = (b_order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
+  this->orderB  = (b_orderB == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
+  this->orderC  = (b_orderC == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
   this->format = (rocsparse_format)b_format;
   this->spmv_alg = (rocsparse_spmv_alg)this->b_spmv_alg;
   this->spmm_alg = (rocsparse_spmm_alg)this->b_spmm_alg;

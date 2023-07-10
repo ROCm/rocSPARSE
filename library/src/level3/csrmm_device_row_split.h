@@ -54,7 +54,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_row_split_device(bool conj_A,
                                                    T beta,
                                                    C* __restrict__ dense_C,
                                                    J                    ldc,
-                                                   rocsparse_order      order,
+                                                   rocsparse_order      order_C,
                                                    rocsparse_index_base idx_base)
 {
     int tid  = hipThreadIdx_x;
@@ -94,7 +94,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_row_split_device(bool conj_A,
     {
         if(beta == static_cast<T>(0))
         {
-            if(order == rocsparse_order_column)
+            if(order_C == rocsparse_order_column)
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
@@ -111,7 +111,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_row_split_device(bool conj_A,
         }
         else
         {
-            if(order == rocsparse_order_column)
+            if(order_C == rocsparse_order_column)
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
@@ -160,7 +160,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_main_device(bool conj_A,
                                                         T beta,
                                                         C* __restrict__ dense_C,
                                                         J                    ldc,
-                                                        rocsparse_order      order,
+                                                        rocsparse_order      order_C,
                                                         rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -222,7 +222,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_main_device(bool conj_A,
 
         if(beta == static_cast<T>(0))
         {
-            if(order == rocsparse_order_column)
+            if(order_C == rocsparse_order_column)
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
@@ -239,7 +239,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_main_device(bool conj_A,
         }
         else
         {
-            if(order == rocsparse_order_column)
+            if(order_C == rocsparse_order_column)
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
@@ -287,7 +287,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_remainder_device(bool conj_A,
                                                              T beta,
                                                              C* __restrict__ dense_C,
                                                              J                    ldc,
-                                                             rocsparse_order      order,
+                                                             rocsparse_order      order_C,
                                                              rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -342,7 +342,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_remainder_device(bool conj_A,
         {
             if(beta == static_cast<T>(0))
             {
-                if(order == rocsparse_order_column)
+                if(order_C == rocsparse_order_column)
                 {
                     dense_C[row + colB * ldc] = alpha * sum;
                 }
@@ -353,7 +353,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_remainder_device(bool conj_A,
             }
             else
             {
-                if(order == rocsparse_order_column)
+                if(order_C == rocsparse_order_column)
                 {
                     dense_C[row + colB * ldc]
                         = rocsparse_fma<T>(beta, dense_C[row + colB * ldc], alpha * sum);

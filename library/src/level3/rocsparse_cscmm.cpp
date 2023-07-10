@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -135,8 +135,6 @@ template <typename T, typename I, typename J, typename A, typename B, typename C
 rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_A,
                                           rocsparse_operation       trans_B,
-                                          rocsparse_order           order_B,
-                                          rocsparse_order           order_C,
                                           rocsparse_csrmm_alg       alg,
                                           J                         m,
                                           J                         n,
@@ -154,11 +152,13 @@ rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                           J                         ldb,
                                           J                         batch_count_B,
                                           I                         batch_stride_B,
+                                          rocsparse_order           order_B,
                                           const T*                  beta_device_host,
                                           C*                        dense_C,
                                           J                         ldc,
                                           J                         batch_count_C,
                                           I                         batch_stride_C,
+                                          rocsparse_order           order_C,
                                           void*                     temp_buffer)
 {
     switch(trans_A)
@@ -168,8 +168,6 @@ rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
         return rocsparse_csrmm_template(handle,
                                         rocsparse_operation_transpose,
                                         trans_B,
-                                        order_B,
-                                        order_C,
                                         alg,
                                         k,
                                         n,
@@ -187,11 +185,13 @@ rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                         ldb,
                                         batch_count_B,
                                         batch_stride_B,
+                                        order_B,
                                         beta_device_host,
                                         dense_C,
                                         ldc,
                                         batch_count_C,
                                         batch_stride_C,
+                                        order_C,
                                         temp_buffer,
                                         false);
     }
@@ -200,8 +200,6 @@ rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
         return rocsparse_csrmm_template<T>(handle,
                                            rocsparse_operation_none,
                                            trans_B,
-                                           order_B,
-                                           order_C,
                                            alg,
                                            k,
                                            n,
@@ -219,11 +217,13 @@ rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                            ldb,
                                            batch_count_B,
                                            batch_stride_B,
+                                           order_B,
                                            beta_device_host,
                                            dense_C,
                                            ldc,
                                            batch_count_C,
                                            batch_stride_C,
+                                           order_C,
                                            temp_buffer,
                                            false);
     }
@@ -232,8 +232,6 @@ rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
         return rocsparse_csrmm_template<T>(handle,
                                            rocsparse_operation_none,
                                            trans_B,
-                                           order_B,
-                                           order_C,
                                            alg,
                                            k,
                                            n,
@@ -251,11 +249,13 @@ rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                            ldb,
                                            batch_count_B,
                                            batch_stride_B,
+                                           order_B,
                                            beta_device_host,
                                            dense_C,
                                            ldc,
                                            batch_count_C,
                                            batch_stride_C,
+                                           order_C,
                                            temp_buffer,
                                            true);
     }
@@ -344,8 +344,6 @@ INSTANTIATE_ANALYSIS(float, int64_t, int64_t, int8_t);
     template rocsparse_status rocsparse_cscmm_template(rocsparse_handle    handle,                 \
                                                        rocsparse_operation trans_A,                \
                                                        rocsparse_operation trans_B,                \
-                                                       rocsparse_order     order_B,                \
-                                                       rocsparse_order     order_C,                \
                                                        rocsparse_csrmm_alg alg,                    \
                                                        JTYPE               m,                      \
                                                        JTYPE               n,                      \
@@ -363,11 +361,13 @@ INSTANTIATE_ANALYSIS(float, int64_t, int64_t, int8_t);
                                                        JTYPE                     ldb,              \
                                                        JTYPE                     batch_count_B,    \
                                                        ITYPE                     batch_stride_B,   \
+                                                       rocsparse_order           order_B,          \
                                                        const TTYPE*              beta_device_host, \
                                                        CTYPE*                    C,                \
                                                        JTYPE                     ldc,              \
                                                        JTYPE                     batch_count_C,    \
                                                        ITYPE                     batch_stride_C,   \
+                                                       rocsparse_order           order_C,          \
                                                        void*                     temp_buffer);
 
 // Uniform precisions
@@ -422,82 +422,3 @@ INSTANTIATE(float, int32_t, int32_t, int8_t, int8_t, float);
 INSTANTIATE(float, int64_t, int32_t, int8_t, int8_t, float);
 INSTANTIATE(float, int64_t, int64_t, int8_t, int8_t, float);
 #undef INSTANTIATE
-
-// #define INSTANTIATE_MIXED_BUFFERSIZE(ITYPE, JTYPE, ATYPE)                      \
-//     template rocsparse_status rocsparse_cscmm_buffer_size_template( \
-//         rocsparse_handle          handle,                                                \
-//         rocsparse_operation       trans_A,                                               \
-//         rocsparse_csrmm_alg       alg,                                                   \
-//         JTYPE                     m,                                                     \
-//         JTYPE                     n,                                                     \
-//         JTYPE                     k,                                                     \
-//         ITYPE                     nnz,                                                   \
-//         const rocsparse_mat_descr descr,                                                 \
-//         const ATYPE*              csc_val,                                               \
-//         const ITYPE*              csc_col_ptr,                                           \
-//         const JTYPE*              csc_row_ind,                                           \
-//         size_t*                   buffer_size);
-
-// INSTANTIATE_MIXED_BUFFERSIZE(int32_t, int32_t, int8_t);
-// INSTANTIATE_MIXED_BUFFERSIZE(int64_t, int32_t, int8_t);
-// INSTANTIATE_MIXED_BUFFERSIZE(int64_t, int64_t, int8_t);
-// #undef INSTANTIATE_MIXED_BUFFERSIZE
-
-// #define INSTANTIATE_MIXED_ANALYSIS(ITYPE, JTYPE, ATYPE)      \
-//     template rocsparse_status rocsparse_cscmm_analysis_template( \
-//         rocsparse_handle          handle,                                             \
-//         rocsparse_operation       trans_A,                                            \
-//         rocsparse_csrmm_alg       alg,                                                \
-//         JTYPE                     m,                                                  \
-//         JTYPE                     n,                                                  \
-//         JTYPE                     k,                                                  \
-//         ITYPE                     nnz,                                                \
-//         const rocsparse_mat_descr descr,                                              \
-//         const ATYPE*              csc_val,                                            \
-//         const ITYPE*              csc_col_ptr,                                        \
-//         const JTYPE*              csc_row_ind,                                        \
-//         void*                     temp_buffer);
-
-// INSTANTIATE_MIXED_ANALYSIS(int32_t, int32_t, int8_t);
-// INSTANTIATE_MIXED_ANALYSIS(int64_t, int32_t, int8_t);
-// INSTANTIATE_MIXED_ANALYSIS(int64_t, int64_t, int8_t);
-// #undef INSTANTIATE_MIXED_ANALYSIS
-
-// #define INSTANTIATE_MIXED(TTYPE, ITYPE, JTYPE, ATYPE, BTYPE, CTYPE)      \
-//     template rocsparse_status rocsparse_cscmm_template( \
-//         rocsparse_handle          handle,                                    \
-//         rocsparse_operation       trans_A,                                   \
-//         rocsparse_operation       trans_B,                                   \
-//         rocsparse_order           order_B,                                   \
-//         rocsparse_order           order_C,                                   \
-//         rocsparse_csrmm_alg       alg,                                       \
-//         JTYPE                     m,                                         \
-//         JTYPE                     n,                                         \
-//         JTYPE                     k,                                         \
-//         ITYPE                     nnz,                                       \
-//         JTYPE                     batch_count_A,                             \
-//         ITYPE                     offsets_batch_stride_A,                    \
-//         ITYPE                     rows_values_batch_stride_A,                \
-//         const TTYPE*              alpha_device_host,                         \
-//         const rocsparse_mat_descr descr,                                     \
-//         const ATYPE*              csc_val,                                   \
-//         const ITYPE*              csc_col_ptr,                               \
-//         const JTYPE*              csc_row_ind,                               \
-//         const BTYPE*              B,                                         \
-//         JTYPE                     ldb,                                       \
-//         JTYPE                     batch_count_B,                             \
-//         ITYPE                     batch_stride_B,                            \
-//         const TTYPE*              beta_device_host,                          \
-//         CTYPE*                    C,                                         \
-//         JTYPE                     ldc,                                       \
-//         JTYPE                     batch_count_C,                             \
-//         ITYPE                     batch_stride_C,                            \
-//         void*                     temp_buffer);
-
-// INSTANTIATE_MIXED(int32_t, int32_t, int32_t, int8_t, int8_t, int32_t);
-// INSTANTIATE_MIXED(int32_t, int64_t, int32_t, int8_t, int8_t, int32_t);
-// INSTANTIATE_MIXED(int32_t, int64_t, int64_t, int8_t, int8_t, int32_t);
-// INSTANTIATE_MIXED(float, int32_t, int32_t, int8_t, int8_t, float);
-// INSTANTIATE_MIXED(float, int64_t, int32_t, int8_t, int8_t, float);
-// INSTANTIATE_MIXED(float, int64_t, int64_t, int8_t, int8_t, float);
-// #undef INSTANTIATE_MIXED

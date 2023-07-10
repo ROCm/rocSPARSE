@@ -93,6 +93,8 @@ struct Arguments
     rocsparse_solve_policy         spol;
     rocsparse_direction            direction;
     rocsparse_order                order;
+    rocsparse_order                orderB;
+    rocsparse_order                orderC;
     rocsparse_format               format;
     rocsparse_itilu0_alg           itilu0_alg;
     rocsparse_sddmm_alg            sddmm_alg;
@@ -221,6 +223,8 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(spol);
         ROCSPARSE_FORMAT_CHECK(direction);
         ROCSPARSE_FORMAT_CHECK(order);
+        ROCSPARSE_FORMAT_CHECK(orderB);
+        ROCSPARSE_FORMAT_CHECK(orderC);
         ROCSPARSE_FORMAT_CHECK(format);
         ROCSPARSE_FORMAT_CHECK(itilu0_alg);
         ROCSPARSE_FORMAT_CHECK(sddmm_alg);
@@ -427,6 +431,8 @@ private:
         print("solve_policy", rocsparse_solve2string(arg.spol));
         print("direction", rocsparse_direction2string(arg.direction));
         print("order", rocsparse_order2string(arg.order));
+        print("orderB", rocsparse_order2string(arg.orderB));
+        print("orderC", rocsparse_order2string(arg.orderC));
         print("format", rocsparse_format2string(arg.format));
         print("itilu0_alg", rocsparse_itilu0alg2string(arg.itilu0_alg));
         print("sddmm_alg", rocsparse_sddmmalg2string(arg.sddmm_alg));

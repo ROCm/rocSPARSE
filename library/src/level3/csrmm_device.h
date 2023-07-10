@@ -53,7 +53,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
                                                  C* __restrict__ dense_C,
                                                  J                    ldc,
                                                  I                    batch_stride_C,
-                                                 rocsparse_order      order,
+                                                 rocsparse_order      order_C,
                                                  rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -117,7 +117,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
     {
         if(beta == static_cast<T>(0))
         {
-            if(order == rocsparse_order_column)
+            if(order_C == rocsparse_order_column)
             {
                 dense_C[row + col * ldc + batch_stride_C * batch] = alpha * sum;
             }
@@ -128,7 +128,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
         }
         else
         {
-            if(order == rocsparse_order_column)
+            if(order_C == rocsparse_order_column)
             {
                 dense_C[row + col * ldc + batch_stride_C * batch] = rocsparse_fma<T>(
                     beta, dense_C[row + col * ldc + batch_stride_C * batch], alpha * sum);
@@ -172,7 +172,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
                                                       C* __restrict__ dense_C,
                                                       J                    ldc,
                                                       I                    batch_stride_C,
-                                                      rocsparse_order      order,
+                                                      rocsparse_order      order_C,
                                                       rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -250,7 +250,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
 
         if(beta == static_cast<T>(0))
         {
-            if(order == rocsparse_order_column)
+            if(order_C == rocsparse_order_column)
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
@@ -269,7 +269,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
         }
         else
         {
-            if(order == rocsparse_order_column)
+            if(order_C == rocsparse_order_column)
             {
                 for(J p = 0; p < LOOPS; p++)
                 {
@@ -324,7 +324,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
                                                            C* __restrict__ dense_C,
                                                            J                    ldc,
                                                            I                    batch_stride_C,
-                                                           rocsparse_order      order,
+                                                           rocsparse_order      order_C,
                                                            rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -395,7 +395,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
         {
             if(beta == static_cast<T>(0))
             {
-                if(order == rocsparse_order_column)
+                if(order_C == rocsparse_order_column)
                 {
                     dense_C[row + col * ldc + batch_stride_C * batch] = alpha * sum;
                 }
@@ -406,7 +406,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
             }
             else
             {
-                if(order == rocsparse_order_column)
+                if(order_C == rocsparse_order_column)
                 {
                     dense_C[row + col * ldc + batch_stride_C * batch] = rocsparse_fma<T>(
                         beta, dense_C[row + col * ldc + batch_stride_C * batch], alpha * sum);
@@ -476,7 +476,7 @@ ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
                                                  C* __restrict__ dense_C,
                                                  J                    ldc,
                                                  I                    batch_stride_C,
-                                                 rocsparse_order      order,
+                                                 rocsparse_order      order_C,
                                                  rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -509,7 +509,7 @@ ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
         J col = csr_col_ind[j + columns_values_batch_stride_A * batch] - idx_base;
         T val = alpha * conj_val(csr_val[j + columns_values_batch_stride_A * batch], conj_A);
 
-        if(order == rocsparse_order_column)
+        if(order_C == rocsparse_order_column)
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
@@ -560,7 +560,7 @@ ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
                                                  C* __restrict__ dense_C,
                                                  J                    ldc,
                                                  I                    batch_stride_C,
-                                                 rocsparse_order      order,
+                                                 rocsparse_order      order_C,
                                                  rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -593,7 +593,7 @@ ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
         J col = csr_col_ind[j + columns_values_batch_stride_A * batch] - idx_base;
         T val = alpha * conj_val(csr_val[j + columns_values_batch_stride_A * batch], conj_A);
 
-        if(order == rocsparse_order_column)
+        if(order_C == rocsparse_order_column)
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {

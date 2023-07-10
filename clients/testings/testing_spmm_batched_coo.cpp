@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,8 @@ void testing_spmm_batched_coo_bad_arg(const Arguments& arg)
     rocsparse_operation  trans_A     = rocsparse_operation_none;
     rocsparse_operation  trans_B     = rocsparse_operation_none;
     rocsparse_index_base base        = rocsparse_index_base_zero;
-    rocsparse_order      order       = rocsparse_order_column;
+    rocsparse_order      order_B     = rocsparse_order_column;
+    rocsparse_order      order_C     = rocsparse_order_column;
     rocsparse_spmm_alg   alg         = rocsparse_spmm_alg_default;
     rocsparse_spmm_stage stage       = rocsparse_spmm_stage_auto;
 
@@ -61,8 +62,8 @@ void testing_spmm_batched_coo_bad_arg(const Arguments& arg)
     // SpMM structures
     rocsparse_local_spmat local_mat_A(
         m, k, nnz, coo_row_ind, coo_col_ind, coo_val, itype, base, ttype);
-    rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order);
-    rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order);
+    rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order_B);
+    rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order_C);
 
     rocsparse_spmat_descr mat_A = local_mat_A;
     rocsparse_dnmat_descr mat_B = local_mat_B;
@@ -139,7 +140,8 @@ void testing_spmm_batched_coo(const Arguments& arg)
     rocsparse_operation  trans_B = arg.transB;
     rocsparse_index_base base    = arg.baseA;
     rocsparse_spmm_alg   alg     = arg.spmm_alg;
-    rocsparse_order      order   = arg.order;
+    rocsparse_order      order_B = arg.orderB;
+    rocsparse_order      order_C = arg.orderC;
 
     I batch_count_A = arg.batch_count_A;
     I batch_count_B = arg.batch_count_B;
@@ -194,15 +196,15 @@ void testing_spmm_batched_coo(const Arguments& arg)
     I C_m = M;
     I C_n = N;
 
-    I ldb = (order == rocsparse_order_column)
+    I ldb = (order_B == rocsparse_order_column)
                 ? ((trans_B == rocsparse_operation_none) ? (2 * K) : (2 * N))
                 : ((trans_B == rocsparse_operation_none) ? (2 * N) : (2 * K));
-    I ldc = (order == rocsparse_order_column) ? (2 * M) : (2 * N);
+    I ldc = (order_C == rocsparse_order_column) ? (2 * M) : (2 * N);
 
-    int64_t nrowB = (order == rocsparse_order_column) ? ldb : B_m;
-    int64_t ncolB = (order == rocsparse_order_column) ? B_n : ldb;
-    int64_t nrowC = (order == rocsparse_order_column) ? ldc : C_m;
-    int64_t ncolC = (order == rocsparse_order_column) ? C_n : ldc;
+    int64_t nrowB = (order_B == rocsparse_order_column) ? ldb : B_m;
+    int64_t ncolB = (order_B == rocsparse_order_column) ? B_n : ldb;
+    int64_t nrowC = (order_C == rocsparse_order_column) ? ldc : C_m;
+    int64_t ncolC = (order_C == rocsparse_order_column) ? C_n : ldc;
 
     int64_t nnz_B = nrowB * ncolB;
     int64_t nnz_C = nrowC * ncolC;
@@ -253,9 +255,9 @@ void testing_spmm_batched_coo(const Arguments& arg)
     // Create descriptors
     rocsparse_local_spmat A(
         A_m, A_n, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
-    rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order);
-    rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order);
-    rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order);
+    rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order_B);
+    rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order_C);
+    rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order_C);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_coo_set_strided_batch(A, batch_count_A, batch_stride_A));
     CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(B, batch_count_B, batch_stride_B));
@@ -351,16 +353,17 @@ void testing_spmm_batched_coo(const Arguments& arg)
                                  ldb,
                                  batch_count_B,
                                  batch_stride_B,
+                                 order_B,
                                  hbeta,
                                  hC_gold.data(),
                                  ldc,
                                  batch_count_C,
                                  batch_stride_C,
-                                 order,
+                                 order_C,
                                  base);
 
-        hC_gold.near_check(hC_1);
-        hC_gold.near_check(hC_2);
+        hC_gold.near_check(hC_1, get_near_check_tol<T>(arg));
+        hC_gold.near_check(hC_2, get_near_check_tol<T>(arg));
     }
 
     if(arg.timing)

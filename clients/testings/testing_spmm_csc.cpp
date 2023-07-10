@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,8 @@ void testing_spmm_csc_bad_arg(const Arguments& arg)
     rocsparse_operation  trans_A     = rocsparse_operation_none;
     rocsparse_operation  trans_B     = rocsparse_operation_none;
     rocsparse_index_base base        = rocsparse_index_base_zero;
-    rocsparse_order      order       = rocsparse_order_column;
+    rocsparse_order      order_B     = rocsparse_order_column;
+    rocsparse_order      order_C     = rocsparse_order_column;
     rocsparse_spmm_alg   alg         = rocsparse_spmm_alg_default;
     rocsparse_spmm_stage stage       = rocsparse_spmm_stage_auto;
 
@@ -68,8 +69,8 @@ void testing_spmm_csc_bad_arg(const Arguments& arg)
                                       base,
                                       ttype,
                                       rocsparse_format_csc);
-    rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order);
-    rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order);
+    rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order_B);
+    rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order_C);
 
     rocsparse_spmat_descr mat_A = local_mat_A;
     rocsparse_dnmat_descr mat_B = local_mat_B;
@@ -132,7 +133,8 @@ void testing_spmm_csc(const Arguments& arg)
     rocsparse_operation  trans_B = arg.transB;
     rocsparse_index_base base    = arg.baseA;
     rocsparse_spmm_alg   alg     = arg.spmm_alg;
-    rocsparse_order      order   = arg.order;
+    rocsparse_order      order_B = arg.orderB;
+    rocsparse_order      order_C = arg.orderC;
 
     T halpha = arg.get_alpha<T>();
     T hbeta  = arg.get_beta<T>();
@@ -188,8 +190,8 @@ void testing_spmm_csc(const Arguments& arg)
                                     base,
                                     ttype,
                                     rocsparse_format_csc);
-            rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order);
-            rocsparse_local_dnmat C(C_m, C_n, ldc, dC, ttype, order);
+            rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order_B);
+            rocsparse_local_dnmat C(C_m, C_n, ldc, dC, ttype, order_C);
 
             size_t buffer_size;
             EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
@@ -271,15 +273,15 @@ void testing_spmm_csc(const Arguments& arg)
     J C_m = M;
     J C_n = N;
 
-    J ldb = (order == rocsparse_order_column)
+    J ldb = (order_B == rocsparse_order_column)
                 ? ((trans_B == rocsparse_operation_none) ? (2 * K) : (2 * N))
                 : ((trans_B == rocsparse_operation_none) ? (2 * N) : (2 * K));
-    J ldc = (order == rocsparse_order_column) ? (2 * M) : (2 * N);
+    J ldc = (order_C == rocsparse_order_column) ? (2 * M) : (2 * N);
 
-    J nrowB = (order == rocsparse_order_column) ? ldb : B_m;
-    J ncolB = (order == rocsparse_order_column) ? B_n : ldb;
-    J nrowC = (order == rocsparse_order_column) ? ldc : C_m;
-    J ncolC = (order == rocsparse_order_column) ? C_n : ldc;
+    J nrowB = (order_B == rocsparse_order_column) ? ldb : B_m;
+    J ncolB = (order_B == rocsparse_order_column) ? B_n : ldb;
+    J nrowC = (order_C == rocsparse_order_column) ? ldc : C_m;
+    J ncolC = (order_C == rocsparse_order_column) ? C_n : ldc;
 
     I nnz_B = nrowB * ncolB;
     I nnz_C = nrowC * ncolC;
@@ -331,9 +333,9 @@ void testing_spmm_csc(const Arguments& arg)
                             base,
                             ttype,
                             rocsparse_format_csc);
-    rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order);
-    rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order);
-    rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order);
+    rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order_B);
+    rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order_C);
+    rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order_C);
 
     // Query SpMM buffer
     size_t buffer_size;
@@ -421,14 +423,15 @@ void testing_spmm_csc(const Arguments& arg)
                             hcsc_val,
                             hB,
                             ldb,
+                            order_B,
                             hbeta,
                             hC_gold,
                             ldc,
-                            order,
+                            order_C,
                             base);
 
-        hC_gold.near_check(hC_1);
-        hC_gold.near_check(hC_2);
+        hC_gold.near_check(hC_1, get_near_check_tol<T>(arg));
+        hC_gold.near_check(hC_2, get_near_check_tol<T>(arg));
     }
 
     if(arg.timing)
