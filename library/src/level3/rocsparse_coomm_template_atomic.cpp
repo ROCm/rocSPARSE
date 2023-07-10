@@ -48,7 +48,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
                                                      I ldb,
                                                      C* __restrict__ dense_C,
                                                      I                    ldc,
-                                                     rocsparse_order      order,
+                                                     rocsparse_order      order_C,
                                                      rocsparse_index_base idx_base)
 {
     int     tid = hipThreadIdx_x;
@@ -75,7 +75,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
 
             if(r != current_row)
             {
-                if(order == rocsparse_order_column)
+                if(order_C == rocsparse_order_column)
                 {
                     for(I p = 0; p < LOOPS; p++)
                     {
@@ -117,7 +117,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
             }
         }
 
-        if(order == rocsparse_order_column)
+        if(order_C == rocsparse_order_column)
         {
             for(I p = 0; p < LOOPS; p++)
             {
@@ -155,7 +155,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                                                           I ldb,
                                                           C* __restrict__ dense_C,
                                                           I                    ldc,
-                                                          rocsparse_order      order,
+                                                          rocsparse_order      order_C,
                                                           rocsparse_index_base idx_base)
 {
     int     tid = hipThreadIdx_x;
@@ -187,7 +187,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
             {
                 if(colB < n)
                 {
-                    if(order == rocsparse_order_column)
+                    if(order_C == rocsparse_order_column)
                     {
                         atomicAdd(&dense_C[colB * ldc + current_row], sum);
                     }
@@ -247,7 +247,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
             {
                 if((l + swid) < n)
                 {
-                    if(order == rocsparse_order_column)
+                    if(order_C == rocsparse_order_column)
                     {
                         atomicAdd(&dense_C[(l + swid) * ldc + current_row], sum);
                     }
@@ -265,7 +265,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
             {
                 if((l + swid) < n)
                 {
-                    if(order == rocsparse_order_column)
+                    if(order_C == rocsparse_order_column)
                     {
                         atomicAdd(&dense_C[(l + swid) * ldc + current_row], sum);
                     }
@@ -298,7 +298,7 @@ ROCSPARSE_DEVICE_ILF void coommtn_atomic_device(bool                 conj_A,
                                                 I                    ldb,
                                                 C*                   dense_C,
                                                 I                    ldc,
-                                                rocsparse_order      order,
+                                                rocsparse_order      order_C,
                                                 rocsparse_index_base idx_base)
 {
     int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
@@ -323,7 +323,7 @@ ROCSPARSE_DEVICE_ILF void coommtn_atomic_device(bool                 conj_A,
         bval = conj_val(dense_B[hipBlockIdx_y * ldb + row], conj_B);
     }
 
-    if(order == rocsparse_order_column)
+    if(order_C == rocsparse_order_column)
     {
         atomicAdd(&dense_C[hipBlockIdx_y * ldc + col], alpha * (val * bval));
     }
@@ -360,7 +360,7 @@ void coommnn_atomic_main(bool    conj_A,
                          C* __restrict__ dense_C,
                          I                    ldc,
                          I                    batch_stride_C,
-                         rocsparse_order      order,
+                         rocsparse_order      order_C,
                          rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -380,7 +380,7 @@ void coommnn_atomic_main(bool    conj_A,
             ldb,
             load_pointer(dense_C, hipBlockIdx_y, batch_stride_C),
             ldc,
-            order,
+            order_C,
             idx_base);
     }
 }
@@ -411,7 +411,7 @@ void coommnn_atomic_remainder(bool    conj_A,
                               C* __restrict__ dense_C,
                               I                    ldc,
                               I                    batch_stride_C,
-                              rocsparse_order      order,
+                              rocsparse_order      order_C,
                               rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -432,7 +432,7 @@ void coommnn_atomic_remainder(bool    conj_A,
             ldb,
             load_pointer(dense_C, hipBlockIdx_y, batch_stride_C),
             ldc,
-            order,
+            order_C,
             idx_base);
     }
 }
@@ -461,7 +461,7 @@ void coommtn_atomic_main(bool    conj_A,
                          C* __restrict__ dense_C,
                          I                    ldc,
                          I                    batch_stride_C,
-                         rocsparse_order      order,
+                         rocsparse_order      order_C,
                          rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -480,7 +480,7 @@ void coommtn_atomic_main(bool    conj_A,
             ldb,
             load_pointer(dense_C, hipBlockIdx_z, batch_stride_C),
             ldc,
-            order,
+            order_C,
             idx_base);
     }
 }
@@ -507,7 +507,7 @@ void coommtn_atomic_main(bool    conj_A,
                        dense_C,                                                       \
                        ldc,                                                           \
                        batch_stride_C,                                                \
-                       order,                                                         \
+                       order_C,                                                       \
                        descr->base);
 
 #define LAUNCH_COOMMNN_ATOMIC_REMAINDER_KERNEL(COOMMNN_DIM, WF_SIZE, TRANSB)        \
@@ -532,7 +532,7 @@ void coommtn_atomic_main(bool    conj_A,
                        dense_C,                                                     \
                        ldc,                                                         \
                        batch_stride_C,                                              \
-                       order,                                                       \
+                       order_C,                                                     \
                        descr->base);
 
 template <unsigned int BLOCKSIZE,
@@ -547,7 +547,6 @@ template <unsigned int BLOCKSIZE,
 rocsparse_status coommnn_atomic_dispatch(rocsparse_handle          handle,
                                          bool                      conj_A,
                                          bool                      conj_B,
-                                         rocsparse_order           order,
                                          I                         m,
                                          I                         n,
                                          I                         k,
@@ -567,7 +566,8 @@ rocsparse_status coommnn_atomic_dispatch(rocsparse_handle          handle,
                                          C*                        dense_C,
                                          I                         ldc,
                                          I                         batch_count_C,
-                                         I                         batch_stride_C)
+                                         I                         batch_stride_C,
+                                         rocsparse_order           order_C)
 {
     I main      = 0;
     I remainder = n;
@@ -636,7 +636,6 @@ template <typename T, typename I, typename A, typename B, typename C, typename U
 rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handle,
                                                  rocsparse_operation       trans_A,
                                                  rocsparse_operation       trans_B,
-                                                 rocsparse_order           order,
                                                  I                         m,
                                                  I                         n,
                                                  I                         k,
@@ -652,11 +651,13 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                                  I                         ldb,
                                                  I                         batch_count_B,
                                                  I                         batch_stride_B,
+                                                 rocsparse_order           order_B,
                                                  U                         beta_device_host,
                                                  C*                        dense_C,
                                                  I                         ldc,
                                                  I                         batch_count_C,
-                                                 I                         batch_stride_C)
+                                                 I                         batch_stride_C,
+                                                 rocsparse_order           order_C)
 {
     bool conj_A = (trans_A == rocsparse_operation_conjugate_transpose);
     bool conj_B = (trans_B == rocsparse_operation_conjugate_transpose);
@@ -664,16 +665,16 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
     // Run different coomm kernels
     if(trans_A == rocsparse_operation_none)
     {
-        if((order == rocsparse_order_column && trans_B == rocsparse_operation_none)
-           || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
-           || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
+        if((order_B == rocsparse_order_column && trans_B == rocsparse_operation_none)
+           || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
+           || (order_B == rocsparse_order_row
+               && trans_B == rocsparse_operation_conjugate_transpose))
         {
             if(handle->wavefront_size == 32)
             {
                 return coommnn_atomic_dispatch<256, 32, false, T>(handle,
                                                                   conj_A,
                                                                   conj_B,
-                                                                  order,
                                                                   m,
                                                                   n,
                                                                   k,
@@ -693,14 +694,14 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                                                   dense_C,
                                                                   ldc,
                                                                   batch_count_C,
-                                                                  batch_stride_C);
+                                                                  batch_stride_C,
+                                                                  order_C);
             }
             else if(handle->wavefront_size == 64)
             {
                 return coommnn_atomic_dispatch<256, 64, false, T>(handle,
                                                                   conj_A,
                                                                   conj_B,
-                                                                  order,
                                                                   m,
                                                                   n,
                                                                   k,
@@ -720,24 +721,24 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                                                   dense_C,
                                                                   ldc,
                                                                   batch_count_C,
-                                                                  batch_stride_C);
+                                                                  batch_stride_C,
+                                                                  order_C);
             }
             else
             {
                 return rocsparse_status_not_implemented;
             }
         }
-        else if((order == rocsparse_order_column
+        else if((order_B == rocsparse_order_column
                  && trans_B == rocsparse_operation_conjugate_transpose)
-                || (order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
-                || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
+                || (order_B == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
+                || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
             if(handle->wavefront_size == 32)
             {
                 return coommnn_atomic_dispatch<256, 32, true, T>(handle,
                                                                  conj_A,
                                                                  conj_B,
-                                                                 order,
                                                                  m,
                                                                  n,
                                                                  k,
@@ -757,14 +758,14 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                                                  dense_C,
                                                                  ldc,
                                                                  batch_count_C,
-                                                                 batch_stride_C);
+                                                                 batch_stride_C,
+                                                                 order_C);
             }
             else if(handle->wavefront_size == 64)
             {
                 return coommnn_atomic_dispatch<256, 64, true, T>(handle,
                                                                  conj_A,
                                                                  conj_B,
-                                                                 order,
                                                                  m,
                                                                  n,
                                                                  k,
@@ -784,7 +785,8 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                                                  dense_C,
                                                                  ldc,
                                                                  batch_count_C,
-                                                                 batch_stride_C);
+                                                                 batch_stride_C,
+                                                                 order_C);
             }
             else
             {
@@ -794,9 +796,10 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
     }
     else
     {
-        if((order == rocsparse_order_column && trans_B == rocsparse_operation_none)
-           || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
-           || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
+        if((order_B == rocsparse_order_column && trans_B == rocsparse_operation_none)
+           || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
+           || (order_B == rocsparse_order_row
+               && trans_B == rocsparse_operation_conjugate_transpose))
         {
             hipLaunchKernelGGL((coommtn_atomic_main<256, false, T>),
                                dim3((nnz - 1) / 256 + 1, n, batch_count_C),
@@ -818,13 +821,13 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                dense_C,
                                ldc,
                                batch_stride_C,
-                               order,
+                               order_C,
                                descr->base);
         }
-        else if((order == rocsparse_order_column
+        else if((order_B == rocsparse_order_column
                  && trans_B == rocsparse_operation_conjugate_transpose)
-                || (order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
-                || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
+                || (order_B == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
+                || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
             hipLaunchKernelGGL((coommtn_atomic_main<256, true, T>),
                                dim3((nnz - 1) / 256 + 1, n, batch_count_C),
@@ -846,7 +849,7 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                dense_C,
                                ldc,
                                batch_stride_C,
-                               order,
+                               order_C,
                                descr->base);
         }
         else
@@ -862,7 +865,6 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
         rocsparse_handle          handle,                             \
         rocsparse_operation       trans_A,                            \
         rocsparse_operation       trans_B,                            \
-        rocsparse_order           order,                              \
         ITYPE                     m,                                  \
         ITYPE                     n,                                  \
         ITYPE                     k,                                  \
@@ -878,11 +880,13 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
         ITYPE                     ldb,                                \
         ITYPE                     batch_count_B,                      \
         ITYPE                     batch_stride_B,                     \
+        rocsparse_order           order_B,                            \
         UTYPE                     beta_device_host,                   \
         CTYPE*                    dense_C,                            \
         ITYPE                     ldc,                                \
         ITYPE                     batch_count_C,                      \
-        ITYPE                     batch_stride_C);
+        ITYPE                     batch_stride_C,                     \
+        rocsparse_order           order_C);
 
 // Uniform precisions
 INSTANTIATE(float, int32_t, float, float, float, float);

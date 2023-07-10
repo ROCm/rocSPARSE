@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_row]
 
 - name: spmm_coo
   category: quick
@@ -82,7 +83,8 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_column]
+  orderB: [rocsparse_order_column]
+  orderC: [rocsparse_order_row]
 
 - name: spmm_coo_file
   category: quick
@@ -98,7 +100,8 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_column]
   filename: [nos1,
              nos2,
              nos4,
@@ -118,7 +121,8 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_row]
   filename: [mac_econ_fwd500]
 
 - name: spmm_coo_file
@@ -135,7 +139,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_column]
+  orderB: [rocsparse_order_column]
+  orderC: [rocsparse_order_column]
   filename: [Chevron2,
              qc2534]
 
@@ -153,7 +158,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_column]
+  orderB: [rocsparse_order_column]
+  orderC: [rocsparse_order_row]
   filename: [Chevron2,
              qc2534]
 
@@ -174,7 +180,8 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
   spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_column, rocsparse_order_row]
+  orderB: [rocsparse_order_column, rocsparse_order_row]
+  orderC: [rocsparse_order_column]
 
 - name: spmm_coo
   category: pre_checkin
@@ -190,7 +197,8 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_column, rocsparse_order_row]
+  orderB: [rocsparse_order_column, rocsparse_order_row]
+  orderC: [rocsparse_order_row]
 
 - name: spmm_coo_file
   category: pre_checkin
@@ -206,7 +214,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_row]
   filename: [ASIC_320k,
              nos1,
              nos5]
@@ -225,7 +234,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_column]
   filename: [nos7]
 
 - name: spmm_coo_file
@@ -242,7 +252,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_column]
   filename: [ASIC_320k,
              nos1,
              nos5]
@@ -261,7 +272,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_row]
   filename: [nos2,
              nos6,
              nos7]
@@ -280,7 +292,8 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_column]
+  orderB: [rocsparse_order_column]
+  orderC: [rocsparse_order_row]
   filename: [Chevron3]
 
 - name: spmm_coo_file
@@ -297,7 +310,8 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented]
-  order: [rocsparse_order_column]
+  orderB: [rocsparse_order_column]
+  orderC: [rocsparse_order_column]
   filename: [Chevron3]
 
 - name: spmm_coo_graph_test
@@ -314,7 +328,8 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_column]
+  orderB: [rocsparse_order_column]
+  orderC: [rocsparse_order_row]
   graph_test: true
 
 ##############################
@@ -335,7 +350,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_row]
 
 - name: spmm_coo
   category: nightly
@@ -351,7 +367,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_column]
 
 - name: spmm_coo_file
   category: nightly
@@ -368,7 +385,8 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_row]
   filename: [bibd_22_8,
              amazon0312]
 
@@ -387,7 +405,8 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_row]
   filename: [scircuit]
 
 - name: spmm_coo_file
@@ -404,7 +423,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_column]
   filename: [Chevron4]
 
 - name: spmm_coo_file
@@ -421,7 +441,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_column]
   filename: [Chevron4]
 
 - name: spmm_coo_file
@@ -438,8 +459,9 @@ Tests:
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_segmented_atomic]
-  order: [rocsparse_order_row]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_row]
   filename: [sme3Dc,
              bmwcra_1]
 
@@ -462,7 +484,8 @@ Tests:
   matrix: [rocsparse_matrix_pentadiagonal]
   storage: [rocsparse_storage_mode_sorted]
   spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_column, rocsparse_order_row]
+  orderB: [rocsparse_order_column, rocsparse_order_row]
+  orderC: [rocsparse_order_row]
 
 - name: spmm_coo
   category: stress
@@ -479,4 +502,5 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_tridiagonal]
   spmm_alg: [rocsparse_spmm_alg_coo_atomic]
-  order: [rocsparse_order_row]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_column]

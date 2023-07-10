@@ -339,6 +339,8 @@ Arguments:
   - spol: rocsparse_solve_policy
   - direction: rocsparse_direction
   - order: rocsparse_order
+  - orderB: rocsparse_order
+  - orderC: rocsparse_order
   - format: rocsparse_format
   - itilu0_alg: rocsparse_itilu0_alg
   - sddmm_alg: rocsparse_sddmm_alg
@@ -457,6 +459,8 @@ Defaults:
   spol: rocsparse_solve_policy_auto
   direction: rocsparse_direction_row
   order: rocsparse_order_column
+  orderB: rocsparse_order_column
+  orderC: rocsparse_order_column
   format: rocsparse_format_coo
   itilu0_alg: rocsparse_itilu0_alg_default
   sddmm_alg: rocsparse_sddmm_alg_default

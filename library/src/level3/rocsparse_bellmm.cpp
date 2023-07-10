@@ -30,8 +30,6 @@ template <typename T, typename I, typename A, typename B, typename C, typename U
 rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_operation       trans_B,
-                                                   rocsparse_order           order_B,
-                                                   rocsparse_order           order_C,
                                                    rocsparse_direction       dir_A,
                                                    I                         mb,
                                                    I                         n,
@@ -44,16 +42,16 @@ rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          han
                                                    const A*                  bell_val,
                                                    const B*                  dense_B,
                                                    I                         ldb,
+                                                   rocsparse_order           order_B,
                                                    U                         beta,
                                                    C*                        dense_C,
-                                                   I                         ldc);
+                                                   I                         ldc,
+                                                   rocsparse_order           order_C);
 
 template <typename T, typename I, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_bellmm_template_dispatch(rocsparse_handle          handle,
                                                     rocsparse_operation       trans_A,
                                                     rocsparse_operation       trans_B,
-                                                    rocsparse_order           order_B,
-                                                    rocsparse_order           order_C,
                                                     rocsparse_direction       dir_A,
                                                     I                         mb,
                                                     I                         n,
@@ -66,16 +64,16 @@ rocsparse_status rocsparse_bellmm_template_dispatch(rocsparse_handle          ha
                                                     const A*                  bell_val,
                                                     const B*                  dense_B,
                                                     I                         ldb,
+                                                    rocsparse_order           order_B,
                                                     U                         beta_device_host,
                                                     C*                        dense_C,
-                                                    I                         ldc)
+                                                    I                         ldc,
+                                                    rocsparse_order           order_C)
 {
 
     return rocsparse_bellmm_template_general<T>(handle,
                                                 trans_A,
                                                 trans_B,
-                                                order_B,
-                                                order_C,
                                                 dir_A,
                                                 mb,
                                                 n,
@@ -88,17 +86,17 @@ rocsparse_status rocsparse_bellmm_template_dispatch(rocsparse_handle          ha
                                                 bell_val,
                                                 dense_B,
                                                 ldb,
+                                                order_B,
                                                 beta_device_host,
                                                 dense_C,
-                                                ldc);
+                                                ldc,
+                                                order_C);
 }
 
 template <typename T, typename I, typename A, typename B, typename C>
 rocsparse_status rocsparse_bellmm_template_buffer_size(rocsparse_handle          handle,
                                                        rocsparse_operation       trans_A,
                                                        rocsparse_operation       trans_B,
-                                                       rocsparse_order           order_B,
-                                                       rocsparse_order           order_C,
                                                        rocsparse_direction       dir_A,
                                                        I                         mb,
                                                        I                         n,
@@ -111,9 +109,11 @@ rocsparse_status rocsparse_bellmm_template_buffer_size(rocsparse_handle         
                                                        const A*                  bell_val,
                                                        const B*                  dense_B,
                                                        I                         ldb,
+                                                       rocsparse_order           order_B,
                                                        const T*                  beta,
                                                        C*                        dense_C,
                                                        I                         ldc,
+                                                       rocsparse_order           order_C,
                                                        size_t*                   buffer_size)
 {
     *buffer_size = 0;
@@ -124,8 +124,6 @@ template <typename T, typename I, typename A, typename B, typename C>
 rocsparse_status rocsparse_bellmm_template_preprocess(rocsparse_handle          handle,
                                                       rocsparse_operation       trans_A,
                                                       rocsparse_operation       trans_B,
-                                                      rocsparse_order           order_B,
-                                                      rocsparse_order           order_C,
                                                       rocsparse_direction       dir_A,
                                                       I                         mb,
                                                       I                         n,
@@ -138,9 +136,11 @@ rocsparse_status rocsparse_bellmm_template_preprocess(rocsparse_handle          
                                                       const A*                  bell_val,
                                                       const B*                  dense_B,
                                                       I                         ldb,
+                                                      rocsparse_order           order_B,
                                                       const T*                  beta,
                                                       C*                        dense_C,
                                                       I                         ldc,
+                                                      rocsparse_order           order_C,
                                                       void*                     temp_buffer)
 {
     return rocsparse_status_success;
@@ -150,8 +150,6 @@ template <typename T, typename I, typename A, typename B, typename C>
 rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                            rocsparse_operation       trans_A,
                                            rocsparse_operation       trans_B,
-                                           rocsparse_order           order_B,
-                                           rocsparse_order           order_C,
                                            rocsparse_direction       dir_A,
                                            I                         mb,
                                            I                         n,
@@ -168,11 +166,13 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                            I                         ldb,
                                            I                         batch_count_B,
                                            I                         batch_stride_B,
+                                           rocsparse_order           order_B,
                                            const T*                  beta,
                                            C*                        dense_C,
                                            I                         ldc,
                                            I                         batch_count_C,
                                            I                         batch_stride_C,
+                                           rocsparse_order           order_C,
                                            void*                     temp_buffer)
 {
     // Check for valid handle and matrix descriptor
@@ -190,8 +190,6 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
               replaceX<T>("rocsparse_Xbellmm"),
               trans_A,
               trans_B,
-              order_B,
-              order_C,
               dir_A,
               mb,
               n,
@@ -208,11 +206,13 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
               ldb,
               batch_count_B,
               batch_stride_B,
+              order_B,
               LOG_TRACE_SCALAR_VALUE(handle, beta),
               (const void*&)dense_C,
               ldc,
               batch_count_C,
-              batch_stride_C);
+              batch_stride_C,
+              order_C);
 
     if(rocsparse_enum_utils::is_invalid(trans_A))
     {
@@ -313,8 +313,6 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
         return rocsparse_bellmm_template_dispatch<T>(handle,
                                                      trans_A,
                                                      trans_B,
-                                                     order_B,
-                                                     order_C,
                                                      dir_A,
                                                      mb,
                                                      n,
@@ -327,17 +325,17 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                                      bell_val,
                                                      dense_B,
                                                      ldb,
+                                                     order_B,
                                                      beta,
                                                      dense_C,
-                                                     ldc);
+                                                     ldc,
+                                                     order_C);
     }
     else
     {
         return rocsparse_bellmm_template_dispatch<T>(handle,
                                                      trans_A,
                                                      trans_B,
-                                                     order_B,
-                                                     order_C,
                                                      dir_A,
                                                      mb,
                                                      n,
@@ -350,9 +348,11 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                                      bell_val,
                                                      dense_B,
                                                      ldb,
+                                                     order_B,
                                                      *beta,
                                                      dense_C,
-                                                     ldc);
+                                                     ldc,
+                                                     order_C);
     }
 }
 
@@ -361,8 +361,6 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
         rocsparse_handle          handle,                                                         \
         rocsparse_operation       trans_A,                                                        \
         rocsparse_operation       trans_B,                                                        \
-        rocsparse_order           order_B,                                                        \
-        rocsparse_order           order_C,                                                        \
         rocsparse_direction       dir_A,                                                          \
         ITYPE                     mb,                                                             \
         ITYPE                     n,                                                              \
@@ -375,16 +373,16 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
         const ATYPE*              bell_val,                                                       \
         const BTYPE*              dense_B,                                                        \
         ITYPE                     ldb,                                                            \
+        rocsparse_order           order_B,                                                        \
         const TTYPE*              beta,                                                           \
         CTYPE*                    dense_C,                                                        \
         ITYPE                     ldc,                                                            \
+        rocsparse_order           order_C,                                                        \
         size_t*                   buffer_size);                                                                     \
     template rocsparse_status rocsparse_bellmm_template_preprocess(                               \
         rocsparse_handle          handle,                                                         \
         rocsparse_operation       trans_A,                                                        \
         rocsparse_operation       trans_B,                                                        \
-        rocsparse_order           order_B,                                                        \
-        rocsparse_order           order_C,                                                        \
         rocsparse_direction       dir_A,                                                          \
         ITYPE                     mb,                                                             \
         ITYPE                     n,                                                              \
@@ -397,15 +395,15 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
         const ATYPE*              bell_val,                                                       \
         const BTYPE*              dense_B,                                                        \
         ITYPE                     ldb,                                                            \
+        rocsparse_order           order_B,                                                        \
         const TTYPE*              beta,                                                           \
         CTYPE*                    dense_C,                                                        \
         ITYPE                     ldc,                                                            \
+        rocsparse_order           order_C,                                                        \
         void*                     temp_buffer);                                                                       \
     template rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,         \
                                                         rocsparse_operation       trans_A,        \
                                                         rocsparse_operation       trans_B,        \
-                                                        rocsparse_order           order_B,        \
-                                                        rocsparse_order           order_C,        \
                                                         rocsparse_direction       dir_A,          \
                                                         ITYPE                     mb,             \
                                                         ITYPE                     n,              \
@@ -422,11 +420,13 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                                         ITYPE                     ldb,            \
                                                         ITYPE                     batch_count_B,  \
                                                         ITYPE                     batch_stride_B, \
+                                                        rocsparse_order           order_B,        \
                                                         const TTYPE*              beta,           \
                                                         CTYPE*                    dense_C,        \
                                                         ITYPE                     ldc,            \
                                                         ITYPE                     batch_count_C,  \
                                                         ITYPE                     batch_stride_C, \
+                                                        rocsparse_order           order_C,        \
                                                         void*                     temp_buffer)
 
 INSTANTIATE(int32_t, int32_t, int32_t, int32_t, int32_t);

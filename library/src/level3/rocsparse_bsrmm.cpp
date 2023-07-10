@@ -150,7 +150,6 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
         return rocsparse_csrmm_template_dispatch<T>(handle,
                                                     trans_A,
                                                     trans_B,
-                                                    rocsparse_order_column,
                                                     rocsparse_csrmm_alg_default,
                                                     m,
                                                     n,
@@ -168,11 +167,13 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                     ldb,
                                                     1,
                                                     0,
+                                                    rocsparse_order_column,
                                                     beta,
                                                     C,
                                                     ldc,
                                                     1,
                                                     0,
+                                                    rocsparse_order_column,
                                                     nullptr,
                                                     false);
     }

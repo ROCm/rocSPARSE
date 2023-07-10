@@ -355,6 +355,7 @@ void testing_csrmm(const Arguments& arg)
                                                         hA.val,
                                                         hB,
                                                         hB.ld,
+                                                        order,
                                                         *h_beta,
                                                         hC,
                                                         hC.ld,

@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,8 @@ void testing_spmm_batched_bell_bad_arg(const Arguments& arg)
     rocsparse_operation  trans_A     = rocsparse_operation_none;
     rocsparse_operation  trans_B     = rocsparse_operation_none;
     rocsparse_index_base base        = rocsparse_index_base_zero;
-    rocsparse_order      order       = rocsparse_order_column;
+    rocsparse_order      order_B     = rocsparse_order_column;
+    rocsparse_order      order_C     = rocsparse_order_column;
     rocsparse_direction  block_dir   = rocsparse_direction_row;
     rocsparse_spmm_alg   alg         = rocsparse_spmm_alg_default;
     rocsparse_spmm_stage stage       = rocsparse_spmm_stage_auto;
@@ -62,8 +63,8 @@ void testing_spmm_batched_bell_bad_arg(const Arguments& arg)
     // SpMM structures
     rocsparse_local_spmat local_mat_A(
         m, k, block_dir, block_size, ell_cols, ell_col_ind, ell_val, itype, base, ttype);
-    rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order);
-    rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order);
+    rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order_B);
+    rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order_C);
 
     rocsparse_spmat_descr mat_A = local_mat_A;
     rocsparse_dnmat_descr mat_B = local_mat_B;

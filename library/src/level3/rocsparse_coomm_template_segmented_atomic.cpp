@@ -49,7 +49,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
                                                           C*                   dense_C,
                                                           I                    ldc,
                                                           I                    batch_stride_C,
-                                                          rocsparse_order      order,
+                                                          rocsparse_order      order_C,
                                                           rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -145,7 +145,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
             }
             else if(prevrow >= 0)
             {
-                if(order == rocsparse_order_column)
+                if(order_C == rocsparse_order_column)
                 {
                     for(I p = 0; p < COLS; p++)
                     {
@@ -206,7 +206,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
         {
             if(row != shared_row[lid + 1] && row >= 0)
             {
-                if(order == rocsparse_order_column)
+                if(order_C == rocsparse_order_column)
                 {
                     for(I p = 0; p < COLS; p++)
                     {
@@ -231,7 +231,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
     // Write last entries into buffers for segmented block reduction
     if(lid == WF_SIZE - 1 && row >= 0)
     {
-        if(order == rocsparse_order_column)
+        if(order_C == rocsparse_order_column)
         {
             for(I p = 0; p < COLS; p++)
             {
@@ -273,7 +273,7 @@ void coommnn_segmented_atomic(rocsparse_operation trans_B,
                               C* __restrict__ dense_C,
                               I                    ldc,
                               I                    batch_stride_C,
-                              rocsparse_order      order,
+                              rocsparse_order      order_C,
                               rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -293,7 +293,7 @@ void coommnn_segmented_atomic(rocsparse_operation trans_B,
                                                                   dense_C,
                                                                   ldc,
                                                                   batch_stride_C,
-                                                                  order,
+                                                                  order_C,
                                                                   idx_base);
     }
 }
@@ -318,7 +318,7 @@ void coommnn_segmented_atomic(rocsparse_operation trans_B,
                        dense_C,                                                 \
                        ldc,                                                     \
                        batch_stride_C,                                          \
-                       order,                                                   \
+                       order_C,                                                 \
                        descr->base);
 
 #define LAUNCH_COOMMNN_SEGMENTED_ATOMIC_REMAINDER_KERNEL(WF_SIZE, LOOPS, COLS, NT) \
@@ -341,14 +341,13 @@ void coommnn_segmented_atomic(rocsparse_operation trans_B,
                        dense_C,                                                    \
                        ldc,                                                        \
                        batch_stride_C,                                             \
-                       order,                                                      \
+                       order_C,                                                    \
                        descr->base);
 
 template <typename T, typename I, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    handle,
                                                            rocsparse_operation trans_A,
                                                            rocsparse_operation trans_B,
-                                                           rocsparse_order     order,
                                                            I                   m,
                                                            I                   n,
                                                            I                   k,
@@ -364,11 +363,13 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
                                                            I                         ldb,
                                                            I                         batch_count_B,
                                                            I                         batch_stride_B,
-                                                           U  beta_device_host,
-                                                           C* dense_C,
-                                                           I  ldc,
-                                                           I  batch_count_C,
-                                                           I  batch_stride_C)
+                                                           rocsparse_order           order_B,
+                                                           U               beta_device_host,
+                                                           C*              dense_C,
+                                                           I               ldc,
+                                                           I               batch_count_C,
+                                                           I               batch_stride_C,
+                                                           rocsparse_order order_C)
 {
     // Stream
     hipStream_t stream = handle->stream;
@@ -376,9 +377,10 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
     // Run different coomm kernels
     if(trans_A == rocsparse_operation_none)
     {
-        if((order == rocsparse_order_column && trans_B == rocsparse_operation_none)
-           || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
-           || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
+        if((order_B == rocsparse_order_column && trans_B == rocsparse_operation_none)
+           || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
+           || (order_B == rocsparse_order_row
+               && trans_B == rocsparse_operation_conjugate_transpose))
         {
             I main = 0;
             I remainder;
@@ -496,10 +498,10 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
                 }
             }
         }
-        else if((order == rocsparse_order_column
+        else if((order_B == rocsparse_order_column
                  && trans_B == rocsparse_operation_conjugate_transpose)
-                || (order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
-                || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
+                || (order_B == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
+                || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
             I main = 0;
             I remainder;
@@ -631,7 +633,6 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
         rocsparse_handle          handle,                                       \
         rocsparse_operation       trans_A,                                      \
         rocsparse_operation       trans_B,                                      \
-        rocsparse_order           order,                                        \
         ITYPE                     m,                                            \
         ITYPE                     n,                                            \
         ITYPE                     k,                                            \
@@ -647,11 +648,13 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
         ITYPE                     ldb,                                          \
         ITYPE                     batch_count_B,                                \
         ITYPE                     batch_stride_B,                               \
+        rocsparse_order           order_B,                                      \
         UTYPE                     beta_device_host,                             \
         CTYPE*                    dense_C,                                      \
         ITYPE                     ldc,                                          \
         ITYPE                     batch_count_C,                                \
-        ITYPE                     batch_stride_C);
+        ITYPE                     batch_stride_C,                               \
+        rocsparse_order           order_C);
 
 // Uniform precisions
 INSTANTIATE(float, int32_t, float, float, float, float);

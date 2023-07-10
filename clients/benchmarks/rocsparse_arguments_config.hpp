@@ -61,6 +61,8 @@ private:
     char          b_apol{};
     rocsparse_int b_dir{};
     rocsparse_int b_order{};
+    rocsparse_int b_orderB{};
+    rocsparse_int b_orderC{};
     rocsparse_int b_format{};
     rocsparse_int b_itilu0_alg{};
     rocsparse_int b_spmv_alg{};

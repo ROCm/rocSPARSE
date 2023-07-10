@@ -334,7 +334,6 @@ template <typename T, typename I, typename A, typename B, typename C, typename U
 rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handle,
                                                  rocsparse_operation       trans_A,
                                                  rocsparse_operation       trans_B,
-                                                 rocsparse_order           order,
                                                  I                         m,
                                                  I                         n,
                                                  I                         k,
@@ -350,17 +349,18 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
                                                  I                         ldb,
                                                  I                         batch_count_B,
                                                  I                         batch_stride_B,
+                                                 rocsparse_order           order_B,
                                                  U                         beta_device_host,
                                                  C*                        dense_C,
                                                  I                         ldc,
                                                  I                         batch_count_C,
-                                                 I                         batch_stride_C);
+                                                 I                         batch_stride_C,
+                                                 rocsparse_order           order_C);
 
 template <typename T, typename I, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    handle,
                                                            rocsparse_operation trans_A,
                                                            rocsparse_operation trans_B,
-                                                           rocsparse_order     order,
                                                            I                   m,
                                                            I                   n,
                                                            I                   k,
@@ -376,17 +376,18 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
                                                            I                         ldb,
                                                            I                         batch_count_B,
                                                            I                         batch_stride_B,
-                                                           U  beta_device_host,
-                                                           C* dense_C,
-                                                           I  ldc,
-                                                           I  batch_count_C,
-                                                           I  batch_stride_C);
+                                                           rocsparse_order           order_B,
+                                                           U               beta_device_host,
+                                                           C*              dense_C,
+                                                           I               ldc,
+                                                           I               batch_count_C,
+                                                           I               batch_stride_C,
+                                                           rocsparse_order order_C);
 
 template <typename T, typename I, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          handle,
                                                     rocsparse_operation       trans_A,
                                                     rocsparse_operation       trans_B,
-                                                    rocsparse_order           order,
                                                     I                         m,
                                                     I                         n,
                                                     I                         k,
@@ -402,18 +403,19 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
                                                     I                         ldb,
                                                     I                         batch_count_B,
                                                     I                         batch_stride_B,
+                                                    rocsparse_order           order_B,
                                                     U                         beta_device_host,
                                                     C*                        dense_C,
                                                     I                         ldc,
                                                     I                         batch_count_C,
                                                     I                         batch_stride_C,
+                                                    rocsparse_order           order_C,
                                                     void*                     temp_buffer);
 
 template <typename T, typename I, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_operation       trans_B,
-                                                   rocsparse_order           order,
                                                    rocsparse_coomm_alg       alg,
                                                    I                         m,
                                                    I                         n,
@@ -430,11 +432,13 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                    I                         ldb,
                                                    I                         batch_count_B,
                                                    I                         batch_stride_B,
+                                                   rocsparse_order           order_B,
                                                    U                         beta_device_host,
                                                    C*                        dense_C,
                                                    I                         ldc,
                                                    I                         batch_count_C,
                                                    I                         batch_stride_C,
+                                                   rocsparse_order           order_C,
                                                    void*                     temp_buffer)
 {
     if(trans_A == rocsparse_operation_none)
@@ -450,7 +454,7 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                            dense_C,
                            ldc,
                            batch_stride_C,
-                           order);
+                           order_C);
     }
     else
     {
@@ -465,7 +469,7 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                            dense_C,
                            ldc,
                            batch_stride_C,
-                           order);
+                           order_C);
     }
 
     switch(alg)
@@ -476,7 +480,6 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
         return rocsparse_coomm_template_atomic<T>(handle,
                                                   trans_A,
                                                   trans_B,
-                                                  order,
                                                   m,
                                                   n,
                                                   k,
@@ -492,11 +495,13 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                   ldb,
                                                   batch_count_B,
                                                   batch_stride_B,
+                                                  order_B,
                                                   beta_device_host,
                                                   dense_C,
                                                   ldc,
                                                   batch_count_C,
-                                                  batch_stride_C);
+                                                  batch_stride_C,
+                                                  order_C);
     }
 
     case rocsparse_coomm_alg_segmented:
@@ -513,7 +518,6 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
             return rocsparse_coomm_template_segmented<T>(handle,
                                                          trans_A,
                                                          trans_B,
-                                                         order,
                                                          m,
                                                          n,
                                                          k,
@@ -529,11 +533,13 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                          ldb,
                                                          batch_count_B,
                                                          batch_stride_B,
+                                                         order_B,
                                                          beta_device_host,
                                                          dense_C,
                                                          ldc,
                                                          batch_count_C,
                                                          batch_stride_C,
+                                                         order_C,
                                                          temp_buffer);
         }
         case rocsparse_operation_transpose:
@@ -542,7 +548,6 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
             return rocsparse_coomm_template_atomic<T>(handle,
                                                       trans_A,
                                                       trans_B,
-                                                      order,
                                                       m,
                                                       n,
                                                       k,
@@ -558,11 +563,13 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                       ldb,
                                                       batch_count_B,
                                                       batch_stride_B,
+                                                      order_B,
                                                       beta_device_host,
                                                       dense_C,
                                                       ldc,
                                                       batch_count_C,
-                                                      batch_stride_C);
+                                                      batch_stride_C,
+                                                      order_C);
         }
         }
     }
@@ -576,7 +583,6 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
             return rocsparse_coomm_template_segmented_atomic<T>(handle,
                                                                 trans_A,
                                                                 trans_B,
-                                                                order,
                                                                 m,
                                                                 n,
                                                                 k,
@@ -592,11 +598,13 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                                 ldb,
                                                                 batch_count_B,
                                                                 batch_stride_B,
+                                                                order_B,
                                                                 beta_device_host,
                                                                 dense_C,
                                                                 ldc,
                                                                 batch_count_C,
-                                                                batch_stride_C);
+                                                                batch_stride_C,
+                                                                order_C);
         }
         case rocsparse_operation_transpose:
         case rocsparse_operation_conjugate_transpose:
@@ -604,7 +612,6 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
             return rocsparse_coomm_template_atomic<T>(handle,
                                                       trans_A,
                                                       trans_B,
-                                                      order,
                                                       m,
                                                       n,
                                                       k,
@@ -620,11 +627,13 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                       ldb,
                                                       batch_count_B,
                                                       batch_stride_B,
+                                                      order_B,
                                                       beta_device_host,
                                                       dense_C,
                                                       ldc,
                                                       batch_count_C,
-                                                      batch_stride_C);
+                                                      batch_stride_C,
+                                                      order_C);
         }
         }
     }
@@ -636,8 +645,6 @@ template <typename T, typename I, typename A, typename B, typename C>
 rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_A,
                                           rocsparse_operation       trans_B,
-                                          rocsparse_order           order_B,
-                                          rocsparse_order           order_C,
                                           rocsparse_coomm_alg       alg,
                                           I                         m,
                                           I                         n,
@@ -654,11 +661,13 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                           I                         ldb,
                                           I                         batch_count_B,
                                           I                         batch_stride_B,
+                                          rocsparse_order           order_B,
                                           const T*                  beta_device_host,
                                           C*                        dense_C,
                                           I                         ldc,
                                           I                         batch_count_C,
                                           I                         batch_stride_C,
+                                          rocsparse_order           order_C,
                                           void*                     temp_buffer)
 {
     // Check for valid handle and matrix descriptor
@@ -676,8 +685,6 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
               replaceX<T>("rocsparse_Xcoomm"),
               trans_A,
               trans_B,
-              order_B,
-              order_C,
               alg,
               m,
               n,
@@ -694,11 +701,13 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
               ldb,
               batch_count_B,
               batch_stride_B,
+              order_B,
               LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
               (const void*&)dense_C,
               ldc,
               batch_count_C,
-              batch_stride_C);
+              batch_stride_C,
+              order_C);
 
     if(rocsparse_enum_utils::is_invalid(trans_A))
     {
@@ -735,11 +744,6 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
     if(descr->storage_mode != rocsparse_storage_mode_sorted)
     {
         return rocsparse_status_requires_sorted_storage;
-    }
-
-    if(order_B != order_C)
-    {
-        return rocsparse_status_invalid_value;
     }
 
     // Check sizes
@@ -867,7 +871,6 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
         return rocsparse_coomm_template_dispatch<T>(handle,
                                                     trans_A,
                                                     trans_B,
-                                                    order_B,
                                                     alg,
                                                     m,
                                                     n,
@@ -884,11 +887,13 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                                     ldb,
                                                     batch_count_B,
                                                     batch_stride_B,
+                                                    order_B,
                                                     beta_device_host,
                                                     dense_C,
                                                     ldc,
                                                     batch_count_C,
                                                     batch_stride_C,
+                                                    order_C,
                                                     temp_buffer);
     }
     else
@@ -896,7 +901,6 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
         return rocsparse_coomm_template_dispatch<T>(handle,
                                                     trans_A,
                                                     trans_B,
-                                                    order_B,
                                                     alg,
                                                     m,
                                                     n,
@@ -913,11 +917,13 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                                     ldb,
                                                     batch_count_B,
                                                     batch_stride_B,
+                                                    order_B,
                                                     *beta_device_host,
                                                     dense_C,
                                                     ldc,
                                                     batch_count_C,
                                                     batch_stride_C,
+                                                    order_C,
                                                     temp_buffer);
     }
 
@@ -993,8 +999,6 @@ INSTANTIATE_ANALYSIS(float, int64_t, int8_t);
     template rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,            \
                                                        rocsparse_operation       trans_A,           \
                                                        rocsparse_operation       trans_B,           \
-                                                       rocsparse_order           order_B,           \
-                                                       rocsparse_order           order_C,           \
                                                        rocsparse_coomm_alg       alg,               \
                                                        ITYPE                     m,                 \
                                                        ITYPE                     n,                 \
@@ -1011,11 +1015,13 @@ INSTANTIATE_ANALYSIS(float, int64_t, int8_t);
                                                        ITYPE                     ldb,               \
                                                        ITYPE                     batch_count_B,     \
                                                        ITYPE                     batch_stride_B,    \
+                                                       rocsparse_order           order_B,           \
                                                        const TTYPE*              beta_device_host,  \
                                                        CTYPE*                    C,                 \
                                                        ITYPE                     ldc,               \
                                                        ITYPE                     batch_count_C,     \
                                                        ITYPE                     batch_stride_C,    \
+                                                       rocsparse_order           order_C,           \
                                                        void*                     temp_buffer);
 
 // Uniform precisions
