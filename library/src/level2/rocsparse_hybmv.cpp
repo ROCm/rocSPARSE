@@ -22,10 +22,11 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_hybmv.hpp"
+#include "internal/level2/rocsparse_hybmv.h"
 #include "definitions.h"
 #include "rocsparse_coomv.hpp"
 #include "rocsparse_ellmv.hpp"
+#include "rocsparse_hybmv.hpp"
 #include "utility.h"
 
 template <typename T>

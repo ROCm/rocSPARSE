@@ -22,11 +22,12 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_bsrgemm.hpp"
+#include "internal/extra/rocsparse_bsrgemm.h"
 #include "../conversion/rocsparse_identity.hpp"
 #include "bsrgemm_device.h"
 #include "csrgemm_device.h"
 #include "definitions.h"
+#include "rocsparse_bsrgemm.hpp"
 #include "rocsparse_csrgemm.hpp"
 #include "utility.h"
 

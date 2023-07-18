@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/level1/rocsparse_roti.h"
 #include "rocsparse_roti.hpp"
 
 /*

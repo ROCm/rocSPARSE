@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_gtsv_interleaved_batch.hpp"
+#include "internal/precond/rocsparse_gtsv.h"
 
 #include "gtsv_interleaved_batch_device.h"
 

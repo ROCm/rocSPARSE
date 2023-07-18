@@ -21,10 +21,10 @@
  *
  * ************************************************************************ */
 
+#include "internal/generic/rocsparse_sddmm.h"
 #include "common.h"
 #include "definitions.h"
 #include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
 
 #include "rocsparse_sddmm.hpp"

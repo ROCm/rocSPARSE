@@ -24,7 +24,8 @@
 
 #pragma once
 
-#include "rocsparse.h"
+#include "rocsparse-auxiliary.h"
+#include "rocsparse-version.h"
 
 #include <fstream>
 #include <hip/hip_runtime_api.h>

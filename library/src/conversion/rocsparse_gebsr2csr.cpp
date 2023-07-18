@@ -22,10 +22,11 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_gebsr2csr.hpp"
+#include "internal/conversion/rocsparse_gebsr2csr.h"
 #include "common.h"
 #include "definitions.h"
 #include "rocsparse_bsr2csr.hpp"
+#include "rocsparse_gebsr2csr.hpp"
 #include "utility.h"
 
 #include "gebsr2csr_device.h"

@@ -22,9 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_csr2csc.hpp"
+#include "internal/conversion/rocsparse_csr2csc.h"
 #include "common.h"
 #include "definitions.h"
+#include "rocsparse_csr2csc.hpp"
 #include "utility.h"
 
 #include "csr2csc_device.h"

@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "definitions.h"
+#include "internal/level3/rocsparse_bsrsm.h"
 #include "utility.h"
 
 #include "../level2/rocsparse_csrsv.hpp"

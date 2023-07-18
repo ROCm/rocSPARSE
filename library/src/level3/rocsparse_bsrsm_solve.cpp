@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "../level2/rocsparse_bsrsv.hpp"
+#include "internal/level3/rocsparse_bsrsm.h"
 #include "utility.h"
 
 template <typename T, typename U>

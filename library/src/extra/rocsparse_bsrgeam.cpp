@@ -22,8 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_bsrgeam.hpp"
+#include "internal/extra/rocsparse_bsrgeam.h"
 #include "definitions.h"
+#include "internal/extra/rocsparse_csrgeam.h"
+#include "rocsparse_bsrgeam.hpp"
 #include "rocsparse_csrgeam.hpp"
 #include "utility.h"
 

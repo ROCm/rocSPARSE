@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/generic/rocsparse_axpby.h"
 #include "axpby_device.h"
 #include "definitions.h"
 #include "rocsparse_axpyi.hpp"

@@ -22,8 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_bsr2csr.hpp"
+#include "internal/conversion/rocsparse_bsr2csr.h"
 #include "definitions.h"
+#include "rocsparse_bsr2csr.hpp"
 #include "utility.h"
 
 #include "bsr2csr_device.h"

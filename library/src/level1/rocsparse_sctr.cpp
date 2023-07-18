@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/level1/rocsparse_sctr.h"
 #include "rocsparse_sctr.hpp"
 
 /*

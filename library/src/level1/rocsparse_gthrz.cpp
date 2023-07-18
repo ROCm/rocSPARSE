@@ -21,6 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "internal/level1/rocsparse_gthrz.h"
 #include "rocsparse_gthrz.hpp"
 
 /*

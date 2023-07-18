@@ -25,6 +25,7 @@
 #include "common.h"
 #include "utility.h"
 
+#include "internal/conversion/rocsparse_coo2csr.h"
 #include "rocsparse_coo2csr.hpp"
 
 #include "coo2csr_device.h"

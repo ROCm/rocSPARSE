@@ -22,8 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_csritsv.hpp"
+#include "internal/level2/rocsparse_csritsv.h"
 #include "definitions.h"
+#include "rocsparse_csritsv.hpp"
 #include "utility.h"
 
 extern "C" rocsparse_status rocsparse_csritsv_zero_pivot(rocsparse_handle          handle,

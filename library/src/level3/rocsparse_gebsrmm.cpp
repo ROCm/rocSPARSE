@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/level3/rocsparse_gebsrmm.h"
 #include "rocsparse_gebsrmm.hpp"
 
 #include "../level2/rocsparse_gebsrmv.hpp"

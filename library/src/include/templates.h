@@ -24,7 +24,12 @@
 
 #pragma once
 
-#include "rocsparse.h"
+#include "rocsparse-types.h"
+
+#include "internal/level2/rocsparse_bsrmv.h"
+#include "internal/level2/rocsparse_csrsv.h"
+#include "internal/level2/rocsparse_gebsrmv.h"
+#include "internal/level3/rocsparse_csrmm.h"
 
 //
 // For reusing without recompiling.

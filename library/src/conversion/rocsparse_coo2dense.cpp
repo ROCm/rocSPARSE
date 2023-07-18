@@ -24,6 +24,7 @@
 #include "definitions.h"
 #include "utility.h"
 
+#include "internal/conversion/rocsparse_coo2dense.h"
 #include "rocsparse_coo2dense.hpp"
 
 #include "common.h"

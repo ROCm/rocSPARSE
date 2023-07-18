@@ -22,9 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_prune_csr2csr.hpp"
+#include "internal/conversion/rocsparse_prune_csr2csr.h"
 #include "definitions.h"
 #include "rocsparse_nnz_compress.hpp"
+#include "rocsparse_prune_csr2csr.hpp"
 #include "utility.h"
 
 #include "csr2csr_compress_device.h"

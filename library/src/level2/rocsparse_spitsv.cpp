@@ -21,9 +21,9 @@
  *
  * ************************************************************************ */
 
+#include "internal/generic/rocsparse_spitsv.h"
 #include "definitions.h"
 #include "handle.h"
-#include "rocsparse.h"
 #include "rocsparse_csritsv.hpp"
 #include "utility.h"
 

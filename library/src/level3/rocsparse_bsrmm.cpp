@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/level3/rocsparse_bsrmm.h"
 #include "rocsparse_bsrmm.hpp"
 #include "rocsparse_csrmm.hpp"
 

@@ -21,6 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "internal/level2/rocsparse_bsrmv.h"
 #include "rocsparse_bsrmv.hpp"
 #include "utility.h"
 

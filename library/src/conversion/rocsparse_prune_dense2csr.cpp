@@ -22,8 +22,9 @@
 *
 * ************************************************************************ */
 
-#include "rocsparse_prune_dense2csr.hpp"
+#include "internal/conversion/rocsparse_prune_dense2csr.h"
 #include "definitions.h"
+#include "rocsparse_prune_dense2csr.hpp"
 #include "utility.h"
 
 #include "csr2csr_compress_device.h"

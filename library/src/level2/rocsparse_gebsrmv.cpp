@@ -21,15 +21,14 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_gebsrmv.hpp"
-#include "rocsparse.h"
+#include "internal/level2/rocsparse_gebsrmv.h"
 #include "rocsparse_bsrmv.hpp"
 #include "rocsparse_csrmv.hpp"
+#include "rocsparse_gebsrmv.hpp"
 
 #include "definitions.h"
 #include "gebsrmv_device.h"
 #include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
 
 #include <hip/hip_runtime.h>

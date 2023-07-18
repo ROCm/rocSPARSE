@@ -22,9 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_dotci.hpp"
+#include "internal/level1/rocsparse_dotci.h"
 #include "definitions.h"
 #include "dotci_device.h"
+#include "rocsparse_dotci.hpp"
 #include "utility.h"
 
 template <typename T, typename I, typename X, typename Y>

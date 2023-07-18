@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "../conversion/rocsparse_identity.hpp"
+#include "internal/extra/rocsparse_csrgemm.h"
 #include "rocsparse_csrgemm.hpp"
 
 #include "common.h"

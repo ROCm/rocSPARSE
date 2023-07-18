@@ -22,8 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_csrgeam.hpp"
+#include "internal/extra/rocsparse_csrgeam.h"
 #include "definitions.h"
+#include "rocsparse_csrgeam.hpp"
 #include "utility.h"
 
 #include "csrgeam_device.h"

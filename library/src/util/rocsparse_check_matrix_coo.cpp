@@ -21,8 +21,9 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "rocsparse_check_matrix_coo.hpp"
+#include "internal/util/rocsparse_check_matrix_coo.h"
 #include "definitions.h"
+#include "rocsparse_check_matrix_coo.hpp"
 #include "utility.h"
 
 #include "check_matrix_coo_device.h"

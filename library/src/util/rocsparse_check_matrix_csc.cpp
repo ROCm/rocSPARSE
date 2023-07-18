@@ -21,8 +21,9 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "rocsparse_check_matrix_csc.hpp"
+#include "internal/util/rocsparse_check_matrix_csc.h"
 #include "definitions.h"
+#include "rocsparse_check_matrix_csc.hpp"
 #include "rocsparse_check_matrix_csr.hpp"
 #include "utility.h"
 

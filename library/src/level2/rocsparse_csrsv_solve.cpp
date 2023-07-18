@@ -22,12 +22,12 @@
  *
  * ************************************************************************ */
 
-#include "definitions.h"
+#include "internal/level2/rocsparse_csrsv.h"
+#include "rocsparse_csrsv.hpp"
 
 #include "../level1/rocsparse_gthr.hpp"
 #include "csrsv_device.h"
-
-#include "rocsparse_csrsv.hpp"
+#include "definitions.h"
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE,

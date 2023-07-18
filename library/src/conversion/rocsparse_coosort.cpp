@@ -21,6 +21,10 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+
+#include "internal/conversion/rocsparse_coosort.h"
+#include "internal/conversion/rocsparse_inverse_permutation.h"
+
 #include "utility.h"
 
 #include "coosort_device.h"

@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/precond/rocsparse_gtsv.h"
 #include "rocsparse_gtsv.hpp"
 
 #include "gtsv_device.h"

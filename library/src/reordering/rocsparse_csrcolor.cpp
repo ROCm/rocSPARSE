@@ -22,9 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_csrcolor.hpp"
+#include "internal/reordering/rocsparse_csrcolor.h"
 #include "csrcolor_device.hpp"
 #include "definitions.h"
+#include "rocsparse_csrcolor.hpp"
 #include "utility.h"
 #include <rocprim/rocprim.hpp>
 

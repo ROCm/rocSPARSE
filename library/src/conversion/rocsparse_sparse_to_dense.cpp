@@ -21,9 +21,9 @@
  *
  * ************************************************************************ */
 
+#include "internal/generic/rocsparse_sparse_to_dense.h"
 #include "definitions.h"
 #include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
 
 #include "rocsparse_coo2dense.hpp"

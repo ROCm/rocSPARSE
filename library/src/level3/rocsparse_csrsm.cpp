@@ -21,6 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "internal/level3/rocsparse_csrsm.h"
 #include "rocsparse_csrsm.hpp"
 
 #include "common.h"
