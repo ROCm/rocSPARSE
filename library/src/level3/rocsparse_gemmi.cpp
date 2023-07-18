@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/level3/rocsparse_gemmi.h"
 #include "rocsparse_gemmi.hpp"
 
 /*

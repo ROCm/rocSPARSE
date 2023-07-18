@@ -23,6 +23,7 @@
  * ************************************************************************ */
 #include "utility.h"
 
+#include "internal/conversion/rocsparse_csr2coo.h"
 #include "rocsparse_csr2coo.hpp"
 
 #include "csr2coo_device.h"

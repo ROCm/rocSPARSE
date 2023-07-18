@@ -25,6 +25,7 @@
 #include <algorithm>
 
 #include "../conversion/rocsparse_csr2coo.hpp"
+#include "internal/level3/rocsparse_csrmm.h"
 #include "rocsparse_csrmm.hpp"
 
 #include "definitions.h"

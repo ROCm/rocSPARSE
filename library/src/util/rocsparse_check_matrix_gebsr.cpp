@@ -21,8 +21,9 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "rocsparse_check_matrix_gebsr.hpp"
+#include "internal/util/rocsparse_check_matrix_gebsr.h"
 #include "definitions.h"
+#include "rocsparse_check_matrix_gebsr.hpp"
 #include "utility.h"
 
 #include <rocprim/rocprim.hpp>

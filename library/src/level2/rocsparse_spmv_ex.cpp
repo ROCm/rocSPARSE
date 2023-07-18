@@ -23,7 +23,7 @@
 
 #include "definitions.h"
 #include "handle.h"
-#include "rocsparse.h"
+#include "internal/generic/rocsparse_spmv.h"
 #include "utility.h"
 
 extern "C" rocsparse_status rocsparse_spmv_ex(rocsparse_handle            handle,

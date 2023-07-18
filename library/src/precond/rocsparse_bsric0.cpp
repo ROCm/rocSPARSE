@@ -22,6 +22,9 @@
  *
  * ************************************************************************ */
 
+#include "internal/precond/rocsparse_bsric0.h"
+#include "internal/level2/rocsparse_csrsv.h"
+
 #include "rocsparse_bsric0.hpp"
 
 /*

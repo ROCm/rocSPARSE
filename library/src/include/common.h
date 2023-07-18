@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "rocsparse.h"
+#include "rocsparse-types.h"
 #ifdef WIN32
 #include <intrin.h>
 #endif

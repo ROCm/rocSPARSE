@@ -22,8 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_csr2csr_compress.hpp"
+#include "internal/conversion/rocsparse_csr2csr_compress.h"
 #include "definitions.h"
+#include "rocsparse_csr2csr_compress.hpp"
 #include "utility.h"
 
 #include "csr2csr_compress_device.h"

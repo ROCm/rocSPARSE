@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/conversion/rocsparse_coosort.h"
 #include <iomanip>
 
 #include "../conversion/rocsparse_coo2csr.hpp"

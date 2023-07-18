@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,6 @@
 #pragma once
 
 #include "common.h"
-#include "rocsparse.h"
-
-#include <hip/hip_runtime.h>
 
 // General GEBSRMV that works for any GEBSR block dimensions
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T>

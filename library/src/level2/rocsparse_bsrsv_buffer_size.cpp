@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/level2/rocsparse_bsrsv.h"
 #include "rocsparse_bsrsv.hpp"
 #include "templates.h"
 #include "utility.h"

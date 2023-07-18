@@ -22,6 +22,8 @@
  *
  * ************************************************************************ */
 
+#include "internal/precond/rocsparse_bsrilu0.h"
+#include "internal/level2/rocsparse_csrsv.h"
 #include "rocsparse_bsrilu0.hpp"
 
 /*

@@ -22,8 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_axpyi.hpp"
+#include "internal/level1/rocsparse_axpyi.h"
 #include "axpyi_device.h"
+#include "rocsparse_axpyi.hpp"
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>

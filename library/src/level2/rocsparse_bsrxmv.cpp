@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/level2/rocsparse_bsrxmv.h"
 #include "rocsparse_bsrxmv.hpp"
 #include "rocsparse_bsrxmv_spzl.hpp"
 

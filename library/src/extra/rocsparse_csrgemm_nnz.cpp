@@ -25,6 +25,7 @@
 #include "../conversion/rocsparse_identity.hpp"
 #include "csrgemm_device.h"
 #include "definitions.h"
+#include "internal/extra/rocsparse_csrgemm.h"
 #include "rocsparse_csrgemm.hpp"
 #include "utility.h"
 

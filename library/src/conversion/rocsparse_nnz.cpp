@@ -22,8 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_nnz.hpp"
+#include "internal/conversion/rocsparse_nnz.h"
 #include "definitions.h"
+#include "rocsparse_nnz.hpp"
 #include "rocsparse_nnz_impl.hpp"
 #include "utility.h"
 

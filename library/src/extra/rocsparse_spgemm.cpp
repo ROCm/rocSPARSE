@@ -21,6 +21,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/generic/rocsparse_spgemm.h"
 #include "definitions.h"
 #include "utility.h"
 

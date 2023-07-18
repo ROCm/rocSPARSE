@@ -21,6 +21,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/generic/rocsparse_rot.h"
 #include "definitions.h"
 #include "rocsparse_roti.hpp"
 

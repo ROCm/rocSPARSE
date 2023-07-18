@@ -21,9 +21,10 @@
  *
  * ************************************************************************ */
 
+#include "internal/generic/rocsparse_scatter.h"
 #include "definitions.h"
 #include "handle.h"
-#include "rocsparse.h"
+#include "internal/level1/rocsparse_sctr.h"
 #include "utility.h"
 
 #include "rocsparse_sctr.hpp"

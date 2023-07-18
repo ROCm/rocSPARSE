@@ -21,6 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "internal/conversion/rocsparse_inverse_permutation.h"
 #include "utility.h"
 
 #include "identity_device.h"

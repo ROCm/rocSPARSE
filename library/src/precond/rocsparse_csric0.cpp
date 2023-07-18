@@ -22,7 +22,10 @@
  *
  * ************************************************************************ */
 
+#include "internal/precond/rocsparse_csric0.h"
 #include "rocsparse_csric0.hpp"
+
+#include "internal/level2/rocsparse_csrsv.h"
 
 /*
  * ===========================================================================

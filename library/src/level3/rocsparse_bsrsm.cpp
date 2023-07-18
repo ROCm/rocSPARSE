@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "internal/level3/rocsparse_bsrsm.h"
 #include "definitions.h"
 #include "utility.h"
 

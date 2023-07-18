@@ -21,9 +21,10 @@
  *
  * ************************************************************************ */
 
+#include "internal/generic/rocsparse_spmm.h"
+
 #include "definitions.h"
 #include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
 
 #include "rocsparse_bellmm.hpp"

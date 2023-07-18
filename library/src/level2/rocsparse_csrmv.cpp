@@ -22,9 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_csrmv.hpp"
+#include "internal/level2/rocsparse_csrmv.h"
 #include "common.h"
 #include "definitions.h"
+#include "rocsparse_csrmv.hpp"
 #include "utility.h"
 
 #include "csrmv_device.h"

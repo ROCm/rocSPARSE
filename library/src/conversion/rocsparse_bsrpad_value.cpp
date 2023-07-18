@@ -22,8 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_bsrpad_value.hpp"
+#include "internal/conversion/rocsparse_bsrpad_value.h"
 #include "definitions.h"
+#include "rocsparse_bsrpad_value.hpp"
 #include "utility.h"
 
 #include "bsrpad_value_device.h"

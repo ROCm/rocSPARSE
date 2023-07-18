@@ -21,6 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "internal/level2/rocsparse_csrsv.h"
 #include "rocsparse_csrsv.hpp"
 
 #include "../conversion/rocsparse_coo2csr.hpp"

@@ -21,8 +21,9 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "rocsparse_check_matrix_ell.hpp"
+#include "internal/util/rocsparse_check_matrix_ell.h"
 #include "definitions.h"
+#include "rocsparse_check_matrix_ell.hpp"
 #include "utility.h"
 
 #include "check_matrix_ell_device.h"

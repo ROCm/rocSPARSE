@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_gtsv_no_pivot.hpp"
+#include "internal/precond/rocsparse_gtsv.h"
 
 #include "gtsv_nopivot_device.h"
 
