@@ -23,12 +23,33 @@
  * ************************************************************************ */
 
 #pragma once
-#include "utility.h"
 
-template <typename I, typename T>
-rocsparse_status rocsparse_sctr_template(rocsparse_handle     handle,
-                                         I                    nnz,
-                                         const T*             x_val,
-                                         const I*             x_ind,
-                                         T*                   y,
-                                         rocsparse_index_base idx_base);
+#include "status.h"
+
+//
+// Log a message.
+//
+void rocsparse_message(const char* msg_, const char* function_, const char* file_, int line_);
+
+//
+// Log a warning message.
+//
+void rocsparse_warning_message(const char* msg_,
+                               const char* function_,
+                               const char* file_,
+                               int         line_);
+
+//
+// Log an error message.
+//
+void rocsparse_error_message(rocsparse_status status_,
+                             const char*      msg_,
+                             const char*      function_,
+                             const char*      file_,
+                             int              line_);
+
+#define ROCSPARSE_MESSAGE(MESSAGE__) rocsparse_message(MESSAGE__, __FUNCTION__, __FILE__, __LINE__)
+#define ROCSPARSE_WARNING_MESSAGE(MESSAGE__) \
+    rocsparse_warning_message(MESSAGE__, __FUNCTION__, __FILE__, __LINE__)
+#define ROCSPARSE_ERROR_MESSAGE(STATUS__, MESSAGE__) \
+    rocsparse_error_message(STATUS__, MESSAGE__, __FUNCTION__, __FILE__, __LINE__)

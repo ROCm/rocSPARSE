@@ -46,12 +46,6 @@ rocsparse_status rocsparse_axpby_template(rocsparse_handle            handle,
                                           const void*                 beta,
                                           rocsparse_dnvec_descr       y)
 {
-    // Check for valid sizes
-    if(y->size < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
     // Quick return
     if(y->size == 0)
     {
@@ -91,13 +85,14 @@ rocsparse_status rocsparse_axpby_template(rocsparse_handle            handle,
     }
 #undef SCALE_DIM
 
-    return rocsparse_axpyi_template<I, T>(handle,
-                                          (I)x->nnz,
-                                          (const T*)alpha,
-                                          (const T*)x->const_val_data,
-                                          (const I*)x->const_idx_data,
-                                          (T*)y->values,
-                                          x->idx_base);
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_axpyi_template<I, T>)(handle,
+                                                               (I)x->nnz,
+                                                               (const T*)alpha,
+                                                               (const T*)x->const_val_data,
+                                                               (const I*)x->const_idx_data,
+                                                               (T*)y->values,
+                                                               x->idx_base));
+    return rocsparse_status_success;
 }
 
 /*
@@ -114,7 +109,7 @@ extern "C" rocsparse_status rocsparse_axpby(rocsparse_handle            handle,
 try
 {
     // Check for invalid handle
-    RETURN_IF_INVALID_HANDLE(handle);
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
     log_trace(handle,
@@ -125,71 +120,87 @@ try
               (const void*&)y);
 
     // Check for invalid descriptors
-    RETURN_IF_NULLPTR(x);
-    RETURN_IF_NULLPTR(y);
-    RETURN_IF_NULLPTR(alpha);
-    RETURN_IF_NULLPTR(beta);
+    ROCSPARSE_CHECKARG_POINTER(1, alpha);
+    ROCSPARSE_CHECKARG_POINTER(2, x);
+    ROCSPARSE_CHECKARG_POINTER(3, beta);
+    ROCSPARSE_CHECKARG_POINTER(4, y);
 
     // Check if descriptors are initialized
-    if(x->init == false || y->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
+    ROCSPARSE_CHECKARG(2, x, (x->init == false), rocsparse_status_not_initialized);
+    ROCSPARSE_CHECKARG(4, y, (y->init == false), rocsparse_status_not_initialized);
 
     // Check for matching types while we do not support mixed precision computation
-    if(x->data_type != y->data_type)
-    {
-        return rocsparse_status_not_implemented;
-    }
+    ROCSPARSE_CHECKARG(4, y, (y->data_type != x->data_type), rocsparse_status_not_implemented);
 
     // single real ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f32_r)
     {
-        return rocsparse_axpby_template<int32_t, float>(handle, alpha, x, beta, y);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_axpby_template<int32_t, float>)(handle, alpha, x, beta, y));
+        return rocsparse_status_success;
     }
     // double real ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f64_r)
     {
-        return rocsparse_axpby_template<int32_t, double>(handle, alpha, x, beta, y);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_axpby_template<int32_t, double>)(handle, alpha, x, beta, y));
+        return rocsparse_status_success;
     }
     // single complex ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f32_c)
     {
-        return rocsparse_axpby_template<int32_t, rocsparse_float_complex>(
-            handle, alpha, x, beta, y);
+        RETURN_IF_ROCSPARSE_ERROR((
+            rocsparse_axpby_template<int32_t, rocsparse_float_complex>)(handle, alpha, x, beta, y));
+        return rocsparse_status_success;
     }
+
     // double complex ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f64_c)
     {
-        return rocsparse_axpby_template<int32_t, rocsparse_double_complex>(
-            handle, alpha, x, beta, y);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_axpby_template<int32_t, rocsparse_double_complex>)(handle,
+                                                                          alpha,
+                                                                          x,
+                                                                          beta,
+                                                                          y));
+        return rocsparse_status_success;
     }
     // single real ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f32_r)
     {
-        return rocsparse_axpby_template<int64_t, float>(handle, alpha, x, beta, y);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_axpby_template<int64_t, float>)(handle, alpha, x, beta, y));
+        return rocsparse_status_success;
     }
     // double real ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f64_r)
     {
-        return rocsparse_axpby_template<int64_t, double>(handle, alpha, x, beta, y);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_axpby_template<int64_t, double>)(handle, alpha, x, beta, y));
+        return rocsparse_status_success;
     }
     // single complex ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f32_c)
     {
-        return rocsparse_axpby_template<int64_t, rocsparse_float_complex>(
-            handle, alpha, x, beta, y);
+        RETURN_IF_ROCSPARSE_ERROR((
+            rocsparse_axpby_template<int64_t, rocsparse_float_complex>)(handle, alpha, x, beta, y));
+        return rocsparse_status_success;
     }
     // double complex ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f64_c)
     {
-        return rocsparse_axpby_template<int64_t, rocsparse_double_complex>(
-            handle, alpha, x, beta, y);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_axpby_template<int64_t, rocsparse_double_complex>)(handle,
+                                                                          alpha,
+                                                                          x,
+                                                                          beta,
+                                                                          y));
+        return rocsparse_status_success;
     }
 
-    return rocsparse_status_not_implemented;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

@@ -29,6 +29,9 @@
 
 using namespace testing;
 
+#include "test_check.hpp"
+bool test_check::s_auto_testing_bad_arg;
+
 bool display_timing_info_is_stdout_disabled()
 {
     return false;

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,16 +34,16 @@ void testing_axpyi_bad_arg(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
 
-    rocsparse_handle     handle = local_handle;
-    rocsparse_int        nnz    = safe_size;
-    const T*             alpha  = &h_alpha;
-    const T*             x_val  = static_cast<const T*>((void*)0x4);
-    const rocsparse_int* x_ind  = (const rocsparse_int*)0x4;
-    T*                   y      = static_cast<T*>((void*)0x4);
-    rocsparse_index_base base   = rocsparse_index_base_zero;
+    rocsparse_handle     handle   = local_handle;
+    rocsparse_int        nnz      = safe_size;
+    const T*             alpha    = &h_alpha;
+    const T*             x_val    = static_cast<const T*>((void*)0x4);
+    const rocsparse_int* x_ind    = (const rocsparse_int*)0x4;
+    T*                   y        = static_cast<T*>((void*)0x4);
+    rocsparse_index_base idx_base = rocsparse_index_base_zero;
 
-#define PARAMS handle, nnz, alpha, x_val, x_ind, y, base
-    auto_testing_bad_arg(rocsparse_axpyi<T>, PARAMS);
+#define PARAMS handle, nnz, alpha, x_val, x_ind, y, idx_base
+    bad_arg_analysis(rocsparse_axpyi<T>, PARAMS);
 #undef PARAMS
 }
 

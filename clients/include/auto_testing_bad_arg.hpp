@@ -27,510 +27,26 @@
  */
 
 #pragma once
-#ifndef AUTO_TESTING_BAD_ARG_HPP
-#define AUTO_TESTING_BAD_ARG_HPP
 
+#include "auto_testing_bad_arg_get_status.hpp"
+#include "auto_testing_bad_arg_set_invalid.hpp"
+#include "rocsparse_clients_envariables.hpp"
 #include "rocsparse_test.hpp"
+#include "test_check.hpp"
 #include <fstream>
 #include <hip/hip_runtime_api.h>
 #include <sstream>
 #include <vector>
-//
-// PROVIDE TEMPLATE FOR AUTO TESTING BAD ARGUMENTS
-//
 
-template <typename T>
-inline void auto_testing_bad_arg_set_invalid(T& p);
-
-template <typename T>
-inline void auto_testing_bad_arg_set_invalid(T*& p)
-{
-    p = nullptr;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(int32_t& p)
-{
-    p = -1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(size_t& p)
-{
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(int64_t& p)
-{
-    p = -1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(float& p)
-{
-    p = static_cast<float>(-1);
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(double& p)
-{
-    p = static_cast<double>(-1);
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_float_complex& p)
-{
-    p = static_cast<rocsparse_float_complex>(-1);
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_double_complex& p)
-{
-    p = static_cast<rocsparse_double_complex>(-1);
-}
-
-template <typename T>
-inline rocsparse_status auto_testing_bad_arg_get_status(T& p)
-{
-    return rocsparse_status_invalid_pointer;
-}
-
-template <typename T>
-inline rocsparse_status auto_testing_bad_arg_get_status(const T& p)
-{
-    return rocsparse_status_invalid_pointer;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_handle& p)
-{
-    return rocsparse_status_invalid_handle;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spmat_descr& p)
-{
-    return rocsparse_status_invalid_pointer;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spvec_descr& p)
-{
-    return rocsparse_status_invalid_pointer;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_dnmat_descr& p)
-{
-    return rocsparse_status_invalid_pointer;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_dnvec_descr& p)
-{
-    return rocsparse_status_invalid_pointer;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(int32_t& p)
-{
-    return rocsparse_status_invalid_size;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(size_t& p)
-{
-    return rocsparse_status_invalid_size;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(int64_t& p)
-{
-    return rocsparse_status_invalid_size;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_operation& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_order& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_index_base& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_matrix_type& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_fill_mode& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_storage_mode& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_gtsv_interleaved_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_sparse_to_dense_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_dense_to_sparse_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spmv_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsv_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spitsv_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_sddmm_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spmm_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_gpsv_interleaved_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsm_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spgemm_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_itilu0_alg& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_indextype& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_datatype& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_analysis_policy& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_solve_policy& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_direction& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_action& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_hyb_partition& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_check_spmat_stage& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spmv_stage& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsv_stage& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spitsv_stage& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsm_stage& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spmm_stage& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spgemm_stage& p)
-{
-    return rocsparse_status_invalid_value;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_operation& p)
-{
-    p = (rocsparse_operation)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_order& p)
-{
-    p = (rocsparse_order)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_index_base& p)
-{
-    p = (rocsparse_index_base)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_matrix_type& p)
-{
-    p = (rocsparse_matrix_type)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_fill_mode& p)
-{
-    p = (rocsparse_fill_mode)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_storage_mode& p)
-{
-    p = (rocsparse_storage_mode)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_gtsv_interleaved_alg& p)
-{
-    p = (rocsparse_gtsv_interleaved_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_sparse_to_dense_alg& p)
-{
-    p = (rocsparse_sparse_to_dense_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_dense_to_sparse_alg& p)
-{
-    p = (rocsparse_dense_to_sparse_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spmv_alg& p)
-{
-    p = (rocsparse_spmv_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spsv_alg& p)
-{
-    p = (rocsparse_spsv_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spitsv_alg& p)
-{
-    p = (rocsparse_spitsv_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spsm_alg& p)
-{
-    p = (rocsparse_spsm_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_sddmm_alg& p)
-{
-    p = (rocsparse_sddmm_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spmm_alg& p)
-{
-    p = (rocsparse_spmm_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_gpsv_interleaved_alg& p)
-{
-    p = (rocsparse_gpsv_interleaved_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spgemm_alg& p)
-{
-    p = (rocsparse_spgemm_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_itilu0_alg& p)
-{
-    p = (rocsparse_itilu0_alg)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_indextype& p)
-{
-    p = (rocsparse_indextype)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_datatype& p)
-{
-    p = (rocsparse_datatype)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_analysis_policy& p)
-{
-    p = (rocsparse_analysis_policy)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_direction& p)
-{
-    p = (rocsparse_direction)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_action& p)
-{
-    p = (rocsparse_action)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_hyb_partition& p)
-{
-    p = (rocsparse_hyb_partition)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_solve_policy& p)
-{
-    p = (rocsparse_solve_policy)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_check_spmat_stage& p)
-{
-    p = (rocsparse_check_spmat_stage)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spmv_stage& p)
-{
-    p = (rocsparse_spmv_stage)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spsv_stage& p)
-{
-    p = (rocsparse_spsv_stage)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spitsv_stage& p)
-{
-    p = (rocsparse_spitsv_stage)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spsm_stage& p)
-{
-    p = (rocsparse_spsm_stage)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spmm_stage& p)
-{
-    p = (rocsparse_spmm_stage)-1;
-}
-
-template <>
-inline void auto_testing_bad_arg_set_invalid(rocsparse_spgemm_stage& p)
-{
-    p = (rocsparse_spgemm_stage)-1;
+extern "C" {
+rocsparse_status rocsparse_argdescr_create(void** argdescr);
+rocsparse_status rocsparse_argdescr_free(void* argdescr);
+rocsparse_status rocsparse_argdescr_get_msg(const void* argdescr, const char**);
+rocsparse_status rocsparse_argdescr_get_status(const void* argdescr, rocsparse_status*);
+rocsparse_status rocsparse_argdescr_get_index(const void* argdescr, int*);
+rocsparse_status rocsparse_argdescr_get_name(const void* argdescr, const char**);
+rocsparse_status rocsparse_argdescr_get_function_line(const void* argdescr, int*);
+rocsparse_status rocsparse_argdescr_get_function_name(const void* argdescr, const char**);
 }
 
 template <typename... T>
@@ -596,9 +112,229 @@ inline void auto_testing_bad_arg_print(T& t, Ts&... ts)
     auto_testing_bad_arg_print(ts...);
 }
 
+static constexpr unsigned int
+    stringargs_count(const char* str, unsigned int pos = 0, unsigned int count = 0)
+{
+    if(str[pos] == '\0')
+    {
+        return ((pos == 0) ? 0 : count + 1);
+    }
+    else
+    {
+        return ((str[pos] == ',') ? stringargs_count(str, pos + 1, count + 1)
+                                  : stringargs_count(str, pos + 1, count));
+    }
+}
+
+static constexpr unsigned int stringargs_trim(const char* str, unsigned int pos)
+{
+    if(str[pos] == '\0' || str[pos] == ' ' || str[pos] == '\t' || str[pos] == ',')
+    {
+        return pos;
+    }
+    else
+    {
+        return stringargs_trim(str, pos + 1);
+    }
+}
+
+constexpr unsigned int
+    stringargs_to_lst(char str[], unsigned int pos, const char* strlst[], unsigned int strlst_pos)
+{
+    if(str[pos] == '\0')
+    {
+        return pos;
+    }
+    else
+    {
+        if(str[pos] == ' ' || str[pos] == '\t' || str[pos] == ',')
+        {
+            str[pos] = '\0';
+            return stringargs_to_lst(str, pos + 1, strlst, strlst_pos);
+        }
+        else
+        {
+            strlst[strlst_pos] = &str[pos];
+            pos                = stringargs_trim(str, pos);
+            return stringargs_to_lst(str, pos, strlst, strlst_pos + 1);
+        }
+    }
+}
+
+#define LIST_ARG_STRINGS(...)                                                          \
+    char                          stringargs[] = #__VA_ARGS__;                         \
+    static constexpr unsigned int stringargs_c = stringargs_count(#__VA_ARGS__, 0, 0); \
+    const char*                   stringargs_lst[stringargs_c];                        \
+    stringargs_to_lst(stringargs, 0, stringargs_lst, 0)
+
+struct rocsparse_local_argdescr
+{
+private:
+    void* argdescr{};
+
+public:
+    rocsparse_local_argdescr()
+    {
+        if(rocsparse_clients_envariables::get(rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS))
+        {
+            rocsparse_argdescr_create(&argdescr);
+        }
+    }
+
+    ~rocsparse_local_argdescr()
+    {
+        rocsparse_argdescr_free(argdescr);
+    }
+
+    // Allow rocsparse_local_mat_descr to be used anywhere rocsparse_mat_descr is expected
+    operator void*&()
+    {
+        return this->argdescr;
+    }
+    operator void* const &() const
+    {
+        return this->argdescr;
+    }
+};
+
+template <typename F, typename... Ts>
+inline void auto_testing_bad_arg_excluding(F f, int n, const int* idx, const char** names, Ts... ts)
+{
+    //
+    // Tell we are passing here to summarize routines that are not.
+    //
+    test_check::set_auto_testing_bad_arg();
+
+    //
+    // Create argument descriptpr.
+    //
+    rocsparse_local_argdescr argdescr;
+
+    static constexpr int nargs = sizeof...(ts);
+    for(int iarg = 0; iarg < nargs; ++iarg)
+    {
+        bool exclude = false;
+        for(int i = 0; i < n; ++i)
+        {
+            if(idx[i] == iarg)
+            {
+                exclude = true;
+                break;
+            }
+        }
+
+        if(!exclude)
+        {
+            //
+            //
+            //
+            auto_testing_bad_arg_t<Ts...> arguments(ts...);
+
+            //
+            //
+            //
+            rocsparse_status              status = rocsparse_status_success;
+            auto_testing_bad_arg_t<Ts...> invalid_data(iarg, status, ts...);
+
+            //
+            //
+            //
+            auto_testing_bad_arg_copy(invalid_data, ts...);
+
+            //
+            //
+            //
+            const rocsparse_status status_from_routine = f(ts...);
+            if(rocsparse_clients_envariables::get(
+                   rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS))
+            {
+                //
+                // Get the argument name.
+                //
+                const char* argname;
+                EXPECT_ROCSPARSE_STATUS(rocsparse_argdescr_get_name(argdescr, &argname),
+                                        rocsparse_status_success);
+
+                //
+                // If names do not fit.
+                //
+                const int cmp = strcmp(argname, names[iarg]);
+                if(cmp)
+                {
+                    std::cout
+                        << "auto testing bad arg failed on " //
+                        << iarg //
+                        << " 'th argument, '" //
+                        << names[iarg] //
+                        << "'" //
+                        << std::endl //
+                        << "   reason: argument names do not match, argument checking returns " //
+                        << argname //
+                        << std::endl;
+#ifdef GOOGLE_TEST
+                    EXPECT_EQ(cmp, 0);
+#endif
+                }
+
+                //
+                // Get the argument index.
+                //
+                int argidx;
+                EXPECT_ROCSPARSE_STATUS(rocsparse_argdescr_get_index(argdescr, &argidx),
+                                        rocsparse_status_success);
+                //
+                // If argument indices do not fit.
+                //
+                if(argidx != iarg)
+                {
+                    std::cout
+                        << "auto testing bad arg failed on " //
+                        << iarg //
+                        << " 'th argument, '" //
+                        << names[iarg] //
+                        << "'" //
+                        << std::endl //
+                        << "   reason: argument indices do not match, argument checking returns " //
+                        << argidx //
+                        << std::endl;
+#ifdef GOOGLE_TEST
+                    EXPECT_EQ(argidx, iarg);
+#endif
+                }
+            }
+
+            //
+            // if statuses do not fit.
+            //
+            if(status != status_from_routine)
+            {
+                std::cout << "auto testing bad arg failed on " //
+                          << iarg //
+                          << " 'th argument, '" //
+                          << ((names != nullptr) ? names[iarg] : "") //
+                          << "'" //
+                          << std::endl
+                          << "   reason: statuses do not match, argument checking returns "
+                          << status_from_routine << std::endl;
+                auto_testing_bad_arg_print(ts...);
+                EXPECT_ROCSPARSE_STATUS(status_from_routine, status);
+            }
+
+            //
+            //
+            //
+            auto_testing_bad_arg_copy(arguments, ts...);
+        }
+    }
+}
+
 template <typename F, typename... Ts>
 inline void auto_testing_bad_arg(F f, Ts... ts)
 {
+    //
+    // Tell we are passing here to summarize routines that are not.
+    //
+    test_check::set_auto_testing_bad_arg();
     static constexpr int nargs = sizeof...(ts);
     for(int iarg = 0; iarg < nargs; ++iarg)
     {
@@ -625,6 +361,10 @@ inline void auto_testing_bad_arg(F f, Ts... ts)
 template <typename F, typename... Ts>
 inline void auto_testing_bad_arg(F f, int n, const int* idx, Ts... ts)
 {
+    //
+    // Tell we are passing here to summarize routines that are not.
+    //
+    test_check::set_auto_testing_bad_arg();
     static constexpr int nargs = sizeof...(ts);
     for(int iarg = 0; iarg < nargs; ++iarg)
     {
@@ -661,4 +401,32 @@ inline void auto_testing_bad_arg(F f, int n, const int* idx, Ts... ts)
     }
 }
 
-#endif // AUTO_TESTING_BAD_ARG_HPP
+#define bad_arg_analysis(f, ...)                                                        \
+    do                                                                                  \
+    {                                                                                   \
+        if(rocsparse_clients_envariables::get(                                          \
+               rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS))                    \
+        {                                                                               \
+            LIST_ARG_STRINGS(__VA_ARGS__);                                              \
+            auto_testing_bad_arg_excluding(f, 0, nullptr, stringargs_lst, __VA_ARGS__); \
+        }                                                                               \
+        else                                                                            \
+        {                                                                               \
+            auto_testing_bad_arg(f, __VA_ARGS__);                                       \
+        }                                                                               \
+    } while(false)
+
+#define select_bad_arg_analysis(f, n, idx, ...)                                     \
+    do                                                                              \
+    {                                                                               \
+        if(rocsparse_clients_envariables::get(                                      \
+               rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS))                \
+        {                                                                           \
+            LIST_ARG_STRINGS(__VA_ARGS__);                                          \
+            auto_testing_bad_arg_excluding(f, n, idx, stringargs_lst, __VA_ARGS__); \
+        }                                                                           \
+        else                                                                        \
+        {                                                                           \
+            auto_testing_bad_arg(f, n, idx, __VA_ARGS__);                           \
+        }                                                                           \
+    } while(false)

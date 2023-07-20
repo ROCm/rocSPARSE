@@ -29,58 +29,6 @@
 #include "rocsparse_dotci.hpp"
 #include "rocsparse_doti.hpp"
 
-#define RETURN_SPVV(itype, xtype, ytype, ctype, ...)                                            \
-    {                                                                                           \
-        if(ctype == rocsparse_datatype_f32_r && itype == rocsparse_indextype_i32                \
-           && xtype == rocsparse_datatype_f32_r && ytype == rocsparse_datatype_f32_r)           \
-            return rocsparse_spvv_template_real<float, int32_t, float, float>(__VA_ARGS__);     \
-        if(ctype == rocsparse_datatype_f64_r && itype == rocsparse_indextype_i32                \
-           && xtype == rocsparse_datatype_f64_r && ytype == rocsparse_datatype_f64_r)           \
-            return rocsparse_spvv_template_real<double, int32_t, double, double>(__VA_ARGS__);  \
-        if(ctype == rocsparse_datatype_f32_c && itype == rocsparse_indextype_i32                \
-           && xtype == rocsparse_datatype_f32_c && ytype == rocsparse_datatype_f32_c)           \
-            return rocsparse_spvv_template_complex<rocsparse_float_complex,                     \
-                                                   int32_t,                                     \
-                                                   rocsparse_float_complex,                     \
-                                                   rocsparse_float_complex>(__VA_ARGS__);       \
-        if(ctype == rocsparse_datatype_f64_c && itype == rocsparse_indextype_i32                \
-           && xtype == rocsparse_datatype_f64_c && ytype == rocsparse_datatype_f64_c)           \
-            return rocsparse_spvv_template_complex<rocsparse_double_complex,                    \
-                                                   int32_t,                                     \
-                                                   rocsparse_double_complex,                    \
-                                                   rocsparse_double_complex>(__VA_ARGS__);      \
-        if(ctype == rocsparse_datatype_i32_r && itype == rocsparse_indextype_i32                \
-           && xtype == rocsparse_datatype_i8_r && ytype == rocsparse_datatype_i8_r)             \
-            return rocsparse_spvv_template_real<int32_t, int32_t, int8_t, int8_t>(__VA_ARGS__); \
-        if(ctype == rocsparse_datatype_f32_r && itype == rocsparse_indextype_i32                \
-           && xtype == rocsparse_datatype_i8_r && ytype == rocsparse_datatype_i8_r)             \
-            return rocsparse_spvv_template_real<float, int32_t, int8_t, int8_t>(__VA_ARGS__);   \
-        if(ctype == rocsparse_datatype_f32_r && itype == rocsparse_indextype_i64                \
-           && xtype == rocsparse_datatype_f32_r && ytype == rocsparse_datatype_f32_r)           \
-            return rocsparse_spvv_template_real<float, int64_t, float, float>(__VA_ARGS__);     \
-        if(ctype == rocsparse_datatype_f64_r && itype == rocsparse_indextype_i64                \
-           && xtype == rocsparse_datatype_f64_r && ytype == rocsparse_datatype_f64_r)           \
-            return rocsparse_spvv_template_real<double, int64_t, double, double>(__VA_ARGS__);  \
-        if(ctype == rocsparse_datatype_f32_c && itype == rocsparse_indextype_i64                \
-           && xtype == rocsparse_datatype_f32_c && ytype == rocsparse_datatype_f32_c)           \
-            return rocsparse_spvv_template_complex<rocsparse_float_complex,                     \
-                                                   int64_t,                                     \
-                                                   rocsparse_float_complex,                     \
-                                                   rocsparse_float_complex>(__VA_ARGS__);       \
-        if(ctype == rocsparse_datatype_f64_c && itype == rocsparse_indextype_i64                \
-           && xtype == rocsparse_datatype_f64_c && ytype == rocsparse_datatype_f64_c)           \
-            return rocsparse_spvv_template_complex<rocsparse_double_complex,                    \
-                                                   int64_t,                                     \
-                                                   rocsparse_double_complex,                    \
-                                                   rocsparse_double_complex>(__VA_ARGS__);      \
-        if(ctype == rocsparse_datatype_i32_r && itype == rocsparse_indextype_i64                \
-           && xtype == rocsparse_datatype_i8_r && ytype == rocsparse_datatype_i8_r)             \
-            return rocsparse_spvv_template_real<int32_t, int64_t, int8_t, int8_t>(__VA_ARGS__); \
-        if(ctype == rocsparse_datatype_f32_r && itype == rocsparse_indextype_i64                \
-           && xtype == rocsparse_datatype_i8_r && ytype == rocsparse_datatype_i8_r)             \
-            return rocsparse_spvv_template_real<float, int64_t, int8_t, int8_t>(__VA_ARGS__);   \
-    }
-
 template <typename T, typename I, typename X, typename Y>
 rocsparse_status rocsparse_spvv_template_real(rocsparse_handle            handle,
                                               rocsparse_operation         trans,
@@ -104,16 +52,17 @@ rocsparse_status rocsparse_spvv_template_real(rocsparse_handle            handle
     if(compute_type == rocsparse_datatype_i32_r || compute_type == rocsparse_datatype_f32_r
        || compute_type == rocsparse_datatype_f64_r)
     {
-        return rocsparse_doti_template(handle,
-                                       (I)x->nnz,
-                                       (const X*)x->val_data,
-                                       (const I*)x->idx_data,
-                                       (const Y*)y->values,
-                                       (T*)result,
-                                       x->idx_base);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_doti_template(handle,
+                                                          (I)x->nnz,
+                                                          (const X*)x->val_data,
+                                                          (const I*)x->idx_data,
+                                                          (const Y*)y->values,
+                                                          (T*)result,
+                                                          x->idx_base));
+        return rocsparse_status_success;
     }
 
-    return rocsparse_status_not_implemented;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
 }
 
 template <typename T, typename I, typename X, typename Y>
@@ -131,7 +80,6 @@ rocsparse_status rocsparse_spvv_template_complex(rocsparse_handle            han
     {
         // We do not need a buffer
         *buffer_size = 4;
-
         return rocsparse_status_success;
     }
 
@@ -141,29 +89,31 @@ rocsparse_status rocsparse_spvv_template_complex(rocsparse_handle            han
         // non transpose
         if(trans == rocsparse_operation_none)
         {
-            return rocsparse_doti_template(handle,
-                                           (I)x->nnz,
-                                           (const X*)x->val_data,
-                                           (const I*)x->idx_data,
-                                           (const Y*)y->values,
-                                           (T*)result,
-                                           x->idx_base);
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_doti_template(handle,
+                                                              (I)x->nnz,
+                                                              (const X*)x->val_data,
+                                                              (const I*)x->idx_data,
+                                                              (const Y*)y->values,
+                                                              (T*)result,
+                                                              x->idx_base));
+            return rocsparse_status_success;
         }
 
         // conjugate transpose
         if(trans == rocsparse_operation_conjugate_transpose)
         {
-            return rocsparse_dotci_template(handle,
-                                            (I)x->nnz,
-                                            (const X*)x->val_data,
-                                            (const I*)x->idx_data,
-                                            (const Y*)y->values,
-                                            (T*)result,
-                                            x->idx_base);
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_dotci_template(handle,
+                                                               (I)x->nnz,
+                                                               (const X*)x->val_data,
+                                                               (const I*)x->idx_data,
+                                                               (const Y*)y->values,
+                                                               (T*)result,
+                                                               x->idx_base));
+            return rocsparse_status_success;
         }
     }
 
-    return rocsparse_status_not_implemented;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
 }
 
 /*
@@ -183,7 +133,7 @@ extern "C" rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 try
 {
     // Check for invalid handle
-    RETURN_IF_INVALID_HANDLE(handle);
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
     log_trace(handle,
@@ -197,52 +147,142 @@ try
               (const void*&)temp_buffer);
 
     // Check operation
-    if(rocsparse_enum_utils::is_invalid(trans))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(1, trans);
 
     // Check compute type
-    if(rocsparse_enum_utils::is_invalid(compute_type))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(5, compute_type);
 
     // Check for invalid descriptors
-    RETURN_IF_NULLPTR(x);
-    RETURN_IF_NULLPTR(y);
+    ROCSPARSE_CHECKARG_POINTER(2, x);
+    ROCSPARSE_CHECKARG_POINTER(3, y);
 
     // Check for valid pointers
-    RETURN_IF_NULLPTR(result);
+    ROCSPARSE_CHECKARG_POINTER(4, result);
 
     // Check for valid buffer_size pointer only if temp_buffer is nullptr
     if(temp_buffer == nullptr)
     {
-        RETURN_IF_NULLPTR(buffer_size);
+        ROCSPARSE_CHECKARG_POINTER(6, buffer_size);
     }
 
     // Check if descriptors are initialized
-    if(x->init == false || y->init == false)
+    ROCSPARSE_CHECKARG(2, x, x->init == false, rocsparse_status_not_initialized);
+    ROCSPARSE_CHECKARG(3, y, y->init == false, rocsparse_status_not_initialized);
+
+    const rocsparse_indextype itype = x->idx_type;
+    const rocsparse_datatype  xtype = x->data_type;
+    const rocsparse_datatype  ytype = y->data_type;
+    const rocsparse_datatype  ctype = compute_type;
+
+#define PARAMS handle, trans, x, y, result, compute_type, buffer_size, temp_buffer
+
+    if(ctype == rocsparse_datatype_f32_r && itype == rocsparse_indextype_i32
+       && xtype == rocsparse_datatype_f32_r && ytype == rocsparse_datatype_f32_r)
     {
-        return rocsparse_status_not_initialized;
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_real<float, int32_t, float, float>(PARAMS)));
+        return rocsparse_status_success;
     }
 
-    RETURN_SPVV(x->idx_type,
-                x->data_type,
-                y->data_type,
-                compute_type,
-                handle,
-                trans,
-                x,
-                y,
-                result,
-                compute_type,
-                buffer_size,
-                temp_buffer);
+    if(ctype == rocsparse_datatype_f32_r && itype == rocsparse_indextype_i32
+       && xtype == rocsparse_datatype_i8_r && ytype == rocsparse_datatype_i8_r)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_real<float, int32_t, int8_t, int8_t>(PARAMS)));
+        return rocsparse_status_success;
+    }
 
-    return rocsparse_status_not_implemented;
+    if(ctype == rocsparse_datatype_f32_r && itype == rocsparse_indextype_i64
+       && xtype == rocsparse_datatype_f32_r && ytype == rocsparse_datatype_f32_r)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_real<float, int64_t, float, float>(PARAMS)));
+        return rocsparse_status_success;
+    }
+    if(ctype == rocsparse_datatype_f32_r && itype == rocsparse_indextype_i64
+       && xtype == rocsparse_datatype_i8_r && ytype == rocsparse_datatype_i8_r)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_real<float, int64_t, int8_t, int8_t>(PARAMS)));
+        return rocsparse_status_success;
+    }
+
+    if(ctype == rocsparse_datatype_f64_r && itype == rocsparse_indextype_i32
+       && xtype == rocsparse_datatype_f64_r && ytype == rocsparse_datatype_f64_r)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_real<double, int32_t, double, double>(PARAMS)));
+        return rocsparse_status_success;
+    }
+    if(ctype == rocsparse_datatype_f64_r && itype == rocsparse_indextype_i64
+       && xtype == rocsparse_datatype_f64_r && ytype == rocsparse_datatype_f64_r)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_real<double, int64_t, double, double>(PARAMS)));
+        return rocsparse_status_success;
+    }
+
+    if(ctype == rocsparse_datatype_f32_c && itype == rocsparse_indextype_i64
+       && xtype == rocsparse_datatype_f32_c && ytype == rocsparse_datatype_f32_c)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_complex<rocsparse_float_complex,
+                                             int64_t,
+                                             rocsparse_float_complex,
+                                             rocsparse_float_complex>(PARAMS)));
+        return rocsparse_status_success;
+    }
+
+    if(ctype == rocsparse_datatype_f32_c && itype == rocsparse_indextype_i32
+       && xtype == rocsparse_datatype_f32_c && ytype == rocsparse_datatype_f32_c)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_complex<rocsparse_float_complex,
+                                             int32_t,
+                                             rocsparse_float_complex,
+                                             rocsparse_float_complex>(PARAMS)));
+        return rocsparse_status_success;
+    }
+    if(ctype == rocsparse_datatype_f64_c && itype == rocsparse_indextype_i32
+       && xtype == rocsparse_datatype_f64_c && ytype == rocsparse_datatype_f64_c)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_complex<rocsparse_double_complex,
+                                             int32_t,
+                                             rocsparse_double_complex,
+                                             rocsparse_double_complex>(PARAMS)));
+        return rocsparse_status_success;
+    }
+    if(ctype == rocsparse_datatype_f64_c && itype == rocsparse_indextype_i64
+       && xtype == rocsparse_datatype_f64_c && ytype == rocsparse_datatype_f64_c)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_complex<rocsparse_double_complex,
+                                             int64_t,
+                                             rocsparse_double_complex,
+                                             rocsparse_double_complex>(PARAMS)));
+
+        return rocsparse_status_success;
+    }
+    if(ctype == rocsparse_datatype_i32_r && itype == rocsparse_indextype_i32
+       && xtype == rocsparse_datatype_i8_r && ytype == rocsparse_datatype_i8_r)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_real<int32_t, int32_t, int8_t, int8_t>(PARAMS)));
+        return rocsparse_status_success;
+    }
+    if(ctype == rocsparse_datatype_i32_r && itype == rocsparse_indextype_i64
+       && xtype == rocsparse_datatype_i8_r && ytype == rocsparse_datatype_i8_r)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_spvv_template_real<int32_t, int64_t, int8_t, int8_t>(PARAMS)));
+        return rocsparse_status_success;
+    }
+#undef PARAMS
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

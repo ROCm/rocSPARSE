@@ -36,52 +36,52 @@ void testing_spvv_bad_arg(const Arguments& arg)
     I                    nnz    = safe_size;
     void*                x_ind  = (void*)0x4;
     void*                x_val  = (void*)0x4;
-    void*                y      = (void*)0x4;
+    void*                py     = (void*)0x4;
     void*                result = (void*)0x4;
     rocsparse_operation  trans  = rocsparse_operation_none;
     rocsparse_index_base base   = rocsparse_index_base_zero;
 
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_datatype  ttype = get_datatype<T>();
+    rocsparse_indextype itype        = get_indextype<I>();
+    rocsparse_datatype  compute_type = get_datatype<T>();
 
     // Structures
-    rocsparse_local_spvec local_vec_x(size, nnz, x_ind, x_val, itype, base, ttype);
-    rocsparse_local_dnvec local_vec_y(size, y, ttype);
+    rocsparse_local_spvec local_vec_x(size, nnz, x_ind, x_val, itype, base, compute_type);
+    rocsparse_local_dnvec local_vec_y(size, py, compute_type);
 
-    rocsparse_spvec_descr vec_x = local_vec_x;
-    rocsparse_dnvec_descr vec_y = local_vec_y;
+    rocsparse_spvec_descr x = local_vec_x;
+    rocsparse_dnvec_descr y = local_vec_y;
 
     int       nargs_to_exclude   = 2;
     const int args_to_exclude[2] = {6, 7};
 
-#define PARAMS handle, trans, vec_x, vec_y, result, ttype, buffer_size, temp_buffer
+#define PARAMS handle, trans, x, y, result, compute_type, buffer_size, temp_buffer
     {
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = nullptr;
         void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = nullptr;
         void*   temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 #undef PARAMS
 
     EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvv(handle, trans, vec_x, vec_y, result, ttype, nullptr, nullptr),
+        rocsparse_spvv(handle, trans, x, y, result, compute_type, nullptr, nullptr),
         rocsparse_status_invalid_pointer);
 }
 

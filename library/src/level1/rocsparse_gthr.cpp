@@ -37,10 +37,7 @@ rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
                                          rocsparse_index_base idx_base)
 {
     // Check for valid handle
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
     log_trace(handle,
@@ -51,19 +48,11 @@ rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
               (const void*&)x_ind,
               idx_base);
 
-    log_bench(handle, "./rocsparse-bench -f gthr -r", replaceX<T>("X"), "--mtx <vector.mtx> ");
-
     // Check index base
-    if(rocsparse_enum_utils::is_invalid(idx_base))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(5, idx_base);
 
     // Check size
-    if(nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_SIZE(1, nnz);
 
     // Quick return if possible
     if(nnz == 0)
@@ -72,18 +61,9 @@ rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
     }
 
     // Check pointer arguments
-    if(y == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(x_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(x_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(2, y);
+    ROCSPARSE_CHECKARG_POINTER(3, x_val);
+    ROCSPARSE_CHECKARG_POINTER(4, x_ind);
 
     // Stream
     hipStream_t stream = handle->stream;
@@ -136,20 +116,22 @@ INSTANTIATE(int64_t, rocsparse_double_complex)
  * ===========================================================================
  */
 
-#define C_IMPL(NAME, TYPE)                                                      \
-    extern "C" rocsparse_status NAME(rocsparse_handle     handle,               \
-                                     rocsparse_int        nnz,                  \
-                                     const TYPE*          y,                    \
-                                     TYPE*                x_val,                \
-                                     const rocsparse_int* x_ind,                \
-                                     rocsparse_index_base idx_base)             \
-    try                                                                         \
-    {                                                                           \
-        return rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base); \
-    }                                                                           \
-    catch(...)                                                                  \
-    {                                                                           \
-        return exception_to_rocsparse_status();                                 \
+#define C_IMPL(NAME, TYPE)                                                    \
+    extern "C" rocsparse_status NAME(rocsparse_handle     handle,             \
+                                     rocsparse_int        nnz,                \
+                                     const TYPE*          y,                  \
+                                     TYPE*                x_val,              \
+                                     const rocsparse_int* x_ind,              \
+                                     rocsparse_index_base idx_base)           \
+    try                                                                       \
+    {                                                                         \
+        RETURN_IF_ROCSPARSE_ERROR(                                            \
+            rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base)); \
+        return rocsparse_status_success;                                      \
+    }                                                                         \
+    catch(...)                                                                \
+    {                                                                         \
+        RETURN_ROCSPARSE_EXCEPTION();                                         \
     }
 
 C_IMPL(rocsparse_sgthr, float);

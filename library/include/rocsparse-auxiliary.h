@@ -2053,6 +2053,99 @@ rocsparse_status rocsparse_dnmat_set_strided_batch(rocsparse_dnmat_descr descr,
                                                    int                   batch_count,
                                                    int64_t               batch_stride);
 
+/*! \ingroup aux_module
+   *  \brief Enable debug arguments.
+   * \details If the debug arguments is enabled then argument descriptors are internally available when an argument checking occurs. It provide information to the user depending of the setup of the verbosity
+   * \ref rocsparse_enable_debug_arguments_verbose, \ref rocsparsr_disable_debug_arguments_verbose and \ref rocsparsr_state_debug_arguments_verbose.
+   * \note This routine ignores the environment variable ROCSPARSE_DEBUG_ARGUMENTS.
+   * \note This routine enables debug arguments verbose with \ref rocsparse_enable_debug_arguments_verbose.
+   */
+ROCSPARSE_EXPORT
+void rocsparse_enable_debug_arguments();
+
+/*! \ingroup aux_module
+   *  \brief Disable debug arguments.
+   *  \note This routine ignores the environment variable ROCSPARSE_DEBUG_ARGUMENTS.
+   *  \note This routines disables debug arguments verbose.
+   */
+ROCSPARSE_EXPORT
+void rocsparse_disable_debug_arguments();
+
+/*! \ingroup aux_module
+   * \return 1 if enabled, 0 otherwise.
+   */
+ROCSPARSE_EXPORT
+int rocsparse_state_debug_arguments();
+
+/*! \ingroup aux_module
+   *  \brief Enable debug arguments verbose.
+   * \detail The debug argument verbose displays information related to argument descriptors created from argument checking failures.
+   *  \note This routine ignores the environment variable ROCSPARSE_DEBUG_ARGUMENTS_VERBOSE)
+   */
+ROCSPARSE_EXPORT
+void rocsparse_enable_debug_arguments_verbose();
+
+/*! \ingroup aux_module
+   *  \brief Disable debug arguments verbose.
+   *  \note This routine ignores the environment variable ROCSPARSE_DEBUG_ARGUMENTS_VERBOSE)
+   */
+ROCSPARSE_EXPORT
+void rocsparse_disable_debug_arguments_verbose();
+
+/*! \ingroup aux_module
+ * \brief Get state of debug arguments verbose.
+ * \return 1 if enabled, 0 otherwise.
+ */
+ROCSPARSE_EXPORT
+int rocsparse_state_debug_arguments_verbose();
+
+/*! \ingroup aux_module
+   *  \brief Enable debug.
+   * \details If the debug is enabled then code traces are generated when unsuccessful status returns occur. It provides information to the user depending of the set of the verbosity
+   * (\ref rocsparse_enable_debug_verbose, \ref rocsparsr_disable_debug_verbose and \ref rocsparsr_state_debug_verbose).
+   *  \note This routine ignores the environment variable ROCSPARSE_DEBUG.
+   * \note \ref rocsparse_enable_debug_verbose and \ref rocsparse_enable_debug_arguments are called.
+   */
+ROCSPARSE_EXPORT
+void rocsparse_enable_debug();
+
+/*! \ingroup aux_module
+   *  \brief Disable debug.
+   *  \note This routine also disables debug arguments with \ref rocsparse_disable_debug_arguments.
+   *  \note This routine ignores the environment variable ROCSPARSE_DEBUG.
+   */
+ROCSPARSE_EXPORT
+void rocsparse_disable_debug();
+/*! \ingroup aux_module
+   * \brief Get state of  debug.
+   * \return 1 if enabled, 0 otherwise.
+   */
+ROCSPARSE_EXPORT
+int rocsparse_state_debug();
+
+/*! \ingroup aux_module
+   *  \brief Enable debug verbose.
+   * \detail The debug verbose displays a stack of code traces showing where the code is handling a unsuccessful status.
+   *  \note This routine enables debug arguments verbose with \ref rocsparse_enable_debug_arguments_verbose.
+   *  \note This routine ignores the environment variable ROCSPARSE_DEBUG_VERBOSE.
+   */
+ROCSPARSE_EXPORT
+void rocsparse_enable_debug_verbose();
+
+/*! \ingroup aux_module
+   *  \brief Disable debug verbose.
+   *  \note This routine disables debug arguments verbose with  \ref rocsparse_disable_debug_arguments.
+   *  \note This routine ignores the environment variable ROCSPARSE_DEBUG_VERBOSE.
+   */
+ROCSPARSE_EXPORT
+void rocsparse_disable_debug_verbose();
+/*! \ingroup aux_module
+   * \brief Get state of  debug verbose.
+   * \return 1 if enabled, 0 otherwise.
+   */
+ROCSPARSE_EXPORT
+int rocsparse_state_debug_verbose();
+
 //
 // If ROCSPARSE_WITH_MEMSTAT is defined
 // then a set of extra routines is offered

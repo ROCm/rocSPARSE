@@ -36,6 +36,10 @@ set(rocsparse_source
   src/rocsparse_auxiliary.cpp
   src/rocsparse_envariables.cpp
   src/rocsparse_memstat.cpp
+  ##
+  src/rocsparse_debug.cpp
+  src/rocsparse_argdescr.cpp
+  src/rocsparse_message.cpp
 
 # Level1
   src/level1/rocsparse_axpyi.cpp

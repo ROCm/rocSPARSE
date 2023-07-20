@@ -25,47 +25,13 @@
 template <typename I, typename T>
 void testing_axpby_bad_arg(const Arguments& arg)
 {
-
-    I size = 100;
-    I nnz  = 100;
-
-    T alpha = (T)2;
-    T beta  = (T)3;
-
-    rocsparse_index_base base = rocsparse_index_base_zero;
-
-    // Index and data type
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_datatype  ttype = get_datatype<T>();
-
-    // Create rocsparse handle
-    rocsparse_local_handle handle;
-
-    // Allocate memory on device
-    device_vector<I> dx_ind(nnz);
-    device_vector<T> dx_val(nnz);
-    device_vector<T> dy(size);
-
-    if(!dx_ind || !dx_val || !dy)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Structures
-    rocsparse_local_spvec x(size, nnz, dx_ind, dx_val, itype, base, ttype);
-    rocsparse_local_dnvec y(size, dy, ttype);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_axpby(nullptr, &alpha, x, &beta, y),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_axpby(handle, nullptr, x, &beta, y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_axpby(handle, &alpha, nullptr, &beta, y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_axpby(handle, &alpha, x, nullptr, y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_axpby(handle, &alpha, x, &beta, nullptr),
-                            rocsparse_status_invalid_pointer);
+    rocsparse_local_handle      local_handle;
+    rocsparse_handle            handle = local_handle;
+    rocsparse_const_spvec_descr x      = (rocsparse_const_spvec_descr)0x4;
+    rocsparse_dnvec_descr       y      = (rocsparse_dnvec_descr)0x4;
+    const void*                 alpha  = (const void*)0x4;
+    const void*                 beta   = (const void*)0x4;
+    bad_arg_analysis(rocsparse_axpby, handle, alpha, x, beta, y);
 }
 
 template <typename I, typename T>

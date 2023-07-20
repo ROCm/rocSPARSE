@@ -42,15 +42,21 @@ struct rocsparse_clients_envariables
     ///
     typedef enum var_bool_ : int32_t
     {
-        VERBOSE
+        VERBOSE,
+        TEST_DEBUG_ARGUMENTS
     } var_bool;
 
-    static constexpr var_bool s_var_bool_all[] = {VERBOSE};
+    static constexpr var_bool s_var_bool_all[] = {VERBOSE, TEST_DEBUG_ARGUMENTS};
 
     ///
     /// @brief Return value of a Boolean variable.
     ///
     static bool get(var_bool v);
+
+    ///
+    /// @brief Set value of a Boolean variable.
+    ///
+    static void set(var_bool v, bool value);
 
     ///
     /// @brief Is the Boolean enviromnent variable defined ?
@@ -75,12 +81,17 @@ struct rocsparse_clients_envariables
         MATRICES_DIR
     } var_string;
 
-    static constexpr var_string s_var_string_all[] = {MATRICES_DIR};
+    static constexpr var_string s_var_string_all[1] = {MATRICES_DIR};
 
     ///
     /// @brief Return value of a string variable.
     ///
     static const char* get(var_string v);
+
+    ///
+    /// @brief Set value of a string variable.
+    ///
+    static void set(var_string v, const char* value);
 
     ///
     /// @brief Return the name of a string variable.

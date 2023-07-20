@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #pragma once
 
 template <std::size_t N, typename T>
@@ -43,10 +42,14 @@ inline constexpr std::size_t countof(T (&)[N])
 class rocsparse_envariables
 {
 public:
-#define ROCSPARSE_FOREACH_ENVARIABLES \
-    ENVARIABLE(VERBOSE)               \
-    ENVARIABLE(MEMSTAT)               \
-    ENVARIABLE(MEMSTAT_FORCE_MANAGED) \
+#define ROCSPARSE_FOREACH_ENVARIABLES   \
+    ENVARIABLE(DEBUG)                   \
+    ENVARIABLE(DEBUG_VERBOSE)           \
+    ENVARIABLE(DEBUG_ARGUMENTS)         \
+    ENVARIABLE(DEBUG_ARGUMENTS_VERBOSE) \
+    ENVARIABLE(VERBOSE)                 \
+    ENVARIABLE(MEMSTAT)                 \
+    ENVARIABLE(MEMSTAT_FORCE_MANAGED)   \
     ENVARIABLE(MEMSTAT_GUARDS)
 
     //
