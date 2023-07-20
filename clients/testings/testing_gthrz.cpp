@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,35 +27,14 @@
 template <typename T>
 void testing_gthrz_bad_arg(const Arguments& arg)
 {
-    static const size_t safe_size = 100;
-
-    // Create rocsparse handle
-    rocsparse_local_handle handle;
-
-    // Allocate memory on device
-    device_vector<rocsparse_int> dx_ind(safe_size);
-    device_vector<T>             dx_val(safe_size);
-    device_vector<T>             dy(safe_size);
-
-    if(!dx_ind || !dx_val || !dy)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Test rocsparse_gthrz()
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_gthrz<T>(nullptr, safe_size, dy, dx_val, dx_ind, rocsparse_index_base_zero),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_gthrz<T>(handle, safe_size, nullptr, dx_val, dx_ind, rocsparse_index_base_zero),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_gthrz<T>(handle, safe_size, dy, nullptr, dx_ind, rocsparse_index_base_zero),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_gthrz<T>(handle, safe_size, dy, dx_val, nullptr, rocsparse_index_base_zero),
-        rocsparse_status_invalid_pointer);
+    rocsparse_local_handle local_handle;
+    rocsparse_handle       handle   = local_handle;
+    rocsparse_int          nnz      = 2;
+    T*                     y        = (T*)0x4;
+    T*                     x_val    = (T*)0x4;
+    const rocsparse_int*   x_ind    = (const rocsparse_int*)0x4;
+    rocsparse_index_base   idx_base = rocsparse_index_base_zero;
+    bad_arg_analysis(rocsparse_gthrz<T>, handle, nnz, y, x_val, x_ind, idx_base);
 }
 
 template <typename T>

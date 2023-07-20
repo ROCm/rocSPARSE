@@ -32,14 +32,15 @@ rocsparse_status rocsparse_rot_template(rocsparse_handle      handle,
                                         rocsparse_spvec_descr x,
                                         rocsparse_dnvec_descr y)
 {
-    return rocsparse_roti_template<I, T>(handle,
-                                         (I)x->nnz,
-                                         (T*)x->val_data,
-                                         (const I*)x->idx_data,
-                                         (T*)y->values,
-                                         (const T*)c,
-                                         (const T*)s,
-                                         x->idx_base);
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_roti_template<I, T>)(handle,
+                                                              (I)x->nnz,
+                                                              (T*)x->val_data,
+                                                              (const I*)x->idx_data,
+                                                              (T*)y->values,
+                                                              (const T*)c,
+                                                              (const T*)s,
+                                                              x->idx_base));
+    return rocsparse_status_success;
 }
 
 /*
@@ -56,7 +57,7 @@ extern "C" rocsparse_status rocsparse_rot(rocsparse_handle      handle,
 try
 {
     // Check for invalid handle
-    RETURN_IF_INVALID_HANDLE(handle);
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
     log_trace(handle,
@@ -67,67 +68,74 @@ try
               (const void*&)y);
 
     // Check for invalid descriptors
-    RETURN_IF_NULLPTR(c);
-    RETURN_IF_NULLPTR(s);
-    RETURN_IF_NULLPTR(x);
-    RETURN_IF_NULLPTR(y);
+    ROCSPARSE_CHECKARG_POINTER(1, c);
+    ROCSPARSE_CHECKARG_POINTER(2, s);
+    ROCSPARSE_CHECKARG_POINTER(3, x);
+    ROCSPARSE_CHECKARG_POINTER(4, y);
 
     // Check if descriptors are initialized
-    if(x->init == false || y->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
+    ROCSPARSE_CHECKARG(3, x, x->init == false, rocsparse_status_not_initialized);
+    ROCSPARSE_CHECKARG(4, y, y->init == false, rocsparse_status_not_initialized);
 
     // Check for matching types while we do not support mixed precision computation
-    if(x->data_type != y->data_type)
-    {
-        return rocsparse_status_not_implemented;
-    }
+    ROCSPARSE_CHECKARG(4, y, (y->data_type != x->data_type), rocsparse_status_not_implemented);
 
     // single real ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f32_r)
     {
-        return rocsparse_rot_template<int32_t, float>(handle, c, s, x, y);
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_rot_template<int32_t, float>)(handle, c, s, x, y));
+        return rocsparse_status_success;
     }
     // double real ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f64_r)
     {
-        return rocsparse_rot_template<int32_t, double>(handle, c, s, x, y);
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_rot_template<int32_t, double>)(handle, c, s, x, y));
+        return rocsparse_status_success;
     }
     // single complex ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f32_c)
     {
-        return rocsparse_rot_template<int32_t, rocsparse_float_complex>(handle, c, s, x, y);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_rot_template<int32_t, rocsparse_float_complex>)(handle, c, s, x, y));
+        return rocsparse_status_success;
     }
     // double complex ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f64_c)
     {
-        return rocsparse_rot_template<int32_t, rocsparse_double_complex>(handle, c, s, x, y);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_rot_template<int32_t, rocsparse_double_complex>)(handle, c, s, x, y));
+        return rocsparse_status_success;
     }
     // single real ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f32_r)
     {
-        return rocsparse_rot_template<int64_t, float>(handle, c, s, x, y);
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_rot_template<int64_t, float>)(handle, c, s, x, y));
+        return rocsparse_status_success;
     }
     // double real ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f64_r)
     {
-        return rocsparse_rot_template<int64_t, double>(handle, c, s, x, y);
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_rot_template<int64_t, double>)(handle, c, s, x, y));
+        return rocsparse_status_success;
     }
     // single complex ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f32_c)
     {
-        return rocsparse_rot_template<int64_t, rocsparse_float_complex>(handle, c, s, x, y);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_rot_template<int64_t, rocsparse_float_complex>)(handle, c, s, x, y));
+        return rocsparse_status_success;
     }
     // double complex ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f64_c)
     {
-        return rocsparse_rot_template<int64_t, rocsparse_double_complex>(handle, c, s, x, y);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_rot_template<int64_t, rocsparse_double_complex>)(handle, c, s, x, y));
+        return rocsparse_status_success;
     }
 
-    return rocsparse_status_not_implemented;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

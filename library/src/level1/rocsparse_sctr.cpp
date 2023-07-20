@@ -31,6 +31,61 @@
  * ===========================================================================
  */
 
+#include "sctr_device.h"
+
+template <typename I, typename T>
+rocsparse_status rocsparse_sctr_template(rocsparse_handle     handle,
+                                         I                    nnz,
+                                         const T*             x_val,
+                                         const I*             x_ind,
+                                         T*                   y,
+                                         rocsparse_index_base idx_base)
+{
+    // Check for valid handle
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+
+    // Logging
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xsctr"),
+              nnz,
+              (const void*&)x_val,
+              (const void*&)x_ind,
+              (const void*&)y,
+              idx_base);
+
+    ROCSPARSE_CHECKARG_SIZE(1, nnz);
+    ROCSPARSE_CHECKARG_ARRAY(2, nnz, x_val);
+    ROCSPARSE_CHECKARG_ARRAY(3, nnz, x_ind);
+    ROCSPARSE_CHECKARG_ARRAY(4, nnz, y);
+    ROCSPARSE_CHECKARG_ENUM(5, idx_base);
+
+    // Quick return if possible
+    if(nnz == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    // Stream
+    hipStream_t stream = handle->stream;
+
+#define SCTR_DIM 512
+    dim3 sctr_blocks((nnz - 1) / SCTR_DIM + 1);
+    dim3 sctr_threads(SCTR_DIM);
+
+    hipLaunchKernelGGL((sctr_kernel<SCTR_DIM>),
+                       sctr_blocks,
+                       sctr_threads,
+                       0,
+                       stream,
+                       nnz,
+                       x_val,
+                       x_ind,
+                       y,
+                       idx_base);
+#undef SCTR_DIM
+    return rocsparse_status_success;
+}
+
 extern "C" rocsparse_status rocsparse_ssctr(rocsparse_handle     handle,
                                             rocsparse_int        nnz,
                                             const float*         x_val,
@@ -39,11 +94,12 @@ extern "C" rocsparse_status rocsparse_ssctr(rocsparse_handle     handle,
                                             rocsparse_index_base idx_base)
 try
 {
-    return rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_dsctr(rocsparse_handle     handle,
@@ -54,11 +110,12 @@ extern "C" rocsparse_status rocsparse_dsctr(rocsparse_handle     handle,
                                             rocsparse_index_base idx_base)
 try
 {
-    return rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_csctr(rocsparse_handle               handle,
@@ -69,11 +126,12 @@ extern "C" rocsparse_status rocsparse_csctr(rocsparse_handle               handl
                                             rocsparse_index_base           idx_base)
 try
 {
-    return rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_zsctr(rocsparse_handle                handle,
@@ -84,11 +142,12 @@ extern "C" rocsparse_status rocsparse_zsctr(rocsparse_handle                hand
                                             rocsparse_index_base            idx_base)
 try
 {
-    return rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_isctr(rocsparse_handle     handle,
@@ -99,9 +158,32 @@ extern "C" rocsparse_status rocsparse_isctr(rocsparse_handle     handle,
                                             rocsparse_index_base idx_base)
 try
 {
-    return rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
+
+#define INSTANTIATE(I, T)                                                          \
+    template rocsparse_status rocsparse_sctr_template(rocsparse_handle     handle, \
+                                                      I                    nnz,    \
+                                                      const T*             x_val,  \
+                                                      const I*             x_ind,  \
+                                                      T*                   y,      \
+                                                      rocsparse_index_base idx_base)
+
+INSTANTIATE(int32_t, int8_t);
+INSTANTIATE(int32_t, float);
+INSTANTIATE(int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, double);
+INSTANTIATE(int32_t, rocsparse_double_complex);
+
+INSTANTIATE(int64_t, int8_t);
+INSTANTIATE(int64_t, float);
+INSTANTIATE(int64_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, double);
+INSTANTIATE(int64_t, rocsparse_double_complex);
+
+#undef INSTANTIATE

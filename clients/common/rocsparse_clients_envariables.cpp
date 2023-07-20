@@ -24,7 +24,7 @@
 #include "rocsparse_clients_envariables.hpp"
 #include "rocsparse-types.h"
 #include <iostream>
-
+#include <mutex>
 constexpr rocsparse_clients_envariables::var_bool rocsparse_clients_envariables::s_var_bool_all[];
 constexpr rocsparse_clients_envariables::var_string
     rocsparse_clients_envariables::s_var_string_all[];
@@ -39,10 +39,12 @@ static constexpr size_t s_var_bool_size = countof(rocsparse_clients_envariables:
 static constexpr size_t s_var_string_size
     = countof(rocsparse_clients_envariables::s_var_string_all);
 
-static constexpr const char* s_var_bool_names[s_var_bool_size] = {"ROCSPARSE_CLIENTS_VERBOSE"};
+static constexpr const char* s_var_bool_names[s_var_bool_size]
+    = {"ROCSPARSE_CLIENTS_VERBOSE", "ROCSPARSE_CLIENTS_TEST_DEBUG_ARGUMENTS"};
 static constexpr const char* s_var_string_names[s_var_string_size]
     = {"ROCSPARSE_CLIENTS_MATRICES_DIR"};
-static constexpr const char* s_var_bool_descriptions[s_var_bool_size] = {"0: disabled, 1: enabled"};
+static constexpr const char* s_var_bool_descriptions[s_var_bool_size]
+    = {"0: disabled, 1: enabled", "0: disabled, 1: enabled"};
 static constexpr const char* s_var_string_descriptions[s_var_string_size]
     = {"Full path of the matrices directory"};
 
@@ -95,6 +97,7 @@ bool rocsparse_getenv<std::string>(const char* name, bool& defined, std::string&
 
 struct rocsparse_clients_envariables_impl
 {
+    static std::mutex s_mutex;
 
 public:
     //
@@ -114,6 +117,27 @@ public:
     };
 
     //
+    // \brief Set value of a Boolean variable.
+    //
+    inline void set(rocsparse_clients_envariables::var_bool v, bool value)
+    {
+
+        rocsparse_clients_envariables_impl::s_mutex.lock();
+        this->m_var_bool[v] = value;
+        rocsparse_clients_envariables_impl::s_mutex.unlock();
+    };
+
+    inline void set(rocsparse_clients_envariables::var_string v, const char* value)
+    {
+        rocsparse_clients_envariables_impl::s_mutex.lock();
+        this->m_var_string[v] = value;
+        rocsparse_clients_envariables_impl::s_mutex.unlock();
+    };
+
+    //
+    // \brief Return value of a string variable.
+    //
+    //
     // \brief Is a Boolean variable defined ?
     //
     inline bool is_defined(rocsparse_clients_envariables::var_bool v) const
@@ -132,7 +156,7 @@ public:
     //
     // Return the unique instance.
     //
-    static const rocsparse_clients_envariables_impl& Instance();
+    static rocsparse_clients_envariables_impl& Instance();
 
 private:
     ~rocsparse_clients_envariables_impl()                                         = default;
@@ -153,6 +177,18 @@ private:
             switch(tag)
             {
             case rocsparse_clients_envariables::VERBOSE:
+            {
+                const bool success = rocsparse_getenv(
+                    s_var_bool_names[tag], this->m_var_bool_defined[tag], this->m_var_bool[tag]);
+                if(!success)
+                {
+                    std::cerr << "rocsparse_getenv failed on fetching " << s_var_bool_names[tag]
+                              << std::endl;
+                    throw(rocsparse_status_invalid_value);
+                }
+                break;
+            }
+            case rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS:
             {
                 const bool success = rocsparse_getenv(
                     s_var_bool_names[tag], this->m_var_bool_defined[tag], this->m_var_bool[tag]);
@@ -203,6 +239,16 @@ private:
                               << std::endl;
                     break;
                 }
+                case rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS:
+                {
+                    const bool v = this->m_var_bool[tag];
+                    std::cout << ""
+                              << "env variable " << s_var_bool_names[tag] << " : "
+                              << ((this->m_var_bool_defined[tag]) ? ((v) ? "enabled" : "disabled")
+                                                                  : "<undefined>")
+                              << std::endl;
+                    break;
+                }
                 }
             }
 
@@ -226,7 +272,9 @@ private:
     }
 };
 
-const rocsparse_clients_envariables_impl& rocsparse_clients_envariables_impl::Instance()
+std::mutex rocsparse_clients_envariables_impl::s_mutex;
+
+rocsparse_clients_envariables_impl& rocsparse_clients_envariables_impl::Instance()
 {
     static rocsparse_clients_envariables_impl instance;
     return instance;
@@ -240,6 +288,12 @@ bool rocsparse_clients_envariables::is_defined(rocsparse_clients_envariables::va
 const char* rocsparse_clients_envariables::get(rocsparse_clients_envariables::var_string v)
 {
     return rocsparse_clients_envariables_impl::Instance().get(v);
+}
+
+void rocsparse_clients_envariables::set(rocsparse_clients_envariables::var_string v,
+                                        const char*                               value)
+{
+    rocsparse_clients_envariables_impl::Instance().set(v, value);
 }
 
 const char* rocsparse_clients_envariables::get_name(rocsparse_clients_envariables::var_string v)
@@ -261,6 +315,11 @@ bool rocsparse_clients_envariables::is_defined(rocsparse_clients_envariables::va
 bool rocsparse_clients_envariables::get(rocsparse_clients_envariables::var_bool v)
 {
     return rocsparse_clients_envariables_impl::Instance().get(v);
+}
+
+void rocsparse_clients_envariables::set(rocsparse_clients_envariables::var_bool v, bool value)
+{
+    rocsparse_clients_envariables_impl::Instance().set(v, value);
 }
 
 const char* rocsparse_clients_envariables::get_name(rocsparse_clients_envariables::var_bool v)

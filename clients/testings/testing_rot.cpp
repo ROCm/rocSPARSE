@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,45 +26,14 @@
 template <typename I, typename T>
 void testing_rot_bad_arg(const Arguments& arg)
 {
-    I size = 100;
-    I nnz  = 100;
-
-    T c = (T)3;
-    T s = (T)2;
-
-    rocsparse_index_base base = rocsparse_index_base_zero;
-
-    // Index and data type
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_datatype  ttype = get_datatype<T>();
-
-    // Create rocsparse handle
-    rocsparse_local_handle handle;
-
-    // Allocate memory on device
-    device_vector<I> dx_ind(nnz);
-    device_vector<T> dx_val(nnz);
-    device_vector<T> dy(size);
-
-    if(!dx_ind || !dx_val || !dy)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Structures
-    rocsparse_local_spvec x(size, nnz, dx_ind, dx_val, itype, base, ttype);
-    rocsparse_local_dnvec y(size, dy, ttype);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_rot(nullptr, &c, &s, x, y), rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_rot(handle, nullptr, &s, x, y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_rot(handle, &c, nullptr, x, y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_rot(handle, &c, &s, nullptr, y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_rot(handle, &c, &s, x, nullptr),
-                            rocsparse_status_invalid_pointer);
+    static const size_t    safe_size = 100;
+    rocsparse_local_handle local_handle;
+    rocsparse_handle       handle = local_handle;
+    const void*            c      = (const void*)0x4;
+    const void*            s      = (const void*)0x4;
+    rocsparse_spvec_descr  x      = (rocsparse_spvec_descr)0x4;
+    rocsparse_dnvec_descr  y      = (rocsparse_dnvec_descr)0x4;
+    bad_arg_analysis(rocsparse_rot, handle, c, s, x, y);
 }
 
 template <typename I, typename T>

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,44 +24,56 @@
 
 #pragma once
 
-#include <iostream>
-static constexpr const char* s_rocsparse_debug_str = "//rocsparse.degug: ";
+#include "envariables.h"
+#include "status.h"
 
-//
-// Trace message..
-//
-#undef ROCSPARSE_DEBUG_VERBOSE
-#define ROCSPARSE_DEBUG_VERBOSE(msg__)                                                          \
-    do                                                                                          \
-    {                                                                                           \
-        std::cout << s_rocsparse_debug_str << std::endl;                                        \
-        std::cout << s_rocsparse_debug_str << "verbose" << std::endl;                           \
-        std::cout << s_rocsparse_debug_str << "  function : '" << __FUNCTION__ << "'"           \
-                  << std::endl;                                                                 \
-        std::cout << s_rocsparse_debug_str << "  file     : '" << __FILE__ << "'" << std::endl; \
-        std::cout << s_rocsparse_debug_str << "  line     : " << __LINE__ << std::endl;         \
-        std::cout << s_rocsparse_debug_str << "  message  : " << msg__ << std::endl;            \
-        std::cout << s_rocsparse_debug_str << std::endl;                                        \
-    } while(false)
-
-inline rocsparse_status rocsparse_return_status_trace(const char*      function,
-                                                      const char*      file,
-                                                      const int        line,
-                                                      rocsparse_status status)
+///
+/// @brief Structure to store debug global variables.
+///
+struct rocsparse_debug_variables_st
 {
-    if(rocsparse_status_success != status)
-    {
-        std::cerr << s_rocsparse_debug_str << std::endl
-                  << s_rocsparse_debug_str << "invalid status" << std::endl
-                  << s_rocsparse_debug_str << "function       : '" << function << "'" << std::endl
-                  << s_rocsparse_debug_str << "line           :  " << line << std::endl
-                  << s_rocsparse_debug_str << "file           : '" << file << "'" << std::endl
-                  << s_rocsparse_debug_str << std::endl;
-    }
-    return status;
-}
+private:
+    bool debug         = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG);
+    bool debug_verbose = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_VERBOSE);
+    bool debug_arguments_verbose
+        = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_VERBOSE)
+          || ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE);
+    bool debug_arguments = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG)
+                           || ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_ARGUMENTS);
 
-#undef ROCSPARSE_RETURN_STATUS
-#define ROCSPARSE_RETURN_STATUS(token__)  \
-    return rocsparse_return_status_trace( \
-        __FUNCTION__, __FILE__, __LINE__, rocsparse_status_##token__)
+public:
+    bool get_debug() const;
+    bool get_debug_verbose() const;
+    bool get_debug_arguments() const;
+    bool get_debug_arguments_verbose() const;
+
+    void set_debug(bool value);
+    void set_debug_verbose(bool value);
+    void set_debug_arguments(bool value);
+    void set_debug_arguments_verbose(bool value);
+};
+
+struct rocsparse_debug_st
+{
+private:
+    rocsparse_debug_variables_st m_var;
+
+public:
+    static rocsparse_debug_st& instance()
+    {
+        static rocsparse_debug_st self;
+        return self;
+    }
+
+    static rocsparse_debug_variables_st& var()
+    {
+        return instance().m_var;
+    }
+
+    ~rocsparse_debug_st() = default;
+
+private:
+    rocsparse_debug_st() = default;
+};
+
+#define rocsparse_debug_variables rocsparse_debug_st::instance().var()

@@ -145,6 +145,48 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
             }
             rocsparse_clients_matrices_dir_set(argv[++i]);
         }
+        else if(!strcmp(argv[i], "--rocsparse-clients-enable-test-debug-arguments"))
+        {
+            rocsparse_clients_envariables::set(rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS,
+                                               true);
+        }
+        else if(!strcmp(argv[i], "--rocsparse-clients-disable-test-debug-arguments"))
+        {
+            rocsparse_clients_envariables::set(rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS,
+                                               false);
+        }
+        else if(!strcmp(argv[i], "--rocsparse-disable-debug"))
+        {
+            rocsparse_disable_debug();
+        }
+        else if(!strcmp(argv[i], "--rocsparse-enable-debug"))
+        {
+            rocsparse_enable_debug();
+        }
+        else if(!strcmp(argv[i], "--rocsparse-enable-debug-verbose"))
+        {
+            rocsparse_enable_debug_verbose();
+        }
+        else if(!strcmp(argv[i], "--rocsparse-disable-debug-verbose"))
+        {
+            rocsparse_disable_debug_verbose();
+        }
+        else if(!strcmp(argv[i], "--rocsparse-enable-debug-arguments"))
+        {
+            rocsparse_enable_debug_arguments();
+        }
+        else if(!strcmp(argv[i], "--rocsparse-disable-debug-arguments"))
+        {
+            rocsparse_disable_debug_arguments();
+        }
+        else if(!strcmp(argv[i], "--rocsparse-enable-debug-arguments-verbose"))
+        {
+            rocsparse_enable_debug_arguments_verbose();
+        }
+        else if(!strcmp(argv[i], "--rocsparse-disable-debug-arguments-verbose"))
+        {
+            rocsparse_disable_debug_arguments_verbose();
+        }
         else
         {
             *argv_p++ = argv[i];
@@ -157,6 +199,50 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
                     << " [ --data <path> | --yaml <path> ] [--matrices-dir <path>] <options> ...\n"
                     << std::endl;
 
+                std::cout << "" << std::endl;
+                std::cout << "Rocsparse clients debug options:" << std::endl;
+                std::cout << "--rocsparse-clients-enable-test-debug-arguments   enable rocsparse "
+                             "clients test debug arguments, it discards any environment variable "
+                             "definition of ROCSPARSE_CLIENTS_TEST_DEBUG_ARGUMENTS."
+                          << std::endl;
+                std::cout << "--rocsparse-clients-disable-test-debug-arguments  disable rocsparse "
+                             "clients test debug arguments, it discards any environment variable "
+                             "definition of ROCSPARSE_CLIENTS_TEST_DEBUG_ARGUMENTS."
+                          << std::endl;
+                std::cout << "" << std::endl;
+                std::cout << "Rocsparse debug options:" << std::endl;
+                std::cout << "--rocsparse-enable-debug                     enable rocsparse debug, "
+                             "it discards any environment variable definition of ROCSPARSE_DEBUG."
+                          << std::endl;
+                std::cout
+                    << "--rocsparse-disable-debug                    disable rocsparse debug, it "
+                       "discards any environment variable definition of ROCSPARSE_DEBUG."
+                    << std::endl;
+                std::cout << "--rocsparse-enable-debug-verbose             enable rocsparse debug "
+                             "verbose, it discards any environment variable definition of "
+                             "ROCSPARSE_DEBUG_VERBOSE."
+                          << std::endl;
+                std::cout << "--rocsparse-disable-debug-verbose            disable rocsparse debug "
+                             "verbose, it discards any environment variable definition of "
+                             "ROCSPARSE_DEBUG_VERBOSE"
+                          << std::endl;
+                std::cout << "--rocsparse-enable-debug-arguments           enable rocsparse debug "
+                             "arguments, it discards any environment variable definition of "
+                             "ROCSPARSE_DEBUG_ARGUMENTS."
+                          << std::endl;
+                std::cout << "--rocsparse-disable-debug-arguments          disable rocsparse debug "
+                             "arguments, it discards any environment variable definition of "
+                             "ROCSPARSE_DEBUG_ARGUMENTS."
+                          << std::endl;
+                std::cout << "--rocsparse-enable-debug-arguments-verbose   enable rocsparse debug "
+                             "arguments verbose, it discards any environment variable definition "
+                             "of ROCSPARSE_DEBUG_ARGUMENTS_VERBOSE"
+                          << std::endl;
+                std::cout << "--rocsparse-disable-debug-arguments-verbose  disable rocsparse debug "
+                             "arguments verbose, it discards any environment variable definition "
+                             "of ROCSPARSE_DEBUG_ARGUMENTS_VERBOSE"
+                          << std::endl;
+                std::cout << "" << std::endl;
                 std::cout << "" << std::endl;
                 std::cout << "Specific environment variables:" << std::endl;
                 for(const auto v : rocsparse_clients_envariables::s_var_bool_all)

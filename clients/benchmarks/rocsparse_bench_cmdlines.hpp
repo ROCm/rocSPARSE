@@ -23,6 +23,7 @@
 * ************************************************************************ */
 #pragma once
 
+#include "rocsparse/rocsparse-auxiliary.h"
 #include "rocsparse_clients_envariables.hpp"
 #include <iostream>
 #include <sstream>
@@ -209,6 +210,69 @@ private:
         //
         cmdline(int argc, char** argv)
         {
+            if(detect_flag(argc, argv, "--rocsparse-clients-enable-test-debug-arguments"))
+            {
+                rocsparse_clients_envariables::set(
+                    rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS, true);
+            }
+
+            if(detect_flag(argc, argv, "--rocsparse-clients-disable-test-debug-arguments"))
+            {
+                rocsparse_clients_envariables::set(
+                    rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS, false);
+            }
+
+            const bool enable_rocsparse_debug = detect_flag(argc, argv, "--rocsparse-enable-debug");
+            if(enable_rocsparse_debug)
+            {
+                rocsparse_enable_debug();
+            }
+            const bool disable_rocsparse_debug
+                = detect_flag(argc, argv, "--rocsparse-disable-debug");
+            if(disable_rocsparse_debug)
+            {
+                rocsparse_disable_debug();
+            }
+
+            const bool enable_rocsparse_debug_verbose
+                = detect_flag(argc, argv, "--rocsparse-enable-debug-verbose");
+            if(enable_rocsparse_debug_verbose)
+            {
+                rocsparse_enable_debug_verbose();
+            }
+            const bool disable_rocsparse_debug_verbose
+                = detect_flag(argc, argv, "--rocsparse-disable-debug-verbose");
+            if(disable_rocsparse_debug_verbose)
+            {
+                rocsparse_disable_debug_verbose();
+            }
+
+            const bool enable_rocsparse_debug_arguments
+                = detect_flag(argc, argv, "--rocsparse-enable-debug-arguments");
+            if(enable_rocsparse_debug_arguments)
+            {
+                rocsparse_enable_debug_arguments();
+            }
+            const bool disable_rocsparse_debug_arguments
+                = detect_flag(argc, argv, "--rocsparse-disable-debug-arguments");
+            if(disable_rocsparse_debug_arguments)
+            {
+                rocsparse_disable_debug_arguments();
+            }
+
+            const bool enable_rocsparse_debug_arguments_verbose
+                = detect_flag(argc, argv, "--rocsparse-enable-debug-arguments-verbose");
+            if(enable_rocsparse_debug_arguments_verbose)
+            {
+                rocsparse_enable_debug_arguments_verbose();
+            }
+            const bool disable_rocsparse_debug_arguments_verbose
+                = detect_flag(argc, argv, "--rocsparse-disable-debug-arguments-verbose");
+            if(disable_rocsparse_debug_arguments_verbose)
+            {
+                rocsparse_disable_debug_arguments_verbose();
+            }
+
             //
             // Any option --bench-?
             //
@@ -587,11 +651,54 @@ public:
                 << rocsparse_clients_envariables::get_description(v) << std::endl;
         }
         out << "" << std::endl;
+        out << "Rocsparse clients debug options:" << std::endl;
+        out << "--rocsparse-clients-enable-test-debug-arguments   enable rocsparse clients test "
+               "debug arguments, it discards any environment variable definition of "
+               "ROCSPARSE_CLIENTS_TEST_DEBUG_ARGUMENTS."
+            << std::endl;
+        out << "--rocsparse-clients-disable-test-debug-arguments  disable rocsparse clients test "
+               "debug arguments, it discards any environment variable definition of "
+               "ROCSPARSE_CLIENTS_TEST_DEBUG_ARGUMENTS."
+            << std::endl;
+        out << "" << std::endl;
+        out << "Rocsparse debug options:" << std::endl;
+        out << "--rocsparse-enable-debug                     enable rocsparse debug, it discards "
+               "any environment variable definition of ROCSPARSE_DEBUG."
+            << std::endl;
+        out << "--rocsparse-disable-debug                    disable rocsparse debug, it discards "
+               "any environment variable definition of ROCSPARSE_DEBUG."
+            << std::endl;
+        out << "--rocsparse-enable-debug-verbose             enable rocsparse debug verbose, it "
+               "discards any environment variable definition of ROCSPARSE_DEBUG_VERBOSE."
+            << std::endl;
+        out << "--rocsparse-disable-debug-verbose            disable rocsparse debug verbose, it "
+               "discards any environment variable definition of ROCSPARSE_DEBUG_VERBOSE"
+            << std::endl;
+        out << "--rocsparse-enable-debug-arguments           enable rocsparse debug arguments, it "
+               "discards any environment variable definition of ROCSPARSE_DEBUG_ARGUMENTS."
+            << std::endl;
+        out << "--rocsparse-disable-debug-arguments          disable rocsparse debug arguments, it "
+               "discards any environment variable definition of ROCSPARSE_DEBUG_ARGUMENTS."
+            << std::endl;
+        out << "--rocsparse-enable-debug-arguments-verbose   enable rocsparse debug arguments "
+               "verbose, it discards any environment variable definition of "
+               "ROCSPARSE_DEBUG_ARGUMENTS_VERBOSE"
+            << std::endl;
+        out << "--rocsparse-disable-debug-arguments-verbose  disable rocsparse debug arguments "
+               "verbose, it discards any environment variable definition of "
+               "ROCSPARSE_DEBUG_ARGUMENTS_VERBOSE"
+            << std::endl;
+        out << "" << std::endl;
         out << "Benchmarks options:" << std::endl;
-        out << "--bench-x          flag to preceed the main option " << std::endl;
-        out << "--bench-o          output JSON file, (default = a.json)" << std::endl;
-        out << "--bench-n          number of runs, (default = 1)" << std::endl;
-        out << "--bench-no-rawdata do not export raw data." << std::endl;
+        out << "--bench-x                                         flag to preceed the main option "
+            << std::endl;
+        out << "--bench-o                                         output JSON file, (default = "
+               "a.json)"
+            << std::endl;
+        out << "--bench-n                                         number of runs, (default = 1)"
+            << std::endl;
+        out << "--bench-no-rawdata                                do not export raw data."
+            << std::endl;
         out << "" << std::endl;
         out << "Example:" << std::endl;
         out << "rocsparse-bench -f csrmv --bench-x -M 10 20 30 40" << std::endl;

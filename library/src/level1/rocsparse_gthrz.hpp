@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,82 +25,10 @@
 #pragma once
 #include "utility.h"
 
-#include "gthrz_device.h"
-
 template <typename T>
 rocsparse_status rocsparse_gthrz_template(rocsparse_handle     handle,
                                           rocsparse_int        nnz,
                                           T*                   y,
                                           T*                   x_val,
                                           const rocsparse_int* x_ind,
-                                          rocsparse_index_base idx_base)
-{
-    // Check for valid handle
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-
-    // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgthrz"),
-              nnz,
-              (const void*&)y,
-              (const void*&)x_val,
-              (const void*&)x_ind,
-              idx_base);
-
-    log_bench(handle, "./rocsparse-bench -f gthrz -r", replaceX<T>("X"), "--mtx <vector.mtx> ");
-
-    // Check index base
-    if(rocsparse_enum_utils::is_invalid(idx_base))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check size
-    if(nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Quick return if possible
-    if(nnz == 0)
-    {
-        return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(y == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(x_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(x_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Stream
-    hipStream_t stream = handle->stream;
-
-#define GTHRZ_DIM 512
-    dim3 gthrz_blocks((nnz - 1) / GTHRZ_DIM + 1);
-    dim3 gthrz_threads(GTHRZ_DIM);
-
-    hipLaunchKernelGGL((gthrz_kernel<GTHRZ_DIM>),
-                       gthrz_blocks,
-                       gthrz_threads,
-                       0,
-                       stream,
-                       nnz,
-                       y,
-                       x_val,
-                       x_ind,
-                       idx_base);
-#undef GTHRZ_DIM
-    return rocsparse_status_success;
-}
+                                          rocsparse_index_base idx_base);

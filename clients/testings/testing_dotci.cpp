@@ -34,16 +34,16 @@ void testing_dotci_bad_arg(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
 
-    rocsparse_handle     handle = local_handle;
-    rocsparse_int        nnz    = safe_size;
-    const T*             x_val  = (const T*)0x4;
-    const rocsparse_int* x_ind  = (const rocsparse_int*)0x4;
-    const T*             y      = (T*)0x4;
-    T*                   result = &h_result;
-    rocsparse_index_base base   = rocsparse_index_base_zero;
+    rocsparse_handle     handle   = local_handle;
+    rocsparse_int        nnz      = safe_size;
+    const T*             x_val    = (const T*)0x4;
+    const rocsparse_int* x_ind    = (const rocsparse_int*)0x4;
+    const T*             y        = (T*)0x4;
+    T*                   result   = &h_result;
+    rocsparse_index_base idx_base = rocsparse_index_base_zero;
 
-#define PARAMS handle, nnz, x_val, x_ind, y, result, base
-    auto_testing_bad_arg(rocsparse_dotci<T>, PARAMS);
+#define PARAMS handle, nnz, x_val, x_ind, y, result, idx_base
+    bad_arg_analysis(rocsparse_dotci<T>, PARAMS);
 #undef PARAMS
 }
 

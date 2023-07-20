@@ -24,46 +24,8 @@
 
 #pragma once
 
+#include "control.h"
 #include "status.h"
-
-/*******************************************************************************
- * Definitions
- * this file to not include any others
- * thereby it can include top-level definitions included by all
- ******************************************************************************/
-
-//
-// @brief Macros for coverage exclusion
-//
-#define ROCSPARSE_COV_EXCL_START (void)("LCOV_EXCL_START")
-#define ROCSPARSE_COV_EXCL_STOP (void)("LCOV_EXCL_STOP")
-
-#define RETURN_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                           \
-    {                                                                         \
-        const hipError_t TMP_STATUS_FOR_CHECK = INPUT_STATUS_FOR_CHECK;       \
-        if(TMP_STATUS_FOR_CHECK != hipSuccess)                                \
-        {                                                                     \
-            return get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK); \
-        }                                                                     \
-    }
-
-#define RETURN_IF_ROCSPARSE_ERROR(INPUT_STATUS_FOR_CHECK)                     \
-    {                                                                         \
-        const rocsparse_status TMP_STATUS_FOR_CHECK = INPUT_STATUS_FOR_CHECK; \
-        if(TMP_STATUS_FOR_CHECK != rocsparse_status_success)                  \
-        {                                                                     \
-            return TMP_STATUS_FOR_CHECK;                                      \
-        }                                                                     \
-    }
-
-#define THROW_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                           \
-    {                                                                        \
-        hipError_t TMP_STATUS_FOR_CHECK = INPUT_STATUS_FOR_CHECK;            \
-        if(TMP_STATUS_FOR_CHECK != hipSuccess)                               \
-        {                                                                    \
-            throw get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK); \
-        }                                                                    \
-    }
 
 #define PRINT_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                \
     {                                                             \

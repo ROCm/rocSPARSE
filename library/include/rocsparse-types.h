@@ -395,7 +395,7 @@ typedef enum rocsparse_layer_mode
 {
     rocsparse_layer_mode_none      = 0x0, /**< layer is not active. */
     rocsparse_layer_mode_log_trace = 0x1, /**< layer is in logging mode. */
-    rocsparse_layer_mode_log_bench = 0x2, /**< layer is in benchmarking mode. */
+    rocsparse_layer_mode_log_bench = 0x2, /**< layer is in benchmarking mode (deprecated) */
     rocsparse_layer_mode_log_debug = 0x4 /**< layer is in debug mode. */
 } rocsparse_layer_mode;
 
@@ -421,7 +421,8 @@ typedef enum rocsparse_status_
     rocsparse_status_not_initialized         = 10, /**< descriptor has not been initialized. */
     rocsparse_status_type_mismatch           = 11, /**< index types do not match. */
     rocsparse_status_requires_sorted_storage = 12, /**< sorted storage required. */
-    rocsparse_status_thrown_exception        = 13 /**< exception being thrown. */
+    rocsparse_status_thrown_exception        = 13, /**< exception being thrown. */
+    rocsparse_status_continue                = 14 /**< Nothing preventing function to proceed */
 } rocsparse_status;
 
 /*! \ingroup types_module

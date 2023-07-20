@@ -27,41 +27,63 @@
 #include "rocsparse_test.hpp"
 #include "rocsparse_test_template_traits.hpp"
 
+#include "test_check.hpp"
+
 //
 // INTERNAL MACRO TO SPECIALIZE TEST CALL NEEDED TO INSTANTIATE
 //
-#define SPECIALIZE_ROCSPARSE_TEST_CALL(ROUTINE)                                              \
-    /**/ template <> /**/ struct rocsparse_test_call<rocsparse_test_enum::ROUTINE>           \
-    /**/ {                                                                                   \
-        /**/ template <typename... P> /**/ static void testing_bad_arg(const Arguments& arg) \
-        /**/ {                                                                               \
-            /**/ testing_##ROUTINE##_bad_arg<P...>(arg);                                     \
-      /**/       }                                                                           \
-        /**/ static void testing_extra(const Arguments& arg)                                 \
-        /**/ {                                                                               \
-            /**/ testing_##ROUTINE##_extra(arg);                                             \
-      /**/       }                                                                           \
-        /**/                                                                                 \
-        /**/ template <typename... P> /**/ static void testing(const Arguments& arg)         \
-        /**/ {                                                                               \
-            /**/ try                                                                         \
-            {                                                                                \
-                testing_##ROUTINE<P...>(arg);                                                \
-            }                                                                                \
-            /**/ catch(rocsparse_status & status)                                            \
-            {                                                                                \
-                CHECK_ROCSPARSE_ERROR(status);                                               \
-            }                                                                                \
-            /**/ catch(hipError_t & error)                                                   \
-            {                                                                                \
-                CHECK_HIP_ERROR(error);                                                      \
-            }                                                                                \
-            /**/ catch(std::exception & error)                                               \
-            {                                                                                \
-                CHECK_ROCSPARSE_ERROR(rocsparse_status_thrown_exception);                    \
-            }                                                                                \
-      /**/       }                                                                           \
-    /**/   }
+#define SPECIALIZE_ROCSPARSE_TEST_CALL(ROUTINE)                                                   \
+    template <>                                                                                   \
+    struct rocsparse_test_call<rocsparse_test_enum::ROUTINE>                                      \
+    {                                                                                             \
+        template <typename... P>                                                                  \
+        static void testing_bad_arg(const Arguments& arg)                                         \
+        {                                                                                         \
+            test_check::reset_auto_testing_bad_arg();                                             \
+            const int state_debug_arguments_verbose = rocsparse_state_debug_arguments_verbose();  \
+            if(state_debug_arguments_verbose == 1)                                                \
+            {                                                                                     \
+                rocsparse_disable_debug_arguments_verbose();                                      \
+            }                                                                                     \
+            testing_##ROUTINE##_bad_arg<P...>(arg);                                               \
+            if(state_debug_arguments_verbose == 1)                                                \
+            {                                                                                     \
+                rocsparse_enable_debug_arguments_verbose();                                       \
+            }                                                                                     \
+            if(false && false == test_check::did_auto_testing_bad_arg())                          \
+            {                                                                                     \
+                std::cerr << "rocsparse_test warning testing bad arguments of "                   \
+                          << rocsparse_test_enum::to_string(rocsparse_test_enum::ROUTINE)         \
+                          << " must use auto_testing_bad_arg, or bad_arg_analysis." << std::endl; \
+                CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);                           \
+            }                                                                                     \
+        }                                                                                         \
+        static void testing_extra(const Arguments& arg)                                           \
+        {                                                                                         \
+            testing_##ROUTINE##_extra(arg);                                                       \
+        }                                                                                         \
+                                                                                                  \
+        template <typename... P>                                                                  \
+        static void testing(const Arguments& arg)                                                 \
+        {                                                                                         \
+            try                                                                                   \
+            {                                                                                     \
+                testing_##ROUTINE<P...>(arg);                                                     \
+            }                                                                                     \
+            catch(rocsparse_status & status)                                                      \
+            {                                                                                     \
+                CHECK_ROCSPARSE_ERROR(status);                                                    \
+            }                                                                                     \
+            catch(hipError_t & error)                                                             \
+            {                                                                                     \
+                CHECK_HIP_ERROR(error);                                                           \
+            }                                                                                     \
+            catch(std::exception & error)                                                         \
+            {                                                                                     \
+                CHECK_ROCSPARSE_ERROR(rocsparse_status_thrown_exception);                         \
+            }                                                                                     \
+        }                                                                                         \
+    }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
