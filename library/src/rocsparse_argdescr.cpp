@@ -33,6 +33,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+int64_t rocsparse_get_pid()
+{
+    return 0;
+}
+
+int64_t rocsparse_get_tid()
+{
+    return 0;
+}
+
 ///
 /// @brief The rocsparse argument descriptor.
 ///
@@ -41,12 +51,12 @@ struct rocsparse_argdescr_st
     ///
     /// @brief Thread id.
     ///
-    pid_t m_tid{};
+    int64_t m_tid{};
     ///
 
     /// @brief Process id.
     ///
-    pid_t m_pid{};
+    int64_t m_pid{};
 
     ///
     /// @brief Line in the file.
@@ -107,7 +117,7 @@ struct rocsparse_argdescr_st
 struct rocsparse_argdescr
 {
 private:
-    std::map<pid_t, rocsparse_argdescr_st> map;
+    std::map<int64_t, rocsparse_argdescr_st> map;
 
 protected:
     static rocsparse_argdescr& instance()
@@ -117,7 +127,7 @@ protected:
     };
 
 public:
-    static rocsparse_argdescr_st& arg(pid_t tid)
+    static rocsparse_argdescr_st& arg(int64_t tid)
     {
         const auto it = instance().map.find(tid);
         if(it != instance().map.end())
@@ -132,7 +142,7 @@ public:
         }
     }
 
-    static bool find(void** c, pid_t tid)
+    static bool find(void** c, int64_t tid)
     {
         c[0]          = nullptr;
         const auto it = instance().map.find(tid);
@@ -146,7 +156,7 @@ public:
 
     static bool find(void** c)
     {
-        return find(c, gettid());
+        return find(c, rocsparse_get_tid());
     }
 
     static bool free(void* obj)
@@ -238,13 +248,13 @@ rocsparse_status rocsparse_argdescr_get_status(const void* argdescr, rocsparse_s
 /// @brief Get the thread id.
 ///
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_argdescr_get_tid(const void* argdescr, pid_t* tid);
+rocsparse_status rocsparse_argdescr_get_tid(const void* argdescr, int64_t* tid);
 
 ///
 /// @brief Get the process id.
 ///
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_argdescr_get_pid(const void* argdescr, pid_t* pid);
+rocsparse_status rocsparse_argdescr_get_pid(const void* argdescr, int64_t* pid);
 
 ///
 /// @brief Get the index of the argument descriptor.
@@ -345,7 +355,7 @@ rocsparse_status rocsparse_argdescr_get_status(const void* argdescr, rocsparse_s
     return rocsparse_status_success;
 }
 
-rocsparse_status rocsparse_argdescr_get_pid(const void* argdescr, pid_t* res)
+rocsparse_status rocsparse_argdescr_get_pid(const void* argdescr, int64_t* res)
 {
     if(!argdescr)
     {
@@ -360,7 +370,7 @@ rocsparse_status rocsparse_argdescr_get_pid(const void* argdescr, pid_t* res)
     return rocsparse_status_success;
 }
 
-rocsparse_status rocsparse_argdescr_get_tid(const void* argdescr, pid_t* res)
+rocsparse_status rocsparse_argdescr_get_tid(const void* argdescr, int64_t* res)
 {
     if(!argdescr)
     {
@@ -433,7 +443,7 @@ rocsparse_status rocsparse_argdescr_get_function_name(const void* argdescr, cons
 
 rocsparse_status rocsparse_argdescr_create(void** argdescr)
 {
-    rocsparse_argdescr_st& elm = rocsparse_argdescr::arg(gettid());
+    rocsparse_argdescr_st& elm = rocsparse_argdescr::arg(rocsparse_get_tid());
     argdescr[0]                = &elm;
     return rocsparse_status_success;
 }
