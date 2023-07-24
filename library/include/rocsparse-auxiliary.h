@@ -618,6 +618,7 @@ rocsparse_status rocsparse_destroy_color_info(rocsparse_color_info info);
  *  \retval rocsparse_status_invalid_size if \p size or \p nnz is invalid.
  *  \retval rocsparse_status_invalid_value if \p idx_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_spvec_descr(rocsparse_spvec_descr* descr,
                                               int64_t                size,
@@ -637,6 +638,7 @@ rocsparse_status rocsparse_create_const_spvec_descr(rocsparse_const_spvec_descr*
                                                     rocsparse_indextype          idx_type,
                                                     rocsparse_index_base         idx_base,
                                                     rocsparse_datatype           data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Destroy a sparse vector descriptor
@@ -682,6 +684,7 @@ rocsparse_status rocsparse_destroy_spvec_descr(rocsparse_const_spvec_descr descr
  *  \retval rocsparse_status_invalid_size if \p size or \p nnz is invalid.
  *  \retval rocsparse_status_invalid_value if \p idx_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spvec_get(const rocsparse_spvec_descr descr,
                                      int64_t*                    size,
@@ -701,6 +704,7 @@ rocsparse_status rocsparse_const_spvec_get(rocsparse_const_spvec_descr descr,
                                            rocsparse_indextype*        idx_type,
                                            rocsparse_index_base*       idx_base,
                                            rocsparse_datatype*         data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Get the index base stored in the sparse vector descriptor
@@ -729,12 +733,14 @@ rocsparse_status rocsparse_spvec_get_index_base(rocsparse_const_spvec_descr desc
  *  \retval rocsparse_status_success the operation completed successfully.
  *  \retval rocsparse_status_invalid_pointer if \p descr or \p values is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spvec_get_values(const rocsparse_spvec_descr descr, void** values);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_const_spvec_get_values(rocsparse_const_spvec_descr descr,
                                                   const void**                values);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Set the values array in the sparse vector descriptor
@@ -783,6 +789,7 @@ rocsparse_status rocsparse_spvec_set_values(rocsparse_spvec_descr descr, void* v
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p nnz is invalid.
  *  \retval rocsparse_status_invalid_value if \p idx_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_coo_descr(rocsparse_spmat_descr* descr,
                                             int64_t                rows,
@@ -806,6 +813,7 @@ rocsparse_status rocsparse_create_const_coo_descr(rocsparse_const_spmat_descr* d
                                                   rocsparse_indextype          idx_type,
                                                   rocsparse_index_base         idx_base,
                                                   rocsparse_datatype           data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Create a sparse COO AoS matrix descriptor
@@ -938,6 +946,7 @@ rocsparse_status rocsparse_create_bsr_descr(rocsparse_spmat_descr* descr,
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p nnz is invalid.
  *  \retval rocsparse_status_invalid_value if \p row_ptr_type or \p col_ind_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_csr_descr(rocsparse_spmat_descr* descr,
                                             int64_t                rows,
@@ -963,6 +972,7 @@ rocsparse_status rocsparse_create_const_csr_descr(rocsparse_const_spmat_descr* d
                                                   rocsparse_indextype          col_ind_type,
                                                   rocsparse_index_base         idx_base,
                                                   rocsparse_datatype           data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Create a sparse CSC matrix descriptor
@@ -999,6 +1009,7 @@ rocsparse_status rocsparse_create_const_csr_descr(rocsparse_const_spmat_descr* d
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p nnz is invalid.
  *  \retval rocsparse_status_invalid_value if \p col_ptr_type or \p row_ind_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_csc_descr(rocsparse_spmat_descr* descr,
                                             int64_t                rows,
@@ -1024,6 +1035,7 @@ rocsparse_status rocsparse_create_const_csc_descr(rocsparse_const_spmat_descr* d
                                                   rocsparse_indextype          row_ind_type,
                                                   rocsparse_index_base         idx_base,
                                                   rocsparse_datatype           data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Create a sparse ELL matrix descriptor
@@ -1102,6 +1114,7 @@ rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols is invalid.
  *  \retval rocsparse_status_invalid_value if \p idx_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_bell_descr(rocsparse_spmat_descr* descr,
                                              int64_t                rows,
@@ -1127,6 +1140,7 @@ rocsparse_status rocsparse_create_const_bell_descr(rocsparse_const_spmat_descr* 
                                                    rocsparse_indextype          idx_type,
                                                    rocsparse_index_base         idx_base,
                                                    rocsparse_datatype           data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Destroy a sparse matrix descriptor
@@ -1176,6 +1190,7 @@ rocsparse_status rocsparse_destroy_spmat_descr(rocsparse_const_spmat_descr descr
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p nnz is invalid.
  *  \retval rocsparse_status_invalid_value if \p idx_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coo_get(const rocsparse_spmat_descr descr,
                                    int64_t*                    rows,
@@ -1199,6 +1214,7 @@ rocsparse_status rocsparse_const_coo_get(rocsparse_const_spmat_descr descr,
                                          rocsparse_indextype*        idx_type,
                                          rocsparse_index_base*       idx_base,
                                          rocsparse_datatype*         data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Get the fields of the sparse COO AoS matrix descriptor
@@ -1275,6 +1291,7 @@ rocsparse_status rocsparse_coo_aos_get(const rocsparse_spmat_descr descr,
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p nnz is invalid.
  *  \retval rocsparse_status_invalid_value if \p row_ptr_type or \p col_ind_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csr_get(const rocsparse_spmat_descr descr,
                                    int64_t*                    rows,
@@ -1300,7 +1317,42 @@ rocsparse_status rocsparse_const_csr_get(rocsparse_const_spmat_descr descr,
                                          rocsparse_indextype*        col_ind_type,
                                          rocsparse_index_base*       idx_base,
                                          rocsparse_datatype*         data_type);
+/**@}*/
 
+/*! \ingroup aux_module
+ *  \brief Get the fields of the sparse CSC matrix descriptor
+ *  \details
+ *  \p rocsparse_csc_get gets the fields of the sparse CSC matrix descriptor
+ *
+ *  @param[in]
+ *  descr        the pointer to the sparse CSC matrix descriptor.
+ *  @param[out]
+ *  rows         number of rows in the CSC matrix.
+ *  @param[out]
+ *  cols         number of columns in the CSC matrix
+ *  @param[out]
+ *  nnz          number of non-zeros in the CSC matrix.
+ *  @param[out]
+ *  csc_col_ptr  column offsets of the CSC matrix (must be array of length \p cols+1 ).
+ *  @param[out]
+ *  csc_row_ind  row indices of the CSC matrix (must be array of length \p nnz ).
+ *  @param[out]
+ *  csc_val      values of the CSC matrix (must be array of length \p nnz ).
+ *  @param[out]
+ *  col_ptr_type \ref rocsparse_indextype_i32 or \ref rocsparse_indextype_i64.
+ *  @param[out]
+ *  row_ind_type \ref rocsparse_indextype_i32 or \ref rocsparse_indextype_i64.
+ *  @param[out]
+ *  idx_base     \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
+ *  @param[out]
+ *  data_type    \ref rocsparse_datatype_f32_r, \ref rocsparse_datatype_f64_r,
+ *               \ref rocsparse_datatype_f32_c or \ref rocsparse_datatype_f64_c.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer if \p descr or \p csc_col_ptr or \p csc_row_ind or \p csr_val is invalid.
+ *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p nnz is invalid.
+ *  \retval rocsparse_status_invalid_value if \p row_ptr_type or \p col_ind_type or \p idx_base or \p data_type is invalid.
+ */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_const_csc_get(rocsparse_const_spmat_descr descr,
                                          int64_t*                    rows,
@@ -1389,6 +1441,7 @@ rocsparse_status rocsparse_ell_get(const rocsparse_spmat_descr descr,
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p ell_block_dim is invalid.
  *  \retval rocsparse_status_invalid_value if \p ell_block_dir or \p idx_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_bell_get(const rocsparse_spmat_descr descr,
                                     int64_t*                    rows,
@@ -1414,6 +1467,7 @@ rocsparse_status rocsparse_const_bell_get(rocsparse_const_spmat_descr descr,
                                           rocsparse_indextype*        idx_type,
                                           rocsparse_index_base*       idx_base,
                                           rocsparse_datatype*         data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Set the row indices, column indices and values array in the sparse COO matrix descriptor
@@ -1600,12 +1654,14 @@ rocsparse_status rocsparse_spmat_get_index_base(rocsparse_const_spmat_descr desc
  *  \retval rocsparse_status_success the operation completed successfully.
  *  \retval rocsparse_status_invalid_pointer if \p descr or \p values is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spmat_get_values(rocsparse_spmat_descr descr, void** values);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_const_spmat_get_values(rocsparse_const_spmat_descr descr,
                                                   const void**                values);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Set the values array in the sparse matrix descriptor
@@ -1784,6 +1840,7 @@ rocsparse_status rocsparse_spmat_set_attribute(rocsparse_spmat_descr     descr,
  *  \retval rocsparse_status_invalid_size if \p size is invalid.
  *  \retval rocsparse_status_invalid_value if \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_dnvec_descr(rocsparse_dnvec_descr* descr,
                                               int64_t                size,
@@ -1795,6 +1852,7 @@ rocsparse_status rocsparse_create_const_dnvec_descr(rocsparse_const_dnvec_descr*
                                                     int64_t                      size,
                                                     const void*                  values,
                                                     rocsparse_datatype           data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Destroy a dense vector descriptor
@@ -1832,6 +1890,7 @@ rocsparse_status rocsparse_destroy_dnvec_descr(rocsparse_const_dnvec_descr descr
  *  \retval rocsparse_status_invalid_size if \p size is invalid.
  *  \retval rocsparse_status_invalid_value if \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dnvec_get(const rocsparse_dnvec_descr descr,
                                      int64_t*                    size,
@@ -1843,6 +1902,7 @@ rocsparse_status rocsparse_const_dnvec_get(rocsparse_const_dnvec_descr descr,
                                            int64_t*                    size,
                                            const void**                values,
                                            rocsparse_datatype*         data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Get the values array from a dense vector descriptor
@@ -1855,12 +1915,14 @@ rocsparse_status rocsparse_const_dnvec_get(rocsparse_const_dnvec_descr descr,
  *  \retval rocsparse_status_success the operation completed successfully.
  *  \retval rocsparse_status_invalid_pointer \p descr or \p values is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dnvec_get_values(const rocsparse_dnvec_descr descr, void** values);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_const_dnvec_get_values(rocsparse_const_dnvec_descr descr,
                                                   const void**                values);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Set the values array in a dense vector descriptor
@@ -1904,6 +1966,7 @@ rocsparse_status rocsparse_dnvec_set_values(rocsparse_dnvec_descr descr, void* v
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p ld is invalid.
  *  \retval rocsparse_status_invalid_value if \p data_type or \p order is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_dnmat_descr(rocsparse_dnmat_descr* descr,
                                               int64_t                rows,
@@ -1921,6 +1984,7 @@ rocsparse_status rocsparse_create_const_dnmat_descr(rocsparse_const_dnmat_descr*
                                                     const void*                  values,
                                                     rocsparse_datatype           data_type,
                                                     rocsparse_order              order);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Destroy a dense matrix descriptor
@@ -1963,6 +2027,7 @@ rocsparse_status rocsparse_destroy_dnmat_descr(rocsparse_const_dnmat_descr descr
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p ld is invalid.
  *  \retval rocsparse_status_invalid_value if \p data_type or \p order is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dnmat_get(const rocsparse_dnmat_descr descr,
                                      int64_t*                    rows,
@@ -1980,6 +2045,7 @@ rocsparse_status rocsparse_const_dnmat_get(rocsparse_const_dnmat_descr descr,
                                            const void**                values,
                                            rocsparse_datatype*         data_type,
                                            rocsparse_order*            order);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Get the values array from the dense matrix descriptor
@@ -1993,12 +2059,14 @@ rocsparse_status rocsparse_const_dnmat_get(rocsparse_const_dnmat_descr descr,
  *  \retval rocsparse_status_success the operation completed successfully.
  *  \retval rocsparse_status_invalid_pointer if \p descr or \p values is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dnmat_get_values(const rocsparse_dnmat_descr descr, void** values);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_const_dnmat_get_values(rocsparse_const_dnmat_descr descr,
                                                   const void**                values);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Set the values array in a dense matrix descriptor
@@ -2056,7 +2124,7 @@ rocsparse_status rocsparse_dnmat_set_strided_batch(rocsparse_dnmat_descr descr,
 /*! \ingroup aux_module
    *  \brief Enable debug arguments.
    * \details If the debug arguments is enabled then argument descriptors are internally available when an argument checking occurs. It provide information to the user depending of the setup of the verbosity
-   * \ref rocsparse_enable_debug_arguments_verbose, \ref rocsparsr_disable_debug_arguments_verbose and \ref rocsparsr_state_debug_arguments_verbose.
+   * \ref rocsparse_enable_debug_arguments_verbose, \ref rocsparse_disable_debug_arguments_verbose and \ref rocsparse_state_debug_arguments_verbose.
    * \note This routine ignores the environment variable ROCSPARSE_DEBUG_ARGUMENTS.
    * \note This routine enables debug arguments verbose with \ref rocsparse_enable_debug_arguments_verbose.
    */
@@ -2079,7 +2147,7 @@ int rocsparse_state_debug_arguments();
 
 /*! \ingroup aux_module
    *  \brief Enable debug arguments verbose.
-   * \detail The debug argument verbose displays information related to argument descriptors created from argument checking failures.
+   * \details The debug argument verbose displays information related to argument descriptors created from argument checking failures.
    *  \note This routine ignores the environment variable ROCSPARSE_DEBUG_ARGUMENTS_VERBOSE)
    */
 ROCSPARSE_EXPORT
@@ -2102,7 +2170,7 @@ int rocsparse_state_debug_arguments_verbose();
 /*! \ingroup aux_module
    *  \brief Enable debug.
    * \details If the debug is enabled then code traces are generated when unsuccessful status returns occur. It provides information to the user depending of the set of the verbosity
-   * (\ref rocsparse_enable_debug_verbose, \ref rocsparsr_disable_debug_verbose and \ref rocsparsr_state_debug_verbose).
+   * (\ref rocsparse_enable_debug_verbose, \ref rocsparse_disable_debug_verbose and \ref rocsparse_state_debug_verbose).
    *  \note This routine ignores the environment variable ROCSPARSE_DEBUG.
    * \note \ref rocsparse_enable_debug_verbose and \ref rocsparse_enable_debug_arguments are called.
    */
@@ -2125,7 +2193,7 @@ int rocsparse_state_debug();
 
 /*! \ingroup aux_module
    *  \brief Enable debug verbose.
-   * \detail The debug verbose displays a stack of code traces showing where the code is handling a unsuccessful status.
+   * \details The debug verbose displays a stack of code traces showing where the code is handling a unsuccessful status.
    *  \note This routine enables debug arguments verbose with \ref rocsparse_enable_debug_arguments_verbose.
    *  \note This routine ignores the environment variable ROCSPARSE_DEBUG_VERBOSE.
    */
