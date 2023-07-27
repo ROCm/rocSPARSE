@@ -2147,7 +2147,7 @@ int rocsparse_state_debug_arguments();
 
 /*! \ingroup aux_module
    *  \brief Enable debug arguments verbose.
-   * \details The debug argument verbose displays information related to argument descriptors created from argument checking failures.
+   *  \details The debug argument verbose displays information related to argument descriptors created from argument checking failures.
    *  \note This routine ignores the environment variable ROCSPARSE_DEBUG_ARGUMENTS_VERBOSE)
    */
 ROCSPARSE_EXPORT
@@ -2193,7 +2193,7 @@ int rocsparse_state_debug();
 
 /*! \ingroup aux_module
    *  \brief Enable debug verbose.
-   * \details The debug verbose displays a stack of code traces showing where the code is handling a unsuccessful status.
+   *  \details The debug verbose displays a stack of code traces showing where the code is handling a unsuccessful status.
    *  \note This routine enables debug arguments verbose with \ref rocsparse_enable_debug_arguments_verbose.
    *  \note This routine ignores the environment variable ROCSPARSE_DEBUG_VERBOSE.
    */

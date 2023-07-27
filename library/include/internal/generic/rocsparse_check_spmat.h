@@ -77,7 +77,6 @@ extern "C" {
 *              is invalid.
 *  \retval     rocsparse_status_invalid_value the value of stage is incorrect.
 */
-/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_check_spmat(rocsparse_handle            handle,
                                        rocsparse_const_spmat_descr mat,

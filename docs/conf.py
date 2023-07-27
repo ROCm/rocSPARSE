@@ -9,6 +9,8 @@ from rocm_docs import ROCmDocs
 
 external_toc_path = "./sphinx/_toc.yml"
 
+external_projects_current_project = "rocsparse"
+
 docs_core = ROCmDocs("rocSPARSE Documentation")
 docs_core.run_doxygen(doxygen_root="doxygen", doxygen_path="doxygen/docBin/xml")
 docs_core.setup()
