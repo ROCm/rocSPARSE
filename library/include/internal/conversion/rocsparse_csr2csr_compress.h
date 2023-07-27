@@ -211,6 +211,7 @@ rocsparse_status rocsparse_zcsr2csr_compress(rocsparse_handle                han
                                              rocsparse_int*                  csr_row_ptr_C,
                                              rocsparse_int*                  csr_col_ind_C,
                                              rocsparse_double_complex        tol);
+/**@}*/
 #ifdef __cplusplus
 }
 #endif

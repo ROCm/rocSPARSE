@@ -124,7 +124,6 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
                                    rocsparse_int*       coo_row_ind,
                                    rocsparse_index_base idx_base);
 
-/**@}*/
 #ifdef __cplusplus
 }
 #endif
