@@ -149,7 +149,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(
+                        rocsparse_atomic_add(
                             &dense_C[prevrow + (col_offset + p) * ldc + batch_stride_C * batch],
                             shared_val[p][WF_SIZE - 1]);
                     }
@@ -158,7 +158,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(
+                        rocsparse_atomic_add(
                             &dense_C[(col_offset + p) + prevrow * ldc + batch_stride_C * batch],
                             shared_val[p][WF_SIZE - 1]);
                     }
@@ -210,16 +210,18 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(&dense_C[row + (col_offset + p) * ldc + batch_stride_C * batch],
-                                  val[p]);
+                        rocsparse_atomic_add(
+                            &dense_C[row + (col_offset + p) * ldc + batch_stride_C * batch],
+                            val[p]);
                     }
                 }
                 else
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(&dense_C[(col_offset + p) + row * ldc + batch_stride_C * batch],
-                                  val[p]);
+                        rocsparse_atomic_add(
+                            &dense_C[(col_offset + p) + row * ldc + batch_stride_C * batch],
+                            val[p]);
                     }
                 }
             }
@@ -235,14 +237,16 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
         {
             for(I p = 0; p < COLS; p++)
             {
-                atomicAdd(&dense_C[row + (col_offset + p) * ldc + batch_stride_C * batch], val[p]);
+                rocsparse_atomic_add(
+                    &dense_C[row + (col_offset + p) * ldc + batch_stride_C * batch], val[p]);
             }
         }
         else
         {
             for(I p = 0; p < COLS; p++)
             {
-                atomicAdd(&dense_C[(col_offset + p) + row * ldc + batch_stride_C * batch], val[p]);
+                rocsparse_atomic_add(
+                    &dense_C[(col_offset + p) + row * ldc + batch_stride_C * batch], val[p]);
             }
         }
     }

@@ -250,7 +250,7 @@ void kernel_calculate(const J m_,
         //
         if(hipThreadIdx_x == 0)
         {
-            atomicMax(nrm_, nrms[0] / nrm0_[0]);
+            rocsparse_atomic_max(nrm_, nrms[0] / nrm0_[0]);
         }
     }
 }
@@ -386,7 +386,7 @@ void kernel_calculate_coo(const J m_,
         rocsparse_blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, nrms);
         if(hipThreadIdx_x == 0)
         {
-            atomicMax(nrm_, nrms[0] / nrm0_[0]);
+            rocsparse_atomic_max(nrm_, nrms[0] / nrm0_[0]);
         }
     }
 }
@@ -1051,7 +1051,7 @@ void kernel_compute_unnz(J m_,
     rocsparse_blockreduce_sum<BLOCKSIZE>(hipThreadIdx_x, data);
     if(hipThreadIdx_x == 0)
     {
-        atomicAdd(nnz_, data[0]);
+        rocsparse_atomic_add(nnz_, data[0]);
     }
     if(nnz_diag_ != nullptr)
     {
@@ -1060,7 +1060,7 @@ void kernel_compute_unnz(J m_,
         rocsparse_blockreduce_sum<BLOCKSIZE>(hipThreadIdx_x, data);
         if(hipThreadIdx_x == 0)
         {
-            atomicAdd(nnz_diag_, data[0]);
+            rocsparse_atomic_add(nnz_diag_, data[0]);
         }
     }
 }

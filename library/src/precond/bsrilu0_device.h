@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -316,7 +316,7 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_2_8_device(rocsparse_direction  dir,
         if(pivot)
         {
             // Atomically set minimum zero pivot, if found
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -643,7 +643,7 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_9_32_device(rocsparse_direction  dir,
         if(pivot)
         {
             // Atomically set minimum zero pivot, if found
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -950,7 +950,7 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_33_64_device(rocsparse_direction  dir,
         if(pivot)
         {
             // Atomically set minimum zero pivot, if found
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -1203,7 +1203,7 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_general_device(rocsparse_direction  dir,
         if(pivot)
         {
             // Atomically set minimum zero pivot, if found
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }

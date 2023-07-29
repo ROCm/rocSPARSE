@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ void bsric0_2_8_unrolled_kernel(rocsparse_direction direction,
 
         if(tidx == 0 && tidy == 0)
         {
-            atomicMin(zero_pivot, block_row + idx_base);
+            rocsparse_atomic_min(zero_pivot, block_row + idx_base);
 
             // Last lane in wavefront writes "we are done" flag for its block row
             atomicOr(&block_done[block_row], 1);
@@ -301,7 +301,7 @@ void bsric0_2_8_unrolled_kernel(rocsparse_direction direction,
                 if(tidx == 0 && tidy == 0)
                 {
                     // We are looking for the first zero pivot
-                    atomicMin(zero_pivot, block_col + idx_base);
+                    rocsparse_atomic_min(zero_pivot, block_col + idx_base);
                 }
 
                 diag_val = static_cast<T>(1);
@@ -371,7 +371,7 @@ void bsric0_2_8_unrolled_kernel(rocsparse_direction direction,
             if(tidx == 0 && tidy == 0)
             {
                 // We are looking for the first zero pivot
-                atomicMin(zero_pivot, block_row + idx_base);
+                rocsparse_atomic_min(zero_pivot, block_row + idx_base);
             }
 
             // Normally would break here but to avoid divergence set diag_val to one and continue
@@ -457,7 +457,7 @@ void bsric0_2_8_kernel(rocsparse_direction direction,
 
         if(tidx == 0 && tidy == 0)
         {
-            atomicMin(zero_pivot, block_row + idx_base);
+            rocsparse_atomic_min(zero_pivot, block_row + idx_base);
 
             // Last lane in wavefront writes "we are done" flag for its block row
             atomicOr(&block_done[block_row], 1);
@@ -618,7 +618,7 @@ void bsric0_2_8_kernel(rocsparse_direction direction,
                 if(tidx == 0 && tidy == 0)
                 {
                     // We are looking for the first zero pivot
-                    atomicMin(zero_pivot, block_col + idx_base);
+                    rocsparse_atomic_min(zero_pivot, block_col + idx_base);
                 }
 
                 diag_val = static_cast<T>(1);
@@ -697,7 +697,7 @@ void bsric0_2_8_kernel(rocsparse_direction direction,
             if(tidx == 0 && tidy == 0)
             {
                 // We are looking for the first zero pivot
-                atomicMin(zero_pivot, block_row + idx_base);
+                rocsparse_atomic_min(zero_pivot, block_row + idx_base);
             }
 
             // Normally would break here but to avoid divergence set diag_val to one and continue
@@ -791,7 +791,7 @@ void bsric0_9_16_kernel(rocsparse_direction direction,
 
         if(tidx == 0 && tidy == 0)
         {
-            atomicMin(zero_pivot, block_row + idx_base);
+            rocsparse_atomic_min(zero_pivot, block_row + idx_base);
 
             // Last lane in wavefront writes "we are done" flag for its block row
             atomicOr(&block_done[block_row], 1);
@@ -961,7 +961,7 @@ void bsric0_9_16_kernel(rocsparse_direction direction,
                 if(tidx == 0 && tidy == 0)
                 {
                     // We are looking for the first zero pivot
-                    atomicMin(zero_pivot, block_col + idx_base);
+                    rocsparse_atomic_min(zero_pivot, block_col + idx_base);
                 }
 
                 diag_val = static_cast<T>(1);
@@ -1054,7 +1054,7 @@ void bsric0_9_16_kernel(rocsparse_direction direction,
             if(tidx == 0 && tidy == 0)
             {
                 // We are looking for the first zero pivot
-                atomicMin(zero_pivot, block_row + idx_base);
+                rocsparse_atomic_min(zero_pivot, block_row + idx_base);
             }
 
             // Normally would break here but to avoid divergence set diag_val to one and continue
@@ -1151,7 +1151,7 @@ void bsric0_17_32_kernel(rocsparse_direction direction,
 
         if(tidx == 0 && tidy == 0)
         {
-            atomicMin(zero_pivot, block_row + idx_base);
+            rocsparse_atomic_min(zero_pivot, block_row + idx_base);
 
             // Last lane in wavefront writes "we are done" flag for its block row
             atomicOr(&block_done[block_row], 1);
@@ -1303,7 +1303,7 @@ void bsric0_17_32_kernel(rocsparse_direction direction,
                 if(tidx == 0 && tidy == 0)
                 {
                     // We are looking for the first zero pivot
-                    atomicMin(zero_pivot, block_col + idx_base);
+                    rocsparse_atomic_min(zero_pivot, block_col + idx_base);
                 }
 
                 diag_val = static_cast<T>(1);
@@ -1405,7 +1405,7 @@ void bsric0_17_32_kernel(rocsparse_direction direction,
             if(tidx == 0 && tidy == 0)
             {
                 // We are looking for the first zero pivot
-                atomicMin(zero_pivot, block_row + idx_base);
+                rocsparse_atomic_min(zero_pivot, block_row + idx_base);
             }
 
             // Normally would break here but to avoid divergence set diag_val to one and continue
@@ -1493,7 +1493,7 @@ void bsric0_binsearch_kernel(rocsparse_direction direction,
 
         if(lid == WFSIZE - 1)
         {
-            atomicMin(zero_pivot, block_row + idx_base);
+            rocsparse_atomic_min(zero_pivot, block_row + idx_base);
 
             // Last lane in wavefront writes "we are done" flag for its block row
             atomicOr(&block_done[block_row], 1);
@@ -1568,7 +1568,7 @@ void bsric0_binsearch_kernel(rocsparse_direction direction,
                     if(lid == 0)
                     {
                         // We are looking for the first zero pivot
-                        atomicMin(zero_pivot, block_col + idx_base);
+                        rocsparse_atomic_min(zero_pivot, block_col + idx_base);
                     }
 
                     // Normally would break here but to avoid divergence set diag_val to one and continue
@@ -1683,7 +1683,7 @@ void bsric0_binsearch_kernel(rocsparse_direction direction,
                 if(lid == 0)
                 {
                     // We are looking for the first zero pivot
-                    atomicMin(zero_pivot, block_row + idx_base);
+                    rocsparse_atomic_min(zero_pivot, block_row + idx_base);
                 }
 
                 // Normally would break here but to avoid divergence set diag_val to one and continue

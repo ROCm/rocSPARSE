@@ -83,7 +83,7 @@ ROCSPARSE_DEVICE_ILF bool insert_key(I key, I* __restrict__ table)
         else if(table[hash] == -1)
         {
             // If empty, add element with atomic
-            if(atomicCAS(&table[hash], -1, key) == -1)
+            if(rocsparse_atomic_cas(&table[hash], -1, key) == -1)
             {
                 // Increment number of insertions
                 return true;
@@ -117,8 +117,8 @@ ROCSPARSE_DEVICE_ILF bool
         }
         else if(table[hash] == -1)
         {
-            atomicCAS(&table[hash], -1, key);
-            atomicCAS(&local_idxs[hash], -1, local_idx);
+            rocsparse_atomic_cas(&table[hash], -1, key);
+            rocsparse_atomic_cas(&local_idxs[hash], -1, local_idx);
             return true;
         }
         else
@@ -143,16 +143,16 @@ ROCSPARSE_DEVICE_ILF void
         if(table[hash] == key)
         {
             // Element already present, add value to exsiting entry
-            atomicAdd(&data[hash], val);
+            rocsparse_atomic_add(&data[hash], val);
             break;
         }
         else if(table[hash] == empty)
         {
             // If empty, add element with atomic
-            if(atomicCAS(&table[hash], empty, key) == empty)
+            if(rocsparse_atomic_cas(&table[hash], empty, key) == empty)
             {
                 // Add value
-                atomicAdd(&data[hash], val);
+                rocsparse_atomic_add(&data[hash], val);
                 break;
             }
         }
@@ -650,7 +650,7 @@ ROCSPARSE_DEVICE_ILF void
                         table[col_B - chunk_begin] = 1;
 
                         // Atomically accumulate the intermediate products
-                        atomicAdd(&data[col_B - chunk_begin], val_A * csr_val_B[k]);
+                        rocsparse_atomic_add(&data[col_B - chunk_begin], val_A * csr_val_B[k]);
                     }
                     else if(col_B >= chunk_end)
                     {
@@ -694,7 +694,7 @@ ROCSPARSE_DEVICE_ILF void
                     table[col_D - chunk_begin] = 1;
 
                     // Atomically accumulate the entry of D
-                    atomicAdd(&data[col_D - chunk_begin], beta * csr_val_D[j]);
+                    rocsparse_atomic_add(&data[col_D - chunk_begin], beta * csr_val_D[j]);
                 }
                 else if(col_D >= chunk_end)
                 {
@@ -716,7 +716,7 @@ ROCSPARSE_DEVICE_ILF void
         {
             // Atomically determine the new chunks beginning (minimum column index of B
             // that is larger than the current chunks end point)
-            atomicMin(&next_chunk, min_col);
+            rocsparse_atomic_min(&next_chunk, min_col);
         }
 
         // Wait for all threads to finish

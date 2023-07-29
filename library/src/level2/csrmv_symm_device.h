@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,7 +122,7 @@ ROCSPARSE_DEVICE_ILF void csrmvt_symm_general_device(bool                 conj,
             if(col != row)
             {
                 A val = conj_val(csr_val[j], conj);
-                atomicAdd(&y[col], row_val * val);
+                rocsparse_atomic_add(&y[col], row_val * val);
             }
         }
     }
@@ -321,10 +321,10 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
                 if((myCol != myRow) && (col + i) < (csr_row_ptr[stop_row] - idx_base))
                 {
                     if(myCol >= (stop_cols_idx) && myCol < stop_row)
-                        atomicAdd(&cols_in_rows[myCol - (stop_cols_idx)],
-                                  (partial_sums[lid + i] * x[myRow]));
+                        rocsparse_atomic_add(&cols_in_rows[myCol - (stop_cols_idx)],
+                                             (partial_sums[lid + i] * x[myRow]));
                     else
-                        atomicAdd(&y[myCol], (partial_sums[lid + i] * x[myRow]));
+                        rocsparse_atomic_add(&y[myCol], (partial_sums[lid + i] * x[myRow]));
                 }
 
                 // For the lower triangular, the matrix value is already in partial_sums.
@@ -348,10 +348,10 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
                 if((myCol != myRow) && (col + i) < (csr_row_ptr[stop_row] - idx_base))
                 {
                     if(myCol >= (stop_cols_idx) && myCol < stop_row)
-                        atomicAdd(&cols_in_rows[myCol - (stop_cols_idx)],
-                                  (partial_sums[lid + i] * x[myRow]));
+                        rocsparse_atomic_add(&cols_in_rows[myCol - (stop_cols_idx)],
+                                             (partial_sums[lid + i] * x[myRow]));
                     else
-                        atomicAdd(&y[myCol], (partial_sums[lid + i] * x[myRow]));
+                        rocsparse_atomic_add(&y[myCol], (partial_sums[lid + i] * x[myRow]));
                 }
 
                 // For the lower triangular, the matrix value is already in partial_sums.
@@ -367,7 +367,7 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
 
         for(I l = lid; l < (end_cols_idx - (stop_row - row)); l += WG_SIZE)
         {
-            atomicAdd(&y[stop_cols_idx + l], cols_in_rows[l]);
+            rocsparse_atomic_add(&y[stop_cols_idx + l], cols_in_rows[l]);
         }
 
         __syncthreads();
@@ -424,7 +424,7 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
                 temp += cols_in_rows[lid
                                      + (end_cols_idx
                                         - (stop_row - row))]; // sum from upper triangular matrix
-                atomicAdd(&y[row + lid], temp);
+                rocsparse_atomic_add(&y[row + lid], temp);
             }
         }
         else
@@ -449,7 +449,7 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
                 // put that into the output for each row.
                 temp += cols_in_rows[end_cols_idx - stop_row
                                      + local_row]; // sum from upper triangular matrix
-                atomicAdd(&y[local_row], temp);
+                rocsparse_atomic_add(&y[local_row], temp);
                 local_row += hipBlockDim_x;
             }
         }
@@ -525,7 +525,7 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
             // Write result
             if(t == 0)
             {
-                atomicAdd(&y[myRow], alpha * partial_sums[0]);
+                rocsparse_atomic_add(&y[myRow], alpha * partial_sums[0]);
             }
             myRow++;
         }
@@ -539,7 +539,7 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
             J myCol  = csr_col_ind[j] - idx_base;
             if(myCol != myRow2)
             {
-                atomicAdd(&y[myCol], (alpha * conj_val(csr_val[j], conj) * x[myRow2]));
+                rocsparse_atomic_add(&y[myCol], (alpha * conj_val(csr_val[j], conj) * x[myRow2]));
             }
         }
     }

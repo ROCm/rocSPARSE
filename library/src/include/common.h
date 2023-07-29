@@ -181,20 +181,69 @@ __device__ __forceinline__ double rocsparse_shfl(double var, int src_lane, int w
 __device__ __forceinline__ rocsparse_float_complex rocsparse_shfl(rocsparse_float_complex var, int src_lane, int width = warpSize) { return rocsparse_float_complex(__shfl(std::real(var), src_lane, width), __shfl(std::imag(var), src_lane, width)); }
 __device__ __forceinline__ rocsparse_double_complex rocsparse_shfl(rocsparse_double_complex var, int src_lane, int width = warpSize) { return rocsparse_double_complex(__shfl(std::real(var), src_lane, width), __shfl(std::imag(var), src_lane, width)); }
 
-__device__ __forceinline__ int64_t atomicMin(int64_t* ptr, int64_t val) { return atomicMin((unsigned long long*)ptr, val); }
-__device__ __forceinline__ int64_t atomicMax(int64_t* ptr, int64_t val) { return atomicMax((unsigned long long*)ptr, val); }
-__device__ __forceinline__ int64_t atomicAdd(int64_t* ptr, int64_t val) { return atomicAdd((unsigned long long*)ptr, val); }
-__device__ __forceinline__ int64_t atomicCAS(int64_t* ptr, int64_t cmp, int64_t val) { return atomicCAS((unsigned long long*)ptr, cmp, val); }
+template <typename T>
+__device__ __forceinline__ T rocsparse_atomic_min(T * ptr, T val)
+{
+  return atomicMin(ptr,val);
+}
 
-__device__ __forceinline__ rocsparse_float_complex atomicAdd(rocsparse_float_complex* ptr, rocsparse_float_complex val)
+template <typename T>
+__device__ __forceinline__ T rocsparse_atomic_max(T * ptr, T val)
+{
+  return atomicMax(ptr,val);
+}
+
+template <typename T>
+__device__ __forceinline__ T rocsparse_atomic_add(T * ptr, T val)
+{
+  return atomicAdd(ptr,val);
+}
+
+template <typename T>
+__device__ __forceinline__ T rocsparse_atomic_cas(T * ptr, T cmp, T val)
+{
+  return atomicCAS(ptr, cmp, val);
+}
+
+
+
+template <>
+__device__ __forceinline__ int64_t rocsparse_atomic_min<int64_t>(int64_t * ptr, int64_t val)
+{
+  return atomicMin((unsigned long long*)ptr, (unsigned long long)val);
+}
+
+template <>
+__device__ __forceinline__ int64_t rocsparse_atomic_max<int64_t>(int64_t * ptr, int64_t val)
+{
+  return atomicMax((unsigned long long*)ptr, val);
+}
+
+
+template <>
+__device__ __forceinline__ int64_t rocsparse_atomic_add<int64_t>(int64_t * ptr, int64_t val)
+{
+  return atomicAdd((unsigned long long*)ptr, val);
+}
+
+template <>
+__device__ __forceinline__ rocsparse_float_complex rocsparse_atomic_add(rocsparse_float_complex* ptr, rocsparse_float_complex val)
 {
     return rocsparse_float_complex(atomicAdd((float*)ptr, std::real(val)),
                                    atomicAdd((float*)ptr + 1, std::imag(val)));
 }
-__device__ __forceinline__ rocsparse_double_complex atomicAdd(rocsparse_double_complex* ptr, rocsparse_double_complex val)
+
+template <>
+__device__ __forceinline__ rocsparse_double_complex rocsparse_atomic_add(rocsparse_double_complex* ptr, rocsparse_double_complex val)
 {
     return rocsparse_double_complex(atomicAdd((double*)ptr, std::real(val)),
                                     atomicAdd((double*)ptr + 1, std::imag(val)));
+}
+
+template <>
+__device__ __forceinline__ int64_t rocsparse_atomic_cas(int64_t* ptr, int64_t cmp, int64_t val)
+{
+  return atomicCAS((unsigned long long*)ptr, cmp, val);
 }
 
 __device__ __forceinline__ bool rocsparse_is_inf(float val){ return (val == std::numeric_limits<float>::infinity()); }
@@ -1018,7 +1067,7 @@ void csr_max_nnz_per_row(J m, const I* __restrict__ csr_row_ptr, J* __restrict__
 
     if(tid == 0)
     {
-        atomicMax(max_nnz, shared[0]);
+        rocsparse_atomic_max(max_nnz, shared[0]);
     }
 }
 

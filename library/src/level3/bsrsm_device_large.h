@@ -183,7 +183,7 @@ void bsrsm_upper_large_kernel(rocsparse_int        mb,
 
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -345,7 +345,7 @@ void bsrsm_lower_large_kernel(rocsparse_int        mb,
 
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }

@@ -79,15 +79,16 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
                 {
                     for(I p = 0; p < LOOPS; p++)
                     {
-                        atomicAdd(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
-                                  alpha * sum[p]);
+                        rocsparse_atomic_add(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
+                                             alpha * sum[p]);
                     }
                 }
                 else
                 {
                     for(I p = 0; p < LOOPS; p++)
                     {
-                        atomicAdd(&dense_C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
+                        rocsparse_atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
+                                             alpha * sum[p]);
                     }
                 }
 
@@ -121,14 +122,16 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
         {
             for(I p = 0; p < LOOPS; p++)
             {
-                atomicAdd(&dense_C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
+                rocsparse_atomic_add(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
+                                     alpha * sum[p]);
             }
         }
         else
         {
             for(I p = 0; p < LOOPS; p++)
             {
-                atomicAdd(&dense_C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
+                rocsparse_atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
+                                     alpha * sum[p]);
             }
         }
     }
@@ -189,11 +192,11 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                 {
                     if(order_C == rocsparse_order_column)
                     {
-                        atomicAdd(&dense_C[colB * ldc + current_row], sum);
+                        rocsparse_atomic_add(&dense_C[colB * ldc + current_row], sum);
                     }
                     else
                     {
-                        atomicAdd(&dense_C[current_row * ldc + colB], sum);
+                        rocsparse_atomic_add(&dense_C[current_row * ldc + colB], sum);
                     }
                 }
 
@@ -249,11 +252,11 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                 {
                     if(order_C == rocsparse_order_column)
                     {
-                        atomicAdd(&dense_C[(l + swid) * ldc + current_row], sum);
+                        rocsparse_atomic_add(&dense_C[(l + swid) * ldc + current_row], sum);
                     }
                     else
                     {
-                        atomicAdd(&dense_C[current_row * ldc + (l + swid)], sum);
+                        rocsparse_atomic_add(&dense_C[current_row * ldc + (l + swid)], sum);
                     }
                 }
             }
@@ -267,11 +270,11 @@ ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                 {
                     if(order_C == rocsparse_order_column)
                     {
-                        atomicAdd(&dense_C[(l + swid) * ldc + current_row], sum);
+                        rocsparse_atomic_add(&dense_C[(l + swid) * ldc + current_row], sum);
                     }
                     else
                     {
-                        atomicAdd(&dense_C[current_row * ldc + (l + swid)], sum);
+                        rocsparse_atomic_add(&dense_C[current_row * ldc + (l + swid)], sum);
                     }
                 }
             }
@@ -325,11 +328,11 @@ ROCSPARSE_DEVICE_ILF void coommtn_atomic_device(bool                 conj_A,
 
     if(order_C == rocsparse_order_column)
     {
-        atomicAdd(&dense_C[hipBlockIdx_y * ldc + col], alpha * (val * bval));
+        rocsparse_atomic_add(&dense_C[hipBlockIdx_y * ldc + col], alpha * (val * bval));
     }
     else
     {
-        atomicAdd(&dense_C[col * ldc + hipBlockIdx_y], alpha * (val * bval));
+        rocsparse_atomic_add(&dense_C[col * ldc + hipBlockIdx_y], alpha * (val * bval));
     }
 }
 

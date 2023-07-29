@@ -79,13 +79,13 @@ namespace
                     }
                     else
                     {
-                        atomicMin(zero_pivot, tid + base);
+                        rocsparse_atomic_min<rocsparse_int>(zero_pivot, tid + base);
                         invdiag[tid] = static_cast<T>(1);
                     }
                 }
                 else
                 {
-                    atomicMin(zero_pivot, tid + base);
+                    rocsparse_atomic_min<rocsparse_int>(zero_pivot, tid + base);
                     invdiag[tid] = static_cast<T>(1);
                 }
             }

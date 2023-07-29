@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -134,7 +134,7 @@ ROCSPARSE_DEVICE_ILF void csrmvt_general_device(bool                 conj,
             J col = csr_col_ind[j] - idx_base;
             A val = conj_val(csr_val[j], conj);
 
-            atomicAdd(&y[col], row_val * val);
+            rocsparse_atomic_add(&y[col], row_val * val);
         }
     }
 }
@@ -443,7 +443,7 @@ ROCSPARSE_DEVICE_ILF void csrmvn_adaptive_device(bool                 conj,
         // The first workgroup will eventually flip this flag, and you can move forward.
         __syncthreads();
         while(gid != first_wg_in_row && lid == 0
-              && ((atomicMax(&wg_flags[first_wg_in_row], 0U)) == compare_value))
+              && ((rocsparse_atomic_max(&wg_flags[first_wg_in_row], 0U)) == compare_value))
             ;
         __syncthreads();
 
@@ -472,7 +472,7 @@ ROCSPARSE_DEVICE_ILF void csrmvn_adaptive_device(bool                 conj,
 
         if(lid == 0)
         {
-            atomicAdd(y + row, partialSums[0]);
+            rocsparse_atomic_add(y + row, partialSums[0]);
         }
     }
 }
