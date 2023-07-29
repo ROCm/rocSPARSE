@@ -245,7 +245,7 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2csr_template(
                 handle, coo_row_ind, (I)nnz, m, csr_row_ptr, descr->base));
 
-            hipLaunchKernelGGL((csr_max_nnz_per_row<256>),
+            hipLaunchKernelGGL((csr_max_nnz_per_row<256, I, I>),
                                dim3((m - 1) / 256 + 1),
                                dim3(256),
                                0,
@@ -266,7 +266,7 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
         }
         else
         {
-            I*       max_nnz     = nullptr;
+            int64_t* max_nnz     = nullptr;
             int64_t* csr_row_ptr = nullptr;
             RETURN_IF_HIP_ERROR(
                 rocsparse_hipMallocAsync((void**)&max_nnz, sizeof(I), handle->stream));
@@ -278,7 +278,7 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse_coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
 
-            hipLaunchKernelGGL((csr_max_nnz_per_row<256>),
+            hipLaunchKernelGGL((csr_max_nnz_per_row<256, int64_t, int64_t>),
                                dim3((m - 1) / 256 + 1),
                                dim3(256),
                                0,
@@ -287,11 +287,9 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
                                csr_row_ptr,
                                max_nnz);
 
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&descr->max_nnz_per_row,
-                                               max_nnz,
-                                               sizeof(I),
-                                               hipMemcpyDeviceToHost,
-                                               handle->stream));
+            int64_t local_max_nnz;
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                &local_max_nnz, max_nnz, sizeof(int64_t), hipMemcpyDeviceToHost, handle->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
             RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(max_nnz, handle->stream));

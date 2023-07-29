@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -150,11 +150,11 @@ void kernel_nrminf(size_t nitems_,
     {
         if(nrm0_ != nullptr)
         {
-            atomicMax(nrm_, shared[0] / nrm0_[0]);
+            rocsparse_atomic_max(nrm_, shared[0] / nrm0_[0]);
         }
         else
         {
-            atomicMax(nrm_, shared[0]);
+            rocsparse_atomic_max(nrm_, shared[0]);
         }
     }
 }
@@ -182,11 +182,11 @@ void kernel_nrminf_diff(size_t nitems_,
     {
         if(nrm0_ != nullptr)
         {
-            atomicMax(nrm_, shared[0] / nrm0_[0]);
+            rocsparse_atomic_max(nrm_, shared[0] / nrm0_[0]);
         }
         else
         {
-            atomicMax(nrm_, shared[0]);
+            rocsparse_atomic_max(nrm_, shared[0]);
         }
     }
 }

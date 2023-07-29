@@ -134,7 +134,7 @@ void kernel_nrm_residual(const J m_,
     rocsparse_blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, sdata);
     if(hipThreadIdx_x == 0)
     {
-        atomicMax(nrm_, sdata[0] / nrm0_[0]);
+        rocsparse_atomic_max(nrm_, sdata[0] / nrm0_[0]);
     }
 }
 

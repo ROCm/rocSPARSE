@@ -568,15 +568,16 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_main_device(bool conj_A,
                 {
                     for(J p = 0; p < LOOPS; p++)
                     {
-                        atomicAdd(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
-                                  alpha * sum[p]);
+                        rocsparse_atomic_add(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
+                                             alpha * sum[p]);
                     }
                 }
                 else
                 {
                     for(J p = 0; p < LOOPS; p++)
                     {
-                        atomicAdd(&dense_C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
+                        rocsparse_atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
+                                             alpha * sum[p]);
                     }
                 }
 
@@ -610,14 +611,16 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_main_device(bool conj_A,
         {
             for(J p = 0; p < LOOPS; p++)
             {
-                atomicAdd(&dense_C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
+                rocsparse_atomic_add(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
+                                     alpha * sum[p]);
             }
         }
         else
         {
             for(J p = 0; p < LOOPS; p++)
             {
-                atomicAdd(&dense_C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
+                rocsparse_atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
+                                     alpha * sum[p]);
             }
         }
     }
@@ -706,11 +709,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&dense_C[colB * ldc + current_row], alpha * sum);
+                        rocsparse_atomic_add(&dense_C[colB * ldc + current_row], alpha * sum);
                     }
                     else
                     {
-                        atomicAdd(&dense_C[current_row * ldc + colB], alpha * sum);
+                        rocsparse_atomic_add(&dense_C[current_row * ldc + colB], alpha * sum);
                     }
                 }
 
@@ -766,11 +769,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&dense_C[(l + swid) * ldc + current_row], alpha * sum);
+                        rocsparse_atomic_add(&dense_C[(l + swid) * ldc + current_row], alpha * sum);
                     }
                     else
                     {
-                        atomicAdd(&dense_C[current_row * ldc + (l + swid)], alpha * sum);
+                        rocsparse_atomic_add(&dense_C[current_row * ldc + (l + swid)], alpha * sum);
                     }
                 }
             }
@@ -784,11 +787,11 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&dense_C[(l + swid) * ldc + current_row], alpha * sum);
+                        rocsparse_atomic_add(&dense_C[(l + swid) * ldc + current_row], alpha * sum);
                     }
                     else
                     {
-                        atomicAdd(&dense_C[current_row * ldc + (l + swid)], alpha * sum);
+                        rocsparse_atomic_add(&dense_C[current_row * ldc + (l + swid)], alpha * sum);
                     }
                 }
             }

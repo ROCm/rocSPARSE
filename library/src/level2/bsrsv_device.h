@@ -170,7 +170,7 @@ ROCSPARSE_DEVICE_ILF void bsrsv_lower_general_device(rocsparse_int mb,
 
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -319,7 +319,7 @@ ROCSPARSE_DEVICE_ILF void bsrsv_upper_general_device(rocsparse_int mb,
 
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -500,7 +500,7 @@ ROCSPARSE_DEVICE_ILF void bsrsv_lower_shared_device(rocsparse_int mb,
         // Find the minimum pivot, if applicable
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -681,7 +681,7 @@ ROCSPARSE_DEVICE_ILF void bsrsv_upper_shared_device(rocsparse_int mb,
         // Find the minimum pivot, if applicable
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }

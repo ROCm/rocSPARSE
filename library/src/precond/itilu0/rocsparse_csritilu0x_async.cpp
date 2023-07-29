@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -180,7 +180,7 @@ void kernel_correction(const J m_,
     rocsparse_blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, sdata);
     if(hipThreadIdx_x == 0)
     {
-        atomicMax(nrm_, sdata[0] / nrm0_[0]);
+        rocsparse_atomic_max(nrm_, sdata[0] / nrm0_[0]);
     }
 }
 

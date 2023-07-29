@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -95,7 +95,7 @@ void csric0_hash_kernel(rocsparse_int m,
                 // key is already inserted, done
                 break;
             }
-            else if(atomicCAS(&table[hash], -1, key) == -1)
+            else if(rocsparse_atomic_cas(&table[hash], -1, key) == -1)
             {
                 // inserted key into the table, done
                 data[hash] = j;
@@ -151,7 +151,7 @@ void csric0_hash_kernel(rocsparse_int m,
             if(lid == 0)
             {
                 // We are looking for the first zero pivot
-                atomicMin(zero_pivot, local_col + idx_base);
+                rocsparse_atomic_min(zero_pivot, local_col + idx_base);
             }
 
             // Skip this row if it has a zero pivot
@@ -320,7 +320,7 @@ void csric0_binsearch_kernel(rocsparse_int m,
             if(lid == 0)
             {
                 // We are looking for the first zero pivot
-                atomicMin(zero_pivot, local_col + idx_base);
+                rocsparse_atomic_min(zero_pivot, local_col + idx_base);
             }
 
             // Skip this row if it has a zero pivot

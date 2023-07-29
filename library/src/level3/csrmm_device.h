@@ -513,7 +513,7 @@ ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(
+                rocsparse_atomic_add(
                     &dense_C[col + (i + hipBlockIdx_y * WF_SIZE) * ldc + batch_stride_C * batch],
                     val * shared_B[wid][i]);
             }
@@ -522,7 +522,7 @@ ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(
+                rocsparse_atomic_add(
                     &dense_C[col * ldc + (i + hipBlockIdx_y * WF_SIZE) + batch_stride_C * batch],
                     val * shared_B[wid][i]);
             }
@@ -597,7 +597,7 @@ ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(
+                rocsparse_atomic_add(
                     &dense_C[col + (i + hipBlockIdx_y * WF_SIZE) * ldc + batch_stride_C * batch],
                     val * shared_B[wid][i]);
             }
@@ -606,7 +606,7 @@ ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
             {
-                atomicAdd(
+                rocsparse_atomic_add(
                     &dense_C[col * ldc + (i + hipBlockIdx_y * WF_SIZE) + batch_stride_C * batch],
                     val * shared_B[wid][i]);
             }
