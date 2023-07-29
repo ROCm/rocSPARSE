@@ -146,7 +146,7 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(&C[prevrow + (col_offset + p) * ldc + batch_stride_C * batch],
+                        rocsparse_atomic_add(&C[prevrow + (col_offset + p) * ldc + batch_stride_C * batch],
                                   shared_val[p][WF_SIZE - 1]);
                     }
                 }
@@ -154,7 +154,7 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(&C[(col_offset + p) + prevrow * ldc + batch_stride_C * batch],
+                        rocsparse_atomic_add(&C[(col_offset + p) + prevrow * ldc + batch_stride_C * batch],
                                   shared_val[p][WF_SIZE - 1]);
                     }
                 }
@@ -205,7 +205,7 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(&C[row + (col_offset + p) * ldc + batch_stride_C * batch],
+                        rocsparse_atomic_add(&C[row + (col_offset + p) * ldc + batch_stride_C * batch],
                                   val[p]);
                     }
                 }
@@ -213,7 +213,7 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(&C[(col_offset + p) + row * ldc + batch_stride_C * batch],
+                        rocsparse_atomic_add(&C[(col_offset + p) + row * ldc + batch_stride_C * batch],
                                   val[p]);
                     }
                 }
@@ -230,14 +230,14 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
         {
             for(I p = 0; p < COLS; p++)
             {
-                atomicAdd(&C[row + (col_offset + p) * ldc + batch_stride_C * batch], val[p]);
+                rocsparse_atomic_add(&C[row + (col_offset + p) * ldc + batch_stride_C * batch], val[p]);
             }
         }
         else
         {
             for(I p = 0; p < COLS; p++)
             {
-                atomicAdd(&C[(col_offset + p) + row * ldc + batch_stride_C * batch], val[p]);
+                rocsparse_atomic_add(&C[(col_offset + p) + row * ldc + batch_stride_C * batch], val[p]);
             }
         }
     }

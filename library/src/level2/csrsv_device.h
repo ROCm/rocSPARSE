@@ -172,12 +172,12 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         atomicOr(&done_array[row], local_max + 1);
 
         // Obtain maximum nnz
-        atomicMax(max_nnz, row_end - row_begin);
+        rocsparse_atomic_max(max_nnz, row_end - row_begin);
 
         if(csr_diag_ind[row] == -1 && diag_type == rocsparse_diag_type_non_unit)
         {
             // We are looking for the first zero pivot
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -326,12 +326,12 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         atomicOr(&done_array[row], local_max + 1);
 
         // Obtain maximum nnz
-        atomicMax(max_nnz, row_end - row_begin);
+        rocsparse_atomic_max(max_nnz, row_end - row_begin);
 
         if(csr_diag_ind[row] == -1 && diag_type == rocsparse_diag_type_non_unit)
         {
             // We are looking for the first zero pivot
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -402,7 +402,7 @@ __device__ void csrsv_device(J m,
         {
             // Numerical zero pivot found, avoid division by 0
             // and store index for later use.
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
             local_val = static_cast<T>(1);
         }
 

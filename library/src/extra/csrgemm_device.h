@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -346,7 +346,7 @@ static __device__ __forceinline__ bool insert_key(I key, I* __restrict__ table)
         else if(table[hash] == -1)
         {
             // If empty, add element with atomic
-            if(atomicCAS(&table[hash], -1, key) == -1)
+            if(rocsparse_atomic_cas<I>(&table[hash], -1, key) == -1)
             {
                 // Increment number of insertions
                 return true;
@@ -376,16 +376,16 @@ static __device__ __forceinline__ void
         if(table[hash] == key)
         {
             // Element already present, add value to exsiting entry
-            atomicAdd(&data[hash], val);
+            rocsparse_atomic_add(&data[hash], val);
             break;
         }
         else if(table[hash] == empty)
         {
             // If empty, add element with atomic
-            if(atomicCAS(&table[hash], empty, key) == empty)
+            if(rocsparse_atomic_cas<I>(&table[hash], empty, key) == empty)
             {
                 // Add value
-                atomicAdd(&data[hash], val);
+                rocsparse_atomic_add(&data[hash], val);
                 break;
             }
         }
@@ -792,7 +792,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         {
             // Atomically determine the new chunks beginning (minimum column index of B
             // that is larger than the current chunks end point)
-            atomicMin(&next_chunk, min_col);
+            rocsparse_atomic_min(&next_chunk, min_col);
         }
 
         // Wait for all threads to finish row nnz operation
@@ -812,7 +812,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         if(lid == WFSIZE - 1)
         {
             // Atomically add this chunks nnz to the total row nnz
-            atomicAdd(&nnz, chunk_nnz);
+            rocsparse_atomic_add(&nnz, chunk_nnz);
         }
 
         // Wait for atomics to be processed
@@ -1316,7 +1316,7 @@ __device__ void csrgemm_fill_block_per_row_multipass_device(J n,
                         table[col_B - chunk_begin] = 1;
 
                         // Atomically accumulate the intermediate products
-                        atomicAdd(&data[col_B - chunk_begin], val_A * csr_val_B[k]);
+                        rocsparse_atomic_add(&data[col_B - chunk_begin], val_A * csr_val_B[k]);
                     }
                     else if(col_B >= chunk_end)
                     {
@@ -1360,7 +1360,7 @@ __device__ void csrgemm_fill_block_per_row_multipass_device(J n,
                     table[col_D - chunk_begin] = 1;
 
                     // Atomically accumulate the entry of D
-                    atomicAdd(&data[col_D - chunk_begin], beta * csr_val_D[j]);
+                    rocsparse_atomic_add(&data[col_D - chunk_begin], beta * csr_val_D[j]);
                 }
                 else if(col_D >= chunk_end)
                 {
@@ -1382,7 +1382,7 @@ __device__ void csrgemm_fill_block_per_row_multipass_device(J n,
         {
             // Atomically determine the new chunks beginning (minimum column index of B
             // that is larger than the current chunks end point)
-            atomicMin(&next_chunk, min_col);
+            rocsparse_atomic_min(&next_chunk, min_col);
         }
 
         // Wait for all threads to finish

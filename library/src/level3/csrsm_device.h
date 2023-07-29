@@ -117,7 +117,7 @@ __device__ void csrsm_device(rocsparse_operation transB,
             // and store index for later use.
             if(hipThreadIdx_x == 0)
             {
-                atomicMin(zero_pivot, row + idx_base);
+                rocsparse_atomic_min(zero_pivot, row + idx_base);
             }
 
             local_val = static_cast<T>(1);

@@ -320,7 +320,7 @@ __launch_bounds__(BLOCKSIZE) __global__
             iter = sdata2[0];
             if(hipThreadIdx_x == 0)
             {
-                atomicMax(niter__, iter + 1);
+                rocsparse_atomic_max(niter__, iter + 1);
             }
         }
     }
@@ -329,14 +329,14 @@ __launch_bounds__(BLOCKSIZE) __global__
     {
         if(hipThreadIdx_x == 0)
         {
-            atomicMax(nrms_corr, nrminf);
+            rocsparse_atomic_max(nrms_corr, nrminf);
         }
     }
     if(compute_nrm_residual)
     {
         if(hipThreadIdx_x == 0)
         {
-            atomicMax(nrms_residual, nrminf_residual);
+            rocsparse_atomic_max(nrms_residual, nrminf_residual);
         }
     }
 }
