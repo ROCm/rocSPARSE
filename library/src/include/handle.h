@@ -183,6 +183,9 @@ struct _rocsparse_mat_info
     // zero pivot for csrsv, csrsm, csrilu0, csric0
     void* zero_pivot{};
 
+    // negative pivot for csric0
+    void* negative_pivot{};
+
     // numeric boost for ilu0
     int         boost_enable{};
     int         use_double_prec_tol{};

@@ -334,6 +334,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                            d_done_array,
                            (rocsparse_int*)info->csric0_info->row_map,
                            (rocsparse_int*)info->zero_pivot,
+                           (rocsparse_int*)info->negative_pivot,
                            descr->base);
     }
     else
@@ -355,6 +356,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
             else if(max_nnz <= 64)
@@ -372,6 +374,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
             else if(max_nnz <= 128)
@@ -389,6 +392,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
             else if(max_nnz <= 256)
@@ -406,6 +410,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
             else if(max_nnz <= 512)
@@ -423,6 +428,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
             else
@@ -440,6 +446,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
         }
@@ -460,6 +467,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
             else if(max_nnz <= 128)
@@ -477,6 +485,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
             else if(max_nnz <= 256)
@@ -494,6 +503,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
             else if(max_nnz <= 512)
@@ -511,6 +521,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
             else if(max_nnz <= 1024)
@@ -528,6 +539,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
             else
@@ -545,6 +557,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+                                   (rocsparse_int*)info->negative_pivot,
                                    descr->base);
             }
         }

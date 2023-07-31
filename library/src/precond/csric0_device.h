@@ -36,6 +36,7 @@ void csric0_hash_kernel(rocsparse_int m,
                         int* __restrict__ done,
                         const rocsparse_int* __restrict__ map,
                         rocsparse_int* __restrict__ zero_pivot,
+                        rocsparse_int* __restrict__ negative_pivot,
                         rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -158,6 +159,21 @@ void csric0_hash_kernel(rocsparse_int m,
             break;
         }
 
+
+        // Row has numerical negative diagonal
+        
+        if ( (std::imag(diag_val) == (0))  &&
+             (std::real(diag_val) <  (0))   )
+        {
+            if(lid == 0)
+            {
+                // We are looking for the first zero pivot
+                rocsparse_atomic_min(negative_pivot, local_col + idx_base);
+            }
+
+            // continue this row even if it has a negative pivot
+        }
+
         // Compute reciprocal
         diag_val = static_cast<T>(1) / diag_val;
 
@@ -236,6 +252,7 @@ void csric0_binsearch_kernel(rocsparse_int m,
                              int* __restrict__ done,
                              const rocsparse_int* __restrict__ map,
                              rocsparse_int* __restrict__ zero_pivot,
+                             rocsparse_int* __restrict__ negative_pivot,
                              rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -325,6 +342,20 @@ void csric0_binsearch_kernel(rocsparse_int m,
 
             // Skip this row if it has a zero pivot
             break;
+        }
+
+
+        // Row has numerical negative diagonal
+        if ( (std::imag(diag_val) == (0))  &&
+             (std::real(diag_val) <  (0))   )
+        {
+            if(lid == 0)
+            {
+                // We are looking for the first negative pivot
+                rocsparse_atomic_min(negative_pivot, local_col + idx_base);
+            }
+
+            // do not skip this row even if it has a negative pivot
         }
 
         // Compute reciprocal

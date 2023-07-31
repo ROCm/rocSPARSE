@@ -1065,6 +1065,39 @@ try
             hipMemcpy(dest->zero_pivot, src->zero_pivot, J_size, hipMemcpyDeviceToDevice));
     }
 
+
+    if(src->negative_pivot != nullptr)
+    {
+        // negative pivot for csric0
+        size_t J_size = sizeof(uint16_t);
+        switch(index_type_J)
+        {
+        case rocsparse_indextype_u16:
+        {
+            J_size = sizeof(uint16_t);
+            break;
+        }
+        case rocsparse_indextype_i32:
+        {
+            J_size = sizeof(int32_t);
+            break;
+        }
+        case rocsparse_indextype_i64:
+        {
+            J_size = sizeof(int64_t);
+            break;
+        }
+        }
+
+        if(dest->negative_pivot == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->negative_pivot, J_size));
+        }
+
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(dest->negative_pivot, src->negative_pivot, J_size, hipMemcpyDeviceToDevice));
+    }
+
     dest->boost_enable        = src->boost_enable;
     dest->use_double_prec_tol = src->use_double_prec_tol;
     dest->boost_tol           = src->boost_tol;
@@ -1305,6 +1338,13 @@ try
     {
         RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->zero_pivot));
         info->zero_pivot = nullptr;
+    }
+
+    // Clear negative pivot
+    if(info->negative_pivot != nullptr)
+    {
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->negative_pivot));
+        info->negative_pivot = nullptr;
     }
 
     // Destruct
