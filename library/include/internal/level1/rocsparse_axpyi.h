@@ -25,8 +25,8 @@
 #ifndef ROCSPARSE_AXPYI_H
 #define ROCSPARSE_AXPYI_H
 
-#include "rocsparse-export.h"
-#include "rocsparse-types.h"
+#include "../../rocsparse-types.h"
+#include "rocsparse/rocsparse-export.h"
 
 extern "C" {
 

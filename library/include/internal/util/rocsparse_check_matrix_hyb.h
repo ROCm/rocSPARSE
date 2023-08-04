@@ -25,8 +25,8 @@
 #ifndef ROCSPARSE_CHECK_MATRIX_HYB_H
 #define ROCSPARSE_CHECK_MATRIX_HYB_H
 
-#include "rocsparse-export.h"
-#include "rocsparse-types.h"
+#include "../../rocsparse-types.h"
+#include "rocsparse/rocsparse-export.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -25,8 +25,8 @@
 #ifndef ROCSPARSE_CSRMM_H
 #define ROCSPARSE_CSRMM_H
 
-#include "rocsparse-export.h"
-#include "rocsparse-types.h"
+#include "../../rocsparse-types.h"
+#include "rocsparse/rocsparse-export.h"
 
 #ifdef __cplusplus
 extern "C" {

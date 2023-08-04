@@ -25,8 +25,8 @@
 #ifndef ROCSPARSE_SCTR_H
 #define ROCSPARSE_SCTR_H
 
-#include "rocsparse-export.h"
-#include "rocsparse-types.h"
+#include "../../rocsparse-types.h"
+#include "rocsparse/rocsparse-export.h"
 
 extern "C" {
 
