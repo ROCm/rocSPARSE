@@ -25,8 +25,8 @@
 #ifndef ROCSPARSE_CSRITILU0_H
 #define ROCSPARSE_CSRITILU0_H
 
-#include "rocsparse-export.h"
-#include "rocsparse-types.h"
+#include "../../rocsparse-types.h"
+#include "rocsparse/rocsparse-export.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -25,8 +25,8 @@
 #ifndef ROCSPARSE_BSRIC0_H
 #define ROCSPARSE_BSRIC0_H
 
-#include "rocsparse-export.h"
-#include "rocsparse-types.h"
+#include "../../rocsparse-types.h"
+#include "rocsparse/rocsparse-export.h"
 
 #ifdef __cplusplus
 extern "C" {
