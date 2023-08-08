@@ -25,8 +25,8 @@
 #ifndef ROCSPARSE_PRUNE_CSR2CSR_BY_PERCENTAGE_H
 #define ROCSPARSE_PRUNE_CSR2CSR_BY_PERCENTAGE_H
 
-#include "rocsparse-export.h"
-#include "rocsparse-types.h"
+#include "../../rocsparse-types.h"
+#include "rocsparse/rocsparse-export.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -25,8 +25,8 @@
 #ifndef ROCSPARSE_GTHRZ_H
 #define ROCSPARSE_GTHRZ_H
 
-#include "rocsparse-export.h"
-#include "rocsparse-types.h"
+#include "../../rocsparse-types.h"
+#include "rocsparse/rocsparse-export.h"
 
 extern "C" {
 
