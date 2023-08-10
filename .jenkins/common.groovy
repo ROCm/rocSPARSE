@@ -56,7 +56,6 @@ def runTestCommand (platform, project, gfilter, String dirmode = "release")
             """
 
     platform.runCommand(this, command)
-    junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
 }
 
 def runTestWithSanitizerCommand (platform, project, gfilter, String dirmode = "release")
@@ -74,7 +73,6 @@ def runTestWithSanitizerCommand (platform, project, gfilter, String dirmode = "r
             """
 
     platform.runCommand(this, command)
-    junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
 }
 
 def runCoverageCommand (platform, project, gfilter, String dirmode = "release")
