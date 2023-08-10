@@ -40,19 +40,19 @@ void testing_csr2csc_bad_arg(const Arguments& arg)
     const rocsparse_int* csr_row_ptr = (const rocsparse_int*)0x4;
     const rocsparse_int* csr_col_ind = (const rocsparse_int*)0x4;
     T*                   csc_val     = (T*)0x4;
-    rocsparse_int*       csc_row_ptr = (rocsparse_int*)0x4;
-    rocsparse_int*       csc_col_ind = (rocsparse_int*)0x4;
-    rocsparse_action     action      = rocsparse_action_numeric;
-    rocsparse_index_base base        = rocsparse_index_base_zero;
+    rocsparse_int*       csc_col_ptr = (rocsparse_int*)0x4;
+    rocsparse_int*       csc_row_ind = (rocsparse_int*)0x4;
+    rocsparse_action     copy_values = rocsparse_action_numeric;
+    rocsparse_index_base idx_base    = rocsparse_index_base_zero;
     size_t*              buffer_size = (size_t*)0x4;
     void*                temp_buffer = (void*)0x4;
 
-#define PARAMS_BUFFER_SIZE handle, m, n, nnz, csr_row_ptr, csr_col_ind, action, buffer_size
+#define PARAMS_BUFFER_SIZE handle, m, n, nnz, csr_row_ptr, csr_col_ind, copy_values, buffer_size
 #define PARAMS                                                                               \
-    handle, m, n, nnz, csr_val, csr_row_ptr, csr_col_ind, csc_val, csc_row_ptr, csc_col_ind, \
-        action, base, temp_buffer
-    auto_testing_bad_arg(rocsparse_csr2csc_buffer_size, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_csr2csc<T>, PARAMS);
+    handle, m, n, nnz, csr_val, csr_row_ptr, csr_col_ind, csc_val, csc_row_ind, csc_col_ptr, \
+        copy_values, idx_base, temp_buffer
+    bad_arg_analysis(rocsparse_csr2csc_buffer_size, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_csr2csc<T>, PARAMS);
 #undef PARAMS
 #undef PARAMS_BUFFER_SIZE
 }

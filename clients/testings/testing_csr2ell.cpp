@@ -38,32 +38,47 @@ void testing_csr2ell_bad_arg(const Arguments& arg)
     // Create matrix descriptor for ELL matrix
     rocsparse_local_mat_descr local_ell_descr;
 
-    rocsparse_handle          handle        = local_handle;
-    rocsparse_int             m             = safe_size;
-    const rocsparse_mat_descr csr_descr     = local_csr_descr;
-    const T*                  csr_val       = (const T*)0x4;
-    const rocsparse_int*      csr_row_ptr   = (const rocsparse_int*)0x4;
-    const rocsparse_int*      csr_col_ind   = (const rocsparse_int*)0x4;
-    const rocsparse_mat_descr ell_descr     = local_ell_descr;
-    rocsparse_int*            ell_width_ptr = (rocsparse_int*)0x4;
-    rocsparse_int             ell_width     = safe_size;
-    T*                        ell_val       = (T*)0x4;
-    rocsparse_int*            ell_col_ind   = (rocsparse_int*)0x4;
+    rocsparse_handle          handle      = local_handle;
+    rocsparse_int             m           = safe_size;
+    const rocsparse_mat_descr csr_descr   = local_csr_descr;
+    const T*                  csr_val     = (const T*)0x4;
+    const rocsparse_int*      csr_row_ptr = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_col_ind = (const rocsparse_int*)0x4;
+    const rocsparse_mat_descr ell_descr   = local_ell_descr;
+    T*                        ell_val     = (T*)0x4;
+    rocsparse_int*            ell_col_ind = (rocsparse_int*)0x4;
 
-#define PARAMS_WIDTH handle, m, csr_descr, csr_row_ptr, ell_descr, ell_width_ptr
+#define PARAMS_WIDTH handle, m, csr_descr, csr_row_ptr, ell_descr, ell_width
+
 #define PARAMS                                                                              \
     handle, m, csr_descr, csr_val, csr_row_ptr, csr_col_ind, ell_descr, ell_width, ell_val, \
         ell_col_ind
-    auto_testing_bad_arg(rocsparse_csr2ell_width, PARAMS_WIDTH);
-    auto_testing_bad_arg(rocsparse_csr2ell<T>, PARAMS);
+
+    {
+        rocsparse_int* ell_width = (rocsparse_int*)0x4;
+        bad_arg_analysis(rocsparse_csr2ell_width, PARAMS_WIDTH);
+    }
+
+    {
+        rocsparse_int ell_width = safe_size;
+        bad_arg_analysis(rocsparse_csr2ell<T>, PARAMS);
+    }
 
     CHECK_ROCSPARSE_ERROR(
         rocsparse_set_mat_storage_mode(csr_descr, rocsparse_storage_mode_unsorted));
     CHECK_ROCSPARSE_ERROR(
         rocsparse_set_mat_storage_mode(ell_descr, rocsparse_storage_mode_unsorted));
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell_width(PARAMS_WIDTH),
-                            rocsparse_status_requires_sorted_storage);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(PARAMS), rocsparse_status_requires_sorted_storage);
+    {
+        rocsparse_int* ell_width = (rocsparse_int*)0x4;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell_width(PARAMS_WIDTH),
+                                rocsparse_status_requires_sorted_storage);
+    }
+    {
+        rocsparse_int ell_width = safe_size;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(PARAMS),
+                                rocsparse_status_requires_sorted_storage);
+    }
+
 #undef PARAMS
 #undef PARAMS_WIDTH
 }

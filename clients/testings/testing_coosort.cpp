@@ -47,9 +47,9 @@ void testing_coosort_bad_arg(const Arguments& arg)
 
 #define PARAMS_BUFFER_SIZE handle, m, n, nnz, coo_row_ind, coo_col_ind, buffer_size
 #define PARAMS handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, temp_buffer
-    auto_testing_bad_arg(rocsparse_coosort_buffer_size, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_coosort_by_row, nargs_to_exclude, args_to_exclude, PARAMS);
-    auto_testing_bad_arg(rocsparse_coosort_by_column, nargs_to_exclude, args_to_exclude, PARAMS);
+    bad_arg_analysis(rocsparse_coosort_buffer_size, PARAMS_BUFFER_SIZE);
+    select_bad_arg_analysis(rocsparse_coosort_by_row, nargs_to_exclude, args_to_exclude, PARAMS);
+    select_bad_arg_analysis(rocsparse_coosort_by_column, nargs_to_exclude, args_to_exclude, PARAMS);
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS
 }

@@ -47,7 +47,7 @@ void testing_dense2coo_bad_arg(const Arguments& arg)
     rocsparse_int*            coo_col_ind  = (rocsparse_int*)0x4;
 
 #define PARAMS handle, m, n, descr, A, ld, nnz_per_rows, coo_val, coo_row_ind, coo_col_ind
-    auto_testing_bad_arg(rocsparse_dense2coo<T>, PARAMS);
+    bad_arg_analysis(rocsparse_dense2coo<T>, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(PARAMS),

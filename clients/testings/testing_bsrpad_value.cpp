@@ -51,7 +51,7 @@ void testing_bsrpad_value_bad_arg(const Arguments& arg)
 
 #define PARAMS handle, m, mb, nnzb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind
 
-    auto_testing_bad_arg(rocsparse_bsrpad_value<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+    select_bad_arg_analysis(rocsparse_bsrpad_value<T>, nargs_to_exclude, args_to_exclude, PARAMS);
 
     // block_dim * mb > m
     mb = 3;

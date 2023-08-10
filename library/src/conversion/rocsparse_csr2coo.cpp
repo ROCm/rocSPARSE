@@ -165,8 +165,9 @@ rocsparse_status rocsparse_csr2coo_template(rocsparse_handle     handle,
     {
         return rocsparse_status_success;
     }
-    return rocsparse_csr2coo_core(
-        handle, csr_row_ptr, csr_row_ptr + 1, nnz, m, coo_row_ind, idx_base);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2coo_core(
+        handle, csr_row_ptr, csr_row_ptr + 1, nnz, m, coo_row_ind, idx_base));
+    return rocsparse_status_success;
 }
 
 template <typename I, typename J>
@@ -177,11 +178,6 @@ rocsparse_status rocsparse_csr2coo_impl(rocsparse_handle     handle,
                                         J*                   coo_row_ind,
                                         rocsparse_index_base idx_base)
 {
-    // Check for valid handle
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
 
     // Logging TODO bench logging
     log_trace(handle,
@@ -192,27 +188,15 @@ rocsparse_status rocsparse_csr2coo_impl(rocsparse_handle     handle,
               (const void*&)coo_row_ind,
               idx_base);
 
-    log_bench(handle, "./rocsparse-bench -f csr2coo ", "--mtx <matrix.mtx>");
-
-    // Check index base
-    if(rocsparse_enum_utils::is_invalid(idx_base))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check sizes
-    if(nnz < 0 || m < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check pointer arguments
-    if((m > 0 && csr_row_ptr == nullptr) || (nnz > 0 && coo_row_ind == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    return rocsparse_csr2coo_template(handle, csr_row_ptr, nnz, m, coo_row_ind, idx_base);
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_ENUM(5, idx_base);
+    ROCSPARSE_CHECKARG_SIZE(2, nnz);
+    ROCSPARSE_CHECKARG_SIZE(3, m);
+    ROCSPARSE_CHECKARG_ARRAY(1, m, csr_row_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(4, nnz, coo_row_ind);
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_csr2coo_template(handle, csr_row_ptr, nnz, m, coo_row_ind, idx_base));
+    return rocsparse_status_success;
 }
 
 #define INSTANTIATE(ITYPE, JTYPE)                                                                    \
@@ -249,9 +233,11 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
                                               rocsparse_index_base idx_base)
 try
 {
-    return rocsparse_csr2coo_impl(handle, csr_row_ptr, nnz, m, coo_row_ind, idx_base);
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_csr2coo_impl(handle, csr_row_ptr, nnz, m, coo_row_ind, idx_base));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

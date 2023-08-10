@@ -27,28 +27,13 @@
 template <typename T>
 void testing_inverse_permutation_bad_arg(const Arguments& arg)
 {
-    // Create rocsparse handle.
-    rocsparse_local_handle handle;
-
-    // Allocate memory on device.
-    rocsparse_int*       p    = (rocsparse_int*)0x4;
-    rocsparse_int*       q    = (rocsparse_int*)0x4;
-    rocsparse_int        n    = 1;
-    rocsparse_index_base base = rocsparse_index_base_zero;
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_inverse_permutation(nullptr, n, p, q, base),
-                            rocsparse_status_invalid_handle);
-    n = -1;
-    EXPECT_ROCSPARSE_STATUS(rocsparse_inverse_permutation(handle, n, p, q, base),
-                            rocsparse_status_invalid_size);
-    n = 1;
-    EXPECT_ROCSPARSE_STATUS(rocsparse_inverse_permutation(handle, n, p, nullptr, base),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_inverse_permutation(handle, n, nullptr, q, base),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_inverse_permutation(handle, n, p, q, (rocsparse_index_base)-1),
-        rocsparse_status_invalid_value);
+    rocsparse_local_handle local_handle;
+    rocsparse_handle       handle = local_handle;
+    rocsparse_int          n      = 1;
+    rocsparse_int*         p      = (rocsparse_int*)0x4;
+    rocsparse_int*         q      = (rocsparse_int*)0x4;
+    rocsparse_index_base   base   = rocsparse_index_base_zero;
+    bad_arg_analysis(rocsparse_inverse_permutation, handle, n, p, q, base);
 }
 
 template <typename T>

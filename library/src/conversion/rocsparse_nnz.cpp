@@ -99,25 +99,84 @@ rocsparse_status rocsparse_nnz_template(rocsparse_handle    handle,
         return rocsparse_status_success;
     }
 
-    rocsparse_status status = rocsparse_status_invalid_value;
-
     switch(dir)
     {
 
     case rocsparse_direction_row:
     {
-        status = rocsparse_nnz_kernel_row(handle, m, n, A, ld, order, nnz_per_row_columns);
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_nnz_kernel_row(handle, m, n, A, ld, order, nnz_per_row_columns));
+        return rocsparse_status_success;
         break;
     }
 
     case rocsparse_direction_column:
     {
-        status = rocsparse_nnz_kernel_col(handle, m, n, A, ld, order, nnz_per_row_columns);
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_nnz_kernel_col(handle, m, n, A, ld, order, nnz_per_row_columns));
+        return rocsparse_status_success;
         break;
     }
     }
 
-    return status;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+}
+
+template <typename I, typename J, typename T>
+rocsparse_status rocsparse_nnz_checkarg(rocsparse_handle          handle,
+                                        rocsparse_direction       dir,
+                                        J                         m,
+                                        J                         n,
+                                        const rocsparse_mat_descr descr,
+                                        const T*                  A,
+                                        I                         ld,
+                                        I*                        nnz_per_row_columns,
+                                        I*                        nnz_total_dev_host_ptr,
+                                        rocsparse_order           order)
+{
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_ENUM(1, dir);
+    ROCSPARSE_CHECKARG_SIZE(2, m);
+    ROCSPARSE_CHECKARG_SIZE(3, n);
+    ROCSPARSE_CHECKARG(
+        6, ld, (ld < (order == rocsparse_order_column ? m : n)), rocsparse_status_invalid_size);
+
+    //
+    // Quick return if possible, before checking for invalid pointers.
+    //
+    if(!m || !n)
+    {
+
+        if(nullptr != nnz_total_dev_host_ptr)
+        {
+            rocsparse_pointer_mode mode;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_get_pointer_mode(handle, &mode));
+            if(rocsparse_pointer_mode_device == mode)
+            {
+                RETURN_IF_HIP_ERROR(
+                    hipMemsetAsync(nnz_total_dev_host_ptr, 0, sizeof(I), handle->stream));
+            }
+            else
+            {
+                *nnz_total_dev_host_ptr = 0;
+            }
+        }
+
+        return rocsparse_status_success;
+    }
+
+    ROCSPARSE_CHECKARG_POINTER(4, descr);
+    ROCSPARSE_CHECKARG(
+        4, descr, (rocsparse_matrix_type_general != descr->type), rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(4,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+
+    ROCSPARSE_CHECKARG_POINTER(5, A);
+    ROCSPARSE_CHECKARG_POINTER(7, nnz_per_row_columns);
+    ROCSPARSE_CHECKARG_POINTER(8, nnz_total_dev_host_ptr);
+    return rocsparse_status_continue;
 }
 
 template <typename I, typename J, typename T>
@@ -132,13 +191,6 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
                                     I*                        nnz_per_row_columns,
                                     I*                        nnz_total_dev_host_ptr)
 {
-    //
-    // Checks for valid handle
-    //
-    if(nullptr == handle)
-    {
-        return rocsparse_status_invalid_handle;
-    }
 
     //
     // Loggings
@@ -155,88 +207,20 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
               (const void*&)nnz_per_row_columns,
               (const void*&)nnz_total_dev_host_ptr);
 
-    log_bench(
-        handle, "./rocsparse_bench", "-f", "nnz", "--dir", dir, "-m", m, "-n", n, "--denseld", ld);
-
-    //
-    // Check validity of the direction.
-    //
-    if(rocsparse_enum_utils::is_invalid(dir))
+    const rocsparse_status status = rocsparse_nnz_checkarg(
+        handle, dir, m, n, descr, A, ld, nnz_per_row_columns, nnz_total_dev_host_ptr, order);
+    if(status != rocsparse_status_continue)
     {
-        return rocsparse_status_invalid_value;
-    }
-
-    //
-    // Check sizes
-    //
-    if((m < 0) || (n < 0) || (ld < (order == rocsparse_order_column ? m : n)))
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    //
-    // Quick return if possible, before checking for invalid pointers.
-    //
-    if(!m || !n)
-    {
-
-        if(nullptr != nnz_total_dev_host_ptr)
-        {
-            rocsparse_pointer_mode mode;
-            rocsparse_status       status = rocsparse_get_pointer_mode(handle, &mode);
-            if(rocsparse_status_success != status)
-            {
-                return status;
-            }
-
-            if(rocsparse_pointer_mode_device == mode)
-            {
-                RETURN_IF_HIP_ERROR(
-                    hipMemsetAsync(nnz_total_dev_host_ptr, 0, sizeof(I), handle->stream));
-            }
-            else
-            {
-                *nnz_total_dev_host_ptr = 0;
-            }
-        }
-
+        RETURN_IF_ROCSPARSE_ERROR(status);
         return rocsparse_status_success;
     }
 
     //
-    // Check invalid pointers.
-    //
-    if(nullptr == descr || nullptr == nnz_per_row_columns || nullptr == A
-       || nullptr == nnz_total_dev_host_ptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
 
-    //
-    // Check the description type of the matrix.
-    //
-    if(rocsparse_matrix_type_general != descr->type)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    //
     // Count.
     //
-    {
-        rocsparse_status status
-            = rocsparse_nnz_template(handle, dir, order, m, n, A, ld, nnz_per_row_columns);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-    }
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_nnz_template(handle, dir, order, m, n, A, ld, nnz_per_row_columns));
 
     //
     // Compute the total number of non-zeros.
@@ -344,43 +328,37 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
 extern "C" {
 
 //
-// Check if the macro CAPI_IMPL already exists.
-//
-#ifdef CAPI_IMPL
-#error macro CAPI_IMPL is already defined.
-#endif
-
-//
 // Definition of the C-implementation.
 //
-#define CAPI_IMPL(name_, type_)                                              \
-    rocsparse_status name_(rocsparse_handle          handle,                 \
-                           rocsparse_direction       dir,                    \
-                           rocsparse_int             m,                      \
-                           rocsparse_int             n,                      \
-                           const rocsparse_mat_descr descr,                  \
-                           const type_*              A,                      \
-                           rocsparse_int             ld,                     \
-                           rocsparse_int*            nnz_per_row_columns,    \
-                           rocsparse_int*            nnz_total_dev_host_ptr) \
-    {                                                                        \
-        try                                                                  \
-        {                                                                    \
-            return rocsparse_nnz_impl(handle,                                \
-                                      dir,                                   \
-                                      rocsparse_order_column,                \
-                                      m,                                     \
-                                      n,                                     \
-                                      descr,                                 \
-                                      A,                                     \
-                                      ld,                                    \
-                                      nnz_per_row_columns,                   \
-                                      nnz_total_dev_host_ptr);               \
-        }                                                                    \
-        catch(...)                                                           \
-        {                                                                    \
-            return exception_to_rocsparse_status();                          \
-        }                                                                    \
+#define CAPI_IMPL(name_, type_)                                                    \
+    rocsparse_status name_(rocsparse_handle          handle,                       \
+                           rocsparse_direction       dir,                          \
+                           rocsparse_int             m,                            \
+                           rocsparse_int             n,                            \
+                           const rocsparse_mat_descr descr,                        \
+                           const type_*              A,                            \
+                           rocsparse_int             ld,                           \
+                           rocsparse_int*            nnz_per_row_columns,          \
+                           rocsparse_int*            nnz_total_dev_host_ptr)       \
+    {                                                                              \
+        try                                                                        \
+        {                                                                          \
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_nnz_impl(handle,                   \
+                                                         dir,                      \
+                                                         rocsparse_order_column,   \
+                                                         m,                        \
+                                                         n,                        \
+                                                         descr,                    \
+                                                         A,                        \
+                                                         ld,                       \
+                                                         nnz_per_row_columns,      \
+                                                         nnz_total_dev_host_ptr)); \
+            return rocsparse_status_success;                                       \
+        }                                                                          \
+        catch(...)                                                                 \
+        {                                                                          \
+            RETURN_ROCSPARSE_EXCEPTION();                                          \
+        }                                                                          \
     }
 
 //

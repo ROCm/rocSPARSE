@@ -46,7 +46,7 @@ void testing_coo2dense_bad_arg(const Arguments& arg)
     rocsparse_int             lda         = safe_size;
 
 #define PARAMS handle, m, n, nnz, descr, coo_val, coo_row_ind, coo_col_ind, A, lda
-    auto_testing_bad_arg(rocsparse_coo2dense<T>, PARAMS);
+    bad_arg_analysis(rocsparse_coo2dense<T>, PARAMS);
 #undef PARAMS
 }
 

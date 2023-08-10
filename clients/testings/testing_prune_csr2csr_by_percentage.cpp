@@ -28,9 +28,9 @@
 template <typename T>
 void testing_prune_csr2csr_by_percentage_bad_arg(const Arguments& arg)
 {
-    static const size_t  safe_size                = 100;
-    static rocsparse_int h_nnz_total_dev_host_ptr = 100;
-    static size_t        h_buffer_size            = 100;
+    static const size_t  safe_size                = 1;
+    static rocsparse_int h_nnz_total_dev_host_ptr = 1;
+    static size_t        h_buffer_size            = 1;
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
@@ -42,26 +42,30 @@ void testing_prune_csr2csr_by_percentage_bad_arg(const Arguments& arg)
     // Create info
     rocsparse_local_mat_info local_info;
 
-    rocsparse_handle          handle                 = local_handle;
-    rocsparse_int             m                      = safe_size;
-    rocsparse_int             n                      = safe_size;
-    rocsparse_int             nnz_A                  = safe_size;
-    const rocsparse_mat_descr csr_descr_A            = local_csr_descr_A;
-    const T*                  csr_val_A              = (const T*)0x4;
-    const rocsparse_int*      csr_row_ptr_A          = (const rocsparse_int*)0x4;
-    const rocsparse_int*      csr_col_ind_A          = (const rocsparse_int*)0x4;
-    const rocsparse_mat_descr csr_descr_C            = local_csr_descr_C;
-    T*                        csr_val_C              = (T*)0x4;
-    rocsparse_int*            csr_row_ptr_C          = (rocsparse_int*)0x4;
-    rocsparse_int*            csr_col_ind_C          = (rocsparse_int*)0x4;
-    rocsparse_int*            nnz_total_dev_host_ptr = &h_nnz_total_dev_host_ptr;
-    rocsparse_mat_info        info                   = local_info;
-    size_t*                   buffer_size            = &h_buffer_size;
-    void*                     temp_buffer            = (void*)0x4;
+    rocsparse_handle          handle        = local_handle;
+    rocsparse_int             m             = safe_size;
+    rocsparse_int             n             = safe_size;
+    rocsparse_int             nnz_A         = safe_size;
+    const rocsparse_mat_descr csr_descr_A   = local_csr_descr_A;
+    const T*                  csr_val_A     = (const T*)0x4;
+    const rocsparse_int*      csr_row_ptr_A = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_col_ind_A = (const rocsparse_int*)0x4;
+    const rocsparse_mat_descr csr_descr_C   = local_csr_descr_C;
+    T*                        csr_val_C     = (T*)0x4;
 
-    int       nargs_to_exclude   = 1;
-    const int args_to_exclude[1] = {8};
-    T         percentage         = static_cast<T>(1);
+    host_dense_vector<rocsparse_int> hptr(safe_size + 1);
+    hptr[0] = 0;
+    hptr[1] = 1;
+    device_dense_vector<rocsparse_int> dcsr_row_ptr_C(hptr);
+
+    rocsparse_int*     csr_row_ptr_C          = (rocsparse_int*)dcsr_row_ptr_C;
+    rocsparse_int*     csr_col_ind_C          = (rocsparse_int*)0x4;
+    rocsparse_int*     nnz_total_dev_host_ptr = &h_nnz_total_dev_host_ptr;
+    rocsparse_mat_info info                   = local_info;
+    size_t*            buffer_size            = &h_buffer_size;
+    void*              temp_buffer            = (void*)0x4;
+
+    T percentage = static_cast<T>(1);
 
 #define PARAMS_BUFFER_SIZE                                                                 \
     handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, percentage, \
@@ -72,16 +76,33 @@ void testing_prune_csr2csr_by_percentage_bad_arg(const Arguments& arg)
 #define PARAMS                                                                             \
     handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, percentage, \
         csr_descr_C, csr_val_C, csr_row_ptr_C, nnz_total_dev_host_ptr, info, temp_buffer
-    auto_testing_bad_arg(rocsparse_prune_csr2csr_by_percentage_buffer_size<T>,
-                         nargs_to_exclude,
-                         args_to_exclude,
-                         PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_prune_csr2csr_nnz_by_percentage<T>,
-                         nargs_to_exclude,
-                         args_to_exclude,
-                         PARAMS_NNZ);
-    auto_testing_bad_arg(
-        rocsparse_prune_csr2csr_by_percentage<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+
+    {
+        static constexpr int nargs_to_exclude                  = 3;
+        const int            args_to_exclude[nargs_to_exclude] = {8, 10, 12};
+
+        select_bad_arg_analysis(rocsparse_prune_csr2csr_by_percentage_buffer_size<T>,
+                                nargs_to_exclude,
+                                args_to_exclude,
+                                PARAMS_BUFFER_SIZE);
+    }
+
+    {
+        static constexpr int nargs_to_exclude                  = 1;
+        const int            args_to_exclude[nargs_to_exclude] = {8};
+
+        select_bad_arg_analysis(rocsparse_prune_csr2csr_nnz_by_percentage<T>,
+                                nargs_to_exclude,
+                                args_to_exclude,
+                                PARAMS_NNZ);
+    }
+
+    {
+        static constexpr int nargs_to_exclude   = 3;
+        const int            args_to_exclude[3] = {8, 10, 12};
+        select_bad_arg_analysis(
+            rocsparse_prune_csr2csr_by_percentage<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
     CHECK_ROCSPARSE_ERROR(
         rocsparse_set_mat_storage_mode(csr_descr_A, rocsparse_storage_mode_unsorted));
@@ -104,21 +125,21 @@ void testing_prune_csr2csr_by_percentage_bad_arg(const Arguments& arg)
     percentage = -10;
     EXPECT_ROCSPARSE_STATUS(
         rocsparse_prune_csr2csr_by_percentage_buffer_size<T>(PARAMS_BUFFER_SIZE),
-        rocsparse_status_invalid_size);
+        rocsparse_status_invalid_value);
     EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(PARAMS_NNZ),
-                            rocsparse_status_invalid_size);
+                            rocsparse_status_invalid_value);
     EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(PARAMS),
-                            rocsparse_status_invalid_size);
+                            rocsparse_status_invalid_value);
 
     // Check percentage being greater than 100
     percentage = 110;
     EXPECT_ROCSPARSE_STATUS(
         rocsparse_prune_csr2csr_by_percentage_buffer_size<T>(PARAMS_BUFFER_SIZE),
-        rocsparse_status_invalid_size);
+        rocsparse_status_invalid_value);
     EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(PARAMS_NNZ),
-                            rocsparse_status_invalid_size);
+                            rocsparse_status_invalid_value);
     EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(PARAMS),
-                            rocsparse_status_invalid_size);
+                            rocsparse_status_invalid_value);
 
 #undef PARAMS
 #undef PARAMS_NNZ

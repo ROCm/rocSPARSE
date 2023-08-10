@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,10 +37,10 @@ void testing_coo2csr_bad_arg(const Arguments& arg)
     rocsparse_int        nnz         = safe_size;
     rocsparse_int        m           = safe_size;
     rocsparse_int*       csr_row_ptr = (rocsparse_int*)0x4;
-    rocsparse_index_base base        = rocsparse_index_base_zero;
+    rocsparse_index_base idx_base    = rocsparse_index_base_zero;
 
-#define PARAMS handle, coo_row_ind, nnz, m, csr_row_ptr, base
-    auto_testing_bad_arg(rocsparse_coo2csr, PARAMS);
+#define PARAMS handle, coo_row_ind, nnz, m, csr_row_ptr, idx_base
+    bad_arg_analysis(rocsparse_coo2csr, PARAMS);
 #undef PARAMS
 }
 

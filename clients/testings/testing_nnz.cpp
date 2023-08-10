@@ -47,7 +47,7 @@ void testing_nnz_bad_arg(const Arguments& arg)
     rocsparse_int*            nnz_total_dev_host_ptr = (rocsparse_int*)0x4;
 
 #define PARAMS handle, dir, m, n, descr, A, ld, nnz_per_row_columns, nnz_total_dev_host_ptr
-    auto_testing_bad_arg(rocsparse_nnz<T>, PARAMS);
+    bad_arg_analysis(rocsparse_nnz<T>, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_nnz<T>(PARAMS), rocsparse_status_requires_sorted_storage);

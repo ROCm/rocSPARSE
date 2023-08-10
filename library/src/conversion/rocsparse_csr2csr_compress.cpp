@@ -31,25 +31,20 @@
 #include <rocprim/rocprim.hpp>
 
 template <typename T>
-rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          handle,
-                                                     rocsparse_int             m,
-                                                     rocsparse_int             n,
-                                                     const rocsparse_mat_descr descr_A,
-                                                     const T*                  csr_val_A,
-                                                     const rocsparse_int*      csr_row_ptr_A,
-                                                     const rocsparse_int*      csr_col_ind_A,
-                                                     rocsparse_int             nnz_A,
-                                                     const rocsparse_int*      nnz_per_row,
-                                                     T*                        csr_val_C,
-                                                     rocsparse_int*            csr_row_ptr_C,
-                                                     rocsparse_int*            csr_col_ind_C,
-                                                     T                         tol)
+rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          handle, //0
+                                                     rocsparse_int             m, //1
+                                                     rocsparse_int             n, //2
+                                                     const rocsparse_mat_descr descr_A, //3
+                                                     const T*                  csr_val_A, //4
+                                                     const rocsparse_int*      csr_row_ptr_A, //5
+                                                     const rocsparse_int*      csr_col_ind_A, //6
+                                                     rocsparse_int             nnz_A, //7
+                                                     const rocsparse_int*      nnz_per_row, //8
+                                                     T*                        csr_val_C, //9
+                                                     rocsparse_int*            csr_row_ptr_C, //10
+                                                     rocsparse_int*            csr_col_ind_C, //11
+                                                     T                         tol) //12
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
 
     // Logging
     log_trace(handle,
@@ -67,67 +62,30 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
               (const void*&)csr_col_ind_C,
               tol);
 
-    log_bench(
-        handle, "./rocsparse-bench -f csr2csr_compress -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(3, descr_A);
+    ROCSPARSE_CHECKARG(3,
+                       descr_A,
+                       (descr_A->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_ARRAY(4, nnz_A, csr_val_A);
+    ROCSPARSE_CHECKARG_ARRAY(5, m, csr_row_ptr_A);
+    ROCSPARSE_CHECKARG_ARRAY(6, nnz_A, csr_col_ind_A);
+    ROCSPARSE_CHECKARG_SIZE(7, nnz_A);
+    ROCSPARSE_CHECKARG_ARRAY(8, m, nnz_per_row);
+    ROCSPARSE_CHECKARG_ARRAY(10, m, csr_row_ptr_C);
+    ROCSPARSE_CHECKARG(
+        12, tol, (std::real(tol) < std::real(static_cast<T>(0))), rocsparse_status_invalid_value);
 
-    // Check matrix descriptor
-    if(descr_A == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check matrix sorting mode
-    if(descr_A->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    // Check sizes
-    if(m < 0 || n < 0 || nnz_A < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check tolerance
-    if(std::real(tol) < std::real(static_cast<T>(0)))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Quick return if possible
     if(m == 0 || n == 0)
     {
         return rocsparse_status_success;
     }
 
-    // Check pointer arguments
-    if(csr_row_ptr_A == nullptr || csr_row_ptr_C == nullptr || nnz_per_row == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // value arrays and column indices arrays must both be null (zero matrix) or both not null
-    if((csr_val_A == nullptr && csr_col_ind_A != nullptr)
-       || (csr_val_A != nullptr && csr_col_ind_A == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // value arrays and column indices arrays must both be null (zero matrix) or both not null
-    if((csr_val_C == nullptr && csr_col_ind_C != nullptr)
-       || (csr_val_C != nullptr && csr_col_ind_C == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz_A != 0 && (csr_val_A == nullptr && csr_col_ind_A == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
     // Stream
     hipStream_t stream = handle->stream;
-
     // Compute required temporary storage buffer size
     size_t nwarps                   = (nnz_A - 1) / handle->wavefront_size + 1;
     size_t temp_storage_size_bytes1 = sizeof(int) * (nwarps / 256 + 1) * 256;
@@ -198,26 +156,28 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                                 op,
                                                 stream));
 
-    if(csr_val_C == nullptr && csr_col_ind_C == nullptr)
+    if(csr_val_C == nullptr || csr_col_ind_C == nullptr)
     {
         rocsparse_int start = 0;
         rocsparse_int end   = 0;
-
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &end, &csr_row_ptr_C[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&start,
-                                           &csr_row_ptr_C[0],
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyDeviceToHost,
-                                           handle->stream));
+        if(csr_row_ptr_C != nullptr)
+        {
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&end,
+                                               &csr_row_ptr_C[m],
+                                               sizeof(rocsparse_int),
+                                               hipMemcpyDeviceToHost,
+                                               handle->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&start,
+                                               &csr_row_ptr_C[0],
+                                               sizeof(rocsparse_int),
+                                               hipMemcpyDeviceToHost,
+                                               handle->stream));
+        }
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-        rocsparse_int nnz_C = (end - start);
-
-        if(nnz_C != 0)
-        {
-            return rocsparse_status_invalid_pointer;
-        }
+        const rocsparse_int nnz_C = (end - start);
+        ROCSPARSE_CHECKARG_ARRAY(9, nnz_C, csr_val_C);
+        ROCSPARSE_CHECKARG_ARRAY(11, nnz_C, csr_col_ind_C);
     }
 
 #define LOOPS 2
@@ -305,39 +265,40 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
  * ===========================================================================
  */
 
-#define C_IMPL(NAME, TYPE)                                                    \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,        \
-                                     rocsparse_int             m,             \
-                                     rocsparse_int             n,             \
-                                     const rocsparse_mat_descr descr_A,       \
-                                     const TYPE*               csr_val_A,     \
-                                     const rocsparse_int*      csr_row_ptr_A, \
-                                     const rocsparse_int*      csr_col_ind_A, \
-                                     rocsparse_int             nnz_A,         \
-                                     const rocsparse_int*      nnz_per_row,   \
-                                     TYPE*                     csr_val_C,     \
-                                     rocsparse_int*            csr_row_ptr_C, \
-                                     rocsparse_int*            csr_col_ind_C, \
-                                     TYPE                      tol)           \
-    try                                                                       \
-    {                                                                         \
-        return rocsparse_csr2csr_compress_template(handle,                    \
-                                                   m,                         \
-                                                   n,                         \
-                                                   descr_A,                   \
-                                                   csr_val_A,                 \
-                                                   csr_row_ptr_A,             \
-                                                   csr_col_ind_A,             \
-                                                   nnz_A,                     \
-                                                   nnz_per_row,               \
-                                                   csr_val_C,                 \
-                                                   csr_row_ptr_C,             \
-                                                   csr_col_ind_C,             \
-                                                   tol);                      \
-    }                                                                         \
-    catch(...)                                                                \
-    {                                                                         \
-        return exception_to_rocsparse_status();                               \
+#define C_IMPL(NAME, TYPE)                                                           \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,               \
+                                     rocsparse_int             m,                    \
+                                     rocsparse_int             n,                    \
+                                     const rocsparse_mat_descr descr_A,              \
+                                     const TYPE*               csr_val_A,            \
+                                     const rocsparse_int*      csr_row_ptr_A,        \
+                                     const rocsparse_int*      csr_col_ind_A,        \
+                                     rocsparse_int             nnz_A,                \
+                                     const rocsparse_int*      nnz_per_row,          \
+                                     TYPE*                     csr_val_C,            \
+                                     rocsparse_int*            csr_row_ptr_C,        \
+                                     rocsparse_int*            csr_col_ind_C,        \
+                                     TYPE                      tol)                  \
+    try                                                                              \
+    {                                                                                \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2csr_compress_template(handle,        \
+                                                                      m,             \
+                                                                      n,             \
+                                                                      descr_A,       \
+                                                                      csr_val_A,     \
+                                                                      csr_row_ptr_A, \
+                                                                      csr_col_ind_A, \
+                                                                      nnz_A,         \
+                                                                      nnz_per_row,   \
+                                                                      csr_val_C,     \
+                                                                      csr_row_ptr_C, \
+                                                                      csr_col_ind_C, \
+                                                                      tol));         \
+        return rocsparse_status_success;                                             \
+    }                                                                                \
+    catch(...)                                                                       \
+    {                                                                                \
+        RETURN_ROCSPARSE_EXCEPTION();                                                \
     }
 
 C_IMPL(rocsparse_scsr2csr_compress, float);
