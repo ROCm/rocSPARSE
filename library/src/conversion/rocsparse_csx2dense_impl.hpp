@@ -30,34 +30,121 @@
 #include <rocprim/rocprim.hpp>
 
 template <rocsparse_direction DIRA, typename I, typename J, typename T>
-rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
-                                          J                         m,
-                                          J                         n,
-                                          const rocsparse_mat_descr descr,
-                                          const T*                  csx_val,
-                                          const I*                  csx_row_col_ptr,
-                                          const J*                  csx_col_row_ind,
-                                          T*                        A,
-                                          I                         lda,
-                                          rocsparse_order           order)
+rocsparse_status rocsparse_csx2dense_checkarg(rocsparse_handle          handle, //0
+                                              J                         m, //1
+                                              J                         n, //2
+                                              const rocsparse_mat_descr descr, //3
+                                              const T*                  csx_val, //4
+                                              const I*                  csx_row_col_ptr, //5
+                                              const J*                  csx_col_row_ind, //6
+                                              T*                        A, //7
+                                              I                         lda, //8
+                                              rocsparse_order           order) //9
+{
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(3, descr);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_ENUM(9, order);
+    ROCSPARSE_CHECKARG(
+        8, lda, (lda < (order == rocsparse_order_column ? m : n)), rocsparse_status_invalid_size);
+    if(m == 0 || n == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    ROCSPARSE_CHECKARG(3,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+    ROCSPARSE_CHECKARG(
+        3, descr, (rocsparse_matrix_type_general != descr->type), rocsparse_status_not_implemented);
+
+    switch(DIRA)
+    {
+    case rocsparse_direction_row:
+    {
+        const I* csr_row_ptr = csx_row_col_ptr;
+        const T* csr_val     = csx_val;
+        const J* csr_col_ind = csx_col_row_ind;
+        ROCSPARSE_CHECKARG_ARRAY(5, m, csr_row_ptr);
+        if(csr_val == nullptr || csr_col_ind == nullptr)
+        {
+            rocsparse_int start = 0;
+            rocsparse_int end   = 0;
+            if(csr_row_ptr != nullptr)
+            {
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(&end,
+                                                   &csr_row_ptr[m],
+                                                   sizeof(rocsparse_int),
+                                                   hipMemcpyDeviceToHost,
+                                                   handle->stream));
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(&start,
+                                                   &csr_row_ptr[0],
+                                                   sizeof(rocsparse_int),
+                                                   hipMemcpyDeviceToHost,
+                                                   handle->stream));
+                RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+            }
+            const rocsparse_int nnz = (end - start);
+            ROCSPARSE_CHECKARG_ARRAY(4, nnz, csr_val);
+            ROCSPARSE_CHECKARG_ARRAY(6, nnz, csr_col_ind);
+        }
+        break;
+    }
+    case rocsparse_direction_column:
+    {
+        const T* csc_val     = csx_val;
+        const I* csc_col_ptr = csx_row_col_ptr;
+        const J* csc_row_ind = csx_col_row_ind;
+        ROCSPARSE_CHECKARG_ARRAY(5, n, csc_col_ptr);
+        if(csc_val == nullptr || csc_row_ind == nullptr)
+        {
+            rocsparse_int start = 0;
+            rocsparse_int end   = 0;
+            if(csc_col_ptr != nullptr)
+            {
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(&end,
+                                                   &csc_col_ptr[m],
+                                                   sizeof(rocsparse_int),
+                                                   hipMemcpyDeviceToHost,
+                                                   handle->stream));
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(&start,
+                                                   &csc_col_ptr[0],
+                                                   sizeof(rocsparse_int),
+                                                   hipMemcpyDeviceToHost,
+                                                   handle->stream));
+                RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+            }
+            const rocsparse_int nnz = (end - start);
+            ROCSPARSE_CHECKARG_ARRAY(4, nnz, csc_val);
+            ROCSPARSE_CHECKARG_ARRAY(6, nnz, csc_row_ind);
+        }
+        break;
+    }
+    }
+
+    ROCSPARSE_CHECKARG_ARRAY(7, m * n, A);
+    //
+    // Quick return if possible, before checking for invalid pointers.
+    //
+    return rocsparse_status_continue;
+}
+
+template <rocsparse_direction DIRA, typename I, typename J, typename T>
+rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle, //0
+                                          J                         m, //1
+                                          J                         n, //2
+                                          const rocsparse_mat_descr descr, //3
+                                          const T*                  csx_val, //4
+                                          const I*                  csx_row_col_ptr, //5
+                                          const J*                  csx_col_row_ind, //6
+                                          T*                        A, //7
+                                          I                         lda, //8
+                                          rocsparse_order           order) //9
 {
     static constexpr bool is_row_oriented = (rocsparse_direction_row == DIRA);
-    //
-    // Checks for valid handle
-    //
-    if(nullptr == handle)
-    {
-        return rocsparse_status_invalid_handle;
-    }
 
-    if(nullptr == descr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    //
-    // Loggings
-    //
     log_trace(handle,
               is_row_oriented ? "rocsparse_csr2dense" : "rocsparse_csc2dense",
               m,
@@ -69,71 +156,17 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
               (const void*&)csx_row_col_ptr,
               (const void*&)csx_col_row_ind);
 
-    log_bench(handle,
-              "./rocsparse-bench",
-              "-f",
-              is_row_oriented ? "csr2dense" : "csc2dense",
-              "-m",
-              m,
-              "-n",
-              n,
-              "--denseld",
-              lda,
-              "--indexbaseA",
-              descr->base);
+    const rocsparse_status status = rocsparse_csx2dense_checkarg<DIRA, I, J, T>(
+        handle, m, n, descr, csx_val, csx_row_col_ptr, csx_col_row_ind, A, lda, order);
 
-    if(rocsparse_enum_utils::is_invalid(order))
+    if(status != rocsparse_status_continue)
     {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    //
-    // Check sizes
-    //
-    if((m < 0) || (n < 0) || lda < (order == rocsparse_order_column ? m : n))
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    //
-    // Quick return if possible, before checking for invalid pointers.
-    //
-    if(!m || !n)
-    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
         return rocsparse_status_success;
     }
 
-    //
-    // Check invalid pointers.
-    //
-    if(A == nullptr || csx_row_col_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // value arrays and column/row indices arrays must both be null (zero matrix) or both not null
-    if((csx_col_row_ind == nullptr && csx_val != nullptr)
-       || (csx_col_row_ind != nullptr && csx_val == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    //
-    // Check the description type of the matrix.
-    //
-    if(rocsparse_matrix_type_general != descr->type)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    J mn = order == rocsparse_order_column ? m : n;
-    J nm = order == rocsparse_order_column ? n : m;
+    const J mn = order == rocsparse_order_column ? m : n;
+    const J nm = order == rocsparse_order_column ? n : m;
 
     //
     // Set memory to zero.
@@ -144,6 +177,7 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
     //
     // Compute the conversion.
     //
-    return rocsparse_csx2dense_template<DIRA>(
-        handle, m, n, descr, csx_val, csx_row_col_ptr, csx_col_row_ind, A, lda, order);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csx2dense_template<DIRA>(
+        handle, m, n, descr, csx_val, csx_row_col_ptr, csx_col_row_ind, A, lda, order));
+    return rocsparse_status_success;
 }

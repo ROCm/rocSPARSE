@@ -40,11 +40,6 @@ extern "C" rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle     h
                                                           size_t*              buffer_size)
 try
 {
-    // Check for valid handle
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
 
     // Logging
     log_trace(handle,
@@ -56,23 +51,19 @@ try
               (const void*&)coo_col_ind,
               (const void*&)buffer_size);
 
-    // Check sizes
-    if(m < 0 || n < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
+    ROCSPARSE_CHECKARG_ARRAY(4, nnz, coo_row_ind);
+    ROCSPARSE_CHECKARG_ARRAY(5, nnz, coo_col_ind);
+    ROCSPARSE_CHECKARG_POINTER(6, buffer_size);
 
     // Quick return if possible
     if(m == 0 || n == 0 || nnz == 0)
     {
         *buffer_size = 0;
         return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(coo_row_ind == nullptr || coo_col_ind == nullptr || buffer_size == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     // Stream
@@ -115,54 +106,67 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
-extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
-                                                     rocsparse_int    m,
-                                                     rocsparse_int    n,
-                                                     rocsparse_int    nnz,
-                                                     rocsparse_int*   coo_row_ind,
-                                                     rocsparse_int*   coo_col_ind,
-                                                     rocsparse_int*   perm,
-                                                     void*            temp_buffer)
-try
+rocsparse_status rocsparse_coosort_by_row_quickreturn(rocsparse_handle handle,
+                                                      rocsparse_int    m,
+                                                      rocsparse_int    n,
+                                                      rocsparse_int    nnz,
+                                                      rocsparse_int*   coo_row_ind,
+                                                      rocsparse_int*   coo_col_ind,
+                                                      rocsparse_int*   perm,
+                                                      void*            temp_buffer)
 {
-    // Check for valid handle
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-
-    // Logging
-    log_trace(handle,
-              "rocsparse_coosort_by_row",
-              m,
-              n,
-              nnz,
-              (const void*&)coo_row_ind,
-              (const void*&)coo_col_ind,
-              (const void*&)perm,
-              (const void*&)temp_buffer);
-
-    log_bench(handle, "./rocsparse-bench -f coosort", "--mtx <matrix.mtx>");
-
-    // Check sizes
-    if(m < 0 || n < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
 
     // Quick return if possible
     if(m == 0 || n == 0 || nnz == 0)
     {
         return rocsparse_status_success;
     }
+    return rocsparse_status_continue;
+}
 
-    // Check pointer arguments
-    if(coo_row_ind == nullptr || coo_col_ind == nullptr || temp_buffer == nullptr)
+rocsparse_status rocsparse_coosort_by_row_checkarg(rocsparse_handle handle,
+                                                   rocsparse_int    m,
+                                                   rocsparse_int    n,
+                                                   rocsparse_int    nnz,
+                                                   rocsparse_int*   coo_row_ind,
+                                                   rocsparse_int*   coo_col_ind,
+                                                   rocsparse_int*   perm,
+                                                   void*            temp_buffer)
+{
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
+    ROCSPARSE_CHECKARG_ARRAY(4, nnz, coo_row_ind);
+    ROCSPARSE_CHECKARG_ARRAY(5, nnz, coo_col_ind);
+    ROCSPARSE_CHECKARG_ARRAY(7, nnz, temp_buffer);
+
+    const rocsparse_status status = rocsparse_coosort_by_row_quickreturn(
+        handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, temp_buffer);
+    if(status != rocsparse_status_continue)
     {
-        return rocsparse_status_invalid_pointer;
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+    return rocsparse_status_continue;
+}
+
+rocsparse_status rocsparse_coosort_by_row_template(rocsparse_handle handle,
+                                                   rocsparse_int    m,
+                                                   rocsparse_int    n,
+                                                   rocsparse_int    nnz,
+                                                   rocsparse_int*   coo_row_ind,
+                                                   rocsparse_int*   coo_col_ind,
+                                                   rocsparse_int*   perm,
+                                                   void*            temp_buffer)
+{
+
+    if(m == 0 || n == 0 || nnz == 0)
+    {
+        return rocsparse_status_success;
     }
 
     // Stream
@@ -436,9 +440,91 @@ try
 
     return rocsparse_status_success;
 }
+
+extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
+                                                     rocsparse_int    m,
+                                                     rocsparse_int    n,
+                                                     rocsparse_int    nnz,
+                                                     rocsparse_int*   coo_row_ind,
+                                                     rocsparse_int*   coo_col_ind,
+                                                     rocsparse_int*   perm,
+                                                     void*            temp_buffer)
+try
+{
+
+    // Logging
+    log_trace(handle,
+              "rocsparse_coosort_by_row",
+              m,
+              n,
+              nnz,
+              (const void*&)coo_row_ind,
+              (const void*&)coo_col_ind,
+              (const void*&)perm,
+              (const void*&)temp_buffer);
+
+    const rocsparse_status status = rocsparse_coosort_by_row_checkarg(
+        handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, temp_buffer);
+
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_coosort_by_row_template(
+        handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, temp_buffer));
+
+    return rocsparse_status_success;
+}
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
+}
+
+rocsparse_status rocsparse_coosort_by_column_quickreturn(rocsparse_handle handle,
+                                                         rocsparse_int    m,
+                                                         rocsparse_int    n,
+                                                         rocsparse_int    nnz,
+                                                         rocsparse_int*   coo_row_ind,
+                                                         rocsparse_int*   coo_col_ind,
+                                                         rocsparse_int*   perm,
+                                                         void*            temp_buffer)
+{
+    // Quick return if possible
+    if(m == 0 || n == 0 || nnz == 0)
+    {
+        return rocsparse_status_success;
+    }
+    return rocsparse_status_continue;
+}
+
+rocsparse_status rocsparse_coosort_by_column_checkarg(rocsparse_handle handle,
+                                                      rocsparse_int    m,
+                                                      rocsparse_int    n,
+                                                      rocsparse_int    nnz,
+                                                      rocsparse_int*   coo_row_ind,
+                                                      rocsparse_int*   coo_col_ind,
+                                                      rocsparse_int*   perm,
+                                                      void*            temp_buffer)
+{
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
+    ROCSPARSE_CHECKARG_ARRAY(4, nnz, coo_row_ind);
+    ROCSPARSE_CHECKARG_ARRAY(5, nnz, coo_col_ind);
+    ROCSPARSE_CHECKARG_ARRAY(7, nnz, temp_buffer);
+
+    const rocsparse_status status = rocsparse_coosort_by_column_quickreturn(
+        handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, temp_buffer);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    return rocsparse_status_continue;
 }
 
 extern "C" rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,
@@ -451,9 +537,33 @@ extern "C" rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,
                                                         void*            temp_buffer)
 try
 {
-    return rocsparse_coosort_by_row(handle, n, m, nnz, coo_col_ind, coo_row_ind, perm, temp_buffer);
+
+    // Logging
+    log_trace(handle,
+              "rocsparse_coosort_by_column",
+              m,
+              n,
+              nnz,
+              (const void*&)coo_row_ind,
+              (const void*&)coo_col_ind,
+              (const void*&)perm,
+              (const void*&)temp_buffer);
+
+    const rocsparse_status status = rocsparse_coosort_by_column_checkarg(
+        handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, temp_buffer);
+
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_coosort_by_row_template(
+        handle, n, m, nnz, coo_col_ind, coo_row_ind, perm, temp_buffer));
+
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

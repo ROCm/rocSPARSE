@@ -35,11 +35,27 @@ extern "C" rocsparse_status rocsparse_cscsort_buffer_size(rocsparse_handle     h
                                                           size_t*              buffer_size)
 try
 {
-    return rocsparse_csrsort_buffer_size(handle, n, m, nnz, csc_col_ptr, csc_row_ind, buffer_size);
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
+    ROCSPARSE_CHECKARG_ARRAY(4, n, csc_col_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(5, nnz, csc_row_ind);
+    ROCSPARSE_CHECKARG_POINTER(6, buffer_size);
+
+    if(m == 0 || n == 0 || nnz == 0)
+    {
+        *buffer_size = 0;
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_csrsort_buffer_size(handle, n, m, nnz, csc_col_ptr, csc_row_ind, buffer_size));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_cscsort(rocsparse_handle          handle,
@@ -53,9 +69,27 @@ extern "C" rocsparse_status rocsparse_cscsort(rocsparse_handle          handle,
                                               void*                     temp_buffer)
 try
 {
-    return rocsparse_csrsort(handle, n, m, nnz, descr, csc_col_ptr, csc_row_ind, perm, temp_buffer);
+
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
+    ROCSPARSE_CHECKARG_POINTER(4, descr);
+    ROCSPARSE_CHECKARG_ARRAY(5, n, csc_col_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(6, nnz, csc_row_ind);
+    ROCSPARSE_CHECKARG_ARRAY(8, nnz, temp_buffer);
+
+    // Quick return if possible
+    if(m == 0 || n == 0 || nnz == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_csrsort(handle, n, m, nnz, descr, csc_col_ptr, csc_row_ind, perm, temp_buffer));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

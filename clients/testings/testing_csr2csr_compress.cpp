@@ -27,7 +27,7 @@
 template <typename T>
 void testing_csr2csr_compress_bad_arg(const Arguments& arg)
 {
-    static const size_t safe_size = 100;
+    static const size_t safe_size = 1;
     static const T      safe_tol  = static_cast<T>(0);
 
     // Create rocsparse handle
@@ -36,19 +36,56 @@ void testing_csr2csr_compress_bad_arg(const Arguments& arg)
     // Create matrix descriptor
     rocsparse_local_mat_descr local_descr_A;
 
-    rocsparse_handle          handle        = local_handle;
-    rocsparse_int             m             = safe_size;
-    rocsparse_int             n             = safe_size;
-    const rocsparse_mat_descr descr_A       = local_descr_A;
-    const T*                  csr_val_A     = (const T*)0x4;
-    const rocsparse_int*      csr_row_ptr_A = (const rocsparse_int*)0x4;
-    const rocsparse_int*      csr_col_ind_A = (const rocsparse_int*)0x4;
-    rocsparse_int             nnz_A         = safe_size;
-    rocsparse_int*            nnz_per_row   = (rocsparse_int*)0x4;
-    T*                        csr_val_C     = (T*)0x4;
-    rocsparse_int*            csr_row_ptr_C = (rocsparse_int*)0x4;
-    rocsparse_int*            csr_col_ind_C = (rocsparse_int*)0x4;
-    rocsparse_int*            nnz_C         = (rocsparse_int*)0x4;
+    rocsparse_handle          handle  = local_handle;
+    rocsparse_int             m       = safe_size;
+    rocsparse_int             n       = safe_size;
+    const rocsparse_mat_descr descr_A = local_descr_A;
+    rocsparse_int             nnz_A   = safe_size;
+
+    host_dense_vector<rocsparse_int> hnnz_per_row(safe_size);
+    hnnz_per_row[0] = 1;
+    device_dense_vector<rocsparse_int> dnnz_per_row(hnnz_per_row);
+
+    rocsparse_int  nnz_per_row_value = safe_size;
+    rocsparse_int* nnz_per_row       = (rocsparse_int*)dnnz_per_row;
+
+    host_dense_vector<rocsparse_int> hptr(safe_size + 1);
+    hptr[0] = 0;
+    hptr[1] = 1;
+    device_dense_vector<rocsparse_int> dcsr_row_ptr_C(hptr);
+
+    host_dense_vector<rocsparse_int> hind_C(safe_size);
+    hind_C[0] = 0;
+    device_dense_vector<rocsparse_int> dcsr_col_ind_C(hind_C);
+
+    host_dense_vector<T> hval_C(safe_size);
+    hval_C[0] = static_cast<T>(1);
+    device_dense_vector<T> dcsr_val_C(hval_C);
+
+    host_dense_vector<rocsparse_int> hptr_A(safe_size + 1);
+    hptr_A[0] = 0;
+    hptr_A[1] = 1;
+    device_dense_vector<rocsparse_int> dcsr_row_ptr_A(hptr_A);
+
+    host_dense_vector<rocsparse_int> hind_A(safe_size);
+    hind_A[0] = 0;
+    device_dense_vector<rocsparse_int> dcsr_col_ind_A(hind_A);
+
+    host_dense_vector<T> hval_A(safe_size);
+    hval_A[0] = static_cast<T>(1);
+    ;
+    device_dense_vector<T> dcsr_val_A(hval_A);
+
+    const T*             csr_val_A     = (const T*)dcsr_val_A;
+    const rocsparse_int* csr_row_ptr_A = (const rocsparse_int*)dcsr_row_ptr_A;
+    const rocsparse_int* csr_col_ind_A = (const rocsparse_int*)dcsr_col_ind_A;
+
+    T*             csr_val_C     = (T*)dcsr_val_C;
+    rocsparse_int* csr_row_ptr_C = (rocsparse_int*)dcsr_row_ptr_C;
+    rocsparse_int* csr_col_ind_C = (rocsparse_int*)dcsr_col_ind_C;
+
+    rocsparse_int  nnz   = safe_size;
+    rocsparse_int* nnz_C = &nnz;
 
     int       nargs_to_exclude_nnz   = 2;
     const int args_to_exclude_nnz[2] = {3, 7};
@@ -61,9 +98,10 @@ void testing_csr2csr_compress_bad_arg(const Arguments& arg)
 #define PARAMS                                                                                     \
     handle, m, n, descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, nnz_A, nnz_per_row, csr_val_C, \
         csr_row_ptr_C, csr_col_ind_C, tol
-    auto_testing_bad_arg(
+    select_bad_arg_analysis(
         rocsparse_nnz_compress<T>, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
-    auto_testing_bad_arg(rocsparse_csr2csr_compress<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+    select_bad_arg_analysis(
+        rocsparse_csr2csr_compress<T>, nargs_to_exclude, args_to_exclude, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_A, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_nnz_compress<T>(PARAMS_NNZ),

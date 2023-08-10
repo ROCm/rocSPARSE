@@ -33,24 +33,54 @@
 #include <rocprim/rocprim.hpp>
 
 template <typename I, typename T>
-rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle,
-                                              rocsparse_order           order,
-                                              I                         m,
-                                              I                         n,
-                                              const rocsparse_mat_descr descr,
-                                              const T*                  A,
-                                              I                         ld,
-                                              const I*                  nnz_per_rows,
-                                              T*                        coo_val,
-                                              I*                        coo_row_ind,
-                                              I*                        coo_col_ind)
+rocsparse_status rocsparse_dense2coo_checkarg(rocsparse_handle          handle, //0
+                                              I                         m, //1
+                                              I                         n, //2
+                                              const rocsparse_mat_descr descr, //3
+                                              const T*                  A, //4
+                                              I                         ld, //5
+                                              const I*                  nnz_per_rows, //6
+                                              T*                        coo_val, //7
+                                              I*                        coo_row_ind, //8
+                                              I*                        coo_col_ind) //9
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_POINTER(3, descr);
+    ROCSPARSE_CHECKARG(4,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+    ROCSPARSE_CHECKARG(5, ld, (ld < m), rocsparse_status_invalid_size);
+
+    // Quick return if possible
+    if(m == 0 || n == 0)
     {
-        return rocsparse_status_invalid_handle;
+        return rocsparse_status_success;
     }
 
+    ROCSPARSE_CHECKARG_POINTER(4, A);
+    ROCSPARSE_CHECKARG_ARRAY(6, m, nnz_per_rows);
+    ROCSPARSE_CHECKARG_POINTER(7, coo_val);
+    ROCSPARSE_CHECKARG_POINTER(8, coo_row_ind);
+    ROCSPARSE_CHECKARG_POINTER(9, coo_col_ind);
+    return rocsparse_status_continue;
+}
+
+template <typename I, typename T>
+rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle, //0
+                                              rocsparse_order           order, //1
+                                              I                         m, //2
+                                              I                         n, //3
+                                              const rocsparse_mat_descr descr, //4
+                                              const T*                  A, //5
+                                              I                         ld, //6
+                                              const I*                  nnz_per_rows, //7
+                                              T*                        coo_val, //8
+                                              I*                        coo_row_ind, //9
+                                              I*                        coo_col_ind) //10
+{
     // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xdense2coo"),
@@ -64,51 +94,6 @@ rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle,
               (const void*&)coo_val,
               (const void*&)coo_row_ind,
               (const void*&)coo_col_ind);
-
-    log_bench(handle, "./rocsparse-bench -f dense2coo -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
-
-    // Check order
-    if(rocsparse_enum_utils::is_invalid(order))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check matrix descriptor
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    // Check sizes
-    if(m < 0 || n < 0 || ld < (order == rocsparse_order_column ? m : n))
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Quick return if possible
-    if(m == 0 || n == 0)
-    {
-        return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(A == nullptr || nnz_per_rows == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // value, row, and column arrays must all be null (zero matrix) or none null
-    if(!(coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr)
-       && !(coo_val != nullptr && coo_row_ind != nullptr && coo_col_ind != nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
 
     I* row_ptr;
     RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(&row_ptr, sizeof(I) * (m + 1), handle->stream));
@@ -124,8 +109,7 @@ rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle,
         hipMemcpyAsync(&end, &row_ptr[m], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-    I nnz = end - start;
-
+    const I nnz = end - start;
     RETURN_IF_ROCSPARSE_ERROR(
         rocsparse_csr2coo_template(handle, row_ptr, nnz, m, coo_row_ind, descr->base));
 
@@ -159,10 +143,10 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
 #undef INSTANTIATE
 
 /*
-* ===========================================================================
-*    C wrapper
-* ===========================================================================
-*/
+ * ===========================================================================
+ *    C wrapper
+ * ===========================================================================
+ */
 
 extern "C" rocsparse_status rocsparse_sdense2coo(rocsparse_handle          handle,
                                                  rocsparse_int             m,
@@ -176,21 +160,30 @@ extern "C" rocsparse_status rocsparse_sdense2coo(rocsparse_handle          handl
                                                  rocsparse_int*            coo_col_ind)
 try
 {
-    return rocsparse_dense2coo_template(handle,
-                                        rocsparse_order_column,
-                                        m,
-                                        n,
-                                        descr,
-                                        A,
-                                        ld,
-                                        nnz_per_rows,
-                                        coo_val,
-                                        coo_row_ind,
-                                        coo_col_ind);
+    const rocsparse_status status = rocsparse_dense2coo_checkarg(
+        handle, m, n, descr, A, ld, nnz_per_rows, coo_val, coo_row_ind, coo_col_ind);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_dense2coo_template(handle,
+                                                           rocsparse_order_column,
+                                                           m,
+                                                           n,
+                                                           descr,
+                                                           A,
+                                                           ld,
+                                                           nnz_per_rows,
+                                                           coo_val,
+                                                           coo_row_ind,
+                                                           coo_col_ind));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_ddense2coo(rocsparse_handle          handle,
@@ -205,21 +198,30 @@ extern "C" rocsparse_status rocsparse_ddense2coo(rocsparse_handle          handl
                                                  rocsparse_int*            coo_col_ind)
 try
 {
-    return rocsparse_dense2coo_template(handle,
-                                        rocsparse_order_column,
-                                        m,
-                                        n,
-                                        descr,
-                                        A,
-                                        ld,
-                                        nnz_per_rows,
-                                        coo_val,
-                                        coo_row_ind,
-                                        coo_col_ind);
+    const rocsparse_status status = rocsparse_dense2coo_checkarg(
+        handle, m, n, descr, A, ld, nnz_per_rows, coo_val, coo_row_ind, coo_col_ind);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_dense2coo_template(handle,
+                                                           rocsparse_order_column,
+                                                           m,
+                                                           n,
+                                                           descr,
+                                                           A,
+                                                           ld,
+                                                           nnz_per_rows,
+                                                           coo_val,
+                                                           coo_row_ind,
+                                                           coo_col_ind));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_cdense2coo(rocsparse_handle               handle,
@@ -234,21 +236,30 @@ extern "C" rocsparse_status rocsparse_cdense2coo(rocsparse_handle               
                                                  rocsparse_int*                 coo_col_ind)
 try
 {
-    return rocsparse_dense2coo_template(handle,
-                                        rocsparse_order_column,
-                                        m,
-                                        n,
-                                        descr,
-                                        A,
-                                        ld,
-                                        nnz_per_rows,
-                                        coo_val,
-                                        coo_row_ind,
-                                        coo_col_ind);
+    const rocsparse_status status = rocsparse_dense2coo_checkarg(
+        handle, m, n, descr, A, ld, nnz_per_rows, coo_val, coo_row_ind, coo_col_ind);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_dense2coo_template(handle,
+                                                           rocsparse_order_column,
+                                                           m,
+                                                           n,
+                                                           descr,
+                                                           A,
+                                                           ld,
+                                                           nnz_per_rows,
+                                                           coo_val,
+                                                           coo_row_ind,
+                                                           coo_col_ind));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_zdense2coo(rocsparse_handle                handle,
@@ -263,19 +274,27 @@ extern "C" rocsparse_status rocsparse_zdense2coo(rocsparse_handle               
                                                  rocsparse_int*                  coo_col_ind)
 try
 {
-    return rocsparse_dense2coo_template(handle,
-                                        rocsparse_order_column,
-                                        m,
-                                        n,
-                                        descr,
-                                        A,
-                                        ld,
-                                        nnz_per_rows,
-                                        coo_val,
-                                        coo_row_ind,
-                                        coo_col_ind);
+    const rocsparse_status status = rocsparse_dense2coo_checkarg(
+        handle, m, n, descr, A, ld, nnz_per_rows, coo_val, coo_row_ind, coo_col_ind);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_dense2coo_template(handle,
+                                                           rocsparse_order_column,
+                                                           m,
+                                                           n,
+                                                           descr,
+                                                           A,
+                                                           ld,
+                                                           nnz_per_rows,
+                                                           coo_val,
+                                                           coo_row_ind,
+                                                           coo_col_ind));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

@@ -27,7 +27,12 @@
 template <typename T>
 void testing_csr2gebsr_bad_arg(const Arguments& arg)
 {
-    static const size_t safe_size = 100;
+    static const size_t safe_size = 1;
+
+    host_dense_vector<rocsparse_int> hptr(safe_size + 1);
+    hptr[0] = 0;
+    hptr[1] = 1;
+    device_dense_vector<rocsparse_int> dcsr_row_ptr(hptr);
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
@@ -42,7 +47,7 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
     rocsparse_int             n               = safe_size;
     const rocsparse_mat_descr csr_descr       = local_csr_descr;
     const T*                  csr_val         = (const T*)0x4;
-    const rocsparse_int*      csr_row_ptr     = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_row_ptr     = (const rocsparse_int*)dcsr_row_ptr;
     const rocsparse_int*      csr_col_ind     = (const rocsparse_int*)0x4;
     const rocsparse_mat_descr bsr_descr       = local_bsr_descr;
     T*                        bsr_val         = (T*)0x4;
@@ -54,11 +59,11 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
     size_t*                   buffer_size     = (size_t*)0x4;
     void*                     temp_buffer     = (void*)0x4;
 
-    int       nargs_to_exclude_nnz   = 2;
-    const int args_to_exclude_nnz[2] = {6, 12};
+    static constexpr int nargs_to_exclude_nnz                      = 2;
+    const int            args_to_exclude_nnz[nargs_to_exclude_nnz] = {6, 12};
 
-    int       nargs_to_exclude_solve   = 1;
-    const int args_to_exclude_solve[1] = {14};
+    static constexpr int nargs_to_exclude_solve                        = 3;
+    const int            args_to_exclude_solve[nargs_to_exclude_solve] = {9, 11, 14};
 
 #define PARAMS_BUFFER_SIZE                                                                         \
     handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, csr_col_ind, row_block_dim, col_block_dim, \
@@ -69,10 +74,10 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
 #define PARAMS                                                                           \
     handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, csr_col_ind, bsr_descr, bsr_val, \
         bsr_row_ptr, bsr_col_ind, row_block_dim, col_block_dim, temp_buffer
-    auto_testing_bad_arg(rocsparse_csr2gebsr_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(
+    bad_arg_analysis(rocsparse_csr2gebsr_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    select_bad_arg_analysis(
         rocsparse_csr2gebsr_nnz, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
-    auto_testing_bad_arg(
+    select_bad_arg_analysis(
         rocsparse_csr2gebsr<T>, nargs_to_exclude_solve, args_to_exclude_solve, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(

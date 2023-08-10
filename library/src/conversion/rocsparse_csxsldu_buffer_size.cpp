@@ -83,42 +83,42 @@ INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
 
-#define C_IMPL(NAME, TYPE)                                                                 \
-    extern "C" rocsparse_status NAME(rocsparse_handle     handle_,                         \
-                                     rocsparse_direction  dir_,                            \
-                                     rocsparse_int        m_,                              \
-                                     rocsparse_int        n_,                              \
-                                     rocsparse_int        nnz_,                            \
-                                     const rocsparse_int* ptr_,                            \
-                                     const rocsparse_int* ind_,                            \
-                                     const TYPE*          val_,                            \
-                                     rocsparse_index_base base_,                           \
-                                     rocsparse_diag_type  ldiag_,                          \
-                                     rocsparse_direction  ldir_,                           \
-                                     rocsparse_diag_type  udiag_,                          \
-                                     rocsparse_direction  udir_,                           \
-                                     size_t*              buffer_size_)                    \
-    try                                                                                    \
-    {                                                                                      \
-        return rocsparse_csxsldu_buffer_size_template<TYPE, rocsparse_int, rocsparse_int>( \
-            handle_,                                                                       \
-            dir_,                                                                          \
-            m_,                                                                            \
-            n_,                                                                            \
-            nnz_,                                                                          \
-            ptr_,                                                                          \
-            ind_,                                                                          \
-            val_,                                                                          \
-            base_,                                                                         \
-            ldiag_,                                                                        \
-            ldir_,                                                                         \
-            udiag_,                                                                        \
-            udir_,                                                                         \
-            buffer_size_);                                                                 \
-    }                                                                                      \
-    catch(...)                                                                             \
-    {                                                                                      \
-        return exception_to_rocsparse_status();                                            \
+#define C_IMPL(NAME, TYPE)                                                               \
+    extern "C" rocsparse_status NAME(rocsparse_handle     handle_,                       \
+                                     rocsparse_direction  dir_,                          \
+                                     rocsparse_int        m_,                            \
+                                     rocsparse_int        n_,                            \
+                                     rocsparse_int        nnz_,                          \
+                                     const rocsparse_int* ptr_,                          \
+                                     const rocsparse_int* ind_,                          \
+                                     const TYPE*          val_,                          \
+                                     rocsparse_index_base base_,                         \
+                                     rocsparse_diag_type  ldiag_,                        \
+                                     rocsparse_direction  ldir_,                         \
+                                     rocsparse_diag_type  udiag_,                        \
+                                     rocsparse_direction  udir_,                         \
+                                     size_t*              buffer_size_)                  \
+    try                                                                                  \
+    {                                                                                    \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csxsldu_buffer_size_template(handle_,        \
+                                                                         dir_,           \
+                                                                         m_,             \
+                                                                         n_,             \
+                                                                         nnz_,           \
+                                                                         ptr_,           \
+                                                                         ind_,           \
+                                                                         val_,           \
+                                                                         base_,          \
+                                                                         ldiag_,         \
+                                                                         ldir_,          \
+                                                                         udiag_,         \
+                                                                         udir_,          \
+                                                                         buffer_size_)); \
+        return rocsparse_status_success;                                                 \
+    }                                                                                    \
+    catch(...)                                                                           \
+    {                                                                                    \
+        RETURN_ROCSPARSE_EXCEPTION();                                                    \
     }
 
 C_IMPL(rocsparse_scsxsldu_buffer_size, float);

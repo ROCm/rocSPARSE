@@ -28,7 +28,7 @@
 template <typename T>
 void testing_gebsr2csr_bad_arg(const Arguments& arg)
 {
-    static const size_t safe_size = 100;
+    static const size_t safe_size = 1;
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
@@ -37,13 +37,20 @@ void testing_gebsr2csr_bad_arg(const Arguments& arg)
     rocsparse_local_mat_descr local_bsr_descr;
     rocsparse_local_mat_descr local_csr_descr;
 
-    rocsparse_handle          handle        = local_handle;
-    rocsparse_direction       dir           = rocsparse_direction_row;
-    rocsparse_int             mb            = safe_size;
-    rocsparse_int             nb            = safe_size;
-    const rocsparse_mat_descr bsr_descr     = local_bsr_descr;
-    const T*                  bsr_val       = (const T*)0x4;
-    const rocsparse_int*      bsr_row_ptr   = (const rocsparse_int*)0x4;
+    rocsparse_handle          handle    = local_handle;
+    rocsparse_direction       dir       = rocsparse_direction_row;
+    rocsparse_int             mb        = safe_size;
+    rocsparse_int             nb        = safe_size;
+    const rocsparse_mat_descr bsr_descr = local_bsr_descr;
+
+    const T* bsr_val = (const T*)0x4;
+
+    host_dense_vector<rocsparse_int> hptr(safe_size + 1);
+    hptr[0] = 0;
+    hptr[1] = 1;
+    device_dense_vector<rocsparse_int> dbsr_row_ptr(hptr);
+
+    const rocsparse_int*      bsr_row_ptr   = (const rocsparse_int*)dbsr_row_ptr;
     const rocsparse_int*      bsr_col_ind   = (const rocsparse_int*)0x4;
     rocsparse_int             row_block_dim = safe_size;
     rocsparse_int             col_block_dim = safe_size;
@@ -55,7 +62,7 @@ void testing_gebsr2csr_bad_arg(const Arguments& arg)
 #define PARAMS                                                                        \
     handle, dir, mb, nb, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind, row_block_dim, \
         col_block_dim, csr_descr, csr_val, csr_row_ptr, csr_col_ind
-    auto_testing_bad_arg(rocsparse_gebsr2csr<T>, PARAMS);
+    bad_arg_analysis(rocsparse_gebsr2csr<T>, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(
         rocsparse_set_mat_storage_mode(bsr_descr, rocsparse_storage_mode_unsorted));
@@ -124,7 +131,6 @@ void testing_gebsr2csr(const Arguments& arg)
 
     // Allocate device memory for output CSR matrix
     device_csr_matrix<T> dC(M, N, size_t(nnzb) * row_block_dim * col_block_dim, csr_base);
-
     if(arg.unit_check)
     {
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_gebsr2csr<T>(handle,

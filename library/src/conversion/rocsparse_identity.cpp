@@ -58,30 +58,14 @@ rocsparse_status rocsparse_create_identity_permutation_template(rocsparse_handle
 template <typename I>
 rocsparse_status rocsparse_create_identity_permutation_impl(rocsparse_handle handle, I n, I* p)
 {
-    // Check for valid handle
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-
     // Logging
     log_trace(handle, "rocsparse_create_identity_permutation", n, (const void*&)p);
 
-    log_bench(handle, "./rocsparse-bench -f identity", "-n", n);
-
-    // Check sizes
-    if(n < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check pointer arguments
-    if(n > 0 && p == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    return rocsparse_create_identity_permutation_template(handle, n, p);
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, n);
+    ROCSPARSE_CHECKARG_ARRAY(2, n, p);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation_template(handle, n, p));
+    return rocsparse_status_success;
 }
 
 #define INSTANTIATE(ITYPE)                                                       \
@@ -107,9 +91,10 @@ extern "C" rocsparse_status rocsparse_create_identity_permutation(rocsparse_hand
                                                                   rocsparse_int*   p)
 try
 {
-    return rocsparse_create_identity_permutation_impl(handle, n, p);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation_impl(handle, n, p));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

@@ -30,28 +30,17 @@
 #include "bsrpad_value_device.h"
 
 template <typename T>
-rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handle,
-                                                 rocsparse_int             m,
-                                                 rocsparse_int             mb,
-                                                 rocsparse_int             nnzb,
-                                                 rocsparse_int             block_dim,
-                                                 T                         value,
-                                                 const rocsparse_mat_descr bsr_descr,
-                                                 T*                        bsr_val,
-                                                 const rocsparse_int*      bsr_row_ptr,
-                                                 const rocsparse_int*      bsr_col_ind)
+rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handle, //0
+                                                 rocsparse_int             m, //1
+                                                 rocsparse_int             mb, //2
+                                                 rocsparse_int             nnzb, //3
+                                                 rocsparse_int             block_dim, //4
+                                                 T                         value, //5
+                                                 const rocsparse_mat_descr bsr_descr, //6
+                                                 T*                        bsr_val, //7
+                                                 const rocsparse_int*      bsr_row_ptr, //8
+                                                 const rocsparse_int*      bsr_col_ind) //9
 {
-    // Check for valid handle
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-
-    // Check matrix descriptors
-    if(bsr_descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
 
     // Logging
     log_trace(handle,
@@ -66,42 +55,23 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
               (const void*&)bsr_row_ptr,
               (const void*&)bsr_col_ind);
 
-    log_bench(
-        handle, "./rocsparse-bench -f bsrpad_value -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
-
-    // Check sizes
-    if(m < 0 || mb < 0 || nnzb < 0 || block_dim <= 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    if((mb * block_dim < m) || (m <= (mb - 1) * block_dim))
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, mb);
+    ROCSPARSE_CHECKARG_SIZE(3, nnzb);
+    ROCSPARSE_CHECKARG_SIZE(4, block_dim);
+    ROCSPARSE_CHECKARG(4, block_dim, (block_dim == 0), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_POINTER(6, bsr_descr);
+    ROCSPARSE_CHECKARG_ARRAY(7, nnzb, bsr_val);
+    ROCSPARSE_CHECKARG_ARRAY(8, mb, bsr_row_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(9, nnzb, bsr_col_ind);
+    ROCSPARSE_CHECKARG(1, m, (mb * block_dim < m), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG(1, m, (m <= (mb - 1) * block_dim), rocsparse_status_invalid_size);
 
     // Quick return if possible
     if(mb == 0 || nnzb == 0)
     {
         return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(bsr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // value arrays and column indices arrays must both be null (zero matrix) or both not null
-    if((bsr_val == nullptr && bsr_col_ind != nullptr)
-       || (bsr_val != nullptr && bsr_col_ind == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(bsr_val == nullptr && bsr_col_ind == nullptr && nnzb != 0)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     // Quick return if possible
@@ -111,8 +81,7 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
     }
 
     constexpr rocsparse_int block_size = 1024;
-
-    rocsparse_int grid_size = (block_dim + block_size - 1) / block_size;
+    const rocsparse_int     grid_size  = (block_dim + block_size - 1) / block_size;
 
     // Check matrix sorting mode
     if(bsr_descr->storage_mode == rocsparse_storage_mode_sorted)
@@ -154,26 +123,27 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
 //
 // C INTERFACE
 //
-#define C_IMPL(NAME, TYPE)                                                                        \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                            \
-                                     rocsparse_int             m,                                 \
-                                     rocsparse_int             mb,                                \
-                                     rocsparse_int             nnzb,                              \
-                                     rocsparse_int             block_dim,                         \
-                                     TYPE                      value,                             \
-                                     const rocsparse_mat_descr bsr_descr,                         \
-                                     TYPE*                     bsr_val,                           \
-                                     const rocsparse_int*      bsr_row_ptr,                       \
-                                     const rocsparse_int*      bsr_col_ind)                       \
-                                                                                                  \
-    try                                                                                           \
-    {                                                                                             \
-        return rocsparse_bsrpad_value_template<TYPE>(                                             \
-            handle, m, mb, nnzb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind); \
-    }                                                                                             \
-    catch(...)                                                                                    \
-    {                                                                                             \
-        return exception_to_rocsparse_status();                                                   \
+#define C_IMPL(NAME, TYPE)                                                                         \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                             \
+                                     rocsparse_int             m,                                  \
+                                     rocsparse_int             mb,                                 \
+                                     rocsparse_int             nnzb,                               \
+                                     rocsparse_int             block_dim,                          \
+                                     TYPE                      value,                              \
+                                     const rocsparse_mat_descr bsr_descr,                          \
+                                     TYPE*                     bsr_val,                            \
+                                     const rocsparse_int*      bsr_row_ptr,                        \
+                                     const rocsparse_int*      bsr_col_ind)                        \
+                                                                                                   \
+    try                                                                                            \
+    {                                                                                              \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrpad_value_template<TYPE>(                           \
+            handle, m, mb, nnzb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind)); \
+        return rocsparse_status_success;                                                           \
+    }                                                                                              \
+    catch(...)                                                                                     \
+    {                                                                                              \
+        RETURN_ROCSPARSE_EXCEPTION();                                                              \
     }
 
 C_IMPL(rocsparse_sbsrpad_value, float);

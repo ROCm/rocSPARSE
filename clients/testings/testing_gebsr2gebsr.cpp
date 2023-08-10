@@ -37,24 +37,24 @@ void testing_gebsr2gebsr_bad_arg(const Arguments& arg)
     rocsparse_local_mat_descr local_descr_A;
     rocsparse_local_mat_descr local_descr_C;
 
-    rocsparse_handle          handle          = local_handle;
-    rocsparse_direction       dir             = rocsparse_direction_row;
-    rocsparse_int             mb              = safe_size;
-    rocsparse_int             nb              = safe_size;
-    rocsparse_int             nnzb            = safe_size;
-    const rocsparse_mat_descr descr_A         = local_descr_A;
-    const T*                  bsr_val_A       = (const T*)0x4;
-    const rocsparse_int*      bsr_row_ptr_A   = (const rocsparse_int*)0x4;
-    const rocsparse_int*      bsr_col_ind_A   = (const rocsparse_int*)0x4;
-    rocsparse_int             row_block_dim_A = safe_size;
-    rocsparse_int             col_block_dim_A = safe_size;
-    const rocsparse_mat_descr descr_C         = local_descr_C;
-    T*                        bsr_val_C       = (T*)0x4;
-    rocsparse_int*            bsr_row_ptr_C   = (rocsparse_int*)0x4;
-    rocsparse_int*            bsr_col_ind_C   = (rocsparse_int*)0x4;
-    rocsparse_int             row_block_dim_C = safe_size;
-    rocsparse_int             col_block_dim_C = safe_size;
-    rocsparse_int*            nnzb_C          = (rocsparse_int*)0x4;
+    rocsparse_handle          handle                 = local_handle;
+    rocsparse_direction       dir                    = rocsparse_direction_row;
+    rocsparse_int             mb                     = safe_size;
+    rocsparse_int             nb                     = safe_size;
+    rocsparse_int             nnzb                   = safe_size;
+    const rocsparse_mat_descr descr_A                = local_descr_A;
+    const T*                  bsr_val_A              = (const T*)0x4;
+    const rocsparse_int*      bsr_row_ptr_A          = (const rocsparse_int*)0x4;
+    const rocsparse_int*      bsr_col_ind_A          = (const rocsparse_int*)0x4;
+    rocsparse_int             row_block_dim_A        = safe_size;
+    rocsparse_int             col_block_dim_A        = safe_size;
+    const rocsparse_mat_descr descr_C                = local_descr_C;
+    T*                        bsr_val_C              = (T*)0x4;
+    rocsparse_int*            bsr_row_ptr_C          = (rocsparse_int*)0x4;
+    rocsparse_int*            bsr_col_ind_C          = (rocsparse_int*)0x4;
+    rocsparse_int             row_block_dim_C        = safe_size;
+    rocsparse_int             col_block_dim_C        = safe_size;
+    rocsparse_int*            nnz_total_dev_host_ptr = (rocsparse_int*)0x4;
     ;
     size_t* buffer_size = (size_t*)0x4;
     void*   temp_buffer = (void*)0x4;
@@ -62,18 +62,23 @@ void testing_gebsr2gebsr_bad_arg(const Arguments& arg)
 #define PARAMS_BUFFER_SIZE                                                                        \
     handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, bsr_col_ind_A, row_block_dim_A, \
         col_block_dim_A, row_block_dim_C, col_block_dim_C, buffer_size
-#define PARAMS_NNZ                                                                         \
-    handle, dir, mb, nb, nnzb, descr_A, bsr_row_ptr_A, bsr_col_ind_A, row_block_dim_A,     \
-        col_block_dim_A, descr_C, bsr_row_ptr_C, row_block_dim_C, col_block_dim_C, nnzb_C, \
-        temp_buffer
+#define PARAMS_NNZ                                                                     \
+    handle, dir, mb, nb, nnzb, descr_A, bsr_row_ptr_A, bsr_col_ind_A, row_block_dim_A, \
+        col_block_dim_A, descr_C, bsr_row_ptr_C, row_block_dim_C, col_block_dim_C,     \
+        nnz_total_dev_host_ptr, temp_buffer
 #define PARAMS                                                                                    \
     handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, bsr_col_ind_A, row_block_dim_A, \
         col_block_dim_A, descr_C, bsr_val_C, bsr_row_ptr_C, bsr_col_ind_C, row_block_dim_C,       \
         col_block_dim_C, temp_buffer
 
-    auto_testing_bad_arg(rocsparse_gebsr2gebsr_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_gebsr2gebsr_nnz, PARAMS_NNZ);
-    auto_testing_bad_arg(rocsparse_gebsr2gebsr<T>, PARAMS);
+    bad_arg_analysis(rocsparse_gebsr2gebsr_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_gebsr2gebsr_nnz, PARAMS_NNZ);
+
+    static constexpr int nargs_to_exclude                        = 2;
+    const int            args_to_exclude_solve[nargs_to_exclude] = {12, 14};
+
+    select_bad_arg_analysis(
+        rocsparse_gebsr2gebsr<T>, nargs_to_exclude, args_to_exclude_solve, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_A, rocsparse_storage_mode_unsorted));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_C, rocsparse_storage_mode_unsorted));

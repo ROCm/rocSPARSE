@@ -51,17 +51,26 @@ void testing_csr2bsr_bad_arg(const Arguments& arg)
     rocsparse_int*            bsr_col_ind = (rocsparse_int*)0x4;
     rocsparse_int*            bsr_nnz     = (rocsparse_int*)0x4;
 
-    int       nargs_to_exclude   = 1;
-    const int args_to_exclude[1] = {6};
-
 #define PARAMS_NNZ                                                                             \
     handle, dir, m, n, csr_descr, csr_row_ptr, csr_col_ind, block_dim, bsr_descr, bsr_row_ptr, \
         bsr_nnz
 #define PARAMS                                                                             \
     handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, csr_col_ind, block_dim, bsr_descr, \
         bsr_val, bsr_row_ptr, bsr_col_ind
-    auto_testing_bad_arg(rocsparse_csr2bsr_nnz, nargs_to_exclude, args_to_exclude, PARAMS_NNZ);
-    auto_testing_bad_arg(rocsparse_csr2bsr<T>, PARAMS);
+
+    {
+        static constexpr int nargs_to_exclude                  = 1;
+        const int            args_to_exclude[nargs_to_exclude] = {6};
+
+        select_bad_arg_analysis(
+            rocsparse_csr2bsr_nnz, nargs_to_exclude, args_to_exclude, PARAMS_NNZ);
+    }
+
+    {
+        static constexpr int nargs_to_exclude                  = 4;
+        const int            args_to_exclude[nargs_to_exclude] = {5, 7, 10, 12};
+        select_bad_arg_analysis(rocsparse_csr2bsr<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
     CHECK_ROCSPARSE_ERROR(
         rocsparse_set_mat_storage_mode(csr_descr, rocsparse_storage_mode_unsorted));

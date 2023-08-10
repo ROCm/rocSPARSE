@@ -57,8 +57,8 @@ void testing_hyb2csr_bad_arg(const Arguments& arg)
 
 #define PARAMS_BUFFER_SIZE handle, descr, hyb, csr_row_ptr, buffer_size
 #define PARAMS handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer
-    auto_testing_bad_arg(rocsparse_hyb2csr_buffer_size, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_hyb2csr<T>, PARAMS);
+    bad_arg_analysis(rocsparse_hyb2csr_buffer_size, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_hyb2csr<T>, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_hyb2csr_buffer_size(PARAMS_BUFFER_SIZE),

@@ -27,8 +27,11 @@
 template <typename T>
 void testing_bsr2csr_bad_arg(const Arguments& arg)
 {
-    static const size_t safe_size = 100;
-
+    static const size_t              safe_size = 1;
+    host_dense_vector<rocsparse_int> hbsr_row_ptr(safe_size + 1);
+    hbsr_row_ptr[0] = 0;
+    hbsr_row_ptr[1] = 1;
+    device_dense_vector<rocsparse_int> dbsr_row_ptr(hbsr_row_ptr);
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
 
@@ -42,7 +45,8 @@ void testing_bsr2csr_bad_arg(const Arguments& arg)
     rocsparse_int             nb          = safe_size;
     const rocsparse_mat_descr bsr_descr   = local_bsr_descr;
     const T*                  bsr_val     = (const T*)0x4;
-    const rocsparse_int*      bsr_row_ptr = (const rocsparse_int*)0x4;
+    const rocsparse_int*      bsr_row_ptr = (const rocsparse_int*)dbsr_row_ptr;
+
     const rocsparse_int*      bsr_col_ind = (const rocsparse_int*)0x4;
     rocsparse_int             block_dim   = safe_size;
     const rocsparse_mat_descr csr_descr   = local_csr_descr;
@@ -54,7 +58,7 @@ void testing_bsr2csr_bad_arg(const Arguments& arg)
     handle, dir, mb, nb, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, csr_descr, \
         csr_val, csr_row_ptr, csr_col_ind
 
-    auto_testing_bad_arg(rocsparse_bsr2csr<T>, PARAMS);
+    bad_arg_analysis(rocsparse_bsr2csr<T>, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(
         rocsparse_set_mat_storage_mode(bsr_descr, rocsparse_storage_mode_unsorted));

@@ -30,30 +30,17 @@
 #include "csr2ell_device.h"
 
 template <typename T>
-rocsparse_status rocsparse_csr2ell_template(rocsparse_handle          handle,
-                                            rocsparse_int             m,
-                                            const rocsparse_mat_descr csr_descr,
-                                            const T*                  csr_val,
-                                            const rocsparse_int*      csr_row_ptr,
-                                            const rocsparse_int*      csr_col_ind,
-                                            const rocsparse_mat_descr ell_descr,
-                                            rocsparse_int             ell_width,
-                                            T*                        ell_val,
-                                            rocsparse_int*            ell_col_ind)
+rocsparse_status rocsparse_csr2ell_template(rocsparse_handle          handle, //0
+                                            rocsparse_int             m, //1
+                                            const rocsparse_mat_descr csr_descr, //2
+                                            const T*                  csr_val, //3
+                                            const rocsparse_int*      csr_row_ptr, //4
+                                            const rocsparse_int*      csr_col_ind, //5
+                                            const rocsparse_mat_descr ell_descr, //6
+                                            rocsparse_int             ell_width, //7
+                                            T*                        ell_val, //8
+                                            rocsparse_int*            ell_col_ind) //9
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(csr_descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(ell_descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
 
     // Logging
     log_trace(handle,
@@ -68,60 +55,39 @@ rocsparse_status rocsparse_csr2ell_template(rocsparse_handle          handle,
               (const void*&)ell_val,
               (const void*&)ell_col_ind);
 
-    log_bench(handle, "./rocsparse-bench -f csr2ell -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    // Check matrix type
-    if(csr_descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    if(ell_descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
+    ROCSPARSE_CHECKARG_POINTER(2, csr_descr);
+    ROCSPARSE_CHECKARG(2,
+                       csr_descr,
+                       (csr_descr->type != rocsparse_matrix_type_general),
+                       rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(2,
+                       csr_descr,
+                       (csr_descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
 
-    // Check matrix sorting mode
-    if(csr_descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-    if(ell_descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    // Check sizes
-    if(m < 0 || ell_width < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_POINTER(6, ell_descr);
+    ROCSPARSE_CHECKARG(6,
+                       ell_descr,
+                       (ell_descr->type != rocsparse_matrix_type_general),
+                       rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(6,
+                       ell_descr,
+                       (ell_descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_POINTER(3, csr_val);
+    ROCSPARSE_CHECKARG_ARRAY(4, m, csr_row_ptr);
+    ROCSPARSE_CHECKARG_POINTER(5, csr_col_ind);
+    ROCSPARSE_CHECKARG_SIZE(7, ell_width);
+    ROCSPARSE_CHECKARG_POINTER(8, ell_val);
+    ROCSPARSE_CHECKARG_POINTER(9, ell_col_ind);
 
     // Quick return if possible
     if(m == 0 || ell_width == 0)
     {
         return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(csr_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(ell_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(ell_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     // Stream
@@ -163,21 +129,6 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle          ha
                                                     rocsparse_int*            ell_width)
 try
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(csr_descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(ell_descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Logging
     log_trace(handle,
               "rocsparse_csr2ell_width",
               m,
@@ -186,38 +137,31 @@ try
               (const void*&)ell_descr,
               (const void*&)ell_width);
 
-    // Check matrix type
-    if(csr_descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    if(ell_descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
 
-    // Check matrix sorting mode
-    if(csr_descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-    if(ell_descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
+    ROCSPARSE_CHECKARG_POINTER(2, csr_descr);
+    ROCSPARSE_CHECKARG(2,
+                       csr_descr,
+                       (csr_descr->type != rocsparse_matrix_type_general),
+                       rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(2,
+                       csr_descr,
+                       (csr_descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
 
-    // Check sizes
-    if(m < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_ARRAY(3, m, csr_row_ptr);
 
-    // Check ell_width pointer
-    if(ell_width == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
+    ROCSPARSE_CHECKARG_POINTER(4, ell_descr);
+    ROCSPARSE_CHECKARG(4,
+                       ell_descr,
+                       (ell_descr->type != rocsparse_matrix_type_general),
+                       rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(4,
+                       ell_descr,
+                       (ell_descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+    ROCSPARSE_CHECKARG_POINTER(5, ell_width);
     // Stream
     hipStream_t stream = handle->stream;
 
@@ -233,12 +177,6 @@ try
             *ell_width = 0;
         }
         return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     // Determine ELL width
@@ -287,7 +225,7 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_scsr2ell(rocsparse_handle          handle,
@@ -302,20 +240,21 @@ extern "C" rocsparse_status rocsparse_scsr2ell(rocsparse_handle          handle,
                                                rocsparse_int*            ell_col_ind)
 try
 {
-    return rocsparse_csr2ell_template(handle,
-                                      m,
-                                      csr_descr,
-                                      csr_val,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      ell_descr,
-                                      ell_width,
-                                      ell_val,
-                                      ell_col_ind);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2ell_template(handle,
+                                                         m,
+                                                         csr_descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind,
+                                                         ell_descr,
+                                                         ell_width,
+                                                         ell_val,
+                                                         ell_col_ind));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_dcsr2ell(rocsparse_handle          handle,
@@ -330,20 +269,21 @@ extern "C" rocsparse_status rocsparse_dcsr2ell(rocsparse_handle          handle,
                                                rocsparse_int*            ell_col_ind)
 try
 {
-    return rocsparse_csr2ell_template(handle,
-                                      m,
-                                      csr_descr,
-                                      csr_val,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      ell_descr,
-                                      ell_width,
-                                      ell_val,
-                                      ell_col_ind);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2ell_template(handle,
+                                                         m,
+                                                         csr_descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind,
+                                                         ell_descr,
+                                                         ell_width,
+                                                         ell_val,
+                                                         ell_col_ind));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_ccsr2ell(rocsparse_handle               handle,
@@ -358,20 +298,21 @@ extern "C" rocsparse_status rocsparse_ccsr2ell(rocsparse_handle               ha
                                                rocsparse_int*                 ell_col_ind)
 try
 {
-    return rocsparse_csr2ell_template(handle,
-                                      m,
-                                      csr_descr,
-                                      csr_val,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      ell_descr,
-                                      ell_width,
-                                      ell_val,
-                                      ell_col_ind);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2ell_template(handle,
+                                                         m,
+                                                         csr_descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind,
+                                                         ell_descr,
+                                                         ell_width,
+                                                         ell_val,
+                                                         ell_col_ind));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_zcsr2ell(rocsparse_handle                handle,
@@ -386,18 +327,19 @@ extern "C" rocsparse_status rocsparse_zcsr2ell(rocsparse_handle                h
                                                rocsparse_int*                  ell_col_ind)
 try
 {
-    return rocsparse_csr2ell_template(handle,
-                                      m,
-                                      csr_descr,
-                                      csr_val,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      ell_descr,
-                                      ell_width,
-                                      ell_val,
-                                      ell_col_ind);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2ell_template(handle,
+                                                         m,
+                                                         csr_descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind,
+                                                         ell_descr,
+                                                         ell_width,
+                                                         ell_val,
+                                                         ell_col_ind));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

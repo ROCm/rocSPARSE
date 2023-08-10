@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,15 +36,15 @@ void testing_csr2coo_bad_arg(const Arguments& arg)
     rocsparse_local_mat_descr local_csr_descr;
     rocsparse_local_mat_descr local_bsr_descr;
 
-    rocsparse_handle     handle      = local_handle;
-    const rocsparse_int* csr_row_ptr = (const rocsparse_int*)0x4;
-    rocsparse_int        nnz         = safe_size;
-    rocsparse_int        m           = safe_size;
-    rocsparse_int*       coo_row_ind = (rocsparse_int*)0x4;
-    rocsparse_index_base base        = rocsparse_index_base_zero;
+    rocsparse_handle           handle      = local_handle;
+    const rocsparse_int*       csr_row_ptr = (const rocsparse_int*)0x4;
+    const rocsparse_int        nnz         = safe_size;
+    const rocsparse_int        m           = safe_size;
+    rocsparse_int*             coo_row_ind = (rocsparse_int*)0x4;
+    const rocsparse_index_base idx_base    = rocsparse_index_base_zero;
 
-#define PARAMS handle, csr_row_ptr, nnz, m, coo_row_ind, base
-    auto_testing_bad_arg(rocsparse_csr2coo, PARAMS);
+#define PARAMS handle, csr_row_ptr, nnz, m, coo_row_ind, idx_base
+    bad_arg_analysis(rocsparse_csr2coo, PARAMS);
 #undef PARAMS
 }
 

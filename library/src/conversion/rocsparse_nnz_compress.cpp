@@ -48,20 +48,15 @@ void nnz_compress_kernel(rocsparse_int        m,
 }
 
 template <typename T>
-rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handle,
-                                                 rocsparse_int             m,
-                                                 const rocsparse_mat_descr descr_A,
-                                                 const T*                  csr_val_A,
-                                                 const rocsparse_int*      csr_row_ptr_A,
-                                                 rocsparse_int*            nnz_per_row,
-                                                 rocsparse_int*            nnz_C,
-                                                 T                         tol)
+rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handle, //0
+                                                 rocsparse_int             m, //1
+                                                 const rocsparse_mat_descr descr_A, //2
+                                                 const T*                  csr_val_A, //3
+                                                 const rocsparse_int*      csr_row_ptr_A, //4
+                                                 rocsparse_int*            nnz_per_row, //5
+                                                 rocsparse_int*            nnz_C, //6
+                                                 T                         tol) //7
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
 
     // Logging
     log_trace(handle,
@@ -74,31 +69,16 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
               (const void*&)nnz_C,
               tol);
 
-    log_bench(
-        handle, "./rocsparse-bench -f nnz_compress -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_POINTER(2, descr_A);
+    ROCSPARSE_CHECKARG(2,
+                       descr_A,
+                       (descr_A->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
 
-    // Check matrix descriptor
-    if(descr_A == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check matrix sorting mode
-    if(descr_A->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    // Check sizes
-    if(m < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    if(std::real(tol) < std::real(static_cast<T>(0)))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG(
+        7, tol, (std::real(tol) < std::real(static_cast<T>(0))), rocsparse_status_invalid_value);
 
     // Quick return if possible
     if(m == 0)
@@ -119,11 +99,9 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
         return rocsparse_status_success;
     }
 
-    // Check pointer arguments
-    if(csr_row_ptr_A == nullptr || nnz_per_row == nullptr || nnz_C == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_ARRAY(4, m, csr_row_ptr_A);
+    ROCSPARSE_CHECKARG_POINTER(5, nnz_per_row);
+    ROCSPARSE_CHECKARG_POINTER(6, nnz_C);
 
     // Find number of non-zeros in input CSR matrix on host
     rocsparse_int nnz_A, nnz_A_0;
@@ -136,14 +114,11 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
     nnz_A -= nnz_A_0;
     if(nnz_A < 0)
     {
-        return rocsparse_status_invalid_size;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_size);
     }
 
     // CSR values array can be nullptr if nnz_A is zero
-    if(nnz_A != 0 && csr_val_A == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_ARRAY(3, nnz_A, csr_val_A);
 
     // Stream
     hipStream_t stream = handle->stream;
@@ -420,12 +395,13 @@ extern "C" rocsparse_status rocsparse_snnz_compress(rocsparse_handle          ha
                                                     float                     tol)
 try
 {
-    return rocsparse_nnz_compress_template(
-        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_nnz_compress_template(
+        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_dnnz_compress(rocsparse_handle          handle,
@@ -438,12 +414,13 @@ extern "C" rocsparse_status rocsparse_dnnz_compress(rocsparse_handle          ha
                                                     double                    tol)
 try
 {
-    return rocsparse_nnz_compress_template(
-        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_nnz_compress_template(
+        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_cnnz_compress(rocsparse_handle               handle,
@@ -456,12 +433,13 @@ extern "C" rocsparse_status rocsparse_cnnz_compress(rocsparse_handle            
                                                     rocsparse_float_complex        tol)
 try
 {
-    return rocsparse_nnz_compress_template(
-        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_nnz_compress_template(
+        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_znnz_compress(rocsparse_handle                handle,
@@ -474,10 +452,11 @@ extern "C" rocsparse_status rocsparse_znnz_compress(rocsparse_handle            
                                                     rocsparse_double_complex        tol)
 try
 {
-    return rocsparse_nnz_compress_template(
-        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_nnz_compress_template(
+        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
