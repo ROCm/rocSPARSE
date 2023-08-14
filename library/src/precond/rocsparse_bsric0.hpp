@@ -312,7 +312,8 @@ inline void bsric0_launcher(rocsparse_handle     handle,
     }
     else
     {
-        if(handle->properties.gcnArch == 908 && handle->asic_rev < 2)
+        const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+        if(gcn_arch_name == rocpsarse_arch_names::gfx908 && handle->asic_rev < 2)
         {
             LAUNCH_BSRIC_33_inf(T, 64, 64, true);
         }

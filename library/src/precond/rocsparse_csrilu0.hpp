@@ -363,14 +363,14 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
     rocsparse_int max_nnz = info->csrilu0_info->max_nnz;
 
     // Determine gcnArch and ASIC revision
-    int gcnArch = handle->properties.gcnArch;
-    int asicRev = handle->asic_rev;
+    const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+    const int         asicRev       = handle->asic_rev;
 
 #define CSRILU0_DIM 256
     dim3 csrilu0_blocks((m * handle->wavefront_size - 1) / CSRILU0_DIM + 1);
     dim3 csrilu0_threads(CSRILU0_DIM);
 
-    if(gcnArch == 908 && asicRev < 2)
+    if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
     {
         hipLaunchKernelGGL((csrilu0_binsearch<CSRILU0_DIM, 64, true>),
                            csrilu0_blocks,
