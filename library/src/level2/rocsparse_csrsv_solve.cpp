@@ -157,16 +157,16 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
                                                              : rocsparse_fill_mode_lower;
     }
 
-    // Determine gcnArch
-    int gcnArch = handle->properties.gcnArch;
-    int asicRev = handle->asic_rev;
+    // Determine gcn_arch
+    const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+    const int         asicRev       = handle->asic_rev;
 
 #define CSRSV_DIM 1024
     dim3 csrsv_blocks(((int64_t)handle->wavefront_size * m - 1) / CSRSV_DIM + 1);
     dim3 csrsv_threads(CSRSV_DIM);
 
     // gfx908
-    if(gcnArch == 908 && asicRev < 2)
+    if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
     {
         // LCOV_EXCL_START
         hipLaunchKernelGGL((csrsv_kernel<CSRSV_DIM, 64, true>),

@@ -242,13 +242,13 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
                                                              : rocsparse_fill_mode_lower;
     }
 
-    // Determine gcnArch and ASIC revision
-    int gcnArch = handle->properties.gcnArch;
-    int asicRev = handle->asic_rev;
-    int wfSize  = handle->wavefront_size;
+    // Determine gcn_arch and ASIC revision
+    const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+    const int         asicRev       = handle->asic_rev;
+    const int         wfSize        = handle->wavefront_size;
 
     // gfx908 A0/1
-    if(gcnArch == 908 && asicRev < 2)
+    if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
     {
         if(fill_mode == rocsparse_fill_mode_upper)
         {

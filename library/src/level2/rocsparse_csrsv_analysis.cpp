@@ -188,9 +188,9 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     // Initialize zero pivot
     RETURN_IF_HIP_ERROR(rocsparse_assign_async(*zero_pivot, std::numeric_limits<J>::max(), stream));
 
-    // Determine gcnArch and ASIC revision
-    int gcnArch = handle->properties.gcnArch;
-    int asicRev = handle->asic_rev;
+    // Determine archid and ASIC revision
+    const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+    const int         asicRev       = handle->asic_rev;
 
 // Run analysis
 #define CSRSV_DIM 1024
@@ -199,7 +199,7 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
 
     if(trans == rocsparse_operation_none)
     {
-        if(gcnArch == 908 && asicRev < 2)
+        if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
         {
             // LCOV_EXCL_START
             if(descr->fill_mode == rocsparse_fill_mode_upper)
@@ -322,7 +322,7 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     else if(trans == rocsparse_operation_transpose
             || trans == rocsparse_operation_conjugate_transpose)
     {
-        if(gcnArch == 908 && asicRev < 2)
+        if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
         {
             // LCOV_EXCL_START
             if(descr->fill_mode == rocsparse_fill_mode_upper)

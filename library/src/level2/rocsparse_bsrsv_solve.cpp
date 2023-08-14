@@ -63,7 +63,7 @@
 #define LAUNCH_BSRSV_SHARED(fill, ptr, bsize, wfsize, dim, arch, asic) \
     if(fill == rocsparse_fill_mode_lower)                              \
     {                                                                  \
-        if(arch == 908 && asic < 2)                                    \
+        if(arch == rocpsarse_arch_names::gfx908 && asic < 2)           \
         {                                                              \
             LAUNCH_BSRSV_LOWER_SHARED(bsize, wfsize, dim, true);       \
         }                                                              \
@@ -74,7 +74,7 @@
     }                                                                  \
     else                                                               \
     {                                                                  \
-        if(arch == 908 && asic < 2)                                    \
+        if(arch == rocpsarse_arch_names::gfx908 && asic < 2)           \
         {                                                              \
             LAUNCH_BSRSV_UPPER_SHARED(bsize, wfsize, dim, true);       \
         }                                                              \
@@ -129,7 +129,7 @@
 #define LAUNCH_BSRSV_GENERAL(fill, ptr, bsize, wfsize, arch, asic) \
     if(fill == rocsparse_fill_mode_lower)                          \
     {                                                              \
-        if(arch == 908 && asic < 2)                                \
+        if(arch == rocpsarse_arch_names::gfx908 && asic < 2)       \
         {                                                          \
             LAUNCH_BSRSV_LOWER_GENERAL(bsize, wfsize, true);       \
         }                                                          \
@@ -140,7 +140,7 @@
     }                                                              \
     else                                                           \
     {                                                              \
-        if(arch == 908 && asic < 2)                                \
+        if(arch == rocpsarse_arch_names::gfx908 && asic < 2)       \
         {                                                          \
             LAUNCH_BSRSV_UPPER_GENERAL(bsize, wfsize, true);       \
         }                                                          \
@@ -416,31 +416,34 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
                                                              : rocsparse_fill_mode_lower;
     }
 
-    // Determine gcnArch and ASIC revision
-    int gcnArch = handle->properties.gcnArch;
-    int asicRev = handle->asic_rev;
+    // Determine gcn_arch and ASIC revision
+    const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+    const int         asicRev       = handle->asic_rev;
 
     if(handle->wavefront_size == 64)
     {
         if(block_dim <= 8)
         {
             // Launch shared memory based kernel for small BSR block dimensions
-            LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 8, gcnArch, asicRev);
+            LAUNCH_BSRSV_SHARED(
+                fill_mode, handle->pointer_mode, 128, 64, 8, gcn_arch_name, asicRev);
         }
         else if(block_dim <= 16)
         {
             // Launch shared memory based kernel for small BSR block dimensions
-            LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 16, gcnArch, asicRev);
+            LAUNCH_BSRSV_SHARED(
+                fill_mode, handle->pointer_mode, 128, 64, 16, gcn_arch_name, asicRev);
         }
         else if(block_dim <= 32)
         {
             // Launch shared memory based kernel for small BSR block dimensions
-            LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 32, gcnArch, asicRev);
+            LAUNCH_BSRSV_SHARED(
+                fill_mode, handle->pointer_mode, 128, 64, 32, gcn_arch_name, asicRev);
         }
         else
         {
             // Launch general algorithm for large BSR block dimensions (> 32x32)
-            LAUNCH_BSRSV_GENERAL(fill_mode, handle->pointer_mode, 128, 64, gcnArch, asicRev);
+            LAUNCH_BSRSV_GENERAL(fill_mode, handle->pointer_mode, 128, 64, gcn_arch_name, asicRev);
         }
     }
     else
@@ -451,7 +454,7 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
         // LCOV_EXCL_START;
 
         // Launch general algorithm
-        LAUNCH_BSRSV_GENERAL(fill_mode, handle->pointer_mode, 128, 32, gcnArch, asicRev);
+        LAUNCH_BSRSV_GENERAL(fill_mode, handle->pointer_mode, 128, 32, gcn_arch_name, asicRev);
 
         // LCOV_EXCL_STOP;
     }
