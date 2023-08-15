@@ -246,7 +246,7 @@ rocsparse_status rocsparse_spitsv_dynamic_dispatch(rocsparse_indextype itype,
     case rocsparse_datatype_i32_r:
     case rocsparse_datatype_u32_r:
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
     }
     // LCOV_EXCL_START
@@ -260,25 +260,25 @@ rocsparse_status rocsparse_spitsv_dynamic_dispatch(rocsparse_indextype itype,
  * ===========================================================================
  */
 
-extern "C" rocsparse_status rocsparse_spitsv(rocsparse_handle            handle,
-                                             rocsparse_int*              host_nmaxiter,
-                                             const void*                 host_tol,
-                                             void*                       host_history,
-                                             rocsparse_operation         trans,
-                                             const void*                 alpha,
-                                             const rocsparse_spmat_descr mat,
-                                             const rocsparse_dnvec_descr x,
-                                             const rocsparse_dnvec_descr y,
-                                             rocsparse_datatype          compute_type,
-                                             rocsparse_spitsv_alg        alg,
-                                             rocsparse_spitsv_stage      stage,
-                                             size_t*                     buffer_size,
-                                             void*                       temp_buffer)
+extern "C" rocsparse_status rocsparse_spitsv(rocsparse_handle            handle, //0
+                                             rocsparse_int*              host_nmaxiter, //1
+                                             const void*                 host_tol, //2
+                                             void*                       host_history, //3
+                                             rocsparse_operation         trans, //4
+                                             const void*                 alpha, //5
+                                             const rocsparse_spmat_descr mat, //6
+                                             const rocsparse_dnvec_descr x, //7
+                                             const rocsparse_dnvec_descr y, //8
+                                             rocsparse_datatype          compute_type, //9
+                                             rocsparse_spitsv_alg        alg, //10
+                                             rocsparse_spitsv_stage      stage, //11
+                                             size_t*                     buffer_size, //12
+                                             void*                       temp_buffer) // 13
 try
 {
 
     // Check for invalid handle
-    RETURN_IF_INVALID_HANDLE(handle);
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
     log_trace(handle,
@@ -298,39 +298,24 @@ try
               (const void*&)temp_buffer);
 
     // Check for invalid descriptors
-    RETURN_IF_NULLPTR(mat);
-    RETURN_IF_NULLPTR(x);
-    RETURN_IF_NULLPTR(y);
+    ROCSPARSE_CHECKARG_POINTER(6, mat);
+    ROCSPARSE_CHECKARG_POINTER(7, x);
+    ROCSPARSE_CHECKARG_POINTER(8, y);
 
     // Check for valid pointers
-    RETURN_IF_NULLPTR(alpha);
+    ROCSPARSE_CHECKARG_POINTER(5, alpha);
     // Check for valid pointers
-    RETURN_IF_NULLPTR(host_nmaxiter);
+    ROCSPARSE_CHECKARG_POINTER(1, host_nmaxiter);
 
-    if(rocsparse_enum_utils::is_invalid(trans))
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    }
-
-    if(rocsparse_enum_utils::is_invalid(compute_type))
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    }
-
-    if(rocsparse_enum_utils::is_invalid(alg))
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    }
-
-    if(rocsparse_enum_utils::is_invalid(stage))
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    }
+    ROCSPARSE_CHECKARG_ENUM(4, trans);
+    ROCSPARSE_CHECKARG_ENUM(9, compute_type);
+    ROCSPARSE_CHECKARG_ENUM(10, alg);
+    ROCSPARSE_CHECKARG_ENUM(11, stage);
 
     // Check for valid buffer_size pointer only if temp_buffer is nullptr
     if(temp_buffer == nullptr)
     {
-        RETURN_IF_NULLPTR(buffer_size);
+        ROCSPARSE_CHECKARG_POINTER(13, buffer_size);
     }
 
     // Check if descriptors are initialized
@@ -370,5 +355,5 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

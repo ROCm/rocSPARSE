@@ -541,66 +541,67 @@ void testing_csritsv_bad_arg(const Arguments& arg)
 
     const T h_alpha = static_cast<T>(1);
 
-    rocsparse_handle          handle        = local_handle;
-    rocsparse_int*            host_nmaxiter = (rocsparse_int*)0x4;
-    const floating_data_t<T>* host_tol      = (const floating_data_t<T>*)0x4;
-    floating_data_t<T>*       host_history  = (floating_data_t<T>*)0x4;
-    rocsparse_operation       trans         = rocsparse_operation_none;
-    rocsparse_int             m             = 32;
-    rocsparse_int             nnz           = 32;
-    const T*                  alpha         = &h_alpha;
-    const rocsparse_mat_descr descr         = local_descr;
-    const T*                  csr_val       = (const T*)0x4;
-    const rocsparse_int*      csr_row_ptr   = (const rocsparse_int*)0x4;
-    const rocsparse_int*      csr_col_ind   = (const rocsparse_int*)0x4;
-    rocsparse_mat_info        info          = local_info;
-    const T*                  x             = (const T*)0x4;
-    T*                        y             = (T*)0x4;
-    rocsparse_solve_policy    solve         = rocsparse_solve_policy_auto;
-    rocsparse_analysis_policy analysis      = rocsparse_analysis_policy_force;
-    void*                     temp_buffer   = (void*)0x4;
-    size_t*                   buffer_size   = (size_t*)0x4;
+    rocsparse_handle          handle            = local_handle;
+    rocsparse_int*            host_nmaxiter     = (rocsparse_int*)0x4;
+    const floating_data_t<T>* host_tol          = (const floating_data_t<T>*)0x4;
+    floating_data_t<T>*       host_history      = (floating_data_t<T>*)0x4;
+    rocsparse_operation       trans             = rocsparse_operation_none;
+    rocsparse_int             m                 = 32;
+    rocsparse_int             nnz               = 32;
+    const T*                  alpha_device_host = &h_alpha;
+    const rocsparse_mat_descr descr             = local_descr;
+    const T*                  csr_val           = (const T*)0x4;
+    const rocsparse_int*      csr_row_ptr       = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_col_ind       = (const rocsparse_int*)0x4;
+    rocsparse_mat_info        info              = local_info;
+    const T*                  x                 = (const T*)0x4;
+    T*                        y                 = (T*)0x4;
+    rocsparse_solve_policy    solve             = rocsparse_solve_policy_auto;
+    rocsparse_solve_policy    policy            = rocsparse_solve_policy_auto;
+    rocsparse_analysis_policy analysis          = rocsparse_analysis_policy_force;
+    void*                     temp_buffer       = (void*)0x4;
+    size_t*                   buffer_size       = (size_t*)0x4;
 #define PARAMS_BUFFER_SIZE \
     handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size
 
 #define PARAMS_ANALYSIS                                                                     \
     handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, analysis, solve, \
         temp_buffer
-#define PARAMS_SOLVE                                                                     \
-    handle, host_nmaxiter, host_tol, host_history, trans, m, nnz, alpha, descr, csr_val, \
-        csr_row_ptr, csr_col_ind, info, x, y, solve, temp_buffer
+#define PARAMS_SOLVE                                                                        \
+    handle, host_nmaxiter, host_tol, host_history, trans, m, nnz, alpha_device_host, descr, \
+        csr_val, csr_row_ptr, csr_col_ind, info, x, y, policy, temp_buffer
 
     //
     //
     //
     if(verbose)
     {
-        std::cout << "auto_testing_bad_arg(rocsparse_csritsv_buffer_size<T>, PARAMS_BUFFER_SIZE)"
+        std::cout << "bad_arg_analysis(rocsparse_csritsv_buffer_size<T>, PARAMS_BUFFER_SIZE)"
                   << std::endl;
     }
-    auto_testing_bad_arg(rocsparse_csritsv_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_csritsv_buffer_size<T>, PARAMS_BUFFER_SIZE);
 
     //
     //
     //
     if(verbose)
     {
-        std::cout << "auto_testing_bad_arg(rocsparse_csritsv_analysis<T>, PARAMS_ANALYSIS)"
+        std::cout << "bad_arg_analysis(rocsparse_csritsv_analysis<T>, PARAMS_ANALYSIS)"
                   << std::endl;
     }
-    auto_testing_bad_arg(rocsparse_csritsv_analysis<T>, PARAMS_ANALYSIS);
+    bad_arg_analysis(rocsparse_csritsv_analysis<T>, PARAMS_ANALYSIS);
 
     //
     //
     //
     if(verbose)
     {
-        std::cout << "auto_testing_bad_arg(rocsparse_csritsv_solve<T>, PARAMS_SOLVE)" << std::endl;
+        std::cout << "bad_arg_analysis(rocsparse_csritsv_solve<T>, PARAMS_SOLVE)" << std::endl;
     }
     static constexpr int nargs_to_exclude                  = 2;
     static constexpr int args_to_exclude[nargs_to_exclude] = {2, 3};
 
-    auto_testing_bad_arg(
+    select_bad_arg_analysis(
         rocsparse_csritsv_solve<T>, nargs_to_exclude, args_to_exclude, PARAMS_SOLVE);
 
     for(auto matrix_type : rocsparse_matrix_type_t::values)

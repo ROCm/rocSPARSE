@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,3 +60,18 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
                                           const X*                  x,
                                           const T*                  beta_device_host,
                                           Y*                        y);
+
+template <typename T>
+rocsparse_status rocsparse_coomv_impl(rocsparse_handle          handle,
+                                      rocsparse_operation       trans,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      rocsparse_int             nnz,
+                                      const T*                  alpha_device_host,
+                                      const rocsparse_mat_descr descr,
+                                      const T*                  coo_val,
+                                      const rocsparse_int*      coo_row_ind,
+                                      const rocsparse_int*      coo_col_ind,
+                                      const T*                  x,
+                                      const T*                  beta_device_host,
+                                      T*                        y);

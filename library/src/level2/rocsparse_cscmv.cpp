@@ -44,34 +44,36 @@ rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          han
     {
     case rocsparse_operation_none:
     {
-        return rocsparse_csrmv_analysis_template(handle,
-                                                 rocsparse_operation_transpose,
-                                                 n,
-                                                 m,
-                                                 nnz,
-                                                 descr,
-                                                 csc_val,
-                                                 csc_col_ptr,
-                                                 csc_row_ind,
-                                                 info);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_template(handle,
+                                                                    rocsparse_operation_transpose,
+                                                                    n,
+                                                                    m,
+                                                                    nnz,
+                                                                    descr,
+                                                                    csc_val,
+                                                                    csc_col_ptr,
+                                                                    csc_row_ind,
+                                                                    info));
+        return rocsparse_status_success;
     }
     case rocsparse_operation_transpose:
     case rocsparse_operation_conjugate_transpose:
     {
-        return rocsparse_csrmv_analysis_template(handle,
-                                                 rocsparse_operation_none,
-                                                 n,
-                                                 m,
-                                                 nnz,
-                                                 descr,
-                                                 csc_val,
-                                                 csc_col_ptr,
-                                                 csc_row_ind,
-                                                 info);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_template(handle,
+                                                                    rocsparse_operation_none,
+                                                                    n,
+                                                                    m,
+                                                                    nnz,
+                                                                    descr,
+                                                                    csc_val,
+                                                                    csc_col_ptr,
+                                                                    csc_row_ind,
+                                                                    info));
+        return rocsparse_status_success;
     }
     }
 
-    return rocsparse_status_not_implemented;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
 }
 
 template <typename T, typename I, typename J, typename A, typename X, typename Y>
@@ -94,64 +96,67 @@ rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,
     {
     case rocsparse_operation_none:
     {
-        return rocsparse_csrmv_template(handle,
-                                        rocsparse_operation_transpose,
-                                        n,
-                                        m,
-                                        nnz,
-                                        alpha,
-                                        descr,
-                                        csc_val,
-                                        csc_col_ptr,
-                                        csc_col_ptr + 1,
-                                        csc_row_ind,
-                                        info,
-                                        x,
-                                        beta,
-                                        y,
-                                        false);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template(handle,
+                                                           rocsparse_operation_transpose,
+                                                           n,
+                                                           m,
+                                                           nnz,
+                                                           alpha,
+                                                           descr,
+                                                           csc_val,
+                                                           csc_col_ptr,
+                                                           csc_col_ptr + 1,
+                                                           csc_row_ind,
+                                                           info,
+                                                           x,
+                                                           beta,
+                                                           y,
+                                                           false));
+        return rocsparse_status_success;
     }
     case rocsparse_operation_transpose:
     {
-        return rocsparse_csrmv_template(handle,
-                                        rocsparse_operation_none,
-                                        n,
-                                        m,
-                                        nnz,
-                                        alpha,
-                                        descr,
-                                        csc_val,
-                                        csc_col_ptr,
-                                        csc_col_ptr + 1,
-                                        csc_row_ind,
-                                        info,
-                                        x,
-                                        beta,
-                                        y,
-                                        false);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template(handle,
+                                                           rocsparse_operation_none,
+                                                           n,
+                                                           m,
+                                                           nnz,
+                                                           alpha,
+                                                           descr,
+                                                           csc_val,
+                                                           csc_col_ptr,
+                                                           csc_col_ptr + 1,
+                                                           csc_row_ind,
+                                                           info,
+                                                           x,
+                                                           beta,
+                                                           y,
+                                                           false));
+        return rocsparse_status_success;
     }
     case rocsparse_operation_conjugate_transpose:
     {
-        return rocsparse_csrmv_template(handle,
-                                        rocsparse_operation_none,
-                                        n,
-                                        m,
-                                        nnz,
-                                        alpha,
-                                        descr,
-                                        csc_val,
-                                        csc_col_ptr,
-                                        csc_col_ptr + 1,
-                                        csc_row_ind,
-                                        info,
-                                        x,
-                                        beta,
-                                        y,
-                                        true);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template(handle,
+                                                           rocsparse_operation_none,
+                                                           n,
+                                                           m,
+                                                           nnz,
+                                                           alpha,
+                                                           descr,
+                                                           csc_val,
+                                                           csc_col_ptr,
+                                                           csc_col_ptr + 1,
+                                                           csc_row_ind,
+                                                           info,
+                                                           x,
+                                                           beta,
+                                                           y,
+                                                           true));
+        return rocsparse_status_success;
     }
     }
 
-    return rocsparse_status_not_implemented;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
 }
 
 #define INSTANTIATE(TTYPE, ITYPE, JTYPE)                                                           \

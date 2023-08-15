@@ -40,22 +40,23 @@ void testing_csrsv_bad_arg(const Arguments& arg)
     // Create matrix info
     rocsparse_local_mat_info local_info;
 
-    rocsparse_handle          handle      = local_handle;
-    rocsparse_operation       trans       = rocsparse_operation_none;
-    rocsparse_int             m           = safe_size;
-    rocsparse_int             nnz         = safe_size;
-    const T*                  alpha       = &h_alpha;
-    const rocsparse_mat_descr descr       = local_descr;
-    const T*                  csr_val     = (const T*)0x4;
-    const rocsparse_int*      csr_row_ptr = (const rocsparse_int*)0x4;
-    const rocsparse_int*      csr_col_ind = (const rocsparse_int*)0x4;
-    rocsparse_mat_info        info        = local_info;
-    const T*                  x           = (const T*)0x4;
-    T*                        y           = (T*)0x4;
-    rocsparse_analysis_policy analysis    = rocsparse_analysis_policy_reuse;
-    rocsparse_solve_policy    solve       = rocsparse_solve_policy_auto;
-    size_t*                   buffer_size = (size_t*)0x4;
-    void*                     temp_buffer = (void*)0x4;
+    rocsparse_handle          handle            = local_handle;
+    rocsparse_operation       trans             = rocsparse_operation_none;
+    rocsparse_int             m                 = safe_size;
+    rocsparse_int             nnz               = safe_size;
+    const T*                  alpha_device_host = &h_alpha;
+    const rocsparse_mat_descr descr             = local_descr;
+    const T*                  csr_val           = (const T*)0x4;
+    const rocsparse_int*      csr_row_ptr       = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_col_ind       = (const rocsparse_int*)0x4;
+    rocsparse_mat_info        info              = local_info;
+    const T*                  x                 = (const T*)0x4;
+    T*                        y                 = (T*)0x4;
+    rocsparse_analysis_policy analysis          = rocsparse_analysis_policy_reuse;
+    rocsparse_solve_policy    solve             = rocsparse_solve_policy_auto;
+    rocsparse_solve_policy    policy            = rocsparse_solve_policy_auto;
+    size_t*                   buffer_size       = (size_t*)0x4;
+    void*                     temp_buffer       = (void*)0x4;
 
 #define PARAMS_BUFFER_SIZE \
     handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size
@@ -64,13 +65,13 @@ void testing_csrsv_bad_arg(const Arguments& arg)
     handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, analysis, solve, \
         temp_buffer
 
-#define PARAMS_SOLVE                                                                           \
-    handle, trans, m, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, info, x, y, solve, \
-        temp_buffer
+#define PARAMS_SOLVE                                                                             \
+    handle, trans, m, nnz, alpha_device_host, descr, csr_val, csr_row_ptr, csr_col_ind, info, x, \
+        y, policy, temp_buffer
 
-    auto_testing_bad_arg(rocsparse_csrsv_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_csrsv_analysis<T>, PARAMS_ANALYSIS);
-    auto_testing_bad_arg(rocsparse_csrsv_solve<T>, PARAMS_SOLVE);
+    bad_arg_analysis(rocsparse_csrsv_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_csrsv_analysis<T>, PARAMS_ANALYSIS);
+    bad_arg_analysis(rocsparse_csrsv_solve<T>, PARAMS_SOLVE);
 
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {
