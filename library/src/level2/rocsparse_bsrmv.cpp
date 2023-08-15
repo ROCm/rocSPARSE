@@ -514,7 +514,7 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
         return rocsparse_status_success;
     }
 
-    ROCSPARSE_CHECKARG_ARRAY(8, nnzb * block_dim * block_dim, bsr_val);
+    ROCSPARSE_CHECKARG_ARRAY(8, int64_t(nnzb) * block_dim * block_dim, bsr_val);
     ROCSPARSE_CHECKARG_ARRAY(9, mb, bsr_row_ptr);
     ROCSPARSE_CHECKARG_ARRAY(10, nnzb, bsr_col_ind);
     ROCSPARSE_CHECKARG_POINTER(13, x);
