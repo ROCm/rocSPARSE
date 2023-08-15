@@ -274,7 +274,7 @@ build_memstat=false
 matrices_dir=
 matrices_dir_install=
 gpu_architecture=all
-build_freorg_bkwdcomp=true
+build_freorg_bkwdcomp=false
 
 # #################################################
 # Parameter parsing
