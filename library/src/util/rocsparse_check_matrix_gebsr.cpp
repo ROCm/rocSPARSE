@@ -31,263 +31,30 @@
 #include "check_matrix_gebsr_device.h"
 
 const char* rocsparse_datastatus2string(rocsparse_data_status data_status);
+std::string rocsparse_matrixtype2string(rocsparse_matrix_type type);
 
 template <typename T, typename I, typename J>
-rocsparse_status
-    rocsparse_check_matrix_gebsr_buffer_size_template(rocsparse_handle       handle,
-                                                      rocsparse_direction    dir,
-                                                      J                      mb,
-                                                      J                      nb,
-                                                      I                      nnzb,
-                                                      J                      row_block_dim,
-                                                      J                      col_block_dim,
-                                                      const T*               bsr_val,
-                                                      const I*               bsr_row_ptr,
-                                                      const J*               bsr_col_ind,
-                                                      rocsparse_index_base   idx_base,
-                                                      rocsparse_matrix_type  matrix_type,
-                                                      rocsparse_fill_mode    uplo,
-                                                      rocsparse_storage_mode storage,
-                                                      size_t*                buffer_size)
+rocsparse_status rocsparse_check_matrix_gebsr_core(rocsparse_handle       handle,
+                                                   rocsparse_direction    dir,
+                                                   J                      mb,
+                                                   J                      nb,
+                                                   I                      nnzb,
+                                                   J                      row_block_dim,
+                                                   J                      col_block_dim,
+                                                   const T*               bsr_val,
+                                                   const I*               bsr_row_ptr,
+                                                   const J*               bsr_col_ind,
+                                                   rocsparse_index_base   idx_base,
+                                                   rocsparse_matrix_type  matrix_type,
+                                                   rocsparse_fill_mode    uplo,
+                                                   rocsparse_storage_mode storage,
+                                                   rocsparse_data_status* data_status,
+                                                   void*                  temp_buffer)
 {
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
+    *data_status = rocsparse_data_status_success;
 
-    if(rocsparse_enum_utils::is_invalid(dir))
-    {
-        log_debug(handle, "Direction is invalid.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(idx_base))
-    {
-        log_debug(handle, "Index base is invalid.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(matrix_type))
-    {
-        log_debug(handle, "Matrix type is invalid.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(uplo))
-    {
-        log_debug(handle, "Matrix fill mode is invalid.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(storage))
-    {
-        log_debug(handle, "Storage mode is invalid.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(mb < 0 || nb < 0 || nnzb < 0)
-    {
-        log_debug(handle, "mb, nb, and nnzb cannot be negative.");
-        return rocsparse_status_invalid_size;
-    }
-
-    if(row_block_dim <= 0 || col_block_dim <= 0)
-    {
-        log_debug(handle, "Row and column block dimension must both be greater than zero.");
-        return rocsparse_status_invalid_size;
-    }
-
-    if(matrix_type != rocsparse_matrix_type_general)
-    {
-        log_debug(handle, "GEBSR format only supports general matrix type.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(buffer_size == nullptr)
-    {
-        log_debug(handle, "buffer size pointer cannot be nullptr.");
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check row pointer array
-    if(bsr_row_ptr == nullptr)
-    {
-        log_debug(handle, "GEBSR row pointer array cannot be nullptr.");
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // value arrays and column indices arrays must both be null (zero matrix) or both not null
-    if((bsr_val == nullptr && bsr_col_ind != nullptr)
-       || (bsr_val != nullptr && bsr_col_ind == nullptr))
-    {
-        log_debug(handle,
-                  "GEBSR values array and column indices array must be both nullptr or both not "
-                  "nullptr.");
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check if zero matrix
-    if(bsr_val == nullptr && bsr_col_ind == nullptr)
-    {
-        if(nnzb != 0)
-        {
-            log_debug(
-                handle,
-                "GEBSR values and column indices array are both nullptr indicating zero matrix "
-                "but this does not match what is found in row pointer array.");
-            return rocsparse_status_invalid_pointer;
-        }
-    }
-
-    *buffer_size = 0;
-    *buffer_size += ((sizeof(rocsparse_data_status) - 1) / 256 + 1) * 256; // data status
-
-    if(storage == rocsparse_storage_mode_unsorted)
-    {
-        // Determine required rocprim buffer size
-        size_t                    rocprim_buffer_size;
-        rocprim::double_buffer<J> dummy(nullptr, nullptr);
-        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs(nullptr,
-                                                                rocprim_buffer_size,
-                                                                dummy,
-                                                                dummy,
-                                                                nnzb,
-                                                                mb,
-                                                                bsr_row_ptr,
-                                                                bsr_row_ptr + 1,
-                                                                0,
-                                                                rocsparse_clz(nb),
-                                                                handle->stream));
-        *buffer_size += ((rocprim_buffer_size - 1) / 256 + 1) * 256;
-
-        // offset buffer
-        *buffer_size += ((sizeof(I) * mb) / 256 + 1) * 256;
-
-        // columns buffer
-        *buffer_size += ((sizeof(J) * nnzb - 1) / 256 + 1) * 256;
-        *buffer_size += ((sizeof(J) * nnzb - 1) / 256 + 1) * 256;
-    }
-
-    return rocsparse_status_success;
-}
-
-template <typename T, typename I, typename J>
-rocsparse_status rocsparse_check_matrix_gebsr_template(rocsparse_handle       handle,
-                                                       rocsparse_direction    dir,
-                                                       J                      mb,
-                                                       J                      nb,
-                                                       I                      nnzb,
-                                                       J                      row_block_dim,
-                                                       J                      col_block_dim,
-                                                       const T*               bsr_val,
-                                                       const I*               bsr_row_ptr,
-                                                       const J*               bsr_col_ind,
-                                                       rocsparse_index_base   idx_base,
-                                                       rocsparse_matrix_type  matrix_type,
-                                                       rocsparse_fill_mode    uplo,
-                                                       rocsparse_storage_mode storage,
-                                                       rocsparse_data_status* data_status,
-                                                       void*                  temp_buffer)
-{
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(dir))
-    {
-        log_debug(handle, "Direction is invalid.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(idx_base))
-    {
-        log_debug(handle, "Index base is invalid.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(matrix_type))
-    {
-        log_debug(handle, "Matrix type is invalid.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(uplo))
-    {
-        log_debug(handle, "Matrix fill mode is invalid.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(storage))
-    {
-        log_debug(handle, "Storage mode is invalid.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(mb < 0 || nb < 0 || nnzb < 0)
-    {
-        log_debug(handle, "mb, nb, and nnzb cannot be negative.");
-        return rocsparse_status_invalid_size;
-    }
-
-    if(row_block_dim <= 0 || col_block_dim <= 0)
-    {
-        log_debug(handle, "Row and column block dimension must both be greater than zero.");
-        return rocsparse_status_invalid_size;
-    }
-
-    if(matrix_type != rocsparse_matrix_type_general)
-    {
-        log_debug(handle, "GEBSR format only supports general matrix type.");
-        return rocsparse_status_invalid_value;
-    }
-
-    if(data_status == nullptr)
-    {
-        log_debug(handle, "data status pointer cannot be nullptr.");
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(temp_buffer == nullptr)
-    {
-        log_debug(handle, "GEBSR temp buffer array cannot be nullptr.");
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check row pointer array
-    if(bsr_row_ptr == nullptr)
-    {
-        log_debug(handle, "GEBSR row pointer array cannot be nullptr.");
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // value arrays and column indices arrays must both be null (zero matrix) or both not null
-    if((bsr_val == nullptr && bsr_col_ind != nullptr)
-       || (bsr_val != nullptr && bsr_col_ind == nullptr))
-    {
-        log_debug(handle,
-                  "GEBSR values array and column indices array must be both nullptr or both not "
-                  "nullptr.");
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check if zero matrix
-    if(bsr_val == nullptr && bsr_col_ind == nullptr)
-    {
-        if(nnzb != 0)
-        {
-            log_debug(
-                handle,
-                "GEBSR values and column indices array are both nullptr indicating zero matrix "
-                "but this does not match what is found in row pointer array.");
-            return rocsparse_status_invalid_pointer;
-        }
-    }
-
-    // Check that nnzb matches row pointer array
     I start = 0;
     I end   = 0;
-
     RETURN_IF_HIP_ERROR(
         hipMemcpyAsync(&end, &bsr_row_ptr[mb], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
     RETURN_IF_HIP_ERROR(
@@ -297,11 +64,8 @@ rocsparse_status rocsparse_check_matrix_gebsr_template(rocsparse_handle       ha
     if(nnzb != (end - start))
     {
         log_debug(handle, "GEBSR row pointer array does not match nnzb.");
-        return rocsparse_status_invalid_value;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
-
-    // clear output status to success
-    *data_status = rocsparse_data_status_success;
 
     // Temporary buffer entry points
     char* ptr = reinterpret_cast<char*>(temp_buffer);
@@ -501,41 +265,128 @@ rocsparse_status rocsparse_check_matrix_gebsr_template(rocsparse_handle       ha
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                        \
-    template rocsparse_status                                                   \
-        rocsparse_check_matrix_gebsr_buffer_size_template<TTYPE, ITYPE, JTYPE>( \
-            rocsparse_handle       handle,                                      \
-            rocsparse_direction    dir,                                         \
-            JTYPE                  mb,                                          \
-            JTYPE                  nb,                                          \
-            ITYPE                  nnzb,                                        \
-            JTYPE                  row_block_dim,                               \
-            JTYPE                  col_block_dim,                               \
-            const TTYPE*           bsr_val,                                     \
-            const ITYPE*           bsr_row_ptr,                                 \
-            const JTYPE*           bsr_col_ind,                                 \
-            rocsparse_index_base   idx_base,                                    \
-            rocsparse_matrix_type  matrix_type,                                 \
-            rocsparse_fill_mode    uplo,                                        \
-            rocsparse_storage_mode storage,                                     \
-            size_t*                buffer_size);
+template <typename T, typename I, typename J>
+rocsparse_status rocsparse_check_matrix_gebsr_quickreturn(rocsparse_handle       handle,
+                                                          rocsparse_direction    dir,
+                                                          J                      mb,
+                                                          J                      nb,
+                                                          I                      nnzb,
+                                                          J                      row_block_dim,
+                                                          J                      col_block_dim,
+                                                          const T*               bsr_val,
+                                                          const I*               bsr_row_ptr,
+                                                          const J*               bsr_col_ind,
+                                                          rocsparse_index_base   idx_base,
+                                                          rocsparse_matrix_type  matrix_type,
+                                                          rocsparse_fill_mode    uplo,
+                                                          rocsparse_storage_mode storage,
+                                                          rocsparse_data_status* data_status,
+                                                          void*                  temp_buffer)
+{
+    return rocsparse_status_continue;
+}
 
-INSTANTIATE(int32_t, int32_t, float);
-INSTANTIATE(int32_t, int32_t, double);
-INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int32_t, float);
-INSTANTIATE(int64_t, int32_t, double);
-INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int64_t, float);
-INSTANTIATE(int64_t, int64_t, double);
-INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
-#undef INSTANTIATE
+template <typename T, typename I, typename J>
+rocsparse_status rocsparse_check_matrix_gebsr_checkarg(rocsparse_handle       handle, //0
+                                                       rocsparse_direction    dir, //1
+                                                       J                      mb, //2
+                                                       J                      nb, //3
+                                                       I                      nnzb, //4
+                                                       J                      row_block_dim, //5
+                                                       J                      col_block_dim, //6
+                                                       const T*               bsr_val, //7
+                                                       const I*               bsr_row_ptr, //8
+                                                       const J*               bsr_col_ind, //9
+                                                       rocsparse_index_base   idx_base, //10
+                                                       rocsparse_matrix_type  matrix_type, //11
+                                                       rocsparse_fill_mode    uplo, //12
+                                                       rocsparse_storage_mode storage, //13
+                                                       rocsparse_data_status* data_status, //14
+                                                       void*                  temp_buffer) //15
+{
+
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_ENUM(1, dir);
+    ROCSPARSE_CHECKARG_SIZE(2, mb);
+    ROCSPARSE_CHECKARG_SIZE(3, nb);
+    ROCSPARSE_CHECKARG_SIZE(4, nnzb);
+
+    ROCSPARSE_CHECKARG_SIZE(5, row_block_dim);
+    ROCSPARSE_CHECKARG(5, row_block_dim, (row_block_dim == 0), rocsparse_status_invalid_size);
+
+    ROCSPARSE_CHECKARG_SIZE(6, col_block_dim);
+    ROCSPARSE_CHECKARG(6, col_block_dim, (col_block_dim == 0), rocsparse_status_invalid_size);
+
+    ROCSPARSE_CHECKARG_ARRAY(7, nnzb, bsr_val);
+    ROCSPARSE_CHECKARG_ARRAY(8, mb, bsr_row_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(9, nnzb, bsr_col_ind);
+    ROCSPARSE_CHECKARG_ENUM(10, idx_base);
+    ROCSPARSE_CHECKARG_ENUM(11, matrix_type);
+    ROCSPARSE_CHECKARG_ENUM(12, uplo);
+    ROCSPARSE_CHECKARG_ENUM(13, storage);
+    ROCSPARSE_CHECKARG_POINTER(14, data_status);
+    ROCSPARSE_CHECKARG_POINTER(15, temp_buffer);
+
+    if(matrix_type != rocsparse_matrix_type_general)
+    {
+        if(row_block_dim != col_block_dim || mb != nb)
+        {
+            log_debug(handle,
+                      ("Matrix was specified to be " + rocsparse_matrixtype2string(matrix_type)
+                       + " but (row_block_dim != col_block_dim || mb != nb)"));
+        }
+    }
+
+    ROCSPARSE_CHECKARG(11,
+                       matrix_type,
+                       ((matrix_type != rocsparse_matrix_type_general)
+                        && (row_block_dim != col_block_dim || mb != nb)),
+                       rocsparse_status_invalid_size);
+
+    const rocsparse_status status = rocsparse_check_matrix_gebsr_quickreturn(handle,
+                                                                             dir,
+                                                                             mb,
+                                                                             nb,
+                                                                             nnzb,
+                                                                             row_block_dim,
+                                                                             col_block_dim,
+                                                                             bsr_val,
+                                                                             bsr_row_ptr,
+                                                                             bsr_col_ind,
+                                                                             idx_base,
+                                                                             matrix_type,
+                                                                             uplo,
+                                                                             storage,
+                                                                             data_status,
+                                                                             temp_buffer);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    return rocsparse_status_continue;
+}
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                  \
-    template rocsparse_status rocsparse_check_matrix_gebsr_template<TTYPE, ITYPE, JTYPE>( \
+    template rocsparse_status rocsparse_check_matrix_gebsr_core<TTYPE, ITYPE, JTYPE>(     \
+        rocsparse_handle       handle,                                                    \
+        rocsparse_direction    dir,                                                       \
+        JTYPE                  mb,                                                        \
+        JTYPE                  nb,                                                        \
+        ITYPE                  nnzb,                                                      \
+        JTYPE                  row_block_dim,                                             \
+        JTYPE                  col_block_dim,                                             \
+        const TTYPE*           bsr_val,                                                   \
+        const ITYPE*           bsr_row_ptr,                                               \
+        const JTYPE*           bsr_col_ind,                                               \
+        rocsparse_index_base   idx_base,                                                  \
+        rocsparse_matrix_type  matrix_type,                                               \
+        rocsparse_fill_mode    uplo,                                                      \
+        rocsparse_storage_mode storage,                                                   \
+        rocsparse_data_status* data_status,                                               \
+        void*                  temp_buffer);                                                               \
+    template rocsparse_status rocsparse_check_matrix_gebsr_checkarg<TTYPE, ITYPE, JTYPE>( \
         rocsparse_handle       handle,                                                    \
         rocsparse_direction    dir,                                                       \
         JTYPE                  mb,                                                        \
@@ -567,95 +418,47 @@ INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
 #undef INSTANTIATE
 
-/*
- * ===========================================================================
- *    C wrapper
- * ===========================================================================
- */
-#define C_IMPL(NAME, TYPE)                                                      \
-    extern "C" rocsparse_status NAME(rocsparse_handle       handle,             \
-                                     rocsparse_direction    dir,                \
-                                     rocsparse_int          mb,                 \
-                                     rocsparse_int          nb,                 \
-                                     rocsparse_int          nnzb,               \
-                                     rocsparse_int          row_block_dim,      \
-                                     rocsparse_int          col_block_dim,      \
-                                     const TYPE*            bsr_val,            \
-                                     const rocsparse_int*   bsr_row_ptr,        \
-                                     const rocsparse_int*   bsr_col_ind,        \
-                                     rocsparse_index_base   idx_base,           \
-                                     rocsparse_matrix_type  matrix_type,        \
-                                     rocsparse_fill_mode    uplo,               \
-                                     rocsparse_storage_mode storage,            \
-                                     size_t*                buffer_size)        \
-    try                                                                         \
-    {                                                                           \
-        return rocsparse_check_matrix_gebsr_buffer_size_template(handle,        \
-                                                                 dir,           \
-                                                                 mb,            \
-                                                                 nb,            \
-                                                                 nnzb,          \
-                                                                 row_block_dim, \
-                                                                 col_block_dim, \
-                                                                 bsr_val,       \
-                                                                 bsr_row_ptr,   \
-                                                                 bsr_col_ind,   \
-                                                                 idx_base,      \
-                                                                 matrix_type,   \
-                                                                 uplo,          \
-                                                                 storage,       \
-                                                                 buffer_size);  \
-    }                                                                           \
-    catch(...)                                                                  \
-    {                                                                           \
-        return exception_to_rocsparse_status();                                 \
-    }
-
-C_IMPL(rocsparse_scheck_matrix_gebsr_buffer_size, float);
-C_IMPL(rocsparse_dcheck_matrix_gebsr_buffer_size, double);
-C_IMPL(rocsparse_ccheck_matrix_gebsr_buffer_size, rocsparse_float_complex);
-C_IMPL(rocsparse_zcheck_matrix_gebsr_buffer_size, rocsparse_double_complex);
-#undef C_IMPL
-
-#define C_IMPL(NAME, TYPE)                                                 \
-    extern "C" rocsparse_status NAME(rocsparse_handle       handle,        \
-                                     rocsparse_direction    dir,           \
-                                     rocsparse_int          mb,            \
-                                     rocsparse_int          nb,            \
-                                     rocsparse_int          nnzb,          \
-                                     rocsparse_int          row_block_dim, \
-                                     rocsparse_int          col_block_dim, \
-                                     const TYPE*            bsr_val,       \
-                                     const rocsparse_int*   bsr_row_ptr,   \
-                                     const rocsparse_int*   bsr_col_ind,   \
-                                     rocsparse_index_base   idx_base,      \
-                                     rocsparse_matrix_type  matrix_type,   \
-                                     rocsparse_fill_mode    uplo,          \
-                                     rocsparse_storage_mode storage,       \
-                                     rocsparse_data_status* data_status,   \
-                                     void*                  temp_buffer)   \
-    try                                                                    \
-    {                                                                      \
-        return rocsparse_check_matrix_gebsr_template(handle,               \
-                                                     dir,                  \
-                                                     mb,                   \
-                                                     nb,                   \
-                                                     nnzb,                 \
-                                                     row_block_dim,        \
-                                                     col_block_dim,        \
-                                                     bsr_val,              \
-                                                     bsr_row_ptr,          \
-                                                     bsr_col_ind,          \
-                                                     idx_base,             \
-                                                     matrix_type,          \
-                                                     uplo,                 \
-                                                     storage,              \
-                                                     data_status,          \
-                                                     temp_buffer);         \
-    }                                                                      \
-    catch(...)                                                             \
-    {                                                                      \
-        return exception_to_rocsparse_status();                            \
+#define C_IMPL(NAME, T)                                                                         \
+    extern "C" rocsparse_status NAME(rocsparse_handle       handle,                             \
+                                     rocsparse_direction    dir,                                \
+                                     rocsparse_int          mb,                                 \
+                                     rocsparse_int          nb,                                 \
+                                     rocsparse_int          nnzb,                               \
+                                     rocsparse_int          row_block_dim,                      \
+                                     rocsparse_int          col_block_dim,                      \
+                                     const T*               bsr_val,                            \
+                                     const rocsparse_int*   bsr_row_ptr,                        \
+                                     const rocsparse_int*   bsr_col_ind,                        \
+                                     rocsparse_index_base   idx_base,                           \
+                                     rocsparse_matrix_type  matrix_type,                        \
+                                     rocsparse_fill_mode    uplo,                               \
+                                     rocsparse_storage_mode storage,                            \
+                                     rocsparse_data_status* data_status,                        \
+                                     void*                  temp_buffer)                        \
+    try                                                                                         \
+    {                                                                                           \
+        RETURN_IF_ROCSPARSE_ERROR(                                                              \
+            (rocsparse_check_matrix_gebsr_impl<T, rocsparse_int, rocsparse_int>(handle,         \
+                                                                                dir,            \
+                                                                                mb,             \
+                                                                                nb,             \
+                                                                                nnzb,           \
+                                                                                row_block_dim,  \
+                                                                                col_block_dim,  \
+                                                                                bsr_val,        \
+                                                                                bsr_row_ptr,    \
+                                                                                bsr_col_ind,    \
+                                                                                idx_base,       \
+                                                                                matrix_type,    \
+                                                                                uplo,           \
+                                                                                storage,        \
+                                                                                data_status,    \
+                                                                                temp_buffer))); \
+        return rocsparse_status_success;                                                        \
+    }                                                                                           \
+    catch(...)                                                                                  \
+    {                                                                                           \
+        RETURN_ROCSPARSE_EXCEPTION();                                                           \
     }
 
 C_IMPL(rocsparse_scheck_matrix_gebsr, float);

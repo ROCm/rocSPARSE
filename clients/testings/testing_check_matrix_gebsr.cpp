@@ -32,8 +32,8 @@ void testing_check_matrix_gebsr_bad_arg(const Arguments& arg)
     rocsparse_int          nnzb          = 100;
     rocsparse_int          row_block_dim = 2;
     rocsparse_int          col_block_dim = 2;
-    rocsparse_direction    direction     = rocsparse_direction_row;
-    rocsparse_index_base   base          = rocsparse_index_base_zero;
+    rocsparse_direction    dir           = rocsparse_direction_row;
+    rocsparse_index_base   idx_base      = rocsparse_index_base_zero;
     rocsparse_matrix_type  matrix_type   = rocsparse_matrix_type_general;
     rocsparse_fill_mode    uplo          = rocsparse_fill_mode_lower;
     rocsparse_storage_mode storage       = rocsparse_storage_mode_sorted;
@@ -42,27 +42,27 @@ void testing_check_matrix_gebsr_bad_arg(const Arguments& arg)
     rocsparse_local_handle local_handle;
     rocsparse_handle       handle = local_handle;
 
-    const rocsparse_int*  bsr_row_ptr = (const rocsparse_int*)0x4;
-    const rocsparse_int*  bsr_col_ind = (const rocsparse_int*)0x4;
-    const T*              bsr_val     = (const T*)0x4;
-    void*                 temp_buffer = (void*)0x4;
-    size_t                buffer_size;
-    rocsparse_data_status data_status;
+    const rocsparse_int*   bsr_row_ptr = (const rocsparse_int*)0x4;
+    const rocsparse_int*   bsr_col_ind = (const rocsparse_int*)0x4;
+    const T*               bsr_val     = (const T*)0x4;
+    void*                  temp_buffer = (void*)0x4;
+    size_t*                buffer_size = (size_t*)0x4;
+    rocsparse_data_status* data_status = (rocsparse_data_status*)0x4;
 
     int       nargs_to_exclude   = 3;
     const int args_to_exclude[3] = {7, 8, 9};
 
-#define PARAMS_BUFFER_SIZE                                                               \
-    handle, direction, mb, nb, nnzb, row_block_dim, col_block_dim, bsr_val, bsr_row_ptr, \
-        bsr_col_ind, base, matrix_type, uplo, storage, &buffer_size
-#define PARAMS                                                                           \
-    handle, direction, mb, nb, nnzb, row_block_dim, col_block_dim, bsr_val, bsr_row_ptr, \
-        bsr_col_ind, base, matrix_type, uplo, storage, &data_status, temp_buffer
-    auto_testing_bad_arg(rocsparse_check_matrix_gebsr_buffer_size<T>,
-                         nargs_to_exclude,
-                         args_to_exclude,
-                         PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(
+#define PARAMS_BUFFER_SIZE                                                                      \
+    handle, dir, mb, nb, nnzb, row_block_dim, col_block_dim, bsr_val, bsr_row_ptr, bsr_col_ind, \
+        idx_base, matrix_type, uplo, storage, buffer_size
+#define PARAMS                                                                                  \
+    handle, dir, mb, nb, nnzb, row_block_dim, col_block_dim, bsr_val, bsr_row_ptr, bsr_col_ind, \
+        idx_base, matrix_type, uplo, storage, data_status, temp_buffer
+    select_bad_arg_analysis(rocsparse_check_matrix_gebsr_buffer_size<T>,
+                            nargs_to_exclude,
+                            args_to_exclude,
+                            PARAMS_BUFFER_SIZE);
+    select_bad_arg_analysis(
         rocsparse_check_matrix_gebsr<T>, nargs_to_exclude, args_to_exclude, PARAMS);
 
     // row_block_dim == 0

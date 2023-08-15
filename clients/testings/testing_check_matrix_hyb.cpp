@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 template <typename T>
 void testing_check_matrix_hyb_bad_arg(const Arguments& arg)
 {
-    rocsparse_index_base   base        = rocsparse_index_base_zero;
+    rocsparse_index_base   idx_base    = rocsparse_index_base_zero;
     rocsparse_matrix_type  matrix_type = rocsparse_matrix_type_general;
     rocsparse_fill_mode    uplo        = rocsparse_fill_mode_lower;
     rocsparse_storage_mode storage     = rocsparse_storage_mode_sorted;
@@ -41,31 +41,31 @@ void testing_check_matrix_hyb_bad_arg(const Arguments& arg)
     rocsparse_handle        handle      = local_handle;
     const rocsparse_hyb_mat hyb         = local_hyb;
     void*                   temp_buffer = (void*)0x4;
-    size_t                  buffer_size;
-    rocsparse_data_status   data_status;
+    size_t*                 buffer_size = (size_t*)0x4;
+    rocsparse_data_status*  data_status = (rocsparse_data_status*)0x4;
 
-    auto_testing_bad_arg(rocsparse_check_matrix_hyb_buffer_size,
-                         handle,
-                         hyb,
-                         base,
-                         matrix_type,
-                         uplo,
-                         storage,
-                         &buffer_size);
+    bad_arg_analysis(rocsparse_check_matrix_hyb_buffer_size,
+                     handle,
+                     hyb,
+                     idx_base,
+                     matrix_type,
+                     uplo,
+                     storage,
+                     buffer_size);
 
     int       nargs_to_exclude   = 1;
     const int args_to_exclude[1] = {7};
-    auto_testing_bad_arg(rocsparse_check_matrix_hyb,
-                         nargs_to_exclude,
-                         args_to_exclude,
-                         handle,
-                         hyb,
-                         base,
-                         matrix_type,
-                         uplo,
-                         storage,
-                         &data_status,
-                         temp_buffer);
+    select_bad_arg_analysis(rocsparse_check_matrix_hyb,
+                            nargs_to_exclude,
+                            args_to_exclude,
+                            handle,
+                            hyb,
+                            idx_base,
+                            matrix_type,
+                            uplo,
+                            storage,
+                            data_status,
+                            temp_buffer);
 }
 
 template <typename T>
