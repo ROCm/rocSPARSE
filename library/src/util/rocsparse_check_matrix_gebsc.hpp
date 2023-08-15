@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,116 @@
  * ************************************************************************ */
 #pragma once
 
-#include "handle.h"
+#include "definitions.h"
+
+template <typename T, typename I, typename J>
+rocsparse_status rocsparse_check_matrix_gebsc_buffer_size_core(rocsparse_handle       handle,
+                                                               rocsparse_direction    dir,
+                                                               J                      mb,
+                                                               J                      nb,
+                                                               I                      nnzb,
+                                                               J                      row_block_dim,
+                                                               J                      col_block_dim,
+                                                               const T*               bsr_val,
+                                                               const I*               bsr_col_ptr,
+                                                               const J*               bsr_row_ind,
+                                                               rocsparse_index_base   idx_base,
+                                                               rocsparse_matrix_type  matrix_type,
+                                                               rocsparse_fill_mode    uplo,
+                                                               rocsparse_storage_mode storage,
+                                                               size_t*                buffer_size);
 
 template <typename T, typename I, typename J>
 rocsparse_status
-    rocsparse_check_matrix_gebsc_buffer_size_template(rocsparse_handle       handle,
+    rocsparse_check_matrix_gebsc_buffer_size_checkarg(rocsparse_handle       handle,
                                                       rocsparse_direction    dir,
                                                       J                      mb,
                                                       J                      nb,
                                                       I                      nnzb,
                                                       J                      row_block_dim,
                                                       J                      col_block_dim,
-                                                      const T*               bsc_val,
-                                                      const I*               bsc_col_ptr,
-                                                      const J*               bsc_row_ind,
+                                                      const T*               bsr_val,
+                                                      const I*               bsr_col_ptr,
+                                                      const J*               bsr_row_ind,
                                                       rocsparse_index_base   idx_base,
                                                       rocsparse_matrix_type  matrix_type,
                                                       rocsparse_fill_mode    uplo,
                                                       rocsparse_storage_mode storage,
                                                       size_t*                buffer_size);
 
+template <typename T, typename I, typename J, typename... P>
+inline rocsparse_status rocsparse_check_matrix_gebsc_buffer_size_impl(P&&... p)
+{
+    const rocsparse_status status
+        = rocsparse_check_matrix_gebsc_buffer_size_checkarg<T, I, J>(p...);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_check_matrix_gebsc_buffer_size_core<T, I, J>(p...)));
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    return rocsparse_status_success;
+}
+
 template <typename T, typename I, typename J>
-rocsparse_status rocsparse_check_matrix_gebsc_template(rocsparse_handle       handle,
+rocsparse_status rocsparse_check_matrix_gebsc_core(rocsparse_handle       handle,
+                                                   rocsparse_direction    dir,
+                                                   J                      mb,
+                                                   J                      nb,
+                                                   I                      nnzb,
+                                                   J                      row_block_dim,
+                                                   J                      col_block_dim,
+                                                   const T*               bsr_val,
+                                                   const I*               bsr_col_ptr,
+                                                   const J*               bsr_row_ind,
+                                                   rocsparse_index_base   idx_base,
+                                                   rocsparse_matrix_type  matrix_type,
+                                                   rocsparse_fill_mode    uplo,
+                                                   rocsparse_storage_mode storage,
+                                                   rocsparse_data_status* data_status,
+                                                   void*                  temp_buffer);
+
+template <typename T, typename I, typename J>
+rocsparse_status rocsparse_check_matrix_gebsc_checkarg(rocsparse_handle       handle,
                                                        rocsparse_direction    dir,
                                                        J                      mb,
                                                        J                      nb,
                                                        I                      nnzb,
                                                        J                      row_block_dim,
                                                        J                      col_block_dim,
-                                                       const T*               bsc_val,
-                                                       const I*               bsc_col_ptr,
-                                                       const J*               bsc_row_ind,
+                                                       const T*               bsr_val,
+                                                       const I*               bsr_col_ptr,
+                                                       const J*               bsr_row_ind,
                                                        rocsparse_index_base   idx_base,
                                                        rocsparse_matrix_type  matrix_type,
                                                        rocsparse_fill_mode    uplo,
                                                        rocsparse_storage_mode storage,
                                                        rocsparse_data_status* data_status,
                                                        void*                  temp_buffer);
+
+template <typename T, typename I, typename J, typename... P>
+inline rocsparse_status rocsparse_check_matrix_gebsc_impl(P&&... p)
+{
+    const rocsparse_status status = rocsparse_check_matrix_gebsc_checkarg<T, I, J>(p...);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_check_matrix_gebsc_core<T, I, J>(p...)));
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    return rocsparse_status_success;
+}

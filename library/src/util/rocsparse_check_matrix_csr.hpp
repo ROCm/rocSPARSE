@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,24 @@
  * ************************************************************************ */
 #pragma once
 
-#include "handle.h"
+#include "definitions.h"
 
 template <typename T, typename I, typename J>
-rocsparse_status rocsparse_check_matrix_csr_buffer_size_template(rocsparse_handle       handle,
+rocsparse_status rocsparse_check_matrix_csr_buffer_size_core(rocsparse_handle       handle,
+                                                             J                      m,
+                                                             J                      n,
+                                                             I                      nnz,
+                                                             const T*               csr_val,
+                                                             const I*               csr_row_ptr,
+                                                             const J*               csr_col_ind,
+                                                             rocsparse_index_base   idx_base,
+                                                             rocsparse_matrix_type  matrix_type,
+                                                             rocsparse_fill_mode    uplo,
+                                                             rocsparse_storage_mode storage,
+                                                             size_t*                buffer_size);
+
+template <typename T, typename I, typename J>
+rocsparse_status rocsparse_check_matrix_csr_buffer_size_checkarg(rocsparse_handle       handle,
                                                                  J                      m,
                                                                  J                      n,
                                                                  I                      nnz,
@@ -39,8 +53,43 @@ rocsparse_status rocsparse_check_matrix_csr_buffer_size_template(rocsparse_handl
                                                                  rocsparse_storage_mode storage,
                                                                  size_t* buffer_size);
 
+template <typename T, typename I, typename J, typename... P>
+inline rocsparse_status rocsparse_check_matrix_csr_buffer_size_impl(P&&... p)
+{
+    const rocsparse_status status = rocsparse_check_matrix_csr_buffer_size_checkarg<T, I, J>(p...);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_check_matrix_csr_buffer_size_core<T, I, J>(p...)));
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    return rocsparse_status_success;
+}
+
 template <typename T, typename I, typename J>
-rocsparse_status rocsparse_check_matrix_csr_template(rocsparse_handle       handle,
+rocsparse_status rocsparse_check_matrix_csr_core(rocsparse_handle       handle,
+                                                 J                      m,
+                                                 J                      n,
+                                                 I                      nnz,
+                                                 const T*               csr_val,
+                                                 const I*               csr_row_ptr,
+                                                 const J*               csr_col_ind,
+                                                 rocsparse_index_base   idx_base,
+                                                 rocsparse_matrix_type  matrix_type,
+                                                 rocsparse_fill_mode    uplo,
+                                                 rocsparse_storage_mode storage,
+                                                 rocsparse_data_status* data_status,
+                                                 void*                  temp_buffer);
+
+template <typename T, typename I, typename J>
+rocsparse_status rocsparse_check_matrix_csr_checkarg(rocsparse_handle       handle,
                                                      J                      m,
                                                      J                      n,
                                                      I                      nnz,
@@ -53,3 +102,23 @@ rocsparse_status rocsparse_check_matrix_csr_template(rocsparse_handle       hand
                                                      rocsparse_storage_mode storage,
                                                      rocsparse_data_status* data_status,
                                                      void*                  temp_buffer);
+
+template <typename T, typename I, typename J, typename... P>
+inline rocsparse_status rocsparse_check_matrix_csr_impl(P&&... p)
+{
+    const rocsparse_status status = rocsparse_check_matrix_csr_checkarg<T, I, J>(p...);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_check_matrix_csr_core<T, I, J>(p...)));
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    return rocsparse_status_success;
+}
