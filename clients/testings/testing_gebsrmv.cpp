@@ -37,28 +37,28 @@ void testing_gebsrmv_bad_arg(const Arguments& arg)
     // Create matrix descriptor
     rocsparse_local_mat_descr local_descr;
 
-    rocsparse_handle          handle            = local_handle;
-    rocsparse_direction       dir               = rocsparse_direction_column;
-    rocsparse_operation       trans             = rocsparse_operation_none;
-    rocsparse_int             mb                = safe_size;
-    rocsparse_int             nb                = safe_size;
-    rocsparse_int             nnzb              = safe_size;
-    const T*                  alpha_device_host = (const T*)&h_alpha;
-    const rocsparse_mat_descr descr             = local_descr;
-    const T*                  bsr_val           = (const T*)0x4;
-    const rocsparse_int*      bsr_row_ptr       = (const rocsparse_int*)0x4;
-    const rocsparse_int*      bsr_col_ind       = (const rocsparse_int*)0x4;
-    rocsparse_int             row_block_dim     = safe_size;
-    rocsparse_int             col_block_dim     = safe_size;
-    const T*                  x                 = (const T*)0x4;
-    const T*                  beta_device_host  = (const T*)&h_beta;
-    T*                        y                 = (T*)0x4;
+    rocsparse_handle          handle        = local_handle;
+    rocsparse_direction       dir           = rocsparse_direction_column;
+    rocsparse_operation       trans         = rocsparse_operation_none;
+    rocsparse_int             mb            = safe_size;
+    rocsparse_int             nb            = safe_size;
+    rocsparse_int             nnzb          = safe_size;
+    const T*                  alpha         = (const T*)&h_alpha;
+    const rocsparse_mat_descr descr         = local_descr;
+    const T*                  bsr_val       = (const T*)0x4;
+    const rocsparse_int*      bsr_row_ptr   = (const rocsparse_int*)0x4;
+    const rocsparse_int*      bsr_col_ind   = (const rocsparse_int*)0x4;
+    rocsparse_int             row_block_dim = safe_size;
+    rocsparse_int             col_block_dim = safe_size;
+    const T*                  x             = (const T*)0x4;
+    const T*                  beta          = (const T*)&h_beta;
+    T*                        y             = (T*)0x4;
 
-#define PARAMS                                                                                     \
-    handle, dir, trans, mb, nb, nnzb, alpha_device_host, descr, bsr_val, bsr_row_ptr, bsr_col_ind, \
-        row_block_dim, col_block_dim, x, beta_device_host, y
+#define PARAMS                                                                         \
+    handle, dir, trans, mb, nb, nnzb, alpha, descr, bsr_val, bsr_row_ptr, bsr_col_ind, \
+        row_block_dim, col_block_dim, x, beta, y
 
-    auto_testing_bad_arg(rocsparse_gebsrmv<T>, PARAMS);
+    bad_arg_analysis(rocsparse_gebsrmv<T>, PARAMS);
 
     //
     // operation different from rocsparse_operation_none is not implemented.
@@ -126,7 +126,7 @@ void testing_gebsrmv_bad_arg(const Arguments& arg)
                                                  mb,
                                                  nb,
                                                  nnzb,
-                                                 alpha_device_host,
+                                                 alpha,
                                                  descr,
                                                  nullptr,
                                                  bsr_row_ptr,
@@ -134,7 +134,7 @@ void testing_gebsrmv_bad_arg(const Arguments& arg)
                                                  row_block_dim,
                                                  col_block_dim,
                                                  x,
-                                                 beta_device_host,
+                                                 beta,
                                                  y),
                             rocsparse_status_invalid_pointer);
 }

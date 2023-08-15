@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ void testing_coomv_bad_arg(const Arguments& arg)
     handle, trans, m, n, nnz, alpha_device_host, descr, coo_val, coo_row_ind, coo_col_ind, x, \
         beta_device_host, y
 
-    auto_testing_bad_arg(rocsparse_coomv<T>, PARAMS);
+    bad_arg_analysis(rocsparse_coomv<T>, PARAMS);
 
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {

@@ -35,27 +35,29 @@ void testing_gemvi_bad_arg(const Arguments& arg)
     T h_alpha = static_cast<T>(1);
     T h_beta  = static_cast<T>(1);
 
-    rocsparse_handle     handle = local_handle;
-    rocsparse_operation  trans  = rocsparse_operation_none;
-    rocsparse_index_base base   = rocsparse_index_base_zero;
-    rocsparse_int        m      = safe_size;
-    rocsparse_int        n      = safe_size;
-    rocsparse_int        nnz    = safe_size;
-    const T*             alpha  = &h_alpha;
-    const T*             A      = (const T*)0x4;
-    rocsparse_int        lda    = safe_size;
-    const rocsparse_int* x_ind  = (const rocsparse_int*)0x4;
-    const T*             x_val  = (const T*)0x4;
-    const T*             beta   = &h_beta;
-    T*                   y      = (T*)0x4;
-    void*                buffer = (void*)0x4;
+    rocsparse_handle     handle            = local_handle;
+    rocsparse_operation  trans             = rocsparse_operation_none;
+    rocsparse_index_base idx_base          = rocsparse_index_base_zero;
+    rocsparse_int        m                 = safe_size;
+    rocsparse_int        n                 = safe_size;
+    rocsparse_int        nnz               = safe_size;
+    const T*             alpha_device_host = &h_alpha;
+    const T*             A                 = (const T*)0x4;
+    rocsparse_int        lda               = safe_size;
+    const rocsparse_int* x_ind             = (const rocsparse_int*)0x4;
+    const T*             x_val             = (const T*)0x4;
+    const T*             beta_device_host  = &h_beta;
+    T*                   y                 = (T*)0x4;
+    void*                buffer            = (void*)0x4;
 
     int       nargs_to_exclude   = 1;
     const int args_to_exclude[1] = {13};
 
-#define PARAMS handle, trans, m, n, alpha, A, lda, nnz, x_val, x_ind, beta, y, base, buffer
+#define PARAMS                                                                              \
+    handle, trans, m, n, alpha_device_host, A, lda, nnz, x_val, x_ind, beta_device_host, y, \
+        idx_base, buffer
 
-    auto_testing_bad_arg(rocsparse_gemvi<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+    select_bad_arg_analysis(rocsparse_gemvi<T>, nargs_to_exclude, args_to_exclude, PARAMS);
 
     {
         auto tmp = trans;

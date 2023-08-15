@@ -133,29 +133,22 @@ rocsparse_status rocsparse_ellmv_dispatch(rocsparse_handle          handle,
 }
 
 template <typename T, typename I, typename A, typename X, typename Y>
-rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,
-                                          rocsparse_operation       trans,
-                                          I                         m,
-                                          I                         n,
-                                          const T*                  alpha_device_host,
-                                          const rocsparse_mat_descr descr,
-                                          const A*                  ell_val,
-                                          const I*                  ell_col_ind,
-                                          I                         ell_width,
-                                          const X*                  x,
-                                          const T*                  beta_device_host,
-                                          Y*                        y)
+rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle, // 0
+                                          rocsparse_operation       trans, //1
+                                          I                         m, //2
+                                          I                         n, //3
+                                          const T*                  alpha_device_host, //4
+                                          const rocsparse_mat_descr descr, //5
+                                          const A*                  ell_val, //6
+                                          const I*                  ell_col_ind, //7
+                                          I                         ell_width, //8
+                                          const X*                  x, //9
+                                          const T*                  beta_device_host, //10
+                                          Y*                        y) //11
 {
     // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(5, descr);
 
     // Logging
     log_trace(handle,
@@ -172,43 +165,27 @@ rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,
               LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
               (const void*&)y);
 
-    log_bench(handle,
-              "./rocsparse-bench -f ellmv -r",
-              replaceX<T>("X"),
-              "--mtx <matrix.mtx> ",
-              "--alpha",
-              LOG_BENCH_SCALAR_VALUE(handle, alpha_device_host),
-              "--beta",
-              LOG_BENCH_SCALAR_VALUE(handle, beta_device_host));
-
-    if(rocsparse_enum_utils::is_invalid(trans))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(1, trans);
 
     // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
+    ROCSPARSE_CHECKARG(
+        5, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);
 
     // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
+
+    ROCSPARSE_CHECKARG(5,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
 
     // Check sizes
-    if(m < 0 || n < 0 || ell_width < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_SIZE(2, m);
+    ROCSPARSE_CHECKARG_SIZE(3, n);
+    ROCSPARSE_CHECKARG_SIZE(8, ell_width);
 
     // Sanity check
-    if((m == 0 || n == 0) && ell_width != 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG(
+        8, ell_width, ((m == 0 || n == 0) && ell_width != 0), rocsparse_status_invalid_size);
 
     // Quick return if possible
     if(m == 0 || n == 0 || ell_width == 0)
@@ -250,10 +227,8 @@ rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,
     }
 
     // Check pointer arguments
-    if(alpha_device_host == nullptr || beta_device_host == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(4, alpha_device_host);
+    ROCSPARSE_CHECKARG_POINTER(10, beta_device_host);
 
     if(handle->pointer_mode == rocsparse_pointer_mode_host
        && *alpha_device_host == static_cast<T>(0) && *beta_device_host == static_cast<T>(1))
@@ -262,40 +237,42 @@ rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,
     }
 
     // Check the rest of the pointer arguments
-    if(ell_val == nullptr || ell_col_ind == nullptr || x == nullptr || y == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(6, ell_val);
+    ROCSPARSE_CHECKARG_POINTER(7, ell_col_ind);
+    ROCSPARSE_CHECKARG_POINTER(9, x);
+    ROCSPARSE_CHECKARG_POINTER(11, y);
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        return rocsparse_ellmv_dispatch(handle,
-                                        trans,
-                                        m,
-                                        n,
-                                        alpha_device_host,
-                                        descr,
-                                        ell_val,
-                                        ell_col_ind,
-                                        ell_width,
-                                        x,
-                                        beta_device_host,
-                                        y);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_ellmv_dispatch(handle,
+                                                           trans,
+                                                           m,
+                                                           n,
+                                                           alpha_device_host,
+                                                           descr,
+                                                           ell_val,
+                                                           ell_col_ind,
+                                                           ell_width,
+                                                           x,
+                                                           beta_device_host,
+                                                           y));
+        return rocsparse_status_success;
     }
     else
     {
-        return rocsparse_ellmv_dispatch(handle,
-                                        trans,
-                                        m,
-                                        n,
-                                        *alpha_device_host,
-                                        descr,
-                                        ell_val,
-                                        ell_col_ind,
-                                        ell_width,
-                                        x,
-                                        *beta_device_host,
-                                        y);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_ellmv_dispatch(handle,
+                                                           trans,
+                                                           m,
+                                                           n,
+                                                           *alpha_device_host,
+                                                           descr,
+                                                           ell_val,
+                                                           ell_col_ind,
+                                                           ell_width,
+                                                           x,
+                                                           *beta_device_host,
+                                                           y));
+        return rocsparse_status_success;
     }
     return rocsparse_status_success;
 }
@@ -373,27 +350,28 @@ INSTANTIATE_MIXED(rocsparse_double_complex,
  * ===========================================================================
  */
 
-#define C_IMPL(NAME, TYPE)                                                                   \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                       \
-                                     rocsparse_operation       trans,                        \
-                                     rocsparse_int             m,                            \
-                                     rocsparse_int             n,                            \
-                                     const TYPE*               alpha,                        \
-                                     const rocsparse_mat_descr descr,                        \
-                                     const TYPE*               ell_val,                      \
-                                     const rocsparse_int*      ell_col_ind,                  \
-                                     rocsparse_int             ell_width,                    \
-                                     const TYPE*               x,                            \
-                                     const TYPE*               beta,                         \
-                                     TYPE*                     y)                            \
-    try                                                                                      \
-    {                                                                                        \
-        return rocsparse_ellmv_template(                                                     \
-            handle, trans, m, n, alpha, descr, ell_val, ell_col_ind, ell_width, x, beta, y); \
-    }                                                                                        \
-    catch(...)                                                                               \
-    {                                                                                        \
-        return exception_to_rocsparse_status();                                              \
+#define C_IMPL(NAME, TYPE)                                                                    \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                        \
+                                     rocsparse_operation       trans,                         \
+                                     rocsparse_int             m,                             \
+                                     rocsparse_int             n,                             \
+                                     const TYPE*               alpha,                         \
+                                     const rocsparse_mat_descr descr,                         \
+                                     const TYPE*               ell_val,                       \
+                                     const rocsparse_int*      ell_col_ind,                   \
+                                     rocsparse_int             ell_width,                     \
+                                     const TYPE*               x,                             \
+                                     const TYPE*               beta,                          \
+                                     TYPE*                     y)                             \
+    try                                                                                       \
+    {                                                                                         \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_ellmv_template(                                   \
+            handle, trans, m, n, alpha, descr, ell_val, ell_col_ind, ell_width, x, beta, y)); \
+        return rocsparse_status_success;                                                      \
+    }                                                                                         \
+    catch(...)                                                                                \
+    {                                                                                         \
+        RETURN_ROCSPARSE_EXCEPTION();                                                         \
     }
 
 C_IMPL(rocsparse_sellmv, float);

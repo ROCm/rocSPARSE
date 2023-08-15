@@ -60,7 +60,7 @@ void testing_bsrxmv_bad_arg(const Arguments& arg)
     handle, dir, trans, size_of_mask, mb, nb, nnzb, alpha_device_host, descr, bsr_val, \
         bsr_mask_ptr, bsr_row_ptr, bsr_end_ptr, bsr_col_ind, block_dim, x, beta_device_host, y
 
-    auto_testing_bad_arg(rocsparse_bsrxmv<T>, PARAMS);
+    bad_arg_analysis(rocsparse_bsrxmv<T>, PARAMS);
 
     {
         auto tmp = trans;

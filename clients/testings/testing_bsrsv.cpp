@@ -43,44 +43,45 @@ void testing_bsrsv_bad_arg(const Arguments& arg)
     // Create matrix info
     rocsparse_local_mat_info local_info;
 
-    rocsparse_handle          handle      = local_handle;
-    rocsparse_direction       dir         = rocsparse_direction_row;
-    rocsparse_operation       trans       = rocsparse_operation_none;
-    rocsparse_int             mb          = safe_size;
-    rocsparse_int             nnzb        = safe_size;
-    const T*                  alpha       = &h_alpha;
-    const rocsparse_mat_descr descr       = local_descr;
-    const T*                  bsr_val     = (const T*)0x4;
-    const rocsparse_int*      bsr_row_ptr = (const rocsparse_int*)0x4;
-    const rocsparse_int*      bsr_col_ind = (const rocsparse_int*)0x4;
-    rocsparse_mat_info        info        = local_info;
-    rocsparse_int             block_dim   = safe_size;
-    const T*                  x           = (const T*)0x4;
-    T*                        y           = (T*)0x4;
-    rocsparse_analysis_policy analysis    = rocsparse_analysis_policy_reuse;
-    rocsparse_solve_policy    solve       = rocsparse_solve_policy_auto;
-    size_t                    buffer_size;
-    size_t*                   p_buffer_size = &buffer_size;
-    void*                     temp_buffer   = (void*)0x4;
+    rocsparse_handle          handle            = local_handle;
+    rocsparse_direction       dir               = rocsparse_direction_row;
+    rocsparse_operation       trans             = rocsparse_operation_none;
+    rocsparse_int             mb                = safe_size;
+    rocsparse_int             nnzb              = safe_size;
+    const T*                  alpha_device_host = &h_alpha;
+    const rocsparse_mat_descr descr             = local_descr;
+    const T*                  bsr_val           = (const T*)0x4;
+    const rocsparse_int*      bsr_row_ptr       = (const rocsparse_int*)0x4;
+    const rocsparse_int*      bsr_col_ind       = (const rocsparse_int*)0x4;
+    rocsparse_mat_info        info              = local_info;
+    rocsparse_int             block_dim         = safe_size;
+    const T*                  x                 = (const T*)0x4;
+    T*                        y                 = (T*)0x4;
+    rocsparse_analysis_policy analysis          = rocsparse_analysis_policy_reuse;
+    rocsparse_solve_policy    policy            = rocsparse_solve_policy_auto;
+    rocsparse_solve_policy    solve             = rocsparse_solve_policy_auto;
+    size_t                    buffer_size_value;
+    size_t*                   buffer_size = &buffer_size_value;
+    void*                     temp_buffer = (void*)0x4;
 
 #define PARAMS_BUFFER_SIZE                                                                   \
     handle, dir, trans, mb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, \
-        p_buffer_size
+        buffer_size
 
 #define PARAMS_ANALYSIS                                                                      \
     handle, dir, trans, mb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, \
         analysis, solve, temp_buffer
 
-#define PARAMS_SOLVE                                                                          \
-    handle, dir, trans, mb, nnzb, alpha, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, \
-        info, x, y, solve, temp_buffer
+#define PARAMS_SOLVE                                                                           \
+    handle, dir, trans, mb, nnzb, alpha_device_host, descr, bsr_val, bsr_row_ptr, bsr_col_ind, \
+        block_dim, info, x, y, policy, temp_buffer
 
     //
     // Call solve before analysis
     //
-    auto_testing_bad_arg(rocsparse_bsrsv_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_bsrsv_analysis<T>, PARAMS_ANALYSIS);
-    auto_testing_bad_arg(rocsparse_bsrsv_solve<T>, PARAMS_SOLVE);
+    bad_arg_analysis(rocsparse_bsrsv_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_bsrsv_analysis<T>, PARAMS_ANALYSIS);
+    bad_arg_analysis(rocsparse_bsrsv_solve<T>, PARAMS_SOLVE);
 
     //
     // Not implemented cases.
@@ -152,7 +153,7 @@ void testing_bsrsv_bad_arg(const Arguments& arg)
                                                      trans,
                                                      mb,
                                                      nnzb,
-                                                     alpha,
+                                                     alpha_device_host,
                                                      descr,
                                                      nullptr,
                                                      bsr_row_ptr,
@@ -161,7 +162,7 @@ void testing_bsrsv_bad_arg(const Arguments& arg)
                                                      info,
                                                      x,
                                                      y,
-                                                     solve,
+                                                     policy,
                                                      temp_buffer),
                             rocsparse_status_invalid_pointer);
 }

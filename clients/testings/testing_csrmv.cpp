@@ -58,7 +58,7 @@ void testing_csrmv_bad_arg(const Arguments& arg)
     T*                        y                 = (T*)0x4;
 
 #define PARAMS_ANALYSIS handle, trans, m, n, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info
-    auto_testing_bad_arg(rocsparse_csrmv_analysis<T>, PARAMS_ANALYSIS);
+    bad_arg_analysis(rocsparse_csrmv_analysis<T>, PARAMS_ANALYSIS);
 
 #define PARAMS                                                                                   \
     handle, trans, m, n, nnz, alpha_device_host, descr, csr_val, csr_row_ptr, csr_col_ind, info, \
@@ -67,7 +67,7 @@ void testing_csrmv_bad_arg(const Arguments& arg)
     {
         static constexpr int num_exclusions  = 1;
         static constexpr int exclude_args[1] = {10};
-        auto_testing_bad_arg(rocsparse_csrmv<T>, num_exclusions, exclude_args, PARAMS);
+        select_bad_arg_analysis(rocsparse_csrmv<T>, num_exclusions, exclude_args, PARAMS);
     }
 
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_clear(nullptr, info), rocsparse_status_invalid_handle);

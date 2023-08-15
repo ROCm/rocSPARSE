@@ -51,7 +51,7 @@ void testing_hybmv_bad_arg(const Arguments& arg)
 
 #define PARAMS handle, trans, alpha_device_host, descr, hyb, x, beta_device_host, y
 
-    auto_testing_bad_arg(rocsparse_hybmv<T>, PARAMS);
+    bad_arg_analysis(rocsparse_hybmv<T>, PARAMS);
 
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {

@@ -71,20 +71,9 @@ rocsparse_status rocsparse_csritsv_buffer_size_impl(rocsparse_handle          ha
                                                     size_t*                   buffer_size)
 {
     // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(4, descr);
+    ROCSPARSE_CHECKARG_POINTER(8, info);
 
     // Logging
     log_trace(handle,
@@ -99,52 +88,40 @@ rocsparse_status rocsparse_csritsv_buffer_size_impl(rocsparse_handle          ha
               (const void*&)info,
               (const void*&)buffer_size);
 
-    if(rocsparse_enum_utils::is_invalid(trans))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(1, trans);
 
     // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general
-       && descr->type != rocsparse_matrix_type_triangular)
-    {
-        return rocsparse_status_not_implemented;
-    }
+    ROCSPARSE_CHECKARG(4,
+                       descr,
+                       (descr->type != rocsparse_matrix_type_general
+                        && descr->type != rocsparse_matrix_type_triangular),
+                       rocsparse_status_not_implemented);
 
     // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
+
+    ROCSPARSE_CHECKARG(4,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
 
     // Check sizes
-    if(m < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_SIZE(2, m);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
 
     // Check for valid buffer_size pointer
-    if(buffer_size == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(9, buffer_size);
+
     // Check pointer arguments
-    if(m > 0 && csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    if(nnz > 0 && csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    if(nnz > 0 && csr_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_ARRAY(6, m, csr_row_ptr);
+
+    ROCSPARSE_CHECKARG_ARRAY(5, nnz, csr_val);
+
+    ROCSPARSE_CHECKARG_ARRAY(7, nnz, csr_col_ind);
 
     // need
-    return rocsparse_csritsv_buffer_size_template(
-        handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csritsv_buffer_size_template(
+        handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size));
+    return rocsparse_status_success;
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE)                              \
@@ -179,25 +156,26 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
  *    C wrapper
  * ===========================================================================
  */
-#define C_IMPL(NAME, TYPE)                                                                       \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                           \
-                                     rocsparse_operation       trans,                            \
-                                     rocsparse_int             m,                                \
-                                     rocsparse_int             nnz,                              \
-                                     const rocsparse_mat_descr descr,                            \
-                                     const TYPE*               csr_val,                          \
-                                     const rocsparse_int*      csr_row_ptr,                      \
-                                     const rocsparse_int*      csr_col_ind,                      \
-                                     rocsparse_mat_info        info,                             \
-                                     size_t*                   buffer_size)                      \
-    try                                                                                          \
-    {                                                                                            \
-        return rocsparse_csritsv_buffer_size_impl(                                               \
-            handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size); \
-    }                                                                                            \
-    catch(...)                                                                                   \
-    {                                                                                            \
-        return exception_to_rocsparse_status();                                                  \
+#define C_IMPL(NAME, TYPE)                                                                        \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                            \
+                                     rocsparse_operation       trans,                             \
+                                     rocsparse_int             m,                                 \
+                                     rocsparse_int             nnz,                               \
+                                     const rocsparse_mat_descr descr,                             \
+                                     const TYPE*               csr_val,                           \
+                                     const rocsparse_int*      csr_row_ptr,                       \
+                                     const rocsparse_int*      csr_col_ind,                       \
+                                     rocsparse_mat_info        info,                              \
+                                     size_t*                   buffer_size)                       \
+    try                                                                                           \
+    {                                                                                             \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csritsv_buffer_size_impl(                             \
+            handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size)); \
+        return rocsparse_status_success;                                                          \
+    }                                                                                             \
+    catch(...)                                                                                    \
+    {                                                                                             \
+        RETURN_ROCSPARSE_EXCEPTION();                                                             \
     }
 
 C_IMPL(rocsparse_scsritsv_buffer_size, float);

@@ -60,7 +60,7 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
 #define PARAMS_ANALYSIS \
     handle, dir, trans, mb, nb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info
 
-    auto_testing_bad_arg(rocsparse_bsrmv_ex_analysis<T>, PARAMS_ANALYSIS);
+    bad_arg_analysis(rocsparse_bsrmv_ex_analysis<T>, PARAMS_ANALYSIS);
 
 #define PARAMS                                                                                     \
     handle, dir, trans, mb, nb, nnzb, alpha_device_host, descr, bsr_val, bsr_row_ptr, bsr_col_ind, \
@@ -69,7 +69,7 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
     {
         static constexpr int num_exclusions  = 1;
         static constexpr int exclude_args[1] = {12};
-        auto_testing_bad_arg(rocsparse_bsrmv_ex<T>, num_exclusions, exclude_args, PARAMS);
+        select_bad_arg_analysis(rocsparse_bsrmv_ex<T>, num_exclusions, exclude_args, PARAMS);
     }
 
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv_ex_clear(nullptr, info),

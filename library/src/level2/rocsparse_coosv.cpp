@@ -43,18 +43,9 @@ rocsparse_status rocsparse_coosv_buffer_size_template(rocsparse_handle          
                                                       size_t*                   buffer_size)
 {
     // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(4, descr);
+    ROCSPARSE_CHECKARG_POINTER(8, info);
 
     // Logging
     log_trace(handle,
@@ -69,34 +60,24 @@ rocsparse_status rocsparse_coosv_buffer_size_template(rocsparse_handle          
               (const void*&)info,
               (const void*&)buffer_size);
 
-    if(rocsparse_enum_utils::is_invalid(trans))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(1, trans);
 
     // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
+    ROCSPARSE_CHECKARG(
+        4, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);
 
     // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
+    ROCSPARSE_CHECKARG(4,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
 
     // Check sizes
-    if(m < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_SIZE(2, m);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
 
     // Check for valid buffer_size pointer
-    if(buffer_size == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(9, buffer_size);
 
     // Quick return if possible
     if(m == 0)
@@ -106,16 +87,9 @@ rocsparse_status rocsparse_coosv_buffer_size_template(rocsparse_handle          
     }
 
     // All must be null (zero matrix) or none null
-    if(!(coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr)
-       && !(coo_val != nullptr && coo_row_ind != nullptr && coo_col_ind != nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz != 0 && (coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_ARRAY(5, nnz, coo_val);
+    ROCSPARSE_CHECKARG_ARRAY(6, nnz, coo_row_ind);
+    ROCSPARSE_CHECKARG_ARRAY(7, nnz, coo_col_ind);
 
     // Call CSR buffer size
     *buffer_size = 0;
@@ -182,18 +156,9 @@ rocsparse_status rocsparse_coosv_analysis_template(rocsparse_handle          han
                                                    void*                     temp_buffer)
 {
     // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(4, descr);
+    ROCSPARSE_CHECKARG_POINTER(8, info);
 
     // Logging
     log_trace(handle,
@@ -210,36 +175,22 @@ rocsparse_status rocsparse_coosv_analysis_template(rocsparse_handle          han
               analysis,
               (const void*&)temp_buffer);
 
-    if(rocsparse_enum_utils::is_invalid(trans))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(rocsparse_enum_utils::is_invalid(analysis))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(rocsparse_enum_utils::is_invalid(solve))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(1, trans);
+    ROCSPARSE_CHECKARG_ENUM(9, analysis);
+    ROCSPARSE_CHECKARG_ENUM(10, solve);
 
     // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
+    ROCSPARSE_CHECKARG(
+        4, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);
     // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
+    ROCSPARSE_CHECKARG(4,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
 
     // Check sizes
-    if(m < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_SIZE(2, m);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
 
     // Quick return if possible
     if(m == 0)
@@ -248,22 +199,12 @@ rocsparse_status rocsparse_coosv_analysis_template(rocsparse_handle          han
     }
 
     // Check pointer arguments
-    if(temp_buffer == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(11, temp_buffer);
 
     // All must be null (zero matrix) or none null
-    if(!(coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr)
-       && !(coo_val != nullptr && coo_row_ind != nullptr && coo_col_ind != nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz != 0 && (coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_ARRAY(5, nnz, coo_val);
+    ROCSPARSE_CHECKARG_ARRAY(6, nnz, coo_row_ind);
+    ROCSPARSE_CHECKARG_ARRAY(7, nnz, coo_col_ind);
 
     // Buffer
     char* ptr = reinterpret_cast<char*>(temp_buffer);
@@ -368,18 +309,9 @@ rocsparse_status rocsparse_coosv_solve_template(rocsparse_handle          handle
                                                 void*                     temp_buffer)
 {
     // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(5, descr);
+    ROCSPARSE_CHECKARG_POINTER(9, info);
 
     // Logging
     log_trace(handle,
@@ -398,40 +330,22 @@ rocsparse_status rocsparse_coosv_solve_template(rocsparse_handle          handle
               policy,
               (const void*&)temp_buffer);
 
-    log_bench(handle,
-              "./rocsparse-bench -f coosv -r",
-              replaceX<T>("X"),
-              "--mtx <matrix.mtx> ",
-              "--alpha",
-              LOG_BENCH_SCALAR_VALUE(handle, alpha_device_host));
-
-    if(rocsparse_enum_utils::is_invalid(trans))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(policy))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(1, trans);
+    ROCSPARSE_CHECKARG_ENUM(12, policy);
 
     // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
+    ROCSPARSE_CHECKARG(
+        5, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);
 
     // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
+    ROCSPARSE_CHECKARG(5,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
 
     // Check sizes
-    if(m < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_SIZE(2, m);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
 
     // Quick return if possible
     if(m == 0)
@@ -440,22 +354,15 @@ rocsparse_status rocsparse_coosv_solve_template(rocsparse_handle          handle
     }
 
     // Check pointer arguments
-    if(alpha_device_host == nullptr || x == nullptr || y == nullptr || temp_buffer == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(4, alpha_device_host);
+    ROCSPARSE_CHECKARG_POINTER(13, temp_buffer);
+    ROCSPARSE_CHECKARG_ARRAY(10, m, x);
+    ROCSPARSE_CHECKARG_ARRAY(11, m, y);
 
     // All must be null (zero matrix) or none null
-    if(!(coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr)
-       && !(coo_val != nullptr && coo_row_ind != nullptr && coo_col_ind != nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz != 0 && (coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_ARRAY(6, nnz, coo_val);
+    ROCSPARSE_CHECKARG_ARRAY(7, nnz, coo_row_ind);
+    ROCSPARSE_CHECKARG_ARRAY(8, nnz, coo_col_ind);
 
     // Buffer
     char* ptr = reinterpret_cast<char*>(temp_buffer);
@@ -468,20 +375,21 @@ rocsparse_status rocsparse_coosv_solve_template(rocsparse_handle          handle
         const I* csr_col_ind = coo_col_ind;
         const T* csr_val     = coo_val;
 
-        return rocsparse_csrsv_solve_template(handle,
-                                              trans,
-                                              m,
-                                              (int32_t)nnz,
-                                              alpha_device_host,
-                                              descr,
-                                              csr_val,
-                                              csr_row_ptr,
-                                              csr_col_ind,
-                                              info,
-                                              x,
-                                              y,
-                                              policy,
-                                              ptr);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_solve_template(handle,
+                                                                 trans,
+                                                                 m,
+                                                                 (int32_t)nnz,
+                                                                 alpha_device_host,
+                                                                 descr,
+                                                                 csr_val,
+                                                                 csr_row_ptr,
+                                                                 csr_col_ind,
+                                                                 info,
+                                                                 x,
+                                                                 y,
+                                                                 policy,
+                                                                 ptr));
+        return rocsparse_status_success;
     }
     else
     {
@@ -491,20 +399,21 @@ rocsparse_status rocsparse_coosv_solve_template(rocsparse_handle          handle
         const I* csr_col_ind = coo_col_ind;
         const T* csr_val     = coo_val;
 
-        return rocsparse_csrsv_solve_template(handle,
-                                              trans,
-                                              m,
-                                              nnz,
-                                              alpha_device_host,
-                                              descr,
-                                              csr_val,
-                                              csr_row_ptr,
-                                              csr_col_ind,
-                                              info,
-                                              x,
-                                              y,
-                                              policy,
-                                              ptr);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_solve_template(handle,
+                                                                 trans,
+                                                                 m,
+                                                                 nnz,
+                                                                 alpha_device_host,
+                                                                 descr,
+                                                                 csr_val,
+                                                                 csr_row_ptr,
+                                                                 csr_col_ind,
+                                                                 info,
+                                                                 x,
+                                                                 y,
+                                                                 policy,
+                                                                 ptr));
+        return rocsparse_status_success;
     }
 }
 

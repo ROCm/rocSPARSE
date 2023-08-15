@@ -148,33 +148,30 @@ rocsparse_status rocsparse_gemvi_dispatch(rocsparse_handle     handle,
     }
     else
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 
     return rocsparse_status_success;
 }
 
 template <typename I, typename T>
-rocsparse_status rocsparse_gemvi_template(rocsparse_handle     handle,
-                                          rocsparse_operation  trans,
-                                          I                    m,
-                                          I                    n,
-                                          const T*             alpha_device_host,
-                                          const T*             A,
-                                          I                    lda,
-                                          I                    nnz,
-                                          const T*             x_val,
-                                          const I*             x_ind,
-                                          const T*             beta_device_host,
-                                          T*                   y,
-                                          rocsparse_index_base idx_base,
-                                          void*                temp_buffer)
+rocsparse_status rocsparse_gemvi_template(rocsparse_handle     handle, //0
+                                          rocsparse_operation  trans, //1
+                                          I                    m, //2
+                                          I                    n, //3
+                                          const T*             alpha_device_host, //4
+                                          const T*             A, //5
+                                          I                    lda, //6
+                                          I                    nnz, //7
+                                          const T*             x_val, //8
+                                          const I*             x_ind, //9
+                                          const T*             beta_device_host, //10
+                                          T*                   y, //11
+                                          rocsparse_index_base idx_base, //12
+                                          void*                temp_buffer) //13
 {
     // Check for valid handle
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
     log_trace(handle,
@@ -194,44 +191,24 @@ rocsparse_status rocsparse_gemvi_template(rocsparse_handle     handle,
               (const void*&)temp_buffer);
 
     // Check operation mode
-    if(rocsparse_enum_utils::is_invalid(trans))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(1, trans);
 
     // Check index base
-    if(rocsparse_enum_utils::is_invalid(idx_base))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(12, idx_base);
 
     // Check sizes
-    if((m < 0) || (n < 0) || (nnz < 0))
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_SIZE(2, m);
+    ROCSPARSE_CHECKARG_SIZE(3, n);
+    ROCSPARSE_CHECKARG_SIZE(7, nnz);
 
     // nnz of sparse vector cannot exceed its size
-    if(nnz > n)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG(7, nnz, (nnz > n), rocsparse_status_invalid_size);
 
     // Check leading dimension
-    if(trans == rocsparse_operation_none)
-    {
-        if(lda < m)
-        {
-            return rocsparse_status_invalid_size;
-        }
-    }
-    else
-    {
-        if(lda < n)
-        {
-            return rocsparse_status_invalid_size;
-        }
-    }
+    ROCSPARSE_CHECKARG(
+        6, lda, ((lda < m) && (trans == rocsparse_operation_none)), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG(
+        6, lda, ((lda < n) && (trans != rocsparse_operation_none)), rocsparse_status_invalid_size);
 
     // Quick return if possible
     if(m == 0)
@@ -239,19 +216,19 @@ rocsparse_status rocsparse_gemvi_template(rocsparse_handle     handle,
         return rocsparse_status_success;
     }
 
+    ROCSPARSE_CHECKARG_POINTER(4, alpha_device_host);
+
     // Check invalid pointers
     if(m > 0 && n > 0 && nnz > 0)
     {
+        ROCSPARSE_CHECKARG_POINTER(5, A);
+        ROCSPARSE_CHECKARG_POINTER(8, x_val);
+        ROCSPARSE_CHECKARG_POINTER(9, x_ind);
         // Allow temp_buffer to be nullptr
-        if(A == nullptr || x_val == nullptr || x_ind == nullptr || alpha_device_host == nullptr)
-        {
-            return rocsparse_status_invalid_pointer;
-        }
     }
-    if(beta_device_host == nullptr || y == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+
+    ROCSPARSE_CHECKARG_POINTER(10, beta_device_host);
+    ROCSPARSE_CHECKARG_POINTER(11, y);
 
     // Quick return if there is no work to do - alpha can be (valid) nullptr!
     if(handle->pointer_mode == rocsparse_pointer_mode_host)
@@ -272,40 +249,40 @@ rocsparse_status rocsparse_gemvi_template(rocsparse_handle     handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        return rocsparse_gemvi_dispatch(handle,
-                                        trans,
-                                        m,
-                                        n,
-                                        alpha_device_host,
-                                        A,
-                                        lda,
-                                        nnz,
-                                        x_val,
-                                        x_ind,
-                                        beta_device_host,
-                                        y,
-                                        idx_base,
-                                        temp_buffer);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gemvi_dispatch(handle,
+                                                           trans,
+                                                           m,
+                                                           n,
+                                                           alpha_device_host,
+                                                           A,
+                                                           lda,
+                                                           nnz,
+                                                           x_val,
+                                                           x_ind,
+                                                           beta_device_host,
+                                                           y,
+                                                           idx_base,
+                                                           temp_buffer));
+        return rocsparse_status_success;
     }
     else
     {
-        return rocsparse_gemvi_dispatch(handle,
-                                        trans,
-                                        m,
-                                        n,
-                                        *alpha_device_host,
-                                        A,
-                                        lda,
-                                        nnz,
-                                        x_val,
-                                        x_ind,
-                                        *beta_device_host,
-                                        y,
-                                        idx_base,
-                                        temp_buffer);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gemvi_dispatch(handle,
+                                                           trans,
+                                                           m,
+                                                           n,
+                                                           *alpha_device_host,
+                                                           A,
+                                                           lda,
+                                                           nnz,
+                                                           x_val,
+                                                           x_ind,
+                                                           *beta_device_host,
+                                                           y,
+                                                           idx_base,
+                                                           temp_buffer));
+        return rocsparse_status_success;
     }
-
-    return rocsparse_status_internal_error;
 }
 
 /*
@@ -333,7 +310,7 @@ extern "C" {
     }                                                       \
     catch(...)                                              \
     {                                                       \
-        return exception_to_rocsparse_status();             \
+        RETURN_ROCSPARSE_EXCEPTION();                       \
     }
 
 // C-implementations
@@ -346,43 +323,44 @@ CAPI_IMPL(rocsparse_zgemvi_buffer_size, rocsparse_double_complex);
 #undef CAPI_IMPL
 
 // rocsparse_xgemvi
-#define CAPI_IMPL(name_, type_)                              \
-    rocsparse_status name_(rocsparse_handle     handle,      \
-                           rocsparse_operation  trans,       \
-                           rocsparse_int        m,           \
-                           rocsparse_int        n,           \
-                           const type_*         alpha,       \
-                           const type_*         A,           \
-                           rocsparse_int        lda,         \
-                           rocsparse_int        nnz,         \
-                           const type_*         x_val,       \
-                           const rocsparse_int* x_ind,       \
-                           const type_*         beta,        \
-                           type_*               y,           \
-                           rocsparse_index_base idx_base,    \
-                           void*                temp_buffer) \
-    {                                                        \
-        try                                                  \
-        {                                                    \
-            return rocsparse_gemvi_template(handle,          \
-                                            trans,           \
-                                            m,               \
-                                            n,               \
-                                            alpha,           \
-                                            A,               \
-                                            lda,             \
-                                            nnz,             \
-                                            x_val,           \
-                                            x_ind,           \
-                                            beta,            \
-                                            y,               \
-                                            idx_base,        \
-                                            temp_buffer);    \
-        }                                                    \
-        catch(...)                                           \
-        {                                                    \
-            return exception_to_rocsparse_status();          \
-        }                                                    \
+#define CAPI_IMPL(name_, type_)                                               \
+    rocsparse_status name_(rocsparse_handle     handle,                       \
+                           rocsparse_operation  trans,                        \
+                           rocsparse_int        m,                            \
+                           rocsparse_int        n,                            \
+                           const type_*         alpha,                        \
+                           const type_*         A,                            \
+                           rocsparse_int        lda,                          \
+                           rocsparse_int        nnz,                          \
+                           const type_*         x_val,                        \
+                           const rocsparse_int* x_ind,                        \
+                           const type_*         beta,                         \
+                           type_*               y,                            \
+                           rocsparse_index_base idx_base,                     \
+                           void*                temp_buffer)                  \
+    {                                                                         \
+        try                                                                   \
+        {                                                                     \
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_gemvi_template(handle,        \
+                                                               trans,         \
+                                                               m,             \
+                                                               n,             \
+                                                               alpha,         \
+                                                               A,             \
+                                                               lda,           \
+                                                               nnz,           \
+                                                               x_val,         \
+                                                               x_ind,         \
+                                                               beta,          \
+                                                               y,             \
+                                                               idx_base,      \
+                                                               temp_buffer)); \
+            return rocsparse_status_success;                                  \
+        }                                                                     \
+        catch(...)                                                            \
+        {                                                                     \
+            RETURN_ROCSPARSE_EXCEPTION();                                     \
+        }                                                                     \
     }
 
 // C-implementations
