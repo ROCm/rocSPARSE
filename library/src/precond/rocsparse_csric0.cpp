@@ -467,10 +467,9 @@ catch(...)
     return exception_to_rocsparse_status();
 }
 
-
 extern "C" rocsparse_status rocsparse_csric0_negative_pivot(rocsparse_handle   handle,
-                                                        rocsparse_mat_info info,
-                                                        rocsparse_int*     position)
+                                                            rocsparse_mat_info info,
+                                                            rocsparse_int*     position)
 try
 {
     // Check for valid handle and matrix descriptor
@@ -484,7 +483,8 @@ try
     }
 
     // Logging
-    log_trace(handle, "rocsparse_csric0_negative_pivot", (const void*&)info, (const void*&)position);
+    log_trace(
+        handle, "rocsparse_csric0_negative_pivot", (const void*&)info, (const void*&)position);
 
     // Check pointer arguments
     if(position == nullptr)
@@ -536,10 +536,10 @@ try
                                                stream));
 
             // ----------------------------------
-            // no enum entry for rocsparse_status_negative_pivot
-            // so return success for now
+            // TODO: no official enum entry for
+            //       rocsparse_status_negative_pivot
             // ----------------------------------
-            return rocsparse_status_success;
+            return rocsparse_status_negative_pivot;
         }
     }
     else
@@ -557,10 +557,10 @@ try
         else
         {
             // ----------------------------------
-            // no enum entry for rocsparse_status_negative_pivot
-            // so return success for now
+            // TODO: no official enum entry for
+            //       rocsparse_status_negative_pivot
             // ----------------------------------
-            return rocsparse_status_success;
+            return rocsparse_status_negative_pivot;
         }
     }
 

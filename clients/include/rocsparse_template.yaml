@@ -243,6 +243,7 @@ Functions:
   rocsparse_ccsric0: { function: csric0, <<: *single_precision_complex }
   rocsparse_zcsric0: { function: csric0, <<: *double_precision_complex }
   rocsparse_csric0_zero_pivot: { function: csric0 }
+  rocsparse_csric0_negative_pivot: { function: csric0 }
   rocsparse_csric0_clear: { function: csric0 }
   rocsparse_scsrilu0_buffer_size: { function: csrilu0, <<: *single_precision }
   rocsparse_dcsrilu0_buffer_size: { function: csrilu0, <<: *double_precision }

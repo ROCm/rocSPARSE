@@ -24,6 +24,8 @@
 #include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
+static int const neg_pivot_level = 3;
+
 template <typename T>
 void testing_csric0_bad_arg(const Arguments& arg)
 {
@@ -88,9 +90,17 @@ void testing_csric0_bad_arg(const Arguments& arg)
 #undef PARAMS
 
     // Test rocsparse_csric0_zero_pivot()
-    rocsparse_int position;
+    rocsparse_int position = -1;
     EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(nullptr, info, &position),
                             rocsparse_status_invalid_handle);
+
+    // Test rocsparse_csric0_negative_pivot()
+    rocsparse_int negative_position = -1;
+    if(neg_pivot_level >= 1)
+    {
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_negative_pivot(nullptr, info, &negative_position),
+                                rocsparse_status_invalid_handle);
+    };
 
     // Test rocsparse_csric0_clear()
     EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_clear(nullptr, info), rocsparse_status_invalid_handle);
@@ -160,6 +170,7 @@ void testing_csric0(const Arguments& arg)
         static const size_t safe_size = 100;
         size_t              buffer_size;
         rocsparse_int       pivot;
+        rocsparse_int       negative_pivot;
 
         // Allocate memory on device
         device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
@@ -200,8 +211,16 @@ void testing_csric0(const Arguments& arg)
                                                     spol,
                                                     dbuffer),
                                 (M < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
+
         EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, &pivot),
                                 rocsparse_status_success);
+
+        if(neg_pivot_level >= 2)
+        {
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_negative_pivot(handle, info, &negative_pivot),
+                                    rocsparse_status_success);
+        };
+
         EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_clear(handle, info), rocsparse_status_success);
 
         return;
@@ -220,14 +239,18 @@ void testing_csric0(const Arguments& arg)
     hcsr_val_gold = hcsr_val;
 
     // Allocate host memory for vectors
-    host_vector<T>             hcsr_val_1(nnz);
-    host_vector<T>             hcsr_val_2(nnz);
+    host_vector<T> hcsr_val_1(nnz);
+    host_vector<T> hcsr_val_2(nnz);
+
     host_vector<rocsparse_int> h_analysis_pivot_1(1);
     host_vector<rocsparse_int> h_analysis_pivot_2(1);
+
     host_vector<rocsparse_int> h_analysis_pivot_gold(1);
     host_vector<rocsparse_int> h_solve_pivot_1(1);
     host_vector<rocsparse_int> h_solve_pivot_2(1);
     host_vector<rocsparse_int> h_solve_pivot_gold(1);
+
+    host_vector<rocsparse_int> h_solve_pivot_neg(1);
 
     // Allocate device memory
     device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
@@ -295,6 +318,7 @@ void testing_csric0(const Arguments& arg)
                                                            apol,
                                                            spol,
                                                            dbuffer));
+
         EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, d_analysis_pivot_2),
                                 (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                               : rocsparse_status_success);
@@ -315,6 +339,14 @@ void testing_csric0(const Arguments& arg)
                                                                : rocsparse_status_success);
         }
 
+        if(neg_pivot_level >= 3)
+        {
+            auto st = rocsparse_csric0_negative_pivot(handle, info, h_solve_pivot_neg);
+            EXPECT_ROCSPARSE_STATUS(st,
+                                    (h_solve_pivot_neg[0] != -1) ? rocsparse_status_negative_pivot
+                                                                 : rocsparse_status_success);
+        }
+
         // Sync to force updated pivots
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
@@ -322,9 +354,24 @@ void testing_csric0(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_csric0<T>(
             handle, M, nnz, descr, dcsr_val_2, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
+
         EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, d_solve_pivot_2),
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
+
+        if(neg_pivot_level >= 4)
+        {
+           auto istat = rocsparse_csric0_negative_pivot( handle, info, h_solve_pivot_neg);
+           std::cout << "testing_csric0:  istat = " << istat 
+                     << " h_solve_pivot_neg[0] " << h_solve_pivot_neg[0]
+                     << " line " << __LINE__
+                     << "\n";
+/*
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_negative_pivot(handle, info, d_solve_pivot_2),
+                                    (h_solve_pivot_neg[0] != -1) ? rocsparse_status_negative_pivot
+                                                                 : rocsparse_status_success);
+*/
+        };
 
         // Sync to force updated pivots
         CHECK_HIP_ERROR(hipDeviceSynchronize());
@@ -443,6 +490,24 @@ void testing_csric0(const Arguments& arg)
         EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, h_solve_pivot_1),
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
+
+        if(neg_pivot_level >= 5)
+        {
+           auto istat = rocsparse_csric0_negative_pivot( handle, info, h_solve_pivot_neg);
+           std::cout << "testing_csric0:  istat = " << istat 
+                     << " h_solve_pivot_neg[0] " << h_solve_pivot_neg[0]
+                     << " line " << __LINE__
+                     << "\n";
+     
+                    
+/*
+            EXPECT_ROCSPARSE_STATUS(
+                rocsparse_csric0_negative_pivot(handle, info, h_solve_pivot_neg),
+                (h_solve_pivot_neg[0] != -1) ? rocsparse_status_negative_pivot
+                                             : rocsparse_status_success);
+*/
+
+        };
 
         gpu_solve_time_used = gpu_solve_time_used / number_hot_calls;
 

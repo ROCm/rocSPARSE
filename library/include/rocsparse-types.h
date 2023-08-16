@@ -418,6 +418,12 @@ typedef enum rocsparse_status_
     rocsparse_status_invalid_value           = 7, /**< invalid value parameter. */
     rocsparse_status_arch_mismatch           = 8, /**< device arch is not supported. */
     rocsparse_status_zero_pivot              = 9, /**< encountered zero pivot. */
+
+    /* 
+      -----------------------------------------------------------------------
+      set rocsparse_status_negative_pivot == rocsparse_status_success for now.
+      -----------------------------------------------------------------------
+    */
     rocsparse_status_negative_pivot          = rocsparse_status_success, /**< encountered negative pivot. */
     rocsparse_status_not_initialized         = 10, /**< descriptor has not been initialized. */
     rocsparse_status_type_mismatch           = 11, /**< index types do not match. */
