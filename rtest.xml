@@ -13,7 +13,7 @@
     </test>
     <test sets="hmm">
         <!-- * This test suite should be run with the command : -->
-        <!-- HSA_XNACK=1 ROCSPARSE_MALLOC_MANAGED=1 rtest.py -t hmm [...] -->
+        <!-- HSA_XNACK=1 rtest.py -t hmm [...] -->
         <run name="managed_memory">{COMMAND}:output_hmm.xml --gtest_filter=*csrmv_managed*</run>
     </test>
 </testset>

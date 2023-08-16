@@ -21,18 +21,12 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 template <typename T>
 void testing_csrmv_managed_bad_arg(const Arguments& arg)
 {
-    if(!std::getenv("ROCSPARSE_MALLOC_MANAGED"))
-    {
-        return;
-    }
-
     // check managed memory enablement
     if(!is_hmm_enabled())
     {
@@ -113,11 +107,6 @@ void testing_csrmv_managed_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_csrmv_managed(const Arguments& arg)
 {
-    if(!std::getenv("ROCSPARSE_MALLOC_MANAGED"))
-    {
-        return;
-    }
-
     // check managed memory enablement
     if(!is_hmm_enabled())
     {
@@ -161,51 +150,31 @@ void testing_csrmv_managed(const Arguments& arg)
     rocsparse_matrix_factory<T> matrix_factory(arg, arg.unit_check ? to_int : false, full_rank);
 
     // Generate matrix
-    std::vector<rocsparse_int> trow_ptr;
-    std::vector<rocsparse_int> tcol_ind;
-    std::vector<T>             tval;
+    host_vector<rocsparse_int> trow_ptr;
+    host_vector<rocsparse_int> tcol_ind;
+    host_vector<T>             tval;
 
     // Sample matrix
     rocsparse_int nnz;
     matrix_factory.init_csr(trow_ptr, tcol_ind, tval, M, N, nnz, base);
 
     // Allocate host memory for vectors
-    std::vector<T> tx(N);
-    std::vector<T> ty(M);
+    host_vector<T> tx(N);
+    host_vector<T> ty(M);
 
     // Initialize data on CPU
     rocsparse_init<T>(tx, 1, N, 1);
     rocsparse_init<T>(ty, 1, M, 1);
 
     // Allocate managed memory
-    rocsparse_int* csr_row_ptr;
-    rocsparse_int* csr_col_ind;
-    T*             csr_val;
-    T*             x;
-    T*             y_1;
-    T*             y_2;
-    T*             alpha;
-    T*             beta;
-
-    CHECK_HIP_ERROR(
-        rocsparse_hipMallocManaged((void**)&csr_row_ptr, sizeof(rocsparse_int) * (M + 1)));
-    if(nnz > 0)
-    {
-        CHECK_HIP_ERROR(
-            rocsparse_hipMallocManaged((void**)&csr_col_ind, sizeof(rocsparse_int) * nnz));
-        CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&csr_val, sizeof(T) * nnz));
-    }
-    if(M > 0)
-    {
-        CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&y_1, sizeof(T) * M));
-        CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&y_2, sizeof(T) * M));
-    }
-    if(N > 0)
-    {
-        CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&x, sizeof(T) * N));
-    }
-    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&alpha, sizeof(T)));
-    CHECK_HIP_ERROR(rocsparse_hipMallocManaged((void**)&beta, sizeof(T)));
+    managed_dense_vector<rocsparse_int> csr_row_ptr(M + 1);
+    managed_dense_vector<rocsparse_int> csr_col_ind(nnz);
+    managed_dense_vector<T>             csr_val(nnz);
+    managed_dense_vector<T>             x(N);
+    managed_dense_vector<T>             y_1(M);
+    managed_dense_vector<T>             y_2(M);
+    managed_scalar<T>                   alpha;
+    managed_scalar<T>                   beta;
 
     // Copy data to managed arrays
     for(rocsparse_int i = 0; i < M + 1; i++)
@@ -239,6 +208,7 @@ void testing_csrmv_managed(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_analysis<T>(
             handle, trans, M, N, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info));
     }
+    CHECK_HIP_ERROR(hipDeviceSynchronize());
 
     if(arg.unit_check)
     {
@@ -279,7 +249,7 @@ void testing_csrmv_managed(const Arguments& arg)
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // CPU y
-        std::vector<T> y_gold(M);
+        host_vector<T> y_gold(M);
         for(rocsparse_int i = 0; i < M; i++)
         {
             y_gold[i] = ty[i];
@@ -291,12 +261,12 @@ void testing_csrmv_managed(const Arguments& arg)
                    N,
                    nnz,
                    *alpha,
-                   csr_row_ptr,
-                   csr_col_ind,
-                   csr_val,
-                   x,
+                   csr_row_ptr.data(),
+                   csr_col_ind.data(),
+                   csr_val.data(),
+                   x.data(),
                    *beta,
-                   &y_gold[0],
+                   y_gold.data(),
                    base,
                    rocsparse_matrix_type_general,
                    alg,
@@ -390,24 +360,6 @@ void testing_csrmv_managed(const Arguments& arg)
     {
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_clear(handle, info));
     }
-
-    CHECK_HIP_ERROR(rocsparse_hipFree(csr_row_ptr));
-    if(nnz > 0)
-    {
-        CHECK_HIP_ERROR(rocsparse_hipFree(csr_col_ind));
-        CHECK_HIP_ERROR(rocsparse_hipFree(csr_val));
-    }
-    if(M > 0)
-    {
-        CHECK_HIP_ERROR(rocsparse_hipFree(y_1));
-        CHECK_HIP_ERROR(rocsparse_hipFree(y_2));
-    }
-    if(N > 0)
-    {
-        CHECK_HIP_ERROR(rocsparse_hipFree(x));
-    }
-    CHECK_HIP_ERROR(rocsparse_hipFree(alpha));
-    CHECK_HIP_ERROR(rocsparse_hipFree(beta));
 }
 
 #define INSTANTIATE(TYPE)                                                    \

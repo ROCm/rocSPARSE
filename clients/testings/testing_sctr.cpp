@@ -121,8 +121,8 @@ void testing_sctr(const Arguments& arg)
         // CPU sctr
         host_sctr<rocsparse_int, T>(nnz, hx_val, hx_ind, hy_gold, base);
 
-        unit_check_segments<T>(M, hy_gold, hy_1);
-        unit_check_segments<T>(M, hy_gold, hy_2);
+        hy_gold.unit_check(hy_1);
+        hy_gold.unit_check(hy_2);
     }
 
     if(arg.timing)
