@@ -336,6 +336,7 @@ void testing_csrilu0(const Arguments& arg)
                                 (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                               : rocsparse_status_success);
 
+
         // Sync to force updated pivots
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
@@ -477,12 +478,26 @@ void testing_csrilu0(const Arguments& arg)
 
         double gpu_gbyte = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
 
+        rocsparse_int pivot = -1;
+        if(h_analysis_pivot_1[0] == -1)
+        {
+            pivot = h_solve_pivot_1[0];
+        }
+        else if(h_solve_pivot_1[0] == -1)
+        {
+            pivot = h_analysis_pivot_1[0];
+        }
+        else
+        {
+            pivot = std::min(h_analysis_pivot_1[0], h_solve_pivot_1[0]);
+        };
+
         display_timing_info("M",
                             M,
                             "nnz",
                             nnz,
                             "pivot",
-                            std::min(h_analysis_pivot_gold[0], h_solve_pivot_gold[0]),
+                            pivot,
                             "analysis policy",
                             rocsparse_analysis2string(apol),
                             "solve policy",
