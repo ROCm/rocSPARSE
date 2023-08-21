@@ -26,6 +26,7 @@
 
 #include "envariables.h"
 #include "status.h"
+#include <iostream>
 
 ///
 /// @brief Structure to store debug global variables.
@@ -33,13 +34,10 @@
 struct rocsparse_debug_variables_st
 {
 private:
-    bool debug         = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG);
-    bool debug_verbose = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_VERBOSE);
-    bool debug_arguments_verbose
-        = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_VERBOSE)
-          || ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE);
-    bool debug_arguments = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG)
-                           || ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_ARGUMENTS);
+    bool debug;
+    bool debug_arguments;
+    bool debug_verbose;
+    bool debug_arguments_verbose;
 
 public:
     bool get_debug() const;
@@ -56,7 +54,7 @@ public:
 struct rocsparse_debug_st
 {
 private:
-    rocsparse_debug_variables_st m_var;
+    rocsparse_debug_variables_st m_var{};
 
 public:
     static rocsparse_debug_st& instance()
@@ -73,7 +71,26 @@ public:
     ~rocsparse_debug_st() = default;
 
 private:
-    rocsparse_debug_st() = default;
+    rocsparse_debug_st()
+    {
+        const bool debug = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG);
+        m_var.set_debug(debug);
+
+        const bool debug_arguments
+            = (!getenv(rocsparse_envariables::names[rocsparse_envariables::DEBUG_ARGUMENTS]))
+                  ? debug
+                  : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG);
+        m_var.set_debug_arguments(debug_arguments);
+
+        m_var.set_debug_verbose(
+            (!getenv(rocsparse_envariables::names[rocsparse_envariables::DEBUG_VERBOSE]))
+                ? debug
+                : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_VERBOSE));
+        m_var.set_debug_arguments_verbose(
+            (!getenv(rocsparse_envariables::names[rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE]))
+                ? debug_arguments
+                : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE));
+    };
 };
 
 #define rocsparse_debug_variables rocsparse_debug_st::instance().var()

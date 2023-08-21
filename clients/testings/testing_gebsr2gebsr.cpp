@@ -272,7 +272,6 @@ void testing_gebsr2gebsr(const Arguments& arg)
                             row_block_dim_C,
                             col_block_dim_C,
                             base_C);
-
         hC_gold.near_check(dC);
     }
 
