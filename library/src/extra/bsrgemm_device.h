@@ -1222,12 +1222,12 @@ ROCSPARSE_DEVICE_ILF void
     while(chunk_begin < nb)
     {
         // Initialize row nnz table and accumulator
-        for(int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
+        for(unsigned int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
         {
             table[i] = 0;
         }
 
-        for(int i = hipThreadIdx_x; i < BLOCKDIM * BLOCKDIM * CHUNKSIZE; i += BLOCKSIZE)
+        for(unsigned int i = hipThreadIdx_x; i < BLOCKDIM * BLOCKDIM * CHUNKSIZE; i += BLOCKSIZE)
         {
             data[i] = static_cast<T>(0);
         }
@@ -1406,7 +1406,7 @@ ROCSPARSE_DEVICE_ILF void
         __syncthreads();
 
         // Segmented wavefront reduction
-        for(int j = 1; j < CHUNKSIZE; j <<= 1)
+        for(unsigned int j = 1; j < CHUNKSIZE; j <<= 1)
         {
             if(tid >= j)
             {
@@ -1432,7 +1432,7 @@ ROCSPARSE_DEVICE_ILF void
 
         __syncthreads();
 
-        for(int i = wid; i < CHUNKSIZE; i += (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)))
+        for(unsigned int i = wid; i < CHUNKSIZE; i += (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)))
         {
             if(table[i])
             {
@@ -1531,12 +1531,12 @@ ROCSPARSE_DEVICE_ILF void
     while(chunk_begin < nb)
     {
         // Initialize row nnz table and accumulator
-        for(int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
+        for(unsigned int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
         {
             table[i] = 0;
         }
 
-        for(int i = hipThreadIdx_x; i < BLOCKDIM * BLOCKDIM * CHUNKSIZE; i += BLOCKSIZE)
+        for(unsigned int i = hipThreadIdx_x; i < BLOCKDIM * BLOCKDIM * CHUNKSIZE; i += BLOCKSIZE)
         {
             data[i] = static_cast<T>(0);
         }

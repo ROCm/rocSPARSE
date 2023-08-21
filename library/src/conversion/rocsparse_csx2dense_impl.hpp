@@ -38,7 +38,7 @@ rocsparse_status rocsparse_csx2dense_checkarg(rocsparse_handle          handle, 
                                               const I*                  csx_row_col_ptr, //5
                                               const J*                  csx_col_row_ind, //6
                                               T*                        A, //7
-                                              I                         lda, //8
+                                              int64_t                   lda, //8
                                               rocsparse_order           order) //9
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -140,7 +140,7 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle, //0
                                           const I*                  csx_row_col_ptr, //5
                                           const J*                  csx_col_row_ind, //6
                                           T*                        A, //7
-                                          I                         lda, //8
+                                          int64_t                   lda, //8
                                           rocsparse_order           order) //9
 {
     static constexpr bool is_row_oriented = (rocsparse_direction_row == DIRA);

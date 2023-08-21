@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,8 @@
 #include "common.h"
 
 template <typename T>
-ROCSPARSE_DEVICE_ILF void bsrsm_copy_scale_device(rocsparse_int m,
-                                                  rocsparse_int n,
-                                                  T             alpha,
-                                                  const T*      B,
-                                                  rocsparse_int ldb,
-                                                  T*            X,
-                                                  rocsparse_int ldx)
+ROCSPARSE_DEVICE_ILF void bsrsm_copy_scale_device(
+    rocsparse_int m, rocsparse_int n, T alpha, const T* B, int64_t ldb, T* X, int64_t ldx)
 {
     rocsparse_int row = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -44,8 +39,8 @@ ROCSPARSE_DEVICE_ILF void bsrsm_copy_scale_device(rocsparse_int m,
 
     for(int i = 0; i < n; ++i)
     {
-        rocsparse_int idx_B = row * ldb + i;
-        rocsparse_int idx_X = row * ldx + i;
+        int64_t idx_B = row * ldb + i;
+        int64_t idx_X = row * ldx + i;
 
         X[idx_X] = alpha * B[idx_B];
     }

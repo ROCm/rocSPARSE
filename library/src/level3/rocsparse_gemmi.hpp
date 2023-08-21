@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,13 +41,13 @@ ROCSPARSE_KERNEL(BLOCKSIZE)
 void gemmit_kernel(rocsparse_int m,
                    U             alpha_device_host,
                    const T* __restrict__ A,
-                   rocsparse_int lda,
+                   int64_t lda,
                    const rocsparse_int* __restrict__ csr_row_ptr,
                    const rocsparse_int* __restrict__ csr_col_ind,
                    const T* __restrict__ csr_val,
                    U beta_device_host,
                    T* __restrict__ C,
-                   rocsparse_int        ldc,
+                   int64_t              ldc,
                    rocsparse_index_base base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -66,14 +66,14 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
                                           rocsparse_int             nnz,
                                           const T*                  alpha,
                                           const T*                  A,
-                                          rocsparse_int             lda,
+                                          int64_t                   lda,
                                           const rocsparse_mat_descr descr,
                                           const T*                  csr_val,
                                           const rocsparse_int*      csr_row_ptr,
                                           const rocsparse_int*      csr_col_ind,
                                           const T*                  beta,
                                           T*                        C,
-                                          rocsparse_int             ldc)
+                                          int64_t                   ldc)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)

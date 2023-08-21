@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -62,5 +62,17 @@ Tests:
   M: [2000, 4000]
   N: [2000, 4000]
   denseld: [ 8000 ]
+  baseA: [rocsparse_index_base_one]
+  order: [rocsparse_order_row, rocsparse_order_column]
+
+- name: sparse_to_dense_coo
+  category: stress
+  hardware: [gfx90a]
+  function: sparse_to_dense_coo
+  indextype: *i32
+  precision: *single_only_precisions
+  M: [2]
+  N: [2]
+  denseld: [ 2400000000 ]
   baseA: [rocsparse_index_base_one]
   order: [rocsparse_order_row, rocsparse_order_column]

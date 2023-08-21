@@ -171,7 +171,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                                          (I)mat_A->cols,
                                                          mat_B->descr,
                                                          (const T*)mat_A->const_values,
-                                                         (I)mat_A->ld,
+                                                         mat_A->ld,
                                                          (I*)temp_buffer,
                                                          (I*)&mat_B->nnz));
             return rocsparse_status_success;
@@ -185,7 +185,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                                          (J)mat_A->cols,
                                                          mat_B->descr,
                                                          (const T*)mat_A->const_values,
-                                                         (I)mat_A->ld,
+                                                         mat_A->ld,
                                                          (I*)temp_buffer,
                                                          (I*)&mat_B->nnz));
             return rocsparse_status_success;
@@ -199,7 +199,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                                          (J)mat_A->cols,
                                                          mat_B->descr,
                                                          (const T*)mat_A->const_values,
-                                                         (I)mat_A->ld,
+                                                         mat_A->ld,
                                                          (I*)temp_buffer,
                                                          (I*)&mat_B->nnz));
             return rocsparse_status_success;
@@ -215,7 +215,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                                                (I)mat_A->cols,
                                                                mat_B->descr,
                                                                (const T*)mat_A->const_values,
-                                                               (I)mat_A->ld,
+                                                               mat_A->ld,
                                                                (I*)temp_buffer,
                                                                (T*)mat_B->val_data,
                                                                (I*)mat_B->row_data,
@@ -233,7 +233,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                                               (J)mat_A->cols,
                                                               mat_B->descr,
                                                               (const T*)mat_A->const_values,
-                                                              (I)mat_A->ld,
+                                                              mat_A->ld,
                                                               (I*)temp_buffer,
                                                               (T*)mat_B->val_data,
                                                               (I*)mat_B->row_data,
@@ -251,7 +251,7 @@ rocsparse_status rocsparse_dense_to_sparse_template(rocsparse_handle            
                                                                  (J)mat_A->cols,
                                                                  mat_B->descr,
                                                                  (const T*)mat_A->const_values,
-                                                                 (I)mat_A->ld,
+                                                                 mat_A->ld,
                                                                  (I*)temp_buffer,
                                                                  (T*)mat_B->val_data,
                                                                  (I*)mat_B->col_data,

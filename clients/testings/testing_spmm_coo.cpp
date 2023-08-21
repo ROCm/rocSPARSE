@@ -101,15 +101,17 @@ void testing_spmm_coo_bad_arg(const Arguments& arg)
 template <typename I, typename T>
 void testing_spmm_coo(const Arguments& arg)
 {
-    I                    M       = arg.M;
-    I                    N       = arg.N;
-    I                    K       = arg.K;
-    rocsparse_operation  trans_A = arg.transA;
-    rocsparse_operation  trans_B = arg.transB;
-    rocsparse_index_base base    = arg.baseA;
-    rocsparse_spmm_alg   alg     = arg.spmm_alg;
-    rocsparse_order      order_B = arg.orderB;
-    rocsparse_order      order_C = arg.orderC;
+    I                    M               = arg.M;
+    I                    N               = arg.N;
+    I                    K               = arg.K;
+    rocsparse_operation  trans_A         = arg.transA;
+    rocsparse_operation  trans_B         = arg.transB;
+    rocsparse_index_base base            = arg.baseA;
+    rocsparse_spmm_alg   alg             = arg.spmm_alg;
+    rocsparse_order      order_B         = arg.orderB;
+    rocsparse_order      order_C         = arg.orderC;
+    rocsparse_int        ld_multiplier_B = arg.ld_multiplier_B;
+    rocsparse_int        ld_multiplier_C = arg.ld_multiplier_C;
 
     T halpha = arg.get_alpha<T>();
     T hbeta  = arg.get_beta<T>();
@@ -120,95 +122,6 @@ void testing_spmm_coo(const Arguments& arg)
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
-
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || K <= 0)
-    {
-        // M == N == 0 means nnz can only be 0, too
-        static const I safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<I> dcoo_row_ind(safe_size);
-        device_vector<I> dcoo_col_ind(safe_size);
-        device_vector<T> dcoo_val(safe_size);
-        device_vector<T> dB(safe_size);
-        device_vector<T> dC(safe_size);
-
-        // Check SpMM when structures can be created
-        if(M == 0 && N == 0 && K == 0)
-        {
-            // Pointer mode
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-            I A_m = 0;
-            I A_n = 0;
-            I B_m = 0;
-            I B_n = 0;
-            I C_m = 0;
-            I C_n = 0;
-
-            I ldb = 0;
-            I ldc = 0;
-
-            // Check structures
-            int64_t nnz_A = 0;
-
-            rocsparse_local_spmat A(
-                A_m, A_n, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
-            rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order_B);
-            rocsparse_local_dnmat C(C_m, C_n, ldc, dC, ttype, order_C);
-
-            size_t buffer_size;
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                                   trans_A,
-                                                   trans_B,
-                                                   &halpha,
-                                                   A,
-                                                   B,
-                                                   &hbeta,
-                                                   C,
-                                                   ttype,
-                                                   alg,
-                                                   rocsparse_spmm_stage_buffer_size,
-                                                   &buffer_size,
-                                                   nullptr),
-                                    rocsparse_status_success);
-
-            void* dbuffer;
-            CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, safe_size));
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                                   trans_A,
-                                                   trans_B,
-                                                   &halpha,
-                                                   A,
-                                                   B,
-                                                   &hbeta,
-                                                   C,
-                                                   ttype,
-                                                   alg,
-                                                   rocsparse_spmm_stage_preprocess,
-                                                   &buffer_size,
-                                                   dbuffer),
-                                    rocsparse_status_success);
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                                   trans_A,
-                                                   trans_B,
-                                                   &halpha,
-                                                   A,
-                                                   B,
-                                                   &hbeta,
-                                                   C,
-                                                   ttype,
-                                                   alg,
-                                                   rocsparse_spmm_stage_compute,
-                                                   &buffer_size,
-                                                   dbuffer),
-                                    rocsparse_status_success);
-            CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
-        }
-
-        return;
-    }
 
     // Allocate host memory for matrix
     host_vector<I> hcoo_row_ind;
@@ -235,10 +148,13 @@ void testing_spmm_coo(const Arguments& arg)
     I C_m = M;
     I C_n = N;
 
-    I ldb = (order_B == rocsparse_order_column)
-                ? ((trans_B == rocsparse_operation_none) ? (2 * K) : (2 * N))
-                : ((trans_B == rocsparse_operation_none) ? (2 * N) : (2 * K));
-    I ldc = (order_C == rocsparse_order_column) ? (2 * M) : (2 * N);
+    int64_t ldb = (order_B == rocsparse_order_column)
+                      ? ((trans_B == rocsparse_operation_none) ? (int64_t(ld_multiplier_B) * K)
+                                                               : (int64_t(ld_multiplier_B) * N))
+                      : ((trans_B == rocsparse_operation_none) ? (int64_t(ld_multiplier_B) * N)
+                                                               : (int64_t(ld_multiplier_B) * K));
+    int64_t ldc = (order_C == rocsparse_order_column) ? (int64_t(ld_multiplier_C) * M)
+                                                      : (int64_t(ld_multiplier_C) * N);
 
     int64_t nrowB = (order_B == rocsparse_order_column) ? ldb : B_m;
     int64_t ncolB = (order_B == rocsparse_order_column) ? B_n : ldb;

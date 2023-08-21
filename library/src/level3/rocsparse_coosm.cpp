@@ -42,7 +42,7 @@ rocsparse_status rocsparse_coosm_buffer_size_template(rocsparse_handle          
                                                       const I*                  coo_row_ind,
                                                       const I*                  coo_col_ind,
                                                       const T*                  B,
-                                                      I                         ldb,
+                                                      int64_t                   ldb,
                                                       rocsparse_mat_info        info,
                                                       rocsparse_solve_policy    policy,
                                                       size_t*                   buffer_size)
@@ -234,7 +234,7 @@ rocsparse_status rocsparse_coosm_analysis_template(rocsparse_handle          han
                                                    const I*                  coo_row_ind,
                                                    const I*                  coo_col_ind,
                                                    const T*                  B,
-                                                   I                         ldb,
+                                                   int64_t                   ldb,
                                                    rocsparse_mat_info        info,
                                                    rocsparse_analysis_policy analysis,
                                                    rocsparse_solve_policy    solve,
@@ -425,7 +425,7 @@ rocsparse_status rocsparse_coosm_solve_template(rocsparse_handle          handle
                                                 const I*                  coo_row_ind,
                                                 const I*                  coo_col_ind,
                                                 T*                        B,
-                                                I                         ldb,
+                                                int64_t                   ldb,
                                                 rocsparse_mat_info        info,
                                                 rocsparse_solve_policy    policy,
                                                 void*                     temp_buffer)
@@ -583,7 +583,7 @@ rocsparse_status rocsparse_coosm_solve_template(rocsparse_handle          handle
         const ITYPE*              coo_row_ind,                      \
         const ITYPE*              coo_col_ind,                      \
         const TTYPE*              B,                                \
-        ITYPE                     ldb,                              \
+        int64_t                   ldb,                              \
         rocsparse_mat_info        info,                             \
         rocsparse_solve_policy    policy,                           \
         size_t*                   buffer_size);
@@ -612,7 +612,7 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
         const ITYPE*              coo_row_ind,                   \
         const ITYPE*              coo_col_ind,                   \
         const TTYPE*              B,                             \
-        ITYPE                     ldb,                           \
+        int64_t                   ldb,                           \
         rocsparse_mat_info        info,                          \
         rocsparse_analysis_policy analysis,                      \
         rocsparse_solve_policy    solve,                         \
@@ -641,7 +641,7 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
                                                              const ITYPE*              coo_row_ind, \
                                                              const ITYPE*              coo_col_ind, \
                                                              TTYPE*                    B,           \
-                                                             ITYPE                     ldb,         \
+                                                             int64_t                   ldb,         \
                                                              rocsparse_mat_info        info,        \
                                                              rocsparse_solve_policy    policy,      \
                                                              void*                     temp_buffer);

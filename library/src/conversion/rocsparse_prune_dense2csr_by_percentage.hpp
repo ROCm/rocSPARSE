@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ rocsparse_status
                                                                  rocsparse_int    m,
                                                                  rocsparse_int    n,
                                                                  const T*         A,
-                                                                 rocsparse_int    lda,
+                                                                 int64_t          lda,
                                                                  T                percentage,
                                                                  const rocsparse_mat_descr descr,
                                                                  const T*                  csr_val,
@@ -47,7 +47,7 @@ rocsparse_status
                                                          rocsparse_int             m,
                                                          rocsparse_int             n,
                                                          const T*                  A,
-                                                         rocsparse_int             lda,
+                                                         int64_t                   lda,
                                                          T                         percentage,
                                                          const rocsparse_mat_descr descr,
                                                          rocsparse_int*            csr_row_ptr,
@@ -60,7 +60,7 @@ rocsparse_status rocsparse_prune_dense2csr_by_percentage_template(rocsparse_hand
                                                                   rocsparse_int    m,
                                                                   rocsparse_int    n,
                                                                   const T*         A,
-                                                                  rocsparse_int    lda,
+                                                                  int64_t          lda,
                                                                   T                percentage,
                                                                   const rocsparse_mat_descr descr,
                                                                   T*                        csr_val,

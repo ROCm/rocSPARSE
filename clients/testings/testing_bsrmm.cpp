@@ -299,14 +299,16 @@ void testing_bsrmm_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_bsrmm(const Arguments& arg)
 {
-    rocsparse_int        M         = arg.M;
-    rocsparse_int        N         = arg.N;
-    rocsparse_int        K         = arg.K;
-    rocsparse_int        block_dim = arg.block_dim;
-    rocsparse_operation  transA    = arg.transA;
-    rocsparse_operation  transB    = arg.transB;
-    rocsparse_direction  direction = arg.direction;
-    rocsparse_index_base base      = arg.baseA;
+    rocsparse_int        M               = arg.M;
+    rocsparse_int        N               = arg.N;
+    rocsparse_int        K               = arg.K;
+    rocsparse_int        block_dim       = arg.block_dim;
+    rocsparse_operation  transA          = arg.transA;
+    rocsparse_operation  transB          = arg.transB;
+    rocsparse_direction  direction       = arg.direction;
+    rocsparse_index_base base            = arg.baseA;
+    rocsparse_int        ld_multiplier_B = arg.ld_multiplier_B;
+    rocsparse_int        ld_multiplier_C = arg.ld_multiplier_C;
 
     rocsparse_int Mb = (M + block_dim - 1) / block_dim;
     rocsparse_int Kb = (K + block_dim - 1) / block_dim;
@@ -336,9 +338,13 @@ void testing_bsrmm(const Arguments& arg)
     K = Kb * dA.col_block_dim;
 
     // Allocate B matrix
-    host_dense_matrix<T> hB_temp((transB == rocsparse_operation_none) ? 2 * K : 2 * N,
+    host_dense_matrix<T> hB_temp((transB == rocsparse_operation_none)
+                                     ? int64_t(ld_multiplier_B) * K
+                                     : int64_t(ld_multiplier_B) * N,
                                  (transB == rocsparse_operation_none) ? N : K);
-    device_dense_matrix<T> dB_temp((transB == rocsparse_operation_none) ? 2 * K : 2 * N,
+    device_dense_matrix<T> dB_temp((transB == rocsparse_operation_none)
+                                       ? int64_t(ld_multiplier_B) * K
+                                       : int64_t(ld_multiplier_B) * N,
                                    (transB == rocsparse_operation_none) ? N : K);
     rocsparse_matrix_utils::init(hB_temp);
     dB_temp.transfer_from(hB_temp);
@@ -347,22 +353,26 @@ void testing_bsrmm(const Arguments& arg)
     host_dense_matrix_view<T> hB((transB == rocsparse_operation_none) ? K : N,
                                  (transB == rocsparse_operation_none) ? N : K,
                                  hB_temp.data(),
-                                 (transB == rocsparse_operation_none) ? 2 * K : 2 * N);
+                                 (transB == rocsparse_operation_none)
+                                     ? int64_t(ld_multiplier_B) * K
+                                     : int64_t(ld_multiplier_B) * N);
 
     device_dense_matrix_view<T> dB((transB == rocsparse_operation_none) ? K : N,
                                    (transB == rocsparse_operation_none) ? N : K,
                                    dB_temp.data(),
-                                   (transB == rocsparse_operation_none) ? 2 * K : 2 * N);
+                                   (transB == rocsparse_operation_none)
+                                       ? int64_t(ld_multiplier_B) * K
+                                       : int64_t(ld_multiplier_B) * N);
 
     // Allocate C matrix
-    host_dense_matrix<T>   hC_temp(2 * M, N);
-    device_dense_matrix<T> dC_temp(2 * M, N);
+    host_dense_matrix<T>   hC_temp(int64_t(ld_multiplier_C) * M, N);
+    device_dense_matrix<T> dC_temp(int64_t(ld_multiplier_C) * M, N);
     rocsparse_matrix_utils::init(hC_temp);
     dC_temp.transfer_from(hC_temp);
 
     // Layout of C matrix
-    host_dense_matrix_view<T>   hC(M, N, hC_temp.data(), 2 * M);
-    device_dense_matrix_view<T> dC(M, N, dC_temp.data(), 2 * M);
+    host_dense_matrix_view<T>   hC(M, N, hC_temp.data(), int64_t(ld_multiplier_C) * M);
+    device_dense_matrix_view<T> dC(M, N, dC_temp.data(), int64_t(ld_multiplier_C) * M);
 
 #define PARAMS(alpha_, dA_, dB_, beta_, dC_)                                                 \
     handle, direction, transA, transB, Mb, N, Kb, dA_.nnzb, alpha_, descr, dA_.val, dA_.ptr, \

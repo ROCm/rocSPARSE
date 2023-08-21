@@ -38,17 +38,17 @@ template <unsigned int WF_SIZE,
 ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  trans_B,
                                                           int64_t              nnz,
                                                           I                    nstart,
-                                                          I                    batch_stride_A,
+                                                          int64_t              batch_stride_A,
                                                           T                    alpha,
                                                           const I*             coo_row_ind,
                                                           const I*             coo_col_ind,
                                                           const A*             coo_val,
                                                           const B*             dense_B,
-                                                          I                    ldb,
-                                                          I                    batch_stride_B,
+                                                          int64_t              ldb,
+                                                          int64_t              batch_stride_B,
                                                           C*                   dense_C,
-                                                          I                    ldc,
-                                                          I                    batch_stride_C,
+                                                          int64_t              ldc,
+                                                          int64_t              batch_stride_C,
                                                           rocsparse_order      order_C,
                                                           rocsparse_index_base idx_base)
 {
@@ -95,7 +95,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
         {
             if(trans_B == rocsparse_operation_conjugate_transpose)
             {
-                for(I p = 0; p < COLS; p++)
+                for(unsigned int p = 0; p < COLS; p++)
                 {
                     val[p] = v
                              * rocsparse_conj(
@@ -104,7 +104,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
             }
             else
             {
-                for(I p = 0; p < COLS; p++)
+                for(unsigned int p = 0; p < COLS; p++)
                 {
                     val[p] = v * dense_B[c * ldb + (col_offset + p) + batch_stride_B * batch];
                 }
@@ -114,7 +114,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
         {
             if(trans_B == rocsparse_operation_conjugate_transpose)
             {
-                for(I p = 0; p < COLS; p++)
+                for(unsigned int p = 0; p < COLS; p++)
                 {
                     val[p] = v
                              * rocsparse_conj(
@@ -123,7 +123,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
             }
             else
             {
-                for(I p = 0; p < COLS; p++)
+                for(unsigned int p = 0; p < COLS; p++)
                 {
                     val[p] = v * dense_B[(col_offset + p) * ldb + c + batch_stride_B * batch];
                 }
@@ -138,7 +138,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
             I prevrow = shared_row[WF_SIZE - 1];
             if(row == prevrow)
             {
-                for(I p = 0; p < COLS; p++)
+                for(unsigned int p = 0; p < COLS; p++)
                 {
                     val[p] += shared_val[p][WF_SIZE - 1];
                 }
@@ -147,7 +147,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
             {
                 if(order_C == rocsparse_order_column)
                 {
-                    for(I p = 0; p < COLS; p++)
+                    for(unsigned int p = 0; p < COLS; p++)
                     {
                         rocsparse_atomic_add(
                             &dense_C[prevrow + (col_offset + p) * ldc + batch_stride_C * batch],
@@ -156,7 +156,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
                 }
                 else
                 {
-                    for(I p = 0; p < COLS; p++)
+                    for(unsigned int p = 0; p < COLS; p++)
                     {
                         rocsparse_atomic_add(
                             &dense_C[(col_offset + p) + prevrow * ldc + batch_stride_C * batch],
@@ -168,7 +168,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
 
         __syncthreads();
 
-        for(I p = 0; p < COLS; p++)
+        for(unsigned int p = 0; p < COLS; p++)
         {
             shared_val[p][lid] = val[p];
         }
@@ -178,13 +178,13 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
 
 #pragma unroll
         // Segmented wavefront reduction
-        for(int j = 1; j < WF_SIZE; j <<= 1)
+        for(unsigned int j = 1; j < WF_SIZE; j <<= 1)
         {
             if(lid >= j)
             {
                 if(row == shared_row[lid - j])
                 {
-                    for(I p = 0; p < COLS; p++)
+                    for(unsigned int p = 0; p < COLS; p++)
                     {
                         val[p] += shared_val[p][lid - j];
                     }
@@ -192,7 +192,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
             }
             __syncthreads();
 
-            for(I p = 0; p < COLS; p++)
+            for(unsigned int p = 0; p < COLS; p++)
             {
                 shared_val[p][lid] = val[p];
             }
@@ -208,7 +208,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
             {
                 if(order_C == rocsparse_order_column)
                 {
-                    for(I p = 0; p < COLS; p++)
+                    for(unsigned int p = 0; p < COLS; p++)
                     {
                         rocsparse_atomic_add(
                             &dense_C[row + (col_offset + p) * ldc + batch_stride_C * batch],
@@ -217,7 +217,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
                 }
                 else
                 {
-                    for(I p = 0; p < COLS; p++)
+                    for(unsigned int p = 0; p < COLS; p++)
                     {
                         rocsparse_atomic_add(
                             &dense_C[(col_offset + p) + row * ldc + batch_stride_C * batch],
@@ -235,7 +235,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
     {
         if(order_C == rocsparse_order_column)
         {
-            for(I p = 0; p < COLS; p++)
+            for(unsigned int p = 0; p < COLS; p++)
             {
                 rocsparse_atomic_add(
                     &dense_C[row + (col_offset + p) * ldc + batch_stride_C * batch], val[p]);
@@ -243,7 +243,7 @@ ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  t
         }
         else
         {
-            for(I p = 0; p < COLS; p++)
+            for(unsigned int p = 0; p < COLS; p++)
             {
                 rocsparse_atomic_add(
                     &dense_C[(col_offset + p) + row * ldc + batch_stride_C * batch], val[p]);
@@ -266,17 +266,17 @@ ROCSPARSE_KERNEL(WF_SIZE)
 void coommnn_segmented_atomic(rocsparse_operation trans_B,
                               int64_t             nnz,
                               I                   n,
-                              I                   batch_stride_A,
+                              int64_t             batch_stride_A,
                               U                   alpha_device_host,
                               const I* __restrict__ coo_row_ind,
                               const I* __restrict__ coo_col_ind,
                               const A* __restrict__ coo_val,
                               const B* __restrict__ dense_B,
-                              I ldb,
-                              I batch_stride_B,
+                              int64_t ldb,
+                              int64_t batch_stride_B,
                               C* __restrict__ dense_C,
-                              I                    ldc,
-                              I                    batch_stride_C,
+                              int64_t              ldc,
+                              int64_t              batch_stride_C,
                               rocsparse_order      order_C,
                               rocsparse_index_base idx_base)
 {
@@ -357,22 +357,22 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
                                                            I                   k,
                                                            int64_t             nnz,
                                                            I                   batch_count_A,
-                                                           I                   batch_stride_A,
+                                                           int64_t             batch_stride_A,
                                                            U                   alpha_device_host,
                                                            const rocsparse_mat_descr descr,
                                                            const A*                  coo_val,
                                                            const I*                  coo_row_ind,
                                                            const I*                  coo_col_ind,
                                                            const B*                  dense_B,
-                                                           I                         ldb,
+                                                           int64_t                   ldb,
                                                            I                         batch_count_B,
-                                                           I                         batch_stride_B,
+                                                           int64_t                   batch_stride_B,
                                                            rocsparse_order           order_B,
                                                            U               beta_device_host,
                                                            C*              dense_C,
-                                                           I               ldc,
+                                                           int64_t         ldc,
                                                            I               batch_count_C,
-                                                           I               batch_stride_C,
+                                                           int64_t         batch_stride_C,
                                                            rocsparse_order order_C)
 {
     // Stream
@@ -642,22 +642,22 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
         ITYPE                     k,                                            \
         int64_t                   nnz,                                          \
         ITYPE                     batch_count_A,                                \
-        ITYPE                     batch_stride_A,                               \
+        int64_t                   batch_stride_A,                               \
         UTYPE                     alpha_device_host,                            \
         const rocsparse_mat_descr descr,                                        \
         const ATYPE*              coo_val,                                      \
         const ITYPE*              coo_row_ind,                                  \
         const ITYPE*              coo_col_ind,                                  \
         const BTYPE*              dense_B,                                      \
-        ITYPE                     ldb,                                          \
+        int64_t                   ldb,                                          \
         ITYPE                     batch_count_B,                                \
-        ITYPE                     batch_stride_B,                               \
+        int64_t                   batch_stride_B,                               \
         rocsparse_order           order_B,                                      \
         UTYPE                     beta_device_host,                             \
         CTYPE*                    dense_C,                                      \
-        ITYPE                     ldc,                                          \
+        int64_t                   ldc,                                          \
         ITYPE                     batch_count_C,                                \
-        ITYPE                     batch_stride_C,                               \
+        int64_t                   batch_stride_C,                               \
         rocsparse_order           order_C);
 
 // Uniform precisions

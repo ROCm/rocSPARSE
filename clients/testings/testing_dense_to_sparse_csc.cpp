@@ -36,7 +36,7 @@ void testing_dense_to_sparse_csc_bad_arg(const Arguments& arg)
     J                             m           = safe_size;
     J                             n           = safe_size;
     I                             nnz         = safe_size;
-    I                             ld          = safe_size;
+    int64_t                       ld          = safe_size;
     void*                         dense_val   = (void*)0x4;
     void*                         csc_val     = (void*)0x4;
     void*                         csc_row_ind = (void*)0x4;
@@ -104,13 +104,13 @@ void testing_dense_to_sparse_csc(const Arguments& arg)
 {
     J                             m     = arg.M;
     J                             n     = arg.N;
-    I                             ld    = arg.denseld;
+    int64_t                       ld    = arg.denseld;
     rocsparse_index_base          base  = arg.baseA;
     rocsparse_dense_to_sparse_alg alg   = arg.dense_to_sparse_alg;
     rocsparse_order               order = arg.order;
 
-    I mn = (order == rocsparse_order_column) ? m : n;
-    I nm = (order == rocsparse_order_column) ? n : m;
+    J mn = (order == rocsparse_order_column) ? m : n;
+    J nm = (order == rocsparse_order_column) ? n : m;
 
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
@@ -186,19 +186,19 @@ void testing_dense_to_sparse_csc(const Arguments& arg)
     rocsparse_seedrand();
 
     // Random initialization of the matrix.
-    for(int j = 0; j < nm; ++j)
+    for(J j = 0; j < nm; ++j)
     {
-        for(int i = 0; i < ld; ++i)
+        for(int64_t i = 0; i < ld; ++i)
         {
-            h_dense_val[j * (int)ld + i] = static_cast<T>(-2);
+            h_dense_val[j * ld + i] = static_cast<T>(-2);
         }
     }
 
-    for(int j = 0; j < nm; ++j)
+    for(J j = 0; j < nm; ++j)
     {
-        for(int i = 0; i < mn; ++i)
+        for(J i = 0; i < mn; ++i)
         {
-            h_dense_val[j * (int)ld + i] = random_cached_generator<T>(0, 9);
+            h_dense_val[j * ld + i] = random_cached_generator<T>(0, 9);
         }
     }
 

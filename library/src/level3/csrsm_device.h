@@ -40,7 +40,7 @@ ROCSPARSE_DEVICE_ILF void csrsm_device(rocsparse_operation transB,
                                        const J* __restrict__ csr_col_ind,
                                        const T* __restrict__ csr_val,
                                        T* __restrict__ B,
-                                       J ldb,
+                                       int64_t ldb,
                                        int* __restrict__ done_array,
                                        J* __restrict__ map,
                                        J* __restrict__ zero_pivot,
@@ -63,13 +63,13 @@ ROCSPARSE_DEVICE_ILF void csrsm_device(rocsparse_operation transB,
     I row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Column index into B
-    J col_B = hipBlockIdx_x / m * BLOCKSIZE + hipThreadIdx_x;
+    J col_B = (hipBlockIdx_x / m) * BLOCKSIZE + hipThreadIdx_x;
 
     // Index into B (i,j)
-    J idx_B = row * ldb + col_B;
+    int64_t idx_B = row * ldb + col_B;
 
     // Index into done array
-    J id = hipBlockIdx_x / m * m;
+    J id = (hipBlockIdx_x / m) * m;
 
     // Initialize local sum with alpha and X
     T local_sum = static_cast<T>(0);
@@ -204,7 +204,7 @@ ROCSPARSE_DEVICE_ILF void csrsm_device(rocsparse_operation transB,
         __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
         // Index into X
-        J idx_X = local_col * ldb + col_B;
+        int64_t idx_X = local_col * ldb + col_B;
 
         // Local sum computation for each lane
         if(transB == rocsparse_operation_conjugate_transpose)

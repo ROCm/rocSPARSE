@@ -44,11 +44,11 @@ ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation tra
                                                          const I* __restrict__ bell_col_ind,
                                                          const A* __restrict__ bell_val,
                                                          const B* __restrict__ dense_B,
-                                                         I               ldb,
+                                                         int64_t         ldb,
                                                          rocsparse_order order_B,
                                                          T               beta,
                                                          C* __restrict__ dense_C,
-                                                         I                    ldc,
+                                                         int64_t              ldc,
                                                          rocsparse_order      order_C,
                                                          rocsparse_index_base idx_base)
 {
@@ -60,8 +60,8 @@ ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation tra
     __shared__ B shared_B[BELL_BLOCK_DIM * BLK_SIZE_Y];
     __shared__ A shared_A[BELL_BLOCK_DIM * BELL_BLOCK_DIM];
 
-    const I global_col = tidy + hipBlockIdx_y * BLK_SIZE_Y;
-    const I colB       = global_col * ldb;
+    const I       global_col = tidy + hipBlockIdx_y * BLK_SIZE_Y;
+    const int64_t colB       = global_col * ldb;
 
     for(I x = 0; x < block_dim; x += BELL_BLOCK_DIM)
     {
@@ -162,8 +162,9 @@ ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation tra
             }
         }
 
-        const I shift_C = (order_C == rocsparse_order_column) ? (global_row + ldc * global_col)
-                                                              : (global_row * ldc + global_col);
+        const int64_t shift_C = (order_C == rocsparse_order_column)
+                                    ? (global_row + ldc * global_col)
+                                    : (global_row * ldc + global_col);
         if(block_row < Mb && global_col < N && (tidx + x) < block_dim)
         {
             if(beta == static_cast<T>(0))
