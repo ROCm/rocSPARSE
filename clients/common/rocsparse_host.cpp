@@ -5738,7 +5738,7 @@ void host_csric0(rocsparse_int                     M,
             if(inv_diag == static_cast<T>(0))
             {
                 // Numerical zero diagonal
-                *numeric_pivot = col_j + base;
+                *numeric_pivot =  col_j + base;
                 return;
             }
 
@@ -5774,6 +5774,11 @@ void host_csric0(rocsparse_int                     M,
         // Process diagonal entry
         T diag_entry = std::sqrt(std::abs(csr_val[j] - sum));
         csr_val[j]   = diag_entry;
+        if (diag_entry == static_cast<T>(0)) {
+                *numeric_pivot =  ai  + base;
+                return;
+                };
+            
 
         // Store diagonal offset
         diag_offset[ai] = j;

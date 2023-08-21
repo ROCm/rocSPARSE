@@ -146,18 +146,6 @@ void csric0_hash_kernel(rocsparse_int m,
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
 
-        // Row has numerical negative diagonal
-
-        if((std::imag(diag_val) == (0)) && (std::real(diag_val) < (0)))
-        {
-            if(lid == 0)
-            {
-                // We are looking for the first negative pivot
-                rocsparse_atomic_min(negative_pivot, local_col + idx_base);
-            }
-
-            // continue this row even if it has a negative pivot
-        }
         // Row has numerical zero diagonal
         if(diag_val == static_cast<T>(0))
         {
@@ -225,18 +213,10 @@ void csric0_hash_kernel(rocsparse_int m,
         // Last lane processes the diagonal entry
         if(row_diag >= 0)
         {
-            T const diag_val = (csr_val[row_diag] - sum);
-
-            // We are looking for the first negative pivot
-            if(diag_val == static_cast<T>(0))
-            {
-                rocsparse_atomic_min(zero_pivot, row  );
-            };
-            if((std::imag(diag_val) == 0) && (std::real(diag_val) < 0))
-            {
-                rocsparse_atomic_min(negative_pivot, row );
-            };
-            csr_val[row_diag] = sqrt(rocsparse_abs(diag_val));
+            csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
+            if (csr_val[row_diag] == static_cast<T>(0)) {
+                rocsparse_atomic_min(zero_pivot, row + idx_base);
+              };
         }
     }
 
@@ -352,18 +332,6 @@ void csric0_binsearch_kernel(rocsparse_int m,
             break;
         }
 
-        // Row has numerical negative diagonal
-        if((std::imag(diag_val) == (0)) && (std::real(diag_val) < (0)))
-        {
-            if(lid == 0)
-            {
-                // We are looking for the first negative pivot
-                rocsparse_atomic_min(negative_pivot, local_col + idx_base);
-            }
-
-            // do not skip this row even if it has a negative pivot
-        }
-
         // Compute reciprocal
         diag_val = static_cast<T>(1) / diag_val;
 
@@ -421,19 +389,10 @@ void csric0_binsearch_kernel(rocsparse_int m,
         // Last lane processes the diagonal entry
         if(row_diag >= 0)
         {
-
-            T const diag_val = (csr_val[row_diag] - sum);
-
-            // We are looking for the first negative pivot
-            if(diag_val == static_cast<T>(0))
-            {
-                rocsparse_atomic_min(zero_pivot, row );
-            };
-            if((std::imag(diag_val) == 0) && (std::real(diag_val) < 0))
-            {
-                rocsparse_atomic_min(negative_pivot, row );
-            };
-            csr_val[row_diag] = sqrt(rocsparse_abs(diag_val));
+            csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
+            if (csr_val[row_diag] == static_cast<T>(0)) {
+                rocsparse_atomic_min(zero_pivot, row + idx_base);
+              };
         }
     }
 

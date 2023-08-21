@@ -194,14 +194,11 @@ rocsparse_status rocsparse_csric0_analysis_template(rocsparse_handle          ha
                 rocsparse_hipMallocAsync(&(info->negative_pivot), sizeof(rocsparse_int), stream));
         };
 
-        static const rocsparse_int h_negative_pivot[1]
-            = {std::numeric_limits<rocsparse_int>::max()};
-
-        void* const       dst = static_cast<void*>(info->negative_pivot);
-        const void* const src = static_cast<const void*>(&(h_negative_pivot[0]));
+        static const rocsparse_int h_max_int = std::numeric_limits<rocsparse_int>::max();
 
         RETURN_IF_HIP_ERROR(
-            hipMemcpyAsync(dst, src, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
+            hipMemcpyAsync(info->negative_pivot, &h_max_int, 
+                           sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
     };
 
     // Perform analysis
@@ -331,16 +328,16 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
     // Max nnz per row
     rocsparse_int max_nnz = info->csric0_info->max_nnz;
 
-    // initialize zero_pivot and negative_pivot
+    // initialize negative_pivot
     {
-        static const rocsparse_int h_max_int[1] = {std::numeric_limits<rocsparse_int>::max()};
+
+        static const rocsparse_int h_max_int = std::numeric_limits<rocsparse_int>::max();
 
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            info->zero_pivot, h_max_int, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
-
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            info->negative_pivot, h_max_int, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
+            info->negative_pivot, &h_max_int, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
     };
+
+
 
     // Determine gcnArch and ASIC revision
     int gcnArch = handle->properties.gcnArch;
