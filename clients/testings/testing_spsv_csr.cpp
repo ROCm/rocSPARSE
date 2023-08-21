@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -286,7 +286,7 @@ void testing_spsv_csr(const Arguments& arg)
                                          y1,
                                          ttype,
                                          alg,
-                                         rocsparse_spsv_stage_auto /*buffersize*/,
+                                         rocsparse_spsv_stage_buffer_size,
                                          &buffer_size,
                                          nullptr));
 
@@ -304,7 +304,7 @@ void testing_spsv_csr(const Arguments& arg)
                                          y1,
                                          ttype,
                                          alg,
-                                         rocsparse_spsv_stage_auto /*preprocess*/,
+                                         rocsparse_spsv_stage_preprocess,
                                          nullptr,
                                          dbuffer));
 
@@ -318,7 +318,7 @@ void testing_spsv_csr(const Arguments& arg)
                                          y2,
                                          ttype,
                                          alg,
-                                         rocsparse_spsv_stage_auto /*preprocess*/,
+                                         rocsparse_spsv_stage_preprocess,
                                          nullptr,
                                          dbuffer));
 
@@ -334,7 +334,7 @@ void testing_spsv_csr(const Arguments& arg)
                                                       y1,
                                                       ttype,
                                                       alg,
-                                                      rocsparse_spsv_stage_auto /*compute*/,
+                                                      rocsparse_spsv_stage_compute,
                                                       &buffer_size,
                                                       dbuffer));
 
@@ -348,7 +348,7 @@ void testing_spsv_csr(const Arguments& arg)
                                                       y2,
                                                       ttype,
                                                       alg,
-                                                      rocsparse_spsv_stage_auto /*compute*/,
+                                                      rocsparse_spsv_stage_compute,
                                                       &buffer_size,
                                                       dbuffer));
 

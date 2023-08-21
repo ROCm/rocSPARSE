@@ -8,6 +8,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Added mixed precisions for SpVV
 - Added uniform int8 precision for Gather and Scatter
 ### Changed
+- Removed auto stages from spmv, spmm, spgemm, spsv, spsm, and spitsv.
 - Removed old deprecated rocsparse_spmv, deprecated current rocsparse_spmv_ex, and added new rocsparse_spmv routine
 - Removed old deprecated rocsparse_xbsrmv routines, deprecated current rocsparse_xbsrmv_ex routines, and added new rocsparse_xbsrmv routines
 - Removed old deprecated rocsparse_spmm_ex routine

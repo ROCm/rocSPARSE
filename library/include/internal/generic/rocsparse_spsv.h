@@ -58,11 +58,6 @@ extern "C" {
 *  that is required for subsequent calls. The second stage
 *  \ref rocsparse_spsv_stage_preprocess will preprocess data that would be saved in the temporary storage buffer.
 *  In the final stage \ref rocsparse_spsv_stage_compute, the actual computation is performed.
-*  \note If \ref rocsparse_spsv_stage_auto is selected, rocSPARSE will automatically detect
-*  which stage is required based on the following indicators:
-*  If \p temp_buffer is equal to \p nullptr, the required buffer size will be returned.
-*  If \p buffer_size is equal to \p nullptr, analysis will be performed.
-*  Otherwise, the SpSV preprocess and the SpSV algorithm will be executed.
 *
 *  \note
 *  Only the \ref rocsparse_spsv_stage_buffer_size stage and the \ref rocsparse_spsv_stage_compute stage are non blocking

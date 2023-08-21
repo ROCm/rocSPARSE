@@ -417,10 +417,6 @@ ROCSPARSE_EXPORT rocsparse_status rocsparse_spmv(rocsparse_handle            han
 *  that is required for subsequent calls to \ref rocsparse_spmv_ex. The second stage
 *  \ref rocsparse_spmv_stage_preprocess will preprocess data that would be saved in the temporary storage buffer.
 *  In the final stage \ref rocsparse_spmv_stage_compute, the actual computation is performed.
-*  \note If \ref rocsparse_spmv_stage_auto is selected, rocSPARSE will automatically detect
-*  which stage is required based on the following indicators:
-*  If \p temp_buffer is equal to \p nullptr, the required buffer size will be returned.
-*  Else, the SpMV_ex preprocess and the SpMV algorithm will be executed.
 *
 *  \note
 *  Only the \ref rocsparse_spmv_stage_buffer_size stage and the \ref rocsparse_spmv_stage_compute stage are non blocking

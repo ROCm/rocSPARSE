@@ -72,12 +72,6 @@ extern "C" {
 *  resulting \f$C\f$ matrix. If the sparsity pattern of \f$C\f$ is already known, this
 *  stage can be skipped. In the final stage \ref rocsparse_spgemm_stage_compute, the actual
 *  computation is performed.
-*  \note If \ref rocsparse_spgemm_stage_auto is selected, rocSPARSE will automatically detect
-*  which stage is required based on the following indicators:
-*  If \p temp_buffer is equal to \p nullptr, the required buffer size will be returned.
-*  Else, if the number of non-zeros of \f$C\f$ is zero, the number of non-zero entries will be
-*  computed.
-*  Else, the SpGEMM algorithm will be executed.
 *  \note If \f$\alpha == 0\f$, then \f$C = \beta \cdot D\f$ will be computed.
 *  \note If \f$\beta == 0\f$, then \f$C = \alpha \cdot op(A) \cdot op(B)\f$ will be
 *  computed.

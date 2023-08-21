@@ -39,7 +39,7 @@ void testing_spmm_bell_bad_arg(const Arguments& arg)
     rocsparse_dnmat_descr C           = (rocsparse_dnmat_descr)0x4;
     rocsparse_datatype    ttype       = rocsparse_datatype_f32_r;
     rocsparse_spmm_alg    alg         = rocsparse_spmm_alg_bell;
-    rocsparse_spmm_stage  stage       = rocsparse_spmm_stage_auto;
+    rocsparse_spmm_stage  stage       = rocsparse_spmm_stage_compute;
     size_t*               buffer_size = (size_t*)0x4;
     void*                 buffer      = (void*)0x4;
 

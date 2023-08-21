@@ -576,7 +576,7 @@ public:
         const void*          p_alpha = (const void*)&alpha;
         const void*          p_beta  = (const void*)&beta;
         rocsparse_spmv_alg   alg     = rocsparse_spmv_alg_default;
-        rocsparse_spmv_stage stage   = rocsparse_spmv_stage_auto;
+        rocsparse_spmv_stage stage   = rocsparse_spmv_stage_compute;
         size_t               buffer_size;
         size_t*              p_buffer_size = &buffer_size;
         void*                temp_buffer   = (void*)0x4;

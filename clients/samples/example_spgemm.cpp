@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
                                      C,
                                      ttype,
                                      rocsparse_spgemm_alg_default,
-                                     rocsparse_spgemm_stage_auto,
+                                     rocsparse_spgemm_stage_buffer_size,
                                      &buffer_size,
                                      nullptr));
 
@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
                                      C,
                                      ttype,
                                      rocsparse_spgemm_alg_default,
-                                     rocsparse_spgemm_stage_auto,
+                                     rocsparse_spgemm_stage_nnz,
                                      &buffer_size,
                                      temp_buffer));
 
@@ -276,7 +276,7 @@ int main(int argc, char* argv[])
                                      C,
                                      ttype,
                                      rocsparse_spgemm_alg_default,
-                                     rocsparse_spgemm_stage_auto,
+                                     rocsparse_spgemm_stage_compute,
                                      &buffer_size,
                                      temp_buffer));
 
