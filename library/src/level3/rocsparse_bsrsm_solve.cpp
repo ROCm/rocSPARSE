@@ -42,9 +42,9 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
                                                       rocsparse_int             block_dim,
                                                       rocsparse_mat_info        info,
                                                       const T*                  B,
-                                                      rocsparse_int             ldb,
+                                                      int64_t                   ldb,
                                                       T*                        X,
-                                                      rocsparse_int             ldx,
+                                                      int64_t                   ldx,
                                                       void*                     temp_buffer);
 
 template <typename T, typename U>
@@ -63,9 +63,9 @@ rocsparse_status rocsparse_bsrsm_solve_template_dispatch(rocsparse_handle       
                                                          rocsparse_int             block_dim,
                                                          rocsparse_mat_info        info,
                                                          const T*                  B,
-                                                         rocsparse_int             ldb,
+                                                         int64_t                   ldb,
                                                          T*                        X,
-                                                         rocsparse_int             ldx,
+                                                         int64_t                   ldx,
                                                          rocsparse_solve_policy    policy,
                                                          void*                     temp_buffer)
 {
@@ -106,9 +106,9 @@ rocsparse_status rocsparse_bsrsm_solve_template(rocsparse_handle          handle
                                                 rocsparse_int             block_dim,
                                                 rocsparse_mat_info        info,
                                                 const T*                  B,
-                                                rocsparse_int             ldb,
+                                                int64_t                   ldb,
                                                 T*                        X,
-                                                rocsparse_int             ldx,
+                                                int64_t                   ldx,
                                                 rocsparse_solve_policy    policy,
                                                 void*                     temp_buffer)
 {

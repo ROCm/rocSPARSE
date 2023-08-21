@@ -42,7 +42,7 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle, 
                                               const I*                  coo_row_ind, //6
                                               const I*                  coo_col_ind, //7
                                               T*                        A, //8
-                                              I                         lda, //9
+                                              int64_t                   lda, //9
                                               rocsparse_order           order) //10
 {
 
@@ -140,7 +140,7 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle, 
         const ITYPE*              coo_row_ind,                            \
         const ITYPE*              coo_col_ind,                            \
         TTYPE*                    A,                                      \
-        ITYPE                     lda,                                    \
+        int64_t                   lda,                                    \
         rocsparse_order           order);
 
 INSTANTIATE(int32_t, float);

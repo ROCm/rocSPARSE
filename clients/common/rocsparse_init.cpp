@@ -235,7 +235,7 @@ void rocsparse_init_index(std::vector<I>& x, size_t nnz, size_t start, size_t en
 {
     std::vector<bool> check(end - start, false);
 
-    I num = 0;
+    size_t num = 0;
 
     while(num < nnz)
     {

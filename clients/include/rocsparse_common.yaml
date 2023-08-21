@@ -359,12 +359,14 @@ Arguments:
   - unit_check: rocsparse_int
   - timing: rocsparse_int
   - iters: rocsparse_int
-  - denseld: rocsparse_int
+  - denseld: c_int64
   - batch_count: rocsparse_int
   - batch_count_A: rocsparse_int
   - batch_count_B: rocsparse_int
   - batch_count_C: rocsparse_int
   - batch_stride: rocsparse_int
+  - ld_multiplier_B: rocsparse_int
+  - ld_multiplier_C: rocsparse_int
   - algo: c_uint
   - numericboost: c_int
   - boosttol: c_double
@@ -485,6 +487,8 @@ Defaults:
   batch_count_B: -1
   batch_count_C: -1
   batch_stride: -1
+  ld_multiplier_B: 2
+  ld_multiplier_C: 2
   algo: 0
   numericboost: 0
   boosttol: 0.0

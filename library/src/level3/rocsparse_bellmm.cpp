@@ -41,11 +41,11 @@ rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          han
                                                    const I*                  bell_col_ind,
                                                    const A*                  bell_val,
                                                    const B*                  dense_B,
-                                                   I                         ldb,
+                                                   int64_t                   ldb,
                                                    rocsparse_order           order_B,
                                                    U                         beta,
                                                    C*                        dense_C,
-                                                   I                         ldc,
+                                                   int64_t                   ldc,
                                                    rocsparse_order           order_C);
 
 template <typename T, typename I, typename A, typename B, typename C, typename U>
@@ -63,11 +63,11 @@ rocsparse_status rocsparse_bellmm_template_dispatch(rocsparse_handle          ha
                                                     const I*                  bell_col_ind,
                                                     const A*                  bell_val,
                                                     const B*                  dense_B,
-                                                    I                         ldb,
+                                                    int64_t                   ldb,
                                                     rocsparse_order           order_B,
                                                     U                         beta_device_host,
                                                     C*                        dense_C,
-                                                    I                         ldc,
+                                                    int64_t                   ldc,
                                                     rocsparse_order           order_C)
 {
 
@@ -108,11 +108,11 @@ rocsparse_status rocsparse_bellmm_template_buffer_size(rocsparse_handle         
                                                        const I*                  bell_col_ind,
                                                        const A*                  bell_val,
                                                        const B*                  dense_B,
-                                                       I                         ldb,
+                                                       int64_t                   ldb,
                                                        rocsparse_order           order_B,
                                                        const T*                  beta,
                                                        C*                        dense_C,
-                                                       I                         ldc,
+                                                       int64_t                   ldc,
                                                        rocsparse_order           order_C,
                                                        size_t*                   buffer_size)
 {
@@ -135,11 +135,11 @@ rocsparse_status rocsparse_bellmm_template_preprocess(rocsparse_handle          
                                                       const I*                  bell_col_ind,
                                                       const A*                  bell_val,
                                                       const B*                  dense_B,
-                                                      I                         ldb,
+                                                      int64_t                   ldb,
                                                       rocsparse_order           order_B,
                                                       const T*                  beta,
                                                       C*                        dense_C,
-                                                      I                         ldc,
+                                                      int64_t                   ldc,
                                                       rocsparse_order           order_C,
                                                       void*                     temp_buffer)
 {
@@ -157,21 +157,21 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                            I                         bell_cols,
                                            I                         block_dim,
                                            I                         batch_count_A,
-                                           I                         batch_stride_A,
+                                           int64_t                   batch_stride_A,
                                            const T*                  alpha,
                                            const rocsparse_mat_descr descr,
                                            const I*                  bell_col_ind,
                                            const A*                  bell_val,
                                            const B*                  dense_B,
-                                           I                         ldb,
+                                           int64_t                   ldb,
                                            I                         batch_count_B,
-                                           I                         batch_stride_B,
+                                           int64_t                   batch_stride_B,
                                            rocsparse_order           order_B,
                                            const T*                  beta,
                                            C*                        dense_C,
-                                           I                         ldc,
+                                           int64_t                   ldc,
                                            I                         batch_count_C,
-                                           I                         batch_stride_C,
+                                           int64_t                   batch_stride_C,
                                            rocsparse_order           order_C,
                                            void*                     temp_buffer)
 {
@@ -372,11 +372,11 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
         const ITYPE*              bell_col_ind,                                                   \
         const ATYPE*              bell_val,                                                       \
         const BTYPE*              dense_B,                                                        \
-        ITYPE                     ldb,                                                            \
+        int64_t                   ldb,                                                            \
         rocsparse_order           order_B,                                                        \
         const TTYPE*              beta,                                                           \
         CTYPE*                    dense_C,                                                        \
-        ITYPE                     ldc,                                                            \
+        int64_t                   ldc,                                                            \
         rocsparse_order           order_C,                                                        \
         size_t*                   buffer_size);                                                                     \
     template rocsparse_status rocsparse_bellmm_template_preprocess(                               \
@@ -394,11 +394,11 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
         const ITYPE*              bell_col_ind,                                                   \
         const ATYPE*              bell_val,                                                       \
         const BTYPE*              dense_B,                                                        \
-        ITYPE                     ldb,                                                            \
+        int64_t                   ldb,                                                            \
         rocsparse_order           order_B,                                                        \
         const TTYPE*              beta,                                                           \
         CTYPE*                    dense_C,                                                        \
-        ITYPE                     ldc,                                                            \
+        int64_t                   ldc,                                                            \
         rocsparse_order           order_C,                                                        \
         void*                     temp_buffer);                                                                       \
     template rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,         \
@@ -411,21 +411,21 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                                         ITYPE                     bell_cols,      \
                                                         ITYPE                     bell_block_dim, \
                                                         ITYPE                     batch_count_A,  \
-                                                        ITYPE                     batch_stride_A, \
+                                                        int64_t                   batch_stride_A, \
                                                         const TTYPE*              alpha,          \
                                                         const rocsparse_mat_descr descr,          \
                                                         const ITYPE*              bell_col_ind,   \
                                                         const ATYPE*              bell_val,       \
                                                         const BTYPE*              dense_B,        \
-                                                        ITYPE                     ldb,            \
+                                                        int64_t                   ldb,            \
                                                         ITYPE                     batch_count_B,  \
-                                                        ITYPE                     batch_stride_B, \
+                                                        int64_t                   batch_stride_B, \
                                                         rocsparse_order           order_B,        \
                                                         const TTYPE*              beta,           \
                                                         CTYPE*                    dense_C,        \
-                                                        ITYPE                     ldc,            \
+                                                        int64_t                   ldc,            \
                                                         ITYPE                     batch_count_C,  \
-                                                        ITYPE                     batch_stride_C, \
+                                                        int64_t                   batch_stride_C, \
                                                         rocsparse_order           order_C,        \
                                                         void*                     temp_buffer)
 

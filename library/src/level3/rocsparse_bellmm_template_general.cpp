@@ -45,11 +45,11 @@ void bellmm_general_blockdim_kernel(rocsparse_operation trans_A,
                                     const I* __restrict__ bell_col_ind,
                                     const A* __restrict__ bell_val,
                                     const B* __restrict__ dense_B,
-                                    I               ldb,
+                                    int64_t         ldb,
                                     rocsparse_order order_B,
                                     U               beta_device_host,
                                     C* __restrict__ dense_C,
-                                    I                    ldc,
+                                    int64_t              ldc,
                                     rocsparse_order      order_C,
                                     rocsparse_index_base idx_base)
 {
@@ -96,11 +96,11 @@ rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          han
                                                    const I*                  bell_col_ind,
                                                    const A*                  bell_val,
                                                    const B*                  dense_B,
-                                                   I                         ldb,
+                                                   int64_t                   ldb,
                                                    rocsparse_order           order_B,
                                                    U                         beta,
                                                    C*                        dense_C,
-                                                   I                         ldc,
+                                                   int64_t                   ldc,
                                                    rocsparse_order           order_C)
 {
     hipStream_t stream = handle->stream;
@@ -153,11 +153,11 @@ rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          han
         const ITYPE*              bell_col_ind,                         \
         const ATYPE*              bell_val,                             \
         const BTYPE*              dense_B,                              \
-        ITYPE                     ldb,                                  \
+        int64_t                   ldb,                                  \
         rocsparse_order           order_B,                              \
         UTYPE                     beta,                                 \
         CTYPE*                    dense_C,                              \
-        ITYPE                     ldc,                                  \
+        int64_t                   ldc,                                  \
         rocsparse_order           order_C)
 
 INSTANTIATE(int32_t, int32_t, int32_t, int32_t, int32_t, int32_t);

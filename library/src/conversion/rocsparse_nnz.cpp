@@ -32,8 +32,13 @@
 #include <rocprim/rocprim.hpp>
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_nnz_kernel_row(
-    rocsparse_handle handle, J m, J n, const T* A, I ld, rocsparse_order order, I* nnz_per_rows)
+rocsparse_status rocsparse_nnz_kernel_row(rocsparse_handle handle,
+                                          J                m,
+                                          J                n,
+                                          const T*         A,
+                                          int64_t          ld,
+                                          rocsparse_order  order,
+                                          I*               nnz_per_rows)
 {
     hipStream_t stream = handle->stream;
 
@@ -60,8 +65,13 @@ rocsparse_status rocsparse_nnz_kernel_row(
 }
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_nnz_kernel_col(
-    rocsparse_handle handle, J m, J n, const T* A, I ld, rocsparse_order order, I* nnz_per_columns)
+rocsparse_status rocsparse_nnz_kernel_col(rocsparse_handle handle,
+                                          J                m,
+                                          J                n,
+                                          const T*         A,
+                                          int64_t          ld,
+                                          rocsparse_order  order,
+                                          I*               nnz_per_columns)
 {
     hipStream_t stream = handle->stream;
 
@@ -90,7 +100,7 @@ rocsparse_status rocsparse_nnz_template(rocsparse_handle    handle,
                                         J                   m,
                                         J                   n,
                                         const T*            A,
-                                        I                   ld,
+                                        int64_t             ld,
                                         I*                  nnz_per_row_columns)
 {
 
@@ -129,7 +139,7 @@ rocsparse_status rocsparse_nnz_checkarg(rocsparse_handle          handle,
                                         J                         n,
                                         const rocsparse_mat_descr descr,
                                         const T*                  A,
-                                        I                         ld,
+                                        int64_t                   ld,
                                         I*                        nnz_per_row_columns,
                                         I*                        nnz_total_dev_host_ptr,
                                         rocsparse_order           order)
@@ -187,7 +197,7 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
                                     J                         n,
                                     const rocsparse_mat_descr descr,
                                     const T*                  A,
-                                    I                         ld,
+                                    int64_t                   ld,
                                     I*                        nnz_per_row_columns,
                                     I*                        nnz_total_dev_host_ptr)
 {
@@ -307,7 +317,7 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
         JTYPE                     n,                                   \
         const rocsparse_mat_descr descr,                               \
         const TTYPE*              A,                                   \
-        ITYPE                     ld,                                  \
+        int64_t                   ld,                                  \
         ITYPE*                    nnz_per_row_columns,                 \
         ITYPE*                    nnz_total_dev_host_ptr);
 

@@ -35,7 +35,7 @@ rocsparse_status rocsparse_csx2dense_checkarg(rocsparse_handle          handle, 
                                               J                         n, //2
                                               const rocsparse_mat_descr descr, //3
                                               const T*                  A, //4
-                                              I                         lda, //5
+                                              int64_t                   lda, //5
                                               const I*                  nnz_per_row_column, //6
                                               T*                        csx_val_A, //7
                                               I*                        csx_row_col_ptr_A, //8
@@ -104,7 +104,7 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
                                           J                         n,
                                           const rocsparse_mat_descr descr,
                                           const T*                  A,
-                                          I                         lda,
+                                          int64_t                   lda,
                                           const I*                  nnz_per_row_column,
                                           T*                        csx_val_A,
                                           I*                        csx_row_col_ptr_A,
@@ -202,39 +202,27 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
 
     if(csx_col_row_ind_A == nullptr && csx_val_A == nullptr)
     {
-        rocsparse_int start = 0;
-        rocsparse_int end   = 0;
+        I start = 0;
+        I end   = 0;
 
         if(is_row_oriented)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&end,
-                                               &csx_row_col_ptr_A[m],
-                                               sizeof(rocsparse_int),
-                                               hipMemcpyDeviceToHost,
-                                               handle->stream));
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&start,
-                                               &csx_row_col_ptr_A[0],
-                                               sizeof(rocsparse_int),
-                                               hipMemcpyDeviceToHost,
-                                               handle->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                &end, &csx_row_col_ptr_A[m], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                &start, &csx_row_col_ptr_A[0], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
         }
         else
         {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&end,
-                                               &csx_row_col_ptr_A[n],
-                                               sizeof(rocsparse_int),
-                                               hipMemcpyDeviceToHost,
-                                               handle->stream));
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&start,
-                                               &csx_row_col_ptr_A[0],
-                                               sizeof(rocsparse_int),
-                                               hipMemcpyDeviceToHost,
-                                               handle->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                &end, &csx_row_col_ptr_A[n], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                &start, &csx_row_col_ptr_A[0], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
         }
 
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-        rocsparse_int nnz = (end - start);
+        I nnz = (end - start);
 
         if(nnz != 0)
         {

@@ -814,7 +814,7 @@ __device__ __forceinline__ rocsparse_double_complex rocsparse_wfreduce_sum(rocsp
 // Perform dense matrix transposition
 template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
 __device__ void dense_transpose_device(
-    I m, I n, T alpha, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
+    I m, I n, T alpha, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
 {
     int lid = threadIdx.x & (DIMX - 1);
     int wid = threadIdx.x / DIMX;
@@ -830,7 +830,7 @@ __device__ void dense_transpose_device(
 
         I col_A = j + wid;
 
-        for(I k = 0; k < DIMX; k += DIMY)
+        for(unsigned int k = 0; k < DIMX; k += DIMY)
         {
             if(row_A < m && col_A + k < n)
             {
@@ -842,7 +842,7 @@ __device__ void dense_transpose_device(
 
         I col_B = j + lid;
 
-        for(I k = 0; k < DIMX; k += DIMY)
+        for(unsigned int k = 0; k < DIMX; k += DIMY)
         {
             if(col_B < n && row_B + k < m)
             {
@@ -855,7 +855,8 @@ __device__ void dense_transpose_device(
 // Perform dense matrix back transposition
 template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
 ROCSPARSE_KERNEL(DIMX* DIMY)
-void dense_transpose_back(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
+void dense_transpose_back(
+    I m, I n, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
 {
     int lid = hipThreadIdx_x & (DIMX - 1);
     int wid = hipThreadIdx_x / DIMX;
@@ -871,7 +872,7 @@ void dense_transpose_back(I m, I n, const T* __restrict__ A, I lda, T* __restric
 
         I col_A = j + lid;
 
-        for(I k = 0; k < DIMX; k += DIMY)
+        for(unsigned int k = 0; k < DIMX; k += DIMY)
         {
             if(col_A < n && row_A + k < m)
             {
@@ -883,7 +884,7 @@ void dense_transpose_back(I m, I n, const T* __restrict__ A, I lda, T* __restric
 
         I col_B = j + wid;
 
-        for(I k = 0; k < DIMX; k += DIMY)
+        for(unsigned int k = 0; k < DIMX; k += DIMY)
         {
             if(row_B < m && col_B + k < n)
             {
@@ -979,7 +980,8 @@ void scale_array(I m, T* __restrict__ array, const T* value)
 // Scale 2d array by value
 template <unsigned int BLOCKSIZE, typename I, typename T>
 ROCSPARSE_KERNEL(BLOCKSIZE)
-void scale_array_2d(I m, I n, I ld, I stride, T* __restrict__ array, T value, rocsparse_order order)
+void scale_array_2d(
+    I m, I n, int64_t ld, int64_t stride, T* __restrict__ array, T value, rocsparse_order order)
 {
     I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
     I batch = hipBlockIdx_y;
@@ -1004,8 +1006,13 @@ void scale_array_2d(I m, I n, I ld, I stride, T* __restrict__ array, T value, ro
 
 template <unsigned int BLOCKSIZE, typename I, typename T>
 ROCSPARSE_KERNEL(BLOCKSIZE)
-void scale_array_2d(
-    I m, I n, I ld, I stride, T* __restrict__ array, const T* value, rocsparse_order order)
+void scale_array_2d(I       m,
+                    I       n,
+                    int64_t ld,
+                    int64_t stride,
+                    T* __restrict__ array,
+                    const T*        value,
+                    rocsparse_order order)
 {
     I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
     I batch = hipBlockIdx_y;
@@ -1073,7 +1080,7 @@ void csr_max_nnz_per_row(J m, const I* __restrict__ csr_row_ptr, J* __restrict__
 
 template <unsigned int BLOCKSIZE, typename I, typename T>
 ROCSPARSE_KERNEL(BLOCKSIZE)
-void memset2d_kernel(I m, I n, T value, T* __restrict__ data, I ld, rocsparse_order order)
+void memset2d_kernel(I m, I n, T value, T* __restrict__ data, int64_t ld, rocsparse_order order)
 {
     I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

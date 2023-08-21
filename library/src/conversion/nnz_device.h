@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,8 +62,12 @@ __device__ __forceinline__ void nnz_device_reduce<0, int64_t>(rocsparse_int tx, 
 //!
 template <rocsparse_int NB_X, typename I, typename J, typename T>
 ROCSPARSE_KERNEL(NB_X)
-void nnz_kernel_col(
-    rocsparse_order order, J m, J n, const T* __restrict__ A, I lda, I* __restrict__ nnz_per_column)
+void nnz_kernel_col(rocsparse_order order,
+                    J               m,
+                    J               n,
+                    const T* __restrict__ A,
+                    int64_t lda,
+                    I* __restrict__ nnz_per_column)
 {
     static constexpr T s_zero = {};
 
@@ -136,8 +140,12 @@ void nnz_kernel_col(
 //!
 template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename I, typename J, typename T>
 ROCSPARSE_KERNEL(DIM_X* DIM_Y)
-void nnz_kernel_row(
-    rocsparse_order order, J m, J n, const T* __restrict__ A, I lda, I* __restrict__ nnz_per_row)
+void nnz_kernel_row(rocsparse_order order,
+                    J               m,
+                    J               n,
+                    const T* __restrict__ A,
+                    int64_t lda,
+                    I* __restrict__ nnz_per_row)
 {
     static constexpr T s_zero = {};
 

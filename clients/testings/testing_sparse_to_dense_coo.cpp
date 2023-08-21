@@ -36,7 +36,7 @@ void testing_sparse_to_dense_coo_bad_arg(const Arguments& arg)
     I                             m           = safe_size;
     I                             n           = safe_size;
     int64_t                       nnz         = safe_size;
-    I                             ld          = safe_size;
+    int64_t                       ld          = safe_size;
     void*                         coo_val     = (void*)0x4;
     void*                         coo_row_ind = (void*)0x4;
     void*                         coo_col_ind = (void*)0x4;
@@ -94,7 +94,7 @@ void testing_sparse_to_dense_coo(const Arguments& arg)
 {
     I                             m     = arg.M;
     I                             n     = arg.N;
-    I                             ld    = arg.denseld;
+    int64_t                       ld    = arg.denseld;
     rocsparse_index_base          base  = arg.baseA;
     rocsparse_sparse_to_dense_alg alg   = arg.sparse_to_dense_alg;
     rocsparse_order               order = arg.order;
@@ -162,19 +162,19 @@ void testing_sparse_to_dense_coo(const Arguments& arg)
     rocsparse_seedrand();
 
     // Random initialization of the matrix.
-    for(int j = 0; j < nm; ++j)
+    for(I j = 0; j < nm; ++j)
     {
-        for(int i = 0; i < ld; ++i)
+        for(int64_t i = 0; i < ld; ++i)
         {
-            h_dense_val[j * (int)ld + i] = static_cast<T>(-2);
+            h_dense_val[j * ld + i] = static_cast<T>(-2);
         }
     }
 
-    for(int j = 0; j < nm; ++j)
+    for(I j = 0; j < nm; ++j)
     {
-        for(int i = 0; i < mn; ++i)
+        for(I i = 0; i < mn; ++i)
         {
-            h_dense_val[j * (int)ld + i] = random_cached_generator<T>(0, 9);
+            h_dense_val[j * ld + i] = random_cached_generator<T>(0, 9);
         }
     }
 

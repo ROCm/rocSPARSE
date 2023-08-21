@@ -48,10 +48,10 @@ void csrmmnn_row_split_kernel(bool conj_A,
                               const J* __restrict__ csr_col_ind,
                               const A* __restrict__ csr_val,
                               const B* __restrict__ dense_B,
-                              J ldb,
-                              U beta_device_host,
+                              int64_t ldb,
+                              U       beta_device_host,
                               C* __restrict__ dense_C,
-                              J                    ldc,
+                              int64_t              ldc,
                               rocsparse_order      order_C,
                               rocsparse_index_base idx_base)
 {
@@ -106,10 +106,10 @@ void csrmmnt_row_split_main_kernel(bool conj_A,
                                    const J* __restrict__ csr_col_ind,
                                    const A* __restrict__ csr_val,
                                    const B* __restrict__ dense_B,
-                                   J ldb,
-                                   U beta_device_host,
+                                   int64_t ldb,
+                                   U       beta_device_host,
                                    C* __restrict__ dense_C,
-                                   J                    ldc,
+                                   int64_t              ldc,
                                    rocsparse_order      order_C,
                                    rocsparse_index_base idx_base)
 {
@@ -164,10 +164,10 @@ void csrmmnt_row_split_remainder_kernel(bool conj_A,
                                         const J* __restrict__ csr_col_ind,
                                         const A* __restrict__ csr_val,
                                         const B* __restrict__ dense_B,
-                                        J ldb,
-                                        U beta_device_host,
+                                        int64_t ldb,
+                                        U       beta_device_host,
                                         C* __restrict__ dense_C,
-                                        J                    ldc,
+                                        int64_t              ldc,
                                         rocsparse_order      order_C,
                                         rocsparse_index_base idx_base)
 {
@@ -266,10 +266,10 @@ rocsparse_status rocsparse_csrmmnn_template_row_split(rocsparse_handle          
                                                       const I*                  csr_row_ptr,
                                                       const J*                  csr_col_ind,
                                                       const B*                  dense_B,
-                                                      J                         ldb,
+                                                      int64_t                   ldb,
                                                       U                         beta_device_host,
                                                       C*                        dense_C,
-                                                      J                         ldc,
+                                                      int64_t                   ldc,
                                                       rocsparse_order           order_C)
 {
 #define CSRMMNN_DIM 256
@@ -354,10 +354,10 @@ rocsparse_status rocsparse_csrmmnt_template_row_split(rocsparse_handle          
                                                       const I*                  csr_row_ptr,
                                                       const J*                  csr_col_ind,
                                                       const B*                  dense_B,
-                                                      J                         ldb,
+                                                      int64_t                   ldb,
                                                       U                         beta_device_host,
                                                       C*                        dense_C,
-                                                      J                         ldc,
+                                                      int64_t                   ldc,
                                                       rocsparse_order           order_C)
 {
     // Average nnz per row of A
@@ -601,11 +601,11 @@ rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          ha
                                                     const I*                  csr_row_ptr,
                                                     const J*                  csr_col_ind,
                                                     const B*                  dense_B,
-                                                    J                         ldb,
+                                                    int64_t                   ldb,
                                                     rocsparse_order           order_B,
                                                     U                         beta_device_host,
                                                     C*                        dense_C,
-                                                    J                         ldc,
+                                                    int64_t                   ldc,
                                                     rocsparse_order           order_C,
                                                     bool                      force_conj_A)
 {
@@ -649,11 +649,11 @@ rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          ha
         const ITYPE*              csr_row_ptr,                           \
         const JTYPE*              csr_col_ind,                           \
         const BTYPE*              dense_B,                               \
-        JTYPE                     ldb,                                   \
+        int64_t                   ldb,                                   \
         rocsparse_order           order_B,                               \
         UTYPE                     beta_device_host,                      \
         CTYPE*                    dense_C,                               \
-        JTYPE                     ldc,                                   \
+        int64_t                   ldc,                                   \
         rocsparse_order           order_C,                               \
         bool                      force_conj_A)
 

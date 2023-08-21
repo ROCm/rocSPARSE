@@ -49,10 +49,10 @@ rocsparse_status rocsparse_bsrmm_template_small(rocsparse_handle          handle
                                                 const rocsparse_int*      bsr_col_ind,
                                                 rocsparse_int             block_dim,
                                                 const T*                  B,
-                                                rocsparse_int             ldb,
+                                                int64_t                   ldb,
                                                 U                         beta,
                                                 T*                        C,
-                                                rocsparse_int             ldc);
+                                                int64_t                   ldc);
 
 template <typename T, typename U>
 rocsparse_status rocsparse_bsrmm_template_large_ext(rocsparse_handle          handle,
@@ -70,10 +70,10 @@ rocsparse_status rocsparse_bsrmm_template_large_ext(rocsparse_handle          ha
                                                     const rocsparse_int*      bsr_col_ind,
                                                     rocsparse_int             block_dim,
                                                     const T*                  B,
-                                                    rocsparse_int             ldb,
+                                                    int64_t                   ldb,
                                                     U                         beta,
                                                     T*                        C,
-                                                    rocsparse_int             ldc);
+                                                    int64_t                   ldc);
 
 template <typename T, typename U>
 rocsparse_status rocsparse_bsrmm_template_general(rocsparse_handle          handle,
@@ -91,10 +91,10 @@ rocsparse_status rocsparse_bsrmm_template_general(rocsparse_handle          hand
                                                   const rocsparse_int*      bsr_col_ind,
                                                   rocsparse_int             block_dim,
                                                   const T*                  B,
-                                                  rocsparse_int             ldb,
+                                                  int64_t                   ldb,
                                                   U                         beta,
                                                   T*                        C,
-                                                  rocsparse_int             ldc);
+                                                  int64_t                   ldc);
 
 template <typename T, typename U>
 rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          handle,
@@ -112,10 +112,10 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                    const rocsparse_int*      bsr_col_ind,
                                                    rocsparse_int             block_dim,
                                                    const T*                  B,
-                                                   rocsparse_int             ldb,
+                                                   int64_t                   ldb,
                                                    U                         beta,
                                                    T*                        C,
-                                                   rocsparse_int             ldc)
+                                                   int64_t                   ldc)
 {
 
     // If n is only 1 and B are non-transposed, then call bsrmv
@@ -264,10 +264,10 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
                                           const rocsparse_int*      bsr_col_ind,
                                           rocsparse_int             block_dim,
                                           const T*                  B,
-                                          rocsparse_int             ldb,
+                                          int64_t                   ldb,
                                           const T*                  beta,
                                           T*                        C,
-                                          rocsparse_int             ldc)
+                                          int64_t                   ldc)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)

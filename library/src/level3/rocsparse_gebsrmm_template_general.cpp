@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,10 @@ void gebsrmm_general_blockdim_kernel(rocsparse_direction direction,
                                      rocsparse_int row_block_dim,
                                      rocsparse_int col_block_dim,
                                      const T* __restrict__ B,
-                                     rocsparse_int ldb,
-                                     U             beta_device_host,
+                                     int64_t ldb,
+                                     U       beta_device_host,
                                      T* __restrict__ C,
-                                     rocsparse_int        ldc,
+                                     int64_t              ldc,
                                      rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -87,10 +87,10 @@ rocsparse_status rocsparse_gebsrmm_template_general(rocsparse_handle          ha
                                                     rocsparse_int             row_block_dim,
                                                     rocsparse_int             col_block_dim,
                                                     const T*                  B,
-                                                    rocsparse_int             ldb,
+                                                    int64_t                   ldb,
                                                     U                         beta,
                                                     T*                        C,
-                                                    rocsparse_int             ldc)
+                                                    int64_t                   ldc)
 {
     hipStream_t stream = handle->stream;
 
@@ -138,10 +138,10 @@ rocsparse_status rocsparse_gebsrmm_template_general(rocsparse_handle          ha
                                                                  rocsparse_int        row_block_dim, \
                                                                  rocsparse_int        col_block_dim, \
                                                                  const real_type_*    B,             \
-                                                                 rocsparse_int        ldb,           \
+                                                                 int64_t              ldb,           \
                                                                  scalar_type_         beta,          \
                                                                  real_type_*          C,             \
-                                                                 rocsparse_int        ldc)
+                                                                 int64_t              ldc)
 
 INSTANTIATE(float, float);
 INSTANTIATE(float, const float*);

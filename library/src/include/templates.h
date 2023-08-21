@@ -415,10 +415,10 @@ inline rocsparse_status rocsparse_csrmm(rocsparse_handle          handle,
                                         const rocsparse_int*      csr_row_ptr,
                                         const rocsparse_int*      csr_col_ind,
                                         const T*                  B,
-                                        rocsparse_int             ldb,
+                                        int64_t                   ldb,
                                         const T*                  beta,
                                         T*                        C,
-                                        rocsparse_int             ldc);
+                                        int64_t                   ldc);
 
 template <>
 inline rocsparse_status rocsparse_csrmm(rocsparse_handle          handle,
@@ -434,10 +434,10 @@ inline rocsparse_status rocsparse_csrmm(rocsparse_handle          handle,
                                         const rocsparse_int*      csr_row_ptr,
                                         const rocsparse_int*      csr_col_ind,
                                         const float*              B,
-                                        rocsparse_int             ldb,
+                                        int64_t                   ldb,
                                         const float*              beta,
                                         float*                    C,
-                                        rocsparse_int             ldc)
+                                        int64_t                   ldc)
 {
     return rocsparse_scsrmm(handle,
                             trans_A,
@@ -472,10 +472,10 @@ inline rocsparse_status rocsparse_csrmm(rocsparse_handle          handle,
                                         const rocsparse_int*      csr_row_ptr,
                                         const rocsparse_int*      csr_col_ind,
                                         const double*             B,
-                                        rocsparse_int             ldb,
+                                        int64_t                   ldb,
                                         const double*             beta,
                                         double*                   C,
-                                        rocsparse_int             ldc)
+                                        int64_t                   ldc)
 {
     return rocsparse_dcsrmm(handle,
                             trans_A,
@@ -510,10 +510,10 @@ inline rocsparse_status rocsparse_csrmm(rocsparse_handle               handle,
                                         const rocsparse_int*           csr_row_ptr,
                                         const rocsparse_int*           csr_col_ind,
                                         const rocsparse_float_complex* B,
-                                        rocsparse_int                  ldb,
+                                        int64_t                        ldb,
                                         const rocsparse_float_complex* beta,
                                         rocsparse_float_complex*       C,
-                                        rocsparse_int                  ldc)
+                                        int64_t                        ldc)
 {
     return rocsparse_ccsrmm(handle,
                             trans_A,
@@ -548,10 +548,10 @@ inline rocsparse_status rocsparse_csrmm(rocsparse_handle                handle,
                                         const rocsparse_int*            csr_row_ptr,
                                         const rocsparse_int*            csr_col_ind,
                                         const rocsparse_double_complex* B,
-                                        rocsparse_int                   ldb,
+                                        int64_t                         ldb,
                                         const rocsparse_double_complex* beta,
                                         rocsparse_double_complex*       C,
-                                        rocsparse_int                   ldc)
+                                        int64_t                         ldc)
 {
     return rocsparse_zcsrmm(handle,
                             trans_A,

@@ -146,7 +146,7 @@ ROCSPARSE_DEVICE_ILF void gebsrmvn_1xn_device(rocsparse_int       mb,
 
         // Compute the sum of the two rows within the BSR blocks of the current
         // BSR row
-        for(rocsparse_int k = 0; k < COLBSRDIM; k++)
+        for(unsigned int k = 0; k < COLBSRDIM; k++)
         {
             sum = rocsparse_fma(bsr_val[COLBSRDIM * j + k], x[col + k], sum);
         }
@@ -220,7 +220,7 @@ ROCSPARSE_DEVICE_ILF void gebsrmvn_2xn_device(rocsparse_int       mb,
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
-            for(rocsparse_int k = 0; k < COLBSRDIM; k++)
+            for(unsigned int k = 0; k < COLBSRDIM; k++)
             {
                 sum0 = rocsparse_fma(
                     bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
@@ -240,7 +240,7 @@ ROCSPARSE_DEVICE_ILF void gebsrmvn_2xn_device(rocsparse_int       mb,
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
-            for(rocsparse_int k = 0; k < COLBSRDIM; k++)
+            for(unsigned int k = 0; k < COLBSRDIM; k++)
             {
                 sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
                                      x[COLBSRDIM * col + k],
@@ -323,7 +323,7 @@ ROCSPARSE_DEVICE_ILF void gebsrmvn_3xn_device(rocsparse_int       mb,
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
-            for(rocsparse_int k = 0; k < COLBSRDIM; k++)
+            for(unsigned int k = 0; k < COLBSRDIM; k++)
             {
                 sum0 = rocsparse_fma(
                     bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
@@ -346,7 +346,7 @@ ROCSPARSE_DEVICE_ILF void gebsrmvn_3xn_device(rocsparse_int       mb,
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
-            for(rocsparse_int k = 0; k < COLBSRDIM; k++)
+            for(unsigned int k = 0; k < COLBSRDIM; k++)
             {
                 sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
                                      x[COLBSRDIM * col + k],
@@ -437,7 +437,7 @@ ROCSPARSE_DEVICE_ILF void gebsrmvn_4xn_device(rocsparse_int       mb,
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
-            for(rocsparse_int k = 0; k < COLBSRDIM; k++)
+            for(unsigned int k = 0; k < COLBSRDIM; k++)
             {
                 sum0 = rocsparse_fma(
                     bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
@@ -463,7 +463,7 @@ ROCSPARSE_DEVICE_ILF void gebsrmvn_4xn_device(rocsparse_int       mb,
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
-            for(rocsparse_int k = 0; k < COLBSRDIM; k++)
+            for(unsigned int k = 0; k < COLBSRDIM; k++)
             {
                 sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
                                      x[COLBSRDIM * col + k],

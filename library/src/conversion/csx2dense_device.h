@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ void csr2dense_kernel(rocsparse_int base,
                       const I* __restrict__ csr_row_ptr,
                       const J* __restrict__ csr_col_ind,
                       T* __restrict__ dense_val,
-                      I               ld,
+                      int64_t         ld,
                       rocsparse_order order)
 {
     const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE,
@@ -84,7 +84,7 @@ void csc2dense_kernel(rocsparse_int base,
                       const I* __restrict__ csc_col_ptr,
                       const J* __restrict__ csc_row_ind,
                       T* __restrict__ dense_val,
-                      I               ld,
+                      int64_t         ld,
                       rocsparse_order order)
 {
     const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE,

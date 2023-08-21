@@ -32,7 +32,7 @@
         JTYPE                     n,                                               \
         const rocsparse_mat_descr descr_A,                                         \
         const TTYPE*              A,                                               \
-        ITYPE                     lda,                                             \
+        int64_t                   lda,                                             \
         const ITYPE*              nnz_per_row_column,                              \
         TTYPE*                    csx_val_A,                                       \
         ITYPE*                    csx_row_col_ptr_A,                               \

@@ -110,7 +110,7 @@ Tests:
   M: [0, 51]
   N: [0, 44]
   K: [0, 8]
-  block_dim: [-1, 0, 1, 2, 4, 8, 16, 32, 64]
+  block_dim: [1, 2, 4, 8, 16, 32, 64]
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none]

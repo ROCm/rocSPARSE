@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -36,5 +36,5 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle,
                                               const I*                  coo_row_ind,
                                               const I*                  coo_col_ind,
                                               T*                        A,
-                                              I                         lda,
+                                              int64_t                   lda,
                                               rocsparse_order           order);

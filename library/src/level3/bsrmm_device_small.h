@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +36,10 @@ ROCSPARSE_DEVICE_ILF void
                                   const rocsparse_int* __restrict__ bsr_col_ind,
                                   const T* __restrict__ bsr_val,
                                   const T* __restrict__ B,
-                                  rocsparse_int ldb,
-                                  T             beta,
+                                  int64_t ldb,
+                                  T       beta,
                                   T* __restrict__ C,
-                                  rocsparse_int        ldc,
+                                  int64_t              ldc,
                                   rocsparse_index_base idx_base)
 {
     constexpr rocsparse_int PADDED_BSR_BLOCK_DIM = (BSR_BLOCK_DIM + 1);
@@ -51,8 +51,8 @@ ROCSPARSE_DEVICE_ILF void
     rocsparse_int nwfb = hipGridDim_x * hipBlockDim_x / (WF_SIZE * BSR_BLOCK_DIM);
     rocsparse_int col  = lid + hipBlockIdx_y * WF_SIZE;
 
-    rocsparse_int colB = col * ldb;
-    rocsparse_int colC = col * ldc;
+    int64_t colB = col * ldb;
+    int64_t colC = col * ldc;
 
     // global row
     rocsparse_int global_row = (gid / WF_SIZE);
@@ -215,10 +215,10 @@ ROCSPARSE_DEVICE_ILF void
                                   const rocsparse_int* __restrict__ bsr_col_ind,
                                   const T* __restrict__ bsr_val,
                                   const T* __restrict__ B,
-                                  rocsparse_int ldb,
-                                  T             beta,
+                                  int64_t ldb,
+                                  T       beta,
                                   T* __restrict__ C,
-                                  rocsparse_int        ldc,
+                                  int64_t              ldc,
                                   rocsparse_index_base idx_base)
 {
     constexpr rocsparse_int PADDED_BSR_BLOCK_DIM = (BSR_BLOCK_DIM + 1);

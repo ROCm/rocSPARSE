@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,10 +41,10 @@ ROCSPARSE_DEVICE_ILF void
                                   rocsparse_int row_block_dim,
                                   rocsparse_int col_block_dim,
                                   const T* __restrict__ B,
-                                  rocsparse_int ldb,
-                                  T             beta,
+                                  int64_t ldb,
+                                  T       beta,
                                   T* __restrict__ C,
-                                  rocsparse_int        ldc,
+                                  int64_t              ldc,
                                   rocsparse_index_base idx_base)
 {
     const rocsparse_int tidx = hipThreadIdx_x;
@@ -63,8 +63,8 @@ ROCSPARSE_DEVICE_ILF void
         block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
     }
 
-    const rocsparse_int colB = global_col * ldb;
-    const rocsparse_int colC = global_col * ldc;
+    const int64_t colB = global_col * ldb;
+    const int64_t colC = global_col * ldc;
 
     __shared__ T shared_B[BSR_BLOCK_DIM * BLK_SIZE_Y];
     __shared__ T shared_A[BSR_BLOCK_DIM * BSR_BLOCK_DIM];

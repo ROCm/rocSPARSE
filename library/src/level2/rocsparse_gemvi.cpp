@@ -47,8 +47,8 @@ void gemvi_kernel(I m,
                   I n,
                   U alpha_device_host,
                   const T* __restrict__ A,
-                  I lda,
-                  I nnz,
+                  int64_t lda,
+                  I       nnz,
                   const T* __restrict__ x_val,
                   const I* __restrict__ x_ind,
                   U beta_device_host,
@@ -71,7 +71,7 @@ rocsparse_status rocsparse_gemvi_dispatch(rocsparse_handle     handle,
                                           I                    n,
                                           U                    alpha_device_host,
                                           const T*             A,
-                                          I                    lda,
+                                          int64_t              lda,
                                           I                    nnz,
                                           const T*             x_val,
                                           const I*             x_ind,
@@ -161,7 +161,7 @@ rocsparse_status rocsparse_gemvi_template(rocsparse_handle     handle, //0
                                           I                    n, //3
                                           const T*             alpha_device_host, //4
                                           const T*             A, //5
-                                          I                    lda, //6
+                                          int64_t              lda, //6
                                           I                    nnz, //7
                                           const T*             x_val, //8
                                           const I*             x_ind, //9

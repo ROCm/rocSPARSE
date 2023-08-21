@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,6 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
                                     J                         n,
                                     const rocsparse_mat_descr descr,
                                     const T*                  A,
-                                    I                         ld,
+                                    int64_t                   ld,
                                     I*                        nnz_per_row_columns,
                                     I*                        nnz_total_dev_host_ptr);

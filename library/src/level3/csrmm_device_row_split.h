@@ -50,10 +50,10 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_row_split_device(bool conj_A,
                                                    const J* __restrict__ csr_col_ind,
                                                    const A* __restrict__ csr_val,
                                                    const B* __restrict__ dense_B,
-                                                   J ldb,
-                                                   T beta,
+                                                   int64_t ldb,
+                                                   T       beta,
                                                    C* __restrict__ dense_C,
-                                                   J                    ldc,
+                                                   int64_t              ldc,
                                                    rocsparse_order      order_C,
                                                    rocsparse_index_base idx_base)
 {
@@ -78,14 +78,14 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_row_split_device(bool conj_A,
         J col = csr_col_ind[j] - idx_base;
         T val = conj_val(csr_val[j], conj_A);
 
-        for(J p = 0; p < LOOPS; p++)
+        for(unsigned int p = 0; p < LOOPS; p++)
         {
             sum[p] = rocsparse_fma<T>(
                 val, conj_val(rocsparse_ldg(dense_B + col + (colB + p) * ldb), conj_B), sum[p]);
         }
     }
 
-    for(J p = 0; p < LOOPS; p++)
+    for(unsigned int p = 0; p < LOOPS; p++)
     {
         sum[p] = rocsparse_wfreduce_sum<WF_SIZE>(sum[p]);
     }
@@ -96,14 +96,14 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_row_split_device(bool conj_A,
         {
             if(order_C == rocsparse_order_column)
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row + (colB + p) * ldc] = alpha * sum[p];
                 }
             }
             else
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row * ldc + (colB + p)] = alpha * sum[p];
                 }
@@ -113,7 +113,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_row_split_device(bool conj_A,
         {
             if(order_C == rocsparse_order_column)
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row + (colB + p) * ldc]
                         = rocsparse_fma<T>(beta, dense_C[row + (colB + p) * ldc], alpha * sum[p]);
@@ -121,7 +121,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_row_split_device(bool conj_A,
             }
             else
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row * ldc + (colB + p)]
                         = rocsparse_fma<T>(beta, dense_C[row * ldc + (colB + p)], alpha * sum[p]);
@@ -156,10 +156,10 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_main_device(bool conj_A,
                                                         const J* __restrict__ csr_col_ind,
                                                         const A* __restrict__ csr_val,
                                                         const B* __restrict__ dense_B,
-                                                        J ldb,
-                                                        T beta,
+                                                        int64_t ldb,
+                                                        T       beta,
                                                         C* __restrict__ dense_C,
-                                                        J                    ldc,
+                                                        int64_t              ldc,
                                                         rocsparse_order      order_C,
                                                         rocsparse_index_base idx_base)
 {
@@ -182,7 +182,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_main_device(bool conj_A,
     {
         J colB = l + lid;
 
-        for(J p = 0; p < LOOPS; p++)
+        for(unsigned int p = 0; p < LOOPS; p++)
         {
             sum[p] = static_cast<T>(0);
         }
@@ -191,8 +191,8 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_main_device(bool conj_A,
         {
             I k = j + lid;
 
-            I col;
-            T val;
+            int64_t col;
+            T       val;
 
             if(k < row_end)
             {
@@ -205,12 +205,12 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_main_device(bool conj_A,
                 val = static_cast<T>(0);
             }
 
-            for(J i = 0; i < WF_SIZE; ++i)
+            for(unsigned int i = 0; i < WF_SIZE; ++i)
             {
-                T v = rocsparse_shfl(val, i, WF_SIZE);
-                J c = __shfl(col, i, WF_SIZE);
+                T       v = rocsparse_shfl(val, i, WF_SIZE);
+                int64_t c = __shfl(col, i, WF_SIZE);
 
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     sum[p] = rocsparse_fma<T>(
                         v,
@@ -224,14 +224,14 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_main_device(bool conj_A,
         {
             if(order_C == rocsparse_order_column)
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row + (colB + p * WF_SIZE) * ldc] = alpha * sum[p];
                 }
             }
             else
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row * ldc + colB + p * WF_SIZE] = alpha * sum[p];
                 }
@@ -241,7 +241,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_main_device(bool conj_A,
         {
             if(order_C == rocsparse_order_column)
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row + (colB + p * WF_SIZE) * ldc] = rocsparse_fma<T>(
                         beta, dense_C[row + (colB + p * WF_SIZE) * ldc], alpha * sum[p]);
@@ -249,7 +249,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_main_device(bool conj_A,
             }
             else
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row * ldc + colB + p * WF_SIZE] = rocsparse_fma<T>(
                         beta, dense_C[row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
@@ -283,10 +283,10 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_remainder_device(bool conj_A,
                                                              const J* __restrict__ csr_col_ind,
                                                              const A* __restrict__ csr_val,
                                                              const B* __restrict__ dense_B,
-                                                             J ldb,
-                                                             T beta,
+                                                             int64_t ldb,
+                                                             T       beta,
                                                              C* __restrict__ dense_C,
-                                                             J                    ldc,
+                                                             int64_t              ldc,
                                                              rocsparse_order      order_C,
                                                              rocsparse_index_base idx_base)
 {
@@ -312,8 +312,8 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_remainder_device(bool conj_A,
         {
             I k = j + lid;
 
-            I col;
-            T val;
+            int64_t col;
+            T       val;
 
             if(k < row_end)
             {
@@ -326,14 +326,14 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_row_split_remainder_device(bool conj_A,
                 val = static_cast<T>(0);
             }
 
-            for(J i = 0; i < WF_SIZE; ++i)
+            for(unsigned int i = 0; i < WF_SIZE; ++i)
             {
-                T v = rocsparse_shfl(val, i, WF_SIZE);
-                J c = __shfl(col, i, WF_SIZE);
-                sum = rocsparse_fma<T>(v,
+                T       v = rocsparse_shfl(val, i, WF_SIZE);
+                int64_t c = __shfl(col, i, WF_SIZE);
+                sum       = rocsparse_fma<T>(v,
                                        (colB < ncol)
-                                           ? conj_val(rocsparse_ldg(dense_B + colB + c), conj_B)
-                                           : static_cast<T>(0),
+                                                 ? conj_val(rocsparse_ldg(dense_B + colB + c), conj_B)
+                                                 : static_cast<T>(0),
                                        sum);
             }
         }

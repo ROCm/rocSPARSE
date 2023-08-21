@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,10 +42,10 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                    const rocsparse_int*      bsr_col_ind,
                                                    rocsparse_int             block_dim,
                                                    const T*                  B,
-                                                   rocsparse_int             ldb,
+                                                   int64_t                   ldb,
                                                    U                         beta,
                                                    T*                        C,
-                                                   rocsparse_int             ldc);
+                                                   int64_t                   ldc);
 
 template <typename T>
 rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
@@ -63,7 +63,7 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
                                           const rocsparse_int*      bsr_col_ind,
                                           rocsparse_int             block_dim,
                                           const T*                  B,
-                                          rocsparse_int             ldb,
+                                          int64_t                   ldb,
                                           const T*                  beta,
                                           T*                        C,
-                                          rocsparse_int             ldc);
+                                          int64_t                   ldc);

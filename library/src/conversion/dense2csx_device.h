@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,13 +37,13 @@ void dense2csr_kernel(rocsparse_index_base base,
                       J                    m,
                       J                    n,
                       const T* __restrict__ dense_val,
-                      I ld,
+                      int64_t ld,
                       T* __restrict__ csr_val,
                       I* __restrict__ csr_row_ptr,
                       J* __restrict__ csr_col_ind)
 {
     const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE;
-    const J             lane_index      = hipThreadIdx_x % WF_SIZE;
+    const J             lane_index      = hipThreadIdx_x & (WF_SIZE - 1);
     const uint64_t      filter          = 0xffffffffffffffff >> (63 - lane_index);
     const J             row_index       = NUMROWS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
 
@@ -83,17 +83,18 @@ void dense2csr_kernel(rocsparse_index_base base,
             //
             const uint64_t wavefront_mask = __ballot(predicate);
 
-            //
-            // Get the number of previous non-zero in the row.
-            //
-            const uint64_t count_previous_nnzs = __popcll(wavefront_mask & filter);
+            // Get the number of previous non-zeros in the row for each lane.
+            const int count_previous_nnzs = __popcll(wavefront_mask & filter);
+
+            // Get the number of non-zeros in the row.
+            const int count_total_nnzs = __popcll(wavefront_mask);
 
             if(predicate)
             {
                 //
                 // Calculate local index.
                 //
-                const uint64_t local_index_in_warp = count_previous_nnzs - 1;
+                const int local_index_in_warp = count_previous_nnzs - 1;
 
                 //
                 // Populate the sparse matrix.
@@ -102,11 +103,7 @@ void dense2csr_kernel(rocsparse_index_base base,
                 csr_col_ind[shift + local_index_in_warp] = column_index + base;
             }
 
-            //
-            // Broadcast the update of the shift to all 64 threads for the next set of 64 columns.
-            // Choose the last lane since that it contains the size of the sparse row (even if its predicate is false).
-            //
-            shift += __shfl(static_cast<int>(count_previous_nnzs), WF_SIZE - 1);
+            shift += count_total_nnzs;
         }
     }
 }
@@ -121,13 +118,13 @@ void dense2csc_kernel(rocsparse_index_base base,
                       J                    m,
                       J                    n,
                       const T* __restrict__ dense_val,
-                      I ld,
+                      int64_t ld,
                       T* __restrict__ csc_val,
                       I* __restrict__ csc_col_ptr,
                       J* __restrict__ csc_row_ind)
 {
     const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE;
-    const J             lane_index      = hipThreadIdx_x % WF_SIZE;
+    const J             lane_index      = hipThreadIdx_x & (WF_SIZE - 1);
     const uint64_t      filter          = 0xffffffffffffffff >> (63 - lane_index);
     const J             column_index    = NUMCOLUMNS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
 
@@ -139,7 +136,6 @@ void dense2csc_kernel(rocsparse_index_base base,
         //
         for(J row_index = lane_index; row_index < m; row_index += WF_SIZE)
         {
-
             //
             // Get value.
             //
@@ -163,10 +159,11 @@ void dense2csc_kernel(rocsparse_index_base base,
             //
             const uint64_t wavefront_mask = __ballot(predicate);
 
-            //
-            // Get the number of previous non-zero in the row.
-            //
-            const uint64_t count_previous_nnzs = __popcll(wavefront_mask & filter);
+            // Get the number of previous non-zeros in the row for each lane.
+            const int count_previous_nnzs = __popcll(wavefront_mask & filter);
+
+            // Get the number of non-zeros in the row.
+            const int count_total_nnzs = __popcll(wavefront_mask);
 
             //
             // Synchronize for cache considerations.
@@ -178,7 +175,7 @@ void dense2csc_kernel(rocsparse_index_base base,
                 //
                 // Calculate local index.
                 //
-                const uint64_t local_index = count_previous_nnzs - 1;
+                const int local_index = count_previous_nnzs - 1;
 
                 //
                 // Populate the sparse matrix.
@@ -187,11 +184,7 @@ void dense2csc_kernel(rocsparse_index_base base,
                 csc_row_ind[shift + local_index] = row_index + base;
             }
 
-            //
-            // Broadcast the update of the shift to all 64 threads for the next set of 64 columns.
-            // Choose the last lane since that it contains the size of the sparse row (even if its predicate is false).
-            //
-            shift += __shfl(static_cast<int>(count_previous_nnzs), WF_SIZE - 1);
+            shift += count_total_nnzs;
         }
     }
 }

@@ -35,7 +35,7 @@
         const ITYPE*              csx_row_col_ptr,                                 \
         const JTYPE*              csx_col_row_ind,                                 \
         TTYPE*                    A,                                               \
-        ITYPE                     lda,                                             \
+        int64_t                   lda,                                             \
         rocsparse_order           order);
 
 INSTANTIATE(rocsparse_direction_row, int32_t, int32_t, float);

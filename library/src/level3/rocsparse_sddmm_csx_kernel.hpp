@@ -46,10 +46,10 @@ void sddmm_csx_kernel(rocsparse_operation transA,
                       I                   nnz,
                       U                   alpha_device_host,
                       const T* __restrict__ A,
-                      J lda,
+                      int64_t lda,
                       const T* __restrict__ B,
-                      J ldb,
-                      U beta_device_host,
+                      int64_t ldb,
+                      U       beta_device_host,
                       T* __restrict__ csx_val,
                       const I* __restrict__ csx_ptr,
                       const J* __restrict__ csx_ind,
@@ -77,16 +77,16 @@ void sddmm_csx_kernel(rocsparse_operation transA,
         return;
     }
 
-    const J incx = (orderA == rocsparse_order_column)
-                       ? ((transA == rocsparse_operation_none) ? lda : 1)
-                       : ((transA == rocsparse_operation_none) ? 1 : lda);
+    const int64_t incx = (orderA == rocsparse_order_column)
+                             ? ((transA == rocsparse_operation_none) ? lda : 1)
+                             : ((transA == rocsparse_operation_none) ? 1 : lda);
 
-    const J incy = (orderB == rocsparse_order_column)
-                       ? ((transB == rocsparse_operation_none) ? 1 : ldb)
-                       : ((transB == rocsparse_operation_none) ? ldb : 1);
+    const int64_t incy = (orderB == rocsparse_order_column)
+                             ? ((transB == rocsparse_operation_none) ? 1 : ldb)
+                             : ((transB == rocsparse_operation_none) ? ldb : 1);
 
-    const J xinc = (row_oriented) ? incx : incy;
-    const J yinc = (row_oriented) ? incy : incx;
+    const int64_t xinc = (row_oriented) ? incx : incy;
+    const int64_t yinc = (row_oriented) ? incy : incx;
 
     __shared__ T s[NUM_SEQS][NTHREADS_PER_DOTPRODUCT];
 

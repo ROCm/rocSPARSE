@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,13 +43,13 @@ template <unsigned int BLOCKSIZE, typename T>
 ROCSPARSE_DEVICE_ILF void gemmit_kernel(rocsparse_int m,
                                         T             alpha,
                                         const T* __restrict__ A,
-                                        rocsparse_int lda,
+                                        int64_t lda,
                                         const rocsparse_int* __restrict__ csr_row_ptr,
                                         const rocsparse_int* __restrict__ csr_col_ind,
                                         const T* __restrict__ csr_val,
                                         T beta,
                                         T* __restrict__ C,
-                                        rocsparse_int        ldc,
+                                        int64_t              ldc,
                                         rocsparse_index_base base)
 {
     rocsparse_int row = hipBlockIdx_y;

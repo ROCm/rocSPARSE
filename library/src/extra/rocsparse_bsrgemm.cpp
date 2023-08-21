@@ -2396,22 +2396,16 @@ static inline rocsparse_status rocsparse_bsrgemm_multadd_template(rocsparse_hand
 
     if(bsr_val_C == nullptr && bsr_col_ind_C == nullptr)
     {
-        rocsparse_int start = 0;
-        rocsparse_int end   = 0;
+        I start = 0;
+        I end   = 0;
 
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&end,
-                                           &bsr_row_ptr_C[mb],
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyDeviceToHost,
-                                           handle->stream));
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&start,
-                                           &bsr_row_ptr_C[0],
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyDeviceToHost,
-                                           handle->stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &end, &bsr_row_ptr_C[mb], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &start, &bsr_row_ptr_C[0], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-        rocsparse_int nnzb = (end - start);
+        I nnzb = (end - start);
 
         if(nnzb != 0)
         {
@@ -2643,22 +2637,16 @@ static inline rocsparse_status rocsparse_bsrgemm_mult_template(rocsparse_handle 
 
     if(bsr_val_C == nullptr && bsr_col_ind_C == nullptr)
     {
-        rocsparse_int start = 0;
-        rocsparse_int end   = 0;
+        I start = 0;
+        I end   = 0;
 
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&end,
-                                           &bsr_row_ptr_C[mb],
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyDeviceToHost,
-                                           handle->stream));
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&start,
-                                           &bsr_row_ptr_C[0],
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyDeviceToHost,
-                                           handle->stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &end, &bsr_row_ptr_C[mb], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &start, &bsr_row_ptr_C[0], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-        rocsparse_int nnzb_C = (end - start);
+        I nnzb_C = (end - start);
 
         if(nnzb_C != 0)
         {
@@ -2822,22 +2810,16 @@ static inline rocsparse_status rocsparse_bsrgemm_scal_template(rocsparse_handle 
 
     if(bsr_val_C == nullptr && bsr_col_ind_C == nullptr)
     {
-        rocsparse_int start = 0;
-        rocsparse_int end   = 0;
+        I start = 0;
+        I end   = 0;
 
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&end,
-                                           &bsr_row_ptr_C[mb],
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyDeviceToHost,
-                                           handle->stream));
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&start,
-                                           &bsr_row_ptr_C[0],
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyDeviceToHost,
-                                           handle->stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &end, &bsr_row_ptr_C[mb], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &start, &bsr_row_ptr_C[0], sizeof(I), hipMemcpyDeviceToHost, handle->stream));
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-        rocsparse_int nnzb_C = (end - start);
+        I nnzb_C = (end - start);
 
         if(nnzb_C != 0)
         {
