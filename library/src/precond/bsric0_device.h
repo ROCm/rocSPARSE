@@ -62,14 +62,13 @@ void bsric0_2_8_unrolled_kernel(rocsparse_direction direction,
     // the warp break so no divergence
     if(block_row_diag == -1)
     {
-        __threadfence();
-
         if(tidx == 0 && tidy == 0)
         {
             rocsparse_atomic_min(zero_pivot, block_row + idx_base);
 
             // Last lane in wavefront writes "we are done" flag for its block row
-            atomicOr(&block_done[block_row], 1);
+            __hip_atomic_store(
+                &block_done[block_row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
         }
 
         return;
@@ -151,10 +150,11 @@ void bsric0_2_8_unrolled_kernel(rocsparse_direction direction,
         __threadfence_block();
 
         // Spin loop until dependency has been resolved
-        while(!atomicOr(&block_done[block_col], 0))
+        while(
+            !__hip_atomic_load(&block_done[block_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT))
             ;
 
-        __threadfence();
+        __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
         if(direction == rocsparse_direction_row)
         {
@@ -408,12 +408,10 @@ void bsric0_2_8_unrolled_kernel(rocsparse_direction direction,
         bsr_val[BSRDIM * BSRDIM * block_row_diag + BSRDIM * tidx + tidy] = values[tidy][tidx];
     }
 
-    __threadfence();
-
     if(tidx == 0 && tidy == 0)
     {
         // Last lane in wavefront writes "we are done" flag for its block row
-        atomicOr(&block_done[block_row], 1);
+        __hip_atomic_store(&block_done[block_row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
     }
 }
 
@@ -453,14 +451,13 @@ void bsric0_2_8_kernel(rocsparse_direction direction,
     // the warp break so no divergence
     if(block_row_diag == -1)
     {
-        __threadfence();
-
         if(tidx == 0 && tidy == 0)
         {
             rocsparse_atomic_min(zero_pivot, block_row + idx_base);
 
             // Last lane in wavefront writes "we are done" flag for its block row
-            atomicOr(&block_done[block_row], 1);
+            __hip_atomic_store(
+                &block_done[block_row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
         }
 
         return;
@@ -547,10 +544,11 @@ void bsric0_2_8_kernel(rocsparse_direction direction,
         __threadfence_block();
 
         // Spin loop until dependency has been resolved
-        while(!atomicOr(&block_done[block_col], 0))
+        while(
+            !__hip_atomic_load(&block_done[block_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT))
             ;
 
-        __threadfence();
+        __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
         if(direction == rocsparse_direction_row)
         {
@@ -739,12 +737,10 @@ void bsric0_2_8_kernel(rocsparse_direction direction,
         }
     }
 
-    __threadfence();
-
     if(tidx == 0 && tidy == 0)
     {
         // Last lane in wavefront writes "we are done" flag for its block row
-        atomicOr(&block_done[block_row], 1);
+        __hip_atomic_store(&block_done[block_row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
     }
 }
 
@@ -787,14 +783,13 @@ void bsric0_9_16_kernel(rocsparse_direction direction,
     // the warp break so no divergence
     if(block_row_diag == -1)
     {
-        __threadfence();
-
         if(tidx == 0 && tidy == 0)
         {
             rocsparse_atomic_min(zero_pivot, block_row + idx_base);
 
             // Last lane in wavefront writes "we are done" flag for its block row
-            atomicOr(&block_done[block_row], 1);
+            __hip_atomic_store(
+                &block_done[block_row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
         }
 
         return;
@@ -888,10 +883,11 @@ void bsric0_9_16_kernel(rocsparse_direction direction,
         __threadfence_block();
 
         // Spin loop until dependency has been resolved
-        while(!atomicOr(&block_done[block_col], 0))
+        while(
+            !__hip_atomic_load(&block_done[block_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT))
             ;
 
-        __threadfence();
+        __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
         for(rocsparse_int q = tidx; q < block_dim; q += DIMX)
         {
@@ -1100,12 +1096,10 @@ void bsric0_9_16_kernel(rocsparse_direction direction,
         }
     }
 
-    __threadfence();
-
     if(tidx == 0 && tidy == 0)
     {
         // Last lane in wavefront writes "we are done" flag for its block row
-        atomicOr(&block_done[block_row], 1);
+        __hip_atomic_store(&block_done[block_row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
     }
 }
 
@@ -1147,14 +1141,13 @@ void bsric0_17_32_kernel(rocsparse_direction direction,
     // the warp break so no divergence
     if(block_row_diag == -1)
     {
-        __threadfence();
-
         if(tidx == 0 && tidy == 0)
         {
             rocsparse_atomic_min(zero_pivot, block_row + idx_base);
 
             // Last lane in wavefront writes "we are done" flag for its block row
-            atomicOr(&block_done[block_row], 1);
+            __hip_atomic_store(
+                &block_done[block_row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
         }
 
         return;
@@ -1248,10 +1241,11 @@ void bsric0_17_32_kernel(rocsparse_direction direction,
         __threadfence_block();
 
         // Spin loop until dependency has been resolved
-        while(!atomicOr(&block_done[block_col], 0))
+        while(
+            !__hip_atomic_load(&block_done[block_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT))
             ;
 
-        __threadfence();
+        __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
         // Loop over the row the current column index depends on
         // Each lane processes one entry
@@ -1451,12 +1445,10 @@ void bsric0_17_32_kernel(rocsparse_direction direction,
         }
     }
 
-    __threadfence();
-
     if(tidx == 0 && tidy == 0)
     {
         // First lane in wavefront writes "we are done" flag for its block row
-        atomicOr(&block_done[block_row], 1);
+        __hip_atomic_store(&block_done[block_row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
     }
 }
 
@@ -1489,14 +1481,13 @@ void bsric0_binsearch_kernel(rocsparse_direction direction,
     // the warp break so no divergence
     if(block_row_diag == -1)
     {
-        __threadfence();
-
         if(lid == WFSIZE - 1)
         {
             rocsparse_atomic_min(zero_pivot, block_row + idx_base);
 
             // Last lane in wavefront writes "we are done" flag for its block row
-            atomicOr(&block_done[block_row], 1);
+            __hip_atomic_store(
+                &block_done[block_row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
         }
 
         return;
@@ -1532,7 +1523,8 @@ void bsric0_binsearch_kernel(rocsparse_direction direction,
             }
 
             // Spin loop until dependency has been resolved
-            int          local_done    = atomicOr(&block_done[block_col], 0);
+            int local_done = __hip_atomic_load(
+                &block_done[block_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
             unsigned int times_through = 0;
             while(!local_done)
             {
@@ -1549,10 +1541,11 @@ void bsric0_binsearch_kernel(rocsparse_direction direction,
                     }
                 }
 
-                local_done = atomicOr(&block_done[block_col], 0);
+                local_done = __hip_atomic_load(
+                    &block_done[block_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
             }
 
-            __threadfence();
+            __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
             for(rocsparse_int k = 0; k < block_dim; k++)
             {
@@ -1765,11 +1758,9 @@ void bsric0_binsearch_kernel(rocsparse_direction direction,
         }
     }
 
-    __threadfence();
-
     if(lid == WFSIZE - 1)
     {
         // Last lane writes "we are done" flag for current block row
-        atomicOr(&block_done[block_row], 1);
+        __hip_atomic_store(&block_done[block_row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
     }
 }

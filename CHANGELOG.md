@@ -2,7 +2,7 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## rocSPARSE 3.0.0
+## rocSPARSE 3.0.1
 ### Added
 - Added rocsparse_inverse_permutation
 - Added mixed precisions for SpVV
@@ -16,6 +16,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Optimization to doti routine
 - Fixed a bug in rocsparse-bench, where SpMV algorithm was not taken into account in CSR format
 - Fixed the BSR/GEBSR routines bsrmv, bsrsv, bsrmm, bsrgeam, gebsrmv, gebsrmm so that block_dim==0 is considered an invalid size
+- Improved spin-looping algorithms
 ### Known Issues
 
 ## rocSPARSE 2.5.4 for ROCm 5.7.0

@@ -174,7 +174,8 @@ ROCSPARSE_DEVICE_ILF void csrsm_device(rocsparse_operation transB,
         // Spin loop until dependency has been resolved
         if(hipThreadIdx_x == 0)
         {
-            int          local_done    = atomicOr(&done_array[local_col + id], 0);
+            int local_done = __hip_atomic_load(
+                &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
             unsigned int times_through = 0;
             while(!local_done)
             {
@@ -191,7 +192,8 @@ ROCSPARSE_DEVICE_ILF void csrsm_device(rocsparse_operation transB,
                     }
                 }
 
-                local_done = atomicOr(&done_array[local_col + id], 0);
+                local_done = __hip_atomic_load(
+                    &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
             }
         }
 
@@ -199,7 +201,7 @@ ROCSPARSE_DEVICE_ILF void csrsm_device(rocsparse_operation transB,
         __syncthreads();
 
         // Make sure updated B is visible globally
-        __threadfence();
+        __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
         // Index into X
         J idx_X = local_col * ldb + col_B;
@@ -240,6 +242,6 @@ ROCSPARSE_DEVICE_ILF void csrsm_device(rocsparse_operation transB,
     if(hipThreadIdx_x == 0)
     {
         // Write the "row is done" flag
-        atomicOr(&done_array[row + id], 1);
+        __hip_atomic_store(&done_array[row + id], 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
     }
 }

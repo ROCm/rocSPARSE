@@ -90,11 +90,12 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_2_8_device(rocsparse_direction  dir,
             }
 
             // Spin loop until dependency has been resolved
-            while(!atomicOr(&done_array[bsr_col], 0))
+            while(!__hip_atomic_load(
+                &done_array[bsr_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT))
                 ;
 
             // Make sure dependencies are visible in global memory
-            __threadfence();
+            __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
             // Load updated BSR block into shared memory
             sdata1[threadIdx.y][threadIdx.x]
@@ -305,13 +306,10 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_2_8_device(rocsparse_direction  dir,
         pivot = true;
     }
 
-    // Make sure updated bsr_val is written to global memory
-    __threadfence();
-
     if(threadIdx.x == 0 && threadIdx.y == 0)
     {
         // First lane writes "we are done" flag
-        atomicOr(&done_array[row], 1);
+        __hip_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
 
         if(pivot)
         {
@@ -391,11 +389,12 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_9_32_device(rocsparse_direction  dir,
             }
 
             // Spin loop until dependency has been resolved
-            while(!atomicOr(&done_array[bsr_col], 0))
+            while(!__hip_atomic_load(
+                &done_array[bsr_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT))
                 ;
 
             // Make sure dependencies are visible in global memory
-            __threadfence();
+            __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
             // Load updated BSR block into shared memory
             for(rocsparse_int p = threadIdx.x; p < block_dim; p += DIMX)
@@ -632,13 +631,10 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_9_32_device(rocsparse_direction  dir,
         pivot = true;
     }
 
-    // Make sure updated bsr_val is written to global memory
-    __threadfence();
-
     if(threadIdx.x == 0 && threadIdx.y == 0)
     {
         // First lane writes "we are done" flag
-        atomicOr(&done_array[row], 1);
+        __hip_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
 
         if(pivot)
         {
@@ -708,11 +704,12 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_33_64_device(rocsparse_direction  dir,
             }
 
             // Spin loop until dependency has been resolved
-            while(!atomicOr(&done_array[bsr_col], 0))
+            while(!__hip_atomic_load(
+                &done_array[bsr_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT))
                 ;
 
             // Make sure dependencies are visible in global memory
-            __threadfence();
+            __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
             // Load updated BSR block into shared memory
             for(rocsparse_int p = threadIdx.x; p < block_dim; p += DIMX)
@@ -939,13 +936,10 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_33_64_device(rocsparse_direction  dir,
         pivot = true;
     }
 
-    // Make sure updated bsr_val is written to global memory
-    __threadfence();
-
     if(threadIdx.x == 0 && threadIdx.y == 0)
     {
         // First lane writes "we are done" flag
-        atomicOr(&done_array[row], 1);
+        __hip_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
 
         if(pivot)
         {
@@ -1021,7 +1015,8 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_general_device(rocsparse_direction  dir,
             }
 
             // Spin loop until dependency has been resolved
-            int          local_done    = atomicOr(&done_array[bsr_col], 0);
+            int local_done = __hip_atomic_load(
+                &done_array[bsr_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
             unsigned int times_through = 0;
             while(!local_done)
             {
@@ -1038,11 +1033,12 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_general_device(rocsparse_direction  dir,
                     }
                 }
 
-                local_done = atomicOr(&done_array[bsr_col], 0);
+                local_done = __hip_atomic_load(
+                    &done_array[bsr_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
             }
 
             // Make sure dependencies are visible in global memory
-            __threadfence();
+            __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
             // Loop through all rows within the BSR block
             for(rocsparse_int bi = 0; bi < block_dim; ++bi)
@@ -1192,13 +1188,10 @@ ROCSPARSE_DEVICE_ILF void bsrilu0_general_device(rocsparse_direction  dir,
         pivot = true;
     }
 
-    // Make sure updated bsr_val is written to global memory
-    __threadfence();
-
     if(lid == 0)
     {
         // First lane writes "we are done" flag
-        atomicOr(&done_array[row], 1);
+        __hip_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
 
         if(pivot)
         {
