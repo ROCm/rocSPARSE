@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,29 +26,43 @@
 
 #include "utility.h"
 
-template <typename T, typename I, typename J>
-rocsparse_status rocsparse_csrcolor_dispatch(J                         m,
-                                             I                         nnz,
-                                             const rocsparse_mat_descr descr,
-                                             const T*                  csr_val,
-                                             const I*                  csr_row_ptr,
-                                             const J*                  csr_col_ind,
-                                             const floating_data_t<T>* fraction_to_color,
-                                             J*                        ncolors,
-                                             J*                        colors,
-                                             J*                        reordering,
-                                             rocsparse_color_info      info);
+rocsparse_status rocsparse_csrcolor_quickreturn(rocsparse_handle          handle,
+                                                int64_t                   m,
+                                                int64_t                   nnz,
+                                                const rocsparse_mat_descr descr,
+                                                const void*               csr_val,
+                                                const void*               csr_row_ptr,
+                                                const void*               csr_col_ind,
+                                                const void*               fraction_to_color,
+                                                void*                     ncolors,
+                                                void*                     coloring,
+                                                void*                     reordering,
+                                                rocsparse_mat_info        info);
 
-template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
-rocsparse_status rocsparse_csrcolor_template(rocsparse_handle          handle,
-                                             J                         m,
-                                             I                         nnz,
-                                             const rocsparse_mat_descr descr,
-                                             const T*                  csr_val,
-                                             const I*                  csr_row_ptr,
-                                             const J*                  csr_col_ind,
-                                             const floating_data_t<T>* fraction_to_color,
-                                             J*                        ncolors,
-                                             J*                        coloring,
-                                             J*                        reordering,
-                                             rocsparse_color_info      info);
+template <typename T, typename I, typename J>
+rocsparse_status rocsparse_csrcolor_core(rocsparse_handle          handle,
+                                         J                         m,
+                                         I                         nnz,
+                                         const rocsparse_mat_descr descr,
+                                         const T*                  csr_val,
+                                         const I*                  csr_row_ptr,
+                                         const J*                  csr_col_ind,
+                                         const floating_data_t<T>* fraction_to_color,
+                                         J*                        ncolors,
+                                         J*                        coloring,
+                                         J*                        reordering,
+                                         rocsparse_color_info      info);
+
+template <typename... P>
+rocsparse_status rocsparse_csrcolor_template(P&&... p)
+{
+    const rocsparse_status status = rocsparse_csrcolor_quickreturn(p...);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrcolor_core(p...));
+    return rocsparse_status_success;
+}
