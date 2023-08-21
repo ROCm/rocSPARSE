@@ -43,8 +43,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                                          void*                       temp_buffer)
 {
     // STAGE 1 - compute required buffer size of temp_buffer
-    if(stage == rocsparse_spsm_stage_buffer_size
-       || (stage == rocsparse_spsm_stage_auto && temp_buffer == nullptr))
+    if(stage == rocsparse_spsm_stage_buffer_size)
     {
         if(matA->format == rocsparse_format_csr)
         {
@@ -99,8 +98,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
     }
 
     // STAGE 2 - preprocess stage
-    if(stage == rocsparse_spsm_stage_preprocess
-       || (stage == rocsparse_spsm_stage_auto && buffer_size == nullptr))
+    if(stage == rocsparse_spsm_stage_preprocess)
     {
         if(matA->analysed == false)
         {
@@ -158,7 +156,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
     }
 
     // STAGE 3 - perform SpSM computation
-    if(stage == rocsparse_spsm_stage_compute || stage == rocsparse_spsm_stage_auto)
+    if(stage == rocsparse_spsm_stage_compute)
     {
         // copy B to C and perform in-place using C
         if(matB->rows > 0 && matB->cols > 0)

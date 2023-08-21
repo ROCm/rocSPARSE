@@ -67,7 +67,7 @@ void testing_spgemm_bsr_bad_arg(const Arguments& arg)
     rocsparse_operation    trans_B = rocsparse_operation_none;
     rocsparse_index_base   base    = rocsparse_index_base_zero;
     rocsparse_spgemm_alg   alg     = rocsparse_spgemm_alg_default;
-    rocsparse_spgemm_stage stage   = rocsparse_spgemm_stage_auto;
+    rocsparse_spgemm_stage stage   = rocsparse_spgemm_stage_compute;
 
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
