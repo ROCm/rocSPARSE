@@ -336,7 +336,6 @@ void testing_csrilu0(const Arguments& arg)
                                 (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                               : rocsparse_status_success);
 
-
         // Sync to force updated pivots
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
