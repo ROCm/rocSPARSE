@@ -32,37 +32,38 @@
  */
 
 // rocsparse_xbsrmv_ex_analysis
-#define C_IMPL(NAME, TYPE)                                                  \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,      \
-                                     rocsparse_direction       dir,         \
-                                     rocsparse_operation       trans,       \
-                                     rocsparse_int             mb,          \
-                                     rocsparse_int             nb,          \
-                                     rocsparse_int             nnzb,        \
-                                     const rocsparse_mat_descr descr,       \
-                                     const TYPE*               bsr_val,     \
-                                     const rocsparse_int*      bsr_row_ptr, \
-                                     const rocsparse_int*      bsr_col_ind, \
-                                     rocsparse_int             block_dim,   \
-                                     rocsparse_mat_info        info)        \
-    try                                                                     \
-    {                                                                       \
-        return rocsparse_bsrmv_analysis_template(handle,                    \
-                                                 dir,                       \
-                                                 trans,                     \
-                                                 mb,                        \
-                                                 nb,                        \
-                                                 nnzb,                      \
-                                                 descr,                     \
-                                                 bsr_val,                   \
-                                                 bsr_row_ptr,               \
-                                                 bsr_col_ind,               \
-                                                 block_dim,                 \
-                                                 info);                     \
-    }                                                                       \
-    catch(...)                                                              \
-    {                                                                       \
-        return exception_to_rocsparse_status();                             \
+#define C_IMPL(NAME, TYPE)                                                       \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,           \
+                                     rocsparse_direction       dir,              \
+                                     rocsparse_operation       trans,            \
+                                     rocsparse_int             mb,               \
+                                     rocsparse_int             nb,               \
+                                     rocsparse_int             nnzb,             \
+                                     const rocsparse_mat_descr descr,            \
+                                     const TYPE*               bsr_val,          \
+                                     const rocsparse_int*      bsr_row_ptr,      \
+                                     const rocsparse_int*      bsr_col_ind,      \
+                                     rocsparse_int             block_dim,        \
+                                     rocsparse_mat_info        info)             \
+    try                                                                          \
+    {                                                                            \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrmv_analysis_template(handle,      \
+                                                                    dir,         \
+                                                                    trans,       \
+                                                                    mb,          \
+                                                                    nb,          \
+                                                                    nnzb,        \
+                                                                    descr,       \
+                                                                    bsr_val,     \
+                                                                    bsr_row_ptr, \
+                                                                    bsr_col_ind, \
+                                                                    block_dim,   \
+                                                                    info));      \
+        return rocsparse_status_success;                                         \
+    }                                                                            \
+    catch(...)                                                                   \
+    {                                                                            \
+        RETURN_ROCSPARSE_EXCEPTION();                                            \
     }
 
 C_IMPL(rocsparse_sbsrmv_ex_analysis, float);
@@ -92,26 +93,27 @@ C_IMPL(rocsparse_zbsrmv_ex_analysis, rocsparse_double_complex);
                                      TYPE*                     y)           \
     try                                                                     \
     {                                                                       \
-        return rocsparse_bsrmv_template(handle,                             \
-                                        dir,                                \
-                                        trans,                              \
-                                        mb,                                 \
-                                        nb,                                 \
-                                        nnzb,                               \
-                                        alpha,                              \
-                                        descr,                              \
-                                        bsr_val,                            \
-                                        bsr_row_ptr,                        \
-                                        bsr_col_ind,                        \
-                                        block_dim,                          \
-                                        info,                               \
-                                        x,                                  \
-                                        beta,                               \
-                                        y);                                 \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrmv_template(handle,          \
+                                                           dir,             \
+                                                           trans,           \
+                                                           mb,              \
+                                                           nb,              \
+                                                           nnzb,            \
+                                                           alpha,           \
+                                                           descr,           \
+                                                           bsr_val,         \
+                                                           bsr_row_ptr,     \
+                                                           bsr_col_ind,     \
+                                                           block_dim,       \
+                                                           info,            \
+                                                           x,               \
+                                                           beta,            \
+                                                           y));             \
+        return rocsparse_status_success;                                    \
     }                                                                       \
     catch(...)                                                              \
     {                                                                       \
-        return exception_to_rocsparse_status();                             \
+        RETURN_ROCSPARSE_EXCEPTION();                                       \
     }
 
 C_IMPL(rocsparse_sbsrmv_ex, float);
@@ -125,9 +127,10 @@ extern "C" rocsparse_status rocsparse_bsrmv_ex_clear(rocsparse_handle   handle,
                                                      rocsparse_mat_info info)
 try
 {
-    return rocsparse_bsrmv_clear(handle, info);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrmv_clear(handle, info));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

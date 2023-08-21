@@ -33,23 +33,18 @@
 #include <rocprim/rocprim.hpp>
 
 template <typename I, typename T>
-rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle,
-                                              I                         m,
-                                              I                         n,
-                                              int64_t                   nnz,
-                                              const rocsparse_mat_descr descr,
-                                              const T*                  coo_val,
-                                              const I*                  coo_row_ind,
-                                              const I*                  coo_col_ind,
-                                              T*                        A,
-                                              I                         lda,
-                                              rocsparse_order           order)
+rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle, //0
+                                              I                         m, //1
+                                              I                         n, //2
+                                              int64_t                   nnz, //3
+                                              const rocsparse_mat_descr descr, //4
+                                              const T*                  coo_val, //5
+                                              const I*                  coo_row_ind, //6
+                                              const I*                  coo_col_ind, //7
+                                              T*                        A, //8
+                                              I                         lda, //9
+                                              rocsparse_order           order) //10
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
 
     // Logging
     log_trace(handle,
@@ -64,19 +59,11 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle,
               (const void*&)A,
               lda);
 
-    log_bench(handle, "./rocsparse-bench -f coo2dense -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
-
-    // Check matrix descriptor
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check sizes
-    if(m < 0 || n < 0 || nnz < 0 || lda < (order == rocsparse_order_column ? m : n))
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG(
+        9, lda, (lda < (order == rocsparse_order_column ? m : n)), rocsparse_status_invalid_size);
 
     // Quick return if possible
     if(m == 0 || n == 0)
@@ -84,23 +71,12 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle,
         return rocsparse_status_success;
     }
 
-    // Check pointer arguments
-    if(A == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // All must be null (zero matrix) or none null
-    if(!(coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr)
-       && !(coo_val != nullptr && coo_row_ind != nullptr && coo_col_ind != nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz != 0 && (coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
+    ROCSPARSE_CHECKARG_POINTER(4, descr);
+    ROCSPARSE_CHECKARG_ARRAY(5, nnz, coo_val);
+    ROCSPARSE_CHECKARG_ARRAY(6, nnz, coo_row_ind);
+    ROCSPARSE_CHECKARG_ARRAY(7, nnz, coo_col_ind);
+    ROCSPARSE_CHECKARG_ARRAY(8, (m * n), A);
 
     // Stream
     hipStream_t stream = handle->stream;
@@ -183,82 +159,39 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
 * ===========================================================================
 */
 
-extern "C" rocsparse_status rocsparse_scoo2dense(rocsparse_handle          handle,
-                                                 rocsparse_int             m,
-                                                 rocsparse_int             n,
-                                                 rocsparse_int             nnz,
-                                                 const rocsparse_mat_descr descr,
-                                                 const float*              coo_val,
-                                                 const rocsparse_int*      coo_row_ind,
-                                                 const rocsparse_int*      coo_col_ind,
-                                                 float*                    A,
-                                                 rocsparse_int             ld)
-try
-{
-    return rocsparse_coo2dense_template(
-        handle, m, n, nnz, descr, coo_val, coo_row_ind, coo_col_ind, A, ld, rocsparse_order_column);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
-}
+#define CIMPL(NAME, T)                                                                   \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                   \
+                                     rocsparse_int             m,                        \
+                                     rocsparse_int             n,                        \
+                                     rocsparse_int             nnz,                      \
+                                     const rocsparse_mat_descr descr,                    \
+                                     const T*                  coo_val,                  \
+                                     const rocsparse_int*      coo_row_ind,              \
+                                     const rocsparse_int*      coo_col_ind,              \
+                                     T*                        A,                        \
+                                     rocsparse_int             ld)                       \
+    try                                                                                  \
+    {                                                                                    \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2dense_template(handle,                   \
+                                                               m,                        \
+                                                               n,                        \
+                                                               nnz,                      \
+                                                               descr,                    \
+                                                               coo_val,                  \
+                                                               coo_row_ind,              \
+                                                               coo_col_ind,              \
+                                                               A,                        \
+                                                               ld,                       \
+                                                               rocsparse_order_column)); \
+        return rocsparse_status_success;                                                 \
+    }                                                                                    \
+    catch(...)                                                                           \
+    {                                                                                    \
+        RETURN_ROCSPARSE_EXCEPTION();                                                    \
+    }
 
-extern "C" rocsparse_status rocsparse_dcoo2dense(rocsparse_handle          handle,
-                                                 rocsparse_int             m,
-                                                 rocsparse_int             n,
-                                                 rocsparse_int             nnz,
-                                                 const rocsparse_mat_descr descr,
-                                                 const double*             coo_val,
-                                                 const rocsparse_int*      coo_row_ind,
-                                                 const rocsparse_int*      coo_col_ind,
-                                                 double*                   A,
-                                                 rocsparse_int             ld)
-try
-{
-    return rocsparse_coo2dense_template(
-        handle, m, n, nnz, descr, coo_val, coo_row_ind, coo_col_ind, A, ld, rocsparse_order_column);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
-}
-
-extern "C" rocsparse_status rocsparse_ccoo2dense(rocsparse_handle               handle,
-                                                 rocsparse_int                  m,
-                                                 rocsparse_int                  n,
-                                                 rocsparse_int                  nnz,
-                                                 const rocsparse_mat_descr      descr,
-                                                 const rocsparse_float_complex* coo_val,
-                                                 const rocsparse_int*           coo_row_ind,
-                                                 const rocsparse_int*           coo_col_ind,
-                                                 rocsparse_float_complex*       A,
-                                                 rocsparse_int                  ld)
-try
-{
-    return rocsparse_coo2dense_template(
-        handle, m, n, nnz, descr, coo_val, coo_row_ind, coo_col_ind, A, ld, rocsparse_order_column);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
-}
-
-extern "C" rocsparse_status rocsparse_zcoo2dense(rocsparse_handle                handle,
-                                                 rocsparse_int                   m,
-                                                 rocsparse_int                   n,
-                                                 rocsparse_int                   nnz,
-                                                 const rocsparse_mat_descr       descr,
-                                                 const rocsparse_double_complex* coo_val,
-                                                 const rocsparse_int*            coo_row_ind,
-                                                 const rocsparse_int*            coo_col_ind,
-                                                 rocsparse_double_complex*       A,
-                                                 rocsparse_int                   ld)
-try
-{
-    return rocsparse_coo2dense_template(
-        handle, m, n, nnz, descr, coo_val, coo_row_ind, coo_col_ind, A, ld, rocsparse_order_column);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
-}
+CIMPL(rocsparse_scoo2dense, float);
+CIMPL(rocsparse_dcoo2dense, double);
+CIMPL(rocsparse_ccoo2dense, rocsparse_float_complex);
+CIMPL(rocsparse_zcoo2dense, rocsparse_double_complex);
+#undef CIMPL

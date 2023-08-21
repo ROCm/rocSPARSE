@@ -340,14 +340,14 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
 
 
     // Determine gcnArch and ASIC revision
-    int gcnArch = handle->properties.gcnArch;
-    int asicRev = handle->asic_rev;
+    const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+    const int         asicRev       = handle->asic_rev;
 
 #define CSRIC0_DIM 256
     dim3 csric0_blocks((m * handle->wavefront_size - 1) / CSRIC0_DIM + 1);
     dim3 csric0_threads(CSRIC0_DIM);
 
-    if(gcnArch == 908 && asicRev < 2)
+    if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
     {
         hipLaunchKernelGGL((csric0_binsearch_kernel<CSRIC0_DIM, 64, true>),
                            csric0_blocks,

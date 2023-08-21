@@ -35,39 +35,39 @@ void testing_check_spmat_bad_arg(const Arguments& arg)
     rocsparse_check_spmat_stage stage  = rocsparse_check_spmat_stage_compute;
     rocsparse_spmat_descr       mat    = (rocsparse_spmat_descr)0x4;
 
-    rocsparse_data_status data_status;
+    rocsparse_data_status* data_status = (rocsparse_data_status*)0x4;
 
     int       nargs_to_exclude   = 2;
     const int args_to_exclude[2] = {4, 5};
 
-#define PARAMS handle, mat, &data_status, stage, buffer_size, temp_buffer
+#define PARAMS handle, mat, data_status, stage, buffer_size, temp_buffer
     {
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_check_spmat, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_check_spmat, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_check_spmat, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_check_spmat, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = nullptr;
         void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_check_spmat, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_check_spmat, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = nullptr;
         void*   temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_check_spmat, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_check_spmat, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 #undef PARAMS
 
     EXPECT_ROCSPARSE_STATUS(
-        rocsparse_check_spmat(handle, mat, &data_status, stage, nullptr, nullptr),
+        rocsparse_check_spmat(handle, mat, data_status, stage, nullptr, nullptr),
         rocsparse_status_invalid_pointer);
 }
 

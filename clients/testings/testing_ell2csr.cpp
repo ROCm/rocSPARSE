@@ -54,8 +54,8 @@ void testing_ell2csr_bad_arg(const Arguments& arg)
 #define PARAMS                                                                                 \
     handle, m, n, ell_descr, ell_width, ell_val, ell_col_ind, csr_descr, csr_val, csr_row_ptr, \
         csr_col_ind
-    auto_testing_bad_arg(rocsparse_ell2csr_nnz, PARAMS_NNZ);
-    auto_testing_bad_arg(rocsparse_ell2csr<T>, PARAMS);
+    bad_arg_analysis(rocsparse_ell2csr_nnz, PARAMS_NNZ);
+    bad_arg_analysis(rocsparse_ell2csr<T>, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(
         rocsparse_set_mat_storage_mode(ell_descr, rocsparse_storage_mode_unsorted));

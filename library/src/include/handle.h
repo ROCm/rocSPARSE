@@ -463,3 +463,18 @@ struct _rocsparse_dnmat_descr
     int64_t batch_count{};
     int64_t batch_stride{};
 };
+
+//
+// Get architecture name.
+//
+std::string rocsparse_handle_get_arch_name(rocsparse_handle handle);
+
+struct rocpsarse_arch_names
+{
+    static constexpr const char* gfx908 = "gfx908";
+};
+
+//
+// Get xnack mode.
+//
+std::string rocsparse_handle_get_xnack_mode(rocsparse_handle handle);

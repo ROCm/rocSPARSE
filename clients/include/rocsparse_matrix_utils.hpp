@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1037,23 +1037,12 @@ struct rocsparse_matrix_utils
         //
         // Compute (A + A^T) / 2
         //
-        J*   blank;
-        auto err = rocsparse_hipHostMalloc(&blank, M * sizeof(J));
-        if(err != hipSuccess)
+        host_dense_vector<J> blank(M);
+        for(size_t i = 0; i < blank.size(); i++)
         {
-            return rocsparse_status_memory_error;
+            blank[i] = 0;
         }
-        for(J i = 0; i < M; ++i)
-        {
-            blank[i] = static_cast<J>(0);
-        }
-
-        J* select;
-        err = rocsparse_hipHostMalloc(&select, M * sizeof(J));
-        if(err != hipSuccess)
-        {
-            return rocsparse_status_memory_error;
-        }
+        host_dense_vector<J> select(M);
 
         symA.define(M, M, 0, base);
 
@@ -1138,7 +1127,7 @@ struct rocsparse_matrix_utils
                 }
             }
 
-            std::sort(select, select + select_n);
+            std::sort(select.data(), select.data() + select_n);
 
             for(J k = 0; k < select_n; ++k)
             {
@@ -1163,9 +1152,6 @@ struct rocsparse_matrix_utils
                 symA.ind[i] += base;
             }
         }
-
-        rocsparse_hipHostFree(select);
-        rocsparse_hipHostFree(blank);
 
         return rocsparse_status_success;
     }

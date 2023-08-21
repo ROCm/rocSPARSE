@@ -27,108 +27,171 @@
 #include "rocsparse_check_matrix_csr.hpp"
 #include "utility.h"
 
+std::string rocsparse_matrixtype2string(rocsparse_matrix_type type);
+
 template <typename T, typename I, typename J>
-rocsparse_status rocsparse_check_matrix_csc_buffer_size_template(rocsparse_handle       handle,
-                                                                 J                      m,
-                                                                 J                      n,
-                                                                 I                      nnz,
-                                                                 const T*               csc_val,
-                                                                 const I*               csc_col_ptr,
-                                                                 const J*               csc_row_ind,
-                                                                 rocsparse_index_base   idx_base,
-                                                                 rocsparse_matrix_type  matrix_type,
-                                                                 rocsparse_fill_mode    uplo,
-                                                                 rocsparse_storage_mode storage,
-                                                                 size_t*                buffer_size)
+rocsparse_status rocsparse_check_matrix_csc_core(rocsparse_handle       handle,
+                                                 J                      m,
+                                                 J                      n,
+                                                 I                      nnz,
+                                                 const T*               csc_val,
+                                                 const I*               csc_col_ptr,
+                                                 const J*               csc_row_ind,
+                                                 rocsparse_index_base   idx_base,
+                                                 rocsparse_matrix_type  matrix_type,
+                                                 rocsparse_fill_mode    uplo,
+                                                 rocsparse_storage_mode storage,
+                                                 rocsparse_data_status* data_status,
+                                                 void*                  temp_buffer)
 {
-    return rocsparse_check_matrix_csr_buffer_size_template(handle,
-                                                           n,
-                                                           m,
-                                                           nnz,
-                                                           csc_val,
-                                                           csc_col_ptr,
-                                                           csc_row_ind,
-                                                           idx_base,
-                                                           matrix_type,
-                                                           uplo,
-                                                           storage,
-                                                           buffer_size);
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_check_matrix_csr_core(handle,
+                                                              n, // switch
+                                                              m, // m and n
+                                                              nnz,
+                                                              csc_val,
+                                                              csc_col_ptr,
+                                                              csc_row_ind,
+                                                              idx_base,
+                                                              matrix_type,
+                                                              uplo,
+                                                              storage,
+                                                              data_status,
+                                                              temp_buffer));
+    return rocsparse_status_success;
 }
 
 template <typename T, typename I, typename J>
-rocsparse_status rocsparse_check_matrix_csc_template(rocsparse_handle       handle,
-                                                     J                      m,
-                                                     J                      n,
-                                                     I                      nnz,
-                                                     const T*               csc_val,
-                                                     const I*               csc_col_ptr,
-                                                     const J*               csc_row_ind,
-                                                     rocsparse_index_base   idx_base,
-                                                     rocsparse_matrix_type  matrix_type,
-                                                     rocsparse_fill_mode    uplo,
-                                                     rocsparse_storage_mode storage,
-                                                     rocsparse_data_status* data_status,
-                                                     void*                  temp_buffer)
+rocsparse_status rocsparse_check_matrix_csc_quickreturn(rocsparse_handle       handle,
+                                                        J                      m,
+                                                        J                      n,
+                                                        I                      nnz,
+                                                        const T*               csc_val,
+                                                        const I*               csc_col_ptr,
+                                                        const J*               csc_row_ind,
+                                                        rocsparse_index_base   idx_base,
+                                                        rocsparse_matrix_type  matrix_type,
+                                                        rocsparse_fill_mode    uplo,
+                                                        rocsparse_storage_mode storage,
+                                                        rocsparse_data_status* data_status,
+                                                        void*                  temp_buffer)
 {
-    return rocsparse_check_matrix_csr_template(handle,
-                                               n,
-                                               m,
-                                               nnz,
-                                               csc_val,
-                                               csc_col_ptr,
-                                               csc_row_ind,
-                                               idx_base,
-                                               matrix_type,
-                                               uplo,
-                                               storage,
-                                               data_status,
-                                               temp_buffer);
+    return rocsparse_status_continue;
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                      \
-    template rocsparse_status                                                 \
-        rocsparse_check_matrix_csc_buffer_size_template<TTYPE, ITYPE, JTYPE>( \
-            rocsparse_handle       handle,                                    \
-            JTYPE                  m,                                         \
-            JTYPE                  n,                                         \
-            ITYPE                  nnz,                                       \
-            const TTYPE*           csc_val,                                   \
-            const ITYPE*           csc_col_ptr,                               \
-            const JTYPE*           csc_row_ind,                               \
-            rocsparse_index_base   idx_base,                                  \
-            rocsparse_matrix_type  matrix_type,                               \
-            rocsparse_fill_mode    uplo,                                      \
-            rocsparse_storage_mode storage,                                   \
-            size_t*                buffer_size);
+template <typename T, typename I, typename J>
+rocsparse_status rocsparse_check_matrix_csc_checkarg(rocsparse_handle       handle, //0
+                                                     J                      m, //1
+                                                     J                      n, //2
+                                                     I                      nnz, //3
+                                                     const T*               csc_val, //4
+                                                     const I*               csc_col_ptr, //5
+                                                     const J*               csc_row_ind, //6
+                                                     rocsparse_index_base   idx_base, //7
+                                                     rocsparse_matrix_type  matrix_type, //8
+                                                     rocsparse_fill_mode    uplo, //9
+                                                     rocsparse_storage_mode storage, //10
+                                                     rocsparse_data_status* data_status, //11
+                                                     void*                  temp_buffer) //12
+{
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
+    ROCSPARSE_CHECKARG_ARRAY(4, nnz, csc_val);
+    ROCSPARSE_CHECKARG_ARRAY(5, m, csc_col_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(6, nnz, csc_row_ind);
+    ROCSPARSE_CHECKARG_ENUM(7, idx_base);
+    ROCSPARSE_CHECKARG_ENUM(8, matrix_type);
+    ROCSPARSE_CHECKARG_ENUM(9, uplo);
+    ROCSPARSE_CHECKARG_ENUM(10, storage);
+    ROCSPARSE_CHECKARG_POINTER(11, data_status);
+    ROCSPARSE_CHECKARG_POINTER(12, temp_buffer);
 
-INSTANTIATE(int32_t, int32_t, float);
-INSTANTIATE(int32_t, int32_t, double);
-INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int32_t, float);
-INSTANTIATE(int64_t, int32_t, double);
-INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int64_t, float);
-INSTANTIATE(int64_t, int64_t, double);
-INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
-#undef INSTANTIATE
+    if(matrix_type != rocsparse_matrix_type_general)
+    {
+        if(m != n)
+        {
+            log_debug(handle,
+                      ("Matrix was specified to be " + rocsparse_matrixtype2string(matrix_type)
+                       + " but m != n"));
+        }
+    }
+    ROCSPARSE_CHECKARG(2,
+                       n,
+                       ((matrix_type != rocsparse_matrix_type_general) && (n != m)),
+                       rocsparse_status_invalid_size);
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                \
-    template rocsparse_status rocsparse_check_matrix_csc_template<TTYPE, ITYPE, JTYPE>( \
-        rocsparse_handle       handle,                                                  \
-        JTYPE                  m,                                                       \
-        JTYPE                  n,                                                       \
-        ITYPE                  nnz,                                                     \
-        const TTYPE*           csc_val,                                                 \
-        const ITYPE*           csc_col_ptr,                                             \
-        const JTYPE*           csc_row_ind,                                             \
-        rocsparse_index_base   idx_base,                                                \
-        rocsparse_matrix_type  matrix_type,                                             \
-        rocsparse_fill_mode    uplo,                                                    \
-        rocsparse_storage_mode storage,                                                 \
-        rocsparse_data_status* data_status,                                             \
+    const rocsparse_status status = rocsparse_check_matrix_csc_quickreturn(handle,
+                                                                           m,
+                                                                           n,
+                                                                           nnz,
+                                                                           csc_val,
+                                                                           csc_col_ptr,
+                                                                           csc_row_ind,
+                                                                           idx_base,
+                                                                           matrix_type,
+                                                                           uplo,
+                                                                           storage,
+                                                                           data_status,
+                                                                           temp_buffer);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    return rocsparse_status_continue;
+}
+
+template <typename T, typename I, typename J, typename... P>
+rocsparse_status rocsparse_check_matrix_csc_template(P&&... p)
+{
+    const rocsparse_status status = rocsparse_check_matrix_csc_quickreturn<T, I, J>(p...);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_check_matrix_csc_core<T, I, J>(p...)));
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    return rocsparse_status_success;
+}
+
+#define INSTANTIATE(I, J, T)                                                \
+    template rocsparse_status rocsparse_check_matrix_csc_core<T, I, J>(     \
+        rocsparse_handle       handle,                                      \
+        J                      m,                                           \
+        J                      n,                                           \
+        I                      nnz,                                         \
+        const T*               csc_val,                                     \
+        const I*               csc_col_ptr,                                 \
+        const J*               csc_row_ind,                                 \
+        rocsparse_index_base   idx_base,                                    \
+        rocsparse_matrix_type  matrix_type,                                 \
+        rocsparse_fill_mode    uplo,                                        \
+        rocsparse_storage_mode storage,                                     \
+        rocsparse_data_status* data_status,                                 \
+        void*                  temp_buffer);                                                 \
+    template rocsparse_status rocsparse_check_matrix_csc_checkarg<T, I, J>( \
+        rocsparse_handle       handle,                                      \
+        J                      m,                                           \
+        J                      n,                                           \
+        I                      nnz,                                         \
+        const T*               csc_val,                                     \
+        const I*               csc_col_ptr,                                 \
+        const J*               csc_row_ind,                                 \
+        rocsparse_index_base   idx_base,                                    \
+        rocsparse_matrix_type  matrix_type,                                 \
+        rocsparse_fill_mode    uplo,                                        \
+        rocsparse_storage_mode storage,                                     \
+        rocsparse_data_status* data_status,                                 \
         void*                  temp_buffer);
 
 INSTANTIATE(int32_t, int32_t, float);
@@ -145,83 +208,41 @@ INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
 #undef INSTANTIATE
 
-/*
- * ===========================================================================
- *    C wrapper
- * ===========================================================================
- */
-#define C_IMPL(NAME, TYPE)                                                   \
-    extern "C" rocsparse_status NAME(rocsparse_handle       handle,          \
-                                     rocsparse_int          m,               \
-                                     rocsparse_int          n,               \
-                                     rocsparse_int          nnz,             \
-                                     const TYPE*            csc_val,         \
-                                     const rocsparse_int*   csc_col_ptr,     \
-                                     const rocsparse_int*   csc_row_ind,     \
-                                     rocsparse_index_base   idx_base,        \
-                                     rocsparse_matrix_type  matrix_type,     \
-                                     rocsparse_fill_mode    uplo,            \
-                                     rocsparse_storage_mode storage,         \
-                                     size_t*                buffer_size)     \
-    try                                                                      \
-    {                                                                        \
-        return rocsparse_check_matrix_csc_buffer_size_template(handle,       \
-                                                               m,            \
-                                                               n,            \
-                                                               nnz,          \
-                                                               csc_val,      \
-                                                               csc_col_ptr,  \
-                                                               csc_row_ind,  \
-                                                               idx_base,     \
-                                                               matrix_type,  \
-                                                               uplo,         \
-                                                               storage,      \
-                                                               buffer_size); \
-    }                                                                        \
-    catch(...)                                                               \
-    {                                                                        \
-        return exception_to_rocsparse_status();                              \
-    }
-
-C_IMPL(rocsparse_scheck_matrix_csc_buffer_size, float);
-C_IMPL(rocsparse_dcheck_matrix_csc_buffer_size, double);
-C_IMPL(rocsparse_ccheck_matrix_csc_buffer_size, rocsparse_float_complex);
-C_IMPL(rocsparse_zcheck_matrix_csc_buffer_size, rocsparse_double_complex);
-#undef C_IMPL
-
-#define C_IMPL(NAME, TYPE)                                               \
-    extern "C" rocsparse_status NAME(rocsparse_handle       handle,      \
-                                     rocsparse_int          m,           \
-                                     rocsparse_int          n,           \
-                                     rocsparse_int          nnz,         \
-                                     const TYPE*            csc_val,     \
-                                     const rocsparse_int*   csc_col_ptr, \
-                                     const rocsparse_int*   csc_row_ind, \
-                                     rocsparse_index_base   idx_base,    \
-                                     rocsparse_matrix_type  matrix_type, \
-                                     rocsparse_fill_mode    uplo,        \
-                                     rocsparse_storage_mode storage,     \
-                                     rocsparse_data_status* data_status, \
-                                     void*                  temp_buffer) \
-    try                                                                  \
-    {                                                                    \
-        return rocsparse_check_matrix_csc_template(handle,               \
-                                                   m,                    \
-                                                   n,                    \
-                                                   nnz,                  \
-                                                   csc_val,              \
-                                                   csc_col_ptr,          \
-                                                   csc_row_ind,          \
-                                                   idx_base,             \
-                                                   matrix_type,          \
-                                                   uplo,                 \
-                                                   storage,              \
-                                                   data_status,          \
-                                                   temp_buffer);         \
-    }                                                                    \
-    catch(...)                                                           \
-    {                                                                    \
-        return exception_to_rocsparse_status();                          \
+#define C_IMPL(NAME, T)                                                                       \
+    extern "C" rocsparse_status NAME(rocsparse_handle       handle,                           \
+                                     rocsparse_int          m,                                \
+                                     rocsparse_int          n,                                \
+                                     rocsparse_int          nnz,                              \
+                                     const T*               csc_val,                          \
+                                     const rocsparse_int*   csc_col_ptr,                      \
+                                     const rocsparse_int*   csc_row_ind,                      \
+                                     rocsparse_index_base   idx_base,                         \
+                                     rocsparse_matrix_type  matrix_type,                      \
+                                     rocsparse_fill_mode    uplo,                             \
+                                     rocsparse_storage_mode storage,                          \
+                                     rocsparse_data_status* data_status,                      \
+                                     void*                  temp_buffer)                      \
+    try                                                                                       \
+    {                                                                                         \
+        RETURN_IF_ROCSPARSE_ERROR(                                                            \
+            (rocsparse_check_matrix_csc_impl<T, rocsparse_int, rocsparse_int>(handle,         \
+                                                                              m,              \
+                                                                              n,              \
+                                                                              nnz,            \
+                                                                              csc_val,        \
+                                                                              csc_col_ptr,    \
+                                                                              csc_row_ind,    \
+                                                                              idx_base,       \
+                                                                              matrix_type,    \
+                                                                              uplo,           \
+                                                                              storage,        \
+                                                                              data_status,    \
+                                                                              temp_buffer))); \
+        return rocsparse_status_success;                                                      \
+    }                                                                                         \
+    catch(...)                                                                                \
+    {                                                                                         \
+        RETURN_ROCSPARSE_EXCEPTION();                                                         \
     }
 
 C_IMPL(rocsparse_scheck_matrix_csc, float);

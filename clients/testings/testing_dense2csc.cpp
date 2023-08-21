@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 template <typename T>
 void testing_dense2csc_bad_arg(const Arguments& arg)
 {
-    testing_dense2csx_bad_arg<rocsparse_direction_column, T>(arg, rocsparse_dense2csc<T>);
+    testing_dense2csx_bad_arg<rocsparse_direction_column, T>(arg);
 }
 template <typename T>
 void testing_dense2csc(const Arguments& arg)

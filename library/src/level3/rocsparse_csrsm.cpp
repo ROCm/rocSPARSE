@@ -745,15 +745,15 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
         dim3 csrsm_blocks(((nrhs - 1) / blockdim + 1) * m);
         dim3 csrsm_threads(blockdim);
 
-        // Determine gcnArch and ASIC revision
-        int gcnArch = handle->properties.gcnArch;
-        int asicRev = handle->asic_rev;
+        // Determine gcn_arch and ASIC revision
+        const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+        const int         asicRev       = handle->asic_rev;
 
         // rocsparse_pointer_mode_device
 
         if(blockdim == 64)
         {
-            if(gcnArch == 908 && asicRev < 2)
+            if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm<64, 64, true>),
                                    csrsm_blocks,
@@ -802,7 +802,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
         }
         else if(blockdim == 128)
         {
-            if(gcnArch == 908 && asicRev < 2)
+            if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm<128, 64, true>),
                                    csrsm_blocks,
@@ -851,7 +851,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
         }
         else if(blockdim == 256)
         {
-            if(gcnArch == 908 && asicRev < 2)
+            if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm<256, 64, true>),
                                    csrsm_blocks,
@@ -900,7 +900,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
         }
         else if(blockdim == 512)
         {
-            if(gcnArch == 908 && asicRev < 2)
+            if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm<512, 64, true>),
                                    csrsm_blocks,
@@ -949,7 +949,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
         }
         else if(blockdim == 1024)
         {
-            if(gcnArch == 908 && asicRev < 2)
+            if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm<1024, 64, true>),
                                    csrsm_blocks,

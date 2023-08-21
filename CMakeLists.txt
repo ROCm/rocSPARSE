@@ -113,7 +113,7 @@ endif()
 include(cmake/Dependencies.cmake)
 
 # FOR HANDLING ENABLE/DISABLE OPTIONAL BACKWARD COMPATIBILITY for FILE/FOLDER REORG
-option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" ON)
+option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" OFF)
 if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY AND NOT WIN32)
   rocm_wrap_header_dir(
     ${CMAKE_SOURCE_DIR}/library/include
@@ -180,8 +180,10 @@ endif( )
 
 # Setup version
 set(VERSION_STRING "3.0.0")
+set(SOVERSION_STRING "1.0.0")
+
 rocm_setup_version(VERSION ${VERSION_STRING})
-set(rocsparse_SOVERSION 0.1)
+set(rocsparse_SOVERSION ${SOVERSION_STRING})
 
 if( BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
   set( BUILD_CLIENTS ON )

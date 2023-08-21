@@ -5774,11 +5774,11 @@ void host_csric0(rocsparse_int                     M,
         // Process diagonal entry
         T diag_entry = std::sqrt(std::abs(csr_val[j] - sum));
         csr_val[j]   = diag_entry;
-        if (diag_entry == static_cast<T>(0)) {
-                *numeric_pivot =  ai  + base;
-                return;
-                };
-            
+        if(diag_entry == static_cast<T>(0))
+        {
+            *numeric_pivot = ai + base;
+            return;
+        };
 
         // Store diagonal offset
         diag_offset[ai] = j;
@@ -5889,6 +5889,19 @@ void host_csrilu0(rocsparse_int                     M,
 
         // set diagonal pointer to diagonal element
         diag_offset[ai] = j;
+
+        // check for zero diagonal
+        {
+          rocsparse_int const diag_pos = diag_offset[ai];
+          bool const is_diag = (diag_pos >= 0) &&
+                               (csr_col_ind[ diag_pos ] == (ai + base) );
+          bool const is_zero_diag = is_diag && (csr_val[ diag_pos ] == static_cast<T>(0));
+          if(is_zero_diag)
+          {
+              *numeric_pivot = (ai + base);
+              return;
+          };
+        };
 
         // clear nnz entries
         for(j = row_begin; j < row_end; ++j)

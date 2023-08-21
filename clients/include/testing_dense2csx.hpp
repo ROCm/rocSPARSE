@@ -39,151 +39,71 @@
 #include <chrono>
 #include <thread>
 
-template <rocsparse_direction DIRA, typename T, typename FUNC>
-void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
+template <rocsparse_direction DIRA, typename T>
+void testing_dense2csx_bad_arg(const Arguments& arg)
 {
 
-    static constexpr size_t        safe_size = 100;
-    static constexpr rocsparse_int M         = 10;
-    static constexpr rocsparse_int N         = 10;
-    static constexpr rocsparse_int LD        = M;
-    rocsparse_local_handle         handle;
-
-    device_vector<T>             d_dense_val(safe_size);
-    device_vector<rocsparse_int> d_nnz_per_row_columns(2);
-    device_vector<rocsparse_int> d_csx_row_col_ptr(2);
-    device_vector<rocsparse_int> d_csx_col_row_ind(2);
-    device_vector<T>             d_csx_val(2);
-
-    if(!d_dense_val || !d_nnz_per_row_columns || !d_csx_row_col_ptr || !d_csx_col_row_ind
-       || !d_csx_val)
+    rocsparse_local_handle         local_handle;
+    rocsparse_local_mat_descr      local_descr;
+    rocsparse_handle               handle = local_handle;
+    static constexpr rocsparse_int m      = 10;
+    static constexpr rocsparse_int n      = 10;
+    rocsparse_mat_descr            descr  = local_descr;
+    static constexpr rocsparse_int lda    = m;
+    const T*                       A      = (T*)0x4;
+    switch(DIRA)
     {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
+    case rocsparse_direction_row:
+    {
+
+        T*                   csr_val      = (T*)0x4;
+        rocsparse_int*       csr_row_ptr  = (rocsparse_int*)0x4;
+        rocsparse_int*       csr_col_ind  = (rocsparse_int*)0x4;
+        const rocsparse_int* nnz_per_rows = (const rocsparse_int*)0x4;
+
+        bad_arg_analysis(rocsparse_dense2csr<T>,
+                         handle,
+                         m,
+                         n,
+                         descr,
+                         A,
+                         lda,
+                         nnz_per_rows,
+                         csr_val,
+                         csr_row_ptr,
+                         csr_col_ind);
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_dense2csr<T>(
+                handle, m, n, descr, A, m - 1, nnz_per_rows, csr_val, csr_row_ptr, csr_col_ind),
+            rocsparse_status_invalid_size);
+        break;
     }
 
-    rocsparse_local_mat_descr descr;
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, rocsparse_index_base_zero));
+    case rocsparse_direction_column:
+    {
+        T*                   csc_val         = (T*)0x4;
+        rocsparse_int*       csc_col_ptr     = (rocsparse_int*)0x4;
+        rocsparse_int*       csc_row_ind     = (rocsparse_int*)0x4;
+        const rocsparse_int* nnz_per_columns = (const rocsparse_int*)0x4;
 
-    //
-    // Testing invalid handle.
-    //
-    EXPECT_ROCSPARSE_STATUS(
-        dense2csx(nullptr, 0, 0, nullptr, nullptr, 0, nullptr, (T*)nullptr, nullptr, nullptr),
-        rocsparse_status_invalid_handle);
-
-    //
-    // Testing invalid pointers.
-    //
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
-                                      M,
-                                      N,
-                                      nullptr,
-                                      d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
-                                      d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
-                                      M,
-                                      N,
-                                      descr,
-                                      nullptr,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
-                                      d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
-                                      M,
-                                      N,
-                                      descr,
-                                      d_dense_val,
-                                      LD,
-                                      nullptr,
-                                      (T*)d_csx_val,
-                                      d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
-                                      M,
-                                      N,
-                                      descr,
-                                      d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)nullptr,
-                                      d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
-                                      M,
-                                      N,
-                                      descr,
-                                      d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
-                                      nullptr,
-                                      d_csx_col_row_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
-                                      M,
-                                      N,
-                                      descr,
-                                      d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
-                                      d_csx_row_col_ptr,
-                                      nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    //
-    // Testing invalid size on M
-    //
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
-                                      -1,
-                                      N,
-                                      descr,
-                                      d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
-                                      d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
-                            rocsparse_status_invalid_size);
-    //
-    // Testing invalid size on N
-    //
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
-                                      M,
-                                      -1,
-                                      descr,
-                                      d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
-                                      d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
-                            rocsparse_status_invalid_size);
-    //
-    // Testing invalid size on LD
-    //
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
-                                      M,
-                                      N,
-                                      descr,
-                                      d_dense_val,
-                                      M - 1,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
-                                      d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
-                            rocsparse_status_invalid_size);
+        bad_arg_analysis(rocsparse_dense2csc<T>,
+                         handle,
+                         m,
+                         n,
+                         descr,
+                         A,
+                         lda,
+                         nnz_per_columns,
+                         csc_val,
+                         csc_col_ptr,
+                         csc_row_ind);
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_dense2csc<T>(
+                handle, m, n, descr, A, m - 1, nnz_per_columns, csc_val, csc_col_ptr, csc_row_ind),
+            rocsparse_status_invalid_size);
+        break;
+    }
+    }
 }
 
 template <rocsparse_direction DIRA, typename T, typename FUNC>
@@ -328,29 +248,9 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
                                         (rocsparse_int*)d_csx_row_col_ptr,
                                         (rocsparse_int*)d_csx_col_row_ind));
 
-        void* buffer;
-        rocsparse_hipHostMalloc(
-            &buffer, std::max(sizeof(T), sizeof(rocsparse_int)) * std::max(DIMDIR + 1, nnz));
-
-        //
-        // Transfer and check results.
-        //
-        CHECK_HIP_ERROR(hipMemcpy(buffer, d_csx_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
-        unit_check_segments(nnz, (T*)cpu_csx_val, (T*)buffer);
-        CHECK_HIP_ERROR(hipMemcpy(
-            buffer, d_csx_col_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
-        unit_check_segments(nnz, (rocsparse_int*)cpu_csx_col_row_ind, (rocsparse_int*)buffer);
-
-        CHECK_HIP_ERROR(hipMemcpy(buffer,
-                                  d_csx_row_col_ptr,
-                                  sizeof(rocsparse_int) * (DIMDIR + 1),
-                                  hipMemcpyDeviceToHost));
-
-        unit_check_segments(
-            (DIMDIR + 1), (rocsparse_int*)cpu_csx_row_col_ptr, (rocsparse_int*)buffer);
-
-        rocsparse_hipHostFree(buffer);
-        buffer = nullptr;
+        cpu_csx_row_col_ptr.unit_check(d_csx_row_col_ptr);
+        cpu_csx_col_row_ind.unit_check(d_csx_col_row_ind);
+        cpu_csx_val.unit_check(d_csx_val);
     }
 
     if(arg.timing)

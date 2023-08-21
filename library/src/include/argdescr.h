@@ -52,21 +52,26 @@ void rocsparse_argdescr_log(const char*      function_file_,
 /// @param SIZE__ size of the array.
 /// @param POINTER__ pointer of the array.
 ///
-#define ROCSPARSE_CHECKARG_ARRAY(ITH__, SIZE__, POINTER__)                                \
-    do                                                                                    \
-    {                                                                                     \
-        if((SIZE__) > 0 && (POINTER__) == nullptr)                                        \
-        {                                                                                 \
-            if(rocsparse_debug_variables.get_debug_arguments())                           \
-                rocsparse_argdescr_log(__FILE__,                                          \
-                                       __FUNCTION__,                                      \
-                                       __LINE__,                                          \
-                                       #POINTER__,                                        \
-                                       (ITH__),                                           \
-                                       rocsparse_status_invalid_pointer,                  \
-                                       "array pointer is null with ('" #SIZE__ "' > 0)"); \
-            return rocsparse_status_invalid_pointer;                                      \
-        }                                                                                 \
+#define ROCSPARSE_CHECKARG_ARRAY(ITH__, SIZE__, POINTER__)                                    \
+    do                                                                                        \
+    {                                                                                         \
+        if((SIZE__) > 0 && (POINTER__) == nullptr)                                            \
+        {                                                                                     \
+            if(rocsparse_debug_variables.get_debug_arguments())                               \
+            {                                                                                 \
+                std::stringstream s;                                                          \
+                s << "array pointer is " #POINTER__ " null with ('" #SIZE__ " = " << (SIZE__) \
+                  << "' > 0)";                                                                \
+                rocsparse_argdescr_log(__FILE__,                                              \
+                                       __FUNCTION__,                                          \
+                                       __LINE__,                                              \
+                                       #POINTER__,                                            \
+                                       (ITH__),                                               \
+                                       rocsparse_status_invalid_pointer,                      \
+                                       s.str().c_str());                                      \
+            }                                                                                 \
+            return rocsparse_status_invalid_pointer;                                          \
+        }                                                                                     \
     } while(false)
 
 ///

@@ -645,18 +645,9 @@ rocsparse_status rocsparse_csritsv_solve_impl(rocsparse_handle          handle,
                                               void*                     temp_buffer)
 {
     // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(8, descr);
+    ROCSPARSE_CHECKARG_POINTER(12, info);
 
     // Logging
     log_trace(handle,
@@ -678,80 +669,67 @@ rocsparse_status rocsparse_csritsv_solve_impl(rocsparse_handle          handle,
               policy,
               (const void*&)temp_buffer);
 
-    if(rocsparse_enum_utils::is_invalid(trans))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(policy))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(4, trans);
+    ROCSPARSE_CHECKARG_ENUM(15, policy);
 
     // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general
-       && descr->type != rocsparse_matrix_type_triangular)
-    {
-        return rocsparse_status_not_implemented;
-    }
+    ROCSPARSE_CHECKARG(8,
+                       descr,
+                       (descr->type != rocsparse_matrix_type_general
+                        && descr->type != rocsparse_matrix_type_triangular),
+                       rocsparse_status_not_implemented);
 
     // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
+
+    ROCSPARSE_CHECKARG(8,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
 
     // Check sizes
-    if(m < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_SIZE(5, m);
+    ROCSPARSE_CHECKARG_SIZE(6, nnz);
 
-    if(m > 0 && csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_ARRAY(9, nnz, csr_val);
 
-    if(nnz > 0 && csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_ARRAY(10, m, csr_row_ptr);
 
-    if(nnz > 0 && csr_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    if(m > 0 && nnz > 0 && temp_buffer == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_ARRAY(11, nnz, csr_col_ind);
 
-    if(host_nmaxiter == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    if(m > 0 && info->csritsv_info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG(16,
+                       temp_buffer,
+                       (m > 0 && nnz > 0 && temp_buffer == nullptr),
+                       rocsparse_status_invalid_pointer);
 
-    return rocsparse_csritsv_solve_template(handle,
-                                            host_nmaxiter,
-                                            host_tol,
-                                            host_history,
-                                            trans,
-                                            m,
-                                            nnz,
-                                            alpha_device_host,
-                                            descr,
-                                            csr_val,
-                                            csr_row_ptr,
-                                            csr_col_ind,
-                                            info,
-                                            x,
-                                            y,
-                                            policy,
-                                            temp_buffer);
+    ROCSPARSE_CHECKARG_POINTER(1, host_nmaxiter);
+
+    ROCSPARSE_CHECKARG_POINTER(7, alpha_device_host);
+
+    ROCSPARSE_CHECKARG_ARRAY(13, m, x);
+
+    ROCSPARSE_CHECKARG_ARRAY(14, m, y);
+
+    ROCSPARSE_CHECKARG(
+        12, info, (m > 0 && info->csritsv_info == nullptr), rocsparse_status_invalid_pointer);
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csritsv_solve_template(handle,
+                                                               host_nmaxiter,
+                                                               host_tol,
+                                                               host_history,
+                                                               trans,
+                                                               m,
+                                                               nnz,
+                                                               alpha_device_host,
+                                                               descr,
+                                                               csr_val,
+                                                               csr_row_ptr,
+                                                               csr_col_ind,
+                                                               info,
+                                                               x,
+                                                               y,
+                                                               policy,
+                                                               temp_buffer));
+    return rocsparse_status_success;
 }
 
 #define INSTANTIATE(I, J, T)                                             \
@@ -832,27 +810,28 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      void*                     temp_buffer)       \
     try                                                                           \
     {                                                                             \
-        return rocsparse_csritsv_solve_impl(handle,                               \
-                                            host_nmaxiter,                        \
-                                            host_tol,                             \
-                                            host_history,                         \
-                                            trans,                                \
-                                            m,                                    \
-                                            nnz,                                  \
-                                            alpha_device_host,                    \
-                                            descr,                                \
-                                            csr_val,                              \
-                                            csr_row_ptr,                          \
-                                            csr_col_ind,                          \
-                                            info,                                 \
-                                            x,                                    \
-                                            y,                                    \
-                                            policy,                               \
-                                            temp_buffer);                         \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csritsv_solve_impl(handle,            \
+                                                               host_nmaxiter,     \
+                                                               host_tol,          \
+                                                               host_history,      \
+                                                               trans,             \
+                                                               m,                 \
+                                                               nnz,               \
+                                                               alpha_device_host, \
+                                                               descr,             \
+                                                               csr_val,           \
+                                                               csr_row_ptr,       \
+                                                               csr_col_ind,       \
+                                                               info,              \
+                                                               x,                 \
+                                                               y,                 \
+                                                               policy,            \
+                                                               temp_buffer));     \
+        return rocsparse_status_success;                                          \
     }                                                                             \
     catch(...)                                                                    \
     {                                                                             \
-        return exception_to_rocsparse_status();                                   \
+        RETURN_ROCSPARSE_EXCEPTION();                                             \
     }
 
 C_IMPL(rocsparse_scsritsv_solve, float);

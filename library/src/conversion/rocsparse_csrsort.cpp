@@ -38,12 +38,6 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle     h
                                                           size_t*              buffer_size)
 try
 {
-    // Check for valid handle
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-
     // Logging
     log_trace(handle,
               "rocsparse_csrsort_buffer_size",
@@ -54,24 +48,14 @@ try
               (const void*&)csr_col_ind,
               (const void*&)buffer_size);
 
-    // Check sizes
-    if(m < 0 || n < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
+    ROCSPARSE_CHECKARG_ARRAY(4, m, csr_row_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(5, nnz, csr_col_ind);
+    ROCSPARSE_CHECKARG_POINTER(6, buffer_size);
 
-    // Check pointer arguments
-    if(csr_row_ptr == nullptr || buffer_size == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz != 0 && csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Quick return if possible
     if(m == 0 || n == 0 || nnz == 0)
     {
         *buffer_size = 0;
@@ -102,7 +86,7 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle          handle,
@@ -116,15 +100,6 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle          handle,
                                               void*                     temp_buffer)
 try
 {
-    // Check for valid handle
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
 
     // Logging
     log_trace(handle,
@@ -138,34 +113,19 @@ try
               (const void*&)perm,
               (const void*&)temp_buffer);
 
-    log_bench(handle, "./rocsparse-bench -f csrsort", "--mtx <matrix.mtx>");
-
-    // Check sizes
-    if(m < 0 || n < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check pointer arguments
-    if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz != 0 && csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
+    ROCSPARSE_CHECKARG_POINTER(4, descr);
+    ROCSPARSE_CHECKARG_ARRAY(5, m, csr_row_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(6, nnz, csr_col_ind);
+    ROCSPARSE_CHECKARG_ARRAY(8, nnz, temp_buffer);
 
     // Quick return if possible
     if(m == 0 || n == 0 || nnz == 0)
     {
         return rocsparse_status_success;
-    }
-
-    if(temp_buffer == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     // Stream
@@ -377,5 +337,5 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

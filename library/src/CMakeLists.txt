@@ -228,5 +228,12 @@ set(rocsparse_source
   src/util/rocsparse_check_matrix_coo.cpp
   src/util/rocsparse_check_matrix_ell.cpp
   src/util/rocsparse_check_matrix_hyb.cpp
+  src/util/rocsparse_check_matrix_csr_buffer_size.cpp
+  src/util/rocsparse_check_matrix_csc_buffer_size.cpp
+  src/util/rocsparse_check_matrix_gebsr_buffer_size.cpp
+  src/util/rocsparse_check_matrix_gebsc_buffer_size.cpp
+  src/util/rocsparse_check_matrix_coo_buffer_size.cpp
+  src/util/rocsparse_check_matrix_ell_buffer_size.cpp
+  src/util/rocsparse_check_matrix_hyb_buffer_size.cpp
   src/util/rocsparse_check_spmat.cpp
 )

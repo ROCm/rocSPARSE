@@ -153,7 +153,7 @@ rocsparse_status rocsparse_csxtril_count_kernel_dispatch(rocsparse_handle    han
         {
         case rocsparse_diag_type_non_unit:
         {
-            return rocsparse_status_invalid_value;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
         }
         case rocsparse_diag_type_unit:
         {
@@ -283,53 +283,54 @@ INSTANTIATE(template, rocsparse_double_complex, rocsparse_int, rocsparse_int);
 
 #undef INSTANTIATE
 
-#define C_IMPL(NAME, TYPE)                                             \
-    extern "C" rocsparse_status NAME(rocsparse_handle     handle_,     \
-                                     rocsparse_direction  dir_,        \
-                                     rocsparse_int        m_,          \
-                                     rocsparse_int        n_,          \
-                                     rocsparse_int        nnz_,        \
-                                     const rocsparse_int* ptr_,        \
-                                     const rocsparse_int* ind_,        \
-                                     const TYPE*          val_,        \
-                                     rocsparse_index_base base_,       \
-                                     rocsparse_diag_type  ldiag_type_, \
-                                     rocsparse_direction  ldir_,       \
-                                     rocsparse_int*       lnnz_,       \
-                                     rocsparse_int*       lptr_,       \
-                                     rocsparse_index_base lbase_,      \
-                                     rocsparse_diag_type  udiag_type_, \
-                                     rocsparse_direction  udir_,       \
-                                     rocsparse_int*       unnz_,       \
-                                     rocsparse_int*       uptr_,       \
-                                     rocsparse_index_base ubase_,      \
-                                     void*                buffer_)     \
-    try                                                                \
-    {                                                                  \
-        return rocsparse_csxsldu_preprocess_template(handle_,          \
-                                                     dir_,             \
-                                                     m_,               \
-                                                     n_,               \
-                                                     nnz_,             \
-                                                     ptr_,             \
-                                                     ind_,             \
-                                                     val_,             \
-                                                     base_,            \
-                                                     ldiag_type_,      \
-                                                     ldir_,            \
-                                                     lnnz_,            \
-                                                     lptr_,            \
-                                                     lbase_,           \
-                                                     udiag_type_,      \
-                                                     udir_,            \
-                                                     unnz_,            \
-                                                     uptr_,            \
-                                                     ubase_,           \
-                                                     buffer_);         \
-    }                                                                  \
-    catch(...)                                                         \
-    {                                                                  \
-        return exception_to_rocsparse_status();                        \
+#define C_IMPL(NAME, TYPE)                                                           \
+    extern "C" rocsparse_status NAME(rocsparse_handle     handle_,                   \
+                                     rocsparse_direction  dir_,                      \
+                                     rocsparse_int        m_,                        \
+                                     rocsparse_int        n_,                        \
+                                     rocsparse_int        nnz_,                      \
+                                     const rocsparse_int* ptr_,                      \
+                                     const rocsparse_int* ind_,                      \
+                                     const TYPE*          val_,                      \
+                                     rocsparse_index_base base_,                     \
+                                     rocsparse_diag_type  ldiag_type_,               \
+                                     rocsparse_direction  ldir_,                     \
+                                     rocsparse_int*       lnnz_,                     \
+                                     rocsparse_int*       lptr_,                     \
+                                     rocsparse_index_base lbase_,                    \
+                                     rocsparse_diag_type  udiag_type_,               \
+                                     rocsparse_direction  udir_,                     \
+                                     rocsparse_int*       unnz_,                     \
+                                     rocsparse_int*       uptr_,                     \
+                                     rocsparse_index_base ubase_,                    \
+                                     void*                buffer_)                   \
+    try                                                                              \
+    {                                                                                \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csxsldu_preprocess_template(handle_,     \
+                                                                        dir_,        \
+                                                                        m_,          \
+                                                                        n_,          \
+                                                                        nnz_,        \
+                                                                        ptr_,        \
+                                                                        ind_,        \
+                                                                        val_,        \
+                                                                        base_,       \
+                                                                        ldiag_type_, \
+                                                                        ldir_,       \
+                                                                        lnnz_,       \
+                                                                        lptr_,       \
+                                                                        lbase_,      \
+                                                                        udiag_type_, \
+                                                                        udir_,       \
+                                                                        unnz_,       \
+                                                                        uptr_,       \
+                                                                        ubase_,      \
+                                                                        buffer_));   \
+        return rocsparse_status_success;                                             \
+    }                                                                                \
+    catch(...)                                                                       \
+    {                                                                                \
+        RETURN_ROCSPARSE_EXCEPTION();                                                \
     }
 
 C_IMPL(rocsparse_scsxsldu_preprocess, float);

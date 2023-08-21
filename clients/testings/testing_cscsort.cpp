@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +51,8 @@ void testing_cscsort_bad_arg(const Arguments& arg)
 
 #define PARAMS_BUFFER_SIZE handle, m, n, nnz, csc_col_ptr, csc_row_ind, buffer_size
 #define PARAMS handle, m, n, nnz, descr, csc_col_ptr, csc_row_ind, perm, temp_buffer
-    auto_testing_bad_arg(rocsparse_cscsort_buffer_size, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_cscsort, nargs_to_exclude, args_to_exclude, PARAMS);
+    bad_arg_analysis(rocsparse_cscsort_buffer_size, PARAMS_BUFFER_SIZE);
+    select_bad_arg_analysis(rocsparse_cscsort, nargs_to_exclude, args_to_exclude, PARAMS);
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS
 }

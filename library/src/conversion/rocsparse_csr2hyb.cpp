@@ -45,19 +45,6 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
                                             rocsparse_hyb_partition   partition_type)
 {
     // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(hyb == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
     // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xcsr2hyb"),
@@ -71,31 +58,20 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
               user_ell_width,
               partition_type);
 
-    log_bench(handle, "./rocsparse-bench -f csr2hyb -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
-
     // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
 
-    // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    // Check partition type
-    if(rocsparse_enum_utils::is_invalid(partition_type))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check sizes
-    if(m < 0 || n < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG_POINTER(3, descr);
+    ROCSPARSE_CHECKARG(
+        3, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(3,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+    ROCSPARSE_CHECKARG_POINTER(7, hyb);
+    ROCSPARSE_CHECKARG_ENUM(9, partition_type);
 
     // Quick return if possible
     if(m == 0 || n == 0)
@@ -103,19 +79,9 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
         return rocsparse_status_success;
     }
 
-    // Check pointer arguments
-    if(csr_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(4, csr_val);
+    ROCSPARSE_CHECKARG_POINTER(6, csr_col_ind);
+    ROCSPARSE_CHECKARG_ARRAY(5, m, csr_row_ptr);
 
     // Stream
     hipStream_t stream = handle->stream;
@@ -393,20 +359,21 @@ extern "C" rocsparse_status rocsparse_scsr2hyb(rocsparse_handle          handle,
                                                rocsparse_hyb_partition   partition_type)
 try
 {
-    return rocsparse_csr2hyb_template(handle,
-                                      m,
-                                      n,
-                                      descr,
-                                      csr_val,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      hyb,
-                                      user_ell_width,
-                                      partition_type);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2hyb_template(handle,
+                                                         m,
+                                                         n,
+                                                         descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind,
+                                                         hyb,
+                                                         user_ell_width,
+                                                         partition_type));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle          handle,
@@ -421,20 +388,21 @@ extern "C" rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle          handle,
                                                rocsparse_hyb_partition   partition_type)
 try
 {
-    return rocsparse_csr2hyb_template(handle,
-                                      m,
-                                      n,
-                                      descr,
-                                      csr_val,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      hyb,
-                                      user_ell_width,
-                                      partition_type);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2hyb_template(handle,
+                                                         m,
+                                                         n,
+                                                         descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind,
+                                                         hyb,
+                                                         user_ell_width,
+                                                         partition_type));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_ccsr2hyb(rocsparse_handle               handle,
@@ -449,20 +417,21 @@ extern "C" rocsparse_status rocsparse_ccsr2hyb(rocsparse_handle               ha
                                                rocsparse_hyb_partition        partition_type)
 try
 {
-    return rocsparse_csr2hyb_template(handle,
-                                      m,
-                                      n,
-                                      descr,
-                                      csr_val,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      hyb,
-                                      user_ell_width,
-                                      partition_type);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2hyb_template(handle,
+                                                         m,
+                                                         n,
+                                                         descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind,
+                                                         hyb,
+                                                         user_ell_width,
+                                                         partition_type));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_zcsr2hyb(rocsparse_handle                handle,
@@ -477,18 +446,19 @@ extern "C" rocsparse_status rocsparse_zcsr2hyb(rocsparse_handle                h
                                                rocsparse_hyb_partition         partition_type)
 try
 {
-    return rocsparse_csr2hyb_template(handle,
-                                      m,
-                                      n,
-                                      descr,
-                                      csr_val,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      hyb,
-                                      user_ell_width,
-                                      partition_type);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2hyb_template(handle,
+                                                         m,
+                                                         n,
+                                                         descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind,
+                                                         hyb,
+                                                         user_ell_width,
+                                                         partition_type));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

@@ -41,8 +41,8 @@ def runTestCommand (platform, project, gfilter, String dirmode = "release")
     if (platform.jenkinsLabel.contains('gfx90a'))
     {
         hmmTestCommand = """
-                            ROCSPARSE_MALLOC_MANAGED=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test  --rocsparse-enable-debug --rocsparse-clients-enable-test-debug-arguments --gtest_output=xml:test_detail_hmm_xnack_off.xml --gtest_color=yes --gtest_filter=*csrmv_managed*
-                            HSA_XNACK=1 ROCSPARSE_MALLOC_MANAGED=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test --gtest_output=xml:test_detail_hmm_xnack_on.xml --gtest_color=yes --gtest_filter=*csrmv_managed*
+                            HSA_XNACK=0 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test  --rocsparse-enable-debug --rocsparse-clients-enable-test-debug-arguments --gtest_output=xml:test_detail_hmm_xnack_off.xml --gtest_color=yes --gtest_filter=**
+                            HSA_XNACK=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test --gtest_output=xml:test_detail_hmm_xnack_on.xml --gtest_color=yes --gtest_filter=**
                          """
     }
 
@@ -56,7 +56,6 @@ def runTestCommand (platform, project, gfilter, String dirmode = "release")
             """
 
     platform.runCommand(this, command)
-    junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
 }
 
 def runTestWithSanitizerCommand (platform, project, gfilter, String dirmode = "release")
@@ -74,7 +73,6 @@ def runTestWithSanitizerCommand (platform, project, gfilter, String dirmode = "r
             """
 
     platform.runCommand(this, command)
-    junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
 }
 
 def runCoverageCommand (platform, project, gfilter, String dirmode = "release")

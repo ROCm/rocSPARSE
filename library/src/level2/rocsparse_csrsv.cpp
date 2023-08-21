@@ -34,23 +34,14 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle         
 try
 {
     // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(1, info);
 
     // Logging
     log_trace(handle, "rocsparse_csrsv_zero_pivot", (const void*&)info, (const void*&)position);
 
     // Check pointer arguments
-    if(position == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(2, position);
 
     // Stream
     hipStream_t stream = handle->stream;
@@ -95,7 +86,7 @@ try
                                                hipMemcpyDeviceToDevice,
                                                stream));
 
-            return rocsparse_status_zero_pivot;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
         }
     }
     else
@@ -115,7 +106,7 @@ try
         }
         else
         {
-            return rocsparse_status_zero_pivot;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
         }
     }
 
@@ -123,7 +114,7 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_csrsv_clear(rocsparse_handle          handle,
@@ -132,18 +123,9 @@ extern "C" rocsparse_status rocsparse_csrsv_clear(rocsparse_handle          hand
 try
 {
     // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(1, descr);
+    ROCSPARSE_CHECKARG_POINTER(2, info);
 
     // Logging
     log_trace(handle, "rocsparse_csrsv_clear", (const void*&)descr, (const void*&)info);
@@ -175,5 +157,5 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

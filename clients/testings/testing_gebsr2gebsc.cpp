@@ -47,17 +47,17 @@ void testing_gebsr2gebsc_bad_arg(const Arguments& arg)
     rocsparse_int*       bsc_col_ptr   = (rocsparse_int*)0x4;
     rocsparse_action     copy_values   = rocsparse_action_numeric;
     rocsparse_index_base idx_base      = rocsparse_index_base_zero;
-    size_t*              buffer_size   = (size_t*)0x4;
+    size_t*              p_buffer_size = (size_t*)0x4;
     void*                temp_buffer   = (void*)0x4;
 
 #define PARAMS_BUFFER_SIZE                                                                 \
     handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, bsr_col_ind, row_block_dim, col_block_dim, \
-        buffer_size
+        p_buffer_size
 #define PARAMS                                                                             \
     handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, bsr_col_ind, row_block_dim, col_block_dim, \
         bsc_val, bsc_row_ind, bsc_col_ptr, copy_values, idx_base, temp_buffer
-    auto_testing_bad_arg(rocsparse_gebsr2gebsc_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_gebsr2gebsc<T>, PARAMS);
+    bad_arg_analysis(rocsparse_gebsr2gebsc_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_gebsr2gebsc<T>, PARAMS);
 
     // Check row_block_dim == 0
     row_block_dim = 0;
@@ -86,7 +86,7 @@ void testing_gebsr2gebsc_bad_arg(const Arguments& arg)
                                                                  nullptr,
                                                                  safe_size,
                                                                  safe_size,
-                                                                 buffer_size),
+                                                                 p_buffer_size),
                             rocsparse_status_invalid_pointer);
 
     EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,

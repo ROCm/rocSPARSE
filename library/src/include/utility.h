@@ -826,3 +826,12 @@ using floating_data_t = typename floating_traits<T>::data_t;
 
 #include "envariables.h"
 #include "memstat.h"
+
+template <typename T>
+rocsparse_indextype rocsparse_get_indextype();
+template <typename T>
+rocsparse_datatype rocsparse_get_datatype();
+rocsparse_status   rocsparse_calculate_nnz(
+      int64_t m, rocsparse_indextype indextype, const void* ptr, int64_t* nnz, hipStream_t stream);
+size_t rocsparse_indextype_sizeof(rocsparse_indextype that);
+size_t rocsparse_datatype_sizeof(rocsparse_datatype that);

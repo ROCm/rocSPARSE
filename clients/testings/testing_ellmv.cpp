@@ -56,7 +56,7 @@ void testing_ellmv_bad_arg(const Arguments& arg)
     handle, trans, m, n, alpha_device_host, descr, ell_val, ell_col_ind, ell_width, x, \
         beta_device_host, y
 
-    auto_testing_bad_arg(rocsparse_ellmv<T>, PARAMS);
+    bad_arg_analysis(rocsparse_ellmv<T>, PARAMS);
 
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {

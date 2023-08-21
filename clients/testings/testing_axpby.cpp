@@ -137,7 +137,7 @@ void testing_axpby(const Arguments& arg)
         // CPU axpby
         host_axpby<I, T>(size, nnz, h_alpha, hx_val, hx_ind, h_beta, hy_gold, base);
 
-        unit_check_segments<T>(size, hy_gold, hy_2);
+        hy_gold.unit_check(hy_2);
     }
 
     if(arg.timing)

@@ -435,7 +435,7 @@ rocsparse_status rocsparse_gebsrmv_template_row_block_dim_5_8(rocsparse_handle  
     else
     {
         // TODO
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 
     return rocsparse_status_success;

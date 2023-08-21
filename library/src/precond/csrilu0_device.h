@@ -67,14 +67,14 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
     }
 
     // Current row this wavefront is working on
-    rocsparse_int row = map[idx];
+    rocsparse_int const row = map[idx];
 
     // Diagonal entry point of the current row
-    rocsparse_int row_diag = csr_diag_ind[row];
+    rocsparse_int const row_diag = csr_diag_ind[row];
 
     // Row entry point
-    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+    rocsparse_int const row_begin = csr_row_ptr[row] - idx_base;
+    rocsparse_int const row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Fill hash table
     // Loop over columns of current row and fill hash table with row dependencies
@@ -210,6 +210,18 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
     // Make sure updated csr_val is written to global memory
     __threadfence();
 
+    // check for zero_pivot
+    if(lid == 0)
+    {
+        bool const is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
+        if(is_diag && (csr_val[row_diag] == static_cast<T>(0)))
+        {
+            rocsparse_atomic_min(zero_pivot, (row + idx_base));
+        };
+    };
+
+    __threadfence();
+
     if(lid == 0)
     {
         // First lane writes "we are done" flag
@@ -243,14 +255,14 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
     }
 
     // Current row this wavefront is working on
-    rocsparse_int row = map[idx];
+    rocsparse_int const row = map[idx];
 
     // Diagonal entry point of the current row
-    rocsparse_int row_diag = csr_diag_ind[row];
+    rocsparse_int const row_diag = csr_diag_ind[row];
 
     // Row entry point
-    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+    rocsparse_int const row_begin = csr_row_ptr[row] - idx_base;
+    rocsparse_int const row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Loop over column of current row
     for(rocsparse_int j = row_begin; j < row_diag; ++j)
@@ -368,6 +380,18 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
     }
 
     // Make sure updated csr_val is written to global memory
+    __threadfence();
+
+    // check for zero_pivot
+    if(lid == 0)
+    {
+        bool const is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
+        if(is_diag && (csr_val[row_diag] == static_cast<T>(0)))
+        {
+            rocsparse_atomic_min(zero_pivot, (row + idx_base));
+        };
+    };
+
     __threadfence();
 
     if(lid == 0)

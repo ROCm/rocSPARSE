@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -786,4 +786,69 @@ rocsparse_status rocsparse_destroy_csritsv_info(rocsparse_csritsv_info info)
         return status;
     }
     return rocsparse_status_success;
+}
+
+// Emulate C++17 std::void_t
+template <typename...>
+using void_t = void;
+
+// By default, use gcnArch converted to a string prepended by gfx
+template <typename PROP, typename = void>
+struct ArchName
+{
+    std::string operator()(const PROP& prop) const;
+};
+
+// If gcnArchName exists as a member, use it instead
+template <typename PROP>
+struct ArchName<PROP, void_t<decltype(PROP::gcnArchName)>>
+{
+    std::string operator()(const PROP& prop) const
+    {
+        // strip out xnack/ecc from name
+        std::string gcnArchName(prop.gcnArchName);
+        std::string gcnArch = gcnArchName.substr(0, gcnArchName.find(":"));
+        return gcnArch;
+    }
+};
+
+// If gcnArchName not present, no xnack mode
+template <typename PROP, typename = void>
+struct XnackMode
+{
+    std::string operator()(const PROP& prop) const
+    {
+        return "";
+    }
+};
+
+// If gcnArchName exists as a member, use it
+template <typename PROP>
+struct XnackMode<PROP, void_t<decltype(PROP::gcnArchName)>>
+{
+    std::string operator()(const PROP& prop) const
+    {
+        // strip out xnack/ecc from name
+        std::string gcnArchName(prop.gcnArchName);
+        auto        loc = gcnArchName.find("xnack");
+        std::string xnackMode;
+        if(loc != std::string::npos)
+        {
+            xnackMode = gcnArchName.substr(loc, 6);
+            // guard against missing +/- at end of xnack mode
+            if(xnackMode.size() < 6)
+                xnackMode = "";
+        }
+        return xnackMode;
+    }
+};
+
+std::string rocsparse_handle_get_arch_name(rocsparse_handle handle)
+{
+    return ArchName<hipDeviceProp_t>{}(handle->properties);
+}
+
+std::string rocsparse_handle_get_xnack_mode(rocsparse_handle handle)
+{
+    return XnackMode<hipDeviceProp_t>{}(handle->properties);
 }

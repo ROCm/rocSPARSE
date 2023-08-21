@@ -40,20 +40,6 @@ rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
                                             rocsparse_int*            csr_col_ind,
                                             void*                     temp_buffer)
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(hyb == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
     // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xhyb2csr"),
@@ -64,48 +50,25 @@ rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
               (const void*&)csr_col_ind,
               (const void*&)temp_buffer);
 
-    log_bench(handle, "./rocsparse-bench -f hyb2csr -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
-
-    // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    // Check sizes in HYB structure
-    if(hyb->m < 0 || hyb->n < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(1, descr);
+    ROCSPARSE_CHECKARG(
+        1, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(1,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+    ROCSPARSE_CHECKARG_POINTER(2, hyb);
+    ROCSPARSE_CHECKARG(2, hyb, (hyb->m < 0), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG(2, hyb, (hyb->n < 0), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_POINTER(3, csr_val);
+    ROCSPARSE_CHECKARG_POINTER(4, csr_row_ptr);
+    ROCSPARSE_CHECKARG_POINTER(5, csr_col_ind);
+    ROCSPARSE_CHECKARG_POINTER(6, temp_buffer);
     // Quick return if possible
     if(hyb->m == 0 || hyb->n == 0 || (hyb->ell_nnz == 0 && hyb->coo_nnz == 0))
     {
         return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(csr_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(temp_buffer == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     // Stream
@@ -206,19 +169,6 @@ extern "C" rocsparse_status rocsparse_hyb2csr_buffer_size(rocsparse_handle      
                                                           size_t*                   buffer_size)
 try
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(hyb == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
 
     // Logging
     log_trace(handle,
@@ -228,42 +178,25 @@ try
               (const void*&)csr_row_ptr,
               (const void*&)buffer_size);
 
-    // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    // Check sizes in HYB structure
-    if(hyb->m < 0 || hyb->n < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check invalid buffer size pointer
-    if(buffer_size == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(1, descr);
+    ROCSPARSE_CHECKARG(
+        1, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(1,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+    ROCSPARSE_CHECKARG_POINTER(2, hyb);
+    ROCSPARSE_CHECKARG(2, hyb, (hyb->m < 0), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG(2, hyb, (hyb->n < 0), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_POINTER(4, buffer_size);
     // Quick return if possible
     if(hyb->m == 0 || hyb->n == 0 || (hyb->ell_nnz == 0 && hyb->coo_nnz == 0))
     {
         *buffer_size = 0;
         return rocsparse_status_success;
     }
-
-    // Check pointer arguments
-    if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(3, csr_row_ptr);
 
     // Stream
     hipStream_t stream = handle->stream;
@@ -297,7 +230,7 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_shyb2csr(rocsparse_handle          handle,
@@ -309,12 +242,13 @@ extern "C" rocsparse_status rocsparse_shyb2csr(rocsparse_handle          handle,
                                                void*                     temp_buffer)
 try
 {
-    return rocsparse_hyb2csr_template(
-        handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_hyb2csr_template(
+        handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_dhyb2csr(rocsparse_handle          handle,
@@ -326,12 +260,13 @@ extern "C" rocsparse_status rocsparse_dhyb2csr(rocsparse_handle          handle,
                                                void*                     temp_buffer)
 try
 {
-    return rocsparse_hyb2csr_template(
-        handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_hyb2csr_template(
+        handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_chyb2csr(rocsparse_handle          handle,
@@ -343,12 +278,13 @@ extern "C" rocsparse_status rocsparse_chyb2csr(rocsparse_handle          handle,
                                                void*                     temp_buffer)
 try
 {
-    return rocsparse_hyb2csr_template(
-        handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_hyb2csr_template(
+        handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_zhyb2csr(rocsparse_handle          handle,
@@ -360,10 +296,11 @@ extern "C" rocsparse_status rocsparse_zhyb2csr(rocsparse_handle          handle,
                                                void*                     temp_buffer)
 try
 {
-    return rocsparse_hyb2csr_template(
-        handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_hyb2csr_template(
+        handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

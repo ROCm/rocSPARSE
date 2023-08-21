@@ -54,7 +54,7 @@ void testing_csr2hyb_bad_arg(const Arguments& arg)
 
 #define PARAMS \
     handle, m, n, descr, csr_val, csr_row_ptr, csr_col_ind, hyb, user_ell_width, partition_type
-    auto_testing_bad_arg(rocsparse_csr2hyb<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+    select_bad_arg_analysis(rocsparse_csr2hyb<T>, nargs_to_exclude, args_to_exclude, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(PARAMS), rocsparse_status_requires_sorted_storage);

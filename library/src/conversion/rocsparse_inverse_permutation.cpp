@@ -83,50 +83,28 @@ rocsparse_status rocsparse_inverse_permutation_template(rocsparse_handle handle_
     {
         return rocsparse_status_success;
     }
-    return rocsparse_inverse_permutation_core(handle_, n_, p_, q_, base_);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_inverse_permutation_core(handle_, n_, p_, q_, base_));
+    return rocsparse_status_success;
 }
 
 template <typename I>
-rocsparse_status rocsparse_inverse_permutation_impl(rocsparse_handle handle_,
-                                                    I                n_,
-                                                    const I* __restrict__ p_,
-                                                    I* __restrict__ q_,
-                                                    rocsparse_index_base base_)
+rocsparse_status rocsparse_inverse_permutation_impl(rocsparse_handle handle,
+                                                    I                n,
+                                                    const I* __restrict__ p,
+                                                    I* __restrict__ q,
+                                                    rocsparse_index_base base)
 {
-    // Check for valid handle
-    if(handle_ == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-
     // Logging
-    log_trace(
-        handle_, "rocsparse_inverse_permutation", n_, (const void*&)p_, (const void*&)q_, base_);
-    log_bench(handle_, "./rocsparse-bench -f inverse_permutation", "-n", n_);
+    log_trace(handle, "rocsparse_inverse_permutation", n, (const void*&)p, (const void*&)q, base);
 
-    // Check sizes
-    if(n_ < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, n);
+    ROCSPARSE_CHECKARG_ARRAY(2, n, p);
+    ROCSPARSE_CHECKARG_ARRAY(3, n, q);
+    ROCSPARSE_CHECKARG_ENUM(4, base);
 
-    // Check pointer arguments
-    if(n_ > 0 && p_ == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(n_ > 0 && q_ == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(base_))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    return rocsparse_inverse_permutation_template(handle_, n_, p_, q_, base_);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_inverse_permutation_template(handle, n, p, q, base));
+    return rocsparse_status_success;
 }
 
 #define INSTANTIATE(ITYPE)                                                                         \
@@ -157,9 +135,10 @@ extern "C" rocsparse_status rocsparse_inverse_permutation(rocsparse_handle     h
                                                           rocsparse_index_base base_)
 try
 {
-    return rocsparse_inverse_permutation_impl(handle_, n_, p_, q_, base_);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_inverse_permutation_impl(handle_, n_, p_, q_, base_));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

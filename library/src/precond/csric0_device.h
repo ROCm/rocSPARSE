@@ -214,9 +214,10 @@ void csric0_hash_kernel(rocsparse_int m,
         if(row_diag >= 0)
         {
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
-            if (csr_val[row_diag] == static_cast<T>(0)) {
+            if(csr_val[row_diag] == static_cast<T>(0))
+            {
                 rocsparse_atomic_min(zero_pivot, row + idx_base);
-              };
+            };
         }
     }
 
@@ -390,9 +391,10 @@ void csric0_binsearch_kernel(rocsparse_int m,
         if(row_diag >= 0)
         {
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
-            if (csr_val[row_diag] == static_cast<T>(0)) {
+            if(csr_val[row_diag] == static_cast<T>(0))
+            {
                 rocsparse_atomic_min(zero_pivot, row + idx_base);
-              };
+            };
         }
     }
 
