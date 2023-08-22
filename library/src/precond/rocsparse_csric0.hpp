@@ -196,9 +196,11 @@ rocsparse_status rocsparse_csric0_analysis_template(rocsparse_handle          ha
 
         static const rocsparse_int h_max_int = std::numeric_limits<rocsparse_int>::max();
 
-        RETURN_IF_HIP_ERROR(
-            hipMemcpyAsync(info->negative_pivot, &h_max_int, 
-                           sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->negative_pivot,
+                                           &h_max_int,
+                                           sizeof(rocsparse_int),
+                                           hipMemcpyHostToDevice,
+                                           stream));
     };
 
     // Perform analysis
@@ -333,11 +335,12 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
 
         static const rocsparse_int h_max_int = std::numeric_limits<rocsparse_int>::max();
 
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            info->negative_pivot, &h_max_int, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->negative_pivot,
+                                           &h_max_int,
+                                           sizeof(rocsparse_int),
+                                           hipMemcpyHostToDevice,
+                                           stream));
     };
-
-
 
     // Determine gcnArch and ASIC revision
     const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);

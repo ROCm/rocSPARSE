@@ -159,6 +159,18 @@ void csric0_hash_kernel(rocsparse_int m,
             break;
         }
 
+        // Row has numerical negative diagonal
+        if(rocsparse_gt(static_cast<T>(0), diag_val))
+        {
+            if(lid == 0)
+            {
+                // We are looking for the first negative pivot
+                rocsparse_atomic_min(negative_pivot, local_col + idx_base);
+            }
+
+            // Skip this row if it has a negative pivot
+            break;
+        }
         // Compute reciprocal
         diag_val = static_cast<T>(1) / diag_val;
 
@@ -213,6 +225,11 @@ void csric0_hash_kernel(rocsparse_int m,
         // Last lane processes the diagonal entry
         if(row_diag >= 0)
         {
+            if(rocsparse_gt(static_cast<T>(0), csr_val[row_diag] - sum))
+            {
+                rocsparse_atomic_min(negative_pivot, row + idx_base);
+            };
+
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
             if(csr_val[row_diag] == static_cast<T>(0))
             {
@@ -333,6 +350,19 @@ void csric0_binsearch_kernel(rocsparse_int m,
             break;
         }
 
+        // Row has numerical negative diagonal
+        if(rocsparse_gt(static_cast<T>(0), diag_val))
+        {
+            if(lid == 0)
+            {
+                // We are looking for the first negative pivot
+                rocsparse_atomic_min(negative_pivot, local_col + idx_base);
+            }
+
+            // Skip this row if it has a negative pivot
+            break;
+        }
+
         // Compute reciprocal
         diag_val = static_cast<T>(1) / diag_val;
 
@@ -390,6 +420,11 @@ void csric0_binsearch_kernel(rocsparse_int m,
         // Last lane processes the diagonal entry
         if(row_diag >= 0)
         {
+            if(rocsparse_gt(static_cast<T>(0), csr_val[row_diag] - sum))
+            {
+                rocsparse_atomic_min(negative_pivot, row + idx_base);
+            };
+
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
             if(csr_val[row_diag] == static_cast<T>(0))
             {
