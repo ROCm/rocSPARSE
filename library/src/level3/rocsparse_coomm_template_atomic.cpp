@@ -76,14 +76,16 @@ static ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
                 {
                     for(I p = 0; p < LOOPS; p++)
                     {
-                        rocsparse_atomic_add(&C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
+                        rocsparse_atomic_add(&C[(colB + p * WF_SIZE) * ldc + current_row], 
+                                             alpha * sum[p]);
                     }
                 }
                 else
                 {
                     for(I p = 0; p < LOOPS; p++)
                     {
-                        rocsparse_atomic_add(&C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
+                        rocsparse_atomic_add(&C[current_row * ldc + colB + p * WF_SIZE], 
+                                             alpha * sum[p]);
                     }
                 }
 
