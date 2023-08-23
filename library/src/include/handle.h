@@ -186,6 +186,9 @@ struct _rocsparse_mat_info
     // negative pivot for csric0
     void* negative_pivot{};
 
+    // tolerance used for determining near singularity
+    double near_singularity_tolerance{0};
+
     // numeric boost for ilu0
     int         boost_enable{};
     int         use_double_prec_tol{};

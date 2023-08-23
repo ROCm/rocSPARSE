@@ -5823,10 +5823,6 @@ void host_csric0(rocsparse_int                     M,
     {
         *negative_pivot = -1;
     };
-
-// debug
-    printf("host_csric0:negative_pivot=%d numeric_pivot=%d\n",
-            *negative_pivot, *numeric_pivot );
 }
 
 template <typename T, typename U>
