@@ -24,7 +24,7 @@
 #include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
-static int const neg_pivot_level = 3;
+static int const neg_pivot_level = 10;
 
 template <typename T>
 void testing_csric0_bad_arg(const Arguments& arg)
@@ -250,7 +250,9 @@ void testing_csric0(const Arguments& arg)
     host_vector<rocsparse_int> h_solve_pivot_2(1);
     host_vector<rocsparse_int> h_solve_pivot_gold(1);
 
-    host_vector<rocsparse_int> h_solve_pivot_neg(1);
+    host_vector<rocsparse_int> h_negative_pivot_1(1);
+    host_vector<rocsparse_int> h_negative_pivot_2(1);
+    host_vector<rocsparse_int> h_negative_pivot_gold(1);
 
     // Allocate device memory
     device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
@@ -259,6 +261,8 @@ void testing_csric0(const Arguments& arg)
     device_vector<T>             dcsr_val_2(nnz);
     device_vector<rocsparse_int> d_analysis_pivot_2(1);
     device_vector<rocsparse_int> d_solve_pivot_2(1);
+
+    device_vector<rocsparse_int> d_negative_pivot_2(1);
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
@@ -341,10 +345,10 @@ void testing_csric0(const Arguments& arg)
 
         if(neg_pivot_level >= 3)
         {
-            auto st = rocsparse_csric0_negative_pivot(handle, info, h_solve_pivot_neg);
+            auto st = rocsparse_csric0_negative_pivot(handle, info, h_negative_pivot_1);
             EXPECT_ROCSPARSE_STATUS(st,
-                                    (h_solve_pivot_neg[0] != -1) ? rocsparse_status_negative_pivot
-                                                                 : rocsparse_status_success);
+                                    (h_negative_pivot_1[0] != -1) ? rocsparse_status_negative_pivot
+                                                                  : rocsparse_status_success);
         }
 
         // Sync to force updated pivots
@@ -361,16 +365,13 @@ void testing_csric0(const Arguments& arg)
 
         if(neg_pivot_level >= 4)
         {
-           auto istat = rocsparse_csric0_negative_pivot( handle, info, h_solve_pivot_neg);
-           std::cout << "testing_csric0:  istat = " << istat 
-                     << " h_solve_pivot_neg[0] " << h_solve_pivot_neg[0]
+           std::cout << "testing_csric0:  "
+                     << " h_negative_pivot_1[0] " << h_negative_pivot_1[0]
                      << " line " << __LINE__
                      << "\n";
-/*
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_negative_pivot(handle, info, d_solve_pivot_2),
-                                    (h_solve_pivot_neg[0] != -1) ? rocsparse_status_negative_pivot
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_negative_pivot(handle, info, d_negative_pivot_2),
+                                    (h_negative_pivot_1[0] != -1) ? rocsparse_status_negative_pivot
                                                                  : rocsparse_status_success);
-*/
         };
 
         // Sync to force updated pivots
@@ -384,6 +385,9 @@ void testing_csric0(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(
             h_solve_pivot_2, d_solve_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
+        CHECK_HIP_ERROR(hipMemcpy(
+            h_negative_pivot_2, d_negative_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
         // CPU csric0
         host_csric0<T>(M,
                        hcsr_row_ptr,
@@ -391,13 +395,22 @@ void testing_csric0(const Arguments& arg)
                        hcsr_val_gold,
                        base,
                        h_analysis_pivot_gold,
-                       h_solve_pivot_gold);
+                       h_solve_pivot_gold,
+                       h_negative_pivot_gold);
 
         // Check pivots
         h_analysis_pivot_gold.unit_check(h_analysis_pivot_1);
         h_analysis_pivot_gold.unit_check(h_analysis_pivot_2);
         h_solve_pivot_gold.unit_check(h_solve_pivot_1);
         h_solve_pivot_gold.unit_check(h_solve_pivot_2);
+
+// debug
+        {
+        printf("%s:%d h_negative_pivot_gold[0]=%d, h_negative_pivot_2[0]=%d\n",
+                __FILE__, __LINE__, h_negative_pivot_gold[0],    h_negative_pivot_2[0]);
+        };
+
+        h_negative_pivot_gold.unit_check( h_negative_pivot_2 );
 
         // Check solution vector if no pivot has been found
         if(h_analysis_pivot_gold[0] == -1 && h_solve_pivot_gold[0] == -1)
@@ -493,19 +506,17 @@ void testing_csric0(const Arguments& arg)
 
         if(neg_pivot_level >= 5)
         {
-           auto istat = rocsparse_csric0_negative_pivot( handle, info, h_solve_pivot_neg);
+           auto istat = rocsparse_csric0_negative_pivot( handle, info, h_negative_pivot_1);
            std::cout << "testing_csric0:  istat = " << istat 
-                     << " h_solve_pivot_neg[0] " << h_solve_pivot_neg[0]
+                     << " h_solve_pivot_neg[0] " << h_negative_pivot_1[0]
                      << " line " << __LINE__
                      << "\n";
      
                     
-/*
             EXPECT_ROCSPARSE_STATUS(
-                rocsparse_csric0_negative_pivot(handle, info, h_solve_pivot_neg),
-                (h_solve_pivot_neg[0] != -1) ? rocsparse_status_negative_pivot
+                rocsparse_csric0_negative_pivot(handle, info, h_negative_pivot_1),
+                (h_negative_pivot_1[0] != -1) ? rocsparse_status_negative_pivot
                                              : rocsparse_status_success);
-*/
 
         };
 
@@ -527,6 +538,8 @@ void testing_csric0(const Arguments& arg)
             pivot = std::min(h_analysis_pivot_1[0], h_solve_pivot_1[0]);
         }
 
+        rocsparse_int negative_pivot = h_negative_pivot_1[0];
+
         double gpu_gbyte = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
 
         display_timing_info("M",
@@ -535,6 +548,8 @@ void testing_csric0(const Arguments& arg)
                             nnz,
                             "pivot",
                             pivot,
+                            "negative pivot",
+                            negative_pivot,
                             "analysis policy",
                             rocsparse_analysis2string(apol),
                             "solve policy",

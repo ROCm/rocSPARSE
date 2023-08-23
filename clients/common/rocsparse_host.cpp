@@ -5681,11 +5681,15 @@ void host_csric0(rocsparse_int                     M,
                  std::vector<T>&                   csr_val,
                  rocsparse_index_base              base,
                  rocsparse_int*                    struct_pivot,
-                 rocsparse_int*                    numeric_pivot)
+                 rocsparse_int*                    numeric_pivot,
+                 rocsparse_int*                    negative_pivot)
 {
     // Initialize pivot
-    *struct_pivot  = -1;
-    *numeric_pivot = -1;
+    rocsparse_int const max_int = std::numeric_limits<rocsparse_int>::max();
+    *struct_pivot               = max_int;
+    *numeric_pivot              = max_int;
+    *negative_pivot             = max_int;
+    double const tol            = 0;
 
     // pointer of upper part of each row
     std::vector<rocsparse_int> diag_offset(M);
@@ -5731,18 +5735,29 @@ void host_csric0(rocsparse_int                     M,
             rocsparse_int row_begin_j = csr_row_ptr[col_j] - base;
             rocsparse_int row_diag_j  = diag_offset[col_j];
 
-            T local_sum = static_cast<T>(0);
-            T inv_diag  = csr_val[row_diag_j];
+            T       local_sum = static_cast<T>(0);
+            T const diag_val  = csr_val[row_diag_j];
+            T       inv_diag  = static_cast<T>(0);
+            ;
 
-            // Check for numeric zero
-            if(inv_diag == static_cast<T>(0))
+            // Check for numeric negative
+            if((std::real(diag_val) < 0) && (std::imag(diag_val) == 0))
             {
-                // Numerical zero diagonal
-                *numeric_pivot =  col_j + base;
-                return;
+                // Numerical negative diagonal
+                *negative_pivot = std::min(*negative_pivot, col_j + base);
             }
 
-            inv_diag = static_cast<T>(1) / inv_diag;
+            // Check for numeric zero
+            if(diag_val == static_cast<T>(0))
+            {
+                // Numerical zero diagonal
+                *numeric_pivot = std::min(*numeric_pivot, col_j + base);
+            }
+            else
+            {
+
+                inv_diag = static_cast<T>(1) / diag_val;
+            };
 
             // loop over upper offset pointer and do linear combination for nnz entry
             for(rocsparse_int k = row_begin_j; k < row_diag_j; ++k)
@@ -5756,7 +5771,6 @@ void host_csric0(rocsparse_int                     M,
                     local_sum = std::fma(csr_val[k], rocsparse_conj(csr_val[idx]), local_sum);
                 }
             }
-
             val_j = (val_j - local_sum) * inv_diag;
             sum   = std::fma(val_j, rocsparse_conj(val_j), sum);
 
@@ -5766,22 +5780,29 @@ void host_csric0(rocsparse_int                     M,
         if(!has_diag)
         {
             // Structural (and numerical) zero diagonal
-            *struct_pivot  = ai + base;
-            *numeric_pivot = ai + base;
-            return;
+            *struct_pivot  = std::min(*struct_pivot, ai + base);
+            *numeric_pivot = std::min(*numeric_pivot, ai + base);
         }
-
-        // Process diagonal entry
-        T diag_entry = std::sqrt(std::abs(csr_val[j] - sum));
-        csr_val[j]   = diag_entry;
-        if(diag_entry == static_cast<T>(0))
+        else
         {
-            *numeric_pivot = ai + base;
-            return;
-        };
+            // Store diagonal offset
+            diag_offset[ai] = j;
 
-        // Store diagonal offset
-        diag_offset[ai] = j;
+            // Process diagonal entry
+            T const diag_entry = csr_val[j] - sum;
+            csr_val[j]         = std::sqrt(std::abs(diag_entry));
+
+            if((std::real(diag_entry) < 0) && (std::imag(diag_entry) == 0))
+            {
+                *negative_pivot = std::min(*negative_pivot, ai + base);
+            };
+
+            // check for zero diagonal
+            if(diag_entry == static_cast<T>(0))
+            {
+                *numeric_pivot = std::min(*numeric_pivot, ai + base);
+            };
+        };
 
         // clear nnz entries
         for(j = row_begin; j < row_end; ++j)
@@ -5789,6 +5810,23 @@ void host_csric0(rocsparse_int                     M,
             nnz_entries[csr_col_ind[j] - base] = 0;
         }
     }
+
+    if(*struct_pivot == max_int)
+    {
+        *struct_pivot = -1;
+    };
+    if(*numeric_pivot == max_int)
+    {
+        *numeric_pivot = -1;
+    };
+    if(*negative_pivot == max_int)
+    {
+        *negative_pivot = -1;
+    };
+
+// debug
+    printf("host_csric0:negative_pivot=%d numeric_pivot=%d\n",
+            *negative_pivot, *numeric_pivot );
 }
 
 template <typename T, typename U>
@@ -5892,15 +5930,14 @@ void host_csrilu0(rocsparse_int                     M,
 
         // check for zero diagonal
         {
-          rocsparse_int const diag_pos = diag_offset[ai];
-          bool const is_diag = (diag_pos >= 0) &&
-                               (csr_col_ind[ diag_pos ] == (ai + base) );
-          bool const is_zero_diag = is_diag && (csr_val[ diag_pos ] == static_cast<T>(0));
-          if(is_zero_diag)
-          {
-              *numeric_pivot = (ai + base);
-              return;
-          };
+            rocsparse_int const diag_pos = diag_offset[ai];
+            bool const          is_diag = (diag_pos >= 0) && (csr_col_ind[diag_pos] == (ai + base));
+            bool const          is_zero_diag = is_diag && (csr_val[diag_pos] == static_cast<T>(0));
+            if(is_zero_diag)
+            {
+                *numeric_pivot = (ai + base);
+                return;
+            };
         };
 
         // clear nnz entries
@@ -8387,7 +8424,8 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                     std::vector<TYPE>&                csr_val,                    \
                                     rocsparse_index_base              base,                       \
                                     rocsparse_int*                    struct_pivot,               \
-                                    rocsparse_int*                    numeric_pivot);                                \
+                                    rocsparse_int*                    numeric_pivot,              \
+                                    rocsparse_int*                    negative_pivot);                               \
     template void             host_csrilu0<TYPE>(rocsparse_int                     M,                         \
                                      const std::vector<rocsparse_int>& csr_row_ptr,               \
                                      const std::vector<rocsparse_int>& csr_col_ind,               \

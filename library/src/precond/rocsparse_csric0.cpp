@@ -515,7 +515,7 @@ try
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
         // rocsparse_pointer_mode_device
-        rocsparse_int pivot;
+        rocsparse_int pivot = std::numeric_limits<rocsparse_int>::max();
 
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
             &pivot, info->negative_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
@@ -523,7 +523,10 @@ try
         // Wait for host transfer to finish
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
-        if(pivot == std::numeric_limits<rocsparse_int>::max())
+// debug
+        printf("%s:%d pivot=%d\n", __FILE__, __LINE__, pivot );
+
+        if( pivot == std::numeric_limits<rocsparse_int>::max())
         {
             RETURN_IF_HIP_ERROR(hipMemsetAsync(position, 0xFF, sizeof(rocsparse_int), stream));
         }
@@ -549,10 +552,14 @@ try
             position, info->negative_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
+// debug
+        printf("%s:%d *position=%d\n", __FILE__, __LINE__, *position );
+
         // If no negative pivot is found, set -1
         if(*position == std::numeric_limits<rocsparse_int>::max())
         {
             *position = -1;
+
         }
         else
         {
