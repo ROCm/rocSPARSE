@@ -48,35 +48,6 @@ void testing_scatter(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
-    // Argument sanity check before allocating invalid memory
-    if(size <= 0 || nnz <= 0)
-    {
-        static const I safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<T> dx_ind(safe_size);
-        device_vector<T> dx_val(safe_size);
-        device_vector<T> dy(safe_size);
-
-        if(!dx_ind || !dx_val || !dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        // Check structures
-        rocsparse_local_spvec x(size, nnz, dx_ind, dx_val, itype, base, ttype);
-        rocsparse_local_dnvec y(size, dy, ttype);
-
-        // Check Scatter when structures were created
-        if(size >= 0 && nnz >= 0)
-        {
-            EXPECT_ROCSPARSE_STATUS(rocsparse_scatter(handle, x, y), rocsparse_status_success);
-        }
-
-        return;
-    }
-
     // Allocate host memory for matrix
     host_vector<I> hx_ind(nnz);
     host_vector<T> hx_val(nnz);
@@ -94,12 +65,6 @@ void testing_scatter(const Arguments& arg)
     device_vector<I> dx_ind(nnz);
     device_vector<T> dx_val(nnz);
     device_vector<T> dy(size);
-
-    if(!dx_ind || !dx_val || !dy)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dx_ind, hx_ind, sizeof(I) * nnz, hipMemcpyHostToDevice));

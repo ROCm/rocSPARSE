@@ -60,31 +60,6 @@ void testing_dotci(const Arguments& arg)
     // Grab stream used by handle
     hipStream_t stream = handle.get_stream();
 
-    // Argument sanity check before allocating invalid memory
-    if(nnz <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dx_ind(safe_size);
-        device_vector<T>             dx_val(safe_size);
-        device_vector<T>             dy(safe_size);
-
-        if(!dx_ind || !dx_val || !dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        T result;
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_dotci<T>(handle, nnz, dx_val, dx_ind, dy, &result, base),
-                                nnz < 0 ? rocsparse_status_invalid_size : rocsparse_status_success);
-
-        return;
-    }
-
     // Allocate host memory
     host_vector<rocsparse_int> hx_ind(nnz);
     host_vector<T>             hx_val(nnz);
@@ -104,12 +79,6 @@ void testing_dotci(const Arguments& arg)
     device_vector<T>             dx_val(nnz);
     device_vector<T>             dy(M);
     device_vector<T>             ddot_2(1);
-
-    if(!dx_ind || !dx_val || !dy || !ddot_2)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dx_ind, hx_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));

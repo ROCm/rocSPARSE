@@ -59,7 +59,19 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle     handle,
     // Quick return if possible
     if(nnz == 0)
     {
-        return rocsparse_status_success;
+        if(result != nullptr)
+        {
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
+            {
+                RETURN_IF_HIP_ERROR(hipMemsetAsync(result, 0, sizeof(T), handle->stream));
+            }
+            else
+            {
+                *result = static_cast<T>(0);
+            }
+
+            return rocsparse_status_success;
+        }
     }
 
     // Check pointer arguments
