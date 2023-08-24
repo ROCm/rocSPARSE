@@ -17,6 +17,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Optimization to doti routine
 - Fixed a bug in rocsparse-bench, where SpMV algorithm was not taken into account in CSR format
 - Fixed the BSR/GEBSR routines bsrmv, bsrsv, bsrmm, bsrgeam, gebsrmv, gebsrmm so that block_dim==0 is considered an invalid size
+- Fixed bug where passing nnz = 0 to doti or dotci did not always return a dot product of 0
 - Improved spin-looping algorithms
 ### Known Issues
 

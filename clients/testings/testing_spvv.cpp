@@ -109,48 +109,6 @@ void testing_spvv(const Arguments& arg)
     // Grab stream used by handle
     hipStream_t stream = handle.get_stream();
 
-    // Argument sanity check before allocating invalid memory
-    if(nnz <= 0)
-    {
-        T h_result;
-
-        // Allocate memory on device
-        device_vector<Y> dy(100);
-
-        if(!dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        // Valid descriptors can only be created for nnz >= 0
-        if(nnz < 0)
-        {
-            return;
-        }
-
-        rocsparse_local_spvec x(size, nnz, nullptr, nullptr, itype, base, xtype);
-        rocsparse_local_dnvec y(size, dy, ytype);
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        // Obtain buffer size
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_spvv(handle, trans, x, y, &h_result, ttype, &buffer_size, nullptr),
-            rocsparse_status_success);
-
-        CHECK_HIP_ERROR(rocsparse_hipMalloc(&temp_buffer, buffer_size));
-
-        // SpVV
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_spvv(handle, trans, x, y, &h_result, ttype, &buffer_size, temp_buffer),
-            rocsparse_status_success);
-
-        CHECK_HIP_ERROR(rocsparse_hipFree(temp_buffer));
-
-        return;
-    }
-
     // Allocate host memory
     host_vector<I> hx_ind(nnz);
     host_vector<X> hx_val(nnz);
@@ -170,12 +128,6 @@ void testing_spvv(const Arguments& arg)
     device_vector<X> dx_val(nnz);
     device_vector<Y> dy(size);
     device_vector<T> ddot_2(1);
-
-    if(!dx_ind || !dx_val || !dy || !ddot_2)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dx_ind, hx_ind, sizeof(I) * nnz, hipMemcpyHostToDevice));

@@ -49,32 +49,6 @@ void testing_roti(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
-    // Argument sanity check before allocating invalid memory
-    if(nnz <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dx_ind(safe_size);
-        device_vector<T>             dx_val(safe_size);
-        device_vector<T>             dy(safe_size);
-
-        if(!dx_ind || !dx_val || !dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        T c = 3.7;
-        T s = 1.2;
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_roti<T>(handle, nnz, dx_val, dx_ind, dy, &c, &s, base),
-                                nnz < 0 ? rocsparse_status_invalid_size : rocsparse_status_success);
-
-        return;
-    }
-
     // Allocate host memory
     host_vector<rocsparse_int> hx_ind(nnz);
     host_vector<T>             hx_val_1(nnz);
@@ -106,12 +80,6 @@ void testing_roti(const Arguments& arg)
     device_vector<T>             dy_2(M);
     device_vector<T>             dc(1);
     device_vector<T>             ds(1);
-
-    if(!dx_ind || !dx_val_1 || !dx_val_2 || !dy_1 || !dy_2 || !dc || !ds)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dx_ind, hx_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
