@@ -350,6 +350,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
     dim3 csric0_blocks((m * handle->wavefront_size - 1) / CSRIC0_DIM + 1);
     dim3 csric0_threads(CSRIC0_DIM);
 
+    double const tol = info->singularity_tol;
+
     if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
     {
         hipLaunchKernelGGL((csric0_binsearch_kernel<CSRIC0_DIM, 64, true>),
@@ -366,7 +368,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                            (rocsparse_int*)info->csric0_info->row_map,
                            (rocsparse_int*)info->zero_pivot,
                            (rocsparse_int*)info->negative_pivot,
-                           descr->base);
+                           descr->base,
+                           tol);
     }
     else
     {
@@ -388,7 +391,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
             else if(max_nnz <= 64)
             {
@@ -406,7 +410,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
             else if(max_nnz <= 128)
             {
@@ -424,7 +429,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
             else if(max_nnz <= 256)
             {
@@ -442,7 +448,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
             else if(max_nnz <= 512)
             {
@@ -460,7 +467,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
             else
             {
@@ -478,7 +486,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
         }
         else if(handle->wavefront_size == 64)
@@ -499,7 +508,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
             else if(max_nnz <= 128)
             {
@@ -517,7 +527,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
             else if(max_nnz <= 256)
             {
@@ -535,7 +546,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
             else if(max_nnz <= 512)
             {
@@ -553,7 +565,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
             else if(max_nnz <= 1024)
             {
@@ -571,7 +584,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
             else
             {
@@ -589,7 +603,8 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
                                    (rocsparse_int*)info->negative_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   tol);
             }
         }
         else

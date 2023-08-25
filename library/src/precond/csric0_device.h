@@ -37,11 +37,11 @@ void csric0_hash_kernel(rocsparse_int m,
                         const rocsparse_int* __restrict__ map,
                         rocsparse_int* __restrict__ zero_pivot,
                         rocsparse_int* __restrict__ negative_pivot,
-                        rocsparse_index_base idx_base)
+                        rocsparse_index_base idx_base,
+                        double               tol = 0)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
-
 
     __shared__ rocsparse_int stable[BLOCKSIZE * HASH];
     __shared__ rocsparse_int sdata[BLOCKSIZE * HASH];
@@ -68,7 +68,6 @@ void csric0_hash_kernel(rocsparse_int m,
 
     // Current row this wavefront is working on
     rocsparse_int row = map[idx];
-
 
     // Diagonal entry point of the current row
     rocsparse_int row_diag = csr_diag_ind[row];
@@ -162,7 +161,7 @@ void csric0_hash_kernel(rocsparse_int m,
         }
 
         // Row has numerical negative diagonal
-        if((std::real(diag_val) < 0) && (std::imag(diag_val) == 0))
+        if((std::real(diag_val) <= tol) && (std::imag(diag_val) == 0))
         {
             if(lid == 0)
             {
@@ -223,21 +222,23 @@ void csric0_hash_kernel(rocsparse_int m,
 
     {
         // Last lane processes the diagonal entry
-        if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base) ))
+        if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
         {
             T const diag_val = csr_val[row_diag] - sum;
-            if((std::real(diag_val) < 0) && (std::imag(diag_val) == 0))
+            if((std::real(diag_val) <= tol) && (std::imag(diag_val) == 0))
             {
-              if (lid == (WFSIZE-1)) {
-                rocsparse_atomic_min(negative_pivot, (row + idx_base) );
+                if(lid == (WFSIZE - 1))
+                {
+                    rocsparse_atomic_min(negative_pivot, (row + idx_base));
                 };
             };
 
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
             if(csr_val[row_diag] == static_cast<T>(0))
             {
-               if (lid == (WFSIZE-1)) {
-                rocsparse_atomic_min(zero_pivot, (row + idx_base) );
+                if(lid == (WFSIZE - 1))
+                {
+                    rocsparse_atomic_min(zero_pivot, (row + idx_base));
                 };
             };
         }
@@ -264,7 +265,8 @@ void csric0_binsearch_kernel(rocsparse_int m,
                              const rocsparse_int* __restrict__ map,
                              rocsparse_int* __restrict__ zero_pivot,
                              rocsparse_int* __restrict__ negative_pivot,
-                             rocsparse_index_base idx_base)
+                             rocsparse_index_base idx_base,
+                             double               tol = 0)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -356,7 +358,7 @@ void csric0_binsearch_kernel(rocsparse_int m,
         }
 
         // Row has numerical negative diagonal
-        if((std::real(diag_val) < 0) && (std::imag(diag_val) == 0))
+        if((std::real(diag_val) <= tol) && (std::imag(diag_val) == 0))
         {
             if(lid == 0)
             {
@@ -421,21 +423,23 @@ void csric0_binsearch_kernel(rocsparse_int m,
 
     {
         // Last lane processes the diagonal entry
-        if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base) ))
+        if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
         {
             T const diag_val = csr_val[row_diag] - sum;
-            if((std::real(diag_val) < 0) && (std::imag(diag_val) == 0))
+            if((std::real(diag_val) <= tol) && (std::imag(diag_val) == 0))
             {
-               if (lid == (WFSIZE-1)) {
-                rocsparse_atomic_min(negative_pivot, (row + idx_base) );
+                if(lid == (WFSIZE - 1))
+                {
+                    rocsparse_atomic_min(negative_pivot, (row + idx_base));
                 };
             };
 
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
             if(csr_val[row_diag] == static_cast<T>(0))
             {
-               if (lid == (WFSIZE-1)) {
-                rocsparse_atomic_min(zero_pivot, (row + idx_base) );
+                if(lid == (WFSIZE - 1))
+                {
+                    rocsparse_atomic_min(zero_pivot, (row + idx_base));
                 };
             };
         }

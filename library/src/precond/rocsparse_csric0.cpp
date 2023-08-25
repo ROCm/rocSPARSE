@@ -570,3 +570,42 @@ catch(...)
 {
     return exception_to_rocsparse_status();
 }
+
+extern "C" rocsparse_status
+    rocsparse_csric0_set_tol(rocsparse_handle handle, rocsparse_mat_info info, double tol)
+try
+{
+    // Check for valid handle and matrix descriptor
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+
+    if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging
+    log_trace(handle, "rocsparse_csric0_set_tol", (const void*&)info, tol);
+
+    // Stream
+    hipStream_t stream = handle->stream;
+
+    {
+        double h_singularity_tol[1];
+        h_singularity_tol[0] = tol;
+
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&(info->singularity_tol),
+                                           h_singularity_tol,
+                                           sizeof(double),
+                                           hipMemcpyHostToDevice,
+                                           stream));
+    }
+
+    return rocsparse_status_success;
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}

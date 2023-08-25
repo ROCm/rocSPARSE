@@ -187,7 +187,7 @@ struct _rocsparse_mat_info
     void* negative_pivot{};
 
     // tolerance used for determining near singularity
-    double near_singularity_tolerance{0};
+    double singularity_tol{0};
 
     // numeric boost for ilu0
     int         boost_enable{};
