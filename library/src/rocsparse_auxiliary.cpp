@@ -1065,8 +1065,7 @@ try
             hipMemcpy(dest->zero_pivot, src->zero_pivot, J_size, hipMemcpyDeviceToDevice));
     }
 
-
-    if(src->negative_pivot != nullptr)
+    if(src->singular_pivot != nullptr)
     {
         // negative pivot for csric0
         size_t J_size = sizeof(uint16_t);
@@ -1089,13 +1088,13 @@ try
         }
         }
 
-        if(dest->negative_pivot == nullptr)
+        if(dest->singular_pivot == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->negative_pivot, J_size));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->singular_pivot, J_size));
         }
 
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(dest->negative_pivot, src->negative_pivot, J_size, hipMemcpyDeviceToDevice));
+            hipMemcpy(dest->singular_pivot, src->singular_pivot, J_size, hipMemcpyDeviceToDevice));
     }
 
     dest->boost_enable        = src->boost_enable;
@@ -1341,10 +1340,10 @@ try
     }
 
     // Clear negative pivot
-    if(info->negative_pivot != nullptr)
+    if(info->singular_pivot != nullptr)
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->negative_pivot));
-        info->negative_pivot = nullptr;
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->singular_pivot));
+        info->singular_pivot = nullptr;
     }
 
     // Destruct

@@ -65,6 +65,8 @@ constexpr auto rocsparse_status2string(rocsparse_status status)
         return "arch mismatch";
     case rocsparse_status_zero_pivot:
         return "zero pivot";
+    case rocsparse_status_singular_pivot:
+        return "singular pivot";
     case rocsparse_status_not_initialized:
         return "not initialized";
     case rocsparse_status_type_mismatch:

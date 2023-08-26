@@ -62,7 +62,7 @@ void testing_csricsv(const Arguments& arg)
     host_vector<rocsparse_int> h_struct_pivot_1(1);
     host_vector<rocsparse_int> h_struct_pivot_2(1);
     host_vector<rocsparse_int> h_numeric_pivot_gold(1);
-    host_vector<rocsparse_int> h_negative_pivot_gold(1);
+    host_vector<rocsparse_int> h_singular_pivot_gold(1);
     host_vector<rocsparse_int> h_numeric_pivot_L_gold(1);
     host_vector<rocsparse_int> h_numeric_pivot_LT_gold(1);
     host_vector<rocsparse_int> h_numeric_pivot_1(1);
@@ -107,7 +107,7 @@ void testing_csricsv(const Arguments& arg)
                    base,
                    h_struct_pivot_gold,
                    h_numeric_pivot_gold,
-                   h_negative_pivot_gold);
+                   h_singular_pivot_gold);
 
     // Obtain csric0 buffer size
     size_t buffer_size;

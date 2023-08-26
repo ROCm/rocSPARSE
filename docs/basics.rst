@@ -642,7 +642,8 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xcsric0_buffer_size() <rocsparse_scsric0_buffer_size>`                                           x      x      x              x
 :cpp:func:`rocsparse_Xcsric0_analysis() <rocsparse_scsric0_analysis>`                                                 x      x      x              x
 :cpp:func:`rocsparse_csric0_zero_pivot`
-:cpp:func:`rocsparse_csric0_negative_pivot`
+:cpp:func:`rocsparse_csric0_singular_pivot`
+:cpp:func:`rocsparse_csric0_set_tolerance`
 :cpp:func:`rocsparse_csric0_clear`
 :cpp:func:`rocsparse_Xcsric0() <rocsparse_scsric0>`                                                                   x      x      x              x
 :cpp:func:`rocsparse_Xcsrilu0_buffer_size() <rocsparse_scsrilu0_buffer_size>`                                         x      x      x              x

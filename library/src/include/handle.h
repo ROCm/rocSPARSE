@@ -183,8 +183,8 @@ struct _rocsparse_mat_info
     // zero pivot for csrsv, csrsm, csrilu0, csric0
     void* zero_pivot{};
 
-    // negative pivot for csric0
-    void* negative_pivot{};
+    // singular pivot for csric0
+    void* singular_pivot{};
 
     // tolerance used for determining near singularity
     double singularity_tol{0};

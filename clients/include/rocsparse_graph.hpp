@@ -199,7 +199,7 @@ namespace testing
     TESTING_TEMPLATE(bsrilu0_clear)
     TESTING_COMPUTE_TEMPLATE(bsrilu0)
     TESTING_TEMPLATE(csric0_zero_pivot)
-    TESTING_TEMPLATE(csric0_negative_pivot)
+    TESTING_TEMPLATE(csric0_singular_pivot)
     TESTING_COMPUTE_TEMPLATE(csric0_buffer_size)
     TESTING_COMPUTE_TEMPLATE(csric0_analysis)
     TESTING_TEMPLATE(csric0_clear)

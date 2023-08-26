@@ -467,7 +467,7 @@ catch(...)
     return exception_to_rocsparse_status();
 }
 
-extern "C" rocsparse_status rocsparse_csric0_negative_pivot(rocsparse_handle   handle,
+extern "C" rocsparse_status rocsparse_csric0_singular_pivot(rocsparse_handle   handle,
                                                             rocsparse_mat_info info,
                                                             rocsparse_int*     position)
 try
@@ -484,7 +484,7 @@ try
 
     // Logging
     log_trace(
-        handle, "rocsparse_csric0_negative_pivot", (const void*&)info, (const void*&)position);
+        handle, "rocsparse_csric0_singular_pivot", (const void*&)info, (const void*&)position);
 
     // Check pointer arguments
     if(position == nullptr)
@@ -518,7 +518,7 @@ try
         rocsparse_int pivot = std::numeric_limits<rocsparse_int>::max();
 
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &pivot, info->negative_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+            &pivot, info->singular_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
 
         // Wait for host transfer to finish
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
@@ -530,26 +530,26 @@ try
         else
         {
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(position,
-                                               info->negative_pivot,
+                                               info->singular_pivot,
                                                sizeof(rocsparse_int),
                                                hipMemcpyDeviceToDevice,
                                                stream));
 
             // ----------------------------------
             // TODO: no official enum entry for
-            //       rocsparse_status_negative_pivot
+            //       rocsparse_status_singular_pivot
             // ----------------------------------
-            return rocsparse_status_negative_pivot;
+            return rocsparse_status_singular_pivot;
         }
     }
     else
     {
         // rocsparse_pointer_mode_host
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            position, info->negative_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+            position, info->singular_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
-        // If no negative pivot is found, set -1
+        // If no singular pivot is found, set -1
         if(*position == std::numeric_limits<rocsparse_int>::max())
         {
             *position = -1;
@@ -558,9 +558,9 @@ try
         {
             // ----------------------------------
             // TODO: no official enum entry for
-            //       rocsparse_status_negative_pivot
+            //       rocsparse_status_singular_pivot
             // ----------------------------------
-            return rocsparse_status_negative_pivot;
+            return rocsparse_status_singular_pivot;
         }
     }
 

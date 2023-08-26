@@ -184,19 +184,19 @@ rocsparse_status rocsparse_csric0_analysis_template(rocsparse_handle          ha
     // Create csric0 info
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&info->csric0_info));
 
-    // Create negative_pivot
+    // Create singular_pivot
     {
         hipStream_t const stream = handle->stream;
 
-        if(info->negative_pivot == nullptr)
+        if(info->singular_pivot == nullptr)
         {
             RETURN_IF_HIP_ERROR(
-                rocsparse_hipMallocAsync(&(info->negative_pivot), sizeof(rocsparse_int), stream));
+                rocsparse_hipMallocAsync(&(info->singular_pivot), sizeof(rocsparse_int), stream));
         };
 
         static const rocsparse_int h_max_int = std::numeric_limits<rocsparse_int>::max();
 
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->negative_pivot,
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->singular_pivot,
                                            &h_max_int,
                                            sizeof(rocsparse_int),
                                            hipMemcpyHostToDevice,
@@ -330,12 +330,12 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
     // Max nnz per row
     rocsparse_int max_nnz = info->csric0_info->max_nnz;
 
-    // initialize negative_pivot
+    // initialize singular_pivot
     {
 
         static const rocsparse_int h_max_int = std::numeric_limits<rocsparse_int>::max();
 
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->negative_pivot,
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->singular_pivot,
                                            &h_max_int,
                                            sizeof(rocsparse_int),
                                            hipMemcpyHostToDevice,
@@ -367,7 +367,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                            d_done_array,
                            (rocsparse_int*)info->csric0_info->row_map,
                            (rocsparse_int*)info->zero_pivot,
-                           (rocsparse_int*)info->negative_pivot,
+                           (rocsparse_int*)info->singular_pivot,
                            descr->base,
                            tol);
     }
@@ -390,7 +390,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }
@@ -409,7 +409,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }
@@ -428,7 +428,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }
@@ -447,7 +447,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }
@@ -466,7 +466,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }
@@ -485,7 +485,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }
@@ -507,7 +507,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }
@@ -526,7 +526,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }
@@ -545,7 +545,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }
@@ -564,7 +564,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }
@@ -583,7 +583,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }
@@ -602,7 +602,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csric0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
-                                   (rocsparse_int*)info->negative_pivot,
+                                   (rocsparse_int*)info->singular_pivot,
                                    descr->base,
                                    tol);
             }

@@ -92,11 +92,11 @@ void testing_csric0_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(nullptr, info, &position),
                             rocsparse_status_invalid_handle);
 
-    // Test rocsparse_csric0_negative_pivot()
-    rocsparse_int negative_position = -1;
+    // Test rocsparse_csric0_singular_pivot()
+    rocsparse_int singular_position = -1;
 
     {
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_negative_pivot(nullptr, info, &negative_position),
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_singular_pivot(nullptr, info, &singular_position),
                                 rocsparse_status_invalid_handle);
     };
 
@@ -168,7 +168,7 @@ void testing_csric0(const Arguments& arg)
         static const size_t safe_size = 100;
         size_t              buffer_size;
         rocsparse_int       pivot;
-        rocsparse_int       negative_pivot;
+        rocsparse_int       singular_pivot;
 
         // Allocate memory on device
         device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
@@ -214,7 +214,7 @@ void testing_csric0(const Arguments& arg)
                                 rocsparse_status_success);
 
         {
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_negative_pivot(handle, info, &negative_pivot),
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_singular_pivot(handle, info, &singular_pivot),
                                     rocsparse_status_success);
         };
 
@@ -247,9 +247,9 @@ void testing_csric0(const Arguments& arg)
     host_vector<rocsparse_int> h_solve_pivot_2(1);
     host_vector<rocsparse_int> h_solve_pivot_gold(1);
 
-    host_vector<rocsparse_int> h_negative_pivot_1(1);
-    host_vector<rocsparse_int> h_negative_pivot_2(1);
-    host_vector<rocsparse_int> h_negative_pivot_gold(1);
+    host_vector<rocsparse_int> h_singular_pivot_1(1);
+    host_vector<rocsparse_int> h_singular_pivot_2(1);
+    host_vector<rocsparse_int> h_singular_pivot_gold(1);
 
     // Allocate device memory
     device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
@@ -259,7 +259,7 @@ void testing_csric0(const Arguments& arg)
     device_vector<rocsparse_int> d_analysis_pivot_2(1);
     device_vector<rocsparse_int> d_solve_pivot_2(1);
 
-    device_vector<rocsparse_int> d_negative_pivot_2(1);
+    device_vector<rocsparse_int> d_singular_pivot_2(1);
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
@@ -341,9 +341,9 @@ void testing_csric0(const Arguments& arg)
         }
 
         {
-            auto st = rocsparse_csric0_negative_pivot(handle, info, h_negative_pivot_1);
+            auto st = rocsparse_csric0_singular_pivot(handle, info, h_singular_pivot_1);
             EXPECT_ROCSPARSE_STATUS(st,
-                                    (h_negative_pivot_1[0] != -1) ? rocsparse_status_negative_pivot
+                                    (h_singular_pivot_1[0] != -1) ? rocsparse_status_singular_pivot
                                                                   : rocsparse_status_success);
         }
 
@@ -359,8 +359,8 @@ void testing_csric0(const Arguments& arg)
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
 
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_negative_pivot(handle, info, d_negative_pivot_2),
-                                (h_negative_pivot_1[0] != -1) ? rocsparse_status_negative_pivot
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_singular_pivot(handle, info, d_singular_pivot_2),
+                                (h_singular_pivot_1[0] != -1) ? rocsparse_status_singular_pivot
                                                               : rocsparse_status_success);
 
         // Sync to force updated pivots
@@ -375,7 +375,7 @@ void testing_csric0(const Arguments& arg)
             h_solve_pivot_2, d_solve_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         CHECK_HIP_ERROR(hipMemcpy(
-            h_negative_pivot_2, d_negative_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            h_singular_pivot_2, d_singular_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         // CPU csric0
         host_csric0<T>(M,
@@ -385,7 +385,7 @@ void testing_csric0(const Arguments& arg)
                        base,
                        h_analysis_pivot_gold,
                        h_solve_pivot_gold,
-                       h_negative_pivot_gold);
+                       h_singular_pivot_gold);
 
         // Check pivots
         h_analysis_pivot_gold.unit_check(h_analysis_pivot_1);
@@ -393,7 +393,7 @@ void testing_csric0(const Arguments& arg)
         h_solve_pivot_gold.unit_check(h_solve_pivot_1);
         h_solve_pivot_gold.unit_check(h_solve_pivot_2);
 
-        h_negative_pivot_gold.unit_check(h_negative_pivot_2);
+        h_singular_pivot_gold.unit_check(h_singular_pivot_2);
 
         // Check solution vector if no pivot has been found
         if(h_analysis_pivot_gold[0] == -1 && h_solve_pivot_gold[0] == -1)
@@ -487,8 +487,8 @@ void testing_csric0(const Arguments& arg)
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
 
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_negative_pivot(handle, info, h_negative_pivot_1),
-                                (h_negative_pivot_1[0] != -1) ? rocsparse_status_negative_pivot
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_singular_pivot(handle, info, h_singular_pivot_1),
+                                (h_singular_pivot_1[0] != -1) ? rocsparse_status_singular_pivot
                                                               : rocsparse_status_success);
 
         gpu_solve_time_used = gpu_solve_time_used / number_hot_calls;
@@ -509,7 +509,7 @@ void testing_csric0(const Arguments& arg)
             pivot = std::min(h_analysis_pivot_1[0], h_solve_pivot_1[0]);
         }
 
-        rocsparse_int negative_pivot = h_negative_pivot_1[0];
+        rocsparse_int singular_pivot = h_singular_pivot_1[0];
 
         double gpu_gbyte = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
 
@@ -520,7 +520,7 @@ void testing_csric0(const Arguments& arg)
                             "pivot",
                             pivot,
                             "negative pivot",
-                            negative_pivot,
+                            singular_pivot,
                             "analysis policy",
                             rocsparse_analysis2string(apol),
                             "solve policy",
