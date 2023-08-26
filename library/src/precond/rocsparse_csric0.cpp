@@ -572,7 +572,7 @@ catch(...)
 }
 
 extern "C" rocsparse_status
-    rocsparse_csric0_set_tol(rocsparse_handle handle, rocsparse_mat_info info, double tol)
+    rocsparse_csric0_set_tolerance(rocsparse_handle handle, rocsparse_mat_info info, double tol)
 try
 {
     // Check for valid handle and matrix descriptor
@@ -587,21 +587,9 @@ try
     }
 
     // Logging
-    log_trace(handle, "rocsparse_csric0_set_tol", (const void*&)info, tol);
+    log_trace(handle, "rocsparse_csric0_set_tolerance", (const void*&)info, tol);
 
-    // Stream
-    hipStream_t stream = handle->stream;
-
-    {
-        double h_singularity_tol[1];
-        h_singularity_tol[0] = tol;
-
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&(info->singularity_tol),
-                                           h_singularity_tol,
-                                           sizeof(double),
-                                           hipMemcpyHostToDevice,
-                                           stream));
-    }
+    info->singularity_tol = tol;
 
     return rocsparse_status_success;
 }
