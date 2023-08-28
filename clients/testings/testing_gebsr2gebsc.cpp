@@ -287,21 +287,21 @@ void testing_gebsr2gebsc(const Arguments& arg)
 
         double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("Mb",
+        display_timing_info(display_key_t::Mb,
                             dbsr.mb,
-                            "Nb",
+                            display_key_t::Nb,
                             dbsr.nb,
-                            "nnzb",
+                            display_key_t::nnzb,
                             dbsr.nnzb,
-                            "rbdim",
+                            display_key_t::rbdim,
                             dbsr.row_block_dim,
-                            "cbdim",
+                            display_key_t::cbdim,
                             dbsr.col_block_dim,
-                            "action",
+                            display_key_t::action,
                             rocsparse_action2string(action),
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
     // Free buffer

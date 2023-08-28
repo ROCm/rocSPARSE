@@ -361,26 +361,26 @@ void testing_spmm_bell(const Arguments& arg)
                                                   *h_beta != static_cast<T>(0));
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "K",
+                            display_key_t::K,
                             K,
-                            "nnz",
+                            display_key_t::nnz,
                             dA.nnz,
-                            "alpha",
+                            display_key_t::alpha,
                             *h_alpha,
-                            "beta",
+                            display_key_t::beta,
                             *h_beta,
-                            "Algorithm",
+                            display_key_t::algorithm,
                             rocsparse_spmmalg2string(alg),
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
-                            gpu_time_used / 1e3);
+                            display_key_t::time_ms,
+                            get_gpu_time_msec(gpu_time_used));
     }
 
     CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));

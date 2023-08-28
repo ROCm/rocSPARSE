@@ -209,15 +209,15 @@ void testing_bsrpad_value(const Arguments& arg)
         double gbyte_count = 0;
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "Mb",
+                            display_key_t::Mb,
                             Mb,
-                            "blockdim",
+                            display_key_t::bdim,
                             block_dim,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 }

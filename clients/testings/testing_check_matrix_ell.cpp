@@ -240,15 +240,15 @@ void testing_check_matrix_ell(const Arguments& arg)
         double gbyte_count = check_matrix_ell_gbyte_count<T>(hA.nnz);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             m,
-                            "N",
+                            display_key_t::N,
                             n,
-                            "nnz",
+                            display_key_t::nnz,
                             hA.nnz,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

@@ -1319,13 +1319,10 @@ void testing_csritsv(const Arguments& arg)
                             dA.nnz,
                             display_key_t::alpha,
                             *h_alpha,
-
-                            "pivot",
+                            display_key_t::pivot,
                             std::min(*h_analysis_pivot, *h_solve_pivot),
-
                             display_key_t::trans,
                             rocsparse_operation2string(trans),
-
                             display_key_t::diag_type,
                             rocsparse_diagtype2string(diag),
                             display_key_t::fill_mode,
@@ -1334,7 +1331,6 @@ void testing_csritsv(const Arguments& arg)
                             rocsparse_analysis2string(apol),
                             display_key_t::solve_policy,
                             rocsparse_solve2string(spol),
-
                             display_key_t::gflops,
                             gpu_gflops,
                             display_key_t::bandwidth,

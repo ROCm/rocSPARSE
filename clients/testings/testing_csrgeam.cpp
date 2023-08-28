@@ -530,27 +530,27 @@ void testing_csrgeam(const Arguments& arg)
         double gpu_gflops = get_gpu_gflops(gpu_solve_time_used, gflop_count);
         double gpu_gbyte  = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "nnz_A",
+                            display_key_t::nnz_A,
                             nnz_A,
-                            "nnz_B",
+                            display_key_t::nnz_B,
                             nnz_B,
-                            "nnz_C",
+                            display_key_t::nnz_C,
                             nnz_C,
-                            "alpha",
+                            display_key_t::alpha,
                             *h_alpha,
-                            "beta",
+                            display_key_t::beta,
                             *h_beta,
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            "nnz msec",
+                            display_key_t::analysis_time_ms,
                             get_gpu_time_msec(gpu_analysis_time_used),
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_solve_time_used));
     }
 }

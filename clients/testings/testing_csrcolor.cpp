@@ -342,13 +342,13 @@ void testing_csrcolor(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             dA.m,
-                            "nnz",
+                            display_key_t::nnz,
                             dA.nnz,
                             "frac",
                             fraction_to_color,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 }

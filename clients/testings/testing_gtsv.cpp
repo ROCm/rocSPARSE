@@ -190,13 +190,13 @@ void testing_gtsv(const Arguments& arg)
 
         double gbyte_count = gtsv_gbyte_count<T>(m, n);
         double gpu_gbyte   = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             m,
-                            "n",
+                            display_key_t::N,
                             n,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_solve_time_used));
     }
 

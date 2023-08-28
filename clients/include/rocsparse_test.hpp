@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,9 +36,10 @@
 #include <utility>
 #include <vector>
 
-static constexpr const char* s_timing_info_perf      = "GFlop/s";
-static constexpr const char* s_timing_info_bandwidth = "GB/s";
-static constexpr const char* s_timing_info_time      = "msec";
+static constexpr const char* s_timing_info_perf          = "GFlop/s";
+static constexpr const char* s_timing_info_bandwidth     = "GB/s";
+static constexpr const char* s_timing_info_time          = "msec";
+static constexpr const char* s_analysis_timing_info_time = "analysis msec";
 
 rocsparse_status rocsparse_record_timing(double msec, double gflops, double gbs);
 rocsparse_status rocsparse_record_output(const std::string&);

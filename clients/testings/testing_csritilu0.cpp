@@ -726,9 +726,9 @@ void testing_csritilu0(const Arguments& arg)
         //
         // gflops ?
         //
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             dA.m,
-                            "nnz",
+                            display_key_t::nnz,
                             dA.nnz,
                             "maxiter",
                             p.maxiter,
@@ -736,7 +736,7 @@ void testing_csritilu0(const Arguments& arg)
                             p.tol,
                             "presolve",
                             get_gpu_time_msec(gpu_presolve_time_used),
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_solve_time_used),
                             "buffer_size",
                             buffer_size);

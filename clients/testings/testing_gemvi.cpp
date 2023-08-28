@@ -294,24 +294,24 @@ void testing_gemvi(const Arguments& arg)
                                                 h_beta != static_cast<T>(0))
                            / gpu_time_used * 1e6;
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "nnz",
+                            display_key_t::nnz,
                             nnz,
-                            "trans",
+                            display_key_t::trans,
                             rocsparse_operation2string(trans),
-                            "alpha",
+                            display_key_t::alpha,
                             h_alpha,
-                            "beta",
+                            display_key_t::beta,
                             h_beta,
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
-                            gpu_time_used / 1e3);
+                            display_key_t::time_ms,
+                            get_gpu_time_msec(gpu_time_used));
     }
 
     CHECK_HIP_ERROR(rocsparse_hipFree(buffer));

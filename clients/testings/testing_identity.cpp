@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -128,11 +128,11 @@ void testing_identity(const Arguments& arg)
 
         double gbyte_count = identity_gbyte_count<T>(N);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
-        display_timing_info("N",
+        display_timing_info(display_key_t::N,
                             N,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 }

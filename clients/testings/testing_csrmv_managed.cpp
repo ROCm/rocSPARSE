@@ -335,23 +335,23 @@ void testing_csrmv_managed(const Arguments& arg)
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
         double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "nnz",
+                            display_key_t::nnz,
                             nnz,
-                            "alpha",
+                            display_key_t::alpha,
                             *alpha,
-                            "beta",
+                            display_key_t::beta,
                             *beta,
-                            "Algorithm",
+                            display_key_t::algorithm,
                             ((alg == rocsparse_spmv_alg_csr_adaptive) ? "adaptive" : "stream"),
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 
