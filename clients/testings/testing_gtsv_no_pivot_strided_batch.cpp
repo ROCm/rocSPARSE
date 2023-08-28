@@ -213,15 +213,15 @@ void testing_gtsv_no_pivot_strided_batch(const Arguments& arg)
 
         double gbyte_count = gtsv_strided_batch_gbyte_count<T>(m, batch_count);
         double gpu_gbyte   = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             m,
-                            "batch_count",
+                            display_key_t::batch_count,
                             batch_count,
-                            "batch_stride",
+                            display_key_t::batch_stride,
                             batch_stride,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_solve_time_used));
     }
 

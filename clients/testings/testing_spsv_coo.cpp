@@ -372,19 +372,19 @@ void testing_spsv_coo(const Arguments& arg)
         double gbyte_count = coosv_gbyte_count<T>(M, nnz_A);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "nnz_A",
+                            display_key_t::nnz_A,
                             nnz_A,
-                            "alpha",
+                            display_key_t::alpha,
                             halpha,
-                            "Algorithm",
+                            display_key_t::algorithm,
                             rocsparse_spsvalg2string(alg),
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

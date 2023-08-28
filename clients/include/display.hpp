@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,10 +45,15 @@ struct display_key_t
     {
         trans_A = 0,
         trans_B,
+        trans_X,
         nnz_A,
         nnz_B,
         nnz_C,
         nnz_D,
+        batch_count_A,
+        batch_count_B,
+        batch_count_C,
+        batch_stride,
         iters,
         function,
         ctype,
@@ -59,27 +64,60 @@ struct display_key_t
         gflops,
         bandwidth,
         time_ms,
+        analysis_time_ms,
         algorithm,
+        size,
+        mask_size,
         M,
         N,
         K,
+        Mb,
+        Mb_A,
+        Mb_C,
+        Nb,
+        Nb_A,
+        Nb_C,
+        Kb,
+        LD,
+        nrhs,
+        ell_width,
+        csr_nnz,
+        ell_nnz,
+        coo_nnz,
         dir_A,
         nnzb_A,
+        nnzb_B,
+        nnzb_C,
+        nnzb_D,
         bdir_A,
         bdim_A,
+        rbdim_A,
+        cbdim_A,
+        rbdim_C,
+        cbdim_C,
         analysis_ms,
+        order,
         diag_type,
         fill_mode,
         analysis_policy,
         solve_policy,
         permute,
+        format,
+        action,
+        partition,
+        threshold,
+        percentage,
+        pivot,
 
-        bdir  = bdir_A,
-        bdim  = bdim_A,
-        dir   = dir_A,
-        nnzb  = nnzb_A,
-        trans = trans_A,
-        nnz   = nnz_A,
+        bdir        = bdir_A,
+        bdim        = bdim_A,
+        rbdim       = rbdim_A,
+        cbdim       = cbdim_A,
+        dir         = dir_A,
+        nnzb        = nnzb_A,
+        trans       = trans_A,
+        nnz         = nnz_A,
+        batch_count = batch_count_A
     } key_t;
 
     static const char* to_str(key_t key_)
@@ -91,6 +129,11 @@ struct display_key_t
             return s_timing_info_perf;
         }
 
+        case order:
+        {
+            return "order";
+        }
+
         case diag_type:
         {
             return "diag_type";
@@ -99,6 +142,36 @@ struct display_key_t
         case permute:
         {
             return "permute";
+        }
+
+        case format:
+        {
+            return "format";
+        }
+
+        case action:
+        {
+            return "action";
+        }
+
+        case partition:
+        {
+            return "partition";
+        }
+
+        case threshold:
+        {
+            return "threshold";
+        }
+
+        case percentage:
+        {
+            return "percentage";
+        }
+
+        case pivot:
+        {
+            return "pivot";
         }
 
         case analysis_ms:
@@ -126,9 +199,34 @@ struct display_key_t
             return "algorithm";
         }
 
+        case size:
+        {
+            return "size";
+        }
+
+        case mask_size:
+        {
+            return "mask_size";
+        }
+
         case M:
         {
             return "M";
+        }
+
+        case Mb:
+        {
+            return "Mb";
+        }
+
+        case Mb_A:
+        {
+            return "Mb_A";
+        }
+
+        case Mb_C:
+        {
+            return "Mb_C";
         }
 
         case bdir_A:
@@ -145,15 +243,76 @@ struct display_key_t
         {
             return "bdim_A";
         }
+        case rbdim_A:
+        {
+            return "rbdim_A";
+        }
+        case cbdim_A:
+        {
+            return "cbdim_A";
+        }
+        case rbdim_C:
+        {
+            return "rbdim_C";
+        }
+        case cbdim_C:
+        {
+            return "cbdim_C";
+        }
 
         case N:
         {
             return "N";
         }
 
+        case Nb:
+        {
+            return "Nb";
+        }
+        case Nb_A:
+        {
+            return "Nb_A";
+        }
+        case Nb_C:
+        {
+            return "Nb_C";
+        }
+
         case K:
         {
             return "K";
+        }
+
+        case Kb:
+        {
+            return "Kb";
+        }
+
+        case LD:
+        {
+            return "LD";
+        }
+
+        case nrhs:
+        {
+            return "nrhs";
+        }
+
+        case ell_width:
+        {
+            return "ell_width";
+        }
+        case csr_nnz:
+        {
+            return "csr_nnz";
+        }
+        case ell_nnz:
+        {
+            return "ell_nnz";
+        }
+        case coo_nnz:
+        {
+            return "coo_nnz";
         }
 
         case bandwidth:
@@ -164,6 +323,11 @@ struct display_key_t
         case time_ms:
         {
             return s_timing_info_time;
+        }
+
+        case analysis_time_ms:
+        {
+            return s_analysis_timing_info_time;
         }
 
         case alpha:
@@ -182,10 +346,26 @@ struct display_key_t
         {
             return "transB";
         }
+        case trans_X:
+        {
+            return "transX";
+        }
 
         case nnzb_A:
         {
             return "nnzb_A";
+        }
+        case nnzb_B:
+        {
+            return "nnzb_B";
+        }
+        case nnzb_C:
+        {
+            return "nnzb_C";
+        }
+        case nnzb_D:
+        {
+            return "nnzb_D";
         }
 
         case nnz_A:
@@ -203,6 +383,22 @@ struct display_key_t
         case nnz_D:
         {
             return "nnz_D";
+        }
+        case batch_count_A:
+        {
+            return "batch_count_A";
+        }
+        case batch_count_B:
+        {
+            return "batch_count_B";
+        }
+        case batch_count_C:
+        {
+            return "batch_count_C";
+        }
+        case batch_stride:
+        {
+            return "batch_stride";
         }
         case iters:
         {

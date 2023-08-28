@@ -378,25 +378,25 @@ void testing_spmm_csc(const Arguments& arg)
             A_n, nnz_A, (I)B_m * (I)B_n, (I)C_m * (I)C_n, hbeta != static_cast<T>(0));
         double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "K",
+                            display_key_t::K,
                             K,
-                            "nnz_A",
+                            display_key_t::nnz_A,
                             nnz_A,
-                            "alpha",
+                            display_key_t::alpha,
                             halpha,
-                            "beta",
+                            display_key_t::beta,
                             hbeta,
-                            "Algorithm",
+                            display_key_t::algorithm,
                             rocsparse_spmmalg2string(alg),
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

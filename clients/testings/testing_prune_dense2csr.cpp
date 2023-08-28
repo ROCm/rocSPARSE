@@ -293,19 +293,19 @@ void testing_prune_dense2csr(const Arguments& arg)
         double gbyte_count = prune_dense2csr_gbyte_count<T>(M, N, h_nnz_total_dev_host_ptr[0]);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "denseld",
+                            display_key_t::LD,
                             LDA,
-                            "nnz",
+                            display_key_t::nnz,
                             h_nnz_total_dev_host_ptr[0],
-                            "threshold",
+                            display_key_t::threshold,
                             *h_threshold,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 
