@@ -586,6 +586,11 @@ try
         return rocsparse_status_invalid_pointer;
     }
 
+    if(tol < 0)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Logging
     log_trace(handle, "rocsparse_csric0_set_tolerance", (const void*&)info, tol);
 
