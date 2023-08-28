@@ -34,10 +34,6 @@ void test_csric0_mat(rocsparse_local_handle&    handle,
                      host_vector<rocsparse_int>& hcsr_col_ind,
                      host_vector<T>&             hcsr_val,
 
-                     rocsparse_analysis_policy apol,
-                     rocsparse_solve_policy    spol,
-                     rocsparse_index_base      base,
-
                      const Arguments& arg,
 
                      bool need_display)
@@ -45,6 +41,10 @@ void test_csric0_mat(rocsparse_local_handle&    handle,
     bool const arg_unit_check = arg.unit_check;
     bool const arg_timing     = arg.timing;
     int const  arg_iters      = arg.iters;
+
+    rocsparse_analysis_policy const apol = arg.apol;
+    rocsparse_solve_policy const    spol = arg.spol;
+    rocsparse_index_base const      base = arg.baseA;
 
     auto const nnz = hcsr_row_ptr[M] - hcsr_row_ptr[0];
 
@@ -525,10 +525,6 @@ void testing_csric0(const Arguments& arg)
                         hcsr_row_ptr,
                         hcsr_col_ind,
                         hcsr_val,
-
-                        apol,
-                        spol,
-                        base,
 
                         arg,
                         need_display);
