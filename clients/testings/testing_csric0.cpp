@@ -25,18 +25,18 @@
 #include "testing.hpp"
 
 template <typename T>
-void test_csric0_mat(rocsparse_local_handle&    handle,
-                     rocsparse_local_mat_descr& descr,
-                     rocsparse_local_mat_info&  info,
+static void test_csric0_matrix(rocsparse_local_handle&    handle,
+                               rocsparse_local_mat_descr& descr,
+                               rocsparse_local_mat_info&  info,
 
-                     rocsparse_int               M,
-                     host_vector<rocsparse_int>& hcsr_row_ptr,
-                     host_vector<rocsparse_int>& hcsr_col_ind,
-                     host_vector<T>&             hcsr_val,
+                               rocsparse_int               M,
+                               host_vector<rocsparse_int>& hcsr_row_ptr,
+                               host_vector<rocsparse_int>& hcsr_col_ind,
+                               host_vector<T>&             hcsr_val,
 
-                     const Arguments& arg,
+                               const Arguments& arg,
 
-                     bool need_display)
+                               bool need_display)
 {
     bool const arg_unit_check = arg.unit_check;
     bool const arg_timing     = arg.timing;
@@ -517,17 +517,17 @@ void testing_csric0(const Arguments& arg)
 
     {
         bool const need_display = true;
-        test_csric0_mat(handle,
-                        descr,
-                        info,
+        test_csric0_matrix(handle,
+                           descr,
+                           info,
 
-                        M,
-                        hcsr_row_ptr,
-                        hcsr_col_ind,
-                        hcsr_val,
+                           M,
+                           hcsr_row_ptr,
+                           hcsr_col_ind,
+                           hcsr_val,
 
-                        arg,
-                        need_display);
+                           arg,
+                           need_display);
     };
 }
 
@@ -538,4 +538,81 @@ INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
-void testing_csric0_extra(const Arguments& arg) {}
+#undef INSTANTIATE
+
+template <typename T>
+static void testing_csric0_extra_template(const Arguments& arg)
+{
+
+    // --------------------------------------
+    // diagonal matrix with zeros on diagonal
+    // --------------------------------------
+    {
+        rocsparse_local_handle    handle;
+        rocsparse_local_mat_descr descr;
+        rocsparse_local_mat_info  info;
+
+        rocsparse_index_base base = arg.baseA;
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
+
+        int const M = 4;
+        // ------------------
+        // [ 1              ]
+        // [      2         ]
+        // [           0    ]
+        // [              0 ]
+        // ------------------
+        host_vector<rocsparse_int> hcsr_row_ptr{base, base + 1, base + 2, base + 3, base + 4};
+        host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base + 2, base + 3};
+        host_vector<T>             hcsr_val{1, 2, 0, 0};
+
+        bool const need_display = false;
+        test_csric0_matrix(
+            handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
+    };
+
+    // -----------------------------------
+    // cancellation to create a zero pivot
+    // -----------------------------------
+
+    {
+        rocsparse_local_handle    handle;
+        rocsparse_local_mat_descr descr;
+        rocsparse_local_mat_info  info;
+
+        rocsparse_index_base base = arg.baseA;
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
+
+        int const M = 4;
+        // ------------------
+        // [ 1   -1         ]
+        // [-1    1         ]
+        // [           1    ]
+        // [              1 ]
+        // ------------------
+
+        host_vector<rocsparse_int> hcsr_row_ptr{base, base + 2, base + 4, base + 5, base + 6};
+        host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base, base + 1, base + 2, base + 3};
+        host_vector<T>             hcsr_val{1, -1, -1, 1, 1, 1};
+
+        bool const need_display = false;
+        test_csric0_matrix(
+            handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
+    };
+}
+
+void testing_csric0_extra(const Arguments& arg)
+{
+
+    printf("testing_csric0_extra\n");
+
+#define CALL_INSTANTIATE(TYPE)                    \
+    {                                             \
+        testing_csric0_extra_template<TYPE>(arg); \
+    }
+    CALL_INSTANTIATE(float);
+    CALL_INSTANTIATE(double);
+    CALL_INSTANTIATE(rocsparse_float_complex);
+    CALL_INSTANTIATE(rocsparse_double_complex);
+#undef CALL_INSTANTIATE
+}
