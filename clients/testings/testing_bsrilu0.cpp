@@ -53,6 +53,7 @@ void testing_bsrilu0_bad_arg(const Arguments& arg)
     rocsparse_mat_info        info        = local_info;
     rocsparse_analysis_policy analysis    = rocsparse_analysis_policy_force;
     rocsparse_solve_policy    solve       = rocsparse_solve_policy_auto;
+    rocsparse_solve_policy    policy      = rocsparse_solve_policy_auto;
     size_t*                   buffer_size = &h_buffer_size;
     void*                     temp_buffer = (void*)0x4;
 
@@ -63,13 +64,13 @@ void testing_bsrilu0_bad_arg(const Arguments& arg)
     handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, analysis, \
         solve, temp_buffer
 
-#define PARAMS                                                                               \
-    handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, solve, \
+#define PARAMS                                                                                \
+    handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, policy, \
         temp_buffer
 
-    auto_testing_bad_arg(rocsparse_bsrilu0_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_bsrilu0_analysis<T>, PARAMS_ANALYSIS);
-    auto_testing_bad_arg(rocsparse_bsrilu0<T>, PARAMS);
+    bad_arg_analysis(rocsparse_bsrilu0_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_bsrilu0_analysis<T>, PARAMS_ANALYSIS);
+    bad_arg_analysis(rocsparse_bsrilu0<T>, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_buffer_size<T>(PARAMS_BUFFER_SIZE),

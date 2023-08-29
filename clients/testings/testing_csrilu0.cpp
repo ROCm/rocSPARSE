@@ -50,6 +50,7 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
     rocsparse_mat_info        info        = local_info;
     rocsparse_analysis_policy analysis    = rocsparse_analysis_policy_force;
     rocsparse_solve_policy    solve       = rocsparse_solve_policy_auto;
+    rocsparse_solve_policy    policy      = rocsparse_solve_policy_auto;
     size_t*                   buffer_size = (size_t*)0x4;
     void*                     temp_buffer = (void*)0x4;
 
@@ -60,11 +61,11 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
     handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size
 #define PARAMS_ANALYSIS \
     handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer
-#define PARAMS handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, solve, temp_buffer
+#define PARAMS handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer
 
-    auto_testing_bad_arg(rocsparse_csrilu0_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_csrilu0_analysis<T>, PARAMS_ANALYSIS);
-    auto_testing_bad_arg(rocsparse_csrilu0<T>, PARAMS);
+    bad_arg_analysis(rocsparse_csrilu0_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_csrilu0_analysis<T>, PARAMS_ANALYSIS);
+    bad_arg_analysis(rocsparse_csrilu0<T>, PARAMS);
 
     for(auto val : rocsparse_matrix_type_t::values)
     {

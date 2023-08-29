@@ -43,17 +43,16 @@ void testing_gpsv_interleaved_batch_bad_arg(const Arguments& arg)
     T*                             d            = (T*)0x4;
     T*                             du           = (T*)0x4;
     T*                             dw           = (T*)0x4;
-    T*                             X1           = (T*)0x4;
-    T*                             X2           = (T*)0x4;
+    T*                             x            = (T*)0x4;
     size_t*                        buffer_size  = (size_t*)0x4;
     void*                          temp_buffer  = (void*)0x4;
 
 #define PARAMS_BUFFER_SIZE \
-    handle, alg, m, ds, dl, d, du, dw, X1, batch_count, batch_stride, buffer_size
-#define PARAMS_SOLVE handle, alg, m, ds, dl, d, du, dw, X2, batch_count, batch_stride, temp_buffer
+    handle, alg, m, ds, dl, d, du, dw, x, batch_count, batch_stride, buffer_size
+#define PARAMS_SOLVE handle, alg, m, ds, dl, d, du, dw, x, batch_count, batch_stride, temp_buffer
 
-    auto_testing_bad_arg(rocsparse_gpsv_interleaved_batch_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_gpsv_interleaved_batch<T>, PARAMS_SOLVE);
+    bad_arg_analysis(rocsparse_gpsv_interleaved_batch_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_gpsv_interleaved_batch<T>, PARAMS_SOLVE);
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_SOLVE

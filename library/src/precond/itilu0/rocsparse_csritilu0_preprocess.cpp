@@ -35,27 +35,35 @@ static rocsparse_status preprocess_dispatch(rocsparse_itilu0_alg alg_, P&&... pa
     case rocsparse_itilu0_alg_default:
     case rocsparse_itilu0_alg_async_inplace:
     {
-        return rocsparse_csritilu0_driver_t<
-            rocsparse_itilu0_alg_async_inplace>::preprocess<I, J>::run(parameters...);
+        RETURN_IF_ROCSPARSE_ERROR((
+            rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>::preprocess<I, J>::run(
+                parameters...)));
+        return rocsparse_status_success;
     }
     case rocsparse_itilu0_alg_async_split:
     {
-        return rocsparse_csritilu0_driver_t<
-            rocsparse_itilu0_alg_async_split>::preprocess<I, J>::run(parameters...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>::preprocess<I, J>::run(
+                parameters...)));
+        return rocsparse_status_success;
     }
     case rocsparse_itilu0_alg_sync_split:
     {
-        return rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::preprocess<I, J>::run(
-            parameters...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::preprocess<I, J>::run(
+                parameters...)));
+        return rocsparse_status_success;
     }
     case rocsparse_itilu0_alg_sync_split_fusion:
     {
-        return rocsparse_csritilu0_driver_t<
-            rocsparse_itilu0_alg_sync_split_fusion>::preprocess<I, J>::run(parameters...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_csritilu0_driver_t<
+                rocsparse_itilu0_alg_sync_split_fusion>::preprocess<I, J>::run(parameters...)));
+        return rocsparse_status_success;
     }
     }
 
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <typename I, typename J>
@@ -79,115 +87,70 @@ rocsparse_status rocsparse_csritilu0_preprocess_template(rocsparse_handle     ha
     }
     if(nnz_ == 0)
     {
-        return rocsparse_status_zero_pivot;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
     }
 
-    return preprocess_dispatch<I, J>(alg_,
-                                     handle_,
-                                     alg_,
-                                     options_,
-                                     nmaxiter_,
-                                     m_,
-                                     nnz_,
-                                     ptr_,
-                                     ind_,
-                                     base_,
-                                     datatype_,
-                                     buffer_size_,
-                                     buffer_);
+    RETURN_IF_ROCSPARSE_ERROR((preprocess_dispatch<I, J>(alg_,
+                                                         handle_,
+                                                         alg_,
+                                                         options_,
+                                                         nmaxiter_,
+                                                         m_,
+                                                         nnz_,
+                                                         ptr_,
+                                                         ind_,
+                                                         base_,
+                                                         datatype_,
+                                                         buffer_size_,
+                                                         buffer_)));
+    return rocsparse_status_success;
 }
 
 template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0_preprocess_impl(rocsparse_handle     handle_,
-                                                     rocsparse_itilu0_alg alg_,
-                                                     J                    options_,
-                                                     J                    nmaxiter_,
-                                                     J                    m_,
-                                                     I                    nnz_,
-                                                     const I* __restrict__ ptr_,
-                                                     const J* __restrict__ ind_,
-                                                     rocsparse_index_base base_,
-                                                     rocsparse_datatype   datatype_,
-                                                     size_t               buffer_size_,
-                                                     void* __restrict__ buffer_)
+rocsparse_status rocsparse_csritilu0_preprocess_impl(rocsparse_handle     handle, //0
+                                                     rocsparse_itilu0_alg alg, //1
+                                                     J                    options, //2
+                                                     J                    nmaxiter, //3
+                                                     J                    m, //4
+                                                     I                    nnz, //5
+                                                     const I* __restrict__ ptr, //6
+                                                     const J* __restrict__ ind, //7
+                                                     rocsparse_index_base base, //8
+                                                     rocsparse_datatype   datatype, //9
+                                                     size_t               buffer_size, //10
+                                                     void* __restrict__ buffer) //11
 {
     // Check for valid handle and matrix descriptor
-    if(handle_ == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle_,
+    log_trace(handle,
               "rocsparse_csritilu0_preprocess",
-              alg_,
-              options_,
-              nmaxiter_,
-              m_,
-              nnz_,
-              (const void*&)ptr_,
-              (const void*&)ind_,
-              base_,
-              datatype_,
-              (const void*&)buffer_size_);
+              alg,
+              options,
+              nmaxiter,
+              m,
+              nnz,
+              (const void*&)ptr,
+              (const void*&)ind,
+              base,
+              datatype,
+              (const void*&)buffer_size);
 
-    if(rocsparse_enum_utils::is_invalid(base_))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_ENUM(1, alg);
+    ROCSPARSE_CHECKARG(2, options, (options < 0), rocsparse_status_invalid_value);
+    ROCSPARSE_CHECKARG(3, nmaxiter, (nmaxiter < 0), rocsparse_status_invalid_value);
+    ROCSPARSE_CHECKARG_SIZE(4, m);
+    ROCSPARSE_CHECKARG_SIZE(5, nnz);
+    ROCSPARSE_CHECKARG_ARRAY(6, m, ptr);
+    ROCSPARSE_CHECKARG_ARRAY(7, nnz, ind);
+    ROCSPARSE_CHECKARG_ENUM(8, base);
+    ROCSPARSE_CHECKARG_ENUM(9, datatype);
+    ROCSPARSE_CHECKARG_ARRAY(11, buffer_size, buffer);
 
-    if(rocsparse_enum_utils::is_invalid(datatype_))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(alg_))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(options_ < 0)
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(nmaxiter_ < 0)
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check sizes
-    if(m_ < 0 || nnz_ < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check pointer arguments
-    if(nnz_ > 0 && ptr_ == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz_ > 0 && ind_ == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(buffer_size_ > 0 && buffer_ == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    return rocsparse_csritilu0_preprocess_template(handle_,
-                                                   alg_,
-                                                   options_,
-                                                   nmaxiter_,
-                                                   m_,
-                                                   nnz_,
-                                                   ptr_,
-                                                   ind_,
-                                                   base_,
-                                                   datatype_,
-                                                   buffer_size_,
-                                                   buffer_);
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_csritilu0_preprocess_template(
+        handle, alg, options, nmaxiter, m, nnz, ptr, ind, base, datatype, buffer_size, buffer)));
+    return rocsparse_status_success;
 }
 
 extern "C" rocsparse_status rocsparse_csritilu0_preprocess(rocsparse_handle     handle_,
@@ -204,20 +167,22 @@ extern "C" rocsparse_status rocsparse_csritilu0_preprocess(rocsparse_handle     
                                                            void*                buffer_)
 try
 {
-    return rocsparse_csritilu0_preprocess_impl<rocsparse_int, rocsparse_int>(handle_,
-                                                                             alg_,
-                                                                             options_,
-                                                                             nmaxiter_,
-                                                                             m_,
-                                                                             nnz_,
-                                                                             ptr_,
-                                                                             ind_,
-                                                                             base_,
-                                                                             datatype_,
-                                                                             buffer_size_,
-                                                                             buffer_);
+    RETURN_IF_ROCSPARSE_ERROR(
+        (rocsparse_csritilu0_preprocess_impl<rocsparse_int, rocsparse_int>(handle_,
+                                                                           alg_,
+                                                                           options_,
+                                                                           nmaxiter_,
+                                                                           m_,
+                                                                           nnz_,
+                                                                           ptr_,
+                                                                           ind_,
+                                                                           base_,
+                                                                           datatype_,
+                                                                           buffer_size_,
+                                                                           buffer_)));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

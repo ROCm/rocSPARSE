@@ -36,18 +36,18 @@ void testing_gtsv_bad_arg(const Arguments& arg)
     rocsparse_int          m           = safe_size;
     rocsparse_int          n           = safe_size;
     rocsparse_int          ldb         = safe_size;
-    const T*               ddl         = (const T*)0x4;
-    const T*               dd          = (const T*)0x4;
-    const T*               ddu         = (const T*)0x4;
-    T*                     dB          = (T*)0x4;
+    const T*               dl          = (const T*)0x4;
+    const T*               d           = (const T*)0x4;
+    const T*               du          = (const T*)0x4;
+    T*                     B           = (T*)0x4;
+    size_t*                buffer_size = (size_t*)0x4;
     void*                  temp_buffer = (void*)0x4;
-    size_t                 buffer_size;
 
-#define PARAMS_BUFFER_SIZE handle, m, n, ddl, dd, ddu, dB, ldb, &buffer_size
-#define PARAMS_SOLVE handle, m, n, ddl, dd, ddu, dB, ldb, temp_buffer
+#define PARAMS_BUFFER_SIZE handle, m, n, dl, d, du, B, ldb, buffer_size
+#define PARAMS_SOLVE handle, m, n, dl, d, du, B, ldb, temp_buffer
 
-    auto_testing_bad_arg(rocsparse_gtsv_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_gtsv<T>, PARAMS_SOLVE);
+    bad_arg_analysis(rocsparse_gtsv_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_gtsv<T>, PARAMS_SOLVE);
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_SOLVE

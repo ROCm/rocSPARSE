@@ -40,19 +40,18 @@ void testing_gtsv_no_pivot_bad_arg(const Arguments& arg)
     const T*         dl          = (const T*)0x4;
     const T*         d           = (const T*)0x4;
     const T*         du          = (const T*)0x4;
-    const T*         B1          = (const T*)0x4;
-    T*               B2          = (T*)0x4;
+    T*               B           = (T*)0x4;
     size_t*          buffer_size = (size_t*)0x4;
     void*            temp_buffer = (void*)0x4;
 
     int       nargs_to_exclude_solve   = 1;
     const int args_to_exclude_solve[1] = {8};
 
-#define PARAMS_BUFFER_SIZE handle, m, n, dl, d, du, B1, ldb, buffer_size
-#define PARAMS_SOLVE handle, m, n, dl, d, du, B2, ldb, temp_buffer
+#define PARAMS_BUFFER_SIZE handle, m, n, dl, d, du, B, ldb, buffer_size
+#define PARAMS_SOLVE handle, m, n, dl, d, du, B, ldb, temp_buffer
 
-    auto_testing_bad_arg(rocsparse_gtsv_no_pivot_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(
+    bad_arg_analysis(rocsparse_gtsv_no_pivot_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    select_bad_arg_analysis(
         rocsparse_gtsv_no_pivot<T>, nargs_to_exclude_solve, args_to_exclude_solve, PARAMS_SOLVE);
 
     // m > 512

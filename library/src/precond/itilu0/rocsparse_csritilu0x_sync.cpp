@@ -377,8 +377,10 @@ public:
                                     size_t buffer_size_,
                                     void* __restrict__ buffer_)
         {
-            return rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
-                history<T, J>::run(handle_, niter_, data_, buffer_size_, buffer_);
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
+                     history<T, J>::run(handle_, niter_, data_, buffer_size_, buffer_)));
+            return rocsparse_status_success;
         }
     };
 
@@ -449,7 +451,7 @@ public:
             case rocsparse_datatype_i32_r:
             case rocsparse_datatype_u32_r:
             {
-                return rocsparse_status_not_implemented;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
             }
             }
 
@@ -475,7 +477,7 @@ public:
             case rocsparse_datatype_i32_r:
             case rocsparse_datatype_u32_r:
             {
-                return rocsparse_status_not_implemented;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
             }
             }
             buffer_size += size_convergence_info;
@@ -575,29 +577,17 @@ public:
                                                      const floating_data_t<T>* nrm_matrix_)
 
     {
-        rocsparse_status status;
-        status = rocsparse_nrminf_diff<BLOCKSIZE>(
-            handle_, unnz_, uval0_, uval1_, nrm_, nrm_matrix_, false);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
 
-        status = rocsparse_nrminf_diff<BLOCKSIZE>(
-            handle_, lnnz_, lval0_, lval1_, nrm_, nrm_matrix_, true);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_nrminf_diff<BLOCKSIZE>(
+            handle_, unnz_, uval0_, uval1_, nrm_, nrm_matrix_, false));
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_nrminf_diff<BLOCKSIZE>(
+            handle_, lnnz_, lval0_, lval1_, nrm_, nrm_matrix_, true));
 
         if(dval0_ != nullptr)
         {
-            status = rocsparse_nrminf_diff<BLOCKSIZE>(
-                handle_, m_, dval0_, dval1_, nrm_, nrm_matrix_, true);
-            if(status != rocsparse_status_success)
-            {
-                return status;
-            }
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_nrminf_diff<BLOCKSIZE>(
+                handle_, m_, dval0_, dval1_, nrm_, nrm_matrix_, true));
         }
         return rocsparse_status_success;
     }
@@ -880,7 +870,7 @@ public:
 
                         RETURN_IF_HIP_ERROR(on_device(p_iter, nmaxiter_, stream));
                         RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
-                        return rocsparse_status_zero_pivot;
+                        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
                     }
                     else
                     {

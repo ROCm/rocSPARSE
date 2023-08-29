@@ -40,22 +40,21 @@ void testing_gtsv_no_pivot_strided_batch_bad_arg(const Arguments& arg)
     const T*         dl           = (const T*)0x4;
     const T*         d            = (const T*)0x4;
     const T*         du           = (const T*)0x4;
-    const T*         x1           = (const T*)0x4;
-    T*               x2           = (T*)0x4;
+    T*               x            = (T*)0x4;
     size_t*          buffer_size  = (size_t*)0x4;
     void*            temp_buffer  = (void*)0x4;
 
     int       nargs_to_exclude_solve   = 1;
     const int args_to_exclude_solve[1] = {8};
 
-#define PARAMS_BUFFER_SIZE handle, m, dl, d, du, x1, batch_count, batch_stride, buffer_size
-#define PARAMS_SOLVE handle, m, dl, d, du, x2, batch_count, batch_stride, temp_buffer
+#define PARAMS_BUFFER_SIZE handle, m, dl, d, du, x, batch_count, batch_stride, buffer_size
+#define PARAMS_SOLVE handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer
 
-    auto_testing_bad_arg(rocsparse_gtsv_no_pivot_strided_batch_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_gtsv_no_pivot_strided_batch<T>,
-                         nargs_to_exclude_solve,
-                         args_to_exclude_solve,
-                         PARAMS_SOLVE);
+    bad_arg_analysis(rocsparse_gtsv_no_pivot_strided_batch_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    select_bad_arg_analysis(rocsparse_gtsv_no_pivot_strided_batch<T>,
+                            nargs_to_exclude_solve,
+                            args_to_exclude_solve,
+                            PARAMS_SOLVE);
 
     // m > 512
     {
