@@ -76,14 +76,16 @@ static ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
                 {
                     for(I p = 0; p < LOOPS; p++)
                     {
-                        atomicAdd(&C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
+                        rocsparse_atomic_add(&C[(colB + p * WF_SIZE) * ldc + current_row], 
+                                             alpha * sum[p]);
                     }
                 }
                 else
                 {
                     for(I p = 0; p < LOOPS; p++)
                     {
-                        atomicAdd(&C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
+                        rocsparse_atomic_add(&C[current_row * ldc + colB + p * WF_SIZE], 
+                                             alpha * sum[p]);
                     }
                 }
 
@@ -117,14 +119,14 @@ static ROCSPARSE_DEVICE_ILF void coommnn_atomic_main_device(bool    conj_A,
         {
             for(I p = 0; p < LOOPS; p++)
             {
-                atomicAdd(&C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
+                rocsparse_atomic_add(&C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
             }
         }
         else
         {
             for(I p = 0; p < LOOPS; p++)
             {
-                atomicAdd(&C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
+                rocsparse_atomic_add(&C[current_row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
             }
         }
     }
@@ -178,11 +180,11 @@ static ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&C[colB * ldc + current_row], sum);
+                        rocsparse_atomic_add(&C[colB * ldc + current_row], sum);
                     }
                     else
                     {
-                        atomicAdd(&C[current_row * ldc + colB], sum);
+                        rocsparse_atomic_add(&C[current_row * ldc + colB], sum);
                     }
                 }
 
@@ -238,11 +240,11 @@ static ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&C[(l + swid) * ldc + current_row], sum);
+                        rocsparse_atomic_add(&C[(l + swid) * ldc + current_row], sum);
                     }
                     else
                     {
-                        atomicAdd(&C[current_row * ldc + (l + swid)], sum);
+                        rocsparse_atomic_add(&C[current_row * ldc + (l + swid)], sum);
                     }
                 }
             }
@@ -256,11 +258,11 @@ static ROCSPARSE_DEVICE_ILF void coommnn_atomic_remainder_device(bool    conj_A,
                 {
                     if(order == rocsparse_order_column)
                     {
-                        atomicAdd(&C[(l + swid) * ldc + current_row], sum);
+                        rocsparse_atomic_add(&C[(l + swid) * ldc + current_row], sum);
                     }
                     else
                     {
-                        atomicAdd(&C[current_row * ldc + (l + swid)], sum);
+                        rocsparse_atomic_add(&C[current_row * ldc + (l + swid)], sum);
                     }
                 }
             }
@@ -308,11 +310,11 @@ static __device__ void coommtn_atomic_device(bool                 conj_A,
 
     if(order == rocsparse_order_column)
     {
-        atomicAdd(&C[hipBlockIdx_y * ldc + col], alpha * (val * bval));
+        rocsparse_atomic_add(&C[hipBlockIdx_y * ldc + col], alpha * (val * bval));
     }
     else
     {
-        atomicAdd(&C[col * ldc + hipBlockIdx_y], alpha * (val * bval));
+        rocsparse_atomic_add(&C[col * ldc + hipBlockIdx_y], alpha * (val * bval));
     }
 }
 

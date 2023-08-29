@@ -171,7 +171,7 @@ static ROCSPARSE_DEVICE_ILF void
 
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -321,7 +321,7 @@ static ROCSPARSE_DEVICE_ILF void
 
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -503,7 +503,7 @@ static ROCSPARSE_DEVICE_ILF void
         // Find the minimum pivot, if applicable
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -685,7 +685,7 @@ static ROCSPARSE_DEVICE_ILF void
         // Find the minimum pivot, if applicable
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }

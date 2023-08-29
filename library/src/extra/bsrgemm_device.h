@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -188,16 +188,16 @@ static __device__ __forceinline__ void insert_pair_rxc(
         if(table[hash] == key)
         {
             // Element already present, add value to exsiting entry
-            atomicAdd(&data[BLOCKDIM * BLOCKDIM * hash + BLOCKDIM * row + col], val);
+            rocsparse_atomic_add(&data[BLOCKDIM * BLOCKDIM * hash + BLOCKDIM * row + col], val);
             break;
         }
         else if(table[hash] == empty)
         {
             // If empty, add element with atomic
-            if(atomicCAS(&table[hash], empty, key) == empty)
+            if(rocsparse_atomic_cas(&table[hash], empty, key) == empty)
             {
                 // Add value
-                atomicAdd(&data[BLOCKDIM * BLOCKDIM * hash + BLOCKDIM * row + col], val);
+                rocsparse_atomic_add(&data[BLOCKDIM * BLOCKDIM * hash + BLOCKDIM * row + col], val);
                 break;
             }
         }
@@ -1320,9 +1320,10 @@ __device__ void bsrgemm_block_per_row_atomic_multipass_device(rocsparse_directio
                                     }
                                 }
 
-                                atomicAdd(&data[BLOCKDIM * BLOCKDIM * (col_B - chunk_begin)
-                                                + BLOCKDIM * r + c],
-                                          alpha * val_AB);
+                                rocsparse_atomic_add(
+                                    &data[BLOCKDIM * BLOCKDIM * (col_B - chunk_begin) + BLOCKDIM * r
+                                          + c],
+                                    alpha * val_AB);
                             }
                         }
                         else if(col_B >= chunk_end)
@@ -1373,7 +1374,7 @@ __device__ void bsrgemm_block_per_row_atomic_multipass_device(rocsparse_directio
                             val_D = beta * bsr_val_D[block_dim * block_dim * j + block_dim * c + r];
                         }
 
-                        atomicAdd(
+                        rocsparse_atomic_add(
                             &data[BLOCKDIM * BLOCKDIM * (col_D - chunk_begin) + BLOCKDIM * r + c],
                             val_D);
                     }
@@ -1391,7 +1392,7 @@ __device__ void bsrgemm_block_per_row_atomic_multipass_device(rocsparse_directio
         {
             // Atomically determine the new chunks beginning (minimum column index of B
             // that is larger than the current chunks end point)
-            atomicMin(&next_chunk, min_col);
+            rocsparse_atomic_min(&next_chunk, min_col);
         }
 
         // Wait for all threads to finish

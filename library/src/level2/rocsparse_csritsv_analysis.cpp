@@ -43,9 +43,9 @@ __launch_bounds__(BLOCKSIZE) static __global__
         const J c = (((ind_[ptr_diag_[tid] - base_ + ptr_shift_] - base_) != tid) ? 1 : 0);
         if(c > 0)
         {
-            const J p = (tid + base_);
-            atomicMin(position, p);
-            atomicAdd(count, c);
+            const rocsparse_int p = (tid + base_);
+            rocsparse_atomic_min(position, p);
+            rocsparse_atomic_add(count, c);
         }
     }
 }
@@ -66,9 +66,9 @@ __launch_bounds__(BLOCKSIZE) static __global__
         const J c = (((ind_[ptr_[tid + shift] - shift - base_] - base_) != tid) ? 1 : 0);
         if(c > 0)
         {
-            const J p = (tid + base_);
-            atomicMin(position, p);
-            atomicAdd(count, c);
+            const rocsparse_int p = (tid + base_);
+            rocsparse_atomic_min(position, p);
+            rocsparse_atomic_add(count, c);
         }
     }
 }
@@ -88,7 +88,7 @@ __launch_bounds__(BLOCKSIZE) static __global__
         const J c = (((ind_[ptr_[tid + shift] - shift - base_] - base_) == tid) ? 1 : 0);
         if(c > 0)
         {
-            atomicAdd(count, c);
+            rocsparse_atomic_add(count, c);
         }
     }
 }

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -466,7 +466,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
     {
         if(row != shared_row[tid + 1] && row >= 0)
         {
-            atomicAdd(&y[row], alpha * val);
+            rocsparse_atomic_add(&y[row], alpha * val);
         }
     }
 
@@ -503,7 +503,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
                 }
                 else if(prevrow >= 0)
                 {
-                    atomicAdd(&y[prevrow], alpha * shared_val[BLOCKSIZE - 1]);
+                    rocsparse_atomic_add(&y[prevrow], alpha * shared_val[BLOCKSIZE - 1]);
                 }
             }
 
@@ -531,7 +531,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
             {
                 if(row != shared_row[tid + 1] && row >= 0)
                 {
-                    atomicAdd(&y[row], alpha * val);
+                    rocsparse_atomic_add(&y[row], alpha * val);
                 }
             }
         }
@@ -541,7 +541,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
     {
         if(row >= 0)
         {
-            atomicAdd(&y[row], alpha * val);
+            rocsparse_atomic_add(&y[row], alpha * val);
         }
     }
 }
@@ -609,7 +609,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
     {
         if(row != shared_row[tid + 1] && row >= 0)
         {
-            atomicAdd(&y[row], alpha * val);
+            rocsparse_atomic_add(&y[row], alpha * val);
         }
     }
 
@@ -644,7 +644,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
             }
             else if(prevrow >= 0)
             {
-                atomicAdd(&y[prevrow], alpha * shared_val[BLOCKSIZE - 1]);
+                rocsparse_atomic_add(&y[prevrow], alpha * shared_val[BLOCKSIZE - 1]);
             }
         }
 
@@ -672,7 +672,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
         {
             if(row != shared_row[tid + 1] && row >= 0)
             {
-                atomicAdd(&y[row], alpha * val);
+                rocsparse_atomic_add(&y[row], alpha * val);
             }
         }
     }
@@ -681,7 +681,7 @@ static ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
     {
         if(row >= 0)
         {
-            atomicAdd(&y[row], alpha * val);
+            rocsparse_atomic_add(&y[row], alpha * val);
         }
     }
 }
@@ -709,7 +709,7 @@ static ROCSPARSE_DEVICE_ILF void coomvt_device(rocsparse_operation  trans,
     A val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse_conj(coo_val[gid])
                                                                : coo_val[gid];
 
-    atomicAdd(&y[col], alpha * val * x[row]);
+    rocsparse_atomic_add(&y[col], alpha * val * x[row]);
 }
 
 template <typename I, typename A, typename X, typename Y, typename T>
@@ -734,5 +734,5 @@ static ROCSPARSE_DEVICE_ILF void coomvt_aos_device(rocsparse_operation  trans,
     A val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse_conj(coo_val[gid])
                                                                : coo_val[gid];
 
-    atomicAdd(&y[col], alpha * val * x[row]);
+    rocsparse_atomic_add(&y[col], alpha * val * x[row]);
 }

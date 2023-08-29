@@ -183,7 +183,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
@@ -345,7 +345,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
         if(pivot == true)
         {
-            atomicMin(zero_pivot, row + idx_base);
+            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }
