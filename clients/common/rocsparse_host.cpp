@@ -5886,15 +5886,14 @@ void host_csrilu0(rocsparse_int                     M,
 
         // check for zero diagonal
         {
-          rocsparse_int const diag_pos = diag_offset[ai];
-          bool const is_diag = (diag_pos >= 0) &&
-                               (csr_col_ind[ diag_pos ] == (ai + base) );
-          bool const is_zero_diag = is_diag && (csr_val[ diag_pos ] == static_cast<T>(0));
-          if(is_zero_diag)
-          {
-              *numeric_pivot = (ai + base);
-              return;
-          };
+            rocsparse_int const diag_pos = diag_offset[ai];
+            bool const          is_diag = (diag_pos >= 0) && (csr_col_ind[diag_pos] == (ai + base));
+            bool const          is_zero_diag = is_diag && (csr_val[diag_pos] == static_cast<T>(0));
+            if(is_zero_diag)
+            {
+                *numeric_pivot = (ai + base);
+                return;
+            };
         };
 
         // clear nnz entries
