@@ -56,11 +56,7 @@ rocsparse_status
                                                           rocsparse_int batch_stride,
                                                           size_t*       buffer_size)
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
     log_trace(handle,
@@ -77,35 +73,26 @@ rocsparse_status
               batch_stride,
               (const void*&)buffer_size);
 
-    if(rocsparse_enum_utils::is_invalid(alg))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check sizes
-    if(m < 5 || batch_count < 0 || batch_stride < batch_count)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check for valid buffer_size pointer
-    if(buffer_size == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_ENUM(1, alg);
+    ROCSPARSE_CHECKARG_SIZE(2, m);
+    ROCSPARSE_CHECKARG(2, m, (m < 5), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_ARRAY(3, batch_count, ds);
+    ROCSPARSE_CHECKARG_ARRAY(4, batch_count, dl);
+    ROCSPARSE_CHECKARG_ARRAY(5, batch_count, d);
+    ROCSPARSE_CHECKARG_ARRAY(6, batch_count, du);
+    ROCSPARSE_CHECKARG_ARRAY(7, batch_count, dw);
+    ROCSPARSE_CHECKARG_ARRAY(8, batch_count, x);
+    ROCSPARSE_CHECKARG_SIZE(9, batch_count);
+    ROCSPARSE_CHECKARG_SIZE(10, batch_stride);
+    ROCSPARSE_CHECKARG(
+        10, batch_stride, (batch_stride < batch_count), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_POINTER(11, buffer_size);
 
     // Quick return if possible
     if(batch_count == 0)
     {
         *buffer_size = 0;
         return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(ds == nullptr || dl == nullptr || d == nullptr || du == nullptr || dw == nullptr
-       || x == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     *buffer_size = 0;
@@ -139,11 +126,7 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
                                                            rocsparse_int batch_stride,
                                                            void*         temp_buffer)
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
     log_trace(handle,
@@ -160,37 +143,25 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
               batch_stride,
               (const void*&)temp_buffer);
 
-    log_bench(handle,
-              "./rocsparse-bench -f gpsv_interleaved_batch -r",
-              replaceX<T>("X"),
-              "--mtx <matrix.mtx> ",
-              "--batch_count",
-              batch_count,
-              "--batch_stride",
-              batch_stride);
-
-    if(rocsparse_enum_utils::is_invalid(alg))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check sizes
-    if(m < 5 || batch_count < 0 || batch_stride < batch_count)
-    {
-        return rocsparse_status_invalid_size;
-    }
+    ROCSPARSE_CHECKARG_ENUM(1, alg);
+    ROCSPARSE_CHECKARG_SIZE(2, m);
+    ROCSPARSE_CHECKARG(2, m, (m < 5), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_ARRAY(3, batch_count, ds);
+    ROCSPARSE_CHECKARG_ARRAY(4, batch_count, dl);
+    ROCSPARSE_CHECKARG_ARRAY(5, batch_count, d);
+    ROCSPARSE_CHECKARG_ARRAY(6, batch_count, du);
+    ROCSPARSE_CHECKARG_ARRAY(7, batch_count, dw);
+    ROCSPARSE_CHECKARG_ARRAY(8, batch_count, x);
+    ROCSPARSE_CHECKARG_SIZE(9, batch_count);
+    ROCSPARSE_CHECKARG_SIZE(10, batch_stride);
+    ROCSPARSE_CHECKARG(
+        10, batch_stride, (batch_stride < batch_count), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_ARRAY(11, batch_count, temp_buffer);
 
     // Quick return if possible
     if(batch_count == 0)
     {
         return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(ds == nullptr || dl == nullptr || d == nullptr || du == nullptr || dw == nullptr
-       || x == nullptr || temp_buffer == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     // Stream
@@ -287,27 +258,28 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
  *    C wrapper
  * ===========================================================================
  */
-#define C_IMPL(NAME, TYPE)                                                                 \
-    extern "C" rocsparse_status NAME(rocsparse_handle               handle,                \
-                                     rocsparse_gpsv_interleaved_alg alg,                   \
-                                     rocsparse_int                  m,                     \
-                                     const TYPE*                    ds,                    \
-                                     const TYPE*                    dl,                    \
-                                     const TYPE*                    d,                     \
-                                     const TYPE*                    du,                    \
-                                     const TYPE*                    dw,                    \
-                                     const TYPE*                    x,                     \
-                                     rocsparse_int                  batch_count,           \
-                                     rocsparse_int                  batch_stride,          \
-                                     size_t*                        buffer_size)           \
-    try                                                                                    \
-    {                                                                                      \
-        return rocsparse_gpsv_interleaved_batch_buffer_size_template(                      \
-            handle, alg, m, ds, dl, d, du, dw, x, batch_count, batch_stride, buffer_size); \
-    }                                                                                      \
-    catch(...)                                                                             \
-    {                                                                                      \
-        return exception_to_rocsparse_status();                                            \
+#define C_IMPL(NAME, TYPE)                                                                  \
+    extern "C" rocsparse_status NAME(rocsparse_handle               handle,                 \
+                                     rocsparse_gpsv_interleaved_alg alg,                    \
+                                     rocsparse_int                  m,                      \
+                                     const TYPE*                    ds,                     \
+                                     const TYPE*                    dl,                     \
+                                     const TYPE*                    d,                      \
+                                     const TYPE*                    du,                     \
+                                     const TYPE*                    dw,                     \
+                                     const TYPE*                    x,                      \
+                                     rocsparse_int                  batch_count,            \
+                                     rocsparse_int                  batch_stride,           \
+                                     size_t*                        buffer_size)            \
+    try                                                                                     \
+    {                                                                                       \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gpsv_interleaved_batch_buffer_size_template(    \
+            handle, alg, m, ds, dl, d, du, dw, x, batch_count, batch_stride, buffer_size)); \
+        return rocsparse_status_success;                                                    \
+    }                                                                                       \
+    catch(...)                                                                              \
+    {                                                                                       \
+        RETURN_ROCSPARSE_EXCEPTION();                                                       \
     }
 
 C_IMPL(rocsparse_sgpsv_interleaved_batch_buffer_size, float);
@@ -316,27 +288,28 @@ C_IMPL(rocsparse_cgpsv_interleaved_batch_buffer_size, rocsparse_float_complex);
 C_IMPL(rocsparse_zgpsv_interleaved_batch_buffer_size, rocsparse_double_complex);
 #undef C_IMPL
 
-#define C_IMPL(NAME, TYPE)                                                                 \
-    extern "C" rocsparse_status NAME(rocsparse_handle               handle,                \
-                                     rocsparse_gpsv_interleaved_alg alg,                   \
-                                     rocsparse_int                  m,                     \
-                                     TYPE*                          ds,                    \
-                                     TYPE*                          dl,                    \
-                                     TYPE*                          d,                     \
-                                     TYPE*                          du,                    \
-                                     TYPE*                          dw,                    \
-                                     TYPE*                          x,                     \
-                                     rocsparse_int                  batch_count,           \
-                                     rocsparse_int                  batch_stride,          \
-                                     void*                          temp_buffer)           \
-    try                                                                                    \
-    {                                                                                      \
-        return rocsparse_gpsv_interleaved_batch_template(                                  \
-            handle, alg, m, ds, dl, d, du, dw, x, batch_count, batch_stride, temp_buffer); \
-    }                                                                                      \
-    catch(...)                                                                             \
-    {                                                                                      \
-        return exception_to_rocsparse_status();                                            \
+#define C_IMPL(NAME, TYPE)                                                                  \
+    extern "C" rocsparse_status NAME(rocsparse_handle               handle,                 \
+                                     rocsparse_gpsv_interleaved_alg alg,                    \
+                                     rocsparse_int                  m,                      \
+                                     TYPE*                          ds,                     \
+                                     TYPE*                          dl,                     \
+                                     TYPE*                          d,                      \
+                                     TYPE*                          du,                     \
+                                     TYPE*                          dw,                     \
+                                     TYPE*                          x,                      \
+                                     rocsparse_int                  batch_count,            \
+                                     rocsparse_int                  batch_stride,           \
+                                     void*                          temp_buffer)            \
+    try                                                                                     \
+    {                                                                                       \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gpsv_interleaved_batch_template(                \
+            handle, alg, m, ds, dl, d, du, dw, x, batch_count, batch_stride, temp_buffer)); \
+        return rocsparse_status_success;                                                    \
+    }                                                                                       \
+    catch(...)                                                                              \
+    {                                                                                       \
+        RETURN_ROCSPARSE_EXCEPTION();                                                       \
     }
 
 C_IMPL(rocsparse_sgpsv_interleaved_batch, float);

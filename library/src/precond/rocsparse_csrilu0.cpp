@@ -27,119 +27,600 @@
 
 #include "internal/level2/rocsparse_csrsv.h"
 
+#include "../level2/rocsparse_csrsv.hpp"
+#include "csrilu0_device.h"
+
+template <typename T, typename U>
+rocsparse_status rocsparse_csrilu0_numeric_boost_template(rocsparse_handle   handle,
+                                                          rocsparse_mat_info info,
+                                                          int                enable_boost,
+                                                          const U*           boost_tol,
+                                                          const T*           boost_val)
+{
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+
+    // Logging
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xcsrilu0_numeric_boost"),
+              (const void*&)info,
+              enable_boost,
+              (const void*&)boost_tol,
+              (const void*&)boost_val);
+
+    ROCSPARSE_CHECKARG_POINTER(1, info);
+
+    // Reset boost
+    info->boost_enable        = 0;
+    info->use_double_prec_tol = 0;
+
+    // Numeric boost
+    if(enable_boost)
+    {
+        // Check pointer arguments
+        ROCSPARSE_CHECKARG_POINTER(3, boost_tol);
+        ROCSPARSE_CHECKARG_POINTER(4, boost_val);
+
+        info->boost_enable        = enable_boost;
+        info->use_double_prec_tol = std::is_same<U, double>();
+        info->boost_tol           = reinterpret_cast<const void*>(boost_tol);
+        info->boost_val           = reinterpret_cast<const void*>(boost_val);
+    }
+
+    return rocsparse_status_success;
+}
+
+template <unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          bool         SLEEP,
+          typename T,
+          typename U,
+          typename V>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrilu0_binsearch(rocsparse_int        m,
+                       const rocsparse_int* csr_row_ptr,
+                       const rocsparse_int* csr_col_ind,
+                       T*                   csr_val,
+                       const rocsparse_int* csr_diag_ind,
+                       int*                 done,
+                       const rocsparse_int* map,
+                       rocsparse_int*       zero_pivot,
+                       rocsparse_index_base idx_base,
+                       int                  enable_boost,
+                       U                    boost_tol_device_host,
+                       V                    boost_val_device_host)
+{
+    auto boost_tol = (enable_boost) ? load_scalar_device_host(boost_tol_device_host)
+                                    : zero_scalar_device_host(boost_tol_device_host);
+
+    auto boost_val = (enable_boost) ? load_scalar_device_host(boost_val_device_host)
+                                    : zero_scalar_device_host(boost_val_device_host);
+
+    csrilu0_binsearch_kernel<BLOCKSIZE, WFSIZE, SLEEP>(m,
+                                                       csr_row_ptr,
+                                                       csr_col_ind,
+                                                       csr_val,
+                                                       csr_diag_ind,
+                                                       done,
+                                                       map,
+                                                       zero_pivot,
+                                                       idx_base,
+                                                       enable_boost,
+                                                       boost_tol,
+                                                       boost_val);
+}
+
+template <unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int HASH,
+          typename T,
+          typename U,
+          typename V>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrilu0_hash(rocsparse_int        m,
+                  const rocsparse_int* csr_row_ptr,
+                  const rocsparse_int* csr_col_ind,
+                  T*                   csr_val,
+                  const rocsparse_int* csr_diag_ind,
+                  int*                 done,
+                  const rocsparse_int* map,
+                  rocsparse_int*       zero_pivot,
+                  rocsparse_index_base idx_base,
+                  int                  enable_boost,
+                  U                    boost_tol_device_host,
+                  V                    boost_val_device_host)
+{
+    auto boost_tol = (enable_boost) ? load_scalar_device_host(boost_tol_device_host)
+                                    : zero_scalar_device_host(boost_tol_device_host);
+
+    auto boost_val = (enable_boost) ? load_scalar_device_host(boost_val_device_host)
+                                    : zero_scalar_device_host(boost_val_device_host);
+
+    csrilu0_hash_kernel<BLOCKSIZE, WFSIZE, HASH>(m,
+                                                 csr_row_ptr,
+                                                 csr_col_ind,
+                                                 csr_val,
+                                                 csr_diag_ind,
+                                                 done,
+                                                 map,
+                                                 zero_pivot,
+                                                 idx_base,
+                                                 enable_boost,
+                                                 boost_tol,
+                                                 boost_val);
+}
+
+template <typename T, typename U, typename V>
+rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             nnz,
+                                            const rocsparse_mat_descr descr,
+                                            T*                        csr_val,
+                                            const rocsparse_int*      csr_row_ptr,
+                                            const rocsparse_int*      csr_col_ind,
+                                            rocsparse_mat_info        info,
+                                            rocsparse_solve_policy    policy,
+                                            void*                     temp_buffer,
+                                            U                         boost_tol_device_host,
+                                            V                         boost_val_device_host)
+{
+    // Check for valid handle and matrix descriptor
+    // Stream
+    hipStream_t stream = handle->stream;
+
+    // Buffer
+    char* ptr = reinterpret_cast<char*>(temp_buffer);
+    ptr += 256;
+
+    // done array
+    int* d_done_array = reinterpret_cast<int*>(ptr);
+
+    // Initialize buffers
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(d_done_array, 0, sizeof(int) * m, stream));
+
+    // Max nnz per row
+    rocsparse_int max_nnz = info->csrilu0_info->max_nnz;
+
+    // Determine gcnArch and ASIC revision
+    int gcnArch = handle->properties.gcnArch;
+    int asicRev = handle->asic_rev;
+
+#define CSRILU0_DIM 256
+    dim3 csrilu0_blocks((m * handle->wavefront_size - 1) / CSRILU0_DIM + 1);
+    dim3 csrilu0_threads(CSRILU0_DIM);
+
+    if(gcnArch == 908 && asicRev < 2)
+    {
+        hipLaunchKernelGGL((csrilu0_binsearch<CSRILU0_DIM, 64, true>),
+                           csrilu0_blocks,
+                           csrilu0_threads,
+                           0,
+                           stream,
+                           m,
+                           csr_row_ptr,
+                           csr_col_ind,
+                           csr_val,
+                           (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                           d_done_array,
+                           (rocsparse_int*)info->csrilu0_info->row_map,
+                           (rocsparse_int*)info->zero_pivot,
+                           descr->base,
+                           info->boost_enable,
+                           boost_tol_device_host,
+                           boost_val_device_host);
+    }
+    else
+    {
+        if(handle->wavefront_size == 32)
+        {
+            if(max_nnz < 32)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 1>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz < 64)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 2>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz < 128)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 4>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz < 256)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 8>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz < 512)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 16>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrilu0_binsearch<CSRILU0_DIM, 32, false>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+        }
+        else if(handle->wavefront_size == 64)
+        {
+            if(max_nnz < 64)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 1>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz < 128)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 2>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz < 256)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 4>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz < 512)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 8>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz < 1024)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 16>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrilu0_binsearch<CSRILU0_DIM, 64, false>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+        }
+        else
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_arch_mismatch);
+        }
+    }
+#undef CSRILU0_DIM
+
+    return rocsparse_status_success;
+}
+
+static rocsparse_status rocsparse_csrilu0_quickreturn(rocsparse_handle          handle,
+                                                      int64_t                   m,
+                                                      int64_t                   nnz,
+                                                      const rocsparse_mat_descr descr,
+                                                      void*                     csr_val,
+                                                      const void*               csr_row_ptr,
+                                                      const void*               csr_col_ind,
+                                                      rocsparse_mat_info        info,
+                                                      rocsparse_solve_policy    policy,
+                                                      void*                     temp_buffer)
+{
+    if(m == 0)
+    {
+        return rocsparse_status_success;
+    }
+    return rocsparse_status_continue;
+}
+
+static rocsparse_status rocsparse_csrilu0_checkarg(rocsparse_handle          handle, //0
+                                                   int64_t                   m, //1
+                                                   int64_t                   nnz, //2
+                                                   const rocsparse_mat_descr descr, //3
+                                                   void*                     csr_val, //4
+                                                   const void*               csr_row_ptr, //5
+                                                   const void*               csr_col_ind, //6
+                                                   rocsparse_mat_info        info, //7
+                                                   rocsparse_solve_policy    policy, //8
+                                                   void*                     temp_buffer) //9
+{
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+
+    const rocsparse_status status = rocsparse_csrilu0_quickreturn(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    ROCSPARSE_CHECKARG_SIZE(2, nnz);
+    ROCSPARSE_CHECKARG_POINTER(3, descr);
+    ROCSPARSE_CHECKARG(
+        3, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(3,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+
+    ROCSPARSE_CHECKARG_ARRAY(4, nnz, csr_val);
+    ROCSPARSE_CHECKARG_ARRAY(5, m, csr_row_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(6, nnz, csr_col_ind);
+
+    ROCSPARSE_CHECKARG_POINTER(7, info);
+    ROCSPARSE_CHECKARG_ENUM(8, policy);
+    ROCSPARSE_CHECKARG_ARRAY(9, m, temp_buffer);
+
+    ROCSPARSE_CHECKARG(7, info, (info->csrilu0_info == nullptr), rocsparse_status_invalid_pointer);
+    return rocsparse_status_continue;
+}
+
+template <typename T, typename U>
+static rocsparse_status rocsparse_csrilu0_core(rocsparse_handle          handle,
+                                               rocsparse_int             m,
+                                               rocsparse_int             nnz,
+                                               const rocsparse_mat_descr descr,
+                                               T*                        csr_val,
+                                               const rocsparse_int*      csr_row_ptr,
+                                               const rocsparse_int*      csr_col_ind,
+                                               rocsparse_mat_info        info,
+                                               rocsparse_solve_policy    policy,
+                                               void*                     temp_buffer)
+{
+
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_csrilu0_dispatch(handle,
+                                       m,
+                                       nnz,
+                                       descr,
+                                       csr_val,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       info,
+                                       policy,
+                                       temp_buffer,
+                                       reinterpret_cast<const U*>(info->boost_tol),
+                                       reinterpret_cast<const T*>(info->boost_val)));
+        return rocsparse_status_success;
+    }
+    else
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrilu0_dispatch(
+            handle,
+            m,
+            nnz,
+            descr,
+            csr_val,
+            csr_row_ptr,
+            csr_col_ind,
+            info,
+            policy,
+            temp_buffer,
+            (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                      : static_cast<U>(0),
+            (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                      : static_cast<T>(0)));
+        return rocsparse_status_success;
+    }
+}
+
+template <typename T, typename U>
+rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             nnz,
+                                            const rocsparse_mat_descr descr,
+                                            T*                        csr_val,
+                                            const rocsparse_int*      csr_row_ptr,
+                                            const rocsparse_int*      csr_col_ind,
+                                            rocsparse_mat_info        info,
+                                            rocsparse_solve_policy    policy,
+                                            void*                     temp_buffer)
+{
+
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xcsrilu0"),
+              m,
+              nnz,
+              (const void*&)descr,
+              (const void*&)csr_val,
+              (const void*&)csr_row_ptr,
+              (const void*&)csr_col_ind,
+              (const void*&)info,
+              policy,
+              (const void*&)temp_buffer);
+
+    const rocsparse_status status = rocsparse_csrilu0_checkarg(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_csrilu0_core<T, U>(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer)));
+    return rocsparse_status_success;
+}
+
 /*
  * ===========================================================================
  *    C wrapper
  * ===========================================================================
  */
-
-extern "C" rocsparse_status rocsparse_scsrilu0_buffer_size(rocsparse_handle          handle,
-                                                           rocsparse_int             m,
-                                                           rocsparse_int             nnz,
-                                                           const rocsparse_mat_descr descr,
-                                                           const float*              csr_val,
-                                                           const rocsparse_int*      csr_row_ptr,
-                                                           const rocsparse_int*      csr_col_ind,
-                                                           rocsparse_mat_info        info,
-                                                           size_t*                   buffer_size)
-try
-{
-    return rocsparse_scsrsv_buffer_size(handle,
-                                        rocsparse_operation_none,
-                                        m,
-                                        nnz,
-                                        descr,
-                                        csr_val,
-                                        csr_row_ptr,
-                                        csr_col_ind,
-                                        info,
-                                        buffer_size);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
-}
-
-extern "C" rocsparse_status rocsparse_dcsrilu0_buffer_size(rocsparse_handle          handle,
-                                                           rocsparse_int             m,
-                                                           rocsparse_int             nnz,
-                                                           const rocsparse_mat_descr descr,
-                                                           const double*             csr_val,
-                                                           const rocsparse_int*      csr_row_ptr,
-                                                           const rocsparse_int*      csr_col_ind,
-                                                           rocsparse_mat_info        info,
-                                                           size_t*                   buffer_size)
-try
-{
-    return rocsparse_dcsrsv_buffer_size(handle,
-                                        rocsparse_operation_none,
-                                        m,
-                                        nnz,
-                                        descr,
-                                        csr_val,
-                                        csr_row_ptr,
-                                        csr_col_ind,
-                                        info,
-                                        buffer_size);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
-}
-
-extern "C" rocsparse_status rocsparse_ccsrilu0_buffer_size(rocsparse_handle               handle,
-                                                           rocsparse_int                  m,
-                                                           rocsparse_int                  nnz,
-                                                           const rocsparse_mat_descr      descr,
-                                                           const rocsparse_float_complex* csr_val,
-                                                           const rocsparse_int* csr_row_ptr,
-                                                           const rocsparse_int* csr_col_ind,
-                                                           rocsparse_mat_info   info,
-                                                           size_t*              buffer_size)
-try
-{
-    return rocsparse_ccsrsv_buffer_size(handle,
-                                        rocsparse_operation_none,
-                                        m,
-                                        nnz,
-                                        descr,
-                                        csr_val,
-                                        csr_row_ptr,
-                                        csr_col_ind,
-                                        info,
-                                        buffer_size);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
-}
-
-extern "C" rocsparse_status rocsparse_zcsrilu0_buffer_size(rocsparse_handle                handle,
-                                                           rocsparse_int                   m,
-                                                           rocsparse_int                   nnz,
-                                                           const rocsparse_mat_descr       descr,
-                                                           const rocsparse_double_complex* csr_val,
-                                                           const rocsparse_int* csr_row_ptr,
-                                                           const rocsparse_int* csr_col_ind,
-                                                           rocsparse_mat_info   info,
-                                                           size_t*              buffer_size)
-try
-{
-    return rocsparse_zcsrsv_buffer_size(handle,
-                                        rocsparse_operation_none,
-                                        m,
-                                        nnz,
-                                        descr,
-                                        csr_val,
-                                        csr_row_ptr,
-                                        csr_col_ind,
-                                        info,
-                                        buffer_size);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
-}
 
 extern "C" rocsparse_status rocsparse_scsrilu0_numeric_boost(rocsparse_handle   handle,
                                                              rocsparse_mat_info info,
@@ -148,12 +629,13 @@ extern "C" rocsparse_status rocsparse_scsrilu0_numeric_boost(rocsparse_handle   
                                                              const float*       boost_val)
 try
 {
-    return rocsparse_csrilu0_numeric_boost_template(
-        handle, info, enable_boost, boost_tol, boost_val);
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_csrilu0_numeric_boost_template(handle, info, enable_boost, boost_tol, boost_val));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_dcsrilu0_numeric_boost(rocsparse_handle   handle,
@@ -163,12 +645,13 @@ extern "C" rocsparse_status rocsparse_dcsrilu0_numeric_boost(rocsparse_handle   
                                                              const double*      boost_val)
 try
 {
-    return rocsparse_csrilu0_numeric_boost_template(
-        handle, info, enable_boost, boost_tol, boost_val);
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_csrilu0_numeric_boost_template(handle, info, enable_boost, boost_tol, boost_val));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status
@@ -179,12 +662,13 @@ extern "C" rocsparse_status
                                      const rocsparse_float_complex* boost_val)
 try
 {
-    return rocsparse_csrilu0_numeric_boost_template(
-        handle, info, enable_boost, boost_tol, boost_val);
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_csrilu0_numeric_boost_template(handle, info, enable_boost, boost_tol, boost_val));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status
@@ -195,12 +679,13 @@ extern "C" rocsparse_status
                                      const rocsparse_double_complex* boost_val)
 try
 {
-    return rocsparse_csrilu0_numeric_boost_template(
-        handle, info, enable_boost, boost_tol, boost_val);
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_csrilu0_numeric_boost_template(handle, info, enable_boost, boost_tol, boost_val));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_dscsrilu0_numeric_boost(rocsparse_handle   handle,
@@ -210,12 +695,13 @@ extern "C" rocsparse_status rocsparse_dscsrilu0_numeric_boost(rocsparse_handle  
                                                               const float*       boost_val)
 try
 {
-    return rocsparse_csrilu0_numeric_boost_template(
-        handle, info, enable_boost, boost_tol, boost_val);
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_csrilu0_numeric_boost_template(handle, info, enable_boost, boost_tol, boost_val));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status
@@ -226,147 +712,21 @@ extern "C" rocsparse_status
                                       const rocsparse_float_complex* boost_val)
 try
 {
-    return rocsparse_csrilu0_numeric_boost_template(
-        handle, info, enable_boost, boost_tol, boost_val);
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_csrilu0_numeric_boost_template(handle, info, enable_boost, boost_tol, boost_val));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
-}
-
-extern "C" rocsparse_status rocsparse_scsrilu0_analysis(rocsparse_handle          handle,
-                                                        rocsparse_int             m,
-                                                        rocsparse_int             nnz,
-                                                        const rocsparse_mat_descr descr,
-                                                        const float*              csr_val,
-                                                        const rocsparse_int*      csr_row_ptr,
-                                                        const rocsparse_int*      csr_col_ind,
-                                                        rocsparse_mat_info        info,
-                                                        rocsparse_analysis_policy analysis,
-                                                        rocsparse_solve_policy    solve,
-                                                        void*                     temp_buffer)
-try
-{
-    return rocsparse_csrilu0_analysis_template(handle,
-                                               m,
-                                               nnz,
-                                               descr,
-                                               csr_val,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               info,
-                                               analysis,
-                                               solve,
-                                               temp_buffer);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
-}
-
-extern "C" rocsparse_status rocsparse_dcsrilu0_analysis(rocsparse_handle          handle,
-                                                        rocsparse_int             m,
-                                                        rocsparse_int             nnz,
-                                                        const rocsparse_mat_descr descr,
-                                                        const double*             csr_val,
-                                                        const rocsparse_int*      csr_row_ptr,
-                                                        const rocsparse_int*      csr_col_ind,
-                                                        rocsparse_mat_info        info,
-                                                        rocsparse_analysis_policy analysis,
-                                                        rocsparse_solve_policy    solve,
-                                                        void*                     temp_buffer)
-try
-{
-    return rocsparse_csrilu0_analysis_template(handle,
-                                               m,
-                                               nnz,
-                                               descr,
-                                               csr_val,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               info,
-                                               analysis,
-                                               solve,
-                                               temp_buffer);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
-}
-
-extern "C" rocsparse_status rocsparse_ccsrilu0_analysis(rocsparse_handle               handle,
-                                                        rocsparse_int                  m,
-                                                        rocsparse_int                  nnz,
-                                                        const rocsparse_mat_descr      descr,
-                                                        const rocsparse_float_complex* csr_val,
-                                                        const rocsparse_int*           csr_row_ptr,
-                                                        const rocsparse_int*           csr_col_ind,
-                                                        rocsparse_mat_info             info,
-                                                        rocsparse_analysis_policy      analysis,
-                                                        rocsparse_solve_policy         solve,
-                                                        void*                          temp_buffer)
-try
-{
-    return rocsparse_csrilu0_analysis_template(handle,
-                                               m,
-                                               nnz,
-                                               descr,
-                                               csr_val,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               info,
-                                               analysis,
-                                               solve,
-                                               temp_buffer);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
-}
-
-extern "C" rocsparse_status rocsparse_zcsrilu0_analysis(rocsparse_handle                handle,
-                                                        rocsparse_int                   m,
-                                                        rocsparse_int                   nnz,
-                                                        const rocsparse_mat_descr       descr,
-                                                        const rocsparse_double_complex* csr_val,
-                                                        const rocsparse_int*            csr_row_ptr,
-                                                        const rocsparse_int*            csr_col_ind,
-                                                        rocsparse_mat_info              info,
-                                                        rocsparse_analysis_policy       analysis,
-                                                        rocsparse_solve_policy          solve,
-                                                        void*                           temp_buffer)
-try
-{
-    return rocsparse_csrilu0_analysis_template(handle,
-                                               m,
-                                               nnz,
-                                               descr,
-                                               csr_val,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               info,
-                                               analysis,
-                                               solve,
-                                               temp_buffer);
-}
-catch(...)
-{
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle   handle,
                                                     rocsparse_mat_info info)
 try
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(1, info);
 
     // Logging
     log_trace(handle, "rocsparse_csrilu0_clear", (const void*&)info);
@@ -383,7 +743,7 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_scsrilu0(rocsparse_handle          handle,
@@ -400,18 +760,20 @@ try
 {
     if(info != nullptr && info->use_double_prec_tol)
     {
-        return rocsparse_csrilu0_template<float, double>(
-            handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_csrilu0_template<float, double>(
+            handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer)));
+        return rocsparse_status_success;
     }
     else
     {
-        return rocsparse_csrilu0_template<float, float>(
-            handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_csrilu0_template<float, float>(
+            handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer)));
+        return rocsparse_status_success;
     }
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_dcsrilu0(rocsparse_handle          handle,
@@ -426,12 +788,13 @@ extern "C" rocsparse_status rocsparse_dcsrilu0(rocsparse_handle          handle,
                                                void*                     temp_buffer)
 try
 {
-    return rocsparse_csrilu0_template<double, double>(
-        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_csrilu0_template<double, double>(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer)));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_ccsrilu0(rocsparse_handle          handle,
@@ -448,18 +811,20 @@ try
 {
     if(info != nullptr && info->use_double_prec_tol)
     {
-        return rocsparse_csrilu0_template<rocsparse_float_complex, double>(
-            handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_csrilu0_template<rocsparse_float_complex, double>(
+            handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer)));
+        return rocsparse_status_success;
     }
     else
     {
-        return rocsparse_csrilu0_template<rocsparse_float_complex, float>(
-            handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_csrilu0_template<rocsparse_float_complex, float>(
+            handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer)));
+        return rocsparse_status_success;
     }
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
@@ -474,12 +839,13 @@ extern "C" rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
                                                void*                     temp_buffer)
 try
 {
-    return rocsparse_csrilu0_template<rocsparse_double_complex, double>(
-        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse_csrilu0_template<rocsparse_double_complex, double>(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer)));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   handle,
@@ -487,24 +853,12 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   hand
                                                          rocsparse_int*     position)
 try
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    // Logging
     log_trace(handle, "rocsparse_csrilu0_zero_pivot", (const void*&)info, (const void*&)position);
 
-    // Check pointer arguments
-    if(position == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(1, info);
+    ROCSPARSE_CHECKARG_POINTER(2, position);
 
     // Stream
     hipStream_t stream = handle->stream;
@@ -549,7 +903,7 @@ try
                                                hipMemcpyDeviceToDevice,
                                                stream));
 
-            return rocsparse_status_zero_pivot;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
         }
     }
     else
@@ -566,7 +920,7 @@ try
         }
         else
         {
-            return rocsparse_status_zero_pivot;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
         }
     }
 
@@ -574,5 +928,5 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

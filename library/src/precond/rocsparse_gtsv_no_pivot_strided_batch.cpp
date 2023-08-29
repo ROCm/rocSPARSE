@@ -164,13 +164,7 @@ rocsparse_status
                                                                rocsparse_int    batch_stride,
                                                                size_t*          buffer_size)
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
 
-    // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xgtsv_no_pivot_strided_batch_buffer_size"),
               m,
@@ -182,41 +176,22 @@ rocsparse_status
               batch_stride,
               (const void*&)buffer_size);
 
-    // Check sizes
-    if(m <= 1 || batch_count < 0 || batch_stride < m)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check for valid buffer_size pointer
-    if(buffer_size == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG(1, m, (m <= 1), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_ARRAY(2, batch_count, dl);
+    ROCSPARSE_CHECKARG_ARRAY(3, batch_count, d);
+    ROCSPARSE_CHECKARG_ARRAY(4, batch_count, du);
+    ROCSPARSE_CHECKARG_ARRAY(5, batch_count, x);
+    ROCSPARSE_CHECKARG_SIZE(6, batch_count);
+    ROCSPARSE_CHECKARG(7, batch_stride, (batch_stride < m), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_POINTER(8, buffer_size);
 
     // Quick return if possible
     if(batch_count == 0)
     {
         *buffer_size = 0;
         return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(dl == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(d == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(du == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(x == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     if(m <= 512)
@@ -436,13 +411,7 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_template(rocsparse_handle
                                                                 rocsparse_int    batch_stride,
                                                                 void*            temp_buffer)
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
 
-    // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xgtsv_no_pivot_strided_batch"),
               m,
@@ -454,54 +423,29 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_template(rocsparse_handle
               batch_stride,
               (const void*&)temp_buffer);
 
-    log_bench(handle,
-              "./rocsparse-bench -f gtsv_no_pivot_strided_batch -r",
-              replaceX<T>("X"),
-              "--mtx <matrix.mtx> ");
-
-    // Check sizes
-    if(m <= 1 || batch_count < 0 || batch_stride < m)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Quick return if possible
-    if(batch_count == 0)
-    {
-        return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(dl == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(d == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(du == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(x == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(m > 512 && temp_buffer == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG(1, m, (m <= 1), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_ARRAY(2, batch_count, dl);
+    ROCSPARSE_CHECKARG_ARRAY(3, batch_count, d);
+    ROCSPARSE_CHECKARG_ARRAY(4, batch_count, du);
+    ROCSPARSE_CHECKARG_ARRAY(5, batch_count, x);
+    ROCSPARSE_CHECKARG_SIZE(6, batch_count);
+    ROCSPARSE_CHECKARG(7, batch_stride, (batch_stride < m), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG(
+        8, temp_buffer, (m > 512 && temp_buffer == nullptr), rocsparse_status_invalid_pointer);
 
     // If m is small we can solve the systems entirely in shared memory
     if(m <= 512)
     {
-        return rocsparse_gtsv_no_pivot_strided_batch_small_template(
-            handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gtsv_no_pivot_strided_batch_small_template(
+            handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer));
+        return rocsparse_status_success;
     }
 
-    return rocsparse_gtsv_no_pivot_strided_batch_large_template(
-        handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_gtsv_no_pivot_strided_batch_large_template(
+        handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer));
+    return rocsparse_status_success;
 }
 
 /*
@@ -509,24 +453,25 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_template(rocsparse_handle
  *    C wrapper
  * ===========================================================================
  */
-#define C_IMPL(NAME, TYPE)                                                    \
-    extern "C" rocsparse_status NAME(rocsparse_handle handle,                 \
-                                     rocsparse_int    m,                      \
-                                     const TYPE*      dl,                     \
-                                     const TYPE*      d,                      \
-                                     const TYPE*      du,                     \
-                                     const TYPE*      x,                      \
-                                     rocsparse_int    batch_count,            \
-                                     rocsparse_int    batch_stride,           \
-                                     size_t*          buffer_size)            \
-    try                                                                       \
-    {                                                                         \
-        return rocsparse_gtsv_no_pivot_strided_batch_buffer_size_template(    \
-            handle, m, dl, d, du, x, batch_count, batch_stride, buffer_size); \
-    }                                                                         \
-    catch(...)                                                                \
-    {                                                                         \
-        return exception_to_rocsparse_status();                               \
+#define C_IMPL(NAME, TYPE)                                                                    \
+    extern "C" rocsparse_status NAME(rocsparse_handle handle,                                 \
+                                     rocsparse_int    m,                                      \
+                                     const TYPE*      dl,                                     \
+                                     const TYPE*      d,                                      \
+                                     const TYPE*      du,                                     \
+                                     const TYPE*      x,                                      \
+                                     rocsparse_int    batch_count,                            \
+                                     rocsparse_int    batch_stride,                           \
+                                     size_t*          buffer_size)                            \
+    try                                                                                       \
+    {                                                                                         \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gtsv_no_pivot_strided_batch_buffer_size_template( \
+            handle, m, dl, d, du, x, batch_count, batch_stride, buffer_size));                \
+        return rocsparse_status_success;                                                      \
+    }                                                                                         \
+    catch(...)                                                                                \
+    {                                                                                         \
+        RETURN_ROCSPARSE_EXCEPTION();                                                         \
     }
 
 C_IMPL(rocsparse_sgtsv_no_pivot_strided_batch_buffer_size, float);
@@ -536,24 +481,25 @@ C_IMPL(rocsparse_zgtsv_no_pivot_strided_batch_buffer_size, rocsparse_double_comp
 
 #undef C_IMPL
 
-#define C_IMPL(NAME, TYPE)                                                    \
-    extern "C" rocsparse_status NAME(rocsparse_handle handle,                 \
-                                     rocsparse_int    m,                      \
-                                     const TYPE*      dl,                     \
-                                     const TYPE*      d,                      \
-                                     const TYPE*      du,                     \
-                                     TYPE*            x,                      \
-                                     rocsparse_int    batch_count,            \
-                                     rocsparse_int    batch_stride,           \
-                                     void*            temp_buffer)            \
-    try                                                                       \
-    {                                                                         \
-        return rocsparse_gtsv_no_pivot_strided_batch_template(                \
-            handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer); \
-    }                                                                         \
-    catch(...)                                                                \
-    {                                                                         \
-        return exception_to_rocsparse_status();                               \
+#define C_IMPL(NAME, TYPE)                                                        \
+    extern "C" rocsparse_status NAME(rocsparse_handle handle,                     \
+                                     rocsparse_int    m,                          \
+                                     const TYPE*      dl,                         \
+                                     const TYPE*      d,                          \
+                                     const TYPE*      du,                         \
+                                     TYPE*            x,                          \
+                                     rocsparse_int    batch_count,                \
+                                     rocsparse_int    batch_stride,               \
+                                     void*            temp_buffer)                \
+    try                                                                           \
+    {                                                                             \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gtsv_no_pivot_strided_batch_template( \
+            handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer));    \
+        return rocsparse_status_success;                                          \
+    }                                                                             \
+    catch(...)                                                                    \
+    {                                                                             \
+        RETURN_ROCSPARSE_EXCEPTION();                                             \
     }
 
 C_IMPL(rocsparse_sgtsv_no_pivot_strided_batch, float);

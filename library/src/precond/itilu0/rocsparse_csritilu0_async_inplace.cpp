@@ -21,7 +21,6 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "internal/conversion/rocsparse_coosort.h"
 #include <iomanip>
 
@@ -674,7 +673,7 @@ struct compute_iter
 
                     RETURN_IF_HIP_ERROR(on_device(p_iter, nmaxiter_, stream));
 
-                    return rocsparse_status_zero_pivot;
+                    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
                 }
                 else
                 {
@@ -1142,7 +1141,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             if(!convergence_history)
             {
                 std::cerr << "convergence history has not been activated." << std::endl;
-                return rocsparse_status_internal_error;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
             }
 
             const bool compute_nrm_residual
@@ -1182,7 +1181,9 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
         {
             using layout_t = buffer_layout_inplace_t;
             layout_t layout;
-            return run(layout, handle_, alg_, niter_, data_, buffer_size_, buffer_);
+            RETURN_IF_ROCSPARSE_ERROR(
+                run(layout, handle_, alg_, niter_, data_, buffer_size_, buffer_));
+            return rocsparse_status_success;
         }
     };
 
@@ -1247,7 +1248,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             case rocsparse_datatype_i32_r:
             case rocsparse_datatype_u32_r:
             {
-                return rocsparse_status_not_implemented;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
             }
             }
             buffer_size += size_convergence_info;
@@ -1298,7 +1299,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             {
                 std::cerr << "rocsparse_csritilu0_preprocess has detected " << (m_ - nnz_diag)
                           << "/" << m_ << " non-existent diagonal element." << std::endl;
-                return rocsparse_status_zero_pivot;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
             }
 
             const bool use_coo_format = (options_ & rocsparse_itilu0_option_coo_format) > 0;

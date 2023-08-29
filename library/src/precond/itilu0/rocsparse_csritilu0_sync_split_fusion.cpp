@@ -52,12 +52,14 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                                     void*                       buffer_)
         {
             using layout_t = buffer_layout_crtp_t<IMPL>;
-            hipMemcpyAsync(&layout_, buffer_, sizeof(IMPL), hipMemcpyDeviceToHost, handle_->stream);
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                &layout_, buffer_, sizeof(IMPL), hipMemcpyDeviceToHost, handle_->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
             void*  p_buffer      = layout_.get_pointer(layout_t::buffer);
             size_t p_buffer_size = layout_.get_size(layout_t::buffer);
-            return rocsparse_csritilu0x_history_template<T, J>(
-                handle_, alg_, niter_, data_, p_buffer_size, p_buffer);
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_csritilu0x_history_template<T, J>(
+                handle_, alg_, niter_, data_, p_buffer_size, p_buffer)));
+            return rocsparse_status_success;
         }
 
         static rocsparse_status run(rocsparse_handle     handle_,
@@ -69,7 +71,9 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
         {
             using layout_t = buffer_layout_contiguous_t;
             layout_t layout;
-            return run(layout, handle_, alg_, niter_, data_, buffer_size_, buffer_);
+            RETURN_IF_ROCSPARSE_ERROR(
+                run(layout, handle_, alg_, niter_, data_, buffer_size_, buffer_));
+            return rocsparse_status_success;
         }
     };
 
@@ -121,61 +125,52 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             buffer_size += sizeof(J) * nnz_; // ind
             buffer_size += sizeof(I) * nnz_; // perm
 
-            size_t           buffer_size_csritilu0x = 0;
-            rocsparse_status status
-                = rocsparse_csritilu0x_buffer_size_template(handle_,
-                                                            alg_,
-                                                            options_,
-                                                            nsweeps_,
-                                                            m_,
-                                                            nnz_,
-                                                            ptr_,
-                                                            ptr_ + 1,
-                                                            ind_,
-                                                            base_,
-                                                            rocsparse_diag_type_unit,
-                                                            rocsparse_direction_row,
-                                                            rocsparse_diag_type_unit,
-                                                            rocsparse_direction_column,
-                                                            datatype_,
-                                                            &buffer_size_csritilu0x);
-
-            if(status != rocsparse_status_success)
-            {
-                return status;
-            }
+            size_t buffer_size_csritilu0x = 0;
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_csritilu0x_buffer_size_template(handle_,
+                                                          alg_,
+                                                          options_,
+                                                          nsweeps_,
+                                                          m_,
+                                                          nnz_,
+                                                          ptr_,
+                                                          ptr_ + 1,
+                                                          ind_,
+                                                          base_,
+                                                          rocsparse_diag_type_unit,
+                                                          rocsparse_direction_row,
+                                                          rocsparse_diag_type_unit,
+                                                          rocsparse_direction_column,
+                                                          datatype_,
+                                                          &buffer_size_csritilu0x));
 
             //
             // buffer csxsldu
             //
-            size_t buffer_size_identity = sizeof(I) * nnz_;
-            size_t buffer_size_csxsldu  = 0;
-            status                      = rocsparse_csxsldu_buffer_size_template<I, I, J>(handle_,
-                                                                     rocsparse_direction_row,
-                                                                     m_,
-                                                                     m_,
-                                                                     nnz_,
-                                                                     ptr_,
-                                                                     ind_,
-                                                                     nullptr,
-                                                                     base_,
-                                                                     rocsparse_diag_type_unit,
-                                                                     rocsparse_direction_row,
-                                                                     rocsparse_diag_type_unit,
-                                                                     rocsparse_direction_column,
-                                                                     &buffer_size_csxsldu);
+            const size_t buffer_size_identity = sizeof(I) * nnz_;
+            size_t       buffer_size_csxsldu  = 0;
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse_csxsldu_buffer_size_template<I, I, J>(handle_,
+                                                                 rocsparse_direction_row,
+                                                                 m_,
+                                                                 m_,
+                                                                 nnz_,
+                                                                 ptr_,
+                                                                 ind_,
+                                                                 nullptr,
+                                                                 base_,
+                                                                 rocsparse_diag_type_unit,
+                                                                 rocsparse_direction_row,
+                                                                 rocsparse_diag_type_unit,
+                                                                 rocsparse_direction_column,
+                                                                 &buffer_size_csxsldu)));
 
-            if(status != rocsparse_status_success)
-            {
-                return status;
-            }
             buffer_size_csxsldu += buffer_size_identity;
             //
             // buffer csritilu0x
             //
             buffer_size += std::max(buffer_size_csxsldu, buffer_size_csritilu0x);
             *buffer_size_ = buffer_size;
-
             return rocsparse_status_success;
         }
     };
@@ -198,8 +193,6 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                                     void* __restrict__ buffer__)
 
         {
-
-            rocsparse_status status;
 
             using layout_t             = LAYOUT_IMPL;
             void* __restrict__ buffer_ = buffer__;
@@ -229,38 +222,34 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             // Set perm to identity.
             //
             I* identity = assign_b<I>(p_buffer_size, p_buffer, nnz_);
-            status      = rocsparse_create_identity_permutation_core(handle_, nnz_, identity);
-            if(status != rocsparse_status_success)
-            {
-                return status;
-            }
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_create_identity_permutation_core(handle_, nnz_, identity));
 
-            status = rocsparse_csxsldu_preprocess_template<I, I, J>(handle_,
-                                                                    rocsparse_direction_row,
-                                                                    m_,
-                                                                    m_,
-                                                                    nnz_,
-                                                                    ptr_,
-                                                                    ind_,
-                                                                    identity,
-                                                                    base_,
-                                                                    rocsparse_diag_type_unit,
-                                                                    rocsparse_direction_row,
-                                                                    &host_lnnz,
-                                                                    p_lptr,
-                                                                    base_,
-                                                                    rocsparse_diag_type_unit,
-                                                                    rocsparse_direction_column,
-                                                                    &host_unnz,
-                                                                    p_uptr,
-                                                                    base_,
-                                                                    p_buffer);
-            if(status != rocsparse_status_success)
-            {
-                return status;
-            }
-            hipMemcpyAsync(p_lnnz, &host_lnnz, sizeof(I), hipMemcpyHostToDevice, handle_->stream);
-            hipMemcpyAsync(p_unnz, &host_unnz, sizeof(I), hipMemcpyHostToDevice, handle_->stream);
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse_csxsldu_preprocess_template<I, I, J>(handle_,
+                                                                rocsparse_direction_row,
+                                                                m_,
+                                                                m_,
+                                                                nnz_,
+                                                                ptr_,
+                                                                ind_,
+                                                                identity,
+                                                                base_,
+                                                                rocsparse_diag_type_unit,
+                                                                rocsparse_direction_row,
+                                                                &host_lnnz,
+                                                                p_lptr,
+                                                                base_,
+                                                                rocsparse_diag_type_unit,
+                                                                rocsparse_direction_column,
+                                                                &host_unnz,
+                                                                p_uptr,
+                                                                base_,
+                                                                p_buffer)));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                p_lnnz, &host_lnnz, sizeof(I), hipMemcpyHostToDevice, handle_->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                p_unnz, &host_unnz, sizeof(I), hipMemcpyHostToDevice, handle_->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
 
             if(nnz_ != m_ + host_lnnz + host_unnz)
@@ -268,7 +257,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                 std::cerr << "rocsparse_csritilu0_preprocess has detected "
                           << (m_ + host_lnnz + host_unnz - nnz_) << "/" << m_
                           << " non-existent diagonal element." << std::endl;
-                return rocsparse_status_zero_pivot;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
             }
 
             J* p_lind = p_ind;
@@ -280,35 +269,36 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             I* p_lval = p_perm;
             I* p_uval = p_perm + host_lnnz;
             I* p_diag = p_perm + host_lnnz + host_unnz;
-            status    = rocsparse_csxsldu_compute_template<I, I, J>(handle_,
-                                                                 rocsparse_direction_row,
-                                                                 m_,
-                                                                 m_,
-                                                                 nnz_,
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse_csxsldu_compute_template<I, I, J>(handle_,
+                                                             rocsparse_direction_row,
+                                                             m_,
+                                                             m_,
+                                                             nnz_,
 
-                                                                 ptr_,
-                                                                 ind_,
-                                                                 identity,
-                                                                 base_,
-                                                                 rocsparse_diag_type_unit,
+                                                             ptr_,
+                                                             ind_,
+                                                             identity,
+                                                             base_,
+                                                             rocsparse_diag_type_unit,
 
-                                                                 rocsparse_direction_row,
-                                                                 host_lnnz,
-                                                                 p_lptr,
-                                                                 p_lind,
-                                                                 p_lval,
+                                                             rocsparse_direction_row,
+                                                             host_lnnz,
+                                                             p_lptr,
+                                                             p_lind,
+                                                             p_lval,
 
-                                                                 base_,
-                                                                 rocsparse_diag_type_unit,
-                                                                 rocsparse_direction_column,
-                                                                 host_unnz,
-                                                                 p_uptr,
+                                                             base_,
+                                                             rocsparse_diag_type_unit,
+                                                             rocsparse_direction_column,
+                                                             host_unnz,
+                                                             p_uptr,
 
-                                                                 p_uind,
-                                                                 p_uval,
-                                                                 base_,
-                                                                 p_diag,
-                                                                 p_buffer);
+                                                             p_uind,
+                                                             p_uval,
+                                                             base_,
+                                                             p_diag,
+                                                             p_buffer)));
 
             //
             // Free identity from the buffer.
@@ -320,39 +310,40 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             //
             p_buffer      = layout.get_pointer(layout_t::buffer);
             p_buffer_size = layout.get_size(layout_t::buffer);
-            status        = rocsparse_csritilu0x_preprocess_template(handle_,
-                                                              alg_,
-                                                              options_,
-                                                              nsweeps_,
-                                                              m_,
-                                                              nnz_,
-                                                              ptr_,
-                                                              ptr_ + 1,
-                                                              ind_,
-                                                              base_,
-                                                              rocsparse_diag_type_unit,
-                                                              rocsparse_direction_row,
-                                                              host_lnnz,
-                                                              p_lptr,
-                                                              p_lptr + 1,
-                                                              p_lind,
-                                                              base_,
-                                                              rocsparse_diag_type_unit,
-                                                              rocsparse_direction_column,
-                                                              host_unnz,
-                                                              p_uptr,
-                                                              p_uptr + 1,
-                                                              p_uind,
-                                                              base_,
-                                                              datatype_,
-                                                              p_buffer_size,
-                                                              p_buffer);
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse_csritilu0x_preprocess_template(handle_,
+                                                          alg_,
+                                                          options_,
+                                                          nsweeps_,
+                                                          m_,
+                                                          nnz_,
+                                                          ptr_,
+                                                          ptr_ + 1,
+                                                          ind_,
+                                                          base_,
+                                                          rocsparse_diag_type_unit,
+                                                          rocsparse_direction_row,
+                                                          host_lnnz,
+                                                          p_lptr,
+                                                          p_lptr + 1,
+                                                          p_lind,
+                                                          base_,
+                                                          rocsparse_diag_type_unit,
+                                                          rocsparse_direction_column,
+                                                          host_unnz,
+                                                          p_uptr,
+                                                          p_uptr + 1,
+                                                          p_uind,
+                                                          base_,
+                                                          datatype_,
+                                                          p_buffer_size,
+                                                          p_buffer)));
 
             //
             // Copy the struct to device.
             //
-            hipMemcpyAsync(
-                buffer__, &layout, sizeof(layout_t), hipMemcpyHostToDevice, handle_->stream);
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                buffer__, &layout, sizeof(layout_t), hipMemcpyHostToDevice, handle_->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
             return rocsparse_status_success;
         }
@@ -370,18 +361,19 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                                     size_t               buffer_size_,
                                     void* __restrict__ buffer__)
         {
-            return run<buffer_layout_contiguous_t>(handle_,
-                                                   alg_,
-                                                   options_,
-                                                   nsweeps_,
-                                                   m_,
-                                                   nnz_,
-                                                   ptr_,
-                                                   ind_,
-                                                   base_,
-                                                   datatype_,
-                                                   buffer_size_,
-                                                   buffer__);
+            RETURN_IF_ROCSPARSE_ERROR(run<buffer_layout_contiguous_t>(handle_,
+                                                                      alg_,
+                                                                      options_,
+                                                                      nsweeps_,
+                                                                      m_,
+                                                                      nnz_,
+                                                                      ptr_,
+                                                                      ind_,
+                                                                      base_,
+                                                                      datatype_,
+                                                                      buffer_size_,
+                                                                      buffer__));
+            return rocsparse_status_success;
         }
     };
 
@@ -409,8 +401,8 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             static constexpr int BLOCKSIZE_PERM = 1024;
             using layout_t                      = buffer_layout_contiguous_t;
             layout_t layout;
-            hipMemcpyAsync(
-                &layout, buffer_, sizeof(layout_t), hipMemcpyDeviceToHost, handle_->stream);
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                &layout, buffer_, sizeof(layout_t), hipMemcpyDeviceToHost, handle_->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
 
             const I* p_lnnz        = (const I*)layout.get_pointer(layout_t::lnnz);
@@ -425,18 +417,10 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
 
             I host_lnnz = -1;
             I host_unnz = -1;
-            if(hipSuccess
-               != hipMemcpyAsync(
-                   &host_lnnz, p_lnnz, sizeof(I), hipMemcpyDeviceToHost, handle_->stream))
-            {
-                return rocsparse_status_internal_error;
-            }
-            if(hipSuccess
-               != hipMemcpyAsync(
-                   &host_unnz, p_unnz, sizeof(I), hipMemcpyDeviceToHost, handle_->stream))
-            {
-                return rocsparse_status_internal_error;
-            }
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                &host_lnnz, p_lnnz, sizeof(I), hipMemcpyDeviceToHost, handle_->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                &host_unnz, p_unnz, sizeof(I), hipMemcpyDeviceToHost, handle_->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
 
             const J* p_lind = p_ind;
@@ -457,44 +441,38 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             //
             // Compute expert routine.
             //
-            rocsparse_status status;
-
-            status = rocsparse_csritilu0x_compute_template(handle_,
-                                                           alg_,
-                                                           options_,
-                                                           nsweeps_,
-                                                           tol_,
-                                                           m_,
-                                                           nnz_,
-                                                           ptr_,
-                                                           ptr_ + 1,
-                                                           ind_,
-                                                           val_,
-                                                           base_,
-                                                           rocsparse_diag_type_unit,
-                                                           rocsparse_direction_row,
-                                                           host_lnnz,
-                                                           p_lptr,
-                                                           p_lptr + 1,
-                                                           p_lind,
-                                                           p_lval,
-                                                           base_,
-                                                           rocsparse_diag_type_unit,
-                                                           rocsparse_direction_column,
-                                                           host_unnz,
-                                                           p_uptr,
-                                                           p_uptr + 1,
-                                                           p_uind,
-                                                           p_uval,
-                                                           base_,
-                                                           p_dval,
-                                                           p_buffer_size,
-                                                           p_buffer);
-
-            if(status != rocsparse_status_success)
-            {
-                return status;
-            }
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_csritilu0x_compute_template(handle_,
+                                                      alg_,
+                                                      options_,
+                                                      nsweeps_,
+                                                      tol_,
+                                                      m_,
+                                                      nnz_,
+                                                      ptr_,
+                                                      ptr_ + 1,
+                                                      ind_,
+                                                      val_,
+                                                      base_,
+                                                      rocsparse_diag_type_unit,
+                                                      rocsparse_direction_row,
+                                                      host_lnnz,
+                                                      p_lptr,
+                                                      p_lptr + 1,
+                                                      p_lind,
+                                                      p_lval,
+                                                      base_,
+                                                      rocsparse_diag_type_unit,
+                                                      rocsparse_direction_column,
+                                                      host_unnz,
+                                                      p_uptr,
+                                                      p_uptr + 1,
+                                                      p_uind,
+                                                      p_uval,
+                                                      base_,
+                                                      p_dval,
+                                                      p_buffer_size,
+                                                      p_buffer));
 
             //
             // Move factorization to matrix.

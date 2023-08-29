@@ -255,8 +255,10 @@ public:
                                     size_t buffer_size_,
                                     void* __restrict__ buffer_)
         {
-            return rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
-                history<T, J>::run(handle_, niter_, data_, buffer_size_, buffer_);
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
+                     history<T, J>::run(handle_, niter_, data_, buffer_size_, buffer_)));
+            return rocsparse_status_success;
         }
     };
 
@@ -322,7 +324,7 @@ public:
             case rocsparse_datatype_i32_r:
             case rocsparse_datatype_u32_r:
             {
-                return rocsparse_status_not_implemented;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
             }
             }
             buffer_size += size_convergence_info;
@@ -534,7 +536,7 @@ public:
                         converged    = false;
 
                         RETURN_IF_HIP_ERROR(on_device(p_iter, nmaxiter_, stream));
-                        return rocsparse_status_zero_pivot;
+                        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
                     }
                     else
                     {

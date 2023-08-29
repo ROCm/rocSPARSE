@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,25 +33,28 @@ static rocsparse_status compute_dispatch(rocsparse_itilu0_alg alg_, P&&... param
     case rocsparse_itilu0_alg_default:
     case rocsparse_itilu0_alg_async_inplace:
     {
-        return rocsparse_status_internal_error;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
     }
     case rocsparse_itilu0_alg_async_split:
     {
-        return rocsparse_csritilu0x_driver_t<
-            rocsparse_itilu0_alg_async_split>::compute<T, I, J>::run(parameters...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_async_split>::compute<T, I, J>::run(
+                parameters...)));
     }
     case rocsparse_itilu0_alg_sync_split:
     {
-        return rocsparse_csritilu0x_driver_t<
-            rocsparse_itilu0_alg_sync_split>::compute<T, I, J>::run(parameters...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split>::compute<T, I, J>::run(
+                parameters...)));
     }
     case rocsparse_itilu0_alg_sync_split_fusion:
     {
-        return rocsparse_csritilu0x_driver_t<
-            rocsparse_itilu0_alg_sync_split_fusion>::compute<T, I, J>::run(parameters...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_csritilu0x_driver_t<
+                rocsparse_itilu0_alg_sync_split_fusion>::compute<T, I, J>::run(parameters...)));
     }
     }
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <typename T, typename I, typename J>
@@ -95,50 +98,51 @@ rocsparse_status rocsparse_csritilu0x_compute_template(rocsparse_handle     hand
 
     if(nnz_ == 0)
     {
-        return rocsparse_status_zero_pivot;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
     }
 
     if(ldir_ != rocsparse_direction_row)
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 
     if(udir_ != rocsparse_direction_column)
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 
-    return compute_dispatch<T, I, J>(alg_,
-                                     handle_,
-                                     options_,
-                                     nsweeps_,
-                                     tol_,
-                                     m_,
-                                     nnz_,
-                                     ptr_begin_,
-                                     ptr_end_,
-                                     ind_,
-                                     val_,
-                                     base_,
-                                     ldiag_type_,
-                                     ldir_,
-                                     lnnz_,
-                                     lptr_begin_,
-                                     lptr_end_,
-                                     lind_,
-                                     lval_,
-                                     lbase_,
-                                     udiag_type_,
-                                     udir_,
-                                     unnz_,
-                                     uptr_begin_,
-                                     uptr_end_,
-                                     uind_,
-                                     uval_,
-                                     ubase_,
-                                     dval_,
-                                     buffer_size_,
-                                     buffer_);
+    RETURN_IF_ROCSPARSE_ERROR((compute_dispatch<T, I, J>(alg_,
+                                                         handle_,
+                                                         options_,
+                                                         nsweeps_,
+                                                         tol_,
+                                                         m_,
+                                                         nnz_,
+                                                         ptr_begin_,
+                                                         ptr_end_,
+                                                         ind_,
+                                                         val_,
+                                                         base_,
+                                                         ldiag_type_,
+                                                         ldir_,
+                                                         lnnz_,
+                                                         lptr_begin_,
+                                                         lptr_end_,
+                                                         lind_,
+                                                         lval_,
+                                                         lbase_,
+                                                         udiag_type_,
+                                                         udir_,
+                                                         unnz_,
+                                                         uptr_begin_,
+                                                         uptr_end_,
+                                                         uind_,
+                                                         uval_,
+                                                         ubase_,
+                                                         dval_,
+                                                         buffer_size_,
+                                                         buffer_)));
+    return rocsparse_status_success;
 }
 
 template <typename T, typename I, typename J>
@@ -177,7 +181,7 @@ rocsparse_status rocsparse_csritilu0x_compute_impl(rocsparse_handle     handle_,
     // Check for valid handle and matrix descriptor
     if(handle_ == nullptr)
     {
-        return rocsparse_status_invalid_handle;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_handle);
     }
 
     // Logging
@@ -218,7 +222,7 @@ rocsparse_status rocsparse_csritilu0x_compute_impl(rocsparse_handle     handle_,
     // Check sizes
     if(m_ < 0 || nnz_ < 0)
     {
-        return rocsparse_status_invalid_size;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_size);
     }
 
     // Quick return if possible
@@ -235,117 +239,118 @@ rocsparse_status rocsparse_csritilu0x_compute_impl(rocsparse_handle     handle_,
     // Check pointer arguments
     if(ptr_begin_ == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
     if(ptr_end_ == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
 
     if(ind_ == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
 
     if(val_ == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
 
     if(rocsparse_enum_utils::is_invalid(base_))
     {
-        return rocsparse_status_invalid_value;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
     if(rocsparse_enum_utils::is_invalid(ubase_))
     {
-        return rocsparse_status_invalid_value;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
     if(rocsparse_enum_utils::is_invalid(lbase_))
     {
-        return rocsparse_status_invalid_value;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
     if(rocsparse_enum_utils::is_invalid(udiag_type_))
     {
-        return rocsparse_status_invalid_value;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
     if(rocsparse_enum_utils::is_invalid(udir_))
     {
-        return rocsparse_status_invalid_value;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
     if(rocsparse_enum_utils::is_invalid(ldiag_type_))
     {
-        return rocsparse_status_invalid_value;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
     if(rocsparse_enum_utils::is_invalid(ldir_))
     {
-        return rocsparse_status_invalid_value;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
     if((m_ > 0)
        && (uptr_begin_ == nullptr || lptr_begin_ == nullptr || uptr_end_ == nullptr
            || lptr_end_ == nullptr))
     {
-        return rocsparse_status_invalid_pointer;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
 
     if((unnz_ > 0) && (uind_ == nullptr || uval_ == nullptr))
     {
-        return rocsparse_status_invalid_pointer;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
 
     if((lnnz_ > 0) && (lind_ == nullptr || lval_ == nullptr))
     {
-        return rocsparse_status_invalid_pointer;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
 
     if((ldiag_type_ == rocsparse_diag_type_unit && udiag_type_ == rocsparse_diag_type_unit)
        && ((m_ > 0) && (dval_ == nullptr)))
     {
-        return rocsparse_status_invalid_pointer;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
 
     if(ldir_ != rocsparse_direction_row)
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
     if(udir_ != rocsparse_direction_column)
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 
-    return rocsparse_csritilu0x_compute_template(handle_,
-                                                 alg_,
-                                                 options_,
-                                                 nsweeps_,
-                                                 tol_,
-                                                 m_,
-                                                 nnz_,
-                                                 ptr_begin_,
-                                                 ptr_end_,
-                                                 ind_,
-                                                 val_,
-                                                 base_,
-                                                 ldiag_type_,
-                                                 ldir_,
-                                                 lnnz_,
-                                                 lptr_begin_,
-                                                 lptr_end_,
-                                                 lind_,
-                                                 lval_,
-                                                 lbase_,
-                                                 udiag_type_,
-                                                 udir_,
-                                                 unnz_,
-                                                 uptr_begin_,
-                                                 uptr_end_,
-                                                 uind_,
-                                                 uval_,
-                                                 ubase_,
-                                                 dval_,
-                                                 buffer_size_,
-                                                 buffer_);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csritilu0x_compute_template(handle_,
+                                                                    alg_,
+                                                                    options_,
+                                                                    nsweeps_,
+                                                                    tol_,
+                                                                    m_,
+                                                                    nnz_,
+                                                                    ptr_begin_,
+                                                                    ptr_end_,
+                                                                    ind_,
+                                                                    val_,
+                                                                    base_,
+                                                                    ldiag_type_,
+                                                                    ldir_,
+                                                                    lnnz_,
+                                                                    lptr_begin_,
+                                                                    lptr_end_,
+                                                                    lind_,
+                                                                    lval_,
+                                                                    lbase_,
+                                                                    udiag_type_,
+                                                                    udir_,
+                                                                    unnz_,
+                                                                    uptr_begin_,
+                                                                    uptr_end_,
+                                                                    uind_,
+                                                                    uval_,
+                                                                    ubase_,
+                                                                    dval_,
+                                                                    buffer_size_,
+                                                                    buffer_));
+    return rocsparse_status_success;
 }
 
 #define INSTANTIATE(TOK, T, I, J)                                          \

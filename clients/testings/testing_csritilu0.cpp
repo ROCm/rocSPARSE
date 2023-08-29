@@ -174,37 +174,37 @@ void testing_csritilu0_bad_arg(const Arguments& arg)
     rocsparse_local_handle local_handle;
     rocsparse_handle       handle   = local_handle;
     rocsparse_itilu0_alg   alg      = rocsparse_itilu0_alg_default;
-    rocsparse_int          option   = 0;
-    rocsparse_int          maxiter  = 1;
+    rocsparse_int          options  = 0;
     rocsparse_int          m        = 1;
     rocsparse_int          nnz      = 1;
     rocsparse_int*         ptr      = (rocsparse_int*)0x4;
     rocsparse_int*         ind      = (rocsparse_int*)0x4;
     rocsparse_index_base   base     = rocsparse_index_base_zero;
     rocsparse_datatype     datatype = rocsparse_datatype_t::get<T>();
-    size_t                 buffer_size;
-    size_t*                p_buffer_size = &buffer_size;
 
     //
     // rocsparse_csritilu0_buffer_size.
     //
     {
+        rocsparse_int nmaxiter = 1;
+        size_t        local_buffer_size;
+        size_t*       buffer_size = &local_buffer_size;
 #define PARAMS_BUFFER_SIZE \
-    handle, alg, option, maxiter, m, nnz, ptr, ind, base, datatype, p_buffer_size
+    handle, alg, options, nmaxiter, m, nnz, ptr, ind, base, datatype, buffer_size
 
         static constexpr int nexcl       = 2;
         static constexpr int excl[nexcl] = {2, 3};
-        auto_testing_bad_arg(rocsparse_csritilu0_buffer_size, nexcl, excl, PARAMS_BUFFER_SIZE);
+        select_bad_arg_analysis(rocsparse_csritilu0_buffer_size, nexcl, excl, PARAMS_BUFFER_SIZE);
 
-        option                  = -1;
+        options                 = -1;
         rocsparse_status status = rocsparse_csritilu0_buffer_size(PARAMS_BUFFER_SIZE);
         EXPECT_ROCSPARSE_STATUS(rocsparse_status_invalid_value, status);
-        option = 0;
+        options = 0;
 
-        maxiter = -1;
-        status  = rocsparse_csritilu0_buffer_size(PARAMS_BUFFER_SIZE);
+        nmaxiter = -1;
+        status   = rocsparse_csritilu0_buffer_size(PARAMS_BUFFER_SIZE);
         EXPECT_ROCSPARSE_STATUS(rocsparse_status_invalid_value, status);
-        maxiter = 1;
+        nmaxiter = 1;
 
 #undef PARAMS_BUFFER_SIZE
     }
@@ -213,27 +213,29 @@ void testing_csritilu0_bad_arg(const Arguments& arg)
     // rocsparse_csritilu0_preprocess.
     //
     {
-        buffer_size  = 1;
+        rocsparse_int nmaxiter    = 1;
+        size_t        buffer_size = 1;
+
         void* buffer = (void*)0x4;
 #define PARAMS_PREPROCESS \
-    handle, alg, option, maxiter, m, nnz, ptr, ind, base, datatype, buffer_size, buffer
+    handle, alg, options, nmaxiter, m, nnz, ptr, ind, base, datatype, buffer_size, buffer
         // 0     1      2      3      4    5   6    7    8       9        10           11
 
         static constexpr int nargs_to_exclude   = 3;
         static constexpr int args_to_exclude[3] = {2, 3, 10};
 
-        auto_testing_bad_arg(
+        select_bad_arg_analysis(
             rocsparse_csritilu0_preprocess, nargs_to_exclude, args_to_exclude, PARAMS_PREPROCESS);
 
-        option                  = -1;
+        options                 = -1;
         rocsparse_status status = rocsparse_csritilu0_preprocess(PARAMS_PREPROCESS);
         EXPECT_ROCSPARSE_STATUS(rocsparse_status_invalid_value, status);
-        option = 0;
+        options = 0;
 
-        maxiter = -1;
-        status  = rocsparse_csritilu0_preprocess(PARAMS_PREPROCESS);
+        nmaxiter = -1;
+        status   = rocsparse_csritilu0_preprocess(PARAMS_PREPROCESS);
         EXPECT_ROCSPARSE_STATUS(rocsparse_status_invalid_value, status);
-        maxiter = 1;
+        nmaxiter = 1;
 
 #undef PARAMS_PREPROCESS
     }
@@ -242,27 +244,27 @@ void testing_csritilu0_bad_arg(const Arguments& arg)
     // rocsparse_csritilu0_compute.
     //
     {
-        buffer_size                  = 1;
-        T*                 val       = (T*)0x4;
-        T*                 ilu0      = (T*)0x4;
-        void*              buffer    = (void*)0x4;
-        floating_data_t<T> tol       = static_cast<floating_data_t<T>>(1.0e-8);
-        rocsparse_int*     p_maxiter = (rocsparse_int*)0x4;
+        rocsparse_int*     nmaxiter    = (rocsparse_int*)0x4;
+        size_t             buffer_size = 1;
+        T*                 val         = (T*)0x4;
+        T*                 ilu0        = (T*)0x4;
+        void*              buffer      = (void*)0x4;
+        floating_data_t<T> tol         = static_cast<floating_data_t<T>>(1.0e-8);
 
 #define PARAMS_COMPUTE \
-    handle, alg, option, p_maxiter, tol, m, nnz, ptr, ind, val, ilu0, base, buffer_size, buffer
+    handle, alg, options, nmaxiter, tol, m, nnz, ptr, ind, val, ilu0, base, buffer_size, buffer
         // 0     1      2      3         4   5   6    7    8    9    10    11    12             13
 
         static constexpr int nargs_to_exclude   = 3;
         static constexpr int args_to_exclude[3] = {2, 4, 12};
 
-        auto_testing_bad_arg(
+        select_bad_arg_analysis(
             rocsparse_csritilu0_compute<T>, nargs_to_exclude, args_to_exclude, PARAMS_COMPUTE);
 
-        option                  = -1;
+        options                 = -1;
         rocsparse_status status = rocsparse_csritilu0_compute<T>(PARAMS_COMPUTE);
         EXPECT_ROCSPARSE_STATUS(rocsparse_status_invalid_value, status);
-        option = 0;
+        options = 0;
 
         tol    = -1;
         status = rocsparse_csritilu0_compute<T>(PARAMS_COMPUTE);

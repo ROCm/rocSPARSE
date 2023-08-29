@@ -592,25 +592,17 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             buffer_ = convergence_info.init(handle_, buffer_);
             J options;
 
-            if(hipSuccess
-               != hipMemcpyAsync(&options,
-                                 convergence_info.info.options,
-                                 sizeof(J),
-                                 hipMemcpyDeviceToHost,
-                                 handle_->stream))
-            {
-                return rocsparse_status_internal_error;
-            }
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&options,
+                                               convergence_info.info.options,
+                                               sizeof(J),
+                                               hipMemcpyDeviceToHost,
+                                               handle_->stream));
 
-            if(hipSuccess
-               != hipMemcpyAsync(niter_,
-                                 convergence_info.info.iter,
-                                 sizeof(J),
-                                 hipMemcpyDeviceToHost,
-                                 handle_->stream))
-            {
-                return rocsparse_status_internal_error;
-            }
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(niter_,
+                                               convergence_info.info.iter,
+                                               sizeof(J),
+                                               hipMemcpyDeviceToHost,
+                                               handle_->stream));
 
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
 
@@ -620,7 +612,7 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             if(!convergence_history)
             {
                 std::cerr << "convergence history has not been activated." << std::endl;
-                return rocsparse_status_internal_error;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
             }
 
             const bool compute_nrm_residual
@@ -630,28 +622,20 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
 
             if(compute_nrm_corr)
             {
-                if(hipSuccess
-                   != hipMemcpyAsync(data_,
-                                     convergence_info.log_mxcorr,
-                                     sizeof(T) * niter,
-                                     hipMemcpyDeviceToHost,
-                                     handle_->stream))
-                {
-                    return rocsparse_status_internal_error;
-                }
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(data_,
+                                                   convergence_info.log_mxcorr,
+                                                   sizeof(T) * niter,
+                                                   hipMemcpyDeviceToHost,
+                                                   handle_->stream));
             }
 
             if(compute_nrm_residual)
             {
-                if(hipSuccess
-                   != hipMemcpyAsync(data_ + niter,
-                                     convergence_info.log_mxresidual,
-                                     sizeof(T) * niter,
-                                     hipMemcpyDeviceToHost,
-                                     handle_->stream))
-                {
-                    return rocsparse_status_internal_error;
-                }
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(data_ + niter,
+                                                   convergence_info.log_mxresidual,
+                                                   sizeof(T) * niter,
+                                                   hipMemcpyDeviceToHost,
+                                                   handle_->stream));
             }
 
             //
@@ -727,7 +711,7 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             case rocsparse_datatype_i32_r:
             case rocsparse_datatype_u32_r:
             {
-                return rocsparse_status_not_implemented;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
             }
             }
 
@@ -753,7 +737,7 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             case rocsparse_datatype_i32_r:
             case rocsparse_datatype_u32_r:
             {
-                return rocsparse_status_not_implemented;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
             }
             }
             buffer_size += size_convergence_info;
@@ -839,9 +823,9 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                                     size_t buffer_size_,
                                     void* __restrict__ buffer_)
         {
-            hipStream_t      stream = handle_->stream;
-            rocsparse_status status;
-            const bool       stopping_criteria
+            hipStream_t stream = handle_->stream;
+
+            const bool stopping_criteria
                 = (options_ & rocsparse_itilu0_option_stopping_criteria) > 0;
             const bool convergence_history
                 = (options_ & rocsparse_itilu0_option_convergence_history) > 0;
@@ -882,12 +866,8 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
 
             if(compute_nrm_residual || compute_nrm_corr)
             {
-                status = rocsparse_nrminf<BLOCKSIZE>(
-                    handle_, nnz_, val_, p_nrm_matrix, nullptr, false);
-                if(status != rocsparse_status_success)
-                {
-                    return status;
-                }
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse_nrminf<BLOCKSIZE>(handle_, nnz_, val_, p_nrm_matrix, nullptr, false));
             }
 
             //
@@ -896,18 +876,18 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             rocsparse_itilu0x_layout_t<T, I, J> layout_next;
             layout_next.init(m_, ldiag_type_, lnnz_, udiag_type_, unnz_, buffer);
 
-            hipMemcpyAsync(
-                layout_next.dval, dval_, sizeof(T) * m_, hipMemcpyDeviceToDevice, handle_->stream);
-            hipMemcpyAsync(layout_next.uval,
-                           uval_,
-                           sizeof(T) * unnz_,
-                           hipMemcpyDeviceToDevice,
-                           handle_->stream);
-            hipMemcpyAsync(layout_next.lval,
-                           lval_,
-                           sizeof(T) * lnnz_,
-                           hipMemcpyDeviceToDevice,
-                           handle_->stream);
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                layout_next.dval, dval_, sizeof(T) * m_, hipMemcpyDeviceToDevice, handle_->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(layout_next.uval,
+                                               uval_,
+                                               sizeof(T) * unnz_,
+                                               hipMemcpyDeviceToDevice,
+                                               handle_->stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(layout_next.lval,
+                                               lval_,
+                                               sizeof(T) * lnnz_,
+                                               hipMemcpyDeviceToDevice,
+                                               handle_->stream));
 
             //
             // Loop over.
@@ -951,9 +931,12 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                 }
                 else
                 {
-                    hipMemsetAsync(p_nrm_corr, 0, sizeof(floating_data_t<T>), handle_->stream);
-                    hipMemsetAsync(p_nrm_residual, 0, sizeof(floating_data_t<T>), handle_->stream);
-                    hipMemsetAsync(p_local_iter, 0, sizeof(J), handle_->stream);
+                    RETURN_IF_HIP_ERROR(
+                        hipMemsetAsync(p_nrm_corr, 0, sizeof(floating_data_t<T>), handle_->stream));
+                    RETURN_IF_HIP_ERROR(hipMemsetAsync(
+                        p_nrm_residual, 0, sizeof(floating_data_t<T>), handle_->stream));
+                    RETURN_IF_HIP_ERROR(
+                        hipMemsetAsync(p_local_iter, 0, sizeof(J), handle_->stream));
 
                     kernel_dispatch<BLOCKSIZE, T, I, J>(m_,
                                                         mean,
@@ -997,11 +980,11 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                     J local_niter = 0;
                     if(stopping_criteria || verbose)
                     {
-                        hipMemcpyAsync(&local_niter,
-                                       p_local_iter,
-                                       sizeof(J),
-                                       hipMemcpyDeviceToHost,
-                                       handle_->stream);
+                        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&local_niter,
+                                                           p_local_iter,
+                                                           sizeof(J),
+                                                           hipMemcpyDeviceToHost,
+                                                           handle_->stream));
                     }
 
                     //
@@ -1011,11 +994,11 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                     {
                         if(convergence_history)
                         {
-                            hipMemcpyAsync(log_mxcorr + iter,
-                                           p_nrm_corr,
-                                           sizeof(floating_data_t<T>),
-                                           hipMemcpyDeviceToDevice,
-                                           handle_->stream);
+                            RETURN_IF_HIP_ERROR(hipMemcpyAsync(log_mxcorr + iter,
+                                                               p_nrm_corr,
+                                                               sizeof(floating_data_t<T>),
+                                                               hipMemcpyDeviceToDevice,
+                                                               handle_->stream));
                         }
                     }
 
@@ -1023,11 +1006,11 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                     {
                         if(convergence_history)
                         {
-                            hipMemcpyAsync(log_mxresidual + iter,
-                                           p_nrm_residual,
-                                           sizeof(floating_data_t<T>),
-                                           hipMemcpyDeviceToDevice,
-                                           handle_->stream);
+                            RETURN_IF_HIP_ERROR(hipMemcpyAsync(log_mxresidual + iter,
+                                                               p_nrm_residual,
+                                                               sizeof(floating_data_t<T>),
+                                                               hipMemcpyDeviceToDevice,
+                                                               handle_->stream));
                         }
                     }
 
@@ -1039,20 +1022,20 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                     {
                         if(compute_nrm_corr)
                         {
-                            hipMemcpyAsync(&nrm_corr,
-                                           p_nrm_corr,
-                                           sizeof(floating_data_t<T>),
-                                           hipMemcpyDeviceToHost,
-                                           handle_->stream);
+                            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&nrm_corr,
+                                                               p_nrm_corr,
+                                                               sizeof(floating_data_t<T>),
+                                                               hipMemcpyDeviceToHost,
+                                                               handle_->stream));
                         }
 
                         if(compute_nrm_residual)
                         {
-                            hipMemcpyAsync(&nrm_residual,
-                                           p_nrm_residual,
-                                           sizeof(floating_data_t<T>),
-                                           hipMemcpyDeviceToHost,
-                                           handle_->stream);
+                            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&nrm_residual,
+                                                               p_nrm_residual,
+                                                               sizeof(floating_data_t<T>),
+                                                               hipMemcpyDeviceToHost,
+                                                               handle_->stream));
                         }
 
                         RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
@@ -1113,7 +1096,7 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
 
                             RETURN_IF_HIP_ERROR(on_device(p_iter, nmaxiter_, stream));
 
-                            return rocsparse_status_zero_pivot;
+                            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
                         }
                         else
                         {

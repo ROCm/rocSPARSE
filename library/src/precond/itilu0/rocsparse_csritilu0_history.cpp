@@ -34,27 +34,33 @@ static rocsparse_status history_dispatch(rocsparse_itilu0_alg alg_, P&&... param
     case rocsparse_itilu0_alg_default:
     case rocsparse_itilu0_alg_async_inplace:
     {
-        return rocsparse_csritilu0_driver_t<
-            rocsparse_itilu0_alg_async_inplace>::history<floating_data_t<T>, J>::run(parameters...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>::
+                 history<floating_data_t<T>, J>::run(parameters...)));
+        return rocsparse_status_success;
     }
     case rocsparse_itilu0_alg_async_split:
     {
-        return rocsparse_csritilu0_driver_t<
-            rocsparse_itilu0_alg_async_split>::history<floating_data_t<T>, J>::run(parameters...);
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>::
+                                       history<floating_data_t<T>, J>::run(parameters...)));
+        return rocsparse_status_success;
     }
     case rocsparse_itilu0_alg_sync_split:
     {
-        return rocsparse_csritilu0_driver_t<
-            rocsparse_itilu0_alg_sync_split>::history<floating_data_t<T>, J>::run(parameters...);
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::
+                                       history<floating_data_t<T>, J>::run(parameters...)));
+        return rocsparse_status_success;
     }
     case rocsparse_itilu0_alg_sync_split_fusion:
     {
-        return rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
-            history<floating_data_t<T>, J>::run(parameters...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
+                 history<floating_data_t<T>, J>::run(parameters...)));
+        return rocsparse_status_success;
     }
     }
 
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <typename T, typename J>
@@ -65,74 +71,55 @@ rocsparse_status rocsparse_csritilu0_history_template(rocsparse_handle     handl
                                                       size_t buffer_size_,
                                                       void* __restrict__ buffer_)
 {
-    return history_dispatch<T, J>(alg_, handle_, alg_, niter_, nrms_, buffer_size_, buffer_);
+    RETURN_IF_ROCSPARSE_ERROR(
+        (history_dispatch<T, J>(alg_, handle_, alg_, niter_, nrms_, buffer_size_, buffer_)));
+    return rocsparse_status_success;
 }
 
 template <typename T, typename J>
-rocsparse_status rocsparse_csritilu0_history_impl(rocsparse_handle     handle_,
-                                                  rocsparse_itilu0_alg alg_,
-                                                  J* __restrict__ niter_,
-                                                  floating_data_t<T>* __restrict__ nrms_,
-                                                  size_t buffer_size_,
-                                                  void* __restrict__ buffer_)
+rocsparse_status rocsparse_csritilu0_history_impl(rocsparse_handle     handle,
+                                                  rocsparse_itilu0_alg alg,
+                                                  J* __restrict__ niter,
+                                                  floating_data_t<T>* __restrict__ nrms,
+                                                  size_t buffer_size,
+                                                  void* __restrict__ buffer)
 {
-    // Check for valid handle and matrix descriptor
-    if(handle_ == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle_,
+    log_trace(handle,
               "rocsparse_csritilu0_history",
-              alg_,
-              (const void*&)niter_,
-              (const void*&)nrms_,
-              buffer_size_,
-              (const void*&)buffer_);
-    // Check pointer arguments
-    if(rocsparse_enum_utils::is_invalid(alg_))
-    {
-        return rocsparse_status_invalid_value;
-    }
+              alg,
+              (const void*&)niter,
+              (const void*&)nrms,
+              buffer_size,
+              (const void*&)buffer);
 
-    if(niter_ == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nrms_ == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    if(buffer_size_ > 0 && buffer_ == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    if(rocsparse_enum_utils::is_invalid(alg_))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    return rocsparse_csritilu0_history_template<T, J>(
-        handle_, alg_, niter_, nrms_, buffer_size_, buffer_);
+    ROCSPARSE_CHECKARG_ENUM(1, alg);
+    ROCSPARSE_CHECKARG_POINTER(2, niter);
+    ROCSPARSE_CHECKARG_POINTER(3, nrms);
+    ROCSPARSE_CHECKARG_ARRAY(5, buffer_size, buffer);
+    RETURN_IF_ROCSPARSE_ERROR((
+        rocsparse_csritilu0_history_template<T, J>(handle, alg, niter, nrms, buffer_size, buffer)));
+    return rocsparse_status_success;
 }
 
-#define IMPL(NAME, T, J)                                                \
-    extern "C" rocsparse_status NAME(rocsparse_handle     handle_,      \
-                                     rocsparse_itilu0_alg alg_,         \
-                                     J*                   niter_,       \
-                                     floating_data_t<T>*  nrms_,        \
-                                     size_t               buffer_size_, \
-                                     void*                buffer_)      \
-    try                                                                 \
-    {                                                                   \
-        return rocsparse_csritilu0_history_impl<T, J>(                  \
-            handle_, alg_, niter_, nrms_, buffer_size_, buffer_);       \
-    }                                                                   \
-    catch(...)                                                          \
-    {                                                                   \
-        return exception_to_rocsparse_status();                         \
+#define IMPL(NAME, T, J)                                                   \
+    extern "C" rocsparse_status NAME(rocsparse_handle     handle,          \
+                                     rocsparse_itilu0_alg alg,             \
+                                     J*                   niter,           \
+                                     floating_data_t<T>*  nrms,            \
+                                     size_t               buffer_size,     \
+                                     void*                buffer)          \
+    try                                                                    \
+    {                                                                      \
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_csritilu0_history_impl<T, J>( \
+            handle, alg, niter, nrms, buffer_size, buffer)));              \
+        return rocsparse_status_success;                                   \
+    }                                                                      \
+    catch(...)                                                             \
+    {                                                                      \
+        RETURN_ROCSPARSE_EXCEPTION();                                      \
     }
 
 IMPL(rocsparse_scsritilu0_history, float, rocsparse_int);
