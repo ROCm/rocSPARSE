@@ -452,11 +452,10 @@ void testing_csrilu0(const Arguments& arg)
     rocsparse_int M = arg.M;
     rocsparse_int N = arg.N;
 
-    rocsparse_analysis_policy apol        = arg.apol;
-    rocsparse_solve_policy    spol        = arg.spol;
-    int                       boost       = arg.numericboost;
-    T                         h_boost_tol = static_cast<T>(arg.boosttol);
-    rocsparse_index_base      base        = arg.baseA;
+    rocsparse_analysis_policy apol  = arg.apol;
+    rocsparse_solve_policy    spol  = arg.spol;
+    int                       boost = arg.numericboost;
+    rocsparse_index_base      base  = arg.baseA;
 
     const bool                  to_int    = arg.timing ? false : true;
     static constexpr bool       full_rank = true;
@@ -623,7 +622,6 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
 void testing_csrilu0_extra(const Arguments& arg)
 {
 
-    printf("using testing_csrilu0_extra\n");
 #define CALL_INSTANTIATE(TYPE)                     \
     {                                              \
         testing_csrilu0_extra_template<TYPE>(arg); \

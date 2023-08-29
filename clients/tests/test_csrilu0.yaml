@@ -213,3 +213,8 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
   graph_test: true
+
+- name: csrilu0_extra
+  category: pre_checkin
+  function: csrilu0_extra
+
