@@ -604,8 +604,6 @@ static void testing_csric0_extra_template(const Arguments& arg)
 void testing_csric0_extra(const Arguments& arg)
 {
 
-    printf("testing_csric0_extra\n");
-
 #define CALL_INSTANTIATE(TYPE)                    \
     {                                             \
         testing_csric0_extra_template<TYPE>(arg); \
