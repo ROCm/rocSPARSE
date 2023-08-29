@@ -59,31 +59,23 @@ extern "C" {
 *      }
 *  \endcode
 *
-*  Uniform Precisions:
-*  \verbatim
-*  |----------------------------------------------------|
-*  |               X / Y / compute_type                 |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f32_r               |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f64_r               |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f32_c               |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f64_c               |
-*  |----------------------------------------------------|
-*  \endverbatim
+*  \par Uniform Precisions:
+*  <table>
+*  <caption id="spvv_uniform">Uniform Precisions</caption>
+*  <tr><th>X / Y / compute_type
+*  <tr><td>rocsparse_datatype_f32_r
+*  <tr><td>rocsparse_datatype_f64_r
+*  <tr><td>rocsparse_datatype_f32_c
+*  <tr><td>rocsparse_datatype_f64_c
+*  </table>
 *
-*  Mixed precisions:
-*  \verbatim
-*  |-------------------------|--------------------------|
-*  |          X / Y          |  compute_type / result   |
-*  |-------------------------|--------------------------|
-*  | rocsparse_datatype_i8_r | rocsparse_datatype_i32_r |
-*  |-------------------------|--------------------------|
-*  | rocsparse_datatype_i8_r | rocsparse_datatype_f32_r |
-*  |-------------------------|--------------------------|
-*  \endverbatim
+*  \par Mixed precisions:
+*  <table>
+*  <caption id="spvv_mixed">Mixed Precisions</caption>
+*  <tr><th>X / Y                   <th>compute_type / result
+*  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_i32_r
+*  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_f32_r
+*  </table>
 *
 *  \note
 *  This function writes the required allocation size (in bytes) to \p buffer_size and
