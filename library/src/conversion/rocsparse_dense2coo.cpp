@@ -38,7 +38,7 @@ rocsparse_status rocsparse_dense2coo_checkarg(rocsparse_handle          handle, 
                                               I                         n, //2
                                               const rocsparse_mat_descr descr, //3
                                               const T*                  A, //4
-                                              I                         ld, //5
+                                              int64_t                   ld, //5
                                               const I*                  nnz_per_rows, //6
                                               T*                        coo_val, //7
                                               I*                        coo_row_ind, //8
@@ -75,7 +75,7 @@ rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle, 
                                               I                         n, //3
                                               const rocsparse_mat_descr descr, //4
                                               const T*                  A, //5
-                                              I                         ld, //6
+                                              int64_t                   ld, //6
                                               const I*                  nnz_per_rows, //7
                                               T*                        coo_val, //8
                                               I*                        coo_row_ind, //9
@@ -126,7 +126,7 @@ rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle, 
         ITYPE                     n,                                      \
         const rocsparse_mat_descr descr,                                  \
         const TTYPE*              A,                                      \
-        ITYPE                     ld,                                     \
+        int64_t                   ld,                                     \
         const ITYPE*              nnz_per_rows,                           \
         TTYPE*                    coo_val,                                \
         ITYPE*                    coo_row_ind,                            \

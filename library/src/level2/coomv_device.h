@@ -93,7 +93,7 @@ ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
     __syncthreads();
 
     // Segmented wavefront reduction
-    for(int j = 1; j < BLOCKSIZE; j <<= 1)
+    for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
     {
         if(tid >= j)
         {
@@ -160,7 +160,7 @@ ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
         __syncthreads();
 
         // Segmented wavefront reduction
-        for(int j = 1; j < BLOCKSIZE; j <<= 1)
+        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
         {
             if(tid >= j)
             {
@@ -200,7 +200,7 @@ ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* rows, T* vals)
     int tid = hipThreadIdx_x;
 
 #pragma unroll
-    for(int j = 1; j < BLOCKSIZE; j <<= 1)
+    for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
     {
         T val = static_cast<T>(0);
         if(tid >= j)
@@ -301,7 +301,7 @@ ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
     __syncthreads();
 
     // Segmented wavefront reduction
-    for(int j = 1; j < BLOCKSIZE; j <<= 1)
+    for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
     {
         if(tid >= j)
         {
@@ -368,7 +368,7 @@ ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
         __syncthreads();
 
         // Segmented wavefront reduction
-        for(int j = 1; j < BLOCKSIZE; j <<= 1)
+        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
         {
             if(tid >= j)
             {
@@ -447,7 +447,7 @@ ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
     __syncthreads();
 
     // segmented reduction
-    for(I j = 1; j < BLOCKSIZE; j <<= 1)
+    for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
     {
         if(tid >= j)
         {
@@ -471,7 +471,7 @@ ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
 
     if(LOOPS > 1)
     {
-        for(int i = 0; i < LOOPS - 1; i++)
+        for(unsigned int i = 0; i < LOOPS - 1; i++)
         {
             // Keep going for the next iteration
             idx += BLOCKSIZE;
@@ -512,7 +512,7 @@ ROCSPARSE_DEVICE_ILF void coomvn_atomic_loops_device(int64_t nnz,
             __syncthreads();
 
             // segmented reduction
-            for(I j = 1; j < BLOCKSIZE; j <<= 1)
+            for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
             {
                 if(tid >= j)
                 {
@@ -590,7 +590,7 @@ ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
     __syncthreads();
 
     // segmented reduction
-    for(I j = 1; j < BLOCKSIZE; j <<= 1)
+    for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
     {
         if(tid >= j)
         {
@@ -612,7 +612,7 @@ ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
         }
     }
 
-    for(int i = 0; i < LOOPS - 1; i++)
+    for(unsigned int i = 0; i < LOOPS - 1; i++)
     {
         // Keep going for the next iteration
         idx += BLOCKSIZE;
@@ -653,7 +653,7 @@ ROCSPARSE_DEVICE_ILF void coomvn_aos_atomic_loops_device(int64_t nnz,
         __syncthreads();
 
         // segmented reduction
-        for(I j = 1; j < BLOCKSIZE; j <<= 1)
+        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
         {
             if(tid >= j)
             {

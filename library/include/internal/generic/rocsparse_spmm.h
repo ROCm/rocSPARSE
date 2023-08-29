@@ -101,10 +101,6 @@ extern "C" {
 *  that is required for subsequent calls to \ref rocsparse_spmm. The second stage
 *  \ref rocsparse_spmm_stage_preprocess will preprocess data that would be saved in the temporary storage buffer.
 *  In the final stage \ref rocsparse_spmm_stage_compute, the actual computation is performed.
-*  \note If \ref rocsparse_spmm_stage_auto is selected, rocSPARSE will automatically detect
-*  which stage is required based on the following indicators:
-*  If \p temp_buffer is equal to \p nullptr, the required buffer size will be returned.
-*  Else, the SpMM preprocess and the SpMM algorithm will be executed.
 *
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.

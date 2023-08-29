@@ -319,15 +319,15 @@ void testing_ell2csr(const Arguments& arg)
         double gbyte_count = ell2csr_gbyte_count<T>(M, csr_nnz, ell_nnz);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "CSR nnz",
+                            display_key_t::csr_nnz,
                             csr_nnz,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 }

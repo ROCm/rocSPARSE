@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +64,7 @@ void testing_spgemm_csr_bad_arg(const Arguments& arg)
     rocsparse_operation    trans_B = rocsparse_operation_none;
     rocsparse_index_base   base    = rocsparse_index_base_zero;
     rocsparse_spgemm_alg   alg     = rocsparse_spgemm_alg_default;
-    rocsparse_spgemm_stage stage   = rocsparse_spgemm_stage_auto;
+    rocsparse_spgemm_stage stage   = rocsparse_spgemm_stage_compute;
 
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
@@ -275,17 +275,20 @@ void testing_spgemm_csr(const Arguments& arg)
     // Index and data type
     rocsparse_datatype ttype = get_datatype<T>();
 
-    // SpGEMM stage
-    rocsparse_spgemm_stage stage = rocsparse_spgemm_stage_auto;
-
     // Create rocsparse handle
     rocsparse_local_handle handle;
     using host_csr   = host_csr_matrix<T, I, J>;
     using device_csr = device_csr_matrix<T, I, J>;
 
-#define PARAMS(alpha_, A_, B_, D_, beta_, C_, buffer_)                                        \
-    handle, trans_A, trans_B, alpha_, A_, B_, beta_, D_, C_, ttype, alg, stage, &buffer_size, \
-        buffer_
+#define PARAMS_BUFFER_SIZE(alpha_, A_, B_, D_, beta_, C_, buffer_)       \
+    handle, trans_A, trans_B, alpha_, A_, B_, beta_, D_, C_, ttype, alg, \
+        rocsparse_spgemm_stage_buffer_size, &buffer_size, buffer_
+#define PARAMS_NNZ(alpha_, A_, B_, D_, beta_, C_, buffer_)               \
+    handle, trans_A, trans_B, alpha_, A_, B_, beta_, D_, C_, ttype, alg, \
+        rocsparse_spgemm_stage_nnz, &buffer_size, buffer_
+#define PARAMS_COMPUTE(alpha_, A_, B_, D_, beta_, C_, buffer_)           \
+    handle, trans_A, trans_B, alpha_, A_, B_, beta_, D_, C_, ttype, alg, \
+        rocsparse_spgemm_stage_compute, &buffer_size, buffer_
 
     // Argument sanity check before allocating invalid memory
     if((M <= 0 || N <= 0 || K <= 0) && (M <= 0 || N <= 0 || K != 0 || h_beta_ptr == nullptr))
@@ -331,13 +334,13 @@ void testing_spgemm_csr(const Arguments& arg)
         size_t buffer_size;
         void*  dbuffer = nullptr;
         EXPECT_ROCSPARSE_STATUS(
-            rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)),
+            rocsparse_spgemm(PARAMS_BUFFER_SIZE(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)),
             rocsparse_status_success);
 
         CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, safe_size));
 
         EXPECT_ROCSPARSE_STATUS(
-            rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)),
+            rocsparse_spgemm(PARAMS_NNZ(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)),
             rocsparse_status_success);
 
         // Verify that nnz_C is equal to zero
@@ -459,15 +462,15 @@ void testing_spgemm_csr(const Arguments& arg)
                 size_t buffer_size;
                 void*  dbuffer = nullptr;
 
-                CHECK_ROCSPARSE_ERROR(
-                    rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
+                CHECK_ROCSPARSE_ERROR(rocsparse_spgemm(
+                    PARAMS_BUFFER_SIZE(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
                 CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
                 //
                 // Compute symbolic C.
                 //
                 CHECK_ROCSPARSE_ERROR(
-                    rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
+                    rocsparse_spgemm(PARAMS_NNZ(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
 
                 //
                 // Update memory.
@@ -483,7 +486,7 @@ void testing_spgemm_csr(const Arguments& arg)
                 // Compute numeric C.
                 //
                 CHECK_ROCSPARSE_ERROR(
-                    rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
+                    rocsparse_spgemm(PARAMS_COMPUTE(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
                 CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
             }
 
@@ -519,15 +522,15 @@ void testing_spgemm_csr(const Arguments& arg)
                     size_t buffer_size;
                     void*  dbuffer = nullptr;
 
-                    CHECK_ROCSPARSE_ERROR(
-                        rocsparse_spgemm(PARAMS(d_alpha_ptr, A, B, D, d_beta_ptr, C, dbuffer)));
+                    CHECK_ROCSPARSE_ERROR(rocsparse_spgemm(
+                        PARAMS_BUFFER_SIZE(d_alpha_ptr, A, B, D, d_beta_ptr, C, dbuffer)));
                     CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
                     //
                     // Compute symbolic C.
                     //
                     CHECK_ROCSPARSE_ERROR(
-                        rocsparse_spgemm(PARAMS(d_alpha_ptr, A, B, D, d_beta_ptr, C, dbuffer)));
+                        rocsparse_spgemm(PARAMS_NNZ(d_alpha_ptr, A, B, D, d_beta_ptr, C, dbuffer)));
 
                     //
                     // Update memory.
@@ -542,8 +545,8 @@ void testing_spgemm_csr(const Arguments& arg)
                     //
                     // Compute numeric C.
                     //
-                    CHECK_ROCSPARSE_ERROR(
-                        rocsparse_spgemm(PARAMS(d_alpha_ptr, A, B, D, d_beta_ptr, C, dbuffer)));
+                    CHECK_ROCSPARSE_ERROR(rocsparse_spgemm(
+                        PARAMS_COMPUTE(d_alpha_ptr, A, B, D, d_beta_ptr, C, dbuffer)));
                     CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
                 }
 
@@ -586,13 +589,13 @@ void testing_spgemm_csr(const Arguments& arg)
                 size_t buffer_size;
                 void*  dbuffer = nullptr;
                 //
-                CHECK_ROCSPARSE_ERROR(
-                    rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
+                CHECK_ROCSPARSE_ERROR(rocsparse_spgemm(
+                    PARAMS_BUFFER_SIZE(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
                 //
                 CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
                 //
                 CHECK_ROCSPARSE_ERROR(
-                    rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
+                    rocsparse_spgemm(PARAMS_NNZ(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
                 //
                 {
                     int64_t C_m, C_n, C_nnz;
@@ -602,7 +605,7 @@ void testing_spgemm_csr(const Arguments& arg)
                 }
                 //
                 CHECK_ROCSPARSE_ERROR(
-                    rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
+                    rocsparse_spgemm(PARAMS_COMPUTE(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
                 //
                 CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
             }
@@ -625,12 +628,12 @@ void testing_spgemm_csr(const Arguments& arg)
             size_t buffer_size;
             void*  dbuffer = nullptr;
             CHECK_ROCSPARSE_ERROR(
-                rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
+                rocsparse_spgemm(PARAMS_BUFFER_SIZE(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
             //
             CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
             //
             CHECK_ROCSPARSE_ERROR(
-                rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
+                rocsparse_spgemm(PARAMS_NNZ(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
             //
 
             gpu_analysis_time_used = get_time_us() - gpu_analysis_time_used;
@@ -650,7 +653,7 @@ void testing_spgemm_csr(const Arguments& arg)
             for(int iter = 0; iter < number_hot_calls; ++iter)
             {
                 CHECK_ROCSPARSE_ERROR(
-                    rocsparse_spgemm(PARAMS(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
+                    rocsparse_spgemm(PARAMS_COMPUTE(h_alpha_ptr, A, B, D, h_beta_ptr, C, dbuffer)));
             }
 
             gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;

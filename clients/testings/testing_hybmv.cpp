@@ -235,43 +235,43 @@ void testing_hybmv(const Arguments& arg)
                 user_ell_width         = dhyb->ell_width;
             }
 
-            display_timing_info("M",
+            display_timing_info(display_key_t::M,
                                 M,
-                                "N",
+                                display_key_t::N,
                                 N,
-                                "nnz",
+                                display_key_t::nnz,
                                 nnz,
-                                "alpha",
+                                display_key_t::alpha,
                                 *h_alpha,
-                                "beta",
+                                display_key_t::beta,
                                 *h_beta,
-                                "partition",
+                                display_key_t::partition,
                                 rocsparse_partition2string(part),
-                                "width",
+                                display_key_t::ell_width,
                                 user_ell_width,
-                                s_timing_info_perf,
+                                display_key_t::gflops,
                                 gpu_gflops,
-                                s_timing_info_time,
+                                display_key_t::time_ms,
                                 get_gpu_time_msec(gpu_time_used));
         }
         else
         {
 
-            display_timing_info("M",
+            display_timing_info(display_key_t::M,
                                 M,
-                                "N",
+                                display_key_t::N,
                                 N,
-                                "nnz",
+                                display_key_t::nnz,
                                 nnz,
-                                "alpha",
+                                display_key_t::alpha,
                                 *h_alpha,
-                                "beta",
+                                display_key_t::beta,
                                 *h_beta,
-                                "partition",
+                                display_key_t::partition,
                                 rocsparse_partition2string(part),
-                                s_timing_info_perf,
+                                display_key_t::gflops,
                                 gpu_gflops,
-                                s_timing_info_time,
+                                display_key_t::time_ms,
                                 get_gpu_time_msec(gpu_time_used));
         }
     }

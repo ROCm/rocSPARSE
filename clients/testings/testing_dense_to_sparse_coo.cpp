@@ -36,7 +36,7 @@ void testing_dense_to_sparse_coo_bad_arg(const Arguments& arg)
     I                             m           = safe_size;
     I                             n           = safe_size;
     int64_t                       nnz         = safe_size;
-    I                             ld          = safe_size;
+    int64_t                       ld          = safe_size;
     void*                         dense_val   = (void*)0x4;
     void*                         coo_val     = (void*)0x4;
     void*                         coo_row_ind = (void*)0x4;
@@ -94,7 +94,7 @@ void testing_dense_to_sparse_coo(const Arguments& arg)
 {
     I                             m     = arg.M;
     I                             n     = arg.N;
-    I                             ld    = arg.denseld;
+    int64_t                       ld    = arg.denseld;
     rocsparse_index_base          base  = arg.baseA;
     rocsparse_dense_to_sparse_alg alg   = arg.dense_to_sparse_alg;
     rocsparse_order               order = arg.order;
@@ -166,19 +166,19 @@ void testing_dense_to_sparse_coo(const Arguments& arg)
     rocsparse_seedrand();
 
     // Random initialization of the matrix.
-    for(int j = 0; j < nm; ++j)
+    for(I j = 0; j < nm; ++j)
     {
-        for(int i = 0; i < ld; ++i)
+        for(int64_t i = 0; i < ld; ++i)
         {
-            h_dense_val[j * (int)ld + i] = static_cast<T>(-2);
+            h_dense_val[j * ld + i] = static_cast<T>(-2);
         }
     }
 
-    for(int j = 0; j < nm; ++j)
+    for(I j = 0; j < nm; ++j)
     {
-        for(int i = 0; i < mn; ++i)
+        for(I i = 0; i < mn; ++i)
         {
-            h_dense_val[j * (int)ld + i] = random_cached_generator<T>(0, 9);
+            h_dense_val[j * ld + i] = random_cached_generator<T>(0, 9);
         }
     }
 
@@ -306,19 +306,19 @@ void testing_dense_to_sparse_coo(const Arguments& arg)
         double gbyte_count = dense2coo_gbyte_count<T>(m, n, (I)nnz);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("order",
+        display_timing_info(display_key_t::order,
                             order,
-                            "M",
+                            display_key_t::M,
                             m,
-                            "N",
+                            display_key_t::N,
                             n,
-                            "LD",
+                            display_key_t::LD,
                             ld,
-                            "nnz",
+                            display_key_t::nnz,
                             nnz,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
 
         // clang-format on

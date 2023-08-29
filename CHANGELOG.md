@@ -2,12 +2,13 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## rocSPARSE 3.0.0
+## rocSPARSE 3.0.1
 ### Added
 - Added rocsparse_inverse_permutation
 - Added mixed precisions for SpVV
 - Added uniform int8 precision for Gather and Scatter
 ### Changed
+- Removed auto stages from spmv, spmm, spgemm, spsv, spsm, and spitsv.
 - Removed old deprecated rocsparse_spmv, deprecated current rocsparse_spmv_ex, and added new rocsparse_spmv routine
 - Removed old deprecated rocsparse_xbsrmv routines, deprecated current rocsparse_xbsrmv_ex routines, and added new rocsparse_xbsrmv routines
 - Removed old deprecated rocsparse_spmm_ex routine
@@ -16,6 +17,8 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Optimization to doti routine
 - Fixed a bug in rocsparse-bench, where SpMV algorithm was not taken into account in CSR format
 - Fixed the BSR/GEBSR routines bsrmv, bsrsv, bsrmm, bsrgeam, gebsrmv, gebsrmm so that block_dim==0 is considered an invalid size
+- Fixed bug where passing nnz = 0 to doti or dotci did not always return a dot product of 0
+- Improved spin-looping algorithms
 ### Known Issues
 
 ## rocSPARSE 2.5.4 for ROCm 5.7.0

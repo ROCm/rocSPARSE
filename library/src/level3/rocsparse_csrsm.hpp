@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
                                                       const I*                  csr_row_ptr,
                                                       const J*                  csr_col_ind,
                                                       const T*                  B,
-                                                      J                         ldb,
+                                                      int64_t                   ldb,
                                                       rocsparse_mat_info        info,
                                                       rocsparse_solve_policy    policy,
                                                       size_t*                   buffer_size);
@@ -57,7 +57,7 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
                                                    const I*                  csr_row_ptr,
                                                    const J*                  csr_col_ind,
                                                    const T*                  B,
-                                                   J                         ldb,
+                                                   int64_t                   ldb,
                                                    rocsparse_mat_info        info,
                                                    rocsparse_analysis_policy analysis,
                                                    rocsparse_solve_policy    solve,
@@ -76,7 +76,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                                 const I*                  csr_row_ptr,
                                                 const J*                  csr_col_ind,
                                                 T*                        B,
-                                                J                         ldb,
+                                                int64_t                   ldb,
                                                 rocsparse_mat_info        info,
                                                 rocsparse_solve_policy    policy,
                                                 void*                     temp_buffer);

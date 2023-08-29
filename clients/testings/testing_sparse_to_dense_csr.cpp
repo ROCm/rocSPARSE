@@ -36,7 +36,7 @@ void testing_sparse_to_dense_csr_bad_arg(const Arguments& arg)
     J                             m           = safe_size;
     J                             n           = safe_size;
     I                             nnz         = safe_size;
-    I                             ld          = safe_size;
+    int64_t                       ld          = safe_size;
     void*                         csr_val     = (void*)0x4;
     void*                         csr_row_ptr = (void*)0x4;
     void*                         csr_col_ind = (void*)0x4;
@@ -104,13 +104,13 @@ void testing_sparse_to_dense_csr(const Arguments& arg)
 {
     J                             m     = arg.M;
     J                             n     = arg.N;
-    I                             ld    = arg.denseld;
+    int64_t                       ld    = arg.denseld;
     rocsparse_index_base          base  = arg.baseA;
     rocsparse_sparse_to_dense_alg alg   = arg.sparse_to_dense_alg;
     rocsparse_order               order = arg.order;
 
-    I mn = (order == rocsparse_order_column) ? m : n;
-    I nm = (order == rocsparse_order_column) ? n : m;
+    J mn = (order == rocsparse_order_column) ? m : n;
+    J nm = (order == rocsparse_order_column) ? n : m;
 
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
@@ -186,19 +186,19 @@ void testing_sparse_to_dense_csr(const Arguments& arg)
     rocsparse_seedrand();
 
     // Random initialization of the matrix.
-    for(int j = 0; j < nm; ++j)
+    for(J j = 0; j < nm; ++j)
     {
-        for(int i = 0; i < ld; ++i)
+        for(int64_t i = 0; i < ld; ++i)
         {
-            h_dense_val[j * (int)ld + i] = static_cast<T>(-2);
+            h_dense_val[j * ld + i] = static_cast<T>(-2);
         }
     }
 
-    for(int j = 0; j < nm; ++j)
+    for(J j = 0; j < nm; ++j)
     {
-        for(int i = 0; i < mn; ++i)
+        for(J i = 0; i < mn; ++i)
         {
-            h_dense_val[j * (int)ld + i] = random_cached_generator<T>(0, 9);
+            h_dense_val[j * ld + i] = random_cached_generator<T>(0, 9);
         }
     }
 
@@ -373,19 +373,19 @@ void testing_sparse_to_dense_csr(const Arguments& arg)
 
         double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("order",
+        display_timing_info(display_key_t::order,
                             order,
-                            "M",
+                            display_key_t::M,
                             m,
-                            "N",
+                            display_key_t::N,
                             n,
-                            "LD",
+                            display_key_t::LD,
                             ld,
-                            "nnz",
+                            display_key_t::nnz,
                             nnz,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 }

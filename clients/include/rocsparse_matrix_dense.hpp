@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,7 +97,7 @@ private:
 public:
     I               m{};
     I               n{};
-    I               ld{};
+    int64_t         ld{};
     rocsparse_order order{rocsparse_order_column};
     dense_matrix_view(){};
     ~dense_matrix_view(){};
@@ -129,8 +129,8 @@ public:
         return this->val;
     }
 
-    dense_matrix_view&
-        operator()(I m_, I n_, T* val_, I ld_, rocsparse_order order_ = rocsparse_order_column)
+    dense_matrix_view& operator()(
+        I m_, I n_, T* val_, int64_t ld_, rocsparse_order order_ = rocsparse_order_column)
     {
         m     = m_;
         n     = n_;
@@ -139,7 +139,8 @@ public:
         order = order_;
         return *this;
     }
-    dense_matrix_view(I m_, I n_, T* val_, I ld_, rocsparse_order order_ = rocsparse_order_column)
+    dense_matrix_view(
+        I m_, I n_, T* val_, int64_t ld_, rocsparse_order order_ = rocsparse_order_column)
         : val(val_)
         , m(m_)
         , n(n_)
@@ -219,7 +220,7 @@ public:
             CHECK_HIP_THROW_ERROR((this->ld >= size_sequence && that_.ld >= size_sequence)
                                       ? hipSuccess
                                       : hipErrorInvalidValue);
-            for(int j = 0; j < num_sequences; ++j)
+            for(I j = 0; j < num_sequences; ++j)
             {
                 CHECK_HIP_THROW_ERROR(hipMemcpy(((T*)*this) + j * this->ld,
                                                 ((const T*)that_) + j * that_.ld,
@@ -357,7 +358,7 @@ public:
         if(this->data() != nullptr)
         {
 #ifdef GOOGLE_TEST
-            allocator::check_guards(this->data(), this->m * this->n);
+            allocator::check_guards(this->data(), size_t(this->m) * size_t(this->n));
 #endif
             allocator::free(this->data());
         }
@@ -387,7 +388,7 @@ public:
     dense_matrix(I m_, I n_, rocsparse_order order_ = rocsparse_order_column)
         : dense_matrix_view<MODE, T, I>(m_,
                                         n_,
-                                        allocator::malloc(m_ * n_),
+                                        allocator::malloc(size_t(m_) * size_t(n_)),
                                         (order_ == rocsparse_order_column) ? m_ : n_,
                                         order_){};
 

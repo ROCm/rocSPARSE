@@ -41,8 +41,8 @@ template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename T>
 ROCSPARSE_DEVICE_ILF void prune_dense2csr_nnz_device(rocsparse_int m,
                                                      rocsparse_int n,
                                                      const T* __restrict__ A,
-                                                     rocsparse_int lda,
-                                                     T             threshold,
+                                                     int64_t lda,
+                                                     T       threshold,
                                                      rocsparse_int* __restrict__ nnz_per_row)
 {
     rocsparse_int thread_id = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x;
@@ -123,8 +123,8 @@ ROCSPARSE_DEVICE_ILF void prune_dense2csr_device(rocsparse_index_base base,
                                                  rocsparse_int        m,
                                                  rocsparse_int        n,
                                                  const T* __restrict__ dense_val,
-                                                 rocsparse_int ld,
-                                                 T             threshold,
+                                                 int64_t ld,
+                                                 T       threshold,
                                                  T* __restrict__ csr_val,
                                                  const rocsparse_int* __restrict__ csr_row_ptr,
                                                  rocsparse_int* __restrict__ csr_col_ind)

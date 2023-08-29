@@ -65,9 +65,9 @@ void bsrsm_copy_scale(rocsparse_int m,
                       rocsparse_int n,
                       U             alpha_device_host,
                       const T*      B,
-                      rocsparse_int ldb,
+                      int64_t       ldb,
                       T*            X,
-                      rocsparse_int ldx)
+                      int64_t       ldx)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
 
@@ -80,9 +80,9 @@ void bsrsm_transpose(rocsparse_int m,
                      rocsparse_int n,
                      U             alpha_device_host,
                      const T* __restrict__ A,
-                     rocsparse_int lda,
+                     int64_t lda,
                      T* __restrict__ B,
-                     rocsparse_int ldb)
+                     int64_t ldb)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
 
@@ -105,9 +105,9 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
                                                       rocsparse_int             block_dim,
                                                       rocsparse_mat_info        info,
                                                       const T*                  B,
-                                                      rocsparse_int             ldb,
+                                                      int64_t                   ldb,
                                                       T*                        X,
-                                                      rocsparse_int             ldx,
+                                                      int64_t                   ldx,
                                                       void*                     temp_buffer)
 {
 #define LAUNCH_LARGE_KERNEL(K_, M_, S_)                     \
@@ -178,7 +178,7 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
     rocsparse_fill_mode fill_mode = descr->fill_mode;
 
     // Transpose X if X is not transposed yet to improve performance
-    rocsparse_int ldimX = ldx;
+    int64_t ldimX = ldx;
     if(trans_X == rocsparse_operation_none)
     {
         // Leading dimension for transposed X
@@ -338,9 +338,9 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
         rocsparse_int             block_dim,                        \
         rocsparse_mat_info        info,                             \
         const real_type_*         B,                                \
-        rocsparse_int             ldb,                              \
+        int64_t                   ldb,                              \
         real_type_*               X,                                \
-        rocsparse_int             ldx,                              \
+        int64_t                   ldx,                              \
         void*                     temp_buffer)
 
 INSTANTIATE(float, float);

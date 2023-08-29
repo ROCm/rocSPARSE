@@ -42,8 +42,7 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                                          void*                       temp_buffer)
 {
     // STAGE 1 - compute required buffer size of temp_buffer
-    if(stage == rocsparse_spsv_stage_buffer_size
-       || (stage == rocsparse_spsv_stage_auto && temp_buffer == nullptr))
+    if(stage == rocsparse_spsv_stage_buffer_size)
     {
         if(mat->format == rocsparse_format_csr)
         {
@@ -86,8 +85,7 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
     }
 
     // STAGE 2 - preprocess stage
-    if(stage == rocsparse_spsv_stage_preprocess
-       || (stage == rocsparse_spsv_stage_auto && buffer_size == nullptr))
+    if(stage == rocsparse_spsv_stage_preprocess)
     {
         if(mat->analysed == false)
         {
@@ -135,7 +133,7 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
     }
 
     // STAGE 3 - perform SpSV computation
-    if(stage == rocsparse_spsv_stage_compute || stage == rocsparse_spsv_stage_auto)
+    if(stage == rocsparse_spsv_stage_compute)
     {
         if(mat->format == rocsparse_format_csr)
         {

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,9 +98,9 @@ ROCSPARSE_DEVICE_ILF void
     {
         // Initialize row nnz table and value accumulator
         table[lid] = false;
-        for(int r = 0; r < BLOCKDIM; r++)
+        for(unsigned int r = 0; r < BLOCKDIM; r++)
         {
-            for(int c = 0; c < BLOCKDIM; c++)
+            for(unsigned int c = 0; c < BLOCKDIM; c++)
             {
                 data[BLOCKDIM * BLOCKDIM * lid + BLOCKDIM * r + c] = static_cast<T>(0);
             }
@@ -130,9 +130,9 @@ ROCSPARSE_DEVICE_ILF void
                 // Initialize with value of A
                 if(dir == rocsparse_direction_row)
                 {
-                    for(int r = 0; r < BLOCKDIM; r++)
+                    for(unsigned int r = 0; r < BLOCKDIM; r++)
                     {
-                        for(int c = 0; c < BLOCKDIM; c++)
+                        for(unsigned int c = 0; c < BLOCKDIM; c++)
                         {
                             data[BLOCKDIM * BLOCKDIM * shf_A + BLOCKDIM * r + c]
                                 = alpha
@@ -142,9 +142,9 @@ ROCSPARSE_DEVICE_ILF void
                 }
                 else
                 {
-                    for(int r = 0; r < BLOCKDIM; r++)
+                    for(unsigned int r = 0; r < BLOCKDIM; r++)
                     {
-                        for(int c = 0; c < BLOCKDIM; c++)
+                        for(unsigned int c = 0; c < BLOCKDIM; c++)
                         {
                             data[BLOCKDIM * BLOCKDIM * shf_A + BLOCKDIM * r + c]
                                 = alpha
@@ -182,7 +182,7 @@ ROCSPARSE_DEVICE_ILF void
                 // Add values of B
                 if(dir == rocsparse_direction_row)
                 {
-                    for(int r = 0; r < BLOCKDIM; r++)
+                    for(unsigned int r = 0; r < BLOCKDIM; r++)
                     {
                         for(int c = 0; c < BLOCKDIM; c++)
                         {
@@ -195,7 +195,7 @@ ROCSPARSE_DEVICE_ILF void
                 }
                 else
                 {
-                    for(int r = 0; r < BLOCKDIM; r++)
+                    for(unsigned int r = 0; r < BLOCKDIM; r++)
                     {
                         for(int c = 0; c < BLOCKDIM; c++)
                         {
@@ -242,7 +242,7 @@ ROCSPARSE_DEVICE_ILF void
             bsr_col_ind_C[row_begin_C + offset - 1] = lid + chunk_begin + idx_base_C;
             if(dir == rocsparse_direction_row)
             {
-                for(int r = 0; r < BLOCKDIM; r++)
+                for(unsigned int r = 0; r < BLOCKDIM; r++)
                 {
                     for(int c = 0; c < BLOCKDIM; c++)
                     {
@@ -254,7 +254,7 @@ ROCSPARSE_DEVICE_ILF void
             }
             else
             {
-                for(int r = 0; r < BLOCKDIM; r++)
+                for(unsigned int r = 0; r < BLOCKDIM; r++)
                 {
                     for(int c = 0; c < BLOCKDIM; c++)
                     {
@@ -708,7 +708,7 @@ ROCSPARSE_DEVICE_ILF void
             __syncthreads();
 
             // Segmented wavefront reduction
-            for(int j = 1; j < (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)); j <<= 1)
+            for(unsigned int j = 1; j < (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)); j <<= 1)
             {
                 if(wid >= j)
                 {

@@ -111,7 +111,7 @@ ROCSPARSE_DEVICE_ILF void
     while(chunk_begin < n)
     {
         // Initialize row nnz table and accumulator
-        for(int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
+        for(unsigned int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
         {
             table[i] = 0;
         }
@@ -234,7 +234,7 @@ ROCSPARSE_DEVICE_ILF void
         // "Pseudo compress" the table array such that we can copy the values over into C
         // In fact, we do an exclusive scan to obtain the index where each non-zero has
         // to be copied to
-        for(int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
+        for(unsigned int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
         {
             // Each thread loads its marker and value to know whether it has to process a
             // non-zero entry or not

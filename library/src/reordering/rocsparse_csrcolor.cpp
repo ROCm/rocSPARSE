@@ -316,18 +316,18 @@ static rocsparse_status rocsparse_csrcolor_assign_uncolored(rocsparse_handle han
 }
 
 template <typename T, typename I, typename J>
-rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
-                                             J                         m,
-                                             I                         nnz,
-                                             const rocsparse_mat_descr descr,
-                                             const T*                  csr_val,
-                                             const I*                  csr_row_ptr,
-                                             const J*                  csr_col_ind,
-                                             const floating_data_t<T>* fraction_to_color,
-                                             J*                        ncolors,
-                                             J*                        colors,
-                                             J*                        reordering,
-                                             rocsparse_mat_info        info)
+rocsparse_status rocsparse_csrcolor_core(rocsparse_handle          handle,
+                                         J                         m,
+                                         I                         nnz,
+                                         const rocsparse_mat_descr descr,
+                                         const T*                  csr_val,
+                                         const I*                  csr_row_ptr,
+                                         const J*                  csr_col_ind,
+                                         const floating_data_t<T>* fraction_to_color,
+                                         J*                        ncolors,
+                                         J*                        colors,
+                                         J*                        reordering,
+                                         rocsparse_mat_info        info)
 {
     static constexpr rocsparse_int blocksize = 256;
 
@@ -522,32 +522,92 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
     return rocsparse_status_success;
 }
 
-template <typename T, typename I, typename J>
-rocsparse_status rocsparse_csrcolor_template(rocsparse_handle          handle,
-                                             J                         m,
-                                             I                         nnz,
-                                             const rocsparse_mat_descr descr,
-                                             const T*                  csr_val,
-                                             const I*                  csr_row_ptr,
-                                             const J*                  csr_col_ind,
-                                             const floating_data_t<T>* fraction_to_color,
-                                             J*                        ncolors,
-                                             J*                        coloring,
-                                             J*                        reordering,
-                                             rocsparse_mat_info        info)
+rocsparse_status rocsparse_csrcolor_quickreturn(rocsparse_handle          handle,
+                                                int64_t                   m,
+                                                int64_t                   nnz,
+                                                const rocsparse_mat_descr descr,
+                                                const void*               csr_val,
+                                                const void*               csr_row_ptr,
+                                                const void*               csr_col_ind,
+                                                const void*               fraction_to_color,
+                                                void*                     ncolors,
+                                                void*                     coloring,
+                                                void*                     reordering,
+                                                rocsparse_mat_info        info)
 {
-
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
+    if(m == 0 || nnz == 0)
     {
-        return rocsparse_status_invalid_handle;
+        return rocsparse_status_success;
+    }
+    return rocsparse_status_continue;
+}
+
+rocsparse_status rocsparse_csrcolor_checkarg(rocsparse_handle          handle, //0
+                                             int64_t                   m, //1
+                                             int64_t                   nnz, //2
+                                             const rocsparse_mat_descr descr, //3
+                                             const void*               csr_val, //4
+                                             const void*               csr_row_ptr, //5
+                                             const void*               csr_col_ind, //6
+                                             const void*               fraction_to_color, //7
+                                             void*                     ncolors, //8
+                                             void*                     coloring, //9
+                                             void*                     reordering, //10
+                                             rocsparse_mat_info        info) //11
+{
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_SIZE(1, m);
+    ROCSPARSE_CHECKARG_SIZE(2, nnz);
+
+    const rocsparse_status status = rocsparse_csrcolor_quickreturn(handle,
+                                                                   m,
+                                                                   nnz,
+                                                                   descr,
+                                                                   csr_val,
+                                                                   csr_row_ptr,
+                                                                   csr_col_ind,
+                                                                   fraction_to_color,
+                                                                   ncolors,
+                                                                   coloring,
+                                                                   reordering,
+                                                                   info);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
     }
 
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(3, descr);
+    ROCSPARSE_CHECKARG(
+        3, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(3,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+    ROCSPARSE_CHECKARG_ARRAY(4, nnz, csr_val);
+    ROCSPARSE_CHECKARG_ARRAY(5, m, csr_row_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(6, nnz, csr_col_ind);
+    ROCSPARSE_CHECKARG_POINTER(7, fraction_to_color);
+    ROCSPARSE_CHECKARG_POINTER(8, ncolors);
+    ROCSPARSE_CHECKARG_ARRAY(9, m, coloring);
+    ROCSPARSE_CHECKARG_POINTER(11, info);
+    return rocsparse_status_continue;
+}
 
+template <typename T, typename I, typename J>
+rocsparse_status rocsparse_csrcolor_impl(rocsparse_handle          handle,
+                                         J                         m,
+                                         I                         nnz,
+                                         const rocsparse_mat_descr descr,
+                                         const T*                  csr_val,
+                                         const I*                  csr_row_ptr,
+                                         const J*                  csr_col_ind,
+                                         const floating_data_t<T>* fraction_to_color,
+                                         J*                        ncolors,
+                                         J*                        coloring,
+                                         J*                        reordering,
+                                         rocsparse_mat_info        info)
+{
     // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xcsrcolor"),
@@ -563,52 +623,40 @@ rocsparse_status rocsparse_csrcolor_template(rocsparse_handle          handle,
               (const void*&)reordering,
               (const void*&)info);
 
-    log_bench(handle, "./rocsparse-bench -f csrcolor -r", replaceX<T>("X"), "--mtx <matrix.mtx> ");
-
-    // Check sizes
-    if(m < 0 || nnz < 0)
+    //
+    // Check arguments.
+    //
+    const rocsparse_status status = rocsparse_csrcolor_checkarg(handle,
+                                                                m,
+                                                                nnz,
+                                                                descr,
+                                                                csr_val,
+                                                                csr_row_ptr,
+                                                                csr_col_ind,
+                                                                fraction_to_color,
+                                                                ncolors,
+                                                                coloring,
+                                                                reordering,
+                                                                info);
+    if(status != rocsparse_status_continue)
     {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Quick return if possible
-    if(m == 0 || nnz == 0)
-    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
         return rocsparse_status_success;
     }
 
-    // Check the rest of the pointer arguments
-    if(csr_val == nullptr || csr_row_ptr == nullptr || csr_col_ind == nullptr
-       || fraction_to_color == nullptr || ncolors == nullptr || coloring == nullptr
-       || info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    return rocsparse_csrcolor_dispatch(handle,
-                                       m,
-                                       nnz,
-                                       descr,
-                                       csr_val,
-                                       csr_row_ptr,
-                                       csr_col_ind,
-                                       fraction_to_color,
-                                       ncolors,
-                                       coloring,
-                                       reordering,
-                                       info);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrcolor_core(handle,
+                                                      m,
+                                                      nnz,
+                                                      descr,
+                                                      csr_val,
+                                                      csr_row_ptr,
+                                                      csr_col_ind,
+                                                      fraction_to_color,
+                                                      ncolors,
+                                                      coloring,
+                                                      reordering,
+                                                      info));
+    return rocsparse_status_success;
 }
 
 /*
@@ -616,37 +664,38 @@ rocsparse_status rocsparse_csrcolor_template(rocsparse_handle          handle,
  *    C wrapper
  * ===========================================================================
  */
-#define C_IMPL(NAME, TYPE, TYPE2)                                                 \
+#define C_IMPL(NAME, T, U)                                                        \
     extern "C" rocsparse_status NAME(rocsparse_handle          handle,            \
                                      rocsparse_int             m,                 \
                                      rocsparse_int             nnz,               \
                                      const rocsparse_mat_descr descr,             \
-                                     const TYPE*               csr_val,           \
+                                     const T*                  csr_val,           \
                                      const rocsparse_int*      csr_row_ptr,       \
                                      const rocsparse_int*      csr_col_ind,       \
-                                     const TYPE2*              fraction_to_color, \
+                                     const U*                  fraction_to_color, \
                                      rocsparse_int*            ncolors,           \
                                      rocsparse_int*            coloring,          \
                                      rocsparse_int*            reordering,        \
                                      rocsparse_mat_info        info)              \
     try                                                                           \
     {                                                                             \
-        return rocsparse_csrcolor_template(handle,                                \
-                                           m,                                     \
-                                           nnz,                                   \
-                                           descr,                                 \
-                                           csr_val,                               \
-                                           csr_row_ptr,                           \
-                                           csr_col_ind,                           \
-                                           fraction_to_color,                     \
-                                           ncolors,                               \
-                                           coloring,                              \
-                                           reordering,                            \
-                                           info);                                 \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrcolor_impl(handle,                 \
+                                                          m,                      \
+                                                          nnz,                    \
+                                                          descr,                  \
+                                                          csr_val,                \
+                                                          csr_row_ptr,            \
+                                                          csr_col_ind,            \
+                                                          fraction_to_color,      \
+                                                          ncolors,                \
+                                                          coloring,               \
+                                                          reordering,             \
+                                                          info));                 \
+        return rocsparse_status_success;                                          \
     }                                                                             \
     catch(...)                                                                    \
     {                                                                             \
-        return exception_to_rocsparse_status();                                   \
+        RETURN_ROCSPARSE_EXCEPTION();                                             \
     }
 
 C_IMPL(rocsparse_scsrcolor, float, float);

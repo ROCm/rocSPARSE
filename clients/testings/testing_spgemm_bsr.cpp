@@ -67,7 +67,7 @@ void testing_spgemm_bsr_bad_arg(const Arguments& arg)
     rocsparse_operation    trans_B = rocsparse_operation_none;
     rocsparse_index_base   base    = rocsparse_index_base_zero;
     rocsparse_spgemm_alg   alg     = rocsparse_spgemm_alg_default;
-    rocsparse_spgemm_stage stage   = rocsparse_spgemm_stage_auto;
+    rocsparse_spgemm_stage stage   = rocsparse_spgemm_stage_compute;
 
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
@@ -603,37 +603,37 @@ void testing_spgemm_bsr(const Arguments& arg)
         double gpu_gbyte  = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
         double gpu_gflops = get_gpu_gflops(gpu_solve_time_used, gflop_count);
 
-        display_timing_info("opA",
+        display_timing_info(display_key_t::trans_A,
                             rocsparse_operation2string(trans_A),
-                            "opB",
+                            display_key_t::trans_B,
                             rocsparse_operation2string(trans_B),
-                            "Mb",
+                            display_key_t::Mb,
                             Mb,
-                            "Nb",
+                            display_key_t::Nb,
                             Nb,
-                            "Kb",
+                            display_key_t::Kb,
                             Kb,
-                            "block_dim",
+                            display_key_t::bdim,
                             block_dim,
-                            "nnzb_A",
+                            display_key_t::nnzb_A,
                             dA.nnzb,
-                            "nnzb_B",
+                            display_key_t::nnzb_B,
                             dB.nnzb,
-                            "nnzb_C",
+                            display_key_t::nnzb_C,
                             dC.nnzb,
-                            "nnzb_D",
+                            display_key_t::nnzb_D,
                             dD.nnzb,
-                            "alpha",
+                            display_key_t::alpha,
                             h_alpha,
-                            "beta",
+                            display_key_t::beta,
                             h_beta,
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            "analysis msec",
+                            display_key_t::analysis_time_ms,
                             get_gpu_time_msec(gpu_analysis_time_used),
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_solve_time_used));
     }
 

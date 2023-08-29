@@ -43,8 +43,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                                          void*                       temp_buffer)
 {
     // STAGE 1 - compute required buffer size of temp_buffer
-    if(stage == rocsparse_spsm_stage_buffer_size
-       || (stage == rocsparse_spsm_stage_auto && temp_buffer == nullptr))
+    if(stage == rocsparse_spsm_stage_buffer_size)
     {
         if(matA->format == rocsparse_format_csr)
         {
@@ -61,7 +60,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 (const I*)matA->const_row_data,
                 (const J*)matA->const_col_data,
                 (const T*)matB->const_values,
-                (J)matB->ld,
+                matB->ld,
                 matA->info,
                 rocsparse_solve_policy_auto,
                 buffer_size));
@@ -84,7 +83,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 (const I*)matA->const_row_data,
                 (const I*)matA->const_col_data,
                 (const T*)matB->const_values,
-                (I)matB->ld,
+                matB->ld,
                 matA->info,
                 rocsparse_solve_policy_auto,
                 buffer_size));
@@ -99,8 +98,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
     }
 
     // STAGE 2 - preprocess stage
-    if(stage == rocsparse_spsm_stage_preprocess
-       || (stage == rocsparse_spsm_stage_auto && buffer_size == nullptr))
+    if(stage == rocsparse_spsm_stage_preprocess)
     {
         if(matA->analysed == false)
         {
@@ -119,7 +117,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                     (const I*)matA->const_row_data,
                     (const J*)matA->const_col_data,
                     (const T*)matB->const_values,
-                    (J)matB->ld,
+                    matB->ld,
                     matA->info,
                     rocsparse_analysis_policy_force,
                     rocsparse_solve_policy_auto,
@@ -140,7 +138,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                     (const I*)matA->const_row_data,
                     (const I*)matA->const_col_data,
                     (const T*)matB->const_values,
-                    (I)matB->ld,
+                    matB->ld,
                     matA->info,
                     rocsparse_analysis_policy_force,
                     rocsparse_solve_policy_auto,
@@ -158,19 +156,19 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
     }
 
     // STAGE 3 - perform SpSM computation
-    if(stage == rocsparse_spsm_stage_compute || stage == rocsparse_spsm_stage_auto)
+    if(stage == rocsparse_spsm_stage_compute)
     {
         // copy B to C and perform in-place using C
         if(matB->rows > 0 && matB->cols > 0)
         {
-            hipMemcpy2DAsync(matC->values,
-                             matC->ld * sizeof(T),
-                             matB->values,
-                             matB->ld * sizeof(T),
-                             (J)matB->rows * sizeof(T),
-                             (J)matB->cols,
-                             hipMemcpyDeviceToDevice,
-                             handle->stream);
+            RETURN_IF_HIP_ERROR(hipMemcpy2DAsync(matC->values,
+                                                 matC->ld * sizeof(T),
+                                                 matB->values,
+                                                 matB->ld * sizeof(T),
+                                                 (J)matB->rows * sizeof(T),
+                                                 (J)matB->cols,
+                                                 hipMemcpyDeviceToDevice,
+                                                 handle->stream));
         }
 
         if(matA->format == rocsparse_format_csr)
@@ -188,7 +186,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 (const I*)matA->const_row_data,
                 (const J*)matA->const_col_data,
                 (T*)matC->values,
-                (J)matC->ld,
+                matC->ld,
                 matA->info,
                 rocsparse_solve_policy_auto,
                 temp_buffer);
@@ -208,7 +206,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 (const I*)matA->const_row_data,
                 (const I*)matA->const_col_data,
                 (T*)matC->values,
-                (I)matC->ld,
+                matC->ld,
                 matA->info,
                 rocsparse_solve_policy_auto,
                 temp_buffer);

@@ -31,6 +31,23 @@
 #include "hyb2csr_device.h"
 #include <rocprim/rocprim.hpp>
 
+static rocsparse_status rocsparse_hyb2csr_quickreturn(rocsparse_handle          handle,
+                                                      const rocsparse_mat_descr descr,
+                                                      const rocsparse_hyb_mat   hyb,
+                                                      void*                     csr_val,
+                                                      rocsparse_int*            csr_row_ptr,
+                                                      rocsparse_int*            csr_col_ind,
+                                                      void*                     temp_buffer)
+
+{
+    // Quick return if possible
+    if(hyb->m == 0 || hyb->n == 0 || (hyb->ell_nnz == 0 && hyb->coo_nnz == 0))
+    {
+        return rocsparse_status_success;
+    }
+    return rocsparse_status_continue;
+}
+
 template <typename T>
 rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
                                             const rocsparse_mat_descr descr,
@@ -61,15 +78,20 @@ rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
     ROCSPARSE_CHECKARG_POINTER(2, hyb);
     ROCSPARSE_CHECKARG(2, hyb, (hyb->m < 0), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG(2, hyb, (hyb->n < 0), rocsparse_status_invalid_size);
+
+    const rocsparse_status status = rocsparse_hyb2csr_quickreturn(
+        handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
     ROCSPARSE_CHECKARG_POINTER(3, csr_val);
     ROCSPARSE_CHECKARG_POINTER(4, csr_row_ptr);
     ROCSPARSE_CHECKARG_POINTER(5, csr_col_ind);
     ROCSPARSE_CHECKARG_POINTER(6, temp_buffer);
-    // Quick return if possible
-    if(hyb->m == 0 || hyb->n == 0 || (hyb->ell_nnz == 0 && hyb->coo_nnz == 0))
-    {
-        return rocsparse_status_success;
-    }
 
     // Stream
     hipStream_t stream = handle->stream;
@@ -162,6 +184,21 @@ rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
  * ===========================================================================
  */
 
+static rocsparse_status rocsparse_hyb2csr_buffer_size_quickreturn(rocsparse_handle          handle,
+                                                                  const rocsparse_mat_descr descr,
+                                                                  const rocsparse_hyb_mat   hyb,
+                                                                  const void* csr_row_ptr,
+                                                                  size_t*     buffer_size)
+
+{
+    if(hyb->m == 0 || hyb->n == 0 || (hyb->ell_nnz == 0 && hyb->coo_nnz == 0))
+    {
+        *buffer_size = 0;
+        return rocsparse_status_success;
+    }
+    return rocsparse_status_continue;
+}
+
 extern "C" rocsparse_status rocsparse_hyb2csr_buffer_size(rocsparse_handle          handle,
                                                           const rocsparse_mat_descr descr,
                                                           const rocsparse_hyb_mat   hyb,
@@ -190,12 +227,16 @@ try
     ROCSPARSE_CHECKARG(2, hyb, (hyb->m < 0), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG(2, hyb, (hyb->n < 0), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG_POINTER(4, buffer_size);
-    // Quick return if possible
-    if(hyb->m == 0 || hyb->n == 0 || (hyb->ell_nnz == 0 && hyb->coo_nnz == 0))
+
+    const rocsparse_status status
+        = rocsparse_hyb2csr_buffer_size_quickreturn(handle, descr, hyb, csr_row_ptr, buffer_size);
+
+    if(status != rocsparse_status_continue)
     {
-        *buffer_size = 0;
+        RETURN_IF_ROCSPARSE_ERROR(status);
         return rocsparse_status_success;
     }
+
     ROCSPARSE_CHECKARG_POINTER(3, csr_row_ptr);
 
     // Stream

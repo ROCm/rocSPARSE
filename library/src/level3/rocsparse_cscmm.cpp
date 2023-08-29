@@ -141,23 +141,23 @@ rocsparse_status rocsparse_cscmm_template(rocsparse_handle          handle,
                                           J                         k,
                                           I                         nnz,
                                           J                         batch_count_A,
-                                          I                         offsets_batch_stride_A,
-                                          I                         rows_values_batch_stride_A,
+                                          int64_t                   offsets_batch_stride_A,
+                                          int64_t                   rows_values_batch_stride_A,
                                           const T*                  alpha_device_host,
                                           const rocsparse_mat_descr descr,
                                           const A*                  csc_val,
                                           const I*                  csc_col_ptr,
                                           const J*                  csc_row_ind,
                                           const B*                  dense_B,
-                                          J                         ldb,
+                                          int64_t                   ldb,
                                           J                         batch_count_B,
-                                          I                         batch_stride_B,
+                                          int64_t                   batch_stride_B,
                                           rocsparse_order           order_B,
                                           const T*                  beta_device_host,
                                           C*                        dense_C,
-                                          J                         ldc,
+                                          int64_t                   ldc,
                                           J                         batch_count_C,
-                                          I                         batch_stride_C,
+                                          int64_t                   batch_stride_C,
                                           rocsparse_order           order_C,
                                           void*                     temp_buffer)
 {
@@ -350,23 +350,23 @@ INSTANTIATE_ANALYSIS(float, int64_t, int64_t, int8_t);
                                                        JTYPE               k,                      \
                                                        ITYPE               nnz,                    \
                                                        JTYPE               batch_count_A,          \
-                                                       ITYPE               offsets_batch_stride_A, \
-                                                       ITYPE        rows_values_batch_stride_A,    \
+                                                       int64_t             offsets_batch_stride_A, \
+                                                       int64_t      rows_values_batch_stride_A,    \
                                                        const TTYPE* alpha_device_host,             \
                                                        const rocsparse_mat_descr descr,            \
                                                        const ATYPE*              csc_val,          \
                                                        const ITYPE*              csc_col_ptr,      \
                                                        const JTYPE*              csc_row_ind,      \
                                                        const BTYPE*              B,                \
-                                                       JTYPE                     ldb,              \
+                                                       int64_t                   ldb,              \
                                                        JTYPE                     batch_count_B,    \
-                                                       ITYPE                     batch_stride_B,   \
+                                                       int64_t                   batch_stride_B,   \
                                                        rocsparse_order           order_B,          \
                                                        const TTYPE*              beta_device_host, \
                                                        CTYPE*                    C,                \
-                                                       JTYPE                     ldc,              \
+                                                       int64_t                   ldc,              \
                                                        JTYPE                     batch_count_C,    \
-                                                       ITYPE                     batch_stride_C,   \
+                                                       int64_t                   batch_stride_C,   \
                                                        rocsparse_order           order_C,          \
                                                        void*                     temp_buffer);
 

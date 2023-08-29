@@ -222,9 +222,7 @@ void testing_csrmm(const Arguments& arg)
     rocsparse_operation  transB = arg.transB;
     rocsparse_index_base base   = arg.baseA;
     rocsparse_order      order  = rocsparse_order_column;
-    //
-    // order column
-    //
+
     host_scalar<T> h_alpha(arg.get_alpha<T>());
     host_scalar<T> h_beta(arg.get_beta<T>());
 
@@ -236,42 +234,6 @@ void testing_csrmm(const Arguments& arg)
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
-
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || K <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        rocsparse_int* dcsr_row_ptr = (rocsparse_int*)0x4;
-        rocsparse_int* dcsr_col_ind = (rocsparse_int*)0x4;
-        T*             dcsr_val     = (T*)0x4;
-        T*             dB           = (T*)0x4;
-        T*             dC           = (T*)0x4;
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(handle,
-                                                   transA,
-                                                   transB,
-                                                   M,
-                                                   N,
-                                                   K,
-                                                   safe_size,
-                                                   h_alpha,
-                                                   descr,
-                                                   dcsr_val,
-                                                   dcsr_row_ptr,
-                                                   dcsr_col_ind,
-                                                   dB,
-                                                   safe_size,
-                                                   h_beta,
-                                                   dC,
-                                                   safe_size),
-                                (M < 0 || N < 0 || K < 0) ? rocsparse_status_invalid_size
-                                                          : rocsparse_status_success);
-
-        return;
-    }
 
     // Allocate host memory for matrix
     rocsparse_matrix_factory<T> matrix_factory(arg);

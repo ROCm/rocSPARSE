@@ -486,15 +486,15 @@ void testing_check_matrix_gebsc(const Arguments& arg)
             = check_matrix_gebsc_gbyte_count<T>(nb, nnzb, row_block_dim, col_block_dim);
         double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("Mb",
+        display_timing_info(display_key_t::Mb,
                             mb,
-                            "Nb",
+                            display_key_t::Nb,
                             nb,
-                            "nnzb",
+                            display_key_t::nnzb,
                             nnzb,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

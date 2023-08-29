@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -108,103 +108,6 @@ void testing_spsm_coo(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || K <= 0)
-    {
-        // M == 0 means nnz can only be 0, too
-
-        static const I safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<I> dcoo_row_ind(safe_size);
-        device_vector<I> dcoo_col_ind(safe_size);
-        device_vector<T> dcoo_val(safe_size);
-        device_vector<T> dB(safe_size);
-        device_vector<T> dC(safe_size);
-
-        // Check SpSM when structures can be created
-        if(M >= 0 && K >= 0 && M == N)
-        {
-            // Pointer mode
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-            I B_m = (trans_B == rocsparse_operation_none) ? M : K;
-            I B_n = (trans_B == rocsparse_operation_none) ? K : M;
-
-            I C_m = (trans_B == rocsparse_operation_none) ? M : K;
-            I C_n = (trans_B == rocsparse_operation_none) ? K : M;
-
-            I ldb = (trans_B == rocsparse_operation_none) ? M : K;
-            I ldc = (trans_B == rocsparse_operation_none) ? M : K;
-
-            // Check structures
-            int64_t               nnz_A = 0;
-            rocsparse_local_spmat A(
-                M, N, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
-
-            rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, rocsparse_order_column);
-
-            rocsparse_local_dnmat C(C_m, C_n, ldc, dB, ttype, rocsparse_order_column);
-
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_spmat_set_attribute(A, rocsparse_spmat_fill_mode, &uplo, sizeof(uplo)),
-                rocsparse_status_success);
-
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_spmat_set_attribute(A, rocsparse_spmat_diag_type, &diag, sizeof(diag)),
-                rocsparse_status_success);
-
-            size_t buffer_size;
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spsm(handle,
-                                                   trans_A,
-                                                   trans_B,
-                                                   &halpha,
-                                                   A,
-                                                   B,
-                                                   C,
-                                                   ttype,
-                                                   alg,
-                                                   buffersize,
-                                                   &buffer_size,
-                                                   nullptr),
-                                    rocsparse_status_success);
-
-            void* dbuffer;
-            CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, safe_size));
-
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spsm(handle,
-                                                   trans_A,
-                                                   trans_B,
-                                                   &halpha,
-                                                   A,
-                                                   B,
-                                                   C,
-                                                   ttype,
-                                                   alg,
-                                                   preprocess,
-                                                   nullptr,
-                                                   dbuffer),
-                                    rocsparse_status_success);
-
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spsm(handle,
-                                                   trans_A,
-                                                   trans_B,
-                                                   &halpha,
-                                                   A,
-                                                   B,
-                                                   C,
-                                                   ttype,
-                                                   alg,
-                                                   compute,
-                                                   &buffer_size,
-                                                   dbuffer),
-                                    rocsparse_status_success);
-            CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
-        }
-
-        return;
-    }
-
     rocsparse_matrix_factory<T, I> matrix_factory(arg);
 
     // Allocate host memory for matrix
@@ -222,8 +125,8 @@ void testing_spsm_coo(const Arguments& arg)
     I C_m = (trans_B == rocsparse_operation_none) ? M : K;
     I C_n = (trans_B == rocsparse_operation_none) ? K : M;
 
-    I ldb = (trans_B == rocsparse_operation_none) ? M : K;
-    I ldc = (trans_B == rocsparse_operation_none) ? M : K;
+    int64_t ldb = (trans_B == rocsparse_operation_none) ? M : K;
+    int64_t ldc = (trans_B == rocsparse_operation_none) ? M : K;
 
     // Non-squared matrices are not supported
     if(M != N)
@@ -287,7 +190,7 @@ void testing_spsm_coo(const Arguments& arg)
                                          C1,
                                          ttype,
                                          alg,
-                                         rocsparse_spsm_stage_auto /*buffersize*/,
+                                         rocsparse_spsm_stage_buffer_size,
                                          &buffer_size,
                                          nullptr));
 
@@ -306,7 +209,7 @@ void testing_spsm_coo(const Arguments& arg)
                                          C1,
                                          ttype,
                                          alg,
-                                         rocsparse_spsm_stage_auto /*preprocess*/,
+                                         rocsparse_spsm_stage_preprocess,
                                          nullptr,
                                          dbuffer));
 
@@ -321,7 +224,7 @@ void testing_spsm_coo(const Arguments& arg)
                                          C2,
                                          ttype,
                                          alg,
-                                         rocsparse_spsm_stage_auto /*preprocess*/,
+                                         rocsparse_spsm_stage_preprocess,
                                          nullptr,
                                          dbuffer));
 
@@ -338,7 +241,7 @@ void testing_spsm_coo(const Arguments& arg)
                                                       C1,
                                                       ttype,
                                                       alg,
-                                                      rocsparse_spsm_stage_auto /*compute*/,
+                                                      rocsparse_spsm_stage_compute,
                                                       &buffer_size,
                                                       dbuffer));
 
@@ -353,7 +256,7 @@ void testing_spsm_coo(const Arguments& arg)
                                                       C2,
                                                       ttype,
                                                       alg,
-                                                      rocsparse_spsm_stage_auto /*compute*/,
+                                                      rocsparse_spsm_stage_compute,
                                                       &buffer_size,
                                                       dbuffer));
 
@@ -441,21 +344,21 @@ void testing_spsm_coo(const Arguments& arg)
         double gbyte_count = coosv_gbyte_count<T>(M, nnz_A) * K;
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "nnz_A",
+                            display_key_t::nnz_A,
                             nnz_A,
-                            "nrhs",
+                            display_key_t::nrhs,
                             K,
-                            "alpha",
+                            display_key_t::alpha,
                             halpha,
-                            "Algorithm",
+                            display_key_t::algorithm,
                             rocsparse_spsmalg2string(alg),
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

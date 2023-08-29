@@ -48,35 +48,6 @@ void testing_gather(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
-    // Argument sanity check before allocating invalid memory
-    if(size <= 0 || nnz <= 0)
-    {
-        static const I safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<T> dx_ind(safe_size);
-        device_vector<T> dx_val(safe_size);
-        device_vector<T> dy(safe_size);
-
-        if(!dx_ind || !dx_val || !dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        // Check structures
-        rocsparse_local_spvec x(size, nnz, dx_ind, dx_val, itype, base, ttype);
-        rocsparse_local_dnvec y(size, dy, ttype);
-
-        // Check Gather when structures were created
-        if(size >= 0 && nnz >= 0)
-        {
-            EXPECT_ROCSPARSE_STATUS(rocsparse_gather(handle, y, x), rocsparse_status_success);
-        }
-
-        return;
-    }
-
     // Allocate host memory for matrix
     host_vector<I> hx_ind(nnz);
     host_vector<T> hx_val(nnz);
@@ -92,12 +63,6 @@ void testing_gather(const Arguments& arg)
     device_vector<I> dx_ind(nnz);
     device_vector<T> dx_val(nnz);
     device_vector<T> dy(size);
-
-    if(!dx_ind || !dx_val || !dy)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dx_ind, hx_ind, sizeof(I) * nnz, hipMemcpyHostToDevice));
@@ -145,11 +110,11 @@ void testing_gather(const Arguments& arg)
         double gbyte_count = gthr_gbyte_count<T>(nnz);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("nnz",
+        display_timing_info(display_key_t::nnz,
                             nnz,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 }

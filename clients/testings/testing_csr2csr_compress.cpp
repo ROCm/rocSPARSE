@@ -333,17 +333,17 @@ void testing_csr2csr_compress(const Arguments& arg)
         double gbyte_count = csr2csr_compress_gbyte_count<T>(M, nnz_A, nnz_C);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "nnz_A",
+                            display_key_t::nnz_A,
                             nnz_A,
-                            "nnz_C",
+                            display_key_t::nnz_C,
                             nnz_C,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 }

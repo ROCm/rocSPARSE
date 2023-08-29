@@ -48,10 +48,10 @@ rocsparse_status rocsparse_gebsrmm_template_small(rocsparse_handle          hand
                                                   rocsparse_int             row_block_dim,
                                                   rocsparse_int             col_block_dim,
                                                   const T*                  B,
-                                                  rocsparse_int             ldb,
+                                                  int64_t                   ldb,
                                                   U                         beta,
                                                   T*                        C,
-                                                  rocsparse_int             ldc);
+                                                  int64_t                   ldc);
 
 template <typename T, typename U>
 rocsparse_status rocsparse_gebsrmm_template_large_ext(rocsparse_handle          handle,
@@ -70,10 +70,10 @@ rocsparse_status rocsparse_gebsrmm_template_large_ext(rocsparse_handle          
                                                       rocsparse_int             row_block_dim,
                                                       rocsparse_int             col_block_dim,
                                                       const T*                  B,
-                                                      rocsparse_int             ldb,
+                                                      int64_t                   ldb,
                                                       U                         beta,
                                                       T*                        C,
-                                                      rocsparse_int             ldc);
+                                                      int64_t                   ldc);
 
 template <typename T, typename U>
 rocsparse_status rocsparse_gebsrmm_template_general(rocsparse_handle          handle,
@@ -92,10 +92,10 @@ rocsparse_status rocsparse_gebsrmm_template_general(rocsparse_handle          ha
                                                     rocsparse_int             row_block_dim,
                                                     rocsparse_int             col_block_dim,
                                                     const T*                  B,
-                                                    rocsparse_int             ldb,
+                                                    int64_t                   ldb,
                                                     U                         beta,
                                                     T*                        C,
-                                                    rocsparse_int             ldc);
+                                                    int64_t                   ldc);
 
 template <typename T, typename U>
 rocsparse_status rocsparse_gebsrmm_template_dispatch(rocsparse_handle          handle,
@@ -114,10 +114,10 @@ rocsparse_status rocsparse_gebsrmm_template_dispatch(rocsparse_handle          h
                                                      rocsparse_int             row_block_dim,
                                                      rocsparse_int             col_block_dim,
                                                      const T*                  B,
-                                                     rocsparse_int             ldb,
+                                                     int64_t                   ldb,
                                                      U                         beta,
                                                      T*                        C,
-                                                     rocsparse_int             ldc)
+                                                     int64_t                   ldc)
 {
     const rocsparse_int block_dim = std::max(row_block_dim, col_block_dim);
     if(row_block_dim == col_block_dim)
@@ -255,10 +255,10 @@ rocsparse_status rocsparse_gebsrmm_template(rocsparse_handle          handle,
                                             rocsparse_int             row_block_dim,
                                             rocsparse_int             col_block_dim,
                                             const T*                  B,
-                                            rocsparse_int             ldb,
+                                            int64_t                   ldb,
                                             const T*                  beta,
                                             T*                        C,
-                                            rocsparse_int             ldc)
+                                            int64_t                   ldc)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)

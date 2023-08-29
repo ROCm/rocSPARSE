@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -95,19 +95,17 @@ void testing_spsm_csr_bad_arg(const Arguments& arg)
 template <typename I, typename J, typename T>
 void testing_spsm_csr(const Arguments& arg)
 {
-    J                    M       = arg.M;
-    J                    N       = arg.N;
-    J                    K       = arg.K;
-    rocsparse_operation  trans_A = arg.transA;
-    rocsparse_operation  trans_B = arg.transB;
-    rocsparse_index_base base    = arg.baseA;
-    rocsparse_spsm_alg   alg     = arg.spsm_alg;
-    rocsparse_diag_type  diag    = arg.diag;
-    rocsparse_fill_mode  uplo    = arg.uplo;
-
-    rocsparse_spsm_stage buffersize = rocsparse_spsm_stage_buffer_size;
-    rocsparse_spsm_stage preprocess = rocsparse_spsm_stage_preprocess;
-    rocsparse_spsm_stage compute    = rocsparse_spsm_stage_compute;
+    J                    M               = arg.M;
+    J                    N               = arg.N;
+    J                    K               = arg.K;
+    rocsparse_operation  trans_A         = arg.transA;
+    rocsparse_operation  trans_B         = arg.transB;
+    rocsparse_index_base base            = arg.baseA;
+    rocsparse_spsm_alg   alg             = arg.spsm_alg;
+    rocsparse_diag_type  diag            = arg.diag;
+    rocsparse_fill_mode  uplo            = arg.uplo;
+    rocsparse_int        ld_multiplier_B = arg.ld_multiplier_B;
+    rocsparse_int        ld_multiplier_C = arg.ld_multiplier_C;
 
     T halpha = arg.get_alpha<T>();
 
@@ -118,118 +116,6 @@ void testing_spsm_csr(const Arguments& arg)
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
-
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || K <= 0)
-    {
-        // M == 0 means nnz can only be 0, too
-        static const I safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<I> dcsr_row_ptr(safe_size);
-        device_vector<J> dcsr_col_ind(safe_size);
-        device_vector<T> dcsr_val(safe_size);
-        device_vector<T> dB(safe_size);
-        device_vector<T> dC(safe_size);
-
-        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        // Check SpSM when structures can be created
-        if(M >= 0 && K >= 0 && M == N)
-        {
-            I nnz_A = 0;
-
-            // Pointer mode
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-            J B_m = (trans_B == rocsparse_operation_none) ? M : K;
-            J B_n = (trans_B == rocsparse_operation_none) ? K : M;
-
-            J C_m = (trans_B == rocsparse_operation_none) ? M : K;
-            J C_n = (trans_B == rocsparse_operation_none) ? K : M;
-
-            J ldb = (trans_B == rocsparse_operation_none) ? M : K;
-            J ldc = (trans_B == rocsparse_operation_none) ? M : K;
-
-            // Check structures
-            rocsparse_local_spmat A(M,
-                                    N,
-                                    nnz_A,
-                                    dcsr_row_ptr,
-                                    dcsr_col_ind,
-                                    dcsr_val,
-                                    itype,
-                                    jtype,
-                                    base,
-                                    ttype,
-                                    rocsparse_format_csr);
-
-            rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, rocsparse_order_column);
-
-            rocsparse_local_dnmat C(C_m, C_n, ldc, dB, ttype, rocsparse_order_column);
-
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_spmat_set_attribute(A, rocsparse_spmat_fill_mode, &uplo, sizeof(uplo)),
-                rocsparse_status_success);
-
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_spmat_set_attribute(A, rocsparse_spmat_diag_type, &diag, sizeof(diag)),
-                rocsparse_status_success);
-
-            size_t buffer_size;
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spsm(handle,
-                                                   trans_A,
-                                                   trans_B,
-                                                   &halpha,
-                                                   A,
-                                                   B,
-                                                   C,
-                                                   ttype,
-                                                   alg,
-                                                   buffersize,
-                                                   &buffer_size,
-                                                   nullptr),
-                                    rocsparse_status_success);
-
-            void* dbuffer;
-            CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, safe_size));
-
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spsm(handle,
-                                                   trans_A,
-                                                   trans_B,
-                                                   &halpha,
-                                                   A,
-                                                   B,
-                                                   C,
-                                                   ttype,
-                                                   alg,
-                                                   preprocess,
-                                                   nullptr,
-                                                   dbuffer),
-                                    rocsparse_status_success);
-
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spsm(handle,
-                                                   trans_A,
-                                                   trans_B,
-                                                   &halpha,
-                                                   A,
-                                                   B,
-                                                   C,
-                                                   ttype,
-                                                   alg,
-                                                   compute,
-                                                   &buffer_size,
-                                                   dbuffer),
-                                    rocsparse_status_success);
-            CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
-        }
-
-        return;
-    }
 
     rocsparse_matrix_factory<T, I, J> matrix_factory(arg);
 
@@ -248,8 +134,15 @@ void testing_spsm_csr(const Arguments& arg)
     J C_m = (trans_B == rocsparse_operation_none) ? M : K;
     J C_n = (trans_B == rocsparse_operation_none) ? K : M;
 
-    J ldb = (trans_B == rocsparse_operation_none) ? M : K;
-    J ldc = (trans_B == rocsparse_operation_none) ? M : K;
+    int64_t ldb = (trans_B == rocsparse_operation_none) ? int64_t(ld_multiplier_B) * M
+                                                        : int64_t(ld_multiplier_B) * K;
+    int64_t ldc = (trans_B == rocsparse_operation_none) ? int64_t(ld_multiplier_C) * M
+                                                        : int64_t(ld_multiplier_C) * K;
+
+    int64_t nrowB = ldb;
+    int64_t ncolB = B_n;
+    int64_t nrowC = ldc;
+    int64_t ncolC = C_n;
 
     // Non-squared matrices are not supported
     if(M != N)
@@ -258,32 +151,41 @@ void testing_spsm_csr(const Arguments& arg)
     }
 
     // Allocate host memory for vectors
-    host_dense_matrix<T> hB(B_m, B_n);
-    host_dense_matrix<T> hC_1(C_m, C_n);
-    host_dense_matrix<T> hC_2(C_m, C_n);
-    host_dense_matrix<T> hC_gold(C_m, C_n);
+    host_dense_matrix<T> htemp(B_m, B_n);
+    host_dense_matrix<T> hB(nrowB, ncolB);
+    host_dense_matrix<T> hC_1(nrowC, ncolC);
+    host_dense_matrix<T> hC_2(nrowC, ncolC);
+    host_dense_matrix<T> hC_gold(nrowC, ncolC);
 
-    // Initialize data on CPU
-    rocsparse_matrix_utils::init(hB);
+    rocsparse_matrix_utils::init(htemp);
+    for(J j = 0; j < B_n; j++)
+    {
+        for(J i = 0; i < B_m; i++)
+        {
+            hB[i + ldb * j] = htemp[i + B_m * j];
+        }
+    }
 
-    hC_1    = hB;
-    hC_2    = hB;
-    hC_gold = hB;
+    // Copy B to C
+    for(J j = 0; j < B_n; j++)
+    {
+        for(J i = 0; i < B_m; i++)
+        {
+            hC_1[i + ldc * j] = hB[i + ldb * j];
+        }
+    }
+
+    hC_2    = hC_1;
+    hC_gold = hC_1;
 
     // Allocate device memory
     device_vector<I>       dcsr_row_ptr(M + 1);
     device_vector<J>       dcsr_col_ind(nnz_A);
     device_vector<T>       dcsr_val(nnz_A);
-    device_dense_matrix<T> dB(B_m, B_n);
-    device_dense_matrix<T> dC_1(C_m, C_n);
-    device_dense_matrix<T> dC_2(C_m, C_n);
+    device_dense_matrix<T> dB(nrowB, ncolB);
+    device_dense_matrix<T> dC_1(nrowC, ncolC);
+    device_dense_matrix<T> dC_2(nrowC, ncolC);
     device_vector<T>       dalpha(1);
-
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC_1 || !dC_2 || !dalpha)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(
@@ -291,9 +193,9 @@ void testing_spsm_csr(const Arguments& arg)
     CHECK_HIP_ERROR(
         hipMemcpy(dcsr_col_ind, hcsr_col_ind.data(), sizeof(J) * nnz_A, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val.data(), sizeof(T) * nnz_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dB, hB, sizeof(T) * B_m * B_n, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dC_1, hC_1, sizeof(T) * C_m * C_n, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dC_2, hC_2, sizeof(T) * C_m * C_n, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dB, hB, sizeof(T) * nrowB * ncolB, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dC_1, hC_1, sizeof(T) * nrowC * ncolC, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dC_2, hC_2, sizeof(T) * nrowC * ncolC, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dalpha, &halpha, sizeof(T), hipMemcpyHostToDevice));
 
     // Create descriptors
@@ -329,7 +231,7 @@ void testing_spsm_csr(const Arguments& arg)
                                          C1,
                                          ttype,
                                          alg,
-                                         rocsparse_spsm_stage_auto /*buffersize*/,
+                                         rocsparse_spsm_stage_buffer_size,
                                          &buffer_size,
                                          nullptr));
 
@@ -348,7 +250,7 @@ void testing_spsm_csr(const Arguments& arg)
                                          C1,
                                          ttype,
                                          alg,
-                                         rocsparse_spsm_stage_auto /*preprocess*/,
+                                         rocsparse_spsm_stage_preprocess,
                                          nullptr,
                                          dbuffer));
 
@@ -363,7 +265,7 @@ void testing_spsm_csr(const Arguments& arg)
                                          C2,
                                          ttype,
                                          alg,
-                                         rocsparse_spsm_stage_auto /*preprocess*/,
+                                         rocsparse_spsm_stage_preprocess,
                                          nullptr,
                                          dbuffer));
 
@@ -380,7 +282,7 @@ void testing_spsm_csr(const Arguments& arg)
                                                       C1,
                                                       ttype,
                                                       alg,
-                                                      rocsparse_spsm_stage_auto /*compute*/,
+                                                      rocsparse_spsm_stage_compute,
                                                       &buffer_size,
                                                       dbuffer));
 
@@ -395,15 +297,15 @@ void testing_spsm_csr(const Arguments& arg)
                                                       C2,
                                                       ttype,
                                                       alg,
-                                                      rocsparse_spsm_stage_auto /*compute*/,
+                                                      rocsparse_spsm_stage_compute,
                                                       &buffer_size,
                                                       dbuffer));
 
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // Copy output to host
-        CHECK_HIP_ERROR(hipMemcpy(hC_1, dC_1, sizeof(T) * C_m * C_n, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(T) * C_m * C_n, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hC_1, dC_1, sizeof(T) * nrowC * ncolC, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(T) * nrowC * ncolC, hipMemcpyDeviceToHost));
 
         // CPU csrsm
         J analysis_pivot = -1;
@@ -451,7 +353,7 @@ void testing_spsm_csr(const Arguments& arg)
                                                  C1,
                                                  ttype,
                                                  alg,
-                                                 compute,
+                                                 rocsparse_spsm_stage_compute,
                                                  &buffer_size,
                                                  dbuffer));
         }
@@ -470,7 +372,7 @@ void testing_spsm_csr(const Arguments& arg)
                                                  C1,
                                                  ttype,
                                                  alg,
-                                                 compute,
+                                                 rocsparse_spsm_stage_compute,
                                                  &buffer_size,
                                                  dbuffer));
         }
@@ -483,21 +385,21 @@ void testing_spsm_csr(const Arguments& arg)
         double gbyte_count = csrsv_gbyte_count<T>(M, nnz_A) * K;
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "nnz_A",
+                            display_key_t::nnz_A,
                             nnz_A,
-                            "nrhs",
+                            display_key_t::nrhs,
                             K,
-                            "alpha",
+                            display_key_t::alpha,
                             halpha,
-                            "Algorithm",
+                            display_key_t::algorithm,
                             rocsparse_spsmalg2string(alg),
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

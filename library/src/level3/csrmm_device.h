@@ -34,25 +34,25 @@ template <unsigned int BLOCKSIZE,
           typename A,
           typename B,
           typename C>
-ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
-                                                 bool conj_B,
-                                                 J    M,
-                                                 J    N,
-                                                 J    K,
-                                                 I    nnz,
-                                                 I    offsets_batch_stride_A,
-                                                 I    columns_values_batch_stride_A,
-                                                 T    alpha,
+ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool    conj_A,
+                                                 bool    conj_B,
+                                                 J       M,
+                                                 J       N,
+                                                 J       K,
+                                                 I       nnz,
+                                                 int64_t offsets_batch_stride_A,
+                                                 int64_t columns_values_batch_stride_A,
+                                                 T       alpha,
                                                  const I* __restrict__ csr_row_ptr,
                                                  const J* __restrict__ csr_col_ind,
                                                  const A* __restrict__ csr_val,
                                                  const B* __restrict__ dense_B,
-                                                 J ldb,
-                                                 I batch_stride_B,
-                                                 T beta,
+                                                 int64_t ldb,
+                                                 int64_t batch_stride_B,
+                                                 T       beta,
                                                  C* __restrict__ dense_C,
-                                                 J                    ldc,
-                                                 I                    batch_stride_C,
+                                                 int64_t              ldc,
+                                                 int64_t              batch_stride_C,
                                                  rocsparse_order      order_C,
                                                  rocsparse_index_base idx_base)
 {
@@ -70,7 +70,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
         return;
     }
 
-    J colB = col * ldb;
+    int64_t colB = col * ldb;
 
     __shared__ J shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
     __shared__ T shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
@@ -103,7 +103,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(bool conj_A,
 
         if(col < N)
         {
-            for(J i = 0; i < WF_SIZE; ++i)
+            for(unsigned int i = 0; i < WF_SIZE; ++i)
             {
                 sum = rocsparse_fma<T>(
                     shared_val[wid][i],
@@ -151,27 +151,27 @@ template <unsigned int BLOCKSIZE,
           typename A,
           typename B,
           typename C>
-ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
-                                                      bool conj_B,
-                                                      J    offset,
-                                                      J    ncol,
-                                                      J    M,
-                                                      J    N,
-                                                      J    K,
-                                                      I    nnz,
-                                                      I    offsets_batch_stride_A,
-                                                      I    columns_values_batch_stride_A,
-                                                      T    alpha,
+ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool    conj_A,
+                                                      bool    conj_B,
+                                                      J       offset,
+                                                      J       ncol,
+                                                      J       M,
+                                                      J       N,
+                                                      J       K,
+                                                      I       nnz,
+                                                      int64_t offsets_batch_stride_A,
+                                                      int64_t columns_values_batch_stride_A,
+                                                      T       alpha,
                                                       const I* __restrict__ csr_row_ptr,
                                                       const J* __restrict__ csr_col_ind,
                                                       const A* __restrict__ csr_val,
                                                       const B* __restrict__ dense_B,
-                                                      J ldb,
-                                                      I batch_stride_B,
-                                                      T beta,
+                                                      int64_t ldb,
+                                                      int64_t batch_stride_B,
+                                                      T       beta,
                                                       C* __restrict__ dense_C,
-                                                      J                    ldc,
-                                                      I                    batch_stride_C,
+                                                      int64_t              ldc,
+                                                      int64_t              batch_stride_C,
                                                       rocsparse_order      order_C,
                                                       rocsparse_index_base idx_base)
 {
@@ -202,7 +202,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
 
         T sum[LOOPS];
 
-        for(J p = 0; p < LOOPS; p++)
+        for(unsigned int p = 0; p < LOOPS; p++)
         {
             sum[p] = static_cast<T>(0);
         }
@@ -215,11 +215,9 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
 
             if(k < row_end)
             {
-                shared_col[wid][lid]
-                    = ldb
-                      * (rocsparse_nontemporal_load(csr_col_ind + k
-                                                    + columns_values_batch_stride_A * batch)
-                         - idx_base);
+                shared_col[wid][lid] = (rocsparse_nontemporal_load(
+                                            csr_col_ind + k + columns_values_batch_stride_A * batch)
+                                        - idx_base);
                 shared_val[wid][lid] = conj_val(
                     rocsparse_nontemporal_load(csr_val + k + columns_values_batch_stride_A * batch),
                     conj_A);
@@ -232,12 +230,12 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
 
             __threadfence_block();
 
-            for(J i = 0; i < WF_SIZE; ++i)
+            for(unsigned int i = 0; i < WF_SIZE; ++i)
             {
-                J sc = shared_col[wid][i];
-                T sv = shared_val[wid][i];
+                int64_t sc = ldb * shared_col[wid][i];
+                T       sv = shared_val[wid][i];
 
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     sum[p] = rocsparse_fma<T>(sv,
                                               conj_val(rocsparse_ldg(dense_B + col + p * WF_SIZE
@@ -252,7 +250,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
         {
             if(order_C == rocsparse_order_column)
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch]
                         = alpha * sum[p];
@@ -260,7 +258,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
             }
             else
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch]
                         = alpha * sum[p];
@@ -271,7 +269,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
         {
             if(order_C == rocsparse_order_column)
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch]
                         = rocsparse_fma<T>(
@@ -282,7 +280,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(bool conj_A,
             }
             else
             {
-                for(J p = 0; p < LOOPS; p++)
+                for(unsigned int p = 0; p < LOOPS; p++)
                 {
                     dense_C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch]
                         = rocsparse_fma<T>(
@@ -303,27 +301,27 @@ template <unsigned int BLOCKSIZE,
           typename A,
           typename B,
           typename C>
-ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
-                                                           bool conj_B,
-                                                           J    offset,
-                                                           J    ncol,
-                                                           J    M,
-                                                           J    N,
-                                                           J    K,
-                                                           I    nnz,
-                                                           I    offsets_batch_stride_A,
-                                                           I    columns_values_batch_stride_A,
-                                                           T    alpha,
+ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool    conj_A,
+                                                           bool    conj_B,
+                                                           J       offset,
+                                                           J       ncol,
+                                                           J       M,
+                                                           J       N,
+                                                           J       K,
+                                                           I       nnz,
+                                                           int64_t offsets_batch_stride_A,
+                                                           int64_t columns_values_batch_stride_A,
+                                                           T       alpha,
                                                            const I* __restrict__ csr_row_ptr,
                                                            const J* __restrict__ csr_col_ind,
                                                            const A* __restrict__ csr_val,
                                                            const B* __restrict__ dense_B,
-                                                           J ldb,
-                                                           I batch_stride_B,
-                                                           T beta,
+                                                           int64_t ldb,
+                                                           int64_t batch_stride_B,
+                                                           T       beta,
                                                            C* __restrict__ dense_C,
-                                                           J                    ldc,
-                                                           I                    batch_stride_C,
+                                                           int64_t              ldc,
+                                                           int64_t              batch_stride_C,
                                                            rocsparse_order      order_C,
                                                            rocsparse_index_base idx_base)
 {
@@ -361,11 +359,9 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
 
             if(k < row_end)
             {
-                shared_col[wid][lid]
-                    = ldb
-                      * (rocsparse_nontemporal_load(csr_col_ind + k
-                                                    + columns_values_batch_stride_A * batch)
-                         - idx_base);
+                shared_col[wid][lid] = (rocsparse_nontemporal_load(
+                                            csr_col_ind + k + columns_values_batch_stride_A * batch)
+                                        - idx_base);
                 shared_val[wid][lid] = conj_val(
                     rocsparse_nontemporal_load(csr_val + k + columns_values_batch_stride_A * batch),
                     conj_A);
@@ -380,13 +376,14 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
 
             if(col < ncol)
             {
-                for(J i = 0; i < WF_SIZE; ++i)
+                for(unsigned int i = 0; i < WF_SIZE; ++i)
                 {
-                    sum = rocsparse_fma<T>(shared_val[wid][i],
-                                           conj_val(rocsparse_ldg(dense_B + col + shared_col[wid][i]
-                                                                  + batch_stride_B * batch),
-                                                    conj_B),
-                                           sum);
+                    sum = rocsparse_fma<T>(
+                        shared_val[wid][i],
+                        conj_val(rocsparse_ldg(dense_B + col + ldb * shared_col[wid][i]
+                                               + batch_stride_B * batch),
+                                 conj_B),
+                        sum);
                 }
             }
         }
@@ -424,7 +421,7 @@ ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(bool conj_A,
 // Scale kernel for beta != 1.0
 template <typename I, typename T>
 ROCSPARSE_DEVICE_ILF void csrmm_scale_device(
-    I m, I n, T beta, T* __restrict__ data, I ld, I stride, rocsparse_order order)
+    I m, I n, T beta, T* __restrict__ data, int64_t ld, int64_t stride, rocsparse_order order)
 {
     I gidx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     I gidy = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -457,25 +454,25 @@ template <unsigned int BLOCKSIZE,
           typename A,
           typename B,
           typename C>
-ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
-                                                 bool conj_B,
-                                                 J    M,
-                                                 J    N,
-                                                 J    K,
-                                                 I    nnz,
-                                                 I    offsets_batch_stride_A,
-                                                 I    columns_values_batch_stride_A,
-                                                 T    alpha,
+ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool    conj_A,
+                                                 bool    conj_B,
+                                                 J       M,
+                                                 J       N,
+                                                 J       K,
+                                                 I       nnz,
+                                                 int64_t offsets_batch_stride_A,
+                                                 int64_t columns_values_batch_stride_A,
+                                                 T       alpha,
                                                  const I* __restrict__ csr_row_ptr,
                                                  const J* __restrict__ csr_col_ind,
                                                  const A* __restrict__ csr_val,
                                                  const B* __restrict__ dense_B,
-                                                 J ldb,
-                                                 I batch_stride_B,
-                                                 T beta,
+                                                 int64_t ldb,
+                                                 int64_t batch_stride_B,
+                                                 T       beta,
                                                  C* __restrict__ dense_C,
-                                                 J                    ldc,
-                                                 I                    batch_stride_C,
+                                                 int64_t              ldc,
+                                                 int64_t              batch_stride_C,
                                                  rocsparse_order      order_C,
                                                  rocsparse_index_base idx_base)
 {
@@ -493,8 +490,8 @@ ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(bool conj_A,
         return;
     }
 
-    J cid  = lid + hipBlockIdx_y * WF_SIZE;
-    J colB = cid * ldb;
+    J       cid  = lid + hipBlockIdx_y * WF_SIZE;
+    int64_t colB = cid * ldb;
 
     __shared__ T shared_B[BLOCKSIZE / WF_SIZE][WF_SIZE];
     shared_B[wid][lid] = (cid < N) ? conj_val(dense_B[row + colB + batch_stride_B * batch], conj_B)
@@ -541,25 +538,25 @@ template <unsigned int BLOCKSIZE,
           typename A,
           typename B,
           typename C>
-ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool conj_A,
-                                                 bool conj_B,
-                                                 J    M,
-                                                 J    N,
-                                                 J    K,
-                                                 I    nnz,
-                                                 I    offsets_batch_stride_A,
-                                                 I    columns_values_batch_stride_A,
-                                                 T    alpha,
+ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(bool    conj_A,
+                                                 bool    conj_B,
+                                                 J       M,
+                                                 J       N,
+                                                 J       K,
+                                                 I       nnz,
+                                                 int64_t offsets_batch_stride_A,
+                                                 int64_t columns_values_batch_stride_A,
+                                                 T       alpha,
                                                  const I* __restrict__ csr_row_ptr,
                                                  const J* __restrict__ csr_col_ind,
                                                  const A* __restrict__ csr_val,
                                                  const B* __restrict__ dense_B,
-                                                 J ldb,
-                                                 I batch_stride_B,
-                                                 T beta,
+                                                 int64_t ldb,
+                                                 int64_t batch_stride_B,
+                                                 T       beta,
                                                  C* __restrict__ dense_C,
-                                                 J                    ldc,
-                                                 I                    batch_stride_C,
+                                                 int64_t              ldc,
+                                                 int64_t              batch_stride_C,
                                                  rocsparse_order      order_C,
                                                  rocsparse_index_base idx_base)
 {

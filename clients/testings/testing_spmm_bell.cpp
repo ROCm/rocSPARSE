@@ -39,7 +39,7 @@ void testing_spmm_bell_bad_arg(const Arguments& arg)
     rocsparse_dnmat_descr C           = (rocsparse_dnmat_descr)0x4;
     rocsparse_datatype    ttype       = rocsparse_datatype_f32_r;
     rocsparse_spmm_alg    alg         = rocsparse_spmm_alg_bell;
-    rocsparse_spmm_stage  stage       = rocsparse_spmm_stage_auto;
+    rocsparse_spmm_stage  stage       = rocsparse_spmm_stage_compute;
     size_t*               buffer_size = (size_t*)0x4;
     void*                 buffer      = (void*)0x4;
 
@@ -87,97 +87,6 @@ void testing_spmm_bell(const Arguments& arg)
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || K <= 0 || block_dim <= 0)
-    {
-        const rocsparse_int safe_width = 4;
-        // Pointer mode
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        I nrow_A = trans_A == rocsparse_operation_none ? M : K;
-        I ncol_A = trans_A == rocsparse_operation_none ? K : M;
-
-        rocsparse_local_spmat A(nrow_A,
-                                ncol_A,
-                                direction,
-                                block_dim,
-                                std::min(safe_width * block_dim, ncol_A),
-                                (I*)0x4,
-                                (T*)0x4,
-                                itype,
-                                base,
-                                ttype);
-        I                     ldb = order_B == rocsparse_order_column
-                                        ? (trans_B == rocsparse_operation_none ? 2 * K : 2 * N)
-                                        : (trans_B == rocsparse_operation_none ? 2 * N : 2 * K);
-
-        I nrow_B = trans_B == rocsparse_operation_none ? K : N;
-        I ncol_B = trans_B == rocsparse_operation_none ? N : K;
-
-        I                     ldc    = order_C == rocsparse_order_column ? 2 * M : 2 * N;
-        I                     nrow_C = M;
-        I                     ncol_C = N;
-        rocsparse_local_dnmat B(nrow_B, ncol_B, ldb, (void*)0x4, ttype, order_B);
-        rocsparse_local_dnmat C(nrow_C, ncol_C, ldc, (void*)0x4, ttype, order_C);
-
-        void*  dbuffer     = nullptr;
-        size_t buffer_size = sizeof(I);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                               trans_A,
-                                               trans_B,
-                                               h_alpha,
-                                               A,
-                                               B,
-                                               h_beta,
-                                               C,
-                                               ttype,
-                                               alg,
-                                               rocsparse_spmm_stage_buffer_size,
-                                               &buffer_size,
-                                               dbuffer),
-                                (M < 0 || N < 0 || K < 0 || block_dim <= 0)
-                                    ? rocsparse_status_invalid_pointer
-                                    : rocsparse_status_success);
-
-        CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                               trans_A,
-                                               trans_B,
-                                               h_alpha,
-                                               A,
-                                               B,
-                                               h_beta,
-                                               C,
-                                               ttype,
-                                               alg,
-                                               rocsparse_spmm_stage_preprocess,
-                                               &buffer_size,
-                                               dbuffer),
-                                (M < 0 || N < 0 || K < 0 || block_dim <= 0)
-                                    ? rocsparse_status_invalid_pointer
-                                    : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                               trans_A,
-                                               trans_B,
-                                               h_alpha,
-                                               A,
-                                               B,
-                                               h_beta,
-                                               C,
-                                               ttype,
-                                               alg,
-                                               rocsparse_spmm_stage_compute,
-                                               &buffer_size,
-                                               dbuffer),
-                                (M < 0 || N < 0 || K < 0 || block_dim <= 0)
-                                    ? rocsparse_status_invalid_pointer
-                                    : rocsparse_status_success);
-        CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
-        return;
-    }
 
     rocsparse_matrix_factory<T, I, I> matrix_factory(arg);
 
@@ -452,26 +361,26 @@ void testing_spmm_bell(const Arguments& arg)
                                                   *h_beta != static_cast<T>(0));
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "K",
+                            display_key_t::K,
                             K,
-                            "nnz",
+                            display_key_t::nnz,
                             dA.nnz,
-                            "alpha",
+                            display_key_t::alpha,
                             *h_alpha,
-                            "beta",
+                            display_key_t::beta,
                             *h_beta,
-                            "Algorithm",
+                            display_key_t::algorithm,
                             rocsparse_spmmalg2string(alg),
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
-                            gpu_time_used / 1e3);
+                            display_key_t::time_ms,
+                            get_gpu_time_msec(gpu_time_used));
     }
 
     CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));

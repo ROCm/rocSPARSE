@@ -51,7 +51,7 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
     rocsparse_order      order_B     = rocsparse_order_column;
     rocsparse_order      order_C     = rocsparse_order_column;
     rocsparse_spmm_alg   alg         = rocsparse_spmm_alg_default;
-    rocsparse_spmm_stage stage       = rocsparse_spmm_stage_auto;
+    rocsparse_spmm_stage stage       = rocsparse_spmm_stage_compute;
 
     rocsparse_indextype itype = get_indextype<I>();
     rocsparse_indextype jtype = get_indextype<J>();
@@ -153,15 +153,17 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
 template <typename I, typename J, typename T>
 void testing_spmm_batched_csr(const Arguments& arg)
 {
-    J                    M       = arg.M;
-    J                    N       = arg.N;
-    J                    K       = arg.K;
-    rocsparse_operation  trans_A = arg.transA;
-    rocsparse_operation  trans_B = arg.transB;
-    rocsparse_index_base base    = arg.baseA;
-    rocsparse_spmm_alg   alg     = arg.spmm_alg;
-    rocsparse_order      order_B = arg.orderB;
-    rocsparse_order      order_C = arg.orderC;
+    J                    M               = arg.M;
+    J                    N               = arg.N;
+    J                    K               = arg.K;
+    rocsparse_operation  trans_A         = arg.transA;
+    rocsparse_operation  trans_B         = arg.transB;
+    rocsparse_index_base base            = arg.baseA;
+    rocsparse_spmm_alg   alg             = arg.spmm_alg;
+    rocsparse_order      order_B         = arg.orderB;
+    rocsparse_order      order_C         = arg.orderC;
+    rocsparse_int        ld_multiplier_B = arg.ld_multiplier_B;
+    rocsparse_int        ld_multiplier_C = arg.ld_multiplier_C;
 
     J batch_count_A = arg.batch_count_A;
     J batch_count_B = arg.batch_count_B;
@@ -177,11 +179,6 @@ void testing_spmm_batched_csr(const Arguments& arg)
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
-
-    if(M <= 0 || N <= 0 || K <= 0)
-    {
-        return;
-    }
 
     bool Ci_A_Bi  = (batch_count_A == 1 && batch_count_B == batch_count_C);
     bool Ci_Ai_B  = (batch_count_B == 1 && batch_count_A == batch_count_C);
@@ -217,23 +214,26 @@ void testing_spmm_batched_csr(const Arguments& arg)
     J C_m = M;
     J C_n = N;
 
-    J ldb = (order_B == rocsparse_order_column)
-                ? ((trans_B == rocsparse_operation_none) ? (2 * K) : (2 * N))
-                : ((trans_B == rocsparse_operation_none) ? (2 * N) : (2 * K));
-    J ldc = (order_C == rocsparse_order_column) ? (2 * M) : (2 * N);
+    int64_t ldb = (order_B == rocsparse_order_column)
+                      ? ((trans_B == rocsparse_operation_none) ? (int64_t(ld_multiplier_B) * K)
+                                                               : (int64_t(ld_multiplier_B) * N))
+                      : ((trans_B == rocsparse_operation_none) ? (int64_t(ld_multiplier_B) * N)
+                                                               : (int64_t(ld_multiplier_B) * K));
+    int64_t ldc = (order_C == rocsparse_order_column) ? (int64_t(ld_multiplier_C) * M)
+                                                      : (int64_t(ld_multiplier_C) * N);
 
-    J nrowB = (order_B == rocsparse_order_column) ? ldb : B_m;
-    J ncolB = (order_B == rocsparse_order_column) ? B_n : ldb;
-    J nrowC = (order_C == rocsparse_order_column) ? ldc : C_m;
-    J ncolC = (order_C == rocsparse_order_column) ? C_n : ldc;
+    int64_t nrowB = (order_B == rocsparse_order_column) ? ldb : B_m;
+    int64_t ncolB = (order_B == rocsparse_order_column) ? B_n : ldb;
+    int64_t nrowC = (order_C == rocsparse_order_column) ? ldc : C_m;
+    int64_t ncolC = (order_C == rocsparse_order_column) ? C_n : ldc;
 
-    I nnz_B = nrowB * ncolB;
-    I nnz_C = nrowC * ncolC;
+    int64_t nnz_B = nrowB * ncolB;
+    int64_t nnz_C = nrowC * ncolC;
 
-    I offsets_batch_stride_A        = (batch_count_A > 1) ? (A_m + 1) : 0;
-    I columns_values_batch_stride_A = (batch_count_A > 1) ? nnz_A : 0;
-    I batch_stride_B                = (batch_count_B > 1) ? nnz_B : 0;
-    I batch_stride_C                = (batch_count_C > 1) ? nnz_C : 0;
+    int64_t offsets_batch_stride_A        = (batch_count_A > 1) ? (A_m + 1) : 0;
+    int64_t columns_values_batch_stride_A = (batch_count_A > 1) ? nnz_A : 0;
+    int64_t batch_stride_B                = (batch_count_B > 1) ? nnz_B : 0;
+    int64_t batch_stride_C                = (batch_count_C > 1) ? nnz_C : 0;
 
     // Allocate host memory for all batches of A matrix
     host_vector<I> hcsr_row_ptr(batch_count_A * (A_m + 1));
@@ -467,31 +467,31 @@ void testing_spmm_batched_csr(const Arguments& arg)
                                                           hbeta != static_cast<T>(0));
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "K",
+                            display_key_t::K,
                             K,
-                            "nnz_A",
+                            display_key_t::nnz_A,
                             nnz_A,
-                            "batch_count_A",
+                            display_key_t::batch_count_A,
                             batch_count_A,
-                            "batch_count_B",
+                            display_key_t::batch_count_B,
                             batch_count_B,
-                            "batch_count_C",
+                            display_key_t::batch_count_C,
                             batch_count_C,
-                            "alpha",
+                            display_key_t::alpha,
                             halpha,
-                            "beta",
+                            display_key_t::beta,
                             hbeta,
-                            "Algorithm",
+                            display_key_t::algorithm,
                             rocsparse_spmmalg2string(alg),
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

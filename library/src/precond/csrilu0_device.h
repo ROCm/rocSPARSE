@@ -133,11 +133,11 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
         }
 
         // Spin loop until dependency has been resolved
-        while(!atomicOr(&done[local_col], 0))
+        while(!__hip_atomic_load(&done[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT))
             ;
 
         // Make sure updated csr_val is visible
-        __threadfence();
+        __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
@@ -225,7 +225,7 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
     if(lid == 0)
     {
         // First lane writes "we are done" flag
-        atomicOr(&done[row], 1);
+        __hip_atomic_store(&done[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
     }
 }
 
@@ -286,7 +286,8 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
         }
 
         // Spin loop until dependency has been resolved
-        int          local_done    = atomicOr(&done[local_col], 0);
+        int local_done
+            = __hip_atomic_load(&done[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
         unsigned int times_through = 0;
         while(!local_done)
         {
@@ -303,11 +304,12 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
                 }
             }
 
-            local_done = atomicOr(&done[local_col], 0);
+            local_done
+                = __hip_atomic_load(&done[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
         }
 
         // Make sure updated csr_val is visible
-        __threadfence();
+        __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
@@ -397,6 +399,6 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
     if(lid == 0)
     {
         // First lane writes "we are done" flag
-        atomicOr(&done[row], 1);
+        __hip_atomic_store(&done[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
     }
 }
