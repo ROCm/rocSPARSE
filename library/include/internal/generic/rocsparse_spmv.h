@@ -59,55 +59,40 @@ extern "C" {
 *  type for \f$\alpha\f$ and \f$\beta\f$. The advantage of using different data types is to save on memory bandwidth and storage
 *  when a user application allows while performing the actual computation in a higher precision.
 *
-*  Uniform Precisions:
-*  \verbatim
-*  |----------------------------------------------------|
-*  |             A / X / Y / compute_type               |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f32_r               |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f64_r               |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f32_c               |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f64_c               |
-*  |----------------------------------------------------|
-*  \endverbatim
+*  \par Uniform Precisions:
+*  <table>
+*  <caption id="spmv_uniform">Uniform Precisions</caption>
+*  <tr><th>A / X / Y / compute_type
+*  <tr><td>rocsparse_datatype_f32_r
+*  <tr><td>rocsparse_datatype_f64_r
+*  <tr><td>rocsparse_datatype_f32_c
+*  <tr><td>rocsparse_datatype_f64_c
+*  </table>
 *
-*  Mixed precisions:
-*  \verbatim
-*  |-------------------------|--------------------------|--------------------------|
-*  |         A / X           |             Y            |       compute_type       |
-*  |-------------------------|--------------------------|--------------------------|
-*  | rocsparse_datatype_i8_r | rocsparse_datatype_i32_r | rocsparse_datatype_i32_r |
-*  |-------------------------|--------------------------|--------------------------|
-*  | rocsparse_datatype_i8_r | rocsparse_datatype_f32_r | rocsparse_datatype_f32_r |
-*  |-------------------------|--------------------------|--------------------------|
-*  | rocsparse_datatype_i8_r | rocsparse_datatype_i32_r | rocsparse_datatype_i32_r |
-*  |-------------------------|--------------------------|--------------------------|
-*  \endverbatim
+*  \par Mixed precisions:
+*  <table>
+*  <caption id="spmv_mixed">Mixed Precisions</caption>
+*  <tr><th>A / X                   <th>Y                        <th>compute_type
+*  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_i32_r <td>rocsparse_datatype_i32_r
+*  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_f32_r <td>rocsparse_datatype_f32_r
+*  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_i32_r <td>rocsparse_datatype_i32_r
+*  </table>
 *
-*  Mixed-regular real precisions
-*  \verbatim
-*  |----------------------------|----------------------------|
-*  |              A             |    X / Y / compute_type    |
-*  |----------------------------|----------------------------|
-*  |  rocsparse_datatype_f32_r  |  rocsparse_datatype_f64_r  |
-*  |----------------------------|----------------------------|
-*  |  rocsparse_datatype_f32_c  |  rocsparse_datatype_f64_c  |
-*  |----------------------------|----------------------------|
-*  \endverbatim
+*  \par Mixed-regular real precisions
+*  <table>
+*  <caption id="spmv_mixed_regular_real">Mixed-regular real precisions</caption>
+*  <tr><th>A                        <th>X / Y / compute_type
+*  <tr><td>rocsparse_datatype_f32_r <td>rocsparse_datatype_f64_r
+*  <tr><td>rocsparse_datatype_f32_c <td>rocsparse_datatype_f64_c
+*  </table>
 *
-*  Mixed-regular Complex precisions
-*  \verbatim
-*  |----------------------------|----------------------------|
-*  |              A             |    X / Y / compute_type    |
-*  |----------------------------|----------------------------|
-*  |  rocsparse_datatype_f32_r  |  rocsparse_datatype_f32_c  |
-*  |----------------------------|----------------------------|
-*  |  rocsparse_datatype_f64_r  |  rocsparse_datatype_f64_c  |
-*  |----------------------------|----------------------------|
-*  \endverbatim
+*  \par Mixed-regular Complex precisions
+*  <table>
+*  <caption id="spmv_mixed_regular_complex">Mixed-regular Complex precisions</caption>
+*  <tr><th>A                        <th>X / Y / compute_type
+*  <tr><td>rocsparse_datatype_f32_r <td>rocsparse_datatype_f32_c
+*  <tr><td>rocsparse_datatype_f64_r <td>rocsparse_datatype_f64_c
+*  </table>
 *
 *  \note
 *  This function writes the required allocation size (in bytes) to \p buffer_size and
@@ -353,55 +338,40 @@ ROCSPARSE_EXPORT rocsparse_status rocsparse_spmv(rocsparse_handle            han
 *  type for \f$\alpha\f$ and \f$\beta\f$. The advantage of using different data types is to save on memory bandwidth and storage
 *  when a user application allows while performing the actual computation in a higher precision.
 *
-*  Uniform Precisions:
-*  \verbatim
-*  |----------------------------------------------------|
-*  |             A / X / Y / compute_type               |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f32_r               |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f64_r               |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f32_c               |
-*  |----------------------------------------------------|
-*  |             rocsparse_datatype_f64_c               |
-*  |----------------------------------------------------|
-*  \endverbatim
+*  \par Uniform Precisions:
+*  <table>
+*  <caption id="spmv_uniform_ex">Uniform Precisions</caption>
+*  <tr><th>A / X / Y / compute_type
+*  <tr><td>rocsparse_datatype_f32_r
+*  <tr><td>rocsparse_datatype_f64_r
+*  <tr><td>rocsparse_datatype_f32_c
+*  <tr><td>rocsparse_datatype_f64_c
+*  </table>
 *
-*  Mixed-regular real precisions
-*  \verbatim
-*  |----------------------------|----------------------------|
-*  |              A             |    X / Y / compute_type    |
-*  |----------------------------|----------------------------|
-*  |  rocsparse_datatype_f32_r  |  rocsparse_datatype_f64_r  |
-*  |----------------------------|----------------------------|
-*  |  rocsparse_datatype_f32_c  |  rocsparse_datatype_f64_c  |
-*  |----------------------------|----------------------------|
-*  \endverbatim
+*  \par Mixed precisions:
+*  <table>
+*  <caption id="spmv_mixed_ex">Mixed Precisions</caption>
+*  <tr><th>A / X                   <th>Y                        <th>compute_type
+*  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_i32_r <td>rocsparse_datatype_i32_r
+*  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_f32_r <td>rocsparse_datatype_f32_r
+*  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_i32_r <td>rocsparse_datatype_i32_r
+*  </table>
 *
-*  Mixed precisions:
-*  \verbatim
-*  |-------------------------|--------------------------|--------------------------|
-*  |         A / X           |             Y            |       compute_type       |
-*  |-------------------------|--------------------------|--------------------------|
-*  | rocsparse_datatype_i8_r | rocsparse_datatype_i32_r | rocsparse_datatype_i32_r |
-*  |-------------------------|--------------------------|--------------------------|
-*  | rocsparse_datatype_i8_r | rocsparse_datatype_f32_r | rocsparse_datatype_f32_r |
-*  |-------------------------|--------------------------|--------------------------|
-*  | rocsparse_datatype_i8_r | rocsparse_datatype_i32_r | rocsparse_datatype_i32_r |
-*  |-------------------------|--------------------------|--------------------------|
-*  \endverbatim
+*  \par Mixed-regular real precisions
+*  <table>
+*  <caption id="spmv_mixed_regular_real_ex">Mixed-regular real precisions</caption>
+*  <tr><th>A                        <th>X / Y / compute_type
+*  <tr><td>rocsparse_datatype_f32_r <td>rocsparse_datatype_f64_r
+*  <tr><td>rocsparse_datatype_f32_c <td>rocsparse_datatype_f64_c
+*  </table>
 *
-*  Mixed-regular Complex precisions
-*  \verbatim
-*  |----------------------------|----------------------------|
-*  |              A             |    X / Y / compute_type    |
-*  |----------------------------|----------------------------|
-*  |  rocsparse_datatype_f32_r  |  rocsparse_datatype_f32_c  |
-*  |----------------------------|----------------------------|
-*  |  rocsparse_datatype_f64_r  |  rocsparse_datatype_f64_c  |
-*  |----------------------------|----------------------------|
-*  \endverbatim
+*  \par Mixed-regular Complex precisions
+*  <table>
+*  <caption id="spmv_mixed_regular_complex_ex">Mixed-regular Complex precisions</caption>
+*  <tr><th>A                        <th>X / Y / compute_type
+*  <tr><td>rocsparse_datatype_f32_r <td>rocsparse_datatype_f32_c
+*  <tr><td>rocsparse_datatype_f64_r <td>rocsparse_datatype_f64_c
+*  </table>
 *
 *  \note
 *  This function writes the required allocation size (in bytes) to \p buffer_size and

@@ -46,22 +46,16 @@ extern "C" {
 *      }
 *  \endcode
 *
-*  Uniform Precisions:
-*  \verbatim
-*  |---------------------------------|
-*  |             X / Y               |
-*  |---------------------------------|
-*  |     rocsparse_datatype_i8_r     |
-*  |---------------------------------|
-*  |     rocsparse_datatype_f32_r    |
-*  |---------------------------------|
-*  |     rocsparse_datatype_f64_r    |
-*  |---------------------------------|
-*  |     rocsparse_datatype_f32_c    |
-*  |---------------------------------|
-*  |     rocsparse_datatype_f64_c    |
-*  |---------------------------------|
-*  \endverbatim
+*  \par Uniform Precisions:
+*  <table>
+*  <caption id="scatter_uniform">Uniform Precisions</caption>
+*  <tr><th>X / Y
+*  <tr><td>rocsparse_datatype_i8_r
+*  <tr><td>rocsparse_datatype_f32_r
+*  <tr><td>rocsparse_datatype_f64_r
+*  <tr><td>rocsparse_datatype_f32_c
+*  <tr><td>rocsparse_datatype_f64_c
+*  </table>
 *
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.

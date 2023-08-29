@@ -4,7 +4,7 @@ rocSPARSE exposes a common interface that provides Basic Linear Algebra Subrouti
 
 ## Documentation
 
-The latest rocSPARSE documentation and API description can be found [here][] or downloaded as [pdf][].
+The latest rocSPARSE documentation and API description can be found [here][].
 
 Run the commands below to build documentation locally:
 
@@ -109,5 +109,4 @@ The [license file][] can be found in the main repository.
 [GTest]: https://github.com/google/googletest
 [the issue tracker]: https://github.com/ROCmSoftwarePlatform/rocSPARSE/issues
 [license file]: https://github.com/ROCmSoftwarePlatform/rocSPARSE
-[here]: https://rocsparse.readthedocs.io
-[pdf]: https://rocsparse.readthedocs.io/_/downloads/en/master/pdf/
+[here]: https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/

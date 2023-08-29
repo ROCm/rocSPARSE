@@ -611,7 +611,7 @@ Function name                                                                 si
 :cpp:func:`rocsparse_bsrgeam_nnzb`
 :cpp:func:`rocsparse_Xbsrgeam() <rocsparse_sbsrgeam>`                         x      x      x              x
 :cpp:func:`rocsparse_Xbsrgemm_buffer_size() <rocsparse_sbsrgemm_buffer_size>` x      x      x              x
-:cpp:func:`rocsparse_bsrgemm_nnz`
+:cpp:func:`rocsparse_bsrgemm_nnzb`
 :cpp:func:`rocsparse_Xbsrgemm() <rocsparse_sbsrgemm>`                         x      x      x              x
 :cpp:func:`rocsparse_csrgeam_nnz`
 :cpp:func:`rocsparse_Xcsrgeam() <rocsparse_scsrgeam>`                         x      x      x              x
@@ -675,7 +675,7 @@ Function name                                                                   
 :cpp:func:`rocsparse_csr2coo`
 :cpp:func:`rocsparse_csr2csc_buffer_size`
 :cpp:func:`rocsparse_Xcsr2csc() <rocsparse_scsr2csc>`                                                                     x      x      x              x
-:cpp:func:`rocsparse_Xgebsr2gebsc_buffer_size`                                                                            x      x      x              x
+:cpp:func:`rocsparse_Xgebsr2gebsc_buffer_size() <rocsparse_sgebsr2gebsc_buffer_size>`                                     x      x      x              x
 :cpp:func:`rocsparse_Xgebsr2gebsc() <rocsparse_sgebsr2gebsc>`                                                             x      x      x              x
 :cpp:func:`rocsparse_csr2ell_width`
 :cpp:func:`rocsparse_Xcsr2ell() <rocsparse_scsr2ell>`                                                                     x      x      x              x

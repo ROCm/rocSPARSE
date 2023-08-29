@@ -1,6 +1,6 @@
 # Change Log for rocSPARSE
 
-Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
+Full documentation for rocSPARSE is available at [rocm.docs.amd.com](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
 ## rocSPARSE 3.0.1
 ### Added
