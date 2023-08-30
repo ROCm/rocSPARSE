@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -74,11 +74,16 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSPARSE with code coverage enabled" OFF)
 option(BUILD_ADDRESS_SANITIZER "Build rocSPARSE with address sanitizer enabled" OFF)
 option(BUILD_MEMSTAT "Build rocSPARSE with memory statistics enabled" OFF)
+option(BUILD_COMPRESSED_DBG "Enable compressed debug symbols" ON)
 
 #
 if(BUILD_CODE_COVERAGE)
   add_compile_options(-fprofile-arcs -ftest-coverage)
   add_link_options(--coverage -lgcov)
+endif()
+
+if(BUILD_COMPRESSED_DBG)
+  add_compile_options($<$<CONFIG:Debug>:-gz> $<$<CONFIG:RelWithDebInfo>:-gz>)
 endif()
 
 if(BUILD_ADDRESS_SANITIZER)
@@ -179,7 +184,7 @@ if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
 endif( )
 
 # Setup version
-set(VERSION_STRING "3.0.0")
+set(VERSION_STRING "3.0.1")
 set(SOVERSION_STRING "1.0.0")
 
 rocm_setup_version(VERSION ${VERSION_STRING})

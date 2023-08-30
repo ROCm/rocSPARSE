@@ -52,32 +52,6 @@ void testing_axpby(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
-    // Argument sanity check before allocating invalid memory
-    if(size <= 0 || nnz <= 0)
-    {
-        // Allocate memory on device
-        device_vector<T> dy(size > 0 ? size : 100);
-
-        if(!dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        // Check structures
-        rocsparse_local_spvec x(size, nnz, nullptr, nullptr, itype, base, ttype);
-        rocsparse_local_dnvec y(size, dy, ttype);
-
-        // Check Scatter when structures were created
-        if(size >= 0 && nnz >= 0)
-        {
-            EXPECT_ROCSPARSE_STATUS(rocsparse_axpby(handle, &h_alpha, x, &h_beta, y),
-                                    rocsparse_status_success);
-        }
-
-        return;
-    }
-
     // Allocate host memory for matrix
     host_vector<I> hx_ind(nnz);
     host_vector<T> hx_val(nnz);
@@ -100,12 +74,6 @@ void testing_axpby(const Arguments& arg)
     device_vector<T> dy_2(size);
     device_vector<T> d_alpha(1);
     device_vector<T> d_beta(1);
-
-    if(!dx_ind || !dx_val || !dy_1 || !dy_2 || !d_alpha || !d_beta)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dx_ind, hx_ind, sizeof(I) * nnz, hipMemcpyHostToDevice));
@@ -169,19 +137,19 @@ void testing_axpby(const Arguments& arg)
         double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
 
-        display_timing_info("size",
+        display_timing_info(display_key_t::size,
                             size,
-                            "nnz",
+                            display_key_t::nnz,
                             nnz,
-                            "alpha",
+                            display_key_t::alpha,
                             h_alpha,
-                            "beta",
+                            display_key_t::beta,
                             h_beta,
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 }

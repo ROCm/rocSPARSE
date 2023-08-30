@@ -34,7 +34,7 @@ rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
                                               const I*                  csx_row_col_ptr,
                                               const J*                  csx_col_row_ind,
                                               T*                        A,
-                                              I                         ld,
+                                              int64_t                   ld,
                                               rocsparse_order           order)
 {
     if(0 == m || 0 == n)

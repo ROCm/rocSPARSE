@@ -241,17 +241,17 @@ void testing_csr2csc(const Arguments& arg)
         double gbyte_count = csr2csc_gbyte_count<T>(M, N, nnz, action);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "nnz",
+                            display_key_t::nnz,
                             nnz,
-                            "action",
+                            display_key_t::action,
                             rocsparse_action2string(action),
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

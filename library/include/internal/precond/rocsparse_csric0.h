@@ -75,7 +75,7 @@ rocsparse_status rocsparse_csric0_zero_pivot(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csric_singular_pivot returns \ref rocsparse_status_success, if a
+*  \p rocsparse_csric0_singular_pivot returns \ref rocsparse_status_success, if a
 *  numerical singular pivot (G(k,k) <= tol ) has been found during rocsparse_scsric0() or
 *  rocsparse_dcsric0() computation. The first singular pivot \f$j\f$ at \f$A_{j,j}\f$
 *  is stored in \p position, using same index base as the CSR matrix.
@@ -141,6 +141,40 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csric0_set_tolerance(rocsparse_handle   handle,
                                                 rocsparse_mat_info info,
                                                 double             tolerance);
+
+/*! \ingroup precond_module
+*  \brief Incomplete Cholesky factorization with 0 fill-ins and no pivoting using CSR
+*  storage format
+*
+*  \details
+*  \p rocsparse_csric_singular_pivot returns \ref rocsparse_status_success, if a
+*  numerical singular pivot (L(k,k) <= tol ) has been found during rocsparse_scsric0() or
+*  rocsparse_dcsric0() computation. The first singular pivot \f$j\f$ at \f$A_{j,j}\f$
+*  is stored in \p position, using same index base as the CSR matrix.
+*
+*  \p position can be in host or device memory. If no singular pivot has been found,
+*  \p position is set to -1 and \ref rocsparse_status_success is returned.
+*
+*  \note \p rocsparse_csric0_singular_pivot is a blocking function. It might influence
+*  performance negatively.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  info        structure that holds the information collected during the analysis step.
+*  @param[out]
+*  tolerance    obtain tolerance for detecting singular pivot (L(k,k) <= tol)
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csric0_get_tolerance(rocsparse_handle   handle,
+                                                rocsparse_mat_info info,
+                                                double*            tolerance);
 
 /*! \ingroup precond_module
 *  \brief Incomplete Cholesky factorization with 0 fill-ins and no pivoting using CSR

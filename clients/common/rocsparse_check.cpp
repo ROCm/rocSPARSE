@@ -76,7 +76,9 @@
     do                                                              \
     {                                                               \
         for(int64_t j = 0; j < N; ++j)                              \
+        {                                                           \
             for(int64_t i = 0; i < M; ++i)                          \
+            {                                                       \
                 if(rocsparse_isnan(A[i + j * LDA]))                 \
                 {                                                   \
                     ASSERT_TRUE(rocsparse_isnan(B[i + j * LDB]));   \
@@ -85,6 +87,8 @@
                 {                                                   \
                     UNIT_ASSERT_EQ(A[i + j * LDA], B[i + j * LDB]); \
                 }                                                   \
+            }                                                       \
+        }                                                           \
     } while(0)
 
 template <>

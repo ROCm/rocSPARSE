@@ -599,7 +599,6 @@ typedef enum rocsparse_check_spmat_stage_
  */
 typedef enum rocsparse_spmv_stage_
 {
-    rocsparse_spmv_stage_auto        = 0, /**< Automatic stage detection. */
     rocsparse_spmv_stage_buffer_size = 1, /**< Returns the required buffer size. */
     rocsparse_spmv_stage_preprocess  = 2, /**< Preprocess data. */
     rocsparse_spmv_stage_compute     = 3 /**< Performs the actual SpMV computation. */
@@ -644,7 +643,6 @@ typedef enum rocsparse_spsv_alg_
  */
 typedef enum rocsparse_spsv_stage_
 {
-    rocsparse_spsv_stage_auto        = 0, /**< Automatic stage detection. */
     rocsparse_spsv_stage_buffer_size = 1, /**< Returns the required buffer size. */
     rocsparse_spsv_stage_preprocess  = 2, /**< Preprocess data. */
     rocsparse_spsv_stage_compute     = 3 /**< Performs the actual SpSV computation. */
@@ -671,7 +669,6 @@ typedef enum rocsparse_spitsv_alg_
  */
 typedef enum rocsparse_spitsv_stage_
 {
-    rocsparse_spitsv_stage_auto        = 0, /**< Automatic stage detection. */
     rocsparse_spitsv_stage_buffer_size = 1, /**< Returns the required buffer size. */
     rocsparse_spitsv_stage_preprocess  = 2, /**< Preprocess data. */
     rocsparse_spitsv_stage_compute     = 3 /**< Performs the actual SpITSV computation. */
@@ -698,7 +695,6 @@ typedef enum rocsparse_spsm_alg_
  */
 typedef enum rocsparse_spsm_stage_
 {
-    rocsparse_spsm_stage_auto        = 0, /**< Automatic stage detection. */
     rocsparse_spsm_stage_buffer_size = 1, /**< Returns the required buffer size. */
     rocsparse_spsm_stage_preprocess  = 2, /**< Preprocess data. */
     rocsparse_spsm_stage_compute     = 3 /**< Performs the actual SpSM computation. */
@@ -771,7 +767,6 @@ typedef enum rocsparse_dense_to_sparse_alg_
  */
 typedef enum rocsparse_spmm_stage_
 {
-    rocsparse_spmm_stage_auto        = 0, /**< Automatic stage detection. */
     rocsparse_spmm_stage_buffer_size = 1, /**< Returns the required buffer size. */
     rocsparse_spmm_stage_preprocess  = 2, /**< Preprocess data. */
     rocsparse_spmm_stage_compute     = 3 /**< Performs the actual SpMM computation. */
@@ -786,7 +781,6 @@ typedef enum rocsparse_spmm_stage_
  */
 typedef enum rocsparse_spgemm_stage_
 {
-    rocsparse_spgemm_stage_auto        = 0, /**< Automatic stage detection. */
     rocsparse_spgemm_stage_buffer_size = 1, /**< Returns the required buffer size. */
     rocsparse_spgemm_stage_nnz         = 2, /**< Computes number of non-zero entries. */
     rocsparse_spgemm_stage_compute     = 3, /**< Performs the actual SpGEMM computation. */

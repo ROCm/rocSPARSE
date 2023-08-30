@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -244,7 +244,7 @@ void testing_spsv_coo(const Arguments& arg)
                                          y1,
                                          ttype,
                                          alg,
-                                         rocsparse_spsv_stage_auto /*buffersize*/,
+                                         rocsparse_spsv_stage_buffer_size,
                                          &buffer_size,
                                          nullptr));
 
@@ -262,7 +262,7 @@ void testing_spsv_coo(const Arguments& arg)
                                          y1,
                                          ttype,
                                          alg,
-                                         rocsparse_spsv_stage_auto /*preprocess*/,
+                                         rocsparse_spsv_stage_preprocess,
                                          nullptr,
                                          dbuffer));
 
@@ -276,7 +276,7 @@ void testing_spsv_coo(const Arguments& arg)
                                          y2,
                                          ttype,
                                          alg,
-                                         rocsparse_spsv_stage_auto /*preprocess*/,
+                                         rocsparse_spsv_stage_preprocess,
                                          nullptr,
                                          dbuffer));
 
@@ -292,7 +292,7 @@ void testing_spsv_coo(const Arguments& arg)
                                                       y1,
                                                       ttype,
                                                       alg,
-                                                      rocsparse_spsv_stage_auto /*compute*/,
+                                                      rocsparse_spsv_stage_compute,
                                                       &buffer_size,
                                                       dbuffer));
 
@@ -306,7 +306,7 @@ void testing_spsv_coo(const Arguments& arg)
                                                       y2,
                                                       ttype,
                                                       alg,
-                                                      rocsparse_spsv_stage_auto /*compute*/,
+                                                      rocsparse_spsv_stage_compute,
                                                       &buffer_size,
                                                       dbuffer));
 
@@ -372,19 +372,19 @@ void testing_spsv_coo(const Arguments& arg)
         double gbyte_count = coosv_gbyte_count<T>(M, nnz_A);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "nnz_A",
+                            display_key_t::nnz_A,
                             nnz_A,
-                            "alpha",
+                            display_key_t::alpha,
                             halpha,
-                            "Algorithm",
+                            display_key_t::algorithm,
                             rocsparse_spsvalg2string(alg),
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

@@ -59,29 +59,6 @@ void testing_axpyi(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
-    // Argument sanity check before allocating invalid memory
-    if(nnz <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dx_ind(safe_size);
-        device_vector<T>             dx_val(safe_size);
-        device_vector<T>             dy(safe_size);
-
-        if(!dx_ind || !dx_val || !dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_axpyi<T>(handle, nnz, &h_alpha, dx_val, dx_ind, dy, base),
-                                nnz < 0 ? rocsparse_status_invalid_size : rocsparse_status_success);
-
-        return;
-    }
-
     // Allocate host memory
     host_vector<rocsparse_int> hx_ind(nnz);
     host_vector<T>             hx_val(nnz);
@@ -103,12 +80,6 @@ void testing_axpyi(const Arguments& arg)
     device_vector<T>             dy_1(M);
     device_vector<T>             dy_2(M);
     device_vector<T>             d_alpha(1);
-
-    if(!dx_ind || !dx_val || !dy_1 || !dy_2 || !d_alpha)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dx_ind, hx_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
@@ -173,17 +144,17 @@ void testing_axpyi(const Arguments& arg)
         double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
 
-        display_timing_info("size",
+        display_timing_info(display_key_t::size,
                             M,
-                            "nnz",
+                            display_key_t::nnz,
                             nnz,
-                            "alpha",
+                            display_key_t::alpha,
                             h_alpha,
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 }

@@ -97,7 +97,8 @@ void csrsv_analysis_lower_kernel(J m,
 
         // While there are threads in this workgroup that have been unable to
         // get their input, loop and wait for the flag to exist.
-        int          local_done    = atomicOr(&done_array[local_col], 0);
+        int local_done
+            = __hip_atomic_load(&done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
         unsigned int times_through = 0;
         while(!local_done)
         {
@@ -114,7 +115,8 @@ void csrsv_analysis_lower_kernel(J m,
                 }
             }
 
-            local_done = atomicOr(&done_array[local_col], 0);
+            local_done = __hip_atomic_load(
+                &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
         }
 
         // Local maximum
@@ -136,7 +138,8 @@ void csrsv_analysis_lower_kernel(J m,
             // Index into shared memory to query for done flag
             int local_idx = local_col - first_row;
 
-            int          local_done    = atomicOr(&local_done_array[local_idx], 0);
+            int local_done = __hip_atomic_load(
+                &local_done_array[local_idx], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_WORKGROUP);
             unsigned int times_through = 0;
             while(!local_done)
             {
@@ -153,7 +156,8 @@ void csrsv_analysis_lower_kernel(J m,
                     }
                 }
 
-                local_done = atomicOr(&local_done_array[local_idx], 0);
+                local_done = __hip_atomic_load(
+                    &local_done_array[local_idx], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_WORKGROUP);
             }
 
             local_max = max(local_done, local_max);
@@ -166,10 +170,12 @@ void csrsv_analysis_lower_kernel(J m,
     if(lid == WF_SIZE - 1)
     {
         // Write the local "row is done" flag
-        atomicOr(&local_done_array[wid], local_max + 1);
+        __hip_atomic_store(
+            &local_done_array[wid], local_max + 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_WORKGROUP);
 
         // Write the "row is done" flag
-        atomicOr(&done_array[row], local_max + 1);
+        __hip_atomic_store(
+            &done_array[row], local_max + 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 
         // Obtain maximum nnz
         rocsparse_atomic_max(max_nnz, row_end - row_begin);
@@ -251,7 +257,8 @@ void csrsv_analysis_upper_kernel(J m,
 
         // While there are threads in this workgroup that have been unable to
         // get their input, loop and wait for the flag to exist.
-        int          local_done    = atomicOr(&done_array[local_col], 0);
+        int local_done
+            = __hip_atomic_load(&done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
         unsigned int times_through = 0;
         while(!local_done)
         {
@@ -268,7 +275,8 @@ void csrsv_analysis_upper_kernel(J m,
                 }
             }
 
-            local_done = atomicOr(&done_array[local_col], 0);
+            local_done = __hip_atomic_load(
+                &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
         }
 
         // Local maximum
@@ -290,7 +298,8 @@ void csrsv_analysis_upper_kernel(J m,
             // Index into shared memory to query for done flag
             int local_idx = last_row - local_col;
 
-            int          local_done    = atomicOr(&local_done_array[local_idx], 0);
+            int local_done = __hip_atomic_load(
+                &local_done_array[local_idx], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_WORKGROUP);
             unsigned int times_through = 0;
             while(!local_done)
             {
@@ -307,7 +316,8 @@ void csrsv_analysis_upper_kernel(J m,
                     }
                 }
 
-                local_done = atomicOr(&local_done_array[local_idx], 0);
+                local_done = __hip_atomic_load(
+                    &local_done_array[local_idx], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_WORKGROUP);
             }
 
             local_max = max(local_done, local_max);
@@ -320,10 +330,12 @@ void csrsv_analysis_upper_kernel(J m,
     if(lid == WF_SIZE - 1)
     {
         // Write the local "row is done" flag
-        atomicOr(&local_done_array[wid], local_max + 1);
+        __hip_atomic_store(
+            &local_done_array[wid], local_max + 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_WORKGROUP);
 
         // Write the "row is done" flag
-        atomicOr(&done_array[row], local_max + 1);
+        __hip_atomic_store(
+            &done_array[row], local_max + 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 
         // Obtain maximum nnz
         rocsparse_atomic_max(max_nnz, row_end - row_begin);
@@ -458,7 +470,8 @@ ROCSPARSE_DEVICE_ILF void csrsv_device(J m,
         }
 
         // Spin loop until dependency has been resolved
-        int          local_done    = atomicOr(&done_array[local_col], 0);
+        int local_done
+            = __hip_atomic_load(&done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
         unsigned int times_through = 0;
         while(!local_done)
         {
@@ -475,11 +488,11 @@ ROCSPARSE_DEVICE_ILF void csrsv_device(J m,
                 }
             }
 
-            local_done = atomicOr(&done_array[local_col], 0);
+            local_done = __hip_atomic_load(
+                &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
         }
 
-        // Wait for y to be visible globally
-        __threadfence();
+        __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
         // Local sum computation for each lane
         local_sum = rocsparse_fma(-local_val, y[local_col], local_sum);
@@ -502,10 +515,7 @@ ROCSPARSE_DEVICE_ILF void csrsv_device(J m,
         // Store the rows result in y
         rocsparse_nontemporal_store(local_sum, &y[row]);
 
-        // Make sure y is written to global memory before setting "row is done" flag
-        __threadfence();
-
         // Mark row as done
-        atomicOr(&done_array[row], 1);
+        __hip_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
     }
 }

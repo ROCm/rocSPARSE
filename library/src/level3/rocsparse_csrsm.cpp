@@ -46,7 +46,7 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
                                                       const I*                  csr_row_ptr,
                                                       const J*                  csr_col_ind,
                                                       const T*                  B,
-                                                      J                         ldb,
+                                                      int64_t                   ldb,
                                                       rocsparse_mat_info        info,
                                                       rocsparse_solve_policy    policy,
                                                       size_t*                   buffer_size)
@@ -244,7 +244,7 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
                                                    const I*                  csr_row_ptr,
                                                    const J*                  csr_col_ind,
                                                    const T*                  B,
-                                                   J                         ldb,
+                                                   int64_t                   ldb,
                                                    rocsparse_mat_info        info,
                                                    rocsparse_analysis_policy analysis,
                                                    rocsparse_solve_policy    solve,
@@ -560,7 +560,7 @@ void csrsm(rocsparse_operation transB,
            const J* __restrict__ csr_col_ind,
            const T* __restrict__ csr_val,
            T* __restrict__ B,
-           J ldb,
+           int64_t ldb,
            int* __restrict__ done_array,
            J* __restrict__ map,
            J* __restrict__ zero_pivot,
@@ -588,7 +588,7 @@ void csrsm(rocsparse_operation transB,
 
 template <unsigned int DIM_X, unsigned int DIM_Y, typename I, typename T>
 ROCSPARSE_KERNEL(DIM_X* DIM_Y)
-void csrsm_transpose(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
+void csrsm_transpose(I m, I n, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
 {
     dense_transpose_device<DIM_X, DIM_Y>(m, n, (T)1, A, lda, B, ldb);
 }
@@ -606,7 +606,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                                 const I*                  csr_row_ptr,
                                                 const J*                  csr_col_ind,
                                                 T*                        B,
-                                                J                         ldb,
+                                                int64_t                   ldb,
                                                 rocsparse_mat_info        info,
                                                 rocsparse_solve_policy    policy,
                                                 void*                     temp_buffer)
@@ -672,7 +672,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
     }
 
     // Leading dimension
-    J ldimB = ldb;
+    int64_t ldimB = ldb;
 
     // Transpose B if B is not transposed yet to improve performance
     if(trans_B == rocsparse_operation_none)
@@ -750,7 +750,6 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
         const int         asicRev       = handle->asic_rev;
 
         // rocsparse_pointer_mode_device
-
         if(blockdim == 64)
         {
             if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
@@ -1040,7 +1039,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                                 const I*                  csr_row_ptr,
                                                 const J*                  csr_col_ind,
                                                 T*                        B,
-                                                J                         ldb,
+                                                int64_t                   ldb,
                                                 rocsparse_mat_info        info,
                                                 rocsparse_solve_policy    policy,
                                                 void*                     temp_buffer)
@@ -1343,7 +1342,7 @@ catch(...)
         const ITYPE*              csr_row_ptr,                      \
         const JTYPE*              csr_col_ind,                      \
         const TTYPE*              B,                                \
-        JTYPE                     ldb,                              \
+        int64_t                   ldb,                              \
         rocsparse_mat_info        info,                             \
         rocsparse_solve_policy    policy,                           \
         size_t*                   buffer_size);
@@ -1429,7 +1428,7 @@ C_IMPL(rocsparse_zcsrsm_buffer_size, int32_t, int32_t, rocsparse_double_complex)
         const ITYPE*              csr_row_ptr,                   \
         const JTYPE*              csr_col_ind,                   \
         const TTYPE*              B,                             \
-        JTYPE                     ldb,                           \
+        int64_t                   ldb,                           \
         rocsparse_mat_info        info,                          \
         rocsparse_analysis_policy analysis,                      \
         rocsparse_solve_policy    solve,                         \
@@ -1517,7 +1516,7 @@ C_IMPL(rocsparse_zcsrsm_analysis, int32_t, int32_t, rocsparse_double_complex);
                                                              const ITYPE*              csr_row_ptr, \
                                                              const JTYPE*              csr_col_ind, \
                                                              TTYPE*                    B,           \
-                                                             JTYPE                     ldb,         \
+                                                             int64_t                   ldb,         \
                                                              rocsparse_mat_info        info,        \
                                                              rocsparse_solve_policy    policy,      \
                                                              void*                     temp_buffer);

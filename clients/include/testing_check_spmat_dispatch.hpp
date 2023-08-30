@@ -52,15 +52,15 @@ struct testing_check_spmat_dispatch_traits<rocsparse_format_csr, I, J, T>
         double gbyte_count = check_matrix_csr_gbyte_count<T>(hA.m, hA.nnz);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             hA.m,
-                            "N",
+                            display_key_t::N,
                             hA.n,
-                            "nnz",
+                            display_key_t::nnz,
                             hA.nnz,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 };
@@ -89,15 +89,15 @@ struct testing_check_spmat_dispatch_traits<rocsparse_format_csc, I, J, T>
         double gbyte_count = check_matrix_csc_gbyte_count<T>(hA.n, hA.nnz);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             hA.m,
-                            "N",
+                            display_key_t::N,
                             hA.n,
-                            "nnz",
+                            display_key_t::nnz,
                             hA.nnz,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 };
@@ -126,15 +126,15 @@ struct testing_check_spmat_dispatch_traits<rocsparse_format_coo, I, I, T>
         double gbyte_count = check_matrix_coo_gbyte_count<T>(hA.nnz);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             hA.m,
-                            "N",
+                            display_key_t::N,
                             hA.n,
-                            "nnz",
+                            display_key_t::nnz,
                             hA.nnz,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 };
@@ -163,15 +163,15 @@ struct testing_check_spmat_dispatch_traits<rocsparse_format_ell, I, I, T>
         double gbyte_count = check_matrix_ell_gbyte_count<T>(hA.nnz);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             hA.m,
-                            "N",
+                            display_key_t::N,
                             hA.n,
-                            "nnz",
+                            display_key_t::nnz,
                             hA.nnz,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 };
@@ -201,21 +201,21 @@ struct testing_check_spmat_dispatch_traits<rocsparse_format_bsr, I, J, T>
             = check_matrix_gebsr_gbyte_count<T>(hA.mb, hA.nnzb, hA.row_block_dim, hA.col_block_dim);
         double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             hA.mb * hA.row_block_dim,
-                            "N",
+                            display_key_t::N,
                             hA.nb * hA.row_block_dim,
-                            "Mb",
+                            display_key_t::Mb,
                             hA.mb,
-                            "Nb",
+                            display_key_t::Nb,
                             hA.nb,
-                            "blockdim",
+                            display_key_t::bdim,
                             hA.row_block_dim,
-                            "nnzb",
+                            display_key_t::nnzb,
                             hA.nnzb,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 };

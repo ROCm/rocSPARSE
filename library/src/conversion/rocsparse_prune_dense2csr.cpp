@@ -36,8 +36,8 @@ ROCSPARSE_KERNEL(DIM_X* DIM_Y)
 void prune_dense2csr_nnz_kernel(rocsparse_int m,
                                 rocsparse_int n,
                                 const T* __restrict__ A,
-                                rocsparse_int lda,
-                                U             threshold_device_host,
+                                int64_t lda,
+                                U       threshold_device_host,
                                 rocsparse_int* __restrict__ nnz_per_rows)
 {
     auto threshold = load_scalar_device_host(threshold_device_host);
@@ -50,8 +50,8 @@ void prune_dense2csr_kernel(rocsparse_index_base base,
                             rocsparse_int        m,
                             rocsparse_int        n,
                             const T* __restrict__ A,
-                            rocsparse_int lda,
-                            U             threshold_device_host,
+                            int64_t lda,
+                            U       threshold_device_host,
                             T* __restrict__ csr_val,
                             const rocsparse_int* __restrict__ csr_row_ptr,
                             rocsparse_int* __restrict__ csr_col_ind)
@@ -67,7 +67,7 @@ rocsparse_status
                                                    rocsparse_int             m, //1
                                                    rocsparse_int             n, //2
                                                    const T*                  A, //3
-                                                   rocsparse_int             lda, //4
+                                                   int64_t                   lda, //4
                                                    const T*                  threshold, //5
                                                    const rocsparse_mat_descr descr, //6
                                                    const T*                  csr_val, //7
@@ -114,7 +114,7 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
                                                         rocsparse_int             m, //1
                                                         rocsparse_int             n, //2
                                                         const T*                  A, //3
-                                                        rocsparse_int             lda, //4
+                                                        int64_t                   lda, //4
                                                         const T*                  threshold, //5
                                                         const rocsparse_mat_descr descr, //6
                                                         rocsparse_int*            csr_row_ptr, //7
@@ -300,7 +300,7 @@ rocsparse_status rocsparse_prune_dense2csr_template(rocsparse_handle          ha
                                                     rocsparse_int             m, //1
                                                     rocsparse_int             n, //2
                                                     const T*                  A, //3
-                                                    rocsparse_int             lda, //4
+                                                    int64_t                   lda, //4
                                                     const T*                  threshold, //5
                                                     const rocsparse_mat_descr descr, //6
                                                     T*                        csr_val, //7

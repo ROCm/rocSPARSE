@@ -350,7 +350,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
     dim3 csric0_blocks((m * handle->wavefront_size - 1) / CSRIC0_DIM + 1);
     dim3 csric0_threads(CSRIC0_DIM);
 
-    double const tol = info->singularity_tol;
+    double const tol = info->singular_tol;
 
     if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
     {

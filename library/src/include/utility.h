@@ -623,7 +623,6 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_stage value_)
 {
     switch(value_)
     {
-    case rocsparse_spmv_stage_auto:
     case rocsparse_spmv_stage_buffer_size:
     case rocsparse_spmv_stage_preprocess:
     case rocsparse_spmv_stage_compute:
@@ -639,7 +638,6 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsv_stage value_)
 {
     switch(value_)
     {
-    case rocsparse_spsv_stage_auto:
     case rocsparse_spsv_stage_buffer_size:
     case rocsparse_spsv_stage_preprocess:
     case rocsparse_spsv_stage_compute:
@@ -655,7 +653,6 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spitsv_stage value_)
 {
     switch(value_)
     {
-    case rocsparse_spitsv_stage_auto:
     case rocsparse_spitsv_stage_buffer_size:
     case rocsparse_spitsv_stage_preprocess:
     case rocsparse_spitsv_stage_compute:
@@ -684,7 +681,6 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsm_stage value_)
 {
     switch(value_)
     {
-    case rocsparse_spsm_stage_auto:
     case rocsparse_spsm_stage_buffer_size:
     case rocsparse_spsm_stage_preprocess:
     case rocsparse_spsm_stage_compute:
@@ -721,7 +717,6 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmm_stage value_)
 {
     switch(value_)
     {
-    case rocsparse_spmm_stage_auto:
     case rocsparse_spmm_stage_buffer_size:
     case rocsparse_spmm_stage_preprocess:
     case rocsparse_spmm_stage_compute:
@@ -763,7 +758,6 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spgemm_stage value_)
 {
     switch(value_)
     {
-    case rocsparse_spgemm_stage_auto:
     case rocsparse_spgemm_stage_buffer_size:
     case rocsparse_spgemm_stage_nnz:
     case rocsparse_spgemm_stage_compute:

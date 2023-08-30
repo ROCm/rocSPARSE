@@ -273,27 +273,27 @@ void testing_gebsrmv(const Arguments& arg)
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
         double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "BSR nnz",
+                            display_key_t::nnzb,
                             dA.nnzb,
-                            "rblockdim",
+                            display_key_t::rbdim,
                             dA.row_block_dim,
-                            "cblockdim",
+                            display_key_t::cbdim,
                             dA.col_block_dim,
-                            "dir",
+                            display_key_t::bdir,
                             rocsparse_direction2string(dA.block_direction),
-                            "alpha",
+                            display_key_t::alpha,
                             *h_alpha,
-                            "beta",
+                            display_key_t::beta,
                             *h_beta,
-                            s_timing_info_perf,
+                            display_key_t::gflops,
                             gpu_gflops,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 

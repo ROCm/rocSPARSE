@@ -116,12 +116,14 @@ struct Arguments
     rocsparse_int timing;
     rocsparse_int iters;
 
-    rocsparse_int denseld;
+    int64_t       denseld;
     rocsparse_int batch_count;
     rocsparse_int batch_count_A;
     rocsparse_int batch_count_B;
     rocsparse_int batch_count_C;
     rocsparse_int batch_stride;
+    rocsparse_int ld_multiplier_B;
+    rocsparse_int ld_multiplier_C;
 
     uint32_t algo;
 
@@ -249,6 +251,8 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(batch_count_B);
         ROCSPARSE_FORMAT_CHECK(batch_count_C);
         ROCSPARSE_FORMAT_CHECK(batch_stride);
+        ROCSPARSE_FORMAT_CHECK(ld_multiplier_B);
+        ROCSPARSE_FORMAT_CHECK(ld_multiplier_C);
         ROCSPARSE_FORMAT_CHECK(algo);
         ROCSPARSE_FORMAT_CHECK(numericboost);
         ROCSPARSE_FORMAT_CHECK(boosttol);
@@ -469,6 +473,8 @@ private:
         print("batch_count_B", arg.batch_count_B);
         print("batch_count_C", arg.batch_count_C);
         print("batch_stride", arg.batch_stride);
+        print("ld_multiplier_B", arg.ld_multiplier_B);
+        print("ld_multiplier_C", arg.ld_multiplier_C);
         return str << " }\n";
     }
 };

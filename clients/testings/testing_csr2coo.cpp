@@ -121,15 +121,15 @@ void testing_csr2coo(const Arguments& arg)
         double gbyte_count = csr2coo_gbyte_count<T>(M, nnz);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "nnz",
+                            display_key_t::nnz,
                             nnz,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             gpu_time_used / 1e3);
     }
 }

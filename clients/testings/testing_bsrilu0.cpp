@@ -529,25 +529,25 @@ void testing_bsrilu0(const Arguments& arg)
 
         double gpu_gbyte = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "nnzb",
+                            display_key_t::nnzb,
                             nnzb,
-                            "block_dim",
+                            display_key_t::bdim,
                             block_dim,
-                            "pivot",
+                            display_key_t::pivot,
                             pivot,
-                            "direction",
+                            display_key_t::bdir,
                             rocsparse_direction2string(direction),
-                            "analysis policy",
+                            display_key_t::analysis_policy,
                             rocsparse_analysis2string(apol),
-                            "solve policy",
+                            display_key_t::solve_policy,
                             rocsparse_solve2string(spol),
-                            "analysis time",
+                            display_key_t::analysis_time_ms,
                             get_gpu_time_msec(gpu_analysis_time_used),
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_solve_time_used));
     }
 

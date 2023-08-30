@@ -52,7 +52,7 @@ void testing_spmm_batched_bell_bad_arg(const Arguments& arg)
     rocsparse_order      order_C     = rocsparse_order_column;
     rocsparse_direction  block_dir   = rocsparse_direction_row;
     rocsparse_spmm_alg   alg         = rocsparse_spmm_alg_default;
-    rocsparse_spmm_stage stage       = rocsparse_spmm_stage_auto;
+    rocsparse_spmm_stage stage       = rocsparse_spmm_stage_compute;
 
     rocsparse_indextype itype = get_indextype<I>();
     rocsparse_datatype  ttype = get_datatype<T>();

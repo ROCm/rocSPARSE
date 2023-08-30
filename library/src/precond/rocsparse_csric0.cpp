@@ -594,7 +594,39 @@ try
     // Logging
     log_trace(handle, "rocsparse_csric0_set_tolerance", (const void*&)info, tol);
 
-    info->singularity_tol = tol;
+    info->singular_tol = tol;
+
+    return rocsparse_status_success;
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
+
+extern "C" rocsparse_status
+    rocsparse_csric0_get_tolerance(rocsparse_handle handle, rocsparse_mat_info info, double* tol)
+try
+{
+    // Check for valid handle and matrix descriptor
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+
+    if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(tol == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging
+    log_trace(handle, "rocsparse_csric0_get_tolerance", (const void*&)info, tol);
+
+    *tol = info->singular_tol;
 
     return rocsparse_status_success;
 }

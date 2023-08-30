@@ -239,21 +239,21 @@ void testing_csr2bsr(const Arguments& arg)
         double gbyte_count = csr2bsr_gbyte_count<T>(M, Mb, hA.nnz, *hbsr_nnzb, block_dim);
         double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        display_timing_info("M",
+        display_timing_info(display_key_t::M,
                             M,
-                            "N",
+                            display_key_t::N,
                             N,
-                            "Mb",
+                            display_key_t::Mb,
                             Mb,
-                            "Nb",
+                            display_key_t::Nb,
                             Nb,
-                            "blockdim",
+                            display_key_t::bdim,
                             block_dim,
-                            "nnzb",
+                            display_key_t::nnzb,
                             *hbsr_nnzb,
-                            s_timing_info_bandwidth,
+                            display_key_t::bandwidth,
                             gpu_gbyte,
-                            s_timing_info_time,
+                            display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
 }

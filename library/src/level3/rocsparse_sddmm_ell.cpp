@@ -45,10 +45,10 @@ void sddmm_ell_kernel(rocsparse_operation transA,
                       I                   nnz,
                       U                   alpha_device_host,
                       const T* __restrict__ A,
-                      J lda,
+                      int64_t lda,
                       const T* __restrict__ B,
-                      J ldb,
-                      U beta_device_host,
+                      int64_t ldb,
+                      U       beta_device_host,
                       T* __restrict__ val,
                       const J* __restrict__ ind,
                       rocsparse_index_base base,
@@ -66,13 +66,13 @@ void sddmm_ell_kernel(rocsparse_operation transA,
     static constexpr rocsparse_int NUM_COEFF          = (BLOCKSIZE / NTHREADS_PER_DOTPRODUCT);
     const I                        local_coeff_index  = hipThreadIdx_x / NTHREADS_PER_DOTPRODUCT;
     const I                        local_thread_index = hipThreadIdx_x % NTHREADS_PER_DOTPRODUCT;
-    const J                        incx               = (orderA == rocsparse_order_column)
+    const int64_t                  incx               = (orderA == rocsparse_order_column)
                                                             ? ((transA == rocsparse_operation_none) ? lda : 1)
                                                             : ((transA == rocsparse_operation_none) ? 1 : lda);
 
-    const J incy = (orderB == rocsparse_order_column)
-                       ? ((transB == rocsparse_operation_none) ? 1 : ldb)
-                       : ((transB == rocsparse_operation_none) ? ldb : 1);
+    const int64_t incy = (orderB == rocsparse_order_column)
+                             ? ((transB == rocsparse_operation_none) ? 1 : ldb)
+                             : ((transB == rocsparse_operation_none) ? ldb : 1);
 
     __shared__ T s[NUM_COEFF][NTHREADS_PER_DOTPRODUCT];
 
@@ -136,9 +136,9 @@ struct rocsparse_sddmm_st<rocsparse_format_ell, rocsparse_sddmm_alg_default, I, 
                                         I                    nnz,
                                         const T*             alpha,
                                         const T*             A_val,
-                                        J                    A_ld,
+                                        int64_t              A_ld,
                                         const T*             B_val,
-                                        J                    B_ld,
+                                        int64_t              B_ld,
                                         const T*             beta,
                                         const I*             C_row_data,
                                         const J*             C_col_data,
@@ -162,9 +162,9 @@ struct rocsparse_sddmm_st<rocsparse_format_ell, rocsparse_sddmm_alg_default, I, 
                                        I                    nnz,
                                        const T*             alpha,
                                        const T*             A_val,
-                                       J                    A_ld,
+                                       int64_t              A_ld,
                                        const T*             B_val,
-                                       J                    B_ld,
+                                       int64_t              B_ld,
                                        const T*             beta,
                                        const I*             C_row_data,
                                        const J*             C_col_data,
@@ -187,9 +187,9 @@ struct rocsparse_sddmm_st<rocsparse_format_ell, rocsparse_sddmm_alg_default, I, 
                                     I                    nnz,
                                     const T*             alpha,
                                     const T*             A_val,
-                                    J                    A_ld,
+                                    int64_t              A_ld,
                                     const T*             B_val,
-                                    J                    B_ld,
+                                    int64_t              B_ld,
                                     const T*             beta,
                                     const I*             C_row_data,
                                     const J*             C_col_data,
