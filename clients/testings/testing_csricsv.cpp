@@ -62,7 +62,6 @@ void testing_csricsv(const Arguments& arg)
     host_vector<rocsparse_int> h_struct_pivot_1(1);
     host_vector<rocsparse_int> h_struct_pivot_2(1);
     host_vector<rocsparse_int> h_numeric_pivot_gold(1);
-    host_vector<rocsparse_int> h_singular_pivot_gold(1);
     host_vector<rocsparse_int> h_numeric_pivot_L_gold(1);
     host_vector<rocsparse_int> h_numeric_pivot_LT_gold(1);
     host_vector<rocsparse_int> h_numeric_pivot_1(1);
@@ -71,6 +70,9 @@ void testing_csricsv(const Arguments& arg)
     host_vector<rocsparse_int> h_numeric_pivot_L_2(1);
     host_vector<rocsparse_int> h_numeric_pivot_LT_1(1);
     host_vector<rocsparse_int> h_numeric_pivot_LT_2(1);
+
+    host_vector<rocsparse_int> h_singular_pivot_gold(1);
+    host_vector<rocsparse_int> h_singular_pivot_1(1);
 
     // Sample matrix
     rocsparse_int nnz;
@@ -122,6 +124,7 @@ void testing_csricsv(const Arguments& arg)
     {
 
         double tol = 0;
+        CHECK_ROCSPARSE_ERROR(rocsparse_csric0_get_tolerance(handle, info, &tol));
         host_csric0<T>(M,
                        hcsr_row_ptr,
                        hcsr_col_ind,
@@ -172,6 +175,12 @@ void testing_csricsv(const Arguments& arg)
                             (h_numeric_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
                                                             : rocsparse_status_success);
 
+    // Check for numerical singular pivot using host pointer mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_singular_pivot(handle, info, h_singular_pivot_1),
+                            (h_singular_pivot_gold[0] != -1) ? rocsparse_status_singular_pivot
+                                                             : rocsparse_status_success);
+
     // Check for structural zero pivot using device pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
     EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, d_numeric_pivot_2),
@@ -187,6 +196,8 @@ void testing_csricsv(const Arguments& arg)
     // Check pivot results
     h_numeric_pivot_gold.unit_check(h_numeric_pivot_1);
     h_numeric_pivot_gold.unit_check(h_numeric_pivot_2);
+
+    h_singular_pivot_gold.unit_check(h_singular_pivot_1);
 
     // If numerical pivot has been found, we are done
     if(h_numeric_pivot_gold[0] != -1)
