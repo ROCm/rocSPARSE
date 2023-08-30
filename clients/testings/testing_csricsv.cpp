@@ -99,16 +99,6 @@ void testing_csricsv(const Arguments& arg)
         hipMemcpy(dcsr_col_ind, hcsr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val_gold, sizeof(T) * nnz, hipMemcpyHostToDevice));
 
-    // Compute reference incomplete LU factorization on host
-    host_csric0<T>(M,
-                   hcsr_row_ptr,
-                   hcsr_col_ind,
-                   hcsr_val_gold,
-                   base,
-                   h_struct_pivot_gold,
-                   h_numeric_pivot_gold,
-                   h_singular_pivot_gold);
-
     // Obtain csric0 buffer size
     size_t buffer_size;
     CHECK_ROCSPARSE_ERROR(rocsparse_csric0_buffer_size<T>(
@@ -127,6 +117,21 @@ void testing_csricsv(const Arguments& arg)
     // csric0 analysis
     CHECK_ROCSPARSE_ERROR(rocsparse_csric0_analysis<T>(
         handle, M, nnz, descrM, dcsr_val, dcsr_row_ptr, dcsr_col_ind, info, apol, spol, dbuffer));
+
+    // Compute reference incomplete LU factorization on host
+    {
+
+        double tol = 0;
+        host_csric0<T>(M,
+                       hcsr_row_ptr,
+                       hcsr_col_ind,
+                       hcsr_val_gold,
+                       base,
+                       h_struct_pivot_gold,
+                       h_numeric_pivot_gold,
+                       h_singular_pivot_gold,
+                       tol);
+    };
 
     // Check for structural zero pivot using host pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));

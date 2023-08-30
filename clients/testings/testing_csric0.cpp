@@ -378,14 +378,18 @@ void testing_csric0(const Arguments& arg)
             h_singular_pivot_2, d_singular_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         // CPU csric0
-        host_csric0<T>(M,
-                       hcsr_row_ptr,
-                       hcsr_col_ind,
-                       hcsr_val_gold,
-                       base,
-                       h_analysis_pivot_gold,
-                       h_solve_pivot_gold,
-                       h_singular_pivot_gold);
+        {
+            double tol = 0;
+            host_csric0<T>(M,
+                           hcsr_row_ptr,
+                           hcsr_col_ind,
+                           hcsr_val_gold,
+                           base,
+                           h_analysis_pivot_gold,
+                           h_solve_pivot_gold,
+                           h_singular_pivot_gold,
+                           tol);
+        };
 
         // Check pivots
         h_analysis_pivot_gold.unit_check(h_analysis_pivot_1);

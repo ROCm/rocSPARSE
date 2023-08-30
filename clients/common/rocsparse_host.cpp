@@ -8421,7 +8421,8 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                     rocsparse_index_base              base,                       \
                                     rocsparse_int*                    struct_pivot,               \
                                     rocsparse_int*                    numeric_pivot,              \
-                                    rocsparse_int*                    singular_pivot);                               \
+                                    rocsparse_int*                    singular_pivot,             \
+                                    double                            tol);                                                  \
     template void             host_csrilu0<TYPE>(rocsparse_int                     M,                         \
                                      const std::vector<rocsparse_int>& csr_row_ptr,               \
                                      const std::vector<rocsparse_int>& csr_col_ind,               \
