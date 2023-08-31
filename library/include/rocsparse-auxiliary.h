@@ -72,6 +72,36 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle);
 
 /*! \ingroup aux_module
+ *  \brief Return the string representation of a rocSPARSE status code enum name
+ *
+ *  \details
+ *  \p rocsparse_get_status_name takes a rocSPARSE status as input and returns the string representation of this status.
+ *  If the status is not recognized, the function returns "Unrecognized status code"
+ *
+ *  @param[in]
+ *  status  a rocSPARSE status
+ *
+ *  \retval pointer to null terminated string
+ */
+ROCSPARSE_EXPORT
+const char* rocsparse_get_status_name(rocsparse_status status);
+
+/*! \ingroup aux_module
+ *  \brief Return the rocSPARSE status code description as a string
+ *
+ *  \details
+ *  \p rocsparse_get_status_description takes a rocSPARSE status as input and returns the status description as a string.
+ *  If the status is not recognized, the function returns "Unrecognized status code"
+ *
+ *  @param[in]
+ *  status  a rocSPARSE status
+ *
+ *  \retval pointer to null terminated string
+ */
+ROCSPARSE_EXPORT
+const char* rocsparse_get_status_description(rocsparse_status status);
+
+/*! \ingroup aux_module
  *  \brief Specify user defined HIP stream
  *
  *  \details
