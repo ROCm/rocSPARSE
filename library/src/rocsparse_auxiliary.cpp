@@ -97,6 +97,90 @@ catch(...)
 }
 
 /********************************************************************************
+ * \brief Get rocSPARSE status enum name as a string
+ *******************************************************************************/
+const char* rocsparse_get_status_name(rocsparse_status status)
+{
+    switch(status)
+    {
+    case rocsparse_status_success:
+        return "rocsparse_status_success";
+    case rocsparse_status_invalid_handle:
+        return "rocsparse_status_invalid_handle";
+    case rocsparse_status_not_implemented:
+        return "rocsparse_status_not_implemented";
+    case rocsparse_status_invalid_pointer:
+        return "rocsparse_status_invalid_pointer";
+    case rocsparse_status_invalid_size:
+        return "rocsparse_status_invalid_size";
+    case rocsparse_status_memory_error:
+        return "rocsparse_status_memory_error";
+    case rocsparse_status_internal_error:
+        return "rocsparse_status_internal_error";
+    case rocsparse_status_invalid_value:
+        return "rocsparse_status_invalid_value";
+    case rocsparse_status_arch_mismatch:
+        return "rocsparse_status_arch_mismatch";
+    case rocsparse_status_zero_pivot:
+        return "rocsparse_status_zero_pivot";
+    case rocsparse_status_not_initialized:
+        return "rocsparse_status_not_initialized";
+    case rocsparse_status_type_mismatch:
+        return "rocsparse_status_type_mismatch";
+    case rocsparse_status_requires_sorted_storage:
+        return "rocsparse_status_requires_sorted_storage";
+    case rocsparse_status_thrown_exception:
+        return "rocsparse_status_thrown_exception";
+    case rocsparse_status_continue:
+        return "rocsparse_status_continue";
+    }
+
+    return "Unrecognized status code";
+}
+
+/********************************************************************************
+ * \brief Get rocSPARSE status enum description as a string
+ *******************************************************************************/
+const char* rocsparse_get_status_description(rocsparse_status status)
+{
+    switch(status)
+    {
+    case rocsparse_status_success:
+        return "rocsparse operation was successful";
+    case rocsparse_status_invalid_handle:
+        return "handle not initialized, invalid or null";
+    case rocsparse_status_not_implemented:
+        return "function is not implemented";
+    case rocsparse_status_invalid_pointer:
+        return "invalid pointer parameter";
+    case rocsparse_status_invalid_size:
+        return "invalid size parameter";
+    case rocsparse_status_memory_error:
+        return "failed memory allocation, copy, dealloc";
+    case rocsparse_status_internal_error:
+        return "other internal library failure";
+    case rocsparse_status_invalid_value:
+        return "invalid value parameter";
+    case rocsparse_status_arch_mismatch:
+        return "device arch is not supported";
+    case rocsparse_status_zero_pivot:
+        return "encountered zero pivot";
+    case rocsparse_status_not_initialized:
+        return "descriptor has not been initialized";
+    case rocsparse_status_type_mismatch:
+        return "index types do not match";
+    case rocsparse_status_requires_sorted_storage:
+        return "sorted storage required";
+    case rocsparse_status_thrown_exception:
+        return "exception being thrown";
+    case rocsparse_status_continue:
+        return "nothing preventing function to proceed";
+    }
+
+    return "Unrecognized status code";
+}
+
+/********************************************************************************
  * \brief Indicates whether the scalar value pointers are on the host or device.
  * Set pointer mode, can be host or device
  *******************************************************************************/
