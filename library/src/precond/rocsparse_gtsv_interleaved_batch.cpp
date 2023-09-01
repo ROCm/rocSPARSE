@@ -58,13 +58,14 @@ rocsparse_status
     ROCSPARSE_CHECKARG_ENUM(1, alg);
     ROCSPARSE_CHECKARG_SIZE(2, m);
     ROCSPARSE_CHECKARG(2, m, (m <= 1), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_SIZE(7, batch_count);
+    ROCSPARSE_CHECKARG(
+        8, batch_stride, (batch_stride < batch_count), rocsparse_status_invalid_size);
+
     ROCSPARSE_CHECKARG_ARRAY(3, batch_count, dl);
     ROCSPARSE_CHECKARG_ARRAY(4, batch_count, d);
     ROCSPARSE_CHECKARG_ARRAY(5, batch_count, du);
     ROCSPARSE_CHECKARG_ARRAY(6, batch_count, x);
-    ROCSPARSE_CHECKARG_SIZE(7, batch_count);
-    ROCSPARSE_CHECKARG(
-        8, batch_stride, (batch_stride < batch_count), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG_POINTER(9, buffer_size);
 
     // Quick return if possible
@@ -240,13 +241,14 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_template(rocsparse_handle     
     ROCSPARSE_CHECKARG_ENUM(1, alg);
     ROCSPARSE_CHECKARG_SIZE(2, m);
     ROCSPARSE_CHECKARG(2, m, (m <= 1), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG_SIZE(7, batch_count);
+    ROCSPARSE_CHECKARG(
+        8, batch_stride, (batch_stride < batch_count), rocsparse_status_invalid_size);
+
     ROCSPARSE_CHECKARG_ARRAY(3, batch_count, dl);
     ROCSPARSE_CHECKARG_ARRAY(4, batch_count, d);
     ROCSPARSE_CHECKARG_ARRAY(5, batch_count, du);
     ROCSPARSE_CHECKARG_ARRAY(6, batch_count, x);
-    ROCSPARSE_CHECKARG_SIZE(7, batch_count);
-    ROCSPARSE_CHECKARG(
-        8, batch_stride, (batch_stride < batch_count), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG_ARRAY(9, batch_count, temp_buffer);
 
     // Quick return if possible

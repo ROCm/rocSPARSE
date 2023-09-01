@@ -111,11 +111,12 @@ rocsparse_status rocsparse_gtsv_no_pivot_buffer_size_template(rocsparse_handle h
     ROCSPARSE_CHECKARG_SIZE(1, m);
     ROCSPARSE_CHECKARG(1, m, (m <= 1), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG(7, ldb, (ldb < std::max(1, m)), rocsparse_status_invalid_size);
+
     ROCSPARSE_CHECKARG_ARRAY(3, n, dl);
     ROCSPARSE_CHECKARG_ARRAY(4, n, d);
     ROCSPARSE_CHECKARG_ARRAY(5, n, du);
     ROCSPARSE_CHECKARG_ARRAY(6, n, B);
-    ROCSPARSE_CHECKARG(7, ldb, (ldb < std::max(1, m)), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG_POINTER(8, buffer_size);
 
     if(n == 0)
@@ -561,11 +562,12 @@ rocsparse_status rocsparse_gtsv_no_pivot_template(rocsparse_handle handle,
     ROCSPARSE_CHECKARG_SIZE(1, m);
     ROCSPARSE_CHECKARG(1, m, (m <= 1), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG_SIZE(2, n);
+    ROCSPARSE_CHECKARG(7, ldb, (ldb < std::max(1, m)), rocsparse_status_invalid_size);
+
     ROCSPARSE_CHECKARG_ARRAY(3, n, dl);
     ROCSPARSE_CHECKARG_ARRAY(4, n, d);
     ROCSPARSE_CHECKARG_ARRAY(5, n, du);
     ROCSPARSE_CHECKARG_ARRAY(6, n, B);
-    ROCSPARSE_CHECKARG(7, ldb, (ldb < std::max(1, m)), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG(
         8, temp_buffer, (m > 512 && temp_buffer == nullptr), rocsparse_status_invalid_pointer);
 
