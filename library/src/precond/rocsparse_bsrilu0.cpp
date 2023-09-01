@@ -138,11 +138,11 @@ rocsparse_status rocsparse_bsrilu0_numeric_boost_template(rocsparse_handle   han
     info->boost_enable        = 0;
     info->use_double_prec_tol = 0;
 
-    ROCSPARSE_CHECKARG(2, boost_tol, enable_boost, rocsparse_status_invalid_pointer);
-    ROCSPARSE_CHECKARG(3, boost_val, enable_boost, rocsparse_status_invalid_pointer);
-
     if(enable_boost)
     {
+        ROCSPARSE_CHECKARG_POINTER(3, boost_tol);
+        ROCSPARSE_CHECKARG_POINTER(4, boost_val);
+
         info->boost_enable        = enable_boost;
         info->use_double_prec_tol = std::is_same<U, double>();
         info->boost_tol           = reinterpret_cast<const void*>(boost_tol);
