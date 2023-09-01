@@ -313,8 +313,8 @@ The Ellpack-Itpack (ELL) storage format represents a :math:`m \times n` matrix b
 m           number of rows (integer).
 n           number of columns (integer).
 ell_width   maximum number of non-zero elements per row (integer)
-ell_val     array of ``m times ell_width`` elements containing the data (floating point).
-ell_col_ind array of ``m times ell_width`` elements containing the column indices (integer).
+ell_val     array of ``m * ell_width`` elements containing the data (floating point).
+ell_col_ind array of ``m * ell_width`` elements containing the column indices (integer).
 =========== ================================================================================
 
 The ELL matrix is assumed to be stored in column-major format. Rows with less than ``ell_width`` non-zero elements are padded with zeros (``ell_val``) and :math:`-1` (``ell_col_ind``).
@@ -348,8 +348,8 @@ m           number of rows (integer).
 n           number of columns (integer).
 nnz         number of non-zero elements of the COO part (integer)
 ell_width   maximum number of non-zero elements per row of the ELL part (integer)
-ell_val     array of ``m times ell_width`` elements containing the ELL part data (floating point).
-ell_col_ind array of ``m times ell_width`` elements containing the ELL part column indices (integer).
+ell_val     array of ``m * ell_width`` elements containing the ELL part data (floating point).
+ell_col_ind array of ``m * ell_width`` elements containing the ELL part column indices (integer).
 coo_val     array of ``nnz`` elements containing the COO part data (floating point).
 coo_row_ind array of ``nnz`` elements containing the COO part row indices (integer).
 coo_col_ind array of ``nnz`` elements containing the COO part column indices (integer).

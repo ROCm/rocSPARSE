@@ -9,8 +9,7 @@ rocSPARSE requires a ROCm enabled platform, more information `here <https://rocm
 
 Installing pre-built packages
 -----------------------------
-rocSPARSE can be installed from `AMD ROCm repository <https://rocm.github.io/ROCmInstall.html#installing-from-amd-rocm-repositories>`_.
-For detailed instructions on how to set up ROCm on different platforms, see the `AMD ROCm Platform Installation Guide for Linux <https://rocm.github.io/ROCmInstall.html>`_.
+For detailed instructions on how to set up ROCm on different platforms, see the `ROCm Documentation <https://rocm.docs.amd.com/en/latest/index.html>`_.
 
 rocSPARSE can be installed on e.g. Ubuntu using
 
@@ -161,3 +160,11 @@ The following HIP capable devices are currently supported
 - gfx900 (e.g. Vega10, MI25)
 - gfx906 (e.g. Vega20, MI50, MI60)
 - gfx908
+- gfx90a (e.g. MI200)
+- gfx940
+- gfx941
+- gfx942
+- gfx1030 (e.g. Navi21)
+- gfx1100 (e.g. Navi31)
+- gfx1101 (e.g. Navi32)
+- gfx1102 (e.g. Navi33)
