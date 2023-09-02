@@ -1339,7 +1339,7 @@ try
         info->zero_pivot = nullptr;
     }
 
-    // Clear negative pivot
+    // Clear singular pivot
     if(info->singular_pivot != nullptr)
     {
         RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->singular_pivot));

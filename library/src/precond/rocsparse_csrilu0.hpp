@@ -235,6 +235,25 @@ rocsparse_status rocsparse_csrilu0_analysis_template(rocsparse_handle          h
     // Create csrilu0 info
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&info->csrilu0_info));
 
+    // Create singular_pivot
+    {
+        hipStream_t const stream = handle->stream;
+
+        if(info->singular_pivot == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&(info->singular_pivot), sizeof(rocsparse_int), stream));
+        };
+
+        static const rocsparse_int h_max_int = std::numeric_limits<rocsparse_int>::max();
+
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->singular_pivot,
+                                           &h_max_int,
+                                           sizeof(rocsparse_int),
+                                           hipMemcpyHostToDevice,
+                                           stream));
+    };
+
     // Perform analysis
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_trm_analysis(handle,
                                                      rocsparse_operation_none,
@@ -266,6 +285,10 @@ void csrilu0_binsearch(rocsparse_int        m,
                        int*                 done,
                        const rocsparse_int* map,
                        rocsparse_int*       zero_pivot,
+
+                       rocsparse_int* singular_pivot,
+                       double         tol,
+
                        rocsparse_index_base idx_base,
                        int                  enable_boost,
                        U                    boost_tol_device_host,
@@ -285,6 +308,10 @@ void csrilu0_binsearch(rocsparse_int        m,
                                                        done,
                                                        map,
                                                        zero_pivot,
+
+                                                       singular_pivot,
+                                                       tol,
+
                                                        idx_base,
                                                        enable_boost,
                                                        boost_tol,
@@ -306,6 +333,10 @@ void csrilu0_hash(rocsparse_int        m,
                   int*                 done,
                   const rocsparse_int* map,
                   rocsparse_int*       zero_pivot,
+
+                  rocsparse_int* singular_pivot,
+                  double         tol,
+
                   rocsparse_index_base idx_base,
                   int                  enable_boost,
                   U                    boost_tol_device_host,
@@ -325,6 +356,10 @@ void csrilu0_hash(rocsparse_int        m,
                                                  done,
                                                  map,
                                                  zero_pivot,
+
+                                                 singular_pivot,
+                                                 tol,
+
                                                  idx_base,
                                                  enable_boost,
                                                  boost_tol,
@@ -370,6 +405,23 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
     dim3 csrilu0_blocks((m * handle->wavefront_size - 1) / CSRILU0_DIM + 1);
     dim3 csrilu0_threads(CSRILU0_DIM);
 
+    double const   tol            = info->singular_tol;
+    rocsparse_int* singular_pivot = (rocsparse_int*)info->singular_pivot;
+    {
+        if(info->singular_pivot == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&(info->singular_pivot), sizeof(rocsparse_int), stream));
+        };
+
+        static const rocsparse_int h_max_int = std::numeric_limits<rocsparse_int>::max();
+
+        void*       dst = static_cast<void*>(singular_pivot);
+        const void* src = static_cast<const void*>(&h_max_int);
+        RETURN_IF_HIP_ERROR(
+            hipMemcpyAsync(dst, src, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
+    }
+
     if(gcn_arch_name == rocpsarse_arch_names::gfx908 && asicRev < 2)
     {
         hipLaunchKernelGGL((csrilu0_binsearch<CSRILU0_DIM, 64, true>),
@@ -385,6 +437,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                            d_done_array,
                            (rocsparse_int*)info->csrilu0_info->row_map,
                            (rocsparse_int*)info->zero_pivot,
+
+                           singular_pivot,
+                           tol,
+
                            descr->base,
                            info->boost_enable,
                            boost_tol_device_host,
@@ -409,6 +465,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,
@@ -429,6 +489,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,
@@ -449,6 +513,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,
@@ -469,6 +537,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,
@@ -489,6 +561,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,
@@ -509,6 +585,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,
@@ -532,6 +612,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,
@@ -552,6 +636,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,
@@ -572,6 +660,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,
@@ -592,6 +684,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,
@@ -612,6 +708,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,
@@ -632,6 +732,10 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
                                    d_done_array,
                                    (rocsparse_int*)info->csrilu0_info->row_map,
                                    (rocsparse_int*)info->zero_pivot,
+
+                                   singular_pivot,
+                                   tol,
+
                                    descr->base,
                                    info->boost_enable,
                                    boost_tol_device_host,

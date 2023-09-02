@@ -49,7 +49,8 @@
         {                                                                                      \
             std::cerr.precision(16);                                                           \
             std::cerr << "ASSERT_EQ(" << state1 << ", " << state2 << ") failed." << std::endl; \
-            std::cerr << __FILE__ << " " << __LINE__ << std::endl; assert(0);                  \
+            std::cerr << __FILE__ << " " << __LINE__ << std::endl;                             \
+            assert(0);                                                                         \
             exit(EXIT_FAILURE);                                                                \
         }                                                                                      \
     } while(0)

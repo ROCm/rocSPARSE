@@ -577,6 +577,101 @@ catch(...)
     return exception_to_rocsparse_status();
 }
 
+extern "C" rocsparse_status rocsparse_csrilu0_singular_pivot(rocsparse_handle   handle,
+                                                             rocsparse_mat_info info,
+                                                             rocsparse_int*     position)
+try
+{
+    // Check for valid handle and matrix descriptor
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+    else if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging
+    log_trace(
+        handle, "rocsparse_csrilu0_singular_pivot", (const void*&)info, (const void*&)position);
+
+    // Check pointer arguments
+    if(position == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Stream
+    hipStream_t stream = handle->stream;
+
+    // If m == 0 || nnz == 0 it can happen, that info structure is not created.
+    // In this case, always return -1.
+    if(info->csrilu0_info == nullptr)
+    {
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, 0xFF, sizeof(rocsparse_int), stream));
+        }
+        else
+        {
+            *position = -1;
+        }
+
+        return rocsparse_status_success;
+    }
+
+    // Differentiate between pointer modes
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        // rocsparse_pointer_mode_device
+        rocsparse_int pivot;
+
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &pivot, info->singular_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+
+        // Wait for host transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
+        if(pivot == std::numeric_limits<rocsparse_int>::max())
+        {
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, 0xFF, sizeof(rocsparse_int), stream));
+        }
+        else
+        {
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(position,
+                                               info->singular_pivot,
+                                               sizeof(rocsparse_int),
+                                               hipMemcpyDeviceToDevice,
+                                               stream));
+
+            return rocsparse_status_singular_pivot;
+        }
+    }
+    else
+    {
+        // rocsparse_pointer_mode_host
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            position, info->singular_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
+        // If no singular pivot is found, set -1
+        if(*position == std::numeric_limits<rocsparse_int>::max())
+        {
+            *position = -1;
+        }
+        else
+        {
+            return rocsparse_status_singular_pivot;
+        }
+    }
+
+    return rocsparse_status_success;
+}
+catch(...)
+{
+    return exception_to_rocsparse_status();
+}
 
 extern "C" rocsparse_status
     rocsparse_csrilu0_set_tolerance(rocsparse_handle handle, rocsparse_mat_info info, double tol)

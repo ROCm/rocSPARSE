@@ -61,6 +61,10 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
     host_vector<rocsparse_int> h_solve_pivot_2(1);
     host_vector<rocsparse_int> h_solve_pivot_gold(1);
 
+    host_vector<rocsparse_int> h_singular_pivot_1(1);
+    host_vector<rocsparse_int> h_singular_pivot_2(1);
+    host_vector<rocsparse_int> h_singular_pivot_gold(1);
+
     // Allocate device memory
     device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
     device_vector<rocsparse_int> dcsr_col_ind(nnz);
@@ -70,6 +74,8 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
     device_vector<rocsparse_int> d_solve_pivot_2(1);
     device_vector<T>             d_boost_tol(1);
     device_vector<T>             d_boost_val(1);
+
+    device_vector<rocsparse_int> d_singular_pivot_2(1);
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
@@ -153,6 +159,13 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
                                     (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                                : rocsparse_status_success);
         }
+        {
+
+            auto st = rocsparse_csrilu0_singular_pivot(handle, info, h_singular_pivot_1);
+            EXPECT_ROCSPARSE_STATUS(st,
+                                    (h_singular_pivot_1[0] != -1) ? rocsparse_status_singular_pivot
+                                                                  : rocsparse_status_success);
+        }
 
         // Sync to force updated pivots
         CHECK_HIP_ERROR(hipDeviceSynchronize());
@@ -167,6 +180,9 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
 
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_singular_pivot(handle, info, d_singular_pivot_2),
+                                (h_singular_pivot_1[0] != -1) ? rocsparse_status_singular_pivot
+                                                              : rocsparse_status_success);
         // Sync to force updated pivots
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
@@ -177,24 +193,36 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
             h_analysis_pivot_2, d_analysis_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(
             h_solve_pivot_2, d_solve_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(
+            h_singular_pivot_2, d_singular_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         // CPU csrilu0
-        host_csrilu0<T>(M,
-                        hcsr_row_ptr,
-                        hcsr_col_ind,
-                        hcsr_val_gold,
-                        base,
-                        h_analysis_pivot_gold,
-                        h_solve_pivot_gold,
-                        boost,
-                        *get_boost_tol(&h_boost_tol),
-                        h_boost_val);
+        {
+            double tol = 0;
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_get_tolerance(handle, info, &tol));
+
+            host_csrilu0<T>(M,
+                            hcsr_row_ptr,
+                            hcsr_col_ind,
+                            hcsr_val_gold,
+                            base,
+                            h_analysis_pivot_gold,
+                            h_solve_pivot_gold,
+                            h_singular_pivot_gold,
+                            tol,
+                            boost,
+                            *get_boost_tol(&h_boost_tol),
+                            h_boost_val);
+        };
 
         // Check pivots
         h_analysis_pivot_gold.unit_check(h_analysis_pivot_1);
         h_analysis_pivot_gold.unit_check(h_analysis_pivot_2);
         h_solve_pivot_gold.unit_check(h_solve_pivot_1);
         h_solve_pivot_gold.unit_check(h_solve_pivot_2);
+
+        h_singular_pivot_gold.unit_check(h_singular_pivot_1);
+        h_singular_pivot_gold.unit_check(h_singular_pivot_2);
 
         // Check solution vector if no pivot has been found
         if(h_analysis_pivot_gold[0] == -1 && h_solve_pivot_gold[0] == -1)
@@ -408,6 +436,17 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, nullptr),
                             rocsparse_status_invalid_pointer);
 
+    // Test rocsparse_csrilu0_singular_pivot()
+    {
+        rocsparse_int position = -1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_singular_pivot(nullptr, info, &position),
+                                rocsparse_status_invalid_handle);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_singular_pivot(handle, nullptr, &position),
+                                rocsparse_status_invalid_pointer);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_singular_pivot(handle, info, nullptr),
+                                rocsparse_status_invalid_pointer);
+    };
+
     // Test rocsparse_csrilu0_clear()
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_clear(nullptr, info),
                             rocsparse_status_invalid_handle);
@@ -612,6 +651,37 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         host_vector<rocsparse_int> hcsr_row_ptr{base, base + 2, base + 4, base + 5, base + 6};
         host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base, base + 1, base + 2, base + 3};
         host_vector<T>             hcsr_val{1, -1, -1, 1, 1, 1};
+
+        bool const need_display = false;
+        test_csrilu0_matrix(
+            handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
+    };
+
+    // -----------------------
+    // singular  pivot
+    // -----------------------
+    {
+        rocsparse_local_handle    handle;
+        rocsparse_local_mat_descr descr;
+        rocsparse_local_mat_info  info;
+
+        rocsparse_index_base base = arg.baseA;
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
+
+        double tol = 0.001;
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_set_tolerance(handle, info, tol));
+
+        int const M = 4;
+        // ------------------
+        // [ 1   -1         ]
+        // [-1    1.0001    ]
+        // [           1    ]
+        // [              1 ]
+        // ------------------
+
+        host_vector<rocsparse_int> hcsr_row_ptr{base, base + 2, base + 4, base + 5, base + 6};
+        host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base, base + 1, base + 2, base + 3};
+        host_vector<T>             hcsr_val{1, -1, -1, 1.0001, 1, 1};
 
         bool const need_display = false;
         test_csrilu0_matrix(

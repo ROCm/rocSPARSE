@@ -699,7 +699,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         int const M = 4;
         // ------------------
         // [ 1   -1         ]
-        // [-1    1.0001     ]
+        // [-1    1.0001    ]
         // [           1    ]
         // [              1 ]
         // ------------------

@@ -5827,13 +5827,21 @@ void host_csrilu0(rocsparse_int                     M,
                   rocsparse_index_base              base,
                   rocsparse_int*                    struct_pivot,
                   rocsparse_int*                    numeric_pivot,
+                  rocsparse_int*                    singular_pivot,
+                  double                            tol,
                   bool                              boost,
                   U                                 boost_tol,
                   T                                 boost_val)
 {
+    bool const isok
+        = (struct_pivot != nullptr) && (numeric_pivot != nullptr) && (singular_pivot != nullptr);
+    assert(isok);
+
+    rocsparse_int const max_int = std::numeric_limits<rocsparse_int>::max();
     // Initialize pivot
-    *struct_pivot  = -1;
-    *numeric_pivot = -1;
+    *struct_pivot   = max_int;
+    *numeric_pivot  = max_int;
+    *singular_pivot = max_int;
 
     // pointer of upper part of each row
     std::vector<rocsparse_int> diag_offset(M);
@@ -5874,16 +5882,23 @@ void host_csrilu0(rocsparse_int                     M,
                 }
                 else
                 {
+                    // Check for numeric singular pivot
+                    if(std::abs(diag_val) <= tol)
+                    {
+                        *singular_pivot = std::min(*singular_pivot, col_j + base);
+                    }
                     // Check for numeric pivot
                     if(diag_val == static_cast<T>(0))
                     {
-                        *numeric_pivot = col_j + base;
-                        return;
+                        *numeric_pivot = std::min(*numeric_pivot, col_j + base);
                     }
                 }
 
                 // multiplication factor
-                csr_val[j] = csr_val[j] / diag_val;
+                if(diag_val != static_cast<T>(0))
+                {
+                    csr_val[j] = csr_val[j] / diag_val;
+                };
 
                 // loop over upper offset pointer and do linear combination for nnz entry
                 for(rocsparse_int k = diag_j + 1; k < csr_row_ptr[col_j + 1] - base; ++k)
@@ -5910,14 +5925,24 @@ void host_csrilu0(rocsparse_int                     M,
         if(!has_diag)
         {
             // Structural (and numerical) zero diagonal
-            *struct_pivot  = ai + base;
-            *numeric_pivot = ai + base;
-            return;
+            *struct_pivot   = std::min(*struct_pivot, ai + base);
+            *numeric_pivot  = std::min(*numeric_pivot, ai + base);
+            *singular_pivot = std::min(*singular_pivot, ai + base);
         }
 
         // set diagonal pointer to diagonal element
         diag_offset[ai] = j;
 
+        // check for singular diagonal
+        {
+            rocsparse_int const diag_pos = diag_offset[ai];
+            bool const          is_diag = (diag_pos >= 0) && (csr_col_ind[diag_pos] == (ai + base));
+            bool const          is_singular_diag = is_diag && (std::abs(csr_val[diag_pos]) <= tol);
+            if(is_singular_diag)
+            {
+                *singular_pivot = std::min(*singular_pivot, (ai + base));
+            };
+        };
         // check for zero diagonal
         {
             rocsparse_int const diag_pos = diag_offset[ai];
@@ -5925,8 +5950,7 @@ void host_csrilu0(rocsparse_int                     M,
             bool const          is_zero_diag = is_diag && (csr_val[diag_pos] == static_cast<T>(0));
             if(is_zero_diag)
             {
-                *numeric_pivot = (ai + base);
-                return;
+                *numeric_pivot = std::min(*numeric_pivot, (ai + base));
             };
         };
 
@@ -5936,6 +5960,19 @@ void host_csrilu0(rocsparse_int                     M,
             nnz_entries[csr_col_ind[j] - base] = 0;
         }
     }
+
+    if(*singular_pivot == max_int)
+    {
+        *singular_pivot = -1;
+    };
+    if(*numeric_pivot == max_int)
+    {
+        *numeric_pivot = -1;
+    };
+    if(*struct_pivot == max_int)
+    {
+        *struct_pivot = -1;
+    };
 }
 
 // Parallel Cyclic reduction based on paper "Fast Tridiagonal Solvers on the GPU" by Yao Zhang
@@ -8424,6 +8461,8 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                      rocsparse_index_base              base,                      \
                                      rocsparse_int*                    struct_pivot,              \
                                      rocsparse_int*                    numeric_pivot,             \
+                                     rocsparse_int*                    singular_pivot,            \
+                                     double                            tol,                       \
                                      bool                              boost,                     \
                                      floating_data_t<TYPE>             boost_tol,                 \
                                      TYPE                              boost_val);                                             \

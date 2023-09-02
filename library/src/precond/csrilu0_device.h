@@ -35,6 +35,10 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
                                               int* __restrict__ done,
                                               const rocsparse_int* __restrict__ map,
                                               rocsparse_int* __restrict__ zero_pivot,
+
+                                              rocsparse_int* __restrict__ singular_pivot,
+                                              double tol,
+
                                               rocsparse_index_base idx_base,
                                               int                  boost,
                                               U                    boost_tol,
@@ -156,6 +160,15 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
         }
         else
         {
+            if(std::abs(diag_val) <= tol)
+            {
+                // Row has numerical singular diagonal
+                if(lid == 0)
+                {
+                    rocsparse_atomic_min(singular_pivot, local_col + idx_base);
+                };
+            };
+
             // Row has numerical zero diagonal
             if(diag_val == static_cast<T>(0))
             {
@@ -210,6 +223,15 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
     // Make sure updated csr_val is written to global memory
     __threadfence();
 
+    // check for singular_pivot
+    if(lid == 0)
+    {
+        bool const is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
+        if(is_diag && (std::abs(csr_val[row_diag]) <= tol))
+        {
+            rocsparse_atomic_min(singular_pivot, (row + idx_base));
+        };
+    };
     // check for zero_pivot
     if(lid == 0)
     {
@@ -238,6 +260,10 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
                                                    int* __restrict__ done,
                                                    const rocsparse_int* __restrict__ map,
                                                    rocsparse_int* __restrict__ zero_pivot,
+
+                                                   rocsparse_int* __restrict__ singular_pivot,
+                                                   double tol,
+
                                                    rocsparse_index_base idx_base,
                                                    int                  boost,
                                                    U                    boost_tol,
@@ -328,6 +354,16 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
         }
         else
         {
+            // Row has numerical singular diagonal
+            if(std::abs(diag_val) <= tol)
+            {
+                if(lid == 0)
+                {
+                    // We are looking for the first singular pivot
+                    rocsparse_atomic_min(singular_pivot, local_col + idx_base);
+                };
+            };
+
             // Row has numerical zero diagonal
             if(diag_val == static_cast<T>(0))
             {
@@ -383,6 +419,16 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
 
     // Make sure updated csr_val is written to global memory
     __threadfence();
+
+    // check for singular_pivot
+    if(lid == 0)
+    {
+        bool const is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
+        if(is_diag && (std::abs(csr_val[row_diag]) <= tol))
+        {
+            rocsparse_atomic_min(singular_pivot, (row + idx_base));
+        };
+    };
 
     // check for zero_pivot
     if(lid == 0)

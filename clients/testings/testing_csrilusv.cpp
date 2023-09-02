@@ -70,6 +70,10 @@ void testing_csrilusv(const Arguments& arg)
     host_vector<rocsparse_int> h_numeric_pivot_U_1(1);
     host_vector<rocsparse_int> h_numeric_pivot_U_2(1);
 
+    host_vector<rocsparse_int> h_singular_pivot_gold(1);
+    host_vector<rocsparse_int> h_singular_pivot_1(1);
+    host_vector<rocsparse_int> h_singular_pivot_2(1);
+
     // Sample matrix
     rocsparse_int nnz;
     matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val_gold, M, N, nnz, base);
@@ -82,6 +86,8 @@ void testing_csrilusv(const Arguments& arg)
     device_vector<rocsparse_int> d_numeric_pivot_2(1);
     device_vector<rocsparse_int> d_numeric_pivot_L_2(1);
     device_vector<rocsparse_int> d_numeric_pivot_U_2(1);
+
+    device_vector<rocsparse_int> d_singular_pivot_2(1);
 
     if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !d_struct_pivot_2 || !d_numeric_pivot_2
        || !d_numeric_pivot_L_2 || !d_numeric_pivot_U_2)
@@ -98,16 +104,23 @@ void testing_csrilusv(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val_gold, sizeof(T) * nnz, hipMemcpyHostToDevice));
 
     // Compute reference incomplete LU factorization on host
-    host_csrilu0<T>(M,
-                    hcsr_row_ptr,
-                    hcsr_col_ind,
-                    hcsr_val_gold,
-                    base,
-                    h_struct_pivot_gold,
-                    h_numeric_pivot_gold,
-                    false,
-                    std::real(static_cast<T>(0)),
-                    static_cast<T>(0));
+    {
+        double tol = 0;
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_get_tolerance(handle, info, &tol));
+
+        host_csrilu0<T>(M,
+                        hcsr_row_ptr,
+                        hcsr_col_ind,
+                        hcsr_val_gold,
+                        base,
+                        h_struct_pivot_gold,
+                        h_numeric_pivot_gold,
+                        h_singular_pivot_gold,
+                        tol,
+                        false,
+                        std::real(static_cast<T>(0)),
+                        static_cast<T>(0));
+    }
 
     // Obtain csrilu0 buffer size
     size_t buffer_size;
@@ -158,21 +171,32 @@ void testing_csrilusv(const Arguments& arg)
                             (h_numeric_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
                                                             : rocsparse_status_success);
 
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_singular_pivot(handle, info, h_singular_pivot_1),
+                            (h_singular_pivot_gold[0] != -1) ? rocsparse_status_singular_pivot
+                                                             : rocsparse_status_success);
     // Check for structural zero pivot using device pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, d_numeric_pivot_2),
                             (h_numeric_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
                                                             : rocsparse_status_success);
 
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_singular_pivot(handle, info, d_singular_pivot_2),
+                            (h_singular_pivot_gold[0] != -1) ? rocsparse_status_singular_pivot
+                                                             : rocsparse_status_success);
     // Copy output to CPU
     host_vector<T> hcsr_val(nnz);
     CHECK_HIP_ERROR(hipMemcpy(
         h_numeric_pivot_2, d_numeric_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(
+        h_singular_pivot_2, d_singular_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
     CHECK_HIP_ERROR(hipMemcpy(hcsr_val, dcsr_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
     // Check pivot results
     h_numeric_pivot_gold.unit_check(h_numeric_pivot_1);
     h_numeric_pivot_gold.unit_check(h_numeric_pivot_2);
+
+    h_singular_pivot_gold.unit_check(h_singular_pivot_1);
+    h_singular_pivot_gold.unit_check(h_singular_pivot_2);
 
     // If numerical pivot has been found, we are done
     if(h_numeric_pivot_gold[0] != -1)
