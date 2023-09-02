@@ -5844,7 +5844,7 @@ void host_csrilu0(rocsparse_int                     M,
     *singular_pivot = max_int;
 
     // pointer of upper part of each row
-    std::vector<rocsparse_int> diag_offset(M);
+    std::vector<rocsparse_int> diag_offset(M, -1);
     std::vector<rocsparse_int> nnz_entries(M, 0);
 
     // ai = 0 to N loop over all rows
@@ -5861,7 +5861,8 @@ void host_csrilu0(rocsparse_int                     M,
             nnz_entries[csr_col_ind[j] - base] = j;
         }
 
-        bool has_diag = false;
+        bool          has_diag = false;
+        rocsparse_int diag_pos = -1;
 
         // loop over ai-th row nnz entries
         for(j = row_begin; j < row_end; ++j)
@@ -5872,6 +5873,8 @@ void host_csrilu0(rocsparse_int                     M,
 
                 rocsparse_int col_j  = csr_col_ind[j] - base;
                 rocsparse_int diag_j = diag_offset[col_j];
+                if(diag_j < 0)
+                    continue;
 
                 T diag_val = csr_val[diag_j];
 
@@ -5879,41 +5882,42 @@ void host_csrilu0(rocsparse_int                     M,
                 {
                     diag_val        = (boost_tol >= std::abs(diag_val)) ? boost_val : diag_val;
                     csr_val[diag_j] = diag_val;
-                }
-                else
-                {
-                    // Check for numeric singular pivot
-                    if(std::abs(diag_val) <= tol)
-                    {
-                        *singular_pivot = std::min(*singular_pivot, col_j + base);
-                    }
-                    // Check for numeric pivot
-                    if(diag_val == static_cast<T>(0))
-                    {
-                        *numeric_pivot = std::min(*numeric_pivot, col_j + base);
-                    }
-                }
-
-                // multiplication factor
-                if(diag_val != static_cast<T>(0))
-                {
-                    csr_val[j] = csr_val[j] / diag_val;
                 };
 
-                // loop over upper offset pointer and do linear combination for nnz entry
-                for(rocsparse_int k = diag_j + 1; k < csr_row_ptr[col_j + 1] - base; ++k)
+                // Check for numeric singular pivot
+                if(std::abs(diag_val) <= tol)
                 {
-                    // if nnz at this position do linear combination
-                    if(nnz_entries[csr_col_ind[k] - base] != 0)
-                    {
-                        rocsparse_int idx = nnz_entries[csr_col_ind[k] - base];
-                        csr_val[idx]      = std::fma(-csr_val[j], csr_val[k], csr_val[idx]);
-                    }
+                    *singular_pivot = std::min(*singular_pivot, col_j + base);
                 }
+
+                // Check for numeric zero pivot
+                if(diag_val == static_cast<T>(0))
+                {
+                    *numeric_pivot = std::min(*numeric_pivot, col_j + base);
+                    continue;
+                }
+
+                {
+                    // multiplication factor
+
+                    csr_val[j] = csr_val[j] / diag_val;
+
+                    // loop over upper offset pointer and do linear combination for nnz entry
+                    for(rocsparse_int k = diag_j + 1; k < csr_row_ptr[col_j + 1] - base; ++k)
+                    {
+                        // if nnz at this position do linear combination
+                        if(nnz_entries[csr_col_ind[k] - base] != 0)
+                        {
+                            rocsparse_int idx = nnz_entries[csr_col_ind[k] - base];
+                            csr_val[idx]      = std::fma(-csr_val[j], csr_val[k], csr_val[idx]);
+                        }
+                    }
+                };
             }
             else if(csr_col_ind[j] - base == ai)
             {
                 has_diag = true;
+                diag_pos = j;
                 break;
             }
             else
@@ -5929,37 +5933,38 @@ void host_csrilu0(rocsparse_int                     M,
             *numeric_pivot  = std::min(*numeric_pivot, ai + base);
             *singular_pivot = std::min(*singular_pivot, ai + base);
         }
-
-        // set diagonal pointer to diagonal element
-        diag_offset[ai] = j;
-
-        // check for singular diagonal
+        else
         {
-            rocsparse_int const diag_pos = diag_offset[ai];
-            bool const          is_diag = (diag_pos >= 0) && (csr_col_ind[diag_pos] == (ai + base));
-            bool const          is_singular_diag = is_diag && (std::abs(csr_val[diag_pos]) <= tol);
-            if(is_singular_diag)
+            // set diagonal pointer to diagonal element
+            diag_offset[ai] = diag_pos;
+
             {
-                *singular_pivot = std::min(*singular_pivot, (ai + base));
-            };
-        };
-        // check for zero diagonal
-        {
-            rocsparse_int const diag_pos = diag_offset[ai];
-            bool const          is_diag = (diag_pos >= 0) && (csr_col_ind[diag_pos] == (ai + base));
-            bool const          is_zero_diag = is_diag && (csr_val[diag_pos] == static_cast<T>(0));
-            if(is_zero_diag)
-            {
-                *numeric_pivot = std::min(*numeric_pivot, (ai + base));
-            };
-        };
+                rocsparse_int const diag_pos = diag_offset[ai];
+                bool const is_diag = (diag_pos >= 0) && (csr_col_ind[diag_pos] == (ai + base));
 
-        // clear nnz entries
-        for(j = row_begin; j < row_end; ++j)
-        {
-            nnz_entries[csr_col_ind[j] - base] = 0;
+                bool const is_singular_diag = is_diag && (std::abs(csr_val[diag_pos]) <= tol);
+                bool const is_zero_diag     = is_diag && (csr_val[diag_pos] == static_cast<T>(0));
+
+                // check for singular diagonal
+                if(is_singular_diag)
+                {
+                    *singular_pivot = std::min(*singular_pivot, (ai + base));
+                };
+
+                // check for zero diagonal
+                if(is_zero_diag)
+                {
+                    *numeric_pivot = std::min(*numeric_pivot, (ai + base));
+                };
+            };
+
+            // clear nnz entries
+            for(j = row_begin; j < row_end; ++j)
+            {
+                nnz_entries[csr_col_ind[j] - base] = 0;
+            }
         }
-    }
+    };
 
     if(*singular_pivot == max_int)
     {
