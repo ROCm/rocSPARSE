@@ -5882,20 +5882,23 @@ void host_csrilu0(rocsparse_int                     M,
                 {
                     diag_val        = (boost_tol >= std::abs(diag_val)) ? boost_val : diag_val;
                     csr_val[diag_j] = diag_val;
+                }
+                else
+                {
+
+                    // Check for numeric singular pivot
+                    if(std::abs(diag_val) <= tol)
+                    {
+                        *singular_pivot = std::min(*singular_pivot, col_j + base);
+                    }
+
+                    // Check for numeric zero pivot
+                    if(diag_val == static_cast<T>(0))
+                    {
+                        *numeric_pivot = std::min(*numeric_pivot, col_j + base);
+                        continue;
+                    }
                 };
-
-                // Check for numeric singular pivot
-                if(std::abs(diag_val) <= tol)
-                {
-                    *singular_pivot = std::min(*singular_pivot, col_j + base);
-                }
-
-                // Check for numeric zero pivot
-                if(diag_val == static_cast<T>(0))
-                {
-                    *numeric_pivot = std::min(*numeric_pivot, col_j + base);
-                    continue;
-                }
 
                 {
                     // multiplication factor
@@ -5929,9 +5932,8 @@ void host_csrilu0(rocsparse_int                     M,
         if(!has_diag)
         {
             // Structural (and numerical) zero diagonal
-            *struct_pivot   = std::min(*struct_pivot, ai + base);
-            *numeric_pivot  = std::min(*numeric_pivot, ai + base);
-            *singular_pivot = std::min(*singular_pivot, ai + base);
+            *struct_pivot  = std::min(*struct_pivot, ai + base);
+            *numeric_pivot = std::min(*numeric_pivot, ai + base);
         }
         else
         {
