@@ -53,9 +53,9 @@ void testing_spmm_csr_bad_arg(const Arguments& arg)
     rocsparse_spmm_alg   alg         = rocsparse_spmm_alg_default;
     rocsparse_spmm_stage stage       = rocsparse_spmm_stage_compute;
 
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_indextype jtype = get_indextype<J>();
-    rocsparse_datatype  ttype = get_datatype<T>();
+    rocsparse_indextype itype        = get_indextype<I>();
+    rocsparse_indextype jtype        = get_indextype<J>();
+    rocsparse_datatype  compute_type = get_datatype<T>();
 
     // SpMM structures
     rocsparse_local_spmat local_mat_A(m,
@@ -67,10 +67,10 @@ void testing_spmm_csr_bad_arg(const Arguments& arg)
                                       itype,
                                       jtype,
                                       base,
-                                      ttype,
+                                      compute_type,
                                       rocsparse_format_csr);
-    rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order_B);
-    rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order_C);
+    rocsparse_local_dnmat local_mat_B(k, n, k, B, compute_type, order_B);
+    rocsparse_local_dnmat local_mat_C(m, n, m, C, compute_type, order_C);
 
     rocsparse_spmat_descr mat_A = local_mat_A;
     rocsparse_dnmat_descr mat_B = local_mat_B;
@@ -79,31 +79,31 @@ void testing_spmm_csr_bad_arg(const Arguments& arg)
     int       nargs_to_exclude   = 2;
     const int args_to_exclude[2] = {11, 12};
 
-#define PARAMS                                                                                  \
-    handle, trans_A, trans_B, alpha, mat_A, mat_B, beta, mat_C, ttype, alg, stage, buffer_size, \
-        temp_buffer
+#define PARAMS                                                                            \
+    handle, trans_A, trans_B, alpha, mat_A, mat_B, beta, mat_C, compute_type, alg, stage, \
+        buffer_size, temp_buffer
     {
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = nullptr;
         void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = nullptr;
         void*   temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 #undef PARAMS
 }
@@ -222,6 +222,7 @@ void testing_spmm_csr(const Arguments& arg)
                             base,
                             ttype,
                             rocsparse_format_csr);
+
     rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order_B);
     rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order_C);
     rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order_C);

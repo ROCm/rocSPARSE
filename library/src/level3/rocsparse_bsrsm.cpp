@@ -37,24 +37,13 @@ extern "C" rocsparse_status rocsparse_bsrsm_zero_pivot(rocsparse_handle   handle
                                                        rocsparse_int*     position)
 try
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
 
     // Logging
     log_trace(handle, "rocsparse_bsrsm_zero_pivot", (const void*&)info, (const void*&)position);
 
-    // Check pointer arguments
-    if(position == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(1, info);
+    ROCSPARSE_CHECKARG_POINTER(2, position);
 
     // Stream
     hipStream_t stream = handle->stream;
@@ -99,7 +88,7 @@ try
                                                hipMemcpyDeviceToDevice,
                                                stream));
 
-            return rocsparse_status_zero_pivot;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
         }
     }
     else
@@ -116,7 +105,7 @@ try
         }
         else
         {
-            return rocsparse_status_zero_pivot;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
         }
     }
 
@@ -124,24 +113,17 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 extern "C" rocsparse_status rocsparse_bsrsm_clear(rocsparse_handle handle, rocsparse_mat_info info)
 try
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
 
-    // Logging
     log_trace(handle, "rocsparse_bsrsm_clear", (const void*&)info);
+
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(1, info);
 
     // Clear bsrsm meta data (this includes lower, upper and their transposed equivalents
     if(!rocsparse_check_trm_shared(info, info->bsrsm_lower_info))
@@ -160,5 +142,5 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

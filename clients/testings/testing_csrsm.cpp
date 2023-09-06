@@ -40,39 +40,41 @@ void testing_csrsm_bad_arg(const Arguments& arg)
     // Create matrix info
     rocsparse_local_mat_info local_info;
 
-    rocsparse_handle          handle            = local_handle;
-    rocsparse_operation       trans_A           = rocsparse_operation_none;
-    rocsparse_operation       trans_B           = rocsparse_operation_none;
-    rocsparse_int             m                 = safe_size;
-    rocsparse_int             nrhs              = safe_size;
-    rocsparse_int             nnz               = safe_size;
-    const T*                  alpha_device_host = &h_alpha;
-    const rocsparse_mat_descr descr             = local_descr;
-    const T*                  csr_val           = (const T*)0x4;
-    const rocsparse_int*      csr_row_ptr       = (const rocsparse_int*)0x4;
-    const rocsparse_int*      csr_col_ind       = (const rocsparse_int*)0x4;
-    T*                        B                 = (T*)0x4;
-    rocsparse_int             ldb               = safe_size;
-    rocsparse_mat_info        info              = local_info;
-    rocsparse_analysis_policy analysis          = rocsparse_analysis_policy_force;
-    rocsparse_solve_policy    solve             = rocsparse_solve_policy_auto;
-    size_t*                   buffer_size       = (size_t*)0x4;
-    void*                     temp_buffer       = (void*)0x4;
+    rocsparse_handle          handle      = local_handle;
+    rocsparse_operation       trans_A     = rocsparse_operation_none;
+    rocsparse_operation       trans_B     = rocsparse_operation_none;
+    rocsparse_int             m           = safe_size;
+    rocsparse_int             nrhs        = safe_size;
+    rocsparse_int             nnz         = safe_size;
+    const T*                  alpha       = &h_alpha;
+    const rocsparse_mat_descr descr       = local_descr;
+    const T*                  csr_val     = (const T*)0x4;
+    const rocsparse_int*      csr_row_ptr = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_col_ind = (const rocsparse_int*)0x4;
+    T*                        B           = (T*)0x4;
+    rocsparse_int             ldb         = safe_size;
+    rocsparse_mat_info        info        = local_info;
+    rocsparse_analysis_policy analysis    = rocsparse_analysis_policy_force;
+    rocsparse_solve_policy    solve       = rocsparse_solve_policy_auto;
+    rocsparse_solve_policy    policy      = rocsparse_solve_policy_auto;
+    size_t                    local_buffer_size;
+    size_t*                   buffer_size = &local_buffer_size;
+    void*                     temp_buffer = (void*)0x4;
 
-#define PARAMS_BUFFER_SIZE                                                                  \
-    handle, trans_A, trans_B, m, nrhs, nnz, alpha_device_host, descr, csr_val, csr_row_ptr, \
-        csr_col_ind, B, ldb, info, solve, buffer_size
-    auto_testing_bad_arg(rocsparse_csrsm_buffer_size<T>, PARAMS_BUFFER_SIZE);
+#define PARAMS_BUFFER_SIZE                                                                      \
+    handle, trans_A, trans_B, m, nrhs, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, \
+        ldb, info, policy, buffer_size
+    bad_arg_analysis(rocsparse_csrsm_buffer_size<T>, PARAMS_BUFFER_SIZE);
 
-#define PARAMS_ANALYSIS                                                                     \
-    handle, trans_A, trans_B, m, nrhs, nnz, alpha_device_host, descr, csr_val, csr_row_ptr, \
-        csr_col_ind, B, ldb, info, analysis, solve, temp_buffer
-    auto_testing_bad_arg(rocsparse_csrsm_analysis<T>, PARAMS_ANALYSIS);
+#define PARAMS_ANALYSIS                                                                         \
+    handle, trans_A, trans_B, m, nrhs, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, \
+        ldb, info, analysis, solve, temp_buffer
+    bad_arg_analysis(rocsparse_csrsm_analysis<T>, PARAMS_ANALYSIS);
 
-#define PARAMS_SOLVE                                                                        \
-    handle, trans_A, trans_B, m, nrhs, nnz, alpha_device_host, descr, csr_val, csr_row_ptr, \
-        csr_col_ind, B, ldb, info, solve, temp_buffer
-    auto_testing_bad_arg(rocsparse_csrsm_solve<T>, PARAMS_SOLVE);
+#define PARAMS_SOLVE                                                                            \
+    handle, trans_A, trans_B, m, nrhs, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, \
+        ldb, info, policy, temp_buffer
+    bad_arg_analysis(rocsparse_csrsm_solve<T>, PARAMS_SOLVE);
 
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {

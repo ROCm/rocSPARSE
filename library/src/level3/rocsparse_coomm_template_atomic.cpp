@@ -675,61 +675,65 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
         {
             if(handle->wavefront_size == 32)
             {
-                return coommnn_atomic_dispatch<256, 32, false, T>(handle,
-                                                                  conj_A,
-                                                                  conj_B,
-                                                                  m,
-                                                                  n,
-                                                                  k,
-                                                                  nnz,
-                                                                  batch_count_A,
-                                                                  batch_stride_A,
-                                                                  alpha_device_host,
-                                                                  descr,
-                                                                  coo_val,
-                                                                  coo_row_ind,
-                                                                  coo_col_ind,
-                                                                  dense_B,
-                                                                  ldb,
-                                                                  batch_count_B,
-                                                                  batch_stride_B,
-                                                                  beta_device_host,
-                                                                  dense_C,
-                                                                  ldc,
-                                                                  batch_count_C,
-                                                                  batch_stride_C,
-                                                                  order_C);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (coommnn_atomic_dispatch<256, 32, false, T>(handle,
+                                                                conj_A,
+                                                                conj_B,
+                                                                m,
+                                                                n,
+                                                                k,
+                                                                nnz,
+                                                                batch_count_A,
+                                                                batch_stride_A,
+                                                                alpha_device_host,
+                                                                descr,
+                                                                coo_val,
+                                                                coo_row_ind,
+                                                                coo_col_ind,
+                                                                dense_B,
+                                                                ldb,
+                                                                batch_count_B,
+                                                                batch_stride_B,
+                                                                beta_device_host,
+                                                                dense_C,
+                                                                ldc,
+                                                                batch_count_C,
+                                                                batch_stride_C,
+                                                                order_C)));
+                return rocsparse_status_success;
             }
             else if(handle->wavefront_size == 64)
             {
-                return coommnn_atomic_dispatch<256, 64, false, T>(handle,
-                                                                  conj_A,
-                                                                  conj_B,
-                                                                  m,
-                                                                  n,
-                                                                  k,
-                                                                  nnz,
-                                                                  batch_count_A,
-                                                                  batch_stride_A,
-                                                                  alpha_device_host,
-                                                                  descr,
-                                                                  coo_val,
-                                                                  coo_row_ind,
-                                                                  coo_col_ind,
-                                                                  dense_B,
-                                                                  ldb,
-                                                                  batch_count_B,
-                                                                  batch_stride_B,
-                                                                  beta_device_host,
-                                                                  dense_C,
-                                                                  ldc,
-                                                                  batch_count_C,
-                                                                  batch_stride_C,
-                                                                  order_C);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (coommnn_atomic_dispatch<256, 64, false, T>(handle,
+                                                                conj_A,
+                                                                conj_B,
+                                                                m,
+                                                                n,
+                                                                k,
+                                                                nnz,
+                                                                batch_count_A,
+                                                                batch_stride_A,
+                                                                alpha_device_host,
+                                                                descr,
+                                                                coo_val,
+                                                                coo_row_ind,
+                                                                coo_col_ind,
+                                                                dense_B,
+                                                                ldb,
+                                                                batch_count_B,
+                                                                batch_stride_B,
+                                                                beta_device_host,
+                                                                dense_C,
+                                                                ldc,
+                                                                batch_count_C,
+                                                                batch_stride_C,
+                                                                order_C)));
+                return rocsparse_status_success;
             }
             else
             {
-                return rocsparse_status_not_implemented;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
             }
         }
         else if((order_B == rocsparse_order_column
@@ -739,61 +743,65 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
         {
             if(handle->wavefront_size == 32)
             {
-                return coommnn_atomic_dispatch<256, 32, true, T>(handle,
-                                                                 conj_A,
-                                                                 conj_B,
-                                                                 m,
-                                                                 n,
-                                                                 k,
-                                                                 nnz,
-                                                                 batch_count_A,
-                                                                 batch_stride_A,
-                                                                 alpha_device_host,
-                                                                 descr,
-                                                                 coo_val,
-                                                                 coo_row_ind,
-                                                                 coo_col_ind,
-                                                                 dense_B,
-                                                                 ldb,
-                                                                 batch_count_B,
-                                                                 batch_stride_B,
-                                                                 beta_device_host,
-                                                                 dense_C,
-                                                                 ldc,
-                                                                 batch_count_C,
-                                                                 batch_stride_C,
-                                                                 order_C);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (coommnn_atomic_dispatch<256, 32, true, T>(handle,
+                                                               conj_A,
+                                                               conj_B,
+                                                               m,
+                                                               n,
+                                                               k,
+                                                               nnz,
+                                                               batch_count_A,
+                                                               batch_stride_A,
+                                                               alpha_device_host,
+                                                               descr,
+                                                               coo_val,
+                                                               coo_row_ind,
+                                                               coo_col_ind,
+                                                               dense_B,
+                                                               ldb,
+                                                               batch_count_B,
+                                                               batch_stride_B,
+                                                               beta_device_host,
+                                                               dense_C,
+                                                               ldc,
+                                                               batch_count_C,
+                                                               batch_stride_C,
+                                                               order_C)));
+                return rocsparse_status_success;
             }
             else if(handle->wavefront_size == 64)
             {
-                return coommnn_atomic_dispatch<256, 64, true, T>(handle,
-                                                                 conj_A,
-                                                                 conj_B,
-                                                                 m,
-                                                                 n,
-                                                                 k,
-                                                                 nnz,
-                                                                 batch_count_A,
-                                                                 batch_stride_A,
-                                                                 alpha_device_host,
-                                                                 descr,
-                                                                 coo_val,
-                                                                 coo_row_ind,
-                                                                 coo_col_ind,
-                                                                 dense_B,
-                                                                 ldb,
-                                                                 batch_count_B,
-                                                                 batch_stride_B,
-                                                                 beta_device_host,
-                                                                 dense_C,
-                                                                 ldc,
-                                                                 batch_count_C,
-                                                                 batch_stride_C,
-                                                                 order_C);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (coommnn_atomic_dispatch<256, 64, true, T>(handle,
+                                                               conj_A,
+                                                               conj_B,
+                                                               m,
+                                                               n,
+                                                               k,
+                                                               nnz,
+                                                               batch_count_A,
+                                                               batch_stride_A,
+                                                               alpha_device_host,
+                                                               descr,
+                                                               coo_val,
+                                                               coo_row_ind,
+                                                               coo_col_ind,
+                                                               dense_B,
+                                                               ldb,
+                                                               batch_count_B,
+                                                               batch_stride_B,
+                                                               beta_device_host,
+                                                               dense_C,
+                                                               ldc,
+                                                               batch_count_C,
+                                                               batch_stride_C,
+                                                               order_C)));
+                return rocsparse_status_success;
             }
             else
             {
-                return rocsparse_status_not_implemented;
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
             }
         }
     }
@@ -857,7 +865,7 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
         }
         else
         {
-            return rocsparse_status_not_implemented;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
         }
     }
     return rocsparse_status_success;

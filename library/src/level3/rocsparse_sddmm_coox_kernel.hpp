@@ -24,6 +24,7 @@
 #include "common.h"
 #include "definitions.h"
 #include "handle.h"
+#include "rocsparse.h"
 #include "rocsparse_reduce.hpp"
 #include "rocsparse_sddmm.hpp"
 #include "utility.h"
@@ -46,10 +47,10 @@ void sddmm_coox_kernel(rocsparse_operation transA,
                        I                   nnz,
                        U                   alpha_device_host,
                        const T* __restrict__ A,
-                       int64_t lda,
+                       J lda,
                        const T* __restrict__ B,
-                       int64_t ldb,
-                       U       beta_device_host,
+                       J ldb,
+                       U beta_device_host,
                        T* __restrict__ coo_val,
                        const I* __restrict__ coo_row_ind,
                        const I* __restrict__ coo_col_ind,
@@ -68,13 +69,13 @@ void sddmm_coox_kernel(rocsparse_operation transA,
     static constexpr rocsparse_int NUM_COEFF          = (BLOCKSIZE / NTHREADS_PER_DOTPRODUCT);
     const I                        local_coeff_index  = hipThreadIdx_x / NTHREADS_PER_DOTPRODUCT;
     const I                        local_thread_index = hipThreadIdx_x % NTHREADS_PER_DOTPRODUCT;
-    const int64_t                  incx               = (orderA == rocsparse_order_column)
+    const J                        incx               = (orderA == rocsparse_order_column)
                                                             ? ((transA == rocsparse_operation_none) ? lda : 1)
                                                             : ((transA == rocsparse_operation_none) ? 1 : lda);
 
-    const int64_t incy = (orderB == rocsparse_order_column)
-                             ? ((transB == rocsparse_operation_none) ? 1 : ldb)
-                             : ((transB == rocsparse_operation_none) ? ldb : 1);
+    const J incy = (orderB == rocsparse_order_column)
+                       ? ((transB == rocsparse_operation_none) ? 1 : ldb)
+                       : ((transB == rocsparse_operation_none) ? ldb : 1);
 
     __shared__ T s[NUM_COEFF][NTHREADS_PER_DOTPRODUCT];
 

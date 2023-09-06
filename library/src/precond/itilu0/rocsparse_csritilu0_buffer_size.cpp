@@ -62,6 +62,7 @@ static rocsparse_status buffer_size_dispatch(rocsparse_itilu0_alg alg_, P&&... p
         return rocsparse_status_success;
     }
     }
+
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
@@ -77,8 +78,8 @@ rocsparse_status rocsparse_csritilu0_buffer_size_template(rocsparse_handle     h
                                                           rocsparse_index_base base_,
                                                           rocsparse_datatype   datatype_,
                                                           size_t* __restrict__ buffer_size_)
-{
 
+{
     if(m_ == 0)
     {
         *buffer_size_ = 0;
@@ -132,7 +133,6 @@ rocsparse_status rocsparse_csritilu0_buffer_size_impl(rocsparse_handle     handl
               base,
               datatype,
               (const void*&)buffer_size);
-
     ROCSPARSE_CHECKARG_ENUM(1, alg);
     ROCSPARSE_CHECKARG(2, options, (options < 0), rocsparse_status_invalid_value);
     ROCSPARSE_CHECKARG(3, nmaxiter, (nmaxiter < 0), rocsparse_status_invalid_value);

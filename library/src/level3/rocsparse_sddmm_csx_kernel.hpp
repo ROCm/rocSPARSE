@@ -24,6 +24,7 @@
 #include "common.h"
 #include "definitions.h"
 #include "handle.h"
+#include "rocsparse.h"
 #include "rocsparse_reduce.hpp"
 #include "rocsparse_sddmm.hpp"
 #include "utility.h"

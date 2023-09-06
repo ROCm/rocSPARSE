@@ -37,34 +37,37 @@ void testing_csrmm_bad_arg(const Arguments& arg)
 
     // Local decalrations.
 
-    rocsparse_handle     handle      = local_handle;
-    rocsparse_operation  trans_A     = rocsparse_operation_none;
-    rocsparse_operation  trans_B     = rocsparse_operation_none;
-    rocsparse_int        m           = safe_size;
-    rocsparse_int        n           = safe_size;
-    rocsparse_int        k           = safe_size;
-    rocsparse_int        nnz         = safe_size;
-    const T              alpha       = static_cast<T>(2);
+    rocsparse_handle    handle  = local_handle;
+    rocsparse_operation trans_A = rocsparse_operation_none;
+    rocsparse_operation trans_B = rocsparse_operation_none;
+    rocsparse_int       m       = safe_size;
+    rocsparse_int       n       = safe_size;
+    rocsparse_int       k       = safe_size;
+    rocsparse_int       nnz     = safe_size;
+
+    const T  local_alpha = static_cast<T>(2);
+    const T* alpha       = &local_alpha;
+
     rocsparse_mat_descr  descr       = local_descr;
     const T*             csr_val     = (const T*)0x4;
     const rocsparse_int* csr_row_ptr = (const rocsparse_int*)0x4;
     const rocsparse_int* csr_col_ind = (const rocsparse_int*)0x4;
     const T*             B           = (const T*)0x4;
     rocsparse_int        ldb         = safe_size;
-    const T              beta        = static_cast<T>(2);
+    const T              local_beta  = static_cast<T>(2);
+    const T*             beta        = &local_beta;
     T*                   C           = (T*)0x4;
     rocsparse_int        ldc         = safe_size;
 
-#define PARAMS                                                                                   \
-    handle, trans_A, trans_B, m, n, k, nnz, &alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, \
-        ldb, &beta, C, ldc
+#define PARAMS                                                                                  \
+    handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, \
+        ldb, beta, C, ldc
 
-    auto_testing_bad_arg(rocsparse_csrmm<T>, PARAMS);
+    bad_arg_analysis(rocsparse_csrmm<T>, PARAMS);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_symmetric));
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(PARAMS), rocsparse_status_not_implemented);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
-
     //
     // Testing wrong leading dimensions.
     //
@@ -222,7 +225,9 @@ void testing_csrmm(const Arguments& arg)
     rocsparse_operation  transB = arg.transB;
     rocsparse_index_base base   = arg.baseA;
     rocsparse_order      order  = rocsparse_order_column;
-
+    //
+    // order column
+    //
     host_scalar<T> h_alpha(arg.get_alpha<T>());
     host_scalar<T> h_beta(arg.get_beta<T>());
 

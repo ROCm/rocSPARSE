@@ -70,27 +70,27 @@ rocsparse_status rocsparse_bellmm_template_dispatch(rocsparse_handle          ha
                                                     int64_t                   ldc,
                                                     rocsparse_order           order_C)
 {
-
-    return rocsparse_bellmm_template_general<T>(handle,
-                                                trans_A,
-                                                trans_B,
-                                                dir_A,
-                                                mb,
-                                                n,
-                                                kb,
-                                                bell_cols,
-                                                bell_block_dim,
-                                                alpha_device_host,
-                                                descr,
-                                                bell_col_ind,
-                                                bell_val,
-                                                dense_B,
-                                                ldb,
-                                                order_B,
-                                                beta_device_host,
-                                                dense_C,
-                                                ldc,
-                                                order_C);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_bellmm_template_general<T>(handle,
+                                                                   trans_A,
+                                                                   trans_B,
+                                                                   dir_A,
+                                                                   mb,
+                                                                   n,
+                                                                   kb,
+                                                                   bell_cols,
+                                                                   bell_block_dim,
+                                                                   alpha_device_host,
+                                                                   descr,
+                                                                   bell_col_ind,
+                                                                   bell_val,
+                                                                   dense_B,
+                                                                   ldb,
+                                                                   order_B,
+                                                                   beta_device_host,
+                                                                   dense_C,
+                                                                   ldc,
+                                                                   order_C));
+    return rocsparse_status_success;
 }
 
 template <typename T, typename I, typename A, typename B, typename C>
@@ -146,6 +146,168 @@ rocsparse_status rocsparse_bellmm_template_preprocess(rocsparse_handle          
     return rocsparse_status_success;
 }
 
+static rocsparse_status rocsparse_bellmm_quickreturn(rocsparse_handle          handle,
+                                                     rocsparse_operation       trans_A,
+                                                     rocsparse_operation       trans_B,
+                                                     rocsparse_direction       dir_A,
+                                                     int64_t                   mb,
+                                                     int64_t                   n,
+                                                     int64_t                   kb,
+                                                     int64_t                   bell_cols,
+                                                     int64_t                   block_dim,
+                                                     int64_t                   batch_count_A,
+                                                     int64_t                   batch_stride_A,
+                                                     const void*               alpha,
+                                                     const rocsparse_mat_descr descr,
+                                                     const void*               bell_col_ind,
+                                                     const void*               bell_val,
+                                                     const void*               dense_B,
+                                                     int64_t                   ldb,
+                                                     int64_t                   batch_count_B,
+                                                     int64_t                   batch_stride_B,
+                                                     rocsparse_order           order_B,
+                                                     const void*               beta,
+                                                     void*                     dense_C,
+                                                     int64_t                   ldc,
+                                                     int64_t                   batch_count_C,
+                                                     int64_t                   batch_stride_C,
+                                                     rocsparse_order           order_C,
+                                                     void*                     temp_buffer)
+{
+    if(mb == 0 || n == 0 || kb == 0 || bell_cols == 0)
+    {
+        return rocsparse_status_success;
+    }
+    return rocsparse_status_continue;
+}
+
+static rocsparse_status rocsparse_bellmm_checkarg(rocsparse_handle          handle, //0
+                                                  rocsparse_operation       trans_A, //1
+                                                  rocsparse_operation       trans_B, //2
+                                                  rocsparse_direction       dir_A, //3
+                                                  int64_t                   mb, //4
+                                                  int64_t                   n, //5
+                                                  int64_t                   kb, //6
+                                                  int64_t                   bell_cols, //7
+                                                  int64_t                   block_dim, //8
+                                                  int64_t                   batch_count_A, //9
+                                                  int64_t                   batch_stride_A, //10
+                                                  const void*               alpha, //11
+                                                  const rocsparse_mat_descr descr, //12
+                                                  const void*               bell_col_ind, //13
+                                                  const void*               bell_val, //14
+                                                  const void*               dense_B, //15
+                                                  int64_t                   ldb, //16
+                                                  int64_t                   batch_count_B, //17
+                                                  int64_t                   batch_stride_B, //18
+                                                  rocsparse_order           order_B, //19
+                                                  const void*               beta, //20
+                                                  void*                     dense_C, //21
+                                                  int64_t                   ldc, //22
+                                                  int64_t                   batch_count_C, //23
+                                                  int64_t                   batch_stride_C, //24
+                                                  rocsparse_order           order_C, //25
+                                                  void*                     temp_buffer) //26
+{
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(12, descr);
+    ROCSPARSE_CHECKARG_ENUM(1, trans_A);
+    ROCSPARSE_CHECKARG_ENUM(2, trans_B);
+    ROCSPARSE_CHECKARG_ENUM(19, order_B);
+    ROCSPARSE_CHECKARG_ENUM(25, order_C);
+    ROCSPARSE_CHECKARG_ENUM(3, dir_A);
+    ROCSPARSE_CHECKARG(12,
+                       descr,
+                       (descr->type != rocsparse_matrix_type_general),
+                       rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(12,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+
+    ROCSPARSE_CHECKARG_SIZE(4, mb);
+    ROCSPARSE_CHECKARG_SIZE(5, n);
+    ROCSPARSE_CHECKARG_SIZE(6, kb);
+    ROCSPARSE_CHECKARG_SIZE(7, bell_cols);
+    ROCSPARSE_CHECKARG_SIZE(8, block_dim);
+    ROCSPARSE_CHECKARG(8, block_dim, (block_dim == 0), rocsparse_status_invalid_size);
+
+    const rocsparse_status status = rocsparse_bellmm_quickreturn(handle,
+                                                                 trans_A,
+                                                                 trans_B,
+                                                                 dir_A,
+                                                                 mb,
+                                                                 n,
+                                                                 kb,
+                                                                 bell_cols,
+                                                                 block_dim,
+                                                                 batch_count_A,
+                                                                 batch_stride_A,
+                                                                 alpha,
+                                                                 descr,
+                                                                 bell_col_ind,
+                                                                 bell_val,
+                                                                 dense_B,
+                                                                 ldb,
+                                                                 batch_count_B,
+                                                                 batch_stride_B,
+                                                                 order_B,
+                                                                 beta,
+                                                                 dense_C,
+                                                                 ldc,
+                                                                 batch_count_C,
+                                                                 batch_stride_C,
+                                                                 order_C,
+                                                                 temp_buffer);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    ROCSPARSE_CHECKARG_POINTER(12, alpha);
+    ROCSPARSE_CHECKARG_POINTER(13, bell_col_ind);
+    ROCSPARSE_CHECKARG_POINTER(14, bell_val);
+    ROCSPARSE_CHECKARG_POINTER(15, dense_B);
+    ROCSPARSE_CHECKARG_POINTER(20, beta);
+    ROCSPARSE_CHECKARG_POINTER(21, dense_C);
+
+    ROCSPARSE_CHECKARG(
+        1, trans_A, (trans_A != rocsparse_operation_none), rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(
+        1, trans_A, (trans_A != rocsparse_operation_none), rocsparse_status_not_implemented);
+
+    ROCSPARSE_CHECKARG(
+        16,
+        ldb,
+        ((trans_B == rocsparse_operation_none && order_B == rocsparse_order_column)
+         || (trans_B != rocsparse_operation_none && order_B != rocsparse_order_column))
+            && (ldb < kb * block_dim),
+        rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG(
+        16,
+        ldb,
+        (!((trans_B == rocsparse_operation_none && order_B == rocsparse_order_column)
+           || (trans_B != rocsparse_operation_none && order_B != rocsparse_order_column)))
+            && (ldb < n),
+        rocsparse_status_invalid_size);
+
+    ROCSPARSE_CHECKARG(22,
+                       ldc,
+                       (ldc < mb * block_dim && order_C == rocsparse_order_column),
+                       rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG(
+        22, ldc, (ldc < n && order_C == rocsparse_order_row), rocsparse_status_invalid_size);
+
+    ROCSPARSE_CHECKARG(9, batch_count_A, (batch_count_A != 1), rocsparse_status_invalid_value);
+
+    ROCSPARSE_CHECKARG(17, batch_count_B, (batch_count_B != 1), rocsparse_status_invalid_value);
+
+    ROCSPARSE_CHECKARG(23, batch_count_C, (batch_count_C != 1), rocsparse_status_invalid_value);
+
+    return rocsparse_status_continue;
+}
+
 template <typename T, typename I, typename A, typename B, typename C>
 rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                            rocsparse_operation       trans_A,
@@ -175,17 +337,7 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                            rocsparse_order           order_C,
                                            void*                     temp_buffer)
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
 
-    // Logging TODO bench logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xbellmm"),
               trans_A,
@@ -212,147 +364,89 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
               ldc,
               batch_count_C,
               batch_stride_C,
-              order_C);
+              order_C,
+              temp_buffer);
 
-    if(rocsparse_enum_utils::is_invalid(trans_A))
+    const rocsparse_status status = rocsparse_bellmm_checkarg(handle,
+                                                              trans_A,
+                                                              trans_B,
+                                                              dir_A,
+                                                              mb,
+                                                              n,
+                                                              kb,
+                                                              bell_cols,
+                                                              block_dim,
+                                                              batch_count_A,
+                                                              batch_stride_A,
+                                                              alpha,
+                                                              descr,
+                                                              bell_col_ind,
+                                                              bell_val,
+                                                              dense_B,
+                                                              ldb,
+                                                              batch_count_B,
+                                                              batch_stride_B,
+                                                              order_B,
+                                                              beta,
+                                                              dense_C,
+                                                              ldc,
+                                                              batch_count_C,
+                                                              batch_stride_C,
+                                                              order_C,
+                                                              temp_buffer);
+    if(status != rocsparse_status_continue)
     {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(trans_B))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(order_B))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(order_C))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(dir_A))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    // Check sizes
-    if(mb < 0 || n < 0 || kb < 0 || bell_cols < 0 || block_dim <= 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Quick return if possible
-    if(mb == 0 || n == 0 || kb == 0 || bell_cols == 0)
-    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
         return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(bell_val == nullptr || bell_col_ind == nullptr || dense_B == nullptr || dense_C == nullptr
-       || alpha == nullptr || beta == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(trans_A != rocsparse_operation_none)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    // Check leading dimension of B
-    if((trans_B == rocsparse_operation_none && order_B == rocsparse_order_column)
-       || (trans_B != rocsparse_operation_none && order_B != rocsparse_order_column))
-    {
-        if(ldb < kb * block_dim)
-        {
-            return rocsparse_status_invalid_size;
-        }
-    }
-    else
-    {
-        if(ldb < n)
-        {
-            return rocsparse_status_invalid_size;
-        }
-    }
-
-    // Check leading dimension of C
-    if(ldc < mb * block_dim && order_C == rocsparse_order_column)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(ldc < n && order_C == rocsparse_order_row)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check batch parameters of matrices
-    if(batch_count_A != 1 || batch_count_B != 1 || batch_count_C != 1)
-    {
-        return rocsparse_status_invalid_value;
     }
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        return rocsparse_bellmm_template_dispatch<T>(handle,
-                                                     trans_A,
-                                                     trans_B,
-                                                     dir_A,
-                                                     mb,
-                                                     n,
-                                                     kb,
-                                                     bell_cols,
-                                                     block_dim,
-                                                     alpha,
-                                                     descr,
-                                                     bell_col_ind,
-                                                     bell_val,
-                                                     dense_B,
-                                                     ldb,
-                                                     order_B,
-                                                     beta,
-                                                     dense_C,
-                                                     ldc,
-                                                     order_C);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bellmm_template_dispatch<T>(handle,
+                                                                        trans_A,
+                                                                        trans_B,
+                                                                        dir_A,
+                                                                        mb,
+                                                                        n,
+                                                                        kb,
+                                                                        bell_cols,
+                                                                        block_dim,
+                                                                        alpha,
+                                                                        descr,
+                                                                        bell_col_ind,
+                                                                        bell_val,
+                                                                        dense_B,
+                                                                        ldb,
+                                                                        order_B,
+                                                                        beta,
+                                                                        dense_C,
+                                                                        ldc,
+                                                                        order_C));
+        return rocsparse_status_success;
     }
     else
     {
-        return rocsparse_bellmm_template_dispatch<T>(handle,
-                                                     trans_A,
-                                                     trans_B,
-                                                     dir_A,
-                                                     mb,
-                                                     n,
-                                                     kb,
-                                                     bell_cols,
-                                                     block_dim,
-                                                     *alpha,
-                                                     descr,
-                                                     bell_col_ind,
-                                                     bell_val,
-                                                     dense_B,
-                                                     ldb,
-                                                     order_B,
-                                                     *beta,
-                                                     dense_C,
-                                                     ldc,
-                                                     order_C);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bellmm_template_dispatch<T>(handle,
+                                                                        trans_A,
+                                                                        trans_B,
+                                                                        dir_A,
+                                                                        mb,
+                                                                        n,
+                                                                        kb,
+                                                                        bell_cols,
+                                                                        block_dim,
+                                                                        *alpha,
+                                                                        descr,
+                                                                        bell_col_ind,
+                                                                        bell_val,
+                                                                        dense_B,
+                                                                        ldb,
+                                                                        order_B,
+                                                                        *beta,
+                                                                        dense_C,
+                                                                        ldc,
+                                                                        order_C));
+        return rocsparse_status_success;
     }
 }
 

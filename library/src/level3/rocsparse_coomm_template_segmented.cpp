@@ -923,7 +923,7 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
     }
     else
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
     return rocsparse_status_success;
 }

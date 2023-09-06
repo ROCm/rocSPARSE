@@ -677,7 +677,7 @@ rocsparse_status rocsparse_csrmmnt_template_general(rocsparse_handle handle,
     }
     else
     {
-        return rocsparse_status_arch_mismatch;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_arch_mismatch);
     }
 
     // Process remainder
@@ -701,7 +701,7 @@ rocsparse_status rocsparse_csrmmnt_template_general(rocsparse_handle handle,
         }
         else
         {
-            return rocsparse_status_arch_mismatch;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_arch_mismatch);
         }
     }
 
@@ -888,7 +888,7 @@ rocsparse_status rocsparse_csrmmtt_template_general(rocsparse_handle handle,
          ldc,                                       \
          batch_count_C,                             \
          batch_stride_C,                            \
-         order_C);
+         order_C)
 
 template <typename T, typename I, typename J, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
@@ -930,14 +930,18 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
            || (order_B == rocsparse_order_row
                && trans_B == rocsparse_operation_conjugate_transpose))
         {
-            return ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmnn_template_general);
+            RETURN_IF_ROCSPARSE_ERROR(
+                ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmnn_template_general));
+            return rocsparse_status_success;
         }
         else if((order_B == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
                 || (order_B == rocsparse_order_column
                     && trans_B == rocsparse_operation_conjugate_transpose)
                 || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
-            return ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmnt_template_general);
+            RETURN_IF_ROCSPARSE_ERROR(
+                ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmnt_template_general));
+            return rocsparse_status_success;
         }
     }
     else
@@ -947,17 +951,21 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
            || (order_B == rocsparse_order_row
                && trans_B == rocsparse_operation_conjugate_transpose))
         {
-            return ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmtn_template_general);
+            RETURN_IF_ROCSPARSE_ERROR(
+                ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmtn_template_general));
+            return rocsparse_status_success;
         }
         else if((order_B == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
                 || (order_B == rocsparse_order_column
                     && trans_B == rocsparse_operation_conjugate_transpose)
                 || (order_B == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
-            return ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmtt_template_general);
+            RETURN_IF_ROCSPARSE_ERROR(
+                ROCSPARSE_CSRMM_TEMPLATE_GENERAL_IMPL(rocsparse_csrmmtt_template_general));
+            return rocsparse_status_success;
         }
     }
-    return rocsparse_status_not_implemented;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
 }
 
 #define INSTANTIATE(TTYPE, ITYPE, JTYPE, ATYPE, BTYPE, CTYPE, UTYPE)   \

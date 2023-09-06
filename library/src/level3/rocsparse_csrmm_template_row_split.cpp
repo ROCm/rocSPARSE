@@ -536,7 +536,7 @@ rocsparse_status rocsparse_csrmmnt_template_row_split(rocsparse_handle          
     }
     else
     {
-        return rocsparse_status_arch_mismatch;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_arch_mismatch);
     }
 
     // Process remainder
@@ -560,7 +560,7 @@ rocsparse_status rocsparse_csrmmnt_template_row_split(rocsparse_handle          
         }
         else
         {
-            return rocsparse_status_arch_mismatch;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_arch_mismatch);
         }
     }
 
@@ -630,8 +630,7 @@ rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          ha
             return ROCSPARSE_CSRMM_TEMPLATE_ROW_SPLIT_IMPL(rocsparse_csrmmnt_template_row_split);
         }
     }
-
-    return rocsparse_status_not_implemented;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
 }
 
 #define INSTANTIATE(TTYPE, ITYPE, JTYPE, ATYPE, BTYPE, CTYPE, UTYPE)     \

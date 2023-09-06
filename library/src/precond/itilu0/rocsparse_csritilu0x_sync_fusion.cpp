@@ -931,10 +931,17 @@ struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                 }
                 else
                 {
-                    RETURN_IF_HIP_ERROR(
-                        hipMemsetAsync(p_nrm_corr, 0, sizeof(floating_data_t<T>), handle_->stream));
-                    RETURN_IF_HIP_ERROR(hipMemsetAsync(
-                        p_nrm_residual, 0, sizeof(floating_data_t<T>), handle_->stream));
+                    if(p_nrm_corr != nullptr)
+                    {
+                        RETURN_IF_HIP_ERROR(hipMemsetAsync(
+                            p_nrm_corr, 0, sizeof(floating_data_t<T>), handle_->stream));
+                    }
+                    if(p_nrm_residual != nullptr)
+                    {
+                        RETURN_IF_HIP_ERROR(hipMemsetAsync(
+                            p_nrm_residual, 0, sizeof(floating_data_t<T>), handle_->stream));
+                    }
+
                     RETURN_IF_HIP_ERROR(
                         hipMemsetAsync(p_local_iter, 0, sizeof(J), handle_->stream));
 

@@ -64,6 +64,7 @@ void testing_bsrsm_bad_arg(const Arguments& arg)
     rocsparse_mat_info        info        = local_info;
     rocsparse_analysis_policy analysis    = rocsparse_analysis_policy_force;
     rocsparse_solve_policy    solve       = rocsparse_solve_policy_auto;
+    rocsparse_solve_policy    policy      = rocsparse_solve_policy_auto;
     size_t*                   buffer_size = &h_buffer_size;
     void*                     temp_buffer = (void*)0x4;
     rocsparse_int*            position    = &h_position;
@@ -72,7 +73,7 @@ void testing_bsrsm_bad_arg(const Arguments& arg)
 #define PARAMS_BUFFER_SIZE                                                                   \
     handle, dir, trans_A, trans_X, mb, nrhs, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, \
         block_dim, info, buffer_size
-    auto_testing_bad_arg(rocsparse_bsrsm_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    bad_arg_analysis(rocsparse_bsrsm_buffer_size<T>, PARAMS_BUFFER_SIZE);
 
     // Invalid size
     {
@@ -87,7 +88,7 @@ void testing_bsrsm_bad_arg(const Arguments& arg)
 #define PARAMS_ANALYSIS                                                                      \
     handle, dir, trans_A, trans_X, mb, nrhs, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, \
         block_dim, info, analysis, solve, temp_buffer
-    auto_testing_bad_arg(rocsparse_bsrsm_analysis<T>, PARAMS_ANALYSIS);
+    bad_arg_analysis(rocsparse_bsrsm_analysis<T>, PARAMS_ANALYSIS);
 
     // Invalid size
     {
@@ -101,8 +102,8 @@ void testing_bsrsm_bad_arg(const Arguments& arg)
     // bsrsm_solve
 #define PARAMS_SOLVE                                                                   \
     handle, dir, trans_A, trans_X, mb, nrhs, nnzb, alpha, descr, bsr_val, bsr_row_ptr, \
-        bsr_col_ind, block_dim, info, B, ldb, X, ldx, solve, temp_buffer
-    auto_testing_bad_arg(rocsparse_bsrsm_solve<T>, PARAMS_SOLVE);
+        bsr_col_ind, block_dim, info, B, ldb, X, ldx, policy, temp_buffer
+    bad_arg_analysis(rocsparse_bsrsm_solve<T>, PARAMS_SOLVE);
 
     // Invalid size
     {
@@ -146,10 +147,10 @@ void testing_bsrsm_bad_arg(const Arguments& arg)
     }
 
     // bsrsm_zero_pivot
-    auto_testing_bad_arg(rocsparse_bsrsm_zero_pivot, handle, info, position);
+    bad_arg_analysis(rocsparse_bsrsm_zero_pivot, handle, info, position);
 
     // bsrsm_clear
-    auto_testing_bad_arg(rocsparse_bsrsm_clear, handle, info);
+    bad_arg_analysis(rocsparse_bsrsm_clear, handle, info);
 
     // Matrix types different from general
     for(auto val : rocsparse_matrix_type_t::values)
