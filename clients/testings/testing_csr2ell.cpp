@@ -108,136 +108,45 @@ void testing_csr2ell(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descrA, baseA));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descrB, baseB));
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
-    {
-        static const size_t safe_size = 100;
-        size_t              ptr_size  = std::max(safe_size, static_cast<size_t>(M + 1));
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dcsr_row_ptr(ptr_size);
-        device_vector<rocsparse_int> dcsr_col_ind(safe_size);
-        device_vector<T>             dcsr_val(safe_size);
-        device_vector<rocsparse_int> dell_col_ind(safe_size);
-        device_vector<T>             dell_val(safe_size);
-
-        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dell_col_ind || !dell_val)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        // Need to initialize csr_row_ptr with 0
-        CHECK_HIP_ERROR(hipMemset(dcsr_row_ptr, 0, sizeof(rocsparse_int) * ptr_size));
-
-        rocsparse_int ell_width;
-
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width),
-            (M < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
-        CHECK_HIP_ERROR(hipStreamSynchronize(stream));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
-                                                     M,
-                                                     descrA,
-                                                     dcsr_val,
-                                                     dcsr_row_ptr,
-                                                     dcsr_col_ind,
-                                                     descrB,
-                                                     ell_width,
-                                                     dell_val,
-                                                     dell_col_ind),
-                                (M < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
-
-        return;
-    }
-
-    // Allocate host memory for matrix
-    host_vector<rocsparse_int> hcsr_row_ptr;
-    host_vector<rocsparse_int> hcsr_col_ind;
-    host_vector<T>             hcsr_val;
-    host_vector<rocsparse_int> hell_col_ind;
-    host_vector<T>             hell_val;
-    host_vector<rocsparse_int> hell_col_ind_gold;
-    host_vector<T>             hell_val_gold;
-
     // Sample matrix
-    rocsparse_int nnz;
-    matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val, M, N, nnz, baseA);
+    host_csr_matrix<T> hA;
+    matrix_factory.init_csr(hA, M, N);
+    rocsparse_int nnz = hA.nnz;
+
+    device_csr_matrix<T> dA(hA);
+
+    // Obtain ELL width
+    rocsparse_int ell_width;
+    CHECK_ROCSPARSE_ERROR(
+        testing::rocsparse_csr2ell_width(handle, M, descrA, dA.ptr, descrB, &ell_width));
+
+    CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
     // Allocate device memory
-    device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
-    device_vector<rocsparse_int> dcsr_col_ind(nnz);
-    device_vector<T>             dcsr_val(nnz);
+    rocsparse_int ell_nnz = ell_width * M;
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_row_ptr, hcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(
-        hipMemcpy(dcsr_col_ind, hcsr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
+    host_ell_matrix<T>   hB(M, N, ell_width, baseB);
+    device_ell_matrix<T> dB(hB);
 
     if(arg.unit_check)
     {
-        // Obtain ELL width
-        rocsparse_int ell_width;
-        CHECK_ROCSPARSE_ERROR(
-            testing::rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width));
-
-        CHECK_HIP_ERROR(hipStreamSynchronize(stream));
-
-        // Allocate device memory
-        rocsparse_int ell_nnz = ell_width * M;
-
-        device_vector<rocsparse_int> dell_col_ind(ell_nnz);
-        device_vector<T>             dell_val(ell_nnz);
-
-        if(!dell_col_ind || !dell_val)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         // Perform ELL conversion
-        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csr2ell<T>(handle,
-                                                            M,
-                                                            descrA,
-                                                            dcsr_val,
-                                                            dcsr_row_ptr,
-                                                            dcsr_col_ind,
-                                                            descrB,
-                                                            ell_width,
-                                                            dell_val,
-                                                            dell_col_ind));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_csr2ell<T>(
+            handle, M, descrA, dA.val, dA.ptr, dA.ind, descrB, ell_width, dB.val, dB.ind));
 
         // Copy output to host
-        hell_col_ind.resize(ell_nnz);
-        hell_val.resize(ell_nnz);
-
-        CHECK_HIP_ERROR(hipMemcpy(
-            hell_col_ind, dell_col_ind, sizeof(rocsparse_int) * ell_nnz, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hell_val, dell_val, sizeof(T) * ell_nnz, hipMemcpyDeviceToHost));
+        hB.transfer_from(dB);
 
         // CPU csr2ell
-        rocsparse_int ell_width_gold;
-        host_csr_to_ell(M,
-                        hcsr_row_ptr,
-                        hcsr_col_ind,
-                        hcsr_val,
-                        hell_col_ind_gold,
-                        hell_val_gold,
-                        ell_width_gold,
-                        baseA,
-                        baseB);
+        rocsparse_int      ell_width_gold;
+        host_ell_matrix<T> hB_gold;
+        host_csr_to_ell(
+            M, hA.ptr, hA.ind, hA.val, hB_gold.ind, hB_gold.val, ell_width_gold, baseA, baseB);
 
         unit_check_scalar(ell_width_gold, ell_width);
-        hell_col_ind_gold.unit_check(hell_col_ind);
-        hell_val_gold.unit_check(hell_val);
+
+        hB_gold.ind.unit_check(hB.ind);
+        hB_gold.val.unit_check(hB.val);
     }
 
     if(arg.timing)
@@ -245,37 +154,11 @@ void testing_csr2ell(const Arguments& arg)
         int number_cold_calls = 2;
         int number_hot_calls  = arg.iters;
 
-        rocsparse_int ell_width;
-        rocsparse_int ell_nnz;
-
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(
-                rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width));
-            CHECK_HIP_ERROR(hipStreamSynchronize(stream));
-
-            ell_nnz = ell_width * M;
-
-            device_vector<rocsparse_int> dell_col_ind(ell_nnz);
-            device_vector<T>             dell_val(ell_nnz);
-
-            if(!dell_col_ind || !dell_val)
-            {
-                CHECK_HIP_ERROR(hipErrorOutOfMemory);
-                return;
-            }
-
-            CHECK_ROCSPARSE_ERROR(rocsparse_csr2ell<T>(handle,
-                                                       M,
-                                                       descrA,
-                                                       dcsr_val,
-                                                       dcsr_row_ptr,
-                                                       dcsr_col_ind,
-                                                       descrB,
-                                                       ell_width,
-                                                       dell_val,
-                                                       dell_col_ind));
+            CHECK_ROCSPARSE_ERROR(rocsparse_csr2ell<T>(
+                handle, M, descrA, dA.val, dA.ptr, dA.ind, descrB, ell_width, dB.val, dB.ind));
         }
 
         double gpu_time_used = get_time_us();
@@ -283,31 +166,8 @@ void testing_csr2ell(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(
-                rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width));
-            CHECK_HIP_ERROR(hipStreamSynchronize(stream));
-
-            ell_nnz = ell_width * M;
-
-            device_vector<rocsparse_int> dell_col_ind(ell_nnz);
-            device_vector<T>             dell_val(ell_nnz);
-
-            if(!dell_col_ind || !dell_val)
-            {
-                CHECK_HIP_ERROR(hipErrorOutOfMemory);
-                return;
-            }
-
-            CHECK_ROCSPARSE_ERROR(rocsparse_csr2ell<T>(handle,
-                                                       M,
-                                                       descrA,
-                                                       dcsr_val,
-                                                       dcsr_row_ptr,
-                                                       dcsr_col_ind,
-                                                       descrB,
-                                                       ell_width,
-                                                       dell_val,
-                                                       dell_col_ind));
+            CHECK_ROCSPARSE_ERROR(rocsparse_csr2ell<T>(
+                handle, M, descrA, dA.val, dA.ptr, dA.ind, descrB, ell_width, dB.val, dB.ind));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

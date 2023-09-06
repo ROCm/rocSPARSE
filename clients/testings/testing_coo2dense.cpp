@@ -47,6 +47,10 @@ void testing_coo2dense_bad_arg(const Arguments& arg)
 
 #define PARAMS handle, m, n, nnz, descr, coo_val, coo_row_ind, coo_col_ind, A, lda
     bad_arg_analysis(rocsparse_coo2dense<T>, PARAMS);
+
+    // Check lda < m
+    lda = m / 2;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_coo2dense<T>(PARAMS), rocsparse_status_invalid_size);
 #undef PARAMS
 }
 
@@ -65,17 +69,8 @@ void testing_coo2dense(const Arguments& arg)
     // Set matrix storage mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, arg.storage));
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || LD < M)
+    if(LD < M)
     {
-        rocsparse_status expected_status = (((M == 0 && N >= 0) || (M >= 0 && N == 0)) && (LD >= M))
-                                               ? rocsparse_status_success
-                                               : rocsparse_status_invalid_size;
-
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_coo2dense<T>(
-                handle, M, N, 100, descr, nullptr, nullptr, nullptr, (T*)nullptr, LD),
-            expected_status);
         return;
     }
 
@@ -162,7 +157,6 @@ void testing_coo2dense(const Arguments& arg)
         // Warm-up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-
             CHECK_ROCSPARSE_ERROR(rocsparse_coo2dense<T>(handle,
                                                          M,
                                                          N,

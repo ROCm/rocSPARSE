@@ -89,7 +89,7 @@ Tests:
   category: pre_checkin
   function: gtsv
   precision: *single_double_precisions
-  M: [0, 1, 2, 720, 1280, 2354, 2956]
+  M: [2, 720, 1280, 2354, 2956]
   N: [0, 1, 2, 4, 10, 21, 56, 71]
   denseld: [1000, 2000, 3000]
   matrix: [rocsparse_matrix_random]

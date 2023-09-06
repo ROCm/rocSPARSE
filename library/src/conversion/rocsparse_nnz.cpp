@@ -103,15 +103,13 @@ rocsparse_status rocsparse_nnz_template(rocsparse_handle    handle,
                                         int64_t             ld,
                                         I*                  nnz_per_row_columns)
 {
-
-    if(0 == m || 0 == n)
+    if(m == 0 || n == 0)
     {
         return rocsparse_status_success;
     }
 
     switch(dir)
     {
-
     case rocsparse_direction_row:
     {
         RETURN_IF_ROCSPARSE_ERROR(
@@ -154,10 +152,26 @@ rocsparse_status rocsparse_nnz_checkarg(rocsparse_handle          handle,
     //
     // Quick return if possible, before checking for invalid pointers.
     //
-    if(!m || !n)
+    if(m == 0 || n == 0)
     {
+        if(nnz_per_row_columns != nullptr)
+        {
+            switch(dir)
+            {
+            case rocsparse_direction_row:
+            {
+                RETURN_IF_HIP_ERROR(
+                    hipMemsetAsync(nnz_per_row_columns, 0, sizeof(I) * m, handle->stream));
+            }
+            case rocsparse_direction_column:
+            {
+                RETURN_IF_HIP_ERROR(
+                    hipMemsetAsync(nnz_per_row_columns, 0, sizeof(I) * n, handle->stream));
+            }
+            }
+        }
 
-        if(nullptr != nnz_total_dev_host_ptr)
+        if(nnz_total_dev_host_ptr != nullptr)
         {
             rocsparse_pointer_mode mode;
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_get_pointer_mode(handle, &mode));
@@ -226,7 +240,6 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
     }
 
     //
-
     // Count.
     //
     RETURN_IF_ROCSPARSE_ERROR(

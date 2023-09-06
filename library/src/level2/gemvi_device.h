@@ -70,7 +70,7 @@ ROCSPARSE_DEVICE_ILF void gemvi_device(I                    m,
     {
         for(I j = wid; j < nnz; j += BLOCKSIZE / WFSIZE)
         {
-            sum = rocsparse_fma(x_val[j], A[x_ind[j] * lda + row], sum);
+            sum = rocsparse_fma(x_val[j], A[(x_ind[j] - idx_base) * lda + row], sum);
         }
     }
 

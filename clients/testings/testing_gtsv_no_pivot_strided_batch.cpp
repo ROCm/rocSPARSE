@@ -57,12 +57,30 @@ void testing_gtsv_no_pivot_strided_batch_bad_arg(const Arguments& arg)
                             PARAMS_SOLVE);
 
     // m > 512
-    {
-        batch_stride = m = 513;
-        temp_buffer      = (void*)nullptr;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot_strided_batch<T>(PARAMS_SOLVE),
-                                rocsparse_status_invalid_pointer);
-    }
+    batch_stride = m = 513;
+    temp_buffer      = (void*)nullptr;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot_strided_batch<T>(PARAMS_SOLVE),
+                            rocsparse_status_invalid_pointer);
+    batch_stride = m = safe_size;
+    temp_buffer      = (void*)0x4;
+
+    // m <= 1
+    m = 1;
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_gtsv_no_pivot_strided_batch_buffer_size<T>(PARAMS_BUFFER_SIZE),
+        rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot_strided_batch<T>(PARAMS_SOLVE),
+                            rocsparse_status_invalid_size);
+    m = safe_size;
+
+    // batch_stride < m
+    m            = 4;
+    batch_stride = 2;
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_gtsv_no_pivot_strided_batch_buffer_size<T>(PARAMS_BUFFER_SIZE),
+        rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot_strided_batch<T>(PARAMS_SOLVE),
+                            rocsparse_status_invalid_size);
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_SOLVE
@@ -81,26 +99,8 @@ void testing_gtsv_no_pivot_strided_batch(const Arguments& arg)
 #define PARAMS_BUFFER_SIZE handle, m, ddl, dd, ddu, dx, batch_count, batch_stride, &buffer_size
 #define PARAMS_SOLVE handle, m, ddl, dd, ddu, dx, batch_count, batch_stride, dbuffer
 
-    // Argument sanity check before allocating invalid memory
-    if(m <= 1 || batch_count <= 0 || batch_stride < m)
+    if(batch_stride < m)
     {
-        size_t buffer_size;
-        T*     ddl     = nullptr;
-        T*     dd      = nullptr;
-        T*     ddu     = nullptr;
-        T*     dx      = nullptr;
-        void*  dbuffer = nullptr;
-
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_gtsv_no_pivot_strided_batch_buffer_size<T>(PARAMS_BUFFER_SIZE),
-            (m <= 1 || batch_count < 0 || batch_stride < m) ? rocsparse_status_invalid_size
-                                                            : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot_strided_batch<T>(PARAMS_SOLVE),
-                                (m <= 1 || batch_count < 0 || batch_stride < m)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
         return;
     }
 

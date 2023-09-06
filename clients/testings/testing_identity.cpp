@@ -27,25 +27,12 @@
 template <typename T>
 void testing_identity_bad_arg(const Arguments& arg)
 {
-    static const size_t safe_size = 100;
+    rocsparse_local_handle local_handle;
+    rocsparse_handle       handle = local_handle;
+    rocsparse_int          n      = 100;
+    rocsparse_int*         dp     = (rocsparse_int*)0x4;
 
-    // Create rocsparse handle
-    rocsparse_local_handle handle;
-
-    // Allocate memory on device
-    device_vector<rocsparse_int> dp(safe_size);
-
-    if(!dp)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Test rocsparse_create_identity_permutation()
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_identity_permutation(nullptr, safe_size, dp),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_identity_permutation(handle, safe_size, nullptr),
-                            rocsparse_status_invalid_pointer);
+    bad_arg_analysis(rocsparse_create_identity_permutation, handle, n, dp);
 }
 
 template <typename T>
@@ -56,38 +43,12 @@ void testing_identity(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
-    // Argument sanity check before allocating invalid memory
-    if(N <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dp(safe_size);
-
-        if(!dp)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_create_identity_permutation(handle, N, dp),
-                                (N < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
-
-        return;
-    }
-
     // Allocate host memory
     host_vector<rocsparse_int> hp(N);
     host_vector<rocsparse_int> hp_gold(N);
 
     // Allocate device memory
     device_vector<rocsparse_int> dp(N);
-
-    if(!dp)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     if(arg.unit_check)
     {

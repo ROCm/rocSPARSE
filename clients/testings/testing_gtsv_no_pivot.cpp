@@ -55,12 +55,28 @@ void testing_gtsv_no_pivot_bad_arg(const Arguments& arg)
         rocsparse_gtsv_no_pivot<T>, nargs_to_exclude_solve, args_to_exclude_solve, PARAMS_SOLVE);
 
     // m > 512
-    {
-        ldb = m     = 513;
-        temp_buffer = (void*)nullptr;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot<T>(PARAMS_SOLVE),
-                                rocsparse_status_invalid_pointer);
-    }
+    ldb = m     = 513;
+    temp_buffer = (void*)nullptr;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot<T>(PARAMS_SOLVE),
+                            rocsparse_status_invalid_pointer);
+    ldb = m     = safe_size;
+    temp_buffer = (void*)0x4;
+
+    // m <= 1
+    m = 1;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot<T>(PARAMS_SOLVE),
+                            rocsparse_status_invalid_size);
+    m = safe_size;
+
+    // ldb < m
+    m   = 4;
+    ldb = 2;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot<T>(PARAMS_SOLVE),
+                            rocsparse_status_invalid_size);
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_SOLVE
@@ -79,26 +95,8 @@ void testing_gtsv_no_pivot(const Arguments& arg)
 #define PARAMS_BUFFER_SIZE handle, m, n, ddl, dd, ddu, dB, ldb, &buffer_size
 #define PARAMS_SOLVE handle, m, n, ddl, dd, ddu, dB, ldb, dbuffer
 
-    // Argument sanity check before allocating invalid memory
-    if(m <= 1 || n <= 0 || ldb < m)
+    if(ldb < m)
     {
-        size_t buffer_size;
-        T*     ddl     = nullptr;
-        T*     dd      = nullptr;
-        T*     ddu     = nullptr;
-        T*     dB      = nullptr;
-        void*  dbuffer = nullptr;
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot_buffer_size<T>(PARAMS_BUFFER_SIZE),
-                                (m <= 1 || n < 0 || ldb < std::max(1, m))
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot<T>(PARAMS_SOLVE),
-                                (m <= 1 || n < 0 || ldb < std::max(1, m))
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
         return;
     }
 

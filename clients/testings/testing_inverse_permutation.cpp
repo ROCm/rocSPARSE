@@ -41,16 +41,9 @@ void testing_inverse_permutation(const Arguments& arg)
 {
     rocsparse_int        N    = arg.N;
     rocsparse_index_base base = arg.baseA;
+
     // Create rocsparse handle
     rocsparse_local_handle handle;
-
-    // Argument sanity check before allocating invalid memory
-    if(N == 0)
-    {
-        EXPECT_ROCSPARSE_STATUS(rocsparse_inverse_permutation(handle, N, nullptr, nullptr, base),
-                                rocsparse_status_success);
-        return;
-    }
 
     // Allocate host memory
     host_dense_vector<rocsparse_int> hp(N);

@@ -77,12 +77,12 @@ rocsparse_status rocsparse_csr2ell_template(rocsparse_handle          handle, //
                        (ell_descr->storage_mode != rocsparse_storage_mode_sorted),
                        rocsparse_status_requires_sorted_storage);
     ROCSPARSE_CHECKARG_SIZE(1, m);
-    ROCSPARSE_CHECKARG_POINTER(3, csr_val);
-    ROCSPARSE_CHECKARG_ARRAY(4, m, csr_row_ptr);
-    ROCSPARSE_CHECKARG_POINTER(5, csr_col_ind);
     ROCSPARSE_CHECKARG_SIZE(7, ell_width);
-    ROCSPARSE_CHECKARG_POINTER(8, ell_val);
-    ROCSPARSE_CHECKARG_POINTER(9, ell_col_ind);
+    ROCSPARSE_CHECKARG_ARRAY(3, ell_width, csr_val);
+    ROCSPARSE_CHECKARG_ARRAY(4, m, csr_row_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(5, ell_width, csr_col_ind);
+    ROCSPARSE_CHECKARG_ARRAY(8, ell_width, ell_val);
+    ROCSPARSE_CHECKARG_ARRAY(9, ell_width, ell_col_ind);
 
     // Quick return if possible
     if(m == 0 || ell_width == 0)

@@ -69,81 +69,20 @@ void testing_csr2csc(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
-        device_vector<rocsparse_int> dcsr_col_ind(safe_size);
-        device_vector<T>             dcsr_val(safe_size);
-        device_vector<rocsparse_int> dcsc_row_ind(safe_size);
-        device_vector<rocsparse_int> dcsc_col_ptr(safe_size);
-        device_vector<T>             dcsc_val(safe_size);
-        device_vector<T>             dbuffer(safe_size);
-
-        size_t buffer_size;
-
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_csr2csc_buffer_size(
-                handle, M, N, safe_size, dcsr_row_ptr, dcsr_col_ind, action, &buffer_size),
-            (M < 0 || N < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2csc<T>(handle,
-                                                     M,
-                                                     N,
-                                                     safe_size,
-                                                     dcsr_val,
-                                                     dcsr_row_ptr,
-                                                     dcsr_col_ind,
-                                                     dcsc_val,
-                                                     dcsc_row_ind,
-                                                     dcsc_col_ptr,
-                                                     action,
-                                                     base,
-                                                     dbuffer),
-                                (M < 0 || N < 0) ? rocsparse_status_invalid_size
-                                                 : rocsparse_status_success);
-
-        return;
-    }
-
-    // Allocate host memory for CSR matrix
-    host_vector<rocsparse_int> hcsr_row_ptr;
-    host_vector<rocsparse_int> hcsr_col_ind;
-    host_vector<T>             hcsr_val;
-
     // Sample matrix
-    rocsparse_int nnz;
-    matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val, M, N, nnz, base);
+    host_csr_matrix<T> hA;
+    matrix_factory.init_csr(hA, M, N);
+    rocsparse_int nnz = hA.nnz;
 
-    // Allocate host memory for CSC matrix
-    host_vector<rocsparse_int> hcsc_row_ind(nnz);
-    host_vector<rocsparse_int> hcsc_col_ptr(N + 1);
-    host_vector<T>             hcsc_val(nnz);
-    host_vector<rocsparse_int> hcsc_row_ind_gold;
-    host_vector<rocsparse_int> hcsc_col_ptr_gold;
-    host_vector<T>             hcsc_val_gold;
+    host_csc_matrix<T> hC(M, N, nnz, base);
+    host_csc_matrix<T> hC_gold(M, N, nnz, base);
 
-    // Allocate device memory
-    device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
-    device_vector<rocsparse_int> dcsr_col_ind(nnz);
-    device_vector<T>             dcsr_val(nnz);
-    device_vector<rocsparse_int> dcsc_row_ind(nnz);
-    device_vector<rocsparse_int> dcsc_col_ptr(N + 1);
-    device_vector<T>             dcsc_val(nnz);
+    device_csr_matrix<T> dA(hA);
+    device_csc_matrix<T> dC(hC);
 
-    // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_row_ptr, hcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(
-        hipMemcpy(dcsr_col_ind, hcsr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
-
-    // Obtain required buffer size
     size_t buffer_size;
     CHECK_ROCSPARSE_ERROR(testing::rocsparse_csr2csc_buffer_size(
-        handle, M, N, nnz, dcsr_row_ptr, dcsr_col_ind, action, &buffer_size));
+        handle, M, N, nnz, dA.ptr, dA.ind, action, &buffer_size));
 
     void* dbuffer;
     CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
@@ -154,42 +93,36 @@ void testing_csr2csc(const Arguments& arg)
                                                             M,
                                                             N,
                                                             nnz,
-                                                            dcsr_val,
-                                                            dcsr_row_ptr,
-                                                            dcsr_col_ind,
-                                                            dcsc_val,
-                                                            dcsc_row_ind,
-                                                            dcsc_col_ptr,
+                                                            dA.val,
+                                                            dA.ptr,
+                                                            dA.ind,
+                                                            dC.val,
+                                                            dC.ind,
+                                                            dC.ptr,
                                                             action,
                                                             base,
                                                             dbuffer));
+        hC.transfer_from(dC);
 
-        // Copy output to host
-        CHECK_HIP_ERROR(hipMemcpy(
-            hcsc_row_ind, dcsc_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(
-            hcsc_col_ptr, dcsc_col_ptr, sizeof(rocsparse_int) * (N + 1), hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hcsc_val, dcsc_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
-
-        // CPU csr2csc
+        host_csc_matrix<T> hC_gold(M, N, nnz, base);
         host_csr_to_csc(M,
                         N,
                         nnz,
-                        hcsr_row_ptr.data(),
-                        hcsr_col_ind.data(),
-                        hcsr_val.data(),
-                        hcsc_row_ind_gold,
-                        hcsc_col_ptr_gold,
-                        hcsc_val_gold,
+                        hA.ptr.data(),
+                        hA.ind.data(),
+                        hA.val.data(),
+                        hC_gold.ind,
+                        hC_gold.ptr,
+                        hC_gold.val,
                         action,
                         base);
 
-        hcsc_row_ind_gold.unit_check(hcsc_row_ind);
-        hcsc_col_ptr_gold.unit_check(hcsc_col_ptr);
+        hC_gold.ptr.unit_check(hC.ptr);
+        hC_gold.ind.unit_check(hC.ind);
 
         if(action == rocsparse_action_numeric)
         {
-            hcsc_val_gold.unit_check(hcsc_val);
+            hC_gold.val.unit_check(hC.val);
         }
     }
 
@@ -205,12 +138,12 @@ void testing_csr2csc(const Arguments& arg)
                                                        M,
                                                        N,
                                                        nnz,
-                                                       dcsr_val,
-                                                       dcsr_row_ptr,
-                                                       dcsr_col_ind,
-                                                       dcsc_val,
-                                                       dcsc_row_ind,
-                                                       dcsc_col_ptr,
+                                                       dA.val,
+                                                       dA.ptr,
+                                                       dA.ind,
+                                                       dC.val,
+                                                       dC.ind,
+                                                       dC.ptr,
                                                        action,
                                                        base,
                                                        dbuffer));
@@ -225,12 +158,12 @@ void testing_csr2csc(const Arguments& arg)
                                                        M,
                                                        N,
                                                        nnz,
-                                                       dcsr_val,
-                                                       dcsr_row_ptr,
-                                                       dcsr_col_ind,
-                                                       dcsc_val,
-                                                       dcsc_row_ind,
-                                                       dcsc_col_ptr,
+                                                       dA.val,
+                                                       dA.ptr,
+                                                       dA.ind,
+                                                       dC.val,
+                                                       dC.ind,
+                                                       dC.ptr,
                                                        action,
                                                        base,
                                                        dbuffer));

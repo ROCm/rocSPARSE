@@ -711,9 +711,17 @@ rocsparse_status rocsparse_coomv_impl(rocsparse_handle          handle,
 
     const rocsparse_int xsize = (trans == rocsparse_operation_none) ? n : m;
     const rocsparse_int ysize = (trans == rocsparse_operation_none) ? m : n;
+
     // Check pointer arguments
     ROCSPARSE_CHECKARG_POINTER(5, alpha_device_host);
     ROCSPARSE_CHECKARG_POINTER(11, beta_device_host);
+
+    if(handle->pointer_mode == rocsparse_pointer_mode_host
+       && *alpha_device_host == static_cast<T>(0) && *beta_device_host == static_cast<T>(1))
+    {
+        return rocsparse_status_success;
+    }
+
     // Check the rest of the pointer arguments
     ROCSPARSE_CHECKARG_ARRAY(10, xsize, x);
     ROCSPARSE_CHECKARG_ARRAY(12, ysize, y);

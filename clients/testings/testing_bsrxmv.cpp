@@ -147,11 +147,9 @@ void testing_bsrxmv(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
     // BSR dimensions
-
     rocsparse_int mb = (block_dim > 0) ? (M + block_dim - 1) / block_dim : 0;
     rocsparse_int nb = (block_dim > 0) ? (N + block_dim - 1) / block_dim : 0;
 
-    // Argument sanity check before allocating invalid memory
 #define PARAMS(alpha_, A_, x_, beta_, y_)                                                          \
     handle, A_.block_direction, trans, size_of_mask, A_.mb, A_.nb, A_.nnzb, alpha_, descr, A_.val, \
         dbsr_mask_ptr, dbsr_row_ptr, dbsr_end_ptr, A_.ind, A_.row_block_dim, x_, beta_, y_
