@@ -417,6 +417,9 @@ public:
         host_scalar<T> h_alpha(arg.get_alpha<T>());
         host_scalar<T> h_beta(arg.get_beta<T>());
 
+        device_scalar<T> d_alpha(h_alpha);
+        device_scalar<T> d_beta(h_beta);
+
 #define PARAMS_BUFFER_SIZE(alpha_, A_, B_, beta_, C_)                                          \
     handle, trans_A, trans_B, alpha_, (const rocsparse_dnmat_descr&)A_,                        \
         (const rocsparse_dnmat_descr&)B_, beta_, (const rocsparse_spmat_descr&)C_, ttype, alg, \
@@ -532,7 +535,6 @@ public:
 
             // Pointer mode device
             {
-                device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
                 CHECK_ROCSPARSE_ERROR(
                     rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
                 CHECK_ROCSPARSE_ERROR(rocsparse_sddmm_preprocess(PARAMS(d_alpha, A, B, d_beta, C)));

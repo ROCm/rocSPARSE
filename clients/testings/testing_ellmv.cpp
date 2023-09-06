@@ -85,6 +85,9 @@ void testing_ellmv(const Arguments& arg)
     host_scalar<T> h_alpha(arg.get_alpha<T>());
     host_scalar<T> h_beta(arg.get_beta<T>());
 
+    device_scalar<T> d_alpha(h_alpha);
+    device_scalar<T> d_beta(h_beta);
+
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
@@ -128,7 +131,6 @@ void testing_ellmv(const Arguments& arg)
         }
 
         // Pointer mode device
-        device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_ellmv<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
         hy.near_check(dy);
@@ -199,8 +201,12 @@ void testing_ellmv_extra_319051(const Arguments& arg)
     rocsparse_int        width = 5;
     rocsparse_index_base base  = rocsparse_index_base_zero;
     rocsparse_operation  trans = rocsparse_operation_none;
-    host_scalar<float>   h_alpha(1.0f);
-    host_scalar<float>   h_beta(2.0f);
+
+    host_scalar<float> h_alpha(1.0f);
+    host_scalar<float> h_beta(2.0f);
+
+    device_scalar<float> d_alpha(h_alpha);
+    device_scalar<float> d_beta(h_beta);
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -245,7 +251,6 @@ void testing_ellmv_extra_319051(const Arguments& arg)
         dy = hy_copy;
 
         // Pointer mode device
-        device_scalar<float> d_alpha(h_alpha), d_beta(h_beta);
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<float>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
         hy.near_check(dy);

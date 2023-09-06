@@ -630,6 +630,9 @@ public:
         host_scalar<T> h_alpha(arg.get_alpha<T>());
         host_scalar<T> h_beta(arg.get_beta<T>());
 
+        device_scalar<T> d_alpha(h_alpha);
+        device_scalar<T> d_beta(h_beta);
+
 #define PARAMS(alpha_, A_, x_, beta_, y_, stage) \
     handle, trans, alpha_, A_, x_, beta_, y_, ttype, alg, stage, &buffer_size, dbuffer
 
@@ -689,6 +692,9 @@ public:
                                     matA, rocsparse_spmat_storage_mode, &storage, sizeof(storage)),
                                 rocsparse_status_success);
 
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
+        // Run buffer size
         void*  dbuffer     = nullptr;
         size_t buffer_size = 0;
         CHECK_ROCSPARSE_ERROR(
@@ -699,38 +705,23 @@ public:
         CHECK_ROCSPARSE_ERROR(
             rocsparse_spmv(PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_preprocess)));
 
-        // Pointer mode host
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
         if(arg.unit_check)
         {
+            // Run solve
             CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmv(
                 PARAMS(h_alpha, matA, x, h_beta, y, rocsparse_spmv_stage_compute)));
 
-            //
-            // CPU spmv
-            //
-            {
-                host_dense_matrix<Y> hy_copy(hy);
-                //
-                // HOST CALCULATION
-                //
-                traits::host_calculation(trans, h_alpha, hA, hx, h_beta, hy, alg, matrix_type);
+            host_dense_matrix<Y> hy_copy(hy);
+            traits::host_calculation(trans, h_alpha, hA, hx, h_beta, hy, alg, matrix_type);
 
-                hy.near_check(dy);
-                dy.transfer_from(hy_copy);
-            }
+            hy.near_check(dy);
+            dy.transfer_from(hy_copy);
 
-            //
-            // Pointer mode device
-            //
-            {
-                device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
-                CHECK_ROCSPARSE_ERROR(
-                    rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-                CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmv(
-                    PARAMS(d_alpha, matA, x, d_beta, y, rocsparse_spmv_stage_compute)));
-            }
+            CHECK_ROCSPARSE_ERROR(
+                rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+            CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmv(
+                PARAMS(d_alpha, matA, x, d_beta, y, rocsparse_spmv_stage_compute)));
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
             hy.near_check(dy);
         }
