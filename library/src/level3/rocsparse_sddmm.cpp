@@ -20,7 +20,6 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "internal/generic/rocsparse_sddmm.h"
 #include "common.h"
 #include "definitions.h"
@@ -36,11 +35,13 @@ rocsparse_status rocsparse_sddmm_buffer_size_dispatch_alg(rocsparse_sddmm_alg al
     {
     case rocsparse_sddmm_alg_default:
     {
-        return rocsparse_sddmm_st<FORMAT, rocsparse_sddmm_alg_default, I, J, T>::
-            buffer_size_template(ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_st<FORMAT, rocsparse_sddmm_alg_default, I, J, T>::buffer_size_template(
+                ts...)));
+        return rocsparse_status_success;
     }
     }
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <typename I, typename J, typename T, typename... Ts>
@@ -52,40 +53,46 @@ rocsparse_status rocsparse_sddmm_buffer_size_dispatch_format(rocsparse_format   
     {
     case rocsparse_format_coo:
     {
-        return rocsparse_sddmm_buffer_size_dispatch_alg<rocsparse_format_coo, I, I, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_buffer_size_dispatch_alg<rocsparse_format_coo, I, I, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_csr:
     {
-        return rocsparse_sddmm_buffer_size_dispatch_alg<rocsparse_format_csr, I, J, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_buffer_size_dispatch_alg<rocsparse_format_csr, I, J, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_coo_aos:
     {
-
-        return rocsparse_sddmm_buffer_size_dispatch_alg<rocsparse_format_coo_aos, I, I, T>(alg,
-                                                                                           ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_buffer_size_dispatch_alg<rocsparse_format_coo_aos, I, I, T>(alg,
+                                                                                         ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_csc:
     {
-        return rocsparse_sddmm_buffer_size_dispatch_alg<rocsparse_format_csc, I, J, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_buffer_size_dispatch_alg<rocsparse_format_csc, I, J, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_ell:
     {
-        return rocsparse_sddmm_buffer_size_dispatch_alg<rocsparse_format_ell, I, I, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_buffer_size_dispatch_alg<rocsparse_format_ell, I, I, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
     case rocsparse_format_bell:
-    {
-        return rocsparse_status_not_implemented;
-    }
     case rocsparse_format_bsr:
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
     }
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <typename... Ts>
@@ -99,52 +106,58 @@ rocsparse_status rocsparse_sddmm_buffer_size_dispatch(rocsparse_format    format
     switch(ctype)
     {
 
-#define DATATYPE_CASE(ENUMVAL, TYPE)                                                        \
-    case ENUMVAL:                                                                           \
-    {                                                                                       \
-        switch(itype)                                                                       \
-        {                                                                                   \
-        case rocsparse_indextype_u16:                                                       \
-        {                                                                                   \
-            return rocsparse_status_not_implemented;                                        \
-        }                                                                                   \
-        case rocsparse_indextype_i32:                                                       \
-        {                                                                                   \
-            switch(jtype)                                                                   \
-            {                                                                               \
-            case rocsparse_indextype_u16:                                                   \
-            case rocsparse_indextype_i64:                                                   \
-            {                                                                               \
-                return rocsparse_status_not_implemented;                                    \
-            }                                                                               \
-            case rocsparse_indextype_i32:                                                   \
-            {                                                                               \
-                return rocsparse_sddmm_buffer_size_dispatch_format<int32_t, int32_t, TYPE>( \
-                    format, alg, ts...);                                                    \
-            }                                                                               \
-            }                                                                               \
-        }                                                                                   \
-        case rocsparse_indextype_i64:                                                       \
-        {                                                                                   \
-            switch(jtype)                                                                   \
-            {                                                                               \
-            case rocsparse_indextype_u16:                                                   \
-            {                                                                               \
-                return rocsparse_status_not_implemented;                                    \
-            }                                                                               \
-            case rocsparse_indextype_i32:                                                   \
-            {                                                                               \
-                return rocsparse_sddmm_buffer_size_dispatch_format<int64_t, int32_t, TYPE>( \
-                    format, alg, ts...);                                                    \
-            }                                                                               \
-            case rocsparse_indextype_i64:                                                   \
-            {                                                                               \
-                return rocsparse_sddmm_buffer_size_dispatch_format<int64_t, int64_t, TYPE>( \
-                    format, alg, ts...);                                                    \
-            }                                                                               \
-            }                                                                               \
-        }                                                                                   \
-        }                                                                                   \
+#define DATATYPE_CASE(ENUMVAL, TYPE)                                                      \
+    case ENUMVAL:                                                                         \
+    {                                                                                     \
+        switch(itype)                                                                     \
+        {                                                                                 \
+        case rocsparse_indextype_u16:                                                     \
+        {                                                                                 \
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);                  \
+        }                                                                                 \
+        case rocsparse_indextype_i32:                                                     \
+        {                                                                                 \
+            switch(jtype)                                                                 \
+            {                                                                             \
+            case rocsparse_indextype_u16:                                                 \
+            case rocsparse_indextype_i64:                                                 \
+            {                                                                             \
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);              \
+            }                                                                             \
+            case rocsparse_indextype_i32:                                                 \
+            {                                                                             \
+                RETURN_IF_ROCSPARSE_ERROR(                                                \
+                    (rocsparse_sddmm_buffer_size_dispatch_format<int32_t, int32_t, TYPE>( \
+                        format, alg, ts...)));                                            \
+                return rocsparse_status_success;                                          \
+            }                                                                             \
+            }                                                                             \
+        }                                                                                 \
+        case rocsparse_indextype_i64:                                                     \
+        {                                                                                 \
+            switch(jtype)                                                                 \
+            {                                                                             \
+            case rocsparse_indextype_u16:                                                 \
+            {                                                                             \
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);              \
+            }                                                                             \
+            case rocsparse_indextype_i32:                                                 \
+            {                                                                             \
+                RETURN_IF_ROCSPARSE_ERROR(                                                \
+                    (rocsparse_sddmm_buffer_size_dispatch_format<int64_t, int32_t, TYPE>( \
+                        format, alg, ts...)));                                            \
+                return rocsparse_status_success;                                          \
+            }                                                                             \
+            case rocsparse_indextype_i64:                                                 \
+            {                                                                             \
+                RETURN_IF_ROCSPARSE_ERROR(                                                \
+                    (rocsparse_sddmm_buffer_size_dispatch_format<int64_t, int64_t, TYPE>( \
+                        format, alg, ts...)));                                            \
+                return rocsparse_status_success;                                          \
+            }                                                                             \
+            }                                                                             \
+        }                                                                                 \
+        }                                                                                 \
     }
 
         DATATYPE_CASE(rocsparse_datatype_f32_r, float);
@@ -161,13 +174,13 @@ rocsparse_status rocsparse_sddmm_buffer_size_dispatch(rocsparse_format    format
     case rocsparse_datatype_i32_r:
     case rocsparse_datatype_u32_r:
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 
 #undef DATATYPE_CASE
     }
 
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 extern "C" rocsparse_status rocsparse_sddmm_buffer_size(rocsparse_handle            handle,
@@ -183,8 +196,6 @@ extern "C" rocsparse_status rocsparse_sddmm_buffer_size(rocsparse_handle        
                                                         size_t*                     buffer_size)
 try
 {
-    // Check for invalid handle
-    RETURN_IF_INVALID_HANDLE(handle);
 
     // Logging
     log_trace(handle,
@@ -200,47 +211,31 @@ try
               alg,
               (const void*&)buffer_size);
 
-    if(rocsparse_enum_utils::is_invalid(trans_A))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(rocsparse_enum_utils::is_invalid(trans_B))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(rocsparse_enum_utils::is_invalid(compute_type))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(rocsparse_enum_utils::is_invalid(alg))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_ENUM(1, trans_A);
+    ROCSPARSE_CHECKARG_ENUM(2, trans_B);
+    ROCSPARSE_CHECKARG_POINTER(3, alpha);
+    ROCSPARSE_CHECKARG_POINTER(4, mat_A);
+    ROCSPARSE_CHECKARG(4, mat_A, mat_A->init == false, rocsparse_status_not_initialized);
 
-    RETURN_IF_NULLPTR(buffer_size);
+    ROCSPARSE_CHECKARG_POINTER(5, mat_B);
+    ROCSPARSE_CHECKARG(5, mat_B, mat_B->init == false, rocsparse_status_not_initialized);
 
-    // Check for invalid descriptors
-    RETURN_IF_NULLPTR(mat_A);
-    RETURN_IF_NULLPTR(mat_B);
-    RETURN_IF_NULLPTR(mat_C);
+    ROCSPARSE_CHECKARG_POINTER(6, beta);
+    ROCSPARSE_CHECKARG_POINTER(7, mat_C);
+    ROCSPARSE_CHECKARG(7, mat_C, mat_C->init == false, rocsparse_status_not_initialized);
 
-    // Check for valid pointers
-    RETURN_IF_NULLPTR(alpha);
-    RETURN_IF_NULLPTR(beta);
+    ROCSPARSE_CHECKARG_ENUM(8, compute_type);
 
-    // Check if descriptors are initialized
-    if(mat_A->init == false || mat_B->init == false || mat_C->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
+    ROCSPARSE_CHECKARG(8,
+                       compute_type,
+                       (compute_type != mat_A->data_type || compute_type != mat_B->data_type
+                        || compute_type != mat_C->data_type),
+                       rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG_ENUM(9, alg);
+    ROCSPARSE_CHECKARG_POINTER(10, buffer_size);
 
-    // Check for matching types while we do not support mixed precision computation
-    if(compute_type != mat_A->data_type || compute_type != mat_B->data_type
-       || compute_type != mat_C->data_type)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    return rocsparse_sddmm_buffer_size_dispatch(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sddmm_buffer_size_dispatch(
         mat_C->format,
         (mat_C->format == rocsparse_format_csc) ? mat_C->col_type : mat_C->row_type,
         (mat_C->format == rocsparse_format_csc) ? mat_C->row_type : mat_C->col_type,
@@ -257,11 +252,12 @@ try
         mat_C,
         compute_type,
         alg,
-        buffer_size);
+        buffer_size));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 template <rocsparse_format FORMAT, typename I, typename J, typename T, typename... Ts>
@@ -271,11 +267,13 @@ rocsparse_status rocsparse_sddmm_preprocess_dispatch_alg(rocsparse_sddmm_alg alg
     {
     case rocsparse_sddmm_alg_default:
     {
-        return rocsparse_sddmm_st<FORMAT, rocsparse_sddmm_alg_default, I, J, T>::
-            preprocess_template(ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_st<FORMAT, rocsparse_sddmm_alg_default, I, J, T>::preprocess_template(
+                ts...)));
+        return rocsparse_status_success;
     }
     }
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <typename I, typename J, typename T, typename... Ts>
@@ -287,41 +285,52 @@ rocsparse_status rocsparse_sddmm_preprocess_dispatch_format(rocsparse_format    
     {
     case rocsparse_format_coo:
     {
-        return rocsparse_sddmm_preprocess_dispatch_alg<rocsparse_format_coo, I, I, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_preprocess_dispatch_alg<rocsparse_format_coo, I, I, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_csr:
     {
-        return rocsparse_sddmm_preprocess_dispatch_alg<rocsparse_format_csr, I, J, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_preprocess_dispatch_alg<rocsparse_format_csr, I, J, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_coo_aos:
     {
-
-        return rocsparse_sddmm_preprocess_dispatch_alg<rocsparse_format_coo_aos, I, I, T>(alg,
-                                                                                          ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_preprocess_dispatch_alg<rocsparse_format_coo_aos, I, I, T>(alg,
+                                                                                        ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_csc:
     {
-        return rocsparse_sddmm_preprocess_dispatch_alg<rocsparse_format_csc, I, J, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_preprocess_dispatch_alg<rocsparse_format_csc, I, J, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_ell:
     {
-        return rocsparse_sddmm_preprocess_dispatch_alg<rocsparse_format_ell, I, I, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_preprocess_dispatch_alg<rocsparse_format_ell, I, I, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_bell:
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+        return rocsparse_status_success;
     }
     case rocsparse_format_bsr:
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+        return rocsparse_status_success;
     }
     }
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <typename... Ts>
@@ -334,52 +343,58 @@ rocsparse_status rocsparse_sddmm_preprocess_dispatch(rocsparse_format    format,
 {
     switch(ctype)
     {
-#define DATATYPE_CASE(ENUMVAL, TYPE)                                                       \
-    case ENUMVAL:                                                                          \
-    {                                                                                      \
-        switch(itype)                                                                      \
-        {                                                                                  \
-        case rocsparse_indextype_u16:                                                      \
-        {                                                                                  \
-            return rocsparse_status_not_implemented;                                       \
-        }                                                                                  \
-        case rocsparse_indextype_i32:                                                      \
-        {                                                                                  \
-            switch(jtype)                                                                  \
-            {                                                                              \
-            case rocsparse_indextype_u16:                                                  \
-            case rocsparse_indextype_i64:                                                  \
-            {                                                                              \
-                return rocsparse_status_not_implemented;                                   \
-            }                                                                              \
-            case rocsparse_indextype_i32:                                                  \
-            {                                                                              \
-                return rocsparse_sddmm_preprocess_dispatch_format<int32_t, int32_t, TYPE>( \
-                    format, alg, ts...);                                                   \
-            }                                                                              \
-            }                                                                              \
-        }                                                                                  \
-        case rocsparse_indextype_i64:                                                      \
-        {                                                                                  \
-            switch(jtype)                                                                  \
-            {                                                                              \
-            case rocsparse_indextype_u16:                                                  \
-            {                                                                              \
-                return rocsparse_status_not_implemented;                                   \
-            }                                                                              \
-            case rocsparse_indextype_i32:                                                  \
-            {                                                                              \
-                return rocsparse_sddmm_preprocess_dispatch_format<int64_t, int32_t, TYPE>( \
-                    format, alg, ts...);                                                   \
-            }                                                                              \
-            case rocsparse_indextype_i64:                                                  \
-            {                                                                              \
-                return rocsparse_sddmm_preprocess_dispatch_format<int64_t, int64_t, TYPE>( \
-                    format, alg, ts...);                                                   \
-            }                                                                              \
-            }                                                                              \
-        }                                                                                  \
-        }                                                                                  \
+#define DATATYPE_CASE(ENUMVAL, TYPE)                                                     \
+    case ENUMVAL:                                                                        \
+    {                                                                                    \
+        switch(itype)                                                                    \
+        {                                                                                \
+        case rocsparse_indextype_u16:                                                    \
+        {                                                                                \
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);                 \
+        }                                                                                \
+        case rocsparse_indextype_i32:                                                    \
+        {                                                                                \
+            switch(jtype)                                                                \
+            {                                                                            \
+            case rocsparse_indextype_u16:                                                \
+            case rocsparse_indextype_i64:                                                \
+            {                                                                            \
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);             \
+            }                                                                            \
+            case rocsparse_indextype_i32:                                                \
+            {                                                                            \
+                RETURN_IF_ROCSPARSE_ERROR(                                               \
+                    (rocsparse_sddmm_preprocess_dispatch_format<int32_t, int32_t, TYPE>( \
+                        format, alg, ts...)));                                           \
+                return rocsparse_status_success;                                         \
+            }                                                                            \
+            }                                                                            \
+        }                                                                                \
+        case rocsparse_indextype_i64:                                                    \
+        {                                                                                \
+            switch(jtype)                                                                \
+            {                                                                            \
+            case rocsparse_indextype_u16:                                                \
+            {                                                                            \
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);             \
+            }                                                                            \
+            case rocsparse_indextype_i32:                                                \
+            {                                                                            \
+                RETURN_IF_ROCSPARSE_ERROR(                                               \
+                    (rocsparse_sddmm_preprocess_dispatch_format<int64_t, int32_t, TYPE>( \
+                        format, alg, ts...)));                                           \
+                return rocsparse_status_success;                                         \
+            }                                                                            \
+            case rocsparse_indextype_i64:                                                \
+            {                                                                            \
+                RETURN_IF_ROCSPARSE_ERROR(                                               \
+                    (rocsparse_sddmm_preprocess_dispatch_format<int64_t, int64_t, TYPE>( \
+                        format, alg, ts...)));                                           \
+                return rocsparse_status_success;                                         \
+            }                                                                            \
+            }                                                                            \
+        }                                                                                \
+        }                                                                                \
     }
 
         DATATYPE_CASE(rocsparse_datatype_f32_r, float);
@@ -396,32 +411,28 @@ rocsparse_status rocsparse_sddmm_preprocess_dispatch(rocsparse_format    format,
     case rocsparse_datatype_i32_r:
     case rocsparse_datatype_u32_r:
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 
 #undef DATATYPE_CASE
     }
 
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
-extern "C" rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle            handle,
-                                                       rocsparse_operation         trans_A,
-                                                       rocsparse_operation         trans_B,
-                                                       const void*                 alpha,
-                                                       rocsparse_const_dnmat_descr mat_A,
-                                                       rocsparse_const_dnmat_descr mat_B,
-                                                       const void*                 beta,
-                                                       const rocsparse_spmat_descr mat_C,
-                                                       rocsparse_datatype          compute_type,
-                                                       rocsparse_sddmm_alg         alg,
-                                                       void*                       temp_buffer)
+extern "C" rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle            handle, //0
+                                                       rocsparse_operation         trans_A, //1
+                                                       rocsparse_operation         trans_B, //2
+                                                       const void*                 alpha, //3
+                                                       rocsparse_const_dnmat_descr mat_A, //4
+                                                       rocsparse_const_dnmat_descr mat_B, //5
+                                                       const void*                 beta, //6
+                                                       const rocsparse_spmat_descr mat_C, //7
+                                                       rocsparse_datatype          compute_type, //8
+                                                       rocsparse_sddmm_alg         alg, //9
+                                                       void*                       temp_buffer) //10
 try
 {
-    // Check for invalid handle
-    RETURN_IF_INVALID_HANDLE(handle);
-
-    // Logging
     log_trace(handle,
               "rocsparse_sddmm_preprocess",
               trans_A,
@@ -435,51 +446,35 @@ try
               alg,
               (const void*&)temp_buffer);
 
-    if(rocsparse_enum_utils::is_invalid(trans_A))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(rocsparse_enum_utils::is_invalid(trans_B))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(rocsparse_enum_utils::is_invalid(compute_type))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(rocsparse_enum_utils::is_invalid(alg))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_ENUM(1, trans_A);
+    ROCSPARSE_CHECKARG_ENUM(2, trans_B);
+    ROCSPARSE_CHECKARG_POINTER(3, alpha);
+    ROCSPARSE_CHECKARG_POINTER(4, mat_A);
+    ROCSPARSE_CHECKARG(4, mat_A, mat_A->init == false, rocsparse_status_not_initialized);
 
-    // Check for invalid descriptors
-    RETURN_IF_NULLPTR(mat_A);
-    RETURN_IF_NULLPTR(mat_B);
-    RETURN_IF_NULLPTR(mat_C);
+    ROCSPARSE_CHECKARG_POINTER(5, mat_B);
+    ROCSPARSE_CHECKARG(5, mat_B, mat_B->init == false, rocsparse_status_not_initialized);
 
-    // Check for valid pointers
-    RETURN_IF_NULLPTR(alpha);
-    RETURN_IF_NULLPTR(beta);
+    ROCSPARSE_CHECKARG_POINTER(6, beta);
+    ROCSPARSE_CHECKARG_POINTER(7, mat_C);
+    ROCSPARSE_CHECKARG(7, mat_C, mat_C->init == false, rocsparse_status_not_initialized);
 
-    // Check if descriptors are initialized
-    if(mat_A->init == false || mat_B->init == false || mat_C->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
+    ROCSPARSE_CHECKARG_ENUM(8, compute_type);
 
-    // Check for matching types while we do not support mixed precision computation
-    if(compute_type != mat_A->data_type || compute_type != mat_B->data_type
-       || compute_type != mat_C->data_type)
-    {
-        return rocsparse_status_not_implemented;
-    }
+    ROCSPARSE_CHECKARG(8,
+                       compute_type,
+                       (compute_type != mat_A->data_type || compute_type != mat_B->data_type
+                        || compute_type != mat_C->data_type),
+                       rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG_ENUM(9, alg);
 
     if(mat_C->nnz == 0)
     {
         return rocsparse_status_success;
     }
 
-    return rocsparse_sddmm_preprocess_dispatch(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sddmm_preprocess_dispatch(
         mat_C->format,
         (mat_C->format == rocsparse_format_csc) ? mat_C->col_type : mat_C->row_type,
         (mat_C->format == rocsparse_format_csc) ? mat_C->row_type : mat_C->col_type,
@@ -496,11 +491,12 @@ try
         mat_C,
         compute_type,
         alg,
-        temp_buffer);
+        temp_buffer));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }
 
 template <rocsparse_format FORMAT, typename I, typename J, typename T, typename... Ts>
@@ -510,11 +506,13 @@ rocsparse_status rocsparse_sddmm_dispatch_alg(rocsparse_sddmm_alg alg, Ts&&... t
     {
     case rocsparse_sddmm_alg_default:
     {
-        return rocsparse_sddmm_st<FORMAT, rocsparse_sddmm_alg_default, I, J, T>::compute_template(
-            ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_st<FORMAT, rocsparse_sddmm_alg_default, I, J, T>::compute_template(
+                ts...)));
+        return rocsparse_status_success;
     }
     }
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <typename I, typename J, typename T, typename... Ts>
@@ -525,40 +523,50 @@ rocsparse_status
     {
     case rocsparse_format_coo:
     {
-        return rocsparse_sddmm_dispatch_alg<rocsparse_format_coo, I, I, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_dispatch_alg<rocsparse_format_coo, I, I, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_csr:
     {
-        return rocsparse_sddmm_dispatch_alg<rocsparse_format_csr, I, J, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_dispatch_alg<rocsparse_format_csr, I, J, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_coo_aos:
     {
 
-        return rocsparse_sddmm_dispatch_alg<rocsparse_format_coo_aos, I, I, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_dispatch_alg<rocsparse_format_coo_aos, I, I, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_csc:
     {
-        return rocsparse_sddmm_dispatch_alg<rocsparse_format_csc, I, J, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_dispatch_alg<rocsparse_format_csc, I, J, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_ell:
     {
-        return rocsparse_sddmm_dispatch_alg<rocsparse_format_ell, I, I, T>(alg, ts...);
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_dispatch_alg<rocsparse_format_ell, I, I, T>(alg, ts...)));
+        return rocsparse_status_success;
     }
 
     case rocsparse_format_bell:
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
     case rocsparse_format_bsr:
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
     }
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <typename... Ts>
@@ -572,52 +580,55 @@ rocsparse_status rocsparse_sddmm_dispatch(rocsparse_format    format,
     switch(ctype)
     {
 
-#define DATATYPE_CASE(ENUMVAL, TYPE)                                            \
-    case ENUMVAL:                                                               \
-    {                                                                           \
-        switch(itype)                                                           \
-        {                                                                       \
-        case rocsparse_indextype_u16:                                           \
-        {                                                                       \
-            return rocsparse_status_not_implemented;                            \
-        }                                                                       \
-        case rocsparse_indextype_i32:                                           \
-        {                                                                       \
-            switch(jtype)                                                       \
-            {                                                                   \
-            case rocsparse_indextype_u16:                                       \
-            case rocsparse_indextype_i64:                                       \
-            {                                                                   \
-                return rocsparse_status_not_implemented;                        \
-            }                                                                   \
-            case rocsparse_indextype_i32:                                       \
-            {                                                                   \
-                return rocsparse_sddmm_dispatch_format<int32_t, int32_t, TYPE>( \
-                    format, alg, ts...);                                        \
-            }                                                                   \
-            }                                                                   \
-        }                                                                       \
-        case rocsparse_indextype_i64:                                           \
-        {                                                                       \
-            switch(jtype)                                                       \
-            {                                                                   \
-            case rocsparse_indextype_u16:                                       \
-            {                                                                   \
-                return rocsparse_status_not_implemented;                        \
-            }                                                                   \
-            case rocsparse_indextype_i32:                                       \
-            {                                                                   \
-                return rocsparse_sddmm_dispatch_format<int64_t, int32_t, TYPE>( \
-                    format, alg, ts...);                                        \
-            }                                                                   \
-            case rocsparse_indextype_i64:                                       \
-            {                                                                   \
-                return rocsparse_sddmm_dispatch_format<int64_t, int64_t, TYPE>( \
-                    format, alg, ts...);                                        \
-            }                                                                   \
-            }                                                                   \
-        }                                                                       \
-        }                                                                       \
+#define DATATYPE_CASE(ENUMVAL, TYPE)                                                               \
+    case ENUMVAL:                                                                                  \
+    {                                                                                              \
+        switch(itype)                                                                              \
+        {                                                                                          \
+        case rocsparse_indextype_u16:                                                              \
+        {                                                                                          \
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);                           \
+        }                                                                                          \
+        case rocsparse_indextype_i32:                                                              \
+        {                                                                                          \
+            switch(jtype)                                                                          \
+            {                                                                                      \
+            case rocsparse_indextype_u16:                                                          \
+            case rocsparse_indextype_i64:                                                          \
+            {                                                                                      \
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);                       \
+            }                                                                                      \
+            case rocsparse_indextype_i32:                                                          \
+            {                                                                                      \
+                RETURN_IF_ROCSPARSE_ERROR((                                                        \
+                    rocsparse_sddmm_dispatch_format<int32_t, int32_t, TYPE>(format, alg, ts...))); \
+                return rocsparse_status_success;                                                   \
+            }                                                                                      \
+            }                                                                                      \
+        }                                                                                          \
+        case rocsparse_indextype_i64:                                                              \
+        {                                                                                          \
+            switch(jtype)                                                                          \
+            {                                                                                      \
+            case rocsparse_indextype_u16:                                                          \
+            {                                                                                      \
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);                       \
+            }                                                                                      \
+            case rocsparse_indextype_i32:                                                          \
+            {                                                                                      \
+                RETURN_IF_ROCSPARSE_ERROR((                                                        \
+                    rocsparse_sddmm_dispatch_format<int64_t, int32_t, TYPE>(format, alg, ts...))); \
+                return rocsparse_status_success;                                                   \
+            }                                                                                      \
+            case rocsparse_indextype_i64:                                                          \
+            {                                                                                      \
+                RETURN_IF_ROCSPARSE_ERROR((                                                        \
+                    rocsparse_sddmm_dispatch_format<int64_t, int64_t, TYPE>(format, alg, ts...))); \
+                return rocsparse_status_success;                                                   \
+            }                                                                                      \
+            }                                                                                      \
+        }                                                                                          \
+        }                                                                                          \
     }
 
         DATATYPE_CASE(rocsparse_datatype_f32_r, float);
@@ -634,29 +645,27 @@ rocsparse_status rocsparse_sddmm_dispatch(rocsparse_format    format,
     case rocsparse_datatype_i32_r:
     case rocsparse_datatype_u32_r:
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 
 #undef DATATYPE_CASE
     }
-    return rocsparse_status_invalid_value;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
-extern "C" rocsparse_status rocsparse_sddmm(rocsparse_handle            handle,
-                                            rocsparse_operation         trans_A,
-                                            rocsparse_operation         trans_B,
-                                            const void*                 alpha,
-                                            rocsparse_const_dnmat_descr mat_A,
-                                            rocsparse_const_dnmat_descr mat_B,
-                                            const void*                 beta,
-                                            const rocsparse_spmat_descr mat_C,
-                                            rocsparse_datatype          compute_type,
-                                            rocsparse_sddmm_alg         alg,
-                                            void*                       temp_buffer)
+extern "C" rocsparse_status rocsparse_sddmm(rocsparse_handle            handle, //0
+                                            rocsparse_operation         trans_A, //1
+                                            rocsparse_operation         trans_B, //2
+                                            const void*                 alpha, //3
+                                            rocsparse_const_dnmat_descr mat_A, //4
+                                            rocsparse_const_dnmat_descr mat_B, //5
+                                            const void*                 beta, //6
+                                            const rocsparse_spmat_descr mat_C, //7
+                                            rocsparse_datatype          compute_type, //8
+                                            rocsparse_sddmm_alg         alg, //9
+                                            void*                       temp_buffer) //19
 try
 {
-    // Check for invalid handle
-    RETURN_IF_INVALID_HANDLE(handle);
 
     // Logging
     log_trace(handle,
@@ -672,50 +681,35 @@ try
               alg,
               (const void*&)temp_buffer);
 
-    if(rocsparse_enum_utils::is_invalid(trans_A))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(rocsparse_enum_utils::is_invalid(trans_B))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(rocsparse_enum_utils::is_invalid(compute_type))
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(rocsparse_enum_utils::is_invalid(alg))
-    {
-        return rocsparse_status_invalid_value;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_ENUM(1, trans_A);
+    ROCSPARSE_CHECKARG_ENUM(2, trans_B);
+    ROCSPARSE_CHECKARG_POINTER(3, alpha);
+    ROCSPARSE_CHECKARG_POINTER(4, mat_A);
+    ROCSPARSE_CHECKARG(4, mat_A, mat_A->init == false, rocsparse_status_not_initialized);
 
-    // Check for invalid descriptors
-    RETURN_IF_NULLPTR(mat_A);
-    RETURN_IF_NULLPTR(mat_B);
-    RETURN_IF_NULLPTR(mat_C);
+    ROCSPARSE_CHECKARG_POINTER(5, mat_B);
+    ROCSPARSE_CHECKARG(5, mat_B, mat_B->init == false, rocsparse_status_not_initialized);
 
-    // Check for valid pointers
-    RETURN_IF_NULLPTR(alpha);
-    RETURN_IF_NULLPTR(beta);
+    ROCSPARSE_CHECKARG_POINTER(6, beta);
+    ROCSPARSE_CHECKARG_POINTER(7, mat_C);
+    ROCSPARSE_CHECKARG(7, mat_C, mat_C->init == false, rocsparse_status_not_initialized);
 
-    // Check if descriptors are initialized
-    if(mat_A->init == false || mat_B->init == false || mat_C->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
+    ROCSPARSE_CHECKARG_ENUM(8, compute_type);
 
-    // Check for matching types while we do not support mixed precision computation
-    if(compute_type != mat_A->data_type || compute_type != mat_B->data_type
-       || compute_type != mat_C->data_type)
-    {
-        return rocsparse_status_not_implemented;
-    }
+    ROCSPARSE_CHECKARG(8,
+                       compute_type,
+                       (compute_type != mat_A->data_type || compute_type != mat_B->data_type
+                        || compute_type != mat_C->data_type),
+                       rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG_ENUM(9, alg);
+
     if(mat_C->nnz == 0)
     {
         return rocsparse_status_success;
     }
 
-    return rocsparse_sddmm_dispatch(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sddmm_dispatch(
         mat_C->format,
         (mat_C->format == rocsparse_format_csc) ? mat_C->col_type : mat_C->row_type,
         (mat_C->format == rocsparse_format_csc) ? mat_C->row_type : mat_C->col_type,
@@ -732,9 +726,10 @@ try
         mat_C,
         compute_type,
         alg,
-        temp_buffer);
+        temp_buffer));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

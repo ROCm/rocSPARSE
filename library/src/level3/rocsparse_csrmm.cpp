@@ -32,285 +32,6 @@
 #include "definitions.h"
 #include "utility.h"
 
-template <>
-inline bool rocsparse_enum_utils::is_invalid(rocsparse_csrmm_alg value_)
-{
-    switch(value_)
-    {
-    case rocsparse_csrmm_alg_default:
-    case rocsparse_csrmm_alg_row_split:
-    case rocsparse_csrmm_alg_merge:
-    {
-        return false;
-    }
-    }
-    return true;
-};
-
-template <typename T, typename I, typename J, typename A>
-rocsparse_status rocsparse_csrmm_buffer_size_template_merge(rocsparse_handle          handle,
-                                                            rocsparse_operation       trans_A,
-                                                            rocsparse_csrmm_alg       alg,
-                                                            J                         m,
-                                                            J                         n,
-                                                            J                         k,
-                                                            I                         nnz,
-                                                            const rocsparse_mat_descr descr,
-                                                            const A*                  csr_val,
-                                                            const I*                  csr_row_ptr,
-                                                            const J*                  csr_col_ind,
-                                                            size_t*                   buffer_size);
-
-template <typename T, typename I, typename J, typename A>
-rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          handle,
-                                                      rocsparse_operation       trans_A,
-                                                      rocsparse_csrmm_alg       alg,
-                                                      J                         m,
-                                                      J                         n,
-                                                      J                         k,
-                                                      I                         nnz,
-                                                      const rocsparse_mat_descr descr,
-                                                      const A*                  csr_val,
-                                                      const I*                  csr_row_ptr,
-                                                      const J*                  csr_col_ind,
-                                                      size_t*                   buffer_size)
-{
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Logging
-    log_trace(handle,
-              "rocsparse_csrmm_buffer_size",
-              trans_A,
-              m,
-              n,
-              k,
-              nnz,
-              (const void*&)descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)buffer_size);
-
-    if(rocsparse_enum_utils::is_invalid(trans_A))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(alg))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    // Check sizes
-    if(m < 0 || n < 0 || k < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Quick return if possible
-    if(m == 0 || n == 0 || k == 0)
-    {
-        *buffer_size = 0;
-        return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(csr_row_ptr == nullptr || buffer_size == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // value arrays and column indices arrays must both be null (zero matrix) or both not null
-    if((csr_val == nullptr && csr_col_ind != nullptr)
-       || (csr_val != nullptr && csr_col_ind == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz != 0 && (csr_col_ind == nullptr && csr_val == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    switch(alg)
-    {
-    case rocsparse_csrmm_alg_merge:
-    {
-        return rocsparse_csrmm_buffer_size_template_merge<T>(handle,
-                                                             trans_A,
-                                                             alg,
-                                                             m,
-                                                             n,
-                                                             k,
-                                                             nnz,
-                                                             descr,
-                                                             csr_val,
-                                                             csr_row_ptr,
-                                                             csr_col_ind,
-                                                             buffer_size);
-    }
-
-    case rocsparse_csrmm_alg_default:
-    case rocsparse_csrmm_alg_row_split:
-    {
-        *buffer_size = 0;
-        return rocsparse_status_success;
-    }
-    }
-    return rocsparse_status_invalid_value;
-}
-
-template <typename T, typename I, typename J, typename A>
-rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle          handle,
-                                                         rocsparse_operation       trans_A,
-                                                         rocsparse_csrmm_alg       alg,
-                                                         J                         m,
-                                                         J                         n,
-                                                         J                         k,
-                                                         I                         nnz,
-                                                         const rocsparse_mat_descr descr,
-                                                         const A*                  csr_val,
-                                                         const I*                  csr_row_ptr,
-                                                         const J*                  csr_col_ind,
-                                                         void*                     temp_buffer);
-
-template <typename T, typename I, typename J, typename A>
-rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          handle,
-                                                   rocsparse_operation       trans_A,
-                                                   rocsparse_csrmm_alg       alg,
-                                                   J                         m,
-                                                   J                         n,
-                                                   J                         k,
-                                                   I                         nnz,
-                                                   const rocsparse_mat_descr descr,
-                                                   const A*                  csr_val,
-                                                   const I*                  csr_row_ptr,
-                                                   const J*                  csr_col_ind,
-                                                   void*                     temp_buffer)
-{
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Logging
-    log_trace(handle,
-              "rocsparse_csrmm_analysis",
-              trans_A,
-              m,
-              n,
-              k,
-              nnz,
-              (const void*&)descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)temp_buffer);
-
-    if(rocsparse_enum_utils::is_invalid(trans_A))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(alg))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    // Check sizes
-    if(m < 0 || n < 0 || k < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Quick return if possible
-    if(m == 0 || n == 0 || k == 0)
-    {
-        return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // value arrays and column indices arrays must both be null (zero matrix) or both not null
-    if((csr_val == nullptr && csr_col_ind != nullptr)
-       || (csr_val != nullptr && csr_col_ind == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz != 0 && (csr_col_ind == nullptr && csr_val == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    switch(alg)
-    {
-    case rocsparse_csrmm_alg_merge:
-    {
-        return rocsparse_csrmm_analysis_template_merge<T>(handle,
-                                                          trans_A,
-                                                          alg,
-                                                          m,
-                                                          n,
-                                                          k,
-                                                          nnz,
-                                                          descr,
-                                                          csr_val,
-                                                          csr_row_ptr,
-                                                          csr_col_ind,
-                                                          temp_buffer);
-    }
-
-    case rocsparse_csrmm_alg_default:
-    case rocsparse_csrmm_alg_row_split:
-    {
-        return rocsparse_status_success;
-    }
-    }
-    return rocsparse_status_invalid_value;
-}
-
 template <typename T, typename I, typename J, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
                                                   rocsparse_operation trans_A,
@@ -322,7 +43,7 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
                                                   J                   batch_count_A,
                                                   int64_t             offsets_batch_stride_A,
                                                   int64_t             columns_values_batch_stride_A,
-                                                  U                   alpha_device_host,
+                                                  U                   alpha,
                                                   const rocsparse_mat_descr descr,
                                                   const A*                  csr_val,
                                                   const I*                  csr_row_ptr,
@@ -332,7 +53,7 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
                                                   J                         batch_count_B,
                                                   int64_t                   batch_stride_B,
                                                   rocsparse_order           order_B,
-                                                  U                         beta_device_host,
+                                                  U                         beta,
                                                   C*                        dense_C,
                                                   int64_t                   ldc,
                                                   J                         batch_count_C,
@@ -348,7 +69,7 @@ rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          ha
                                                     J                         n,
                                                     J                         k,
                                                     I                         nnz,
-                                                    U                         alpha_device_host,
+                                                    U                         alpha,
                                                     const rocsparse_mat_descr descr,
                                                     const A*                  csr_val,
                                                     const I*                  csr_row_ptr,
@@ -356,7 +77,7 @@ rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          ha
                                                     const B*                  dense_B,
                                                     int64_t                   ldb,
                                                     rocsparse_order           order_B,
-                                                    U                         beta_device_host,
+                                                    U                         beta,
                                                     C*                        dense_C,
                                                     int64_t                   ldc,
                                                     rocsparse_order           order_C,
@@ -370,7 +91,7 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                 J                         n,
                                                 J                         k,
                                                 I                         nnz,
-                                                U                         alpha_device_host,
+                                                U                         alpha,
                                                 const rocsparse_mat_descr descr,
                                                 const A*                  csr_val,
                                                 const I*                  csr_row_ptr,
@@ -378,7 +99,7 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                 const B*                  dense_B,
                                                 int64_t                   ldb,
                                                 rocsparse_order           order_B,
-                                                U                         beta_device_host,
+                                                U                         beta,
                                                 C*                        dense_C,
                                                 int64_t                   ldc,
                                                 rocsparse_order           order_C,
@@ -397,7 +118,7 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
                                                    J                   batch_count_A,
                                                    int64_t             offsets_batch_stride_A,
                                                    int64_t columns_values_batch_stride_A,
-                                                   U       alpha_device_host,
+                                                   U       alpha,
                                                    const rocsparse_mat_descr descr,
                                                    const A*                  csr_val,
                                                    const I*                  csr_row_ptr,
@@ -407,7 +128,7 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
                                                    J                         batch_count_B,
                                                    int64_t                   batch_stride_B,
                                                    rocsparse_order           order_B,
-                                                   U                         beta_device_host,
+                                                   U                         beta,
                                                    C*                        dense_C,
                                                    int64_t                   ldc,
                                                    J                         batch_count_C,
@@ -418,36 +139,36 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
 {
     switch(alg)
     {
-
     case rocsparse_csrmm_alg_default:
     {
-        return rocsparse_csrmm_template_general<T>(handle,
-                                                   trans_A,
-                                                   trans_B,
-                                                   m,
-                                                   n,
-                                                   k,
-                                                   nnz,
-                                                   batch_count_A,
-                                                   offsets_batch_stride_A,
-                                                   columns_values_batch_stride_A,
-                                                   alpha_device_host,
-                                                   descr,
-                                                   csr_val,
-                                                   csr_row_ptr,
-                                                   csr_col_ind,
-                                                   dense_B,
-                                                   ldb,
-                                                   batch_count_B,
-                                                   batch_stride_B,
-                                                   order_B,
-                                                   beta_device_host,
-                                                   dense_C,
-                                                   ldc,
-                                                   batch_count_C,
-                                                   batch_stride_C,
-                                                   order_C,
-                                                   force_conj_A);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmm_template_general<T>(handle,
+                                                                      trans_A,
+                                                                      trans_B,
+                                                                      m,
+                                                                      n,
+                                                                      k,
+                                                                      nnz,
+                                                                      batch_count_A,
+                                                                      offsets_batch_stride_A,
+                                                                      columns_values_batch_stride_A,
+                                                                      alpha,
+                                                                      descr,
+                                                                      csr_val,
+                                                                      csr_row_ptr,
+                                                                      csr_col_ind,
+                                                                      dense_B,
+                                                                      ldb,
+                                                                      batch_count_B,
+                                                                      batch_stride_B,
+                                                                      order_B,
+                                                                      beta,
+                                                                      dense_C,
+                                                                      ldc,
+                                                                      batch_count_C,
+                                                                      batch_stride_C,
+                                                                      order_C,
+                                                                      force_conj_A));
+        return rocsparse_status_success;
     }
 
     case rocsparse_csrmm_alg_merge:
@@ -456,58 +177,62 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
         {
         case rocsparse_operation_none:
         {
-            return rocsparse_csrmm_template_merge<T>(handle,
-                                                     trans_A,
-                                                     trans_B,
-                                                     m,
-                                                     n,
-                                                     k,
-                                                     nnz,
-                                                     alpha_device_host,
-                                                     descr,
-                                                     csr_val,
-                                                     csr_row_ptr,
-                                                     csr_col_ind,
-                                                     dense_B,
-                                                     ldb,
-                                                     order_B,
-                                                     beta_device_host,
-                                                     dense_C,
-                                                     ldc,
-                                                     order_C,
-                                                     temp_buffer,
-                                                     force_conj_A);
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmm_template_merge<T>(handle,
+                                                                        trans_A,
+                                                                        trans_B,
+                                                                        m,
+                                                                        n,
+                                                                        k,
+                                                                        nnz,
+                                                                        alpha,
+                                                                        descr,
+                                                                        csr_val,
+                                                                        csr_row_ptr,
+                                                                        csr_col_ind,
+                                                                        dense_B,
+                                                                        ldb,
+                                                                        order_B,
+                                                                        beta,
+                                                                        dense_C,
+                                                                        ldc,
+                                                                        order_C,
+                                                                        temp_buffer,
+                                                                        force_conj_A));
+            return rocsparse_status_success;
         }
         case rocsparse_operation_transpose:
         case rocsparse_operation_conjugate_transpose:
         {
-            return rocsparse_csrmm_template_general<T>(handle,
-                                                       trans_A,
-                                                       trans_B,
-                                                       m,
-                                                       n,
-                                                       k,
-                                                       nnz,
-                                                       batch_count_A,
-                                                       offsets_batch_stride_A,
-                                                       columns_values_batch_stride_A,
-                                                       alpha_device_host,
-                                                       descr,
-                                                       csr_val,
-                                                       csr_row_ptr,
-                                                       csr_col_ind,
-                                                       dense_B,
-                                                       ldb,
-                                                       batch_count_B,
-                                                       batch_stride_B,
-                                                       order_B,
-                                                       beta_device_host,
-                                                       dense_C,
-                                                       ldc,
-                                                       batch_count_C,
-                                                       batch_stride_C,
-                                                       order_C,
-                                                       force_conj_A);
+            std::cout << "allo1 " << std::endl;
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_csrmm_template_general<T>(handle,
+                                                    trans_A,
+                                                    trans_B,
+                                                    m,
+                                                    n,
+                                                    k,
+                                                    nnz,
+                                                    batch_count_A,
+                                                    offsets_batch_stride_A,
+                                                    columns_values_batch_stride_A,
+                                                    alpha,
+                                                    descr,
+                                                    csr_val,
+                                                    csr_row_ptr,
+                                                    csr_col_ind,
+                                                    dense_B,
+                                                    ldb,
+                                                    batch_count_B,
+                                                    batch_stride_B,
+                                                    order_B,
+                                                    beta,
+                                                    dense_C,
+                                                    ldc,
+                                                    batch_count_C,
+                                                    batch_stride_C,
+                                                    order_C,
+                                                    force_conj_A));
+            return rocsparse_status_success;
         }
         }
     }
@@ -518,62 +243,407 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
         {
         case rocsparse_operation_none:
         {
-            return rocsparse_csrmm_template_row_split<T>(handle,
-                                                         trans_A,
-                                                         trans_B,
-                                                         m,
-                                                         n,
-                                                         k,
-                                                         nnz,
-                                                         alpha_device_host,
-                                                         descr,
-                                                         csr_val,
-                                                         csr_row_ptr,
-                                                         csr_col_ind,
-                                                         dense_B,
-                                                         ldb,
-                                                         order_B,
-                                                         beta_device_host,
-                                                         dense_C,
-                                                         ldc,
-                                                         order_C,
-                                                         force_conj_A);
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmm_template_row_split<T>(handle,
+                                                                            trans_A,
+                                                                            trans_B,
+                                                                            m,
+                                                                            n,
+                                                                            k,
+                                                                            nnz,
+                                                                            alpha,
+                                                                            descr,
+                                                                            csr_val,
+                                                                            csr_row_ptr,
+                                                                            csr_col_ind,
+                                                                            dense_B,
+                                                                            ldb,
+                                                                            order_B,
+                                                                            beta,
+                                                                            dense_C,
+                                                                            ldc,
+                                                                            order_C,
+                                                                            force_conj_A));
+            return rocsparse_status_success;
         }
         case rocsparse_operation_transpose:
         case rocsparse_operation_conjugate_transpose:
         {
-            return rocsparse_csrmm_template_general<T>(handle,
-                                                       trans_A,
-                                                       trans_B,
-                                                       m,
-                                                       n,
-                                                       k,
-                                                       nnz,
-                                                       batch_count_A,
-                                                       offsets_batch_stride_A,
-                                                       columns_values_batch_stride_A,
-                                                       alpha_device_host,
-                                                       descr,
-                                                       csr_val,
-                                                       csr_row_ptr,
-                                                       csr_col_ind,
-                                                       dense_B,
-                                                       ldb,
-                                                       batch_count_B,
-                                                       batch_stride_B,
-                                                       order_B,
-                                                       beta_device_host,
-                                                       dense_C,
-                                                       ldc,
-                                                       batch_count_C,
-                                                       batch_stride_C,
-                                                       order_C,
-                                                       force_conj_A);
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_csrmm_template_general<T>(handle,
+                                                    trans_A,
+                                                    trans_B,
+                                                    m,
+                                                    n,
+                                                    k,
+                                                    nnz,
+                                                    batch_count_A,
+                                                    offsets_batch_stride_A,
+                                                    columns_values_batch_stride_A,
+                                                    alpha,
+                                                    descr,
+                                                    csr_val,
+                                                    csr_row_ptr,
+                                                    csr_col_ind,
+                                                    dense_B,
+                                                    ldb,
+                                                    batch_count_B,
+                                                    batch_stride_B,
+                                                    order_B,
+                                                    beta,
+                                                    dense_C,
+                                                    ldc,
+                                                    batch_count_C,
+                                                    batch_stride_C,
+                                                    order_C,
+                                                    force_conj_A));
+            return rocsparse_status_success;
         }
         }
     }
     }
-    return rocsparse_status_invalid_value;
+}
+
+template <typename T, typename I, typename J, typename A, typename B, typename C>
+static rocsparse_status rocsparse_csrmm_core(rocsparse_handle    handle,
+                                             rocsparse_operation trans_A,
+                                             rocsparse_operation trans_B,
+                                             rocsparse_csrmm_alg alg,
+                                             J                   m,
+                                             J                   n,
+                                             J                   k,
+                                             I                   nnz,
+                                             J                   batch_count_A,
+                                             int64_t             offsets_batch_stride_A,
+                                             int64_t             columns_values_batch_stride_A,
+                                             const T*            alpha,
+                                             const rocsparse_mat_descr descr,
+                                             const A*                  csr_val,
+                                             const I*                  csr_row_ptr,
+                                             const J*                  csr_col_ind,
+                                             const B*                  dense_B,
+                                             int64_t                   ldb,
+                                             J                         batch_count_B,
+                                             int64_t                   batch_stride_B,
+                                             rocsparse_order           order_B,
+                                             const T*                  beta,
+                                             C*                        dense_C,
+                                             int64_t                   ldc,
+                                             J                         batch_count_C,
+                                             int64_t                   batch_stride_C,
+                                             rocsparse_order           order_C,
+                                             void*                     temp_buffer,
+                                             bool                      force_conj_A)
+{
+
+    const bool Ci_A_Bi  = (batch_count_A == 1 && batch_count_B == batch_count_C);
+    const bool Ci_Ai_B  = (batch_count_B == 1 && batch_count_A == batch_count_C);
+    const bool Ci_Ai_Bi = (batch_count_A == batch_count_C && batch_count_A == batch_count_B);
+
+    if(!Ci_A_Bi && !Ci_Ai_B && !Ci_Ai_Bi)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+    }
+
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_csrmm_template_dispatch<T>(handle,
+                                                 trans_A,
+                                                 trans_B,
+                                                 alg,
+                                                 m,
+                                                 n,
+                                                 k,
+                                                 nnz,
+                                                 batch_count_A,
+                                                 offsets_batch_stride_A,
+                                                 columns_values_batch_stride_A,
+                                                 alpha,
+                                                 descr,
+                                                 csr_val,
+                                                 csr_row_ptr,
+                                                 csr_col_ind,
+                                                 dense_B,
+                                                 ldb,
+                                                 batch_count_B,
+                                                 batch_stride_B,
+                                                 order_B,
+                                                 beta,
+                                                 dense_C,
+                                                 ldc,
+                                                 batch_count_C,
+                                                 batch_stride_C,
+                                                 order_C,
+                                                 temp_buffer,
+                                                 force_conj_A));
+        return rocsparse_status_success;
+    }
+    else
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_csrmm_template_dispatch<T>(handle,
+                                                 trans_A,
+                                                 trans_B,
+                                                 alg,
+                                                 m,
+                                                 n,
+                                                 k,
+                                                 nnz,
+                                                 batch_count_A,
+                                                 offsets_batch_stride_A,
+                                                 columns_values_batch_stride_A,
+                                                 *alpha,
+                                                 descr,
+                                                 csr_val,
+                                                 csr_row_ptr,
+                                                 csr_col_ind,
+                                                 dense_B,
+                                                 ldb,
+                                                 batch_count_B,
+                                                 batch_stride_B,
+                                                 order_B,
+                                                 *beta,
+                                                 dense_C,
+                                                 ldc,
+                                                 batch_count_C,
+                                                 batch_stride_C,
+                                                 order_C,
+                                                 temp_buffer,
+                                                 force_conj_A));
+        return rocsparse_status_success;
+    }
+}
+
+template <typename T>
+static rocsparse_status rocsparse_csrmm_quickreturn(rocsparse_handle          handle,
+                                                    rocsparse_operation       trans_A,
+                                                    rocsparse_operation       trans_B,
+                                                    int64_t                   m,
+                                                    int64_t                   n,
+                                                    int64_t                   k,
+                                                    int64_t                   nnz,
+                                                    const T*                  alpha,
+                                                    const rocsparse_mat_descr descr,
+                                                    const void*               csr_val,
+                                                    const void*               csr_row_ptr,
+                                                    const void*               csr_col_ind,
+                                                    const void*               dense_B,
+                                                    int64_t                   ldb,
+                                                    const T*                  beta,
+                                                    void*                     dense_C,
+                                                    int64_t                   ldc,
+                                                    rocsparse_order           order_B,
+                                                    rocsparse_order           order_C,
+                                                    int64_t                   batch_count_C,
+                                                    int64_t                   batch_stride_C)
+{
+
+    if(m == 0 || n == 0 || k == 0)
+    {
+        // matrix never accessed however still need to update C matrix
+        rocsparse_int Csize = (trans_A == rocsparse_operation_none) ? m * n : k * n;
+        if(Csize > 0)
+        {
+            if(dense_C == nullptr || beta == nullptr)
+            {
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
+            }
+
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
+            {
+                hipLaunchKernelGGL((scale_array_2d<256>),
+                                   dim3((Csize - 1) / 256 + 1, batch_count_C),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   (trans_A == rocsparse_operation_none) ? m : k,
+                                   n,
+                                   ldc,
+                                   batch_stride_C,
+                                   (T*)dense_C,
+                                   beta,
+                                   order_C);
+            }
+            else
+            {
+                hipLaunchKernelGGL((scale_array_2d<256>),
+                                   dim3((Csize - 1) / 256 + 1, batch_count_C),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   (trans_A == rocsparse_operation_none) ? m : k,
+                                   n,
+                                   ldc,
+                                   batch_stride_C,
+                                   (T*)dense_C,
+                                   *beta,
+                                   order_C);
+            }
+        }
+
+        return rocsparse_status_success;
+    }
+
+    if(handle->pointer_mode == rocsparse_pointer_mode_host
+       && (alpha != nullptr && *alpha == static_cast<T>(0))
+       && (beta != nullptr && *beta == static_cast<T>(1)))
+    {
+        return rocsparse_status_success;
+    }
+    return rocsparse_status_continue;
+}
+
+template <typename T>
+rocsparse_status rocsparse_csrmm_checkarg(rocsparse_handle          handle, //0
+                                          rocsparse_operation       trans_A, //1
+                                          rocsparse_operation       trans_B, //2
+                                          int64_t                   m, //3
+                                          int64_t                   n, //4
+                                          int64_t                   k, //5
+                                          int64_t                   nnz, //6
+                                          const T*                  alpha, //7
+                                          const rocsparse_mat_descr descr, //8
+                                          const void*               csr_val, //9
+                                          const void*               csr_row_ptr, //10
+                                          const void*               csr_col_ind, //11
+                                          const void*               B, //12
+                                          int64_t                   ldb, //13
+                                          const T*                  beta, //14
+                                          void*                     C, //15
+                                          int64_t                   ldc, //16
+                                          rocsparse_order           order_B,
+                                          rocsparse_order           order_C,
+                                          int64_t                   batch_count_C,
+                                          int64_t                   batch_stride_C)
+
+{
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_ENUM(1, trans_A);
+    ROCSPARSE_CHECKARG_ENUM(2, trans_B);
+    ROCSPARSE_CHECKARG_SIZE(3, m);
+    ROCSPARSE_CHECKARG_SIZE(4, n);
+    ROCSPARSE_CHECKARG_SIZE(5, k);
+    ROCSPARSE_CHECKARG_SIZE(6, nnz);
+    ROCSPARSE_CHECKARG_POINTER(8, descr);
+    ROCSPARSE_CHECKARG(
+        8, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(8,
+                       descr,
+                       (descr->storage_mode != rocsparse_storage_mode_sorted),
+                       rocsparse_status_requires_sorted_storage);
+
+    ROCSPARSE_CHECKARG_ARRAY(9, nnz, csr_val);
+    ROCSPARSE_CHECKARG_ARRAY(10, m, csr_row_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(11, nnz, csr_col_ind);
+
+    const rocsparse_status status = rocsparse_csrmm_quickreturn(handle,
+                                                                trans_A,
+                                                                trans_B,
+                                                                m,
+                                                                n,
+                                                                k,
+                                                                nnz,
+                                                                alpha,
+                                                                descr,
+                                                                csr_val,
+                                                                csr_row_ptr,
+                                                                csr_col_ind,
+                                                                B,
+                                                                ldb,
+                                                                beta,
+                                                                C,
+                                                                ldc,
+                                                                order_B,
+                                                                order_C,
+                                                                batch_count_C,
+                                                                batch_stride_C);
+
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    ROCSPARSE_CHECKARG_POINTER(7, alpha);
+    ROCSPARSE_CHECKARG_POINTER(12, B);
+    ROCSPARSE_CHECKARG_SIZE(13, ldb);
+    ROCSPARSE_CHECKARG_POINTER(14, beta);
+    ROCSPARSE_CHECKARG_POINTER(15, C);
+    ROCSPARSE_CHECKARG_SIZE(16, ldc);
+
+    static constexpr int64_t s_one = static_cast<int64_t>(1);
+    switch(trans_A)
+    {
+    case rocsparse_operation_none:
+    {
+        // Check leading dimension of C
+        ROCSPARSE_CHECKARG(16,
+                           ldc,
+                           (ldc < std::max(s_one, ((order_C == rocsparse_order_column) ? m : n))),
+                           rocsparse_status_invalid_size);
+
+        // Check leading dimension of B
+        switch(trans_B)
+        {
+        case rocsparse_operation_none:
+        {
+            ROCSPARSE_CHECKARG(
+                13,
+                ldb,
+                (ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? k : n))),
+                rocsparse_status_invalid_size);
+
+            break;
+        }
+
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            ROCSPARSE_CHECKARG(
+                13,
+                ldb,
+                (ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? n : k))),
+                rocsparse_status_invalid_size);
+            break;
+        }
+        }
+        break;
+    }
+    case rocsparse_operation_transpose:
+    case rocsparse_operation_conjugate_transpose:
+    {
+        ROCSPARSE_CHECKARG(16,
+                           ldc,
+                           (ldc < std::max(s_one, ((order_C == rocsparse_order_column) ? k : n))),
+                           rocsparse_status_invalid_size);
+
+        switch(trans_B)
+        {
+        case rocsparse_operation_none:
+        {
+            ROCSPARSE_CHECKARG(
+                13,
+                ldb,
+                (ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? m : n))),
+                rocsparse_status_invalid_size);
+            break;
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            ROCSPARSE_CHECKARG(
+                13,
+                ldb,
+                (ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? n : m))),
+                rocsparse_status_invalid_size);
+            break;
+        }
+        }
+        break;
+    }
+    }
+
+    return rocsparse_status_continue;
 }
 
 template <typename T, typename I, typename J, typename A, typename B, typename C>
@@ -588,7 +658,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           J                         batch_count_A,
                                           int64_t                   offsets_batch_stride_A,
                                           int64_t                   columns_values_batch_stride_A,
-                                          const T*                  alpha_device_host,
+                                          const T*                  alpha,
                                           const rocsparse_mat_descr descr,
                                           const A*                  csr_val,
                                           const I*                  csr_row_ptr,
@@ -598,7 +668,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           J                         batch_count_B,
                                           int64_t                   batch_stride_B,
                                           rocsparse_order           order_B,
-                                          const T*                  beta_device_host,
+                                          const T*                  beta,
                                           C*                        dense_C,
                                           int64_t                   ldc,
                                           J                         batch_count_C,
@@ -607,17 +677,98 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           void*                     temp_buffer,
                                           bool                      force_conj_A)
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
+    const rocsparse_status status = rocsparse_csrmm_quickreturn(handle,
+                                                                trans_A,
+                                                                trans_B,
+                                                                m,
+                                                                n,
+                                                                k,
+                                                                nnz,
+                                                                alpha,
+                                                                descr,
+                                                                csr_val,
+                                                                csr_row_ptr,
+                                                                csr_col_ind,
+                                                                dense_B,
+                                                                ldb,
+                                                                beta,
+                                                                dense_C,
+                                                                ldc,
+                                                                order_B,
+                                                                order_C,
+                                                                batch_count_C,
+                                                                batch_stride_C);
+
+    if(status != rocsparse_status_continue)
     {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
     }
 
-    // Logging TODO bench logging
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmm_core(handle,
+                                                   trans_A,
+                                                   trans_B,
+                                                   alg,
+                                                   m,
+                                                   n,
+                                                   k,
+                                                   nnz,
+                                                   batch_count_A,
+                                                   offsets_batch_stride_A,
+                                                   columns_values_batch_stride_A,
+                                                   alpha,
+                                                   descr,
+                                                   csr_val,
+                                                   csr_row_ptr,
+                                                   csr_col_ind,
+                                                   dense_B,
+                                                   ldb,
+                                                   batch_count_B,
+                                                   batch_stride_B,
+                                                   order_B,
+                                                   beta,
+                                                   dense_C,
+                                                   ldc,
+                                                   batch_count_C,
+                                                   batch_stride_C,
+                                                   order_C,
+                                                   temp_buffer,
+                                                   force_conj_A));
+
+    return rocsparse_status_success;
+}
+
+template <typename T, typename I, typename J, typename A, typename B, typename C>
+rocsparse_status rocsparse_csrmm_impl(rocsparse_handle          handle,
+                                      rocsparse_operation       trans_A,
+                                      rocsparse_operation       trans_B,
+                                      rocsparse_csrmm_alg       alg,
+                                      J                         m,
+                                      J                         n,
+                                      J                         k,
+                                      I                         nnz,
+                                      J                         batch_count_A,
+                                      int64_t                   offsets_batch_stride_A,
+                                      int64_t                   columns_values_batch_stride_A,
+                                      const T*                  alpha,
+                                      const rocsparse_mat_descr descr,
+                                      const A*                  csr_val,
+                                      const I*                  csr_row_ptr,
+                                      const J*                  csr_col_ind,
+                                      const B*                  dense_B,
+                                      int64_t                   ldb,
+                                      J                         batch_count_B,
+                                      int64_t                   batch_stride_B,
+                                      rocsparse_order           order_B,
+                                      const T*                  beta,
+                                      C*                        dense_C,
+                                      int64_t                   ldc,
+                                      J                         batch_count_C,
+                                      int64_t                   batch_stride_C,
+                                      rocsparse_order           order_C,
+                                      void*                     temp_buffer,
+                                      bool                      force_conj_A)
+{
     log_trace(handle,
               replaceX<T>("rocsparse_Xcsrmm"),
               trans_A,
@@ -626,365 +777,77 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
               n,
               k,
               nnz,
-              batch_count_A,
-              offsets_batch_stride_A,
-              columns_values_batch_stride_A,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+              LOG_TRACE_SCALAR_VALUE(handle, alpha),
               (const void*&)descr,
               (const void*&)csr_val,
               (const void*&)csr_row_ptr,
               (const void*&)csr_col_ind,
               (const void*&)dense_B,
               ldb,
-              batch_count_B,
-              batch_stride_B,
-              order_B,
-              LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+              LOG_TRACE_SCALAR_VALUE(handle, beta),
               (const void*&)dense_C,
-              ldc,
-              batch_count_C,
-              batch_stride_C,
-              order_C);
+              ldc);
 
-    if(rocsparse_enum_utils::is_invalid(trans_A))
+    const rocsparse_status status = rocsparse_csrmm_checkarg(handle,
+                                                             trans_A,
+                                                             trans_B,
+                                                             m,
+                                                             n,
+                                                             k,
+                                                             nnz,
+                                                             alpha,
+                                                             descr,
+                                                             csr_val,
+                                                             csr_row_ptr,
+                                                             csr_col_ind,
+                                                             dense_B,
+                                                             ldb,
+                                                             beta,
+                                                             dense_C,
+                                                             ldc,
+                                                             order_B,
+                                                             order_C,
+                                                             batch_count_C,
+                                                             batch_stride_C);
+
+    if(status != rocsparse_status_continue)
     {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(trans_B))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(alg))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(order_B))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(order_C))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check matrix type
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    // Check matrix sorting mode
-    if(descr->storage_mode != rocsparse_storage_mode_sorted)
-    {
-        return rocsparse_status_requires_sorted_storage;
-    }
-
-    // Check sizes
-    if(m < 0 || n < 0 || k < 0 || nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Quick return if possible
-    if(m == 0 || n == 0 || k == 0)
-    {
-        // matrix never accessed however still need to update C matrix
-        rocsparse_int Csize = (trans_A == rocsparse_operation_none) ? m * n : k * n;
-        if(Csize > 0)
-        {
-            if(dense_C == nullptr && beta_device_host == nullptr)
-            {
-                return rocsparse_status_invalid_pointer;
-            }
-
-            if(handle->pointer_mode == rocsparse_pointer_mode_device)
-            {
-                hipLaunchKernelGGL((scale_array_2d<256>),
-                                   dim3((Csize - 1) / 256 + 1, batch_count_C),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   (trans_A == rocsparse_operation_none) ? m : k,
-                                   n,
-                                   ldc,
-                                   batch_stride_C,
-                                   dense_C,
-                                   beta_device_host,
-                                   order_C);
-            }
-            else
-            {
-                hipLaunchKernelGGL((scale_array_2d<256>),
-                                   dim3((Csize - 1) / 256 + 1, batch_count_C),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   (trans_A == rocsparse_operation_none) ? m : k,
-                                   n,
-                                   ldc,
-                                   batch_stride_C,
-                                   dense_C,
-                                   *beta_device_host,
-                                   order_C);
-            }
-        }
-
+        RETURN_IF_ROCSPARSE_ERROR(status);
         return rocsparse_status_success;
     }
 
-    // Check the rest of pointer arguments
-    if(alpha_device_host == nullptr || beta_device_host == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmm_core(handle,
+                                                   trans_A,
+                                                   trans_B,
+                                                   alg,
+                                                   m,
+                                                   n,
+                                                   k,
+                                                   nnz,
+                                                   batch_count_A,
+                                                   offsets_batch_stride_A,
+                                                   columns_values_batch_stride_A,
+                                                   alpha,
+                                                   descr,
+                                                   csr_val,
+                                                   csr_row_ptr,
+                                                   csr_col_ind,
+                                                   dense_B,
+                                                   ldb,
+                                                   batch_count_B,
+                                                   batch_stride_B,
+                                                   order_B,
+                                                   beta,
+                                                   dense_C,
+                                                   ldc,
+                                                   batch_count_C,
+                                                   batch_stride_C,
+                                                   order_C,
+                                                   temp_buffer,
+                                                   force_conj_A));
 
-    if(handle->pointer_mode == rocsparse_pointer_mode_host
-       && *alpha_device_host == static_cast<T>(0) && *beta_device_host == static_cast<T>(1))
-    {
-        return rocsparse_status_success;
-    }
-
-    // Check the rest of pointer arguments
-    if(csr_row_ptr == nullptr || dense_B == nullptr || dense_C == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // value arrays and column indices arrays must both be null (zero matrix) or both not null
-    if((csr_val == nullptr && csr_col_ind != nullptr)
-       || (csr_val != nullptr && csr_col_ind == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz != 0 && (csr_col_ind == nullptr && csr_val == nullptr))
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check leading dimension of matrices
-    static constexpr J s_one = static_cast<J>(1);
-    switch(trans_A)
-    {
-    case rocsparse_operation_none:
-    {
-        // Check leading dimension of C
-        if(ldc < std::max(s_one, ((order_C == rocsparse_order_column) ? m : n)))
-        {
-            return rocsparse_status_invalid_size;
-        }
-
-        // Check leading dimension of B
-        switch(trans_B)
-        {
-        case rocsparse_operation_none:
-        {
-            if(ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? k : n)))
-            {
-                return rocsparse_status_invalid_size;
-            }
-            break;
-        }
-        case rocsparse_operation_transpose:
-        case rocsparse_operation_conjugate_transpose:
-        {
-            if(ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? n : k)))
-            {
-                return rocsparse_status_invalid_size;
-            }
-            break;
-        }
-        }
-        break;
-    }
-    case rocsparse_operation_transpose:
-    case rocsparse_operation_conjugate_transpose:
-    {
-        // Check leading dimension of C
-        if(ldc < std::max(s_one, ((order_C == rocsparse_order_column) ? k : n)))
-        {
-            return rocsparse_status_invalid_size;
-        }
-
-        switch(trans_B)
-        {
-        case rocsparse_operation_none:
-        {
-            if(ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? m : n)))
-            {
-                return rocsparse_status_invalid_size;
-            }
-            break;
-        }
-        case rocsparse_operation_transpose:
-        case rocsparse_operation_conjugate_transpose:
-        {
-            if(ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? n : m)))
-            {
-                return rocsparse_status_invalid_size;
-            }
-            break;
-        }
-        }
-        break;
-    }
-    }
-
-    // Check batch parameters of matrices
-    bool Ci_A_Bi  = (batch_count_A == 1 && batch_count_B == batch_count_C);
-    bool Ci_Ai_B  = (batch_count_B == 1 && batch_count_A == batch_count_C);
-    bool Ci_Ai_Bi = (batch_count_A == batch_count_C && batch_count_A == batch_count_B);
-
-    if(!Ci_A_Bi && !Ci_Ai_B && !Ci_Ai_Bi)
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(handle->pointer_mode == rocsparse_pointer_mode_device)
-    {
-        return rocsparse_csrmm_template_dispatch<T>(handle,
-                                                    trans_A,
-                                                    trans_B,
-                                                    alg,
-                                                    m,
-                                                    n,
-                                                    k,
-                                                    nnz,
-                                                    batch_count_A,
-                                                    offsets_batch_stride_A,
-                                                    columns_values_batch_stride_A,
-                                                    alpha_device_host,
-                                                    descr,
-                                                    csr_val,
-                                                    csr_row_ptr,
-                                                    csr_col_ind,
-                                                    dense_B,
-                                                    ldb,
-                                                    batch_count_B,
-                                                    batch_stride_B,
-                                                    order_B,
-                                                    beta_device_host,
-                                                    dense_C,
-                                                    ldc,
-                                                    batch_count_C,
-                                                    batch_stride_C,
-                                                    order_C,
-                                                    temp_buffer,
-                                                    force_conj_A);
-    }
-    else
-    {
-        return rocsparse_csrmm_template_dispatch<T>(handle,
-                                                    trans_A,
-                                                    trans_B,
-                                                    alg,
-                                                    m,
-                                                    n,
-                                                    k,
-                                                    nnz,
-                                                    batch_count_A,
-                                                    offsets_batch_stride_A,
-                                                    columns_values_batch_stride_A,
-                                                    *alpha_device_host,
-                                                    descr,
-                                                    csr_val,
-                                                    csr_row_ptr,
-                                                    csr_col_ind,
-                                                    dense_B,
-                                                    ldb,
-                                                    batch_count_B,
-                                                    batch_stride_B,
-                                                    order_B,
-                                                    *beta_device_host,
-                                                    dense_C,
-                                                    ldc,
-                                                    batch_count_C,
-                                                    batch_stride_C,
-                                                    order_C,
-                                                    temp_buffer,
-                                                    force_conj_A);
-    }
+    return rocsparse_status_success;
 }
-
-#define INSTANTIATE_BUFFER_SIZE(TTYPE, ITYPE, JTYPE, ATYPE)                \
-    template rocsparse_status rocsparse_csrmm_buffer_size_template<TTYPE>( \
-        rocsparse_handle          handle,                                  \
-        rocsparse_operation       trans_A,                                 \
-        rocsparse_csrmm_alg       alg,                                     \
-        JTYPE                     m,                                       \
-        JTYPE                     n,                                       \
-        JTYPE                     k,                                       \
-        ITYPE                     nnz,                                     \
-        const rocsparse_mat_descr descr,                                   \
-        const ATYPE*              csr_val,                                 \
-        const ITYPE*              csr_row_ptr,                             \
-        const JTYPE*              csr_col_ind,                             \
-        size_t*                   buffer_size);
-
-// Uniform precisions
-INSTANTIATE_BUFFER_SIZE(float, int32_t, int32_t, float);
-INSTANTIATE_BUFFER_SIZE(float, int64_t, int32_t, float);
-INSTANTIATE_BUFFER_SIZE(float, int64_t, int64_t, float);
-INSTANTIATE_BUFFER_SIZE(double, int32_t, int32_t, double);
-INSTANTIATE_BUFFER_SIZE(double, int64_t, int32_t, double);
-INSTANTIATE_BUFFER_SIZE(double, int64_t, int64_t, double);
-INSTANTIATE_BUFFER_SIZE(rocsparse_float_complex, int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE_BUFFER_SIZE(rocsparse_float_complex, int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE_BUFFER_SIZE(rocsparse_float_complex, int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE_BUFFER_SIZE(rocsparse_double_complex, int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE_BUFFER_SIZE(rocsparse_double_complex, int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE_BUFFER_SIZE(rocsparse_double_complex, int64_t, int64_t, rocsparse_double_complex);
-
-// Mixed precisions
-INSTANTIATE_BUFFER_SIZE(int32_t, int32_t, int32_t, int8_t);
-INSTANTIATE_BUFFER_SIZE(int32_t, int64_t, int32_t, int8_t);
-INSTANTIATE_BUFFER_SIZE(int32_t, int64_t, int64_t, int8_t);
-INSTANTIATE_BUFFER_SIZE(float, int32_t, int32_t, int8_t);
-INSTANTIATE_BUFFER_SIZE(float, int64_t, int32_t, int8_t);
-INSTANTIATE_BUFFER_SIZE(float, int64_t, int64_t, int8_t);
-#undef INSTANTIATE_BUFFER_SIZE
-
-#define INSTANTIATE_ANALYSIS(TTYPE, ITYPE, JTYPE, ATYPE)                \
-    template rocsparse_status rocsparse_csrmm_analysis_template<TTYPE>( \
-        rocsparse_handle          handle,                               \
-        rocsparse_operation       trans_A,                              \
-        rocsparse_csrmm_alg       alg,                                  \
-        JTYPE                     m,                                    \
-        JTYPE                     n,                                    \
-        JTYPE                     k,                                    \
-        ITYPE                     nnz,                                  \
-        const rocsparse_mat_descr descr,                                \
-        const ATYPE*              csr_val,                              \
-        const ITYPE*              csr_row_ptr,                          \
-        const JTYPE*              csr_col_ind,                          \
-        void*                     temp_buffer);
-
-// Uniform precisions
-INSTANTIATE_ANALYSIS(float, int32_t, int32_t, float);
-INSTANTIATE_ANALYSIS(float, int64_t, int32_t, float);
-INSTANTIATE_ANALYSIS(float, int64_t, int64_t, float);
-INSTANTIATE_ANALYSIS(double, int32_t, int32_t, double);
-INSTANTIATE_ANALYSIS(double, int64_t, int32_t, double);
-INSTANTIATE_ANALYSIS(double, int64_t, int64_t, double);
-INSTANTIATE_ANALYSIS(rocsparse_float_complex, int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE_ANALYSIS(rocsparse_float_complex, int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE_ANALYSIS(rocsparse_float_complex, int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE_ANALYSIS(rocsparse_double_complex, int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE_ANALYSIS(rocsparse_double_complex, int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE_ANALYSIS(rocsparse_double_complex, int64_t, int64_t, rocsparse_double_complex);
-
-// Mixed precisions
-INSTANTIATE_ANALYSIS(int32_t, int32_t, int32_t, int8_t);
-INSTANTIATE_ANALYSIS(int32_t, int64_t, int32_t, int8_t);
-INSTANTIATE_ANALYSIS(int32_t, int64_t, int64_t, int8_t);
-INSTANTIATE_ANALYSIS(float, int32_t, int32_t, int8_t);
-INSTANTIATE_ANALYSIS(float, int64_t, int32_t, int8_t);
-INSTANTIATE_ANALYSIS(float, int64_t, int64_t, int8_t);
-#undef INSTANTIATE_ANALYSIS
 
 #define INSTANTIATE(TTYPE, ITYPE, JTYPE, ATYPE, BTYPE, CTYPE)                                      \
     template rocsparse_status rocsparse_csrmm_template(rocsparse_handle    handle,                 \
@@ -998,7 +861,7 @@ INSTANTIATE_ANALYSIS(float, int64_t, int64_t, int8_t);
                                                        JTYPE               batch_count_A,          \
                                                        int64_t             offsets_batch_stride_A, \
                                                        int64_t      columns_values_batch_stride_A, \
-                                                       const TTYPE* alpha_device_host,             \
+                                                       const TTYPE* alpha,                         \
                                                        const rocsparse_mat_descr descr,            \
                                                        const ATYPE*              csr_val,          \
                                                        const ITYPE*              csr_row_ptr,      \
@@ -1008,7 +871,7 @@ INSTANTIATE_ANALYSIS(float, int64_t, int64_t, int8_t);
                                                        JTYPE                     batch_count_B,    \
                                                        int64_t                   batch_stride_B,   \
                                                        rocsparse_order           order_B,          \
-                                                       const TTYPE*              beta_device_host, \
+                                                       const TTYPE*              beta,             \
                                                        CTYPE*                    dense_C,          \
                                                        int64_t                   ldc,              \
                                                        JTYPE                     batch_count_C,    \
@@ -1071,64 +934,65 @@ INSTANTIATE(float, int64_t, int64_t, int8_t, int8_t, float);
 #undef INSTANTIATE
 
 /*
-* ===========================================================================
-*    C wrapper
-* ===========================================================================
-*/
+ * ===========================================================================
+ *    C wrapper
+ * ===========================================================================
+ */
 
-#define C_IMPL(NAME, TYPE)                                                  \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,      \
-                                     rocsparse_operation       trans_A,     \
-                                     rocsparse_operation       trans_B,     \
-                                     rocsparse_int             m,           \
-                                     rocsparse_int             n,           \
-                                     rocsparse_int             k,           \
-                                     rocsparse_int             nnz,         \
-                                     const TYPE*               alpha,       \
-                                     const rocsparse_mat_descr descr,       \
-                                     const TYPE*               csr_val,     \
-                                     const rocsparse_int*      csr_row_ptr, \
-                                     const rocsparse_int*      csr_col_ind, \
-                                     const TYPE*               dense_B,     \
-                                     rocsparse_int             ldb,         \
-                                     const TYPE*               beta,        \
-                                     TYPE*                     dense_C,     \
-                                     rocsparse_int             ldc)         \
-    try                                                                     \
-    {                                                                       \
-        return rocsparse_csrmm_template(handle,                             \
-                                        trans_A,                            \
-                                        trans_B,                            \
-                                        rocsparse_csrmm_alg_default,        \
-                                        m,                                  \
-                                        n,                                  \
-                                        k,                                  \
-                                        nnz,                                \
-                                        1,                                  \
-                                        0,                                  \
-                                        0,                                  \
-                                        alpha,                              \
-                                        descr,                              \
-                                        csr_val,                            \
-                                        csr_row_ptr,                        \
-                                        csr_col_ind,                        \
-                                        dense_B,                            \
-                                        ldb,                                \
-                                        1,                                  \
-                                        0,                                  \
-                                        rocsparse_order_column,             \
-                                        beta,                               \
-                                        dense_C,                            \
-                                        ldc,                                \
-                                        1,                                  \
-                                        0,                                  \
-                                        rocsparse_order_column,             \
-                                        nullptr,                            \
-                                        false);                             \
-    }                                                                       \
-    catch(...)                                                              \
-    {                                                                       \
-        return exception_to_rocsparse_status();                             \
+#define C_IMPL(NAME, TYPE)                                                          \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,              \
+                                     rocsparse_operation       trans_A,             \
+                                     rocsparse_operation       trans_B,             \
+                                     rocsparse_int             m,                   \
+                                     rocsparse_int             n,                   \
+                                     rocsparse_int             k,                   \
+                                     rocsparse_int             nnz,                 \
+                                     const TYPE*               alpha,               \
+                                     const rocsparse_mat_descr descr,               \
+                                     const TYPE*               csr_val,             \
+                                     const rocsparse_int*      csr_row_ptr,         \
+                                     const rocsparse_int*      csr_col_ind,         \
+                                     const TYPE*               dense_B,             \
+                                     rocsparse_int             ldb,                 \
+                                     const TYPE*               beta,                \
+                                     TYPE*                     dense_C,             \
+                                     rocsparse_int             ldc)                 \
+    try                                                                             \
+    {                                                                               \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmm_impl(handle,                      \
+                                                       trans_A,                     \
+                                                       trans_B,                     \
+                                                       rocsparse_csrmm_alg_default, \
+                                                       m,                           \
+                                                       n,                           \
+                                                       k,                           \
+                                                       nnz,                         \
+                                                       1,                           \
+                                                       0,                           \
+                                                       0,                           \
+                                                       alpha,                       \
+                                                       descr,                       \
+                                                       csr_val,                     \
+                                                       csr_row_ptr,                 \
+                                                       csr_col_ind,                 \
+                                                       dense_B,                     \
+                                                       ldb,                         \
+                                                       1,                           \
+                                                       0,                           \
+                                                       rocsparse_order_column,      \
+                                                       beta,                        \
+                                                       dense_C,                     \
+                                                       ldc,                         \
+                                                       1,                           \
+                                                       0,                           \
+                                                       rocsparse_order_column,      \
+                                                       nullptr,                     \
+                                                       false));                     \
+        return rocsparse_status_success;                                            \
+    }                                                                               \
+    catch(...)                                                                      \
+    {                                                                               \
+        RETURN_ROCSPARSE_EXCEPTION();                                               \
     }
 
 C_IMPL(rocsparse_scsrmm, float);

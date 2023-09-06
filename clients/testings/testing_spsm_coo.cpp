@@ -26,11 +26,12 @@
 template <typename I, typename T>
 void testing_spsm_coo_bad_arg(const Arguments& arg)
 {
-    I       m     = 100;
-    I       n     = 100;
-    I       k     = 16;
-    int64_t nnz   = 100;
-    T       alpha = 0.6;
+    I        m           = 100;
+    I        n           = 100;
+    I        k           = 16;
+    int64_t  nnz         = 100;
+    const T  local_alpha = 0.6;
+    const T* alpha       = &local_alpha;
 
     rocsparse_operation  trans_A = rocsparse_operation_none;
     rocsparse_operation  trans_B = rocsparse_operation_none;
@@ -38,44 +39,57 @@ void testing_spsm_coo_bad_arg(const Arguments& arg)
     rocsparse_spsm_alg   alg     = rocsparse_spsm_alg_default;
 
     // Index and data type
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_datatype  ttype = get_datatype<T>();
+    rocsparse_indextype itype        = get_indextype<I>();
+    rocsparse_datatype  compute_type = get_datatype<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
 
     // SpSM structures
     rocsparse_local_spmat local_A(
-        m, n, nnz, (void*)0x4, (void*)0x4, (void*)0x4, itype, base, ttype);
-    rocsparse_local_dnmat local_B(m, k, m, (void*)0x4, ttype, rocsparse_order_column);
-    rocsparse_local_dnmat local_C(m, k, m, (void*)0x4, ttype, rocsparse_order_column);
+        m, n, nnz, (void*)0x4, (void*)0x4, (void*)0x4, itype, base, compute_type);
+    rocsparse_local_dnmat local_B(m, k, m, (void*)0x4, compute_type, rocsparse_order_column);
+    rocsparse_local_dnmat local_C(m, k, m, (void*)0x4, compute_type, rocsparse_order_column);
 
     int       nargs_to_exclude   = 2;
     const int args_to_exclude[2] = {10, 11};
 
     rocsparse_handle      handle = local_handle;
-    rocsparse_spmat_descr A      = local_A;
-    rocsparse_dnmat_descr B      = local_B;
-    rocsparse_dnmat_descr C      = local_C;
+    rocsparse_spmat_descr matA   = local_A;
+    rocsparse_dnmat_descr matB   = local_B;
+    rocsparse_dnmat_descr matC   = local_C;
 
-    size_t buffer_size;
-    void*  temp_buffer = (void*)0x4;
+    size_t  local_buffer_size;
+    size_t* buffer_size = &local_buffer_size;
+    void*   temp_buffer = (void*)0x4;
 
-#define PARAMS_BUFFER_SIZE                                                                   \
-    handle, trans_A, trans_B, &alpha, A, B, C, ttype, alg, rocsparse_spsm_stage_buffer_size, \
-        &buffer_size, temp_buffer
+#define PARAMS_BUFFER_SIZE                                                                    \
+    handle, trans_A, trans_B, alpha, matA, matB, matC, compute_type, alg, stage, buffer_size, \
+        temp_buffer
 
-#define PARAMS_ANALYSIS                                                                     \
-    handle, trans_A, trans_B, &alpha, A, B, C, ttype, alg, rocsparse_spsm_stage_preprocess, \
-        &buffer_size, temp_buffer
+#define PARAMS_ANALYSIS                                                                       \
+    handle, trans_A, trans_B, alpha, matA, matB, matC, compute_type, alg, stage, buffer_size, \
+        temp_buffer
 
-#define PARAMS_SOLVE                                                                     \
-    handle, trans_A, trans_B, &alpha, A, B, C, ttype, alg, rocsparse_spsm_stage_compute, \
-        &buffer_size, temp_buffer
+#define PARAMS_SOLVE                                                                          \
+    handle, trans_A, trans_B, alpha, matA, matB, matC, compute_type, alg, stage, buffer_size, \
+        temp_buffer
 
-    auto_testing_bad_arg(rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_ANALYSIS);
-    auto_testing_bad_arg(rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_SOLVE);
+    {
+        const rocsparse_spsm_stage stage = rocsparse_spsm_stage_buffer_size;
+        select_bad_arg_analysis(
+            rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_BUFFER_SIZE);
+    }
+
+    {
+        const rocsparse_spsm_stage stage = rocsparse_spsm_stage_preprocess;
+        select_bad_arg_analysis(rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_ANALYSIS);
+    }
+
+    {
+        const rocsparse_spsm_stage stage = rocsparse_spsm_stage_compute;
+        select_bad_arg_analysis(rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_SOLVE);
+    }
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_ANALYSIS

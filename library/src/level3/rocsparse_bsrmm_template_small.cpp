@@ -190,7 +190,7 @@ rocsparse_status rocsparse_bsrmm_template_small(rocsparse_handle          handle
         }
         else
         {
-            return rocsparse_status_arch_mismatch;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_arch_mismatch);
         }
 
 #undef UNROLL_SMALL_TRANSPOSE_KERNEL

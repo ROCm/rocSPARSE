@@ -29,27 +29,42 @@ void testing_spmm_bell_bad_arg(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
 
-    rocsparse_handle      handle      = local_handle;
-    rocsparse_operation   trans_A     = rocsparse_operation_none;
-    rocsparse_operation   trans_B     = rocsparse_operation_none;
-    void*                 alpha       = (void*)0x4;
-    rocsparse_spmat_descr A           = (rocsparse_spmat_descr)0x4;
-    rocsparse_dnmat_descr B           = (rocsparse_dnmat_descr)0x4;
-    void*                 beta        = (void*)0x4;
-    rocsparse_dnmat_descr C           = (rocsparse_dnmat_descr)0x4;
-    rocsparse_datatype    ttype       = rocsparse_datatype_f32_r;
-    rocsparse_spmm_alg    alg         = rocsparse_spmm_alg_bell;
-    rocsparse_spmm_stage  stage       = rocsparse_spmm_stage_compute;
-    size_t*               buffer_size = (size_t*)0x4;
-    void*                 buffer      = (void*)0x4;
+    rocsparse_handle     handle       = local_handle;
+    rocsparse_operation  trans_A      = rocsparse_operation_none;
+    rocsparse_operation  trans_B      = rocsparse_operation_none;
+    void*                alpha        = (void*)0x4;
+    void*                beta         = (void*)0x4;
+    rocsparse_datatype   compute_type = rocsparse_datatype_f32_r;
+    rocsparse_spmm_alg   alg          = rocsparse_spmm_alg_bell;
+    rocsparse_spmm_stage stage        = rocsparse_spmm_stage_compute;
+    size_t*              buffer_size  = (size_t*)0x4;
+    void*                buffer       = (void*)0x4;
 
-#define PARAMS \
-    handle, trans_A, trans_B, &alpha, A, B, &beta, C, ttype, alg, stage, buffer_size, buffer
+    rocsparse_local_spmat local_mat_A(4,
+                                      4,
+                                      rocsparse_direction_row,
+                                      2,
+                                      2,
+                                      (void*)0x4,
+                                      (void*)0x4,
+                                      rocsparse_indextype_i32,
+                                      rocsparse_index_base_zero,
+                                      compute_type);
+    rocsparse_local_dnmat local_mat_B(4, 4, 4, (void*)0x4, compute_type, rocsparse_order_column);
+    rocsparse_local_dnmat local_mat_C(4, 4, 4, (void*)0x4, compute_type, rocsparse_order_column);
+
+    rocsparse_spmat_descr mat_A = local_mat_A;
+    rocsparse_dnmat_descr mat_B = local_mat_B;
+    rocsparse_dnmat_descr mat_C = local_mat_C;
+
+#define PARAMS                                                                            \
+    handle, trans_A, trans_B, alpha, mat_A, mat_B, beta, mat_C, compute_type, alg, stage, \
+        buffer_size, buffer
 
     static const int nargs_to_exclude                  = 2;
     static const int args_to_exclude[nargs_to_exclude] = {11, 12};
 
-    auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+    select_bad_arg_analysis(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
 
 #undef PARAMS
 }

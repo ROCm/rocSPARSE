@@ -333,7 +333,7 @@ rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle       
     {
         if(temp_buffer == nullptr)
         {
-            return rocsparse_status_invalid_pointer;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
         }
 
         char* ptr        = reinterpret_cast<char*>(temp_buffer);
@@ -727,7 +727,7 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
     {
         if(temp_buffer == nullptr)
         {
-            return rocsparse_status_invalid_pointer;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
         }
 
         if((order_B == rocsparse_order_column && trans_B == rocsparse_operation_none)
@@ -737,47 +737,51 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
         {
             if(handle->wavefront_size == 32)
             {
-                return csrmmnn_merge_dispatch<NNZ_PER_BLOCK, 32, false, T>(handle,
-                                                                           conj_A,
-                                                                           conj_B,
-                                                                           m,
-                                                                           n,
-                                                                           k,
-                                                                           nnz,
-                                                                           alpha_device_host,
-                                                                           descr,
-                                                                           csr_val,
-                                                                           csr_row_ptr,
-                                                                           csr_col_ind,
-                                                                           dense_B,
-                                                                           ldb,
-                                                                           beta_device_host,
-                                                                           dense_C,
-                                                                           ldc,
-                                                                           order_C,
-                                                                           temp_buffer);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (csrmmnn_merge_dispatch<NNZ_PER_BLOCK, 32, false, T>(handle,
+                                                                         conj_A,
+                                                                         conj_B,
+                                                                         m,
+                                                                         n,
+                                                                         k,
+                                                                         nnz,
+                                                                         alpha_device_host,
+                                                                         descr,
+                                                                         csr_val,
+                                                                         csr_row_ptr,
+                                                                         csr_col_ind,
+                                                                         dense_B,
+                                                                         ldb,
+                                                                         beta_device_host,
+                                                                         dense_C,
+                                                                         ldc,
+                                                                         order_C,
+                                                                         temp_buffer)));
+                return rocsparse_status_success;
             }
             else if(handle->wavefront_size == 64)
             {
-                return csrmmnn_merge_dispatch<NNZ_PER_BLOCK, 64, false, T>(handle,
-                                                                           conj_A,
-                                                                           conj_B,
-                                                                           m,
-                                                                           n,
-                                                                           k,
-                                                                           nnz,
-                                                                           alpha_device_host,
-                                                                           descr,
-                                                                           csr_val,
-                                                                           csr_row_ptr,
-                                                                           csr_col_ind,
-                                                                           dense_B,
-                                                                           ldb,
-                                                                           beta_device_host,
-                                                                           dense_C,
-                                                                           ldc,
-                                                                           order_C,
-                                                                           temp_buffer);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (csrmmnn_merge_dispatch<NNZ_PER_BLOCK, 64, false, T>(handle,
+                                                                         conj_A,
+                                                                         conj_B,
+                                                                         m,
+                                                                         n,
+                                                                         k,
+                                                                         nnz,
+                                                                         alpha_device_host,
+                                                                         descr,
+                                                                         csr_val,
+                                                                         csr_row_ptr,
+                                                                         csr_col_ind,
+                                                                         dense_B,
+                                                                         ldb,
+                                                                         beta_device_host,
+                                                                         dense_C,
+                                                                         ldc,
+                                                                         order_C,
+                                                                         temp_buffer)));
+                return rocsparse_status_success;
             }
         }
         else if((order_B == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
@@ -787,52 +791,56 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
         {
             if(handle->wavefront_size == 32)
             {
-                return csrmmnt_merge_dispatch<NNZ_PER_BLOCK, 32, true, T>(handle,
-                                                                          conj_A,
-                                                                          conj_B,
-                                                                          m,
-                                                                          n,
-                                                                          k,
-                                                                          nnz,
-                                                                          alpha_device_host,
-                                                                          descr,
-                                                                          csr_val,
-                                                                          csr_row_ptr,
-                                                                          csr_col_ind,
-                                                                          dense_B,
-                                                                          ldb,
-                                                                          beta_device_host,
-                                                                          dense_C,
-                                                                          ldc,
-                                                                          order_C,
-                                                                          temp_buffer);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (csrmmnt_merge_dispatch<NNZ_PER_BLOCK, 32, true, T>(handle,
+                                                                        conj_A,
+                                                                        conj_B,
+                                                                        m,
+                                                                        n,
+                                                                        k,
+                                                                        nnz,
+                                                                        alpha_device_host,
+                                                                        descr,
+                                                                        csr_val,
+                                                                        csr_row_ptr,
+                                                                        csr_col_ind,
+                                                                        dense_B,
+                                                                        ldb,
+                                                                        beta_device_host,
+                                                                        dense_C,
+                                                                        ldc,
+                                                                        order_C,
+                                                                        temp_buffer)));
+                return rocsparse_status_success;
             }
             else if(handle->wavefront_size == 64)
             {
-                return csrmmnt_merge_dispatch<NNZ_PER_BLOCK, 64, true, T>(handle,
-                                                                          conj_A,
-                                                                          conj_B,
-                                                                          m,
-                                                                          n,
-                                                                          k,
-                                                                          nnz,
-                                                                          alpha_device_host,
-                                                                          descr,
-                                                                          csr_val,
-                                                                          csr_row_ptr,
-                                                                          csr_col_ind,
-                                                                          dense_B,
-                                                                          ldb,
-                                                                          beta_device_host,
-                                                                          dense_C,
-                                                                          ldc,
-                                                                          order_C,
-                                                                          temp_buffer);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    (csrmmnt_merge_dispatch<NNZ_PER_BLOCK, 64, true, T>(handle,
+                                                                        conj_A,
+                                                                        conj_B,
+                                                                        m,
+                                                                        n,
+                                                                        k,
+                                                                        nnz,
+                                                                        alpha_device_host,
+                                                                        descr,
+                                                                        csr_val,
+                                                                        csr_row_ptr,
+                                                                        csr_col_ind,
+                                                                        dense_B,
+                                                                        ldb,
+                                                                        beta_device_host,
+                                                                        dense_C,
+                                                                        ldc,
+                                                                        order_C,
+                                                                        temp_buffer)));
+                return rocsparse_status_success;
             }
         }
     }
 
-    return rocsparse_status_not_implemented;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
 }
 
 #define INSTANTIATE_BUFFER_SIZE(TTYPE, ITYPE, JTYPE, ATYPE)                      \

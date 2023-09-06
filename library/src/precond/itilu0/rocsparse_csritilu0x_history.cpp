@@ -34,6 +34,7 @@ static rocsparse_status history_dispatch(rocsparse_itilu0_alg alg_, P&&... param
     case rocsparse_itilu0_alg_async_inplace:
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+        return rocsparse_status_success;
     }
 
     case rocsparse_itilu0_alg_sync_split_fusion:
@@ -41,18 +42,21 @@ static rocsparse_status history_dispatch(rocsparse_itilu0_alg alg_, P&&... param
         RETURN_IF_ROCSPARSE_ERROR(
             (rocsparse_csritilu0x_driver_t<
                 rocsparse_itilu0_alg_sync_split_fusion>::history<T, J>::run(parameters...)));
+        return rocsparse_status_success;
     }
     case rocsparse_itilu0_alg_sync_split:
     {
         RETURN_IF_ROCSPARSE_ERROR(
             (rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split>::history<T, J>::run(
                 parameters...)));
+        return rocsparse_status_success;
     }
     case rocsparse_itilu0_alg_async_split:
     {
         RETURN_IF_ROCSPARSE_ERROR(
             (rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_async_split>::history<T, J>::run(
                 parameters...)));
+        return rocsparse_status_success;
     }
     }
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);

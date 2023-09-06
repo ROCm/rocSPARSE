@@ -627,7 +627,7 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
     }
     else
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
     return rocsparse_status_success;
 }

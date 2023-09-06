@@ -21,9 +21,9 @@
  *
  * ************************************************************************ */
 
-#include "internal/generic/rocsparse_spsm.h"
 #include "definitions.h"
 #include "handle.h"
+#include "rocsparse.h"
 #include "utility.h"
 
 #include "rocsparse_coosm.hpp"
@@ -42,10 +42,14 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                                          size_t*                     buffer_size,
                                          void*                       temp_buffer)
 {
-    // STAGE 1 - compute required buffer size of temp_buffer
-    if(stage == rocsparse_spsm_stage_buffer_size)
+    switch(stage)
     {
-        if(matA->format == rocsparse_format_csr)
+    case rocsparse_spsm_stage_buffer_size:
+    {
+        switch(matA->format)
+        {
+
+        case rocsparse_format_csr:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsm_buffer_size_template(
                 handle,
@@ -65,10 +69,10 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 rocsparse_solve_policy_auto,
                 buffer_size));
 
-            *buffer_size = std::max(static_cast<size_t>(4), *buffer_size);
             return rocsparse_status_success;
         }
-        else if(matA->format == rocsparse_format_coo)
+
+        case rocsparse_format_coo:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_coosm_buffer_size_template(
                 handle,
@@ -88,21 +92,28 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 rocsparse_solve_policy_auto,
                 buffer_size));
 
-            *buffer_size = std::max(static_cast<size_t>(4), *buffer_size);
             return rocsparse_status_success;
         }
-        else
+
+        case rocsparse_format_coo_aos:
+        case rocsparse_format_csc:
+        case rocsparse_format_bsr:
+        case rocsparse_format_ell:
+        case rocsparse_format_bell:
         {
-            return rocsparse_status_not_implemented;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+        }
         }
     }
 
-    // STAGE 2 - preprocess stage
-    if(stage == rocsparse_spsm_stage_preprocess)
+    case rocsparse_spsm_stage_preprocess:
     {
-        if(matA->analysed == false)
+        switch(matA->format)
         {
-            if(matA->format == rocsparse_format_csr)
+
+        case rocsparse_format_csr:
+        {
+            if(matA->analysed == false)
             {
                 RETURN_IF_ROCSPARSE_ERROR((rocsparse_csrsm_analysis_template(
                     handle,
@@ -122,8 +133,15 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                     rocsparse_analysis_policy_force,
                     rocsparse_solve_policy_auto,
                     temp_buffer)));
+                matA->analysed = true;
             }
-            else if(matA->format == rocsparse_format_coo)
+            return rocsparse_status_success;
+        }
+
+        case rocsparse_format_coo:
+        {
+
+            if(matA->analysed == false)
             {
                 RETURN_IF_ROCSPARSE_ERROR((rocsparse_coosm_analysis_template(
                     handle,
@@ -143,37 +161,43 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                     rocsparse_analysis_policy_force,
                     rocsparse_solve_policy_auto,
                     temp_buffer)));
+                matA->analysed = true;
             }
-            else
-            {
-                return rocsparse_status_not_implemented;
-            }
-
-            matA->analysed = true;
+            return rocsparse_status_success;
         }
 
-        return rocsparse_status_success;
+        case rocsparse_format_coo_aos:
+        case rocsparse_format_csc:
+        case rocsparse_format_bsr:
+        case rocsparse_format_ell:
+        case rocsparse_format_bell:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+        }
+        }
     }
 
-    // STAGE 3 - perform SpSM computation
-    if(stage == rocsparse_spsm_stage_compute)
+    case rocsparse_spsm_stage_compute:
     {
         // copy B to C and perform in-place using C
         if(matB->rows > 0 && matB->cols > 0)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy2DAsync(matC->values,
-                                                 matC->ld * sizeof(T),
-                                                 matB->values,
-                                                 matB->ld * sizeof(T),
-                                                 (J)matB->rows * sizeof(T),
-                                                 (J)matB->cols,
-                                                 hipMemcpyDeviceToDevice,
-                                                 handle->stream));
+            hipMemcpy2DAsync(matC->values,
+                             sizeof(T) * matC->ld,
+                             matB->values,
+                             sizeof(T) * matB->ld,
+                             (J)matB->rows * sizeof(T),
+                             (J)matB->cols,
+                             hipMemcpyDeviceToDevice,
+                             handle->stream);
         }
 
-        if(matA->format == rocsparse_format_csr)
+        switch(matA->format)
         {
-            return rocsparse_csrsm_solve_template(
+
+        case rocsparse_format_csr:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsm_solve_template(
                 handle,
                 trans_A,
                 trans_B,
@@ -189,11 +213,13 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 matC->ld,
                 matA->info,
                 rocsparse_solve_policy_auto,
-                temp_buffer);
+                temp_buffer));
+            return rocsparse_status_success;
         }
-        else if(matA->format == rocsparse_format_coo)
+
+        case rocsparse_format_coo:
         {
-            return rocsparse_coosm_solve_template(
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_coosm_solve_template(
                 handle,
                 trans_A,
                 trans_B,
@@ -209,15 +235,21 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 matC->ld,
                 matA->info,
                 rocsparse_solve_policy_auto,
-                temp_buffer);
+                temp_buffer));
+            return rocsparse_status_success;
         }
-        else
+
+        case rocsparse_format_coo_aos:
+        case rocsparse_format_csc:
+        case rocsparse_format_bsr:
+        case rocsparse_format_ell:
+        case rocsparse_format_bell:
         {
-            return rocsparse_status_not_implemented;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+        }
         }
     }
-
-    return rocsparse_status_not_implemented;
+    }
 }
 
 template <typename... Ts>
@@ -228,7 +260,6 @@ rocsparse_status rocsparse_spsm_dynamic_dispatch(rocsparse_indextype itype,
 {
     switch(ctype)
     {
-
 #define DATATYPE_CASE(ENUMVAL, TYPE)                                           \
     case ENUMVAL:                                                              \
     {                                                                          \
@@ -236,7 +267,7 @@ rocsparse_status rocsparse_spsm_dynamic_dispatch(rocsparse_indextype itype,
         {                                                                      \
         case rocsparse_indextype_u16:                                          \
         {                                                                      \
-            return rocsparse_status_not_implemented;                           \
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);       \
         }                                                                      \
         case rocsparse_indextype_i32:                                          \
         {                                                                      \
@@ -245,11 +276,14 @@ rocsparse_status rocsparse_spsm_dynamic_dispatch(rocsparse_indextype itype,
             case rocsparse_indextype_u16:                                      \
             case rocsparse_indextype_i64:                                      \
             {                                                                  \
-                return rocsparse_status_not_implemented;                       \
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);   \
+                return rocsparse_status_success;                               \
             }                                                                  \
             case rocsparse_indextype_i32:                                      \
             {                                                                  \
-                return rocsparse_spsm_template<int32_t, int32_t, TYPE>(ts...); \
+                RETURN_IF_ROCSPARSE_ERROR(                                     \
+                    (rocsparse_spsm_template<int32_t, int32_t, TYPE>(ts...))); \
+                return rocsparse_status_success;                               \
             }                                                                  \
             }                                                                  \
         }                                                                      \
@@ -259,15 +293,19 @@ rocsparse_status rocsparse_spsm_dynamic_dispatch(rocsparse_indextype itype,
             {                                                                  \
             case rocsparse_indextype_u16:                                      \
             {                                                                  \
-                return rocsparse_status_not_implemented;                       \
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);   \
             }                                                                  \
             case rocsparse_indextype_i32:                                      \
             {                                                                  \
-                return rocsparse_spsm_template<int64_t, int32_t, TYPE>(ts...); \
+                RETURN_IF_ROCSPARSE_ERROR(                                     \
+                    (rocsparse_spsm_template<int64_t, int32_t, TYPE>(ts...))); \
+                return rocsparse_status_success;                               \
             }                                                                  \
             case rocsparse_indextype_i64:                                      \
             {                                                                  \
-                return rocsparse_spsm_template<int64_t, int64_t, TYPE>(ts...); \
+                RETURN_IF_ROCSPARSE_ERROR(                                     \
+                    (rocsparse_spsm_template<int64_t, int64_t, TYPE>(ts...))); \
+                return rocsparse_status_success;                               \
             }                                                                  \
             }                                                                  \
         }                                                                      \
@@ -288,14 +326,11 @@ rocsparse_status rocsparse_spsm_dynamic_dispatch(rocsparse_indextype itype,
     case rocsparse_datatype_i32_r:
     case rocsparse_datatype_u32_r:
     {
-        return rocsparse_status_not_implemented;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 
 #undef DATATYPE_CASE
     }
-    // LCOV_EXCL_START
-    return rocsparse_status_invalid_value;
-    // LCOV_EXCL_STOP
 }
 
 /*
@@ -304,24 +339,21 @@ rocsparse_status rocsparse_spsm_dynamic_dispatch(rocsparse_indextype itype,
  * ===========================================================================
  */
 
-extern "C" rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
-                                           rocsparse_operation         trans_A,
-                                           rocsparse_operation         trans_B,
-                                           const void*                 alpha,
-                                           rocsparse_const_spmat_descr matA,
-                                           rocsparse_const_dnmat_descr matB,
-                                           const rocsparse_dnmat_descr matC,
-                                           rocsparse_datatype          compute_type,
-                                           rocsparse_spsm_alg          alg,
-                                           rocsparse_spsm_stage        stage,
-                                           size_t*                     buffer_size,
-                                           void*                       temp_buffer)
+extern "C" rocsparse_status rocsparse_spsm(rocsparse_handle            handle, //0
+                                           rocsparse_operation         trans_A, //1
+                                           rocsparse_operation         trans_B, //2
+                                           const void*                 alpha, //3
+                                           rocsparse_const_spmat_descr matA, //4
+                                           rocsparse_const_dnmat_descr matB, //5
+                                           const rocsparse_dnmat_descr matC, //6
+                                           rocsparse_datatype          compute_type, //7
+                                           rocsparse_spsm_alg          alg, //8
+                                           rocsparse_spsm_stage        stage, //9
+                                           size_t*                     buffer_size, //10
+                                           void*                       temp_buffer) //11
 try
 {
-    // Check for invalid handle
-    RETURN_IF_INVALID_HANDLE(handle);
 
-    // Logging
     log_trace(handle,
               "rocsparse_spsm",
               trans_A,
@@ -336,77 +368,43 @@ try
               (const void*&)buffer_size,
               (const void*&)temp_buffer);
 
-    // Check for invalid descriptors
-    RETURN_IF_NULLPTR(matA);
-    RETURN_IF_NULLPTR(matB);
-    RETURN_IF_NULLPTR(matC);
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_ENUM(1, trans_A);
+    ROCSPARSE_CHECKARG_ENUM(2, trans_B);
+    ROCSPARSE_CHECKARG_POINTER(3, alpha);
+    ROCSPARSE_CHECKARG_POINTER(4, matA);
+    ROCSPARSE_CHECKARG(4, matA, matA->init == false, rocsparse_status_not_initialized);
+    ROCSPARSE_CHECKARG_POINTER(5, matB);
+    ROCSPARSE_CHECKARG(5, matB, matB->init == false, rocsparse_status_not_initialized);
+    ROCSPARSE_CHECKARG_POINTER(6, matC);
+    ROCSPARSE_CHECKARG(6, matC, matC->init == false, rocsparse_status_not_initialized);
+    ROCSPARSE_CHECKARG_ENUM(7, compute_type);
+    ROCSPARSE_CHECKARG(7,
+                       compute_type,
+                       (compute_type != matA->data_type || compute_type != matB->data_type
+                        || compute_type != matC->data_type),
+                       rocsparse_status_not_implemented);
 
-    // Check for valid pointers
-    RETURN_IF_NULLPTR(alpha);
+    ROCSPARSE_CHECKARG_ENUM(8, alg);
+    ROCSPARSE_CHECKARG_ENUM(9, stage);
 
-    if(rocsparse_enum_utils::is_invalid(trans_A))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(trans_B))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(compute_type))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(alg))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(stage))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check for valid buffer_size pointer only if temp_buffer is nullptr
-    if(temp_buffer == nullptr)
-    {
-        RETURN_IF_NULLPTR(buffer_size);
-    }
-
-    // Check if descriptors are initialized
-    // Basically this never happens, but I let it here.
-    // LCOV_EXCL_START
-    if(matA->init == false || matB->init == false || matC->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
-    // LCOV_EXCL_STOP
-
-    // Check for matching types while we do not support mixed precision computation
-    if(compute_type != matA->data_type || compute_type != matB->data_type
-       || compute_type != matC->data_type)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    return rocsparse_spsm_dynamic_dispatch(matA->row_type,
-                                           matA->col_type,
-                                           compute_type,
-                                           handle,
-                                           trans_A,
-                                           trans_B,
-                                           alpha,
-                                           matA,
-                                           matB,
-                                           matC,
-                                           alg,
-                                           stage,
-                                           buffer_size,
-                                           temp_buffer);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_spsm_dynamic_dispatch(matA->row_type,
+                                                              matA->col_type,
+                                                              compute_type,
+                                                              handle,
+                                                              trans_A,
+                                                              trans_B,
+                                                              alpha,
+                                                              matA,
+                                                              matB,
+                                                              matC,
+                                                              alg,
+                                                              stage,
+                                                              buffer_size,
+                                                              temp_buffer));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

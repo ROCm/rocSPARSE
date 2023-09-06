@@ -69,7 +69,7 @@ void testing_bsrmm_bad_arg(const Arguments& arg)
     //
     // Auto testing.
     //
-    auto_testing_bad_arg(rocsparse_bsrmm<T>, PARAMS);
+    bad_arg_analysis(rocsparse_bsrmm<T>, PARAMS);
 
     //
     // LOOP OVER MATRIX TYPES DIFFERENT FROM TYPE_GENERAL.

@@ -113,7 +113,7 @@ struct rocsparse_sddmm_st
         case rocsparse_format_csr:
         case rocsparse_format_coo:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::buffer_size(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::buffer_size(
                 handle,
                 trans_A,
                 trans_B,
@@ -134,12 +134,13 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                out_buffer_size);
+                out_buffer_size)));
+            return rocsparse_status_success;
         }
 
         case rocsparse_format_csc:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::buffer_size(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::buffer_size(
                 handle,
                 trans_A,
                 trans_B,
@@ -160,11 +161,12 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                out_buffer_size);
+                out_buffer_size)));
+            return rocsparse_status_success;
         }
         case rocsparse_format_ell:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::buffer_size(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::buffer_size(
                 handle,
                 trans_A,
                 trans_B,
@@ -185,12 +187,13 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                out_buffer_size);
+                out_buffer_size)));
+            return rocsparse_status_success;
         }
 
         case rocsparse_format_coo_aos:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::buffer_size(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::buffer_size(
                 handle,
                 trans_A,
                 trans_B,
@@ -211,10 +214,11 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                out_buffer_size);
+                out_buffer_size)));
+            return rocsparse_status_success;
         }
         }
-        return rocsparse_status_invalid_value;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
     static rocsparse_status preprocess_template(rocsparse_handle            handle,
@@ -234,7 +238,7 @@ struct rocsparse_sddmm_st
         case rocsparse_format_csr:
         case rocsparse_format_coo:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::preprocess(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::preprocess(
                 handle,
                 trans_A,
                 trans_B,
@@ -255,11 +259,12 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                buffer);
+                buffer)));
+            return rocsparse_status_success;
         }
         case rocsparse_format_csc:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::preprocess(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::preprocess(
                 handle,
                 trans_A,
                 trans_B,
@@ -280,11 +285,12 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                buffer);
+                buffer)));
+            return rocsparse_status_success;
         }
         case rocsparse_format_ell:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::preprocess(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::preprocess(
                 handle,
                 trans_A,
                 trans_B,
@@ -305,11 +311,12 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                buffer);
+                buffer)));
+            return rocsparse_status_success;
         }
         case rocsparse_format_coo_aos:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::preprocess(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::preprocess(
                 handle,
                 trans_A,
                 trans_B,
@@ -330,10 +337,11 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                buffer);
+                buffer)));
+            return rocsparse_status_success;
         }
         }
-        return rocsparse_status_invalid_value;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
     static rocsparse_status compute_template(rocsparse_handle            handle,
@@ -353,7 +361,7 @@ struct rocsparse_sddmm_st
         case rocsparse_format_csr:
         case rocsparse_format_coo:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::compute(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::compute(
                 handle,
                 trans_A,
                 trans_B,
@@ -374,11 +382,12 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                buffer);
+                buffer)));
+            return rocsparse_status_success;
         }
         case rocsparse_format_csc:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::compute(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::compute(
                 handle,
                 trans_A,
                 trans_B,
@@ -399,11 +408,12 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                buffer);
+                buffer)));
+            return rocsparse_status_success;
         }
         case rocsparse_format_ell:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::compute(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::compute(
                 handle,
                 trans_A,
                 trans_B,
@@ -424,11 +434,12 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                buffer);
+                buffer)));
+            return rocsparse_status_success;
         }
         case rocsparse_format_coo_aos:
         {
-            return rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::compute(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse_sddmm_st<FORMAT, ALG, I, J, T>::compute(
                 handle,
                 trans_A,
                 trans_B,
@@ -449,9 +460,10 @@ struct rocsparse_sddmm_st
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
                 alg,
-                buffer);
+                buffer)));
+            return rocsparse_status_success;
         }
         }
-        return rocsparse_status_invalid_value;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 };
