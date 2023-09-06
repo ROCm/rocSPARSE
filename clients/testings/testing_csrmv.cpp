@@ -112,6 +112,9 @@ void testing_csrmv(const Arguments& arg)
     host_scalar<T> h_alpha(arg.get_alpha<T>());
     host_scalar<T> h_beta(arg.get_beta<T>());
 
+    device_scalar<T> d_alpha(h_alpha);
+    device_scalar<T> d_beta(h_beta);
+
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
@@ -205,7 +208,6 @@ void testing_csrmv(const Arguments& arg)
         dy = hy_copy;
 
         // Pointer mode device
-        device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_csrmv<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
 
