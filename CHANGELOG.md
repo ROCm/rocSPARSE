@@ -13,7 +13,6 @@ Full documentation for rocSPARSE is available at [rocm.docs.amd.com](https://roc
 - Removed old deprecated rocsparse_xbsrmv routines, deprecated current rocsparse_xbsrmv_ex routines, and added new rocsparse_xbsrmv routines
 - Removed old deprecated rocsparse_spmm_ex routine
 - doti, dotci, spvv, and csr2ell now require calling hipStreamSynchronize after when using host pointer mode
-- Leading dimensions and stride are now int64_t type
 ### Improved
 - Optimization to doti routine
 - Fixed a bug in rocsparse-bench, where SpMV algorithm was not taken into account in CSR format
