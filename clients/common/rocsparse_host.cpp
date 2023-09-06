@@ -5805,6 +5805,16 @@ void host_csric0(rocsparse_int                     M,
         }
     }
 
+    if(*struct_pivot != max_int)
+    {
+        *numeric_pivot = std::min(*numeric_pivot, *struct_pivot);
+    };
+
+    if(*numeric_pivot != max_int)
+    {
+        *singular_pivot = std::min(*singular_pivot, *numeric_pivot);
+    };
+
     if(*struct_pivot == max_int)
     {
         *struct_pivot = -1;
