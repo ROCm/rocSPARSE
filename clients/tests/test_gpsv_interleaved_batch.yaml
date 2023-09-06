@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ Tests:
   category: pre_checkin
   function: gpsv_interleaved_batch
   precision: *single_double_precisions_complex_real
-  M: [0, 1, 2, 3, 256, 456, 1107, 1804, 3380]
+  M: [256, 456, 1107, 1804, 3380]
   batch_count: [0, 1, 2, 3, 27, 299]
   batch_stride: [300]
   matrix: [rocsparse_matrix_random]
@@ -62,7 +62,7 @@ Tests:
   category: quick
   function: gpsv_interleaved_batch
   precision: *single_double_precisions_complex_real
-  M: [2, 4, 8, 16, 32, 64]
+  M: [8, 16, 32, 64]
   batch_count: [2, 4, 8, 16, 32, 64]
   batch_stride: [64]
   matrix: [rocsparse_matrix_random]

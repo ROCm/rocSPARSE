@@ -183,7 +183,7 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
 {
 
     // Quick return if possible
-    if(m == 0 || n == 0)
+    if(m == 0 || n == 0 || nnz == 0)
     {
         return rocsparse_status_success;
     }
@@ -289,22 +289,19 @@ rocsparse_status rocsparse_csr2csc_impl(rocsparse_handle     handle, //0
     }
 
     // Quick return if possible
-    if(m == 0 || n == 0)
+    if(m == 0 || n == 0 || nnz == 0)
     {
-        return rocsparse_status_success;
-    }
-
-    if(nnz == 0)
-    {
-        hipLaunchKernelGGL((set_array_to_value<256>),
-                           dim3(n / 256 + 1),
-                           dim3(256),
-                           0,
-                           handle->stream,
-                           (n + 1),
-                           csc_col_ptr,
-                           static_cast<I>(idx_base));
-
+        if(nnz == 0 && csc_col_ptr != nullptr)
+        {
+            hipLaunchKernelGGL((set_array_to_value<256>),
+                               dim3(n / 256 + 1),
+                               dim3(256),
+                               0,
+                               handle->stream,
+                               (n + 1),
+                               csc_col_ptr,
+                               static_cast<I>(idx_base));
+        }
         return rocsparse_status_success;
     }
 

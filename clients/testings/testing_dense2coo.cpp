@@ -52,6 +52,11 @@ void testing_dense2coo_bad_arg(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(PARAMS),
                             rocsparse_status_requires_sorted_storage);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
+
+    // Check ld < m
+    ld = m / 2;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(PARAMS), rocsparse_status_invalid_size);
 #undef PARAMS
 }
 
@@ -68,17 +73,8 @@ void testing_dense2coo(const Arguments& arg)
     rocsparse_local_mat_descr descr;
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, baseA));
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || LD < M)
+    if(LD < M)
     {
-        rocsparse_status expected_status = (((M == 0 && N >= 0) || (M >= 0 && N == 0)) && (LD >= M))
-                                               ? rocsparse_status_success
-                                               : rocsparse_status_invalid_size;
-
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_dense2coo<T>(
-                handle, M, N, descr, (const T*)nullptr, LD, nullptr, (T*)nullptr, nullptr, nullptr),
-            expected_status);
         return;
     }
 
@@ -88,11 +84,6 @@ void testing_dense2coo(const Arguments& arg)
 
     host_vector<rocsparse_int>   h_nnz_per_row(M);
     device_vector<rocsparse_int> d_nnz_per_row(M);
-    if(!d_nnz_per_row || !d_dense_val || !h_nnz_per_row || !h_dense_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     rocsparse_seedrand();
 
@@ -136,11 +127,6 @@ void testing_dense2coo(const Arguments& arg)
     device_vector<rocsparse_int> d_coo_row_ind(nnz);
     device_vector<T>             d_coo_val(nnz);
     device_vector<rocsparse_int> d_coo_col_ind(nnz);
-    if(!d_coo_row_ind || !d_coo_val || !d_coo_col_ind)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     if(arg.unit_check)
     {
@@ -158,11 +144,6 @@ void testing_dense2coo(const Arguments& arg)
         host_vector<rocsparse_int> gpu_coo_row_ind(nnz);
         host_vector<T>             gpu_coo_val(nnz);
         host_vector<rocsparse_int> gpu_coo_col_ind(nnz);
-        if(!gpu_coo_row_ind || !gpu_coo_val || !gpu_coo_col_ind)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
 
         CHECK_HIP_ERROR(hipMemcpy(
             gpu_coo_row_ind, d_coo_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
@@ -173,11 +154,6 @@ void testing_dense2coo(const Arguments& arg)
         host_vector<rocsparse_int> cpu_coo_row_ind(nnz);
         host_vector<T>             cpu_coo_val(nnz);
         host_vector<rocsparse_int> cpu_coo_col_ind(nnz);
-        if(!cpu_coo_row_ind || !cpu_coo_val || !cpu_coo_col_ind)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
 
         // Compute the reference host first.
         host_dense_to_coo(M,

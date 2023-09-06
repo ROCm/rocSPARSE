@@ -51,6 +51,22 @@ void testing_gtsv_interleaved_batch_bad_arg(const Arguments& arg)
     bad_arg_analysis(rocsparse_gtsv_interleaved_batch_buffer_size<T>, PARAMS_BUFFER_SIZE);
     bad_arg_analysis(rocsparse_gtsv_interleaved_batch<T>, PARAMS_SOLVE);
 
+    // m <= 1
+    m = 1;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_interleaved_batch_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_interleaved_batch<T>(PARAMS_SOLVE),
+                            rocsparse_status_invalid_size);
+    m = safe_size;
+
+    // batch_stride < batch_count
+    batch_count  = 4;
+    batch_stride = 2;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_interleaved_batch_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_interleaved_batch<T>(PARAMS_SOLVE),
+                            rocsparse_status_invalid_size);
+
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_SOLVE
 }
@@ -69,26 +85,8 @@ void testing_gtsv_interleaved_batch(const Arguments& arg)
 #define PARAMS_BUFFER_SIZE handle, alg, m, ddl, dd, ddu, dx, batch_count, batch_stride, &buffer_size
 #define PARAMS_SOLVE handle, alg, m, ddl, dd, ddu, dx, batch_count, batch_stride, dbuffer
 
-    // Argument sanity check before allocating invalid memory
-    if(m <= 1 || batch_count <= 0 || batch_stride < batch_count)
+    if(batch_stride < batch_count)
     {
-        size_t buffer_size;
-        T*     ddl     = nullptr;
-        T*     dd      = nullptr;
-        T*     ddu     = nullptr;
-        T*     dx      = nullptr;
-        void*  dbuffer = nullptr;
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_interleaved_batch_buffer_size<T>(PARAMS_BUFFER_SIZE),
-                                (m <= 1 || batch_count < 0 || batch_stride < batch_count)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_interleaved_batch<T>(PARAMS_SOLVE),
-                                (m <= 1 || batch_count < 0 || batch_stride < batch_count)
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
         return;
     }
 

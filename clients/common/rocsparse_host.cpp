@@ -3773,7 +3773,7 @@ void host_gemvi(I                    M,
 
         for(I j = 0; j < nnz; ++j)
         {
-            sum = std::fma(x_val[j], A[x_ind[j] * lda + i], sum);
+            sum = std::fma(x_val[j], A[(x_ind[j] - base) * lda + i], sum);
         }
 
         y[i] = std::fma(alpha, sum, beta * y[i]);
@@ -7105,10 +7105,6 @@ void host_csr_to_csc(J                    M,
                      rocsparse_action     action,
                      rocsparse_index_base base)
 {
-    csc_row_ind.resize(nnz);
-    csc_col_ptr.resize(N + 1, 0);
-    csc_val.resize(nnz);
-
     // Determine nnz per column
     for(I i = 0; i < nnz; ++i)
     {
@@ -7145,7 +7141,10 @@ void host_csr_to_csc(J                    M,
         csc_col_ptr[i] = csc_col_ptr[i - 1] + base;
     }
 
-    csc_col_ptr[0] = base;
+    if(csc_col_ptr.size() > 0)
+    {
+        csc_col_ptr[0] = base;
+    }
 }
 
 template <typename T>

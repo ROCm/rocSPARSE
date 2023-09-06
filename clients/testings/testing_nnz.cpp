@@ -51,6 +51,12 @@ void testing_nnz_bad_arg(const Arguments& arg)
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_nnz<T>(PARAMS), rocsparse_status_requires_sorted_storage);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
+
+    // ld < m
+    m  = 4;
+    ld = 2;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz<T>(PARAMS), rocsparse_status_invalid_size);
 #undef PARAMS
 }
 
@@ -65,60 +71,8 @@ void testing_nnz(const Arguments& arg)
     rocsparse_local_handle    handle(arg);
     rocsparse_local_mat_descr descrA;
 
-    //
-    // Argument sanity check before allocating invalid memory
-    //
-    if(M <= 0 || N <= 0 || LD < M)
+    if(LD < M)
     {
-        rocsparse_status expected_status = (((M == 0 && N >= 0) || (M >= 0 && N == 0)) && (LD >= M))
-                                               ? rocsparse_status_success
-                                               : rocsparse_status_invalid_size;
-
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_nnz<T>(handle, dirA, M, N, descrA, nullptr, LD, nullptr, nullptr),
-            expected_status);
-
-        if(rocsparse_status_success == expected_status)
-        {
-            rocsparse_int h_nnz = 77;
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_nnz<T>(handle, dirA, M, N, descrA, nullptr, LD, nullptr, nullptr),
-                rocsparse_status_success);
-
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_nnz<T>(handle, dirA, M, N, descrA, nullptr, LD, nullptr, &h_nnz),
-                rocsparse_status_success);
-
-            EXPECT_ROCSPARSE_STATUS(0 == h_nnz ? rocsparse_status_success
-                                               : rocsparse_status_internal_error,
-                                    rocsparse_status_success);
-
-            h_nnz = 139;
-            device_vector<rocsparse_int> d_nnz(1);
-            CHECK_HIP_ERROR(hipMemcpy(
-                (rocsparse_int*)d_nnz, &h_nnz, sizeof(rocsparse_int) * 1, hipMemcpyHostToDevice));
-
-            CHECK_ROCSPARSE_ERROR(
-                rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_nnz<T>(handle, dirA, M, N, descrA, nullptr, LD, nullptr, nullptr),
-                rocsparse_status_success);
-
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_nnz<T>(
-                    handle, dirA, M, N, descrA, nullptr, LD, nullptr, (rocsparse_int*)d_nnz),
-                rocsparse_status_success);
-
-            CHECK_HIP_ERROR(hipMemcpy(
-                &h_nnz, (rocsparse_int*)d_nnz, sizeof(rocsparse_int) * 1, hipMemcpyDeviceToHost));
-
-            EXPECT_ROCSPARSE_STATUS(0 == h_nnz ? rocsparse_status_success
-                                               : rocsparse_status_internal_error,
-                                    rocsparse_status_success);
-        }
-
         return;
     }
 
@@ -137,11 +91,6 @@ void testing_nnz(const Arguments& arg)
     device_vector<T>             d_A(LD * N);
     device_vector<rocsparse_int> d_nnzPerRowColumn(MN);
     device_vector<rocsparse_int> d_nnzTotalDevHostPtr(1);
-    if(!h_nnzPerRowColumn || !d_nnzPerRowColumn || !d_A)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     //
     // Initialize a random matrix.

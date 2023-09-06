@@ -35,7 +35,6 @@ Tests:
   category: quick
   function: inverse_permutation
   precision: *single_precision
-  M: 1
   N: [33, 242, 623, 1000]
   baseA: [rocsparse_index_base_zero,rocsparse_index_base_one]
 
@@ -43,7 +42,6 @@ Tests:
   category: pre_checkin
   function: inverse_permutation
   precision: *single_precision
-  M: 1
   N: [0, 1543, 7111, 10000]
   baseA: [rocsparse_index_base_zero,rocsparse_index_base_one]
 
@@ -51,7 +49,6 @@ Tests:
   category: pre_checkin
   function: inverse_permutation
   precision: *single_precision
-  M: 1
   N: [0, 1543, 7111, 10000]
   baseA: [rocsparse_index_base_zero,rocsparse_index_base_one]
   graph_test: true
@@ -60,6 +57,5 @@ Tests:
   category: nightly
   function: inverse_permutation
   precision: *single_precision
-  M: 1
   N: [23512, 184412, 711983, 3452387, 9482640]
   baseA: [rocsparse_index_base_zero,rocsparse_index_base_one]

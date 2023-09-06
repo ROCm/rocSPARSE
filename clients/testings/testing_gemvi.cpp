@@ -112,41 +112,6 @@ void testing_gemvi(const Arguments& arg)
     rocsparse_int nnz = N * 0.33;
     rocsparse_int lda = (trans == rocsparse_operation_none) ? M : N;
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N < 0)
-    {
-        device_vector<T> dy(std::max(100, M));
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        size_t buffer_size;
-        CHECK_ROCSPARSE_ERROR(
-            rocsparse_gemvi_buffer_size<T>(handle, trans, M, N, nnz, &buffer_size));
-
-        void* buffer;
-        CHECK_HIP_ERROR(rocsparse_hipMalloc(&buffer, buffer_size));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gemvi<T>(handle,
-                                                   trans,
-                                                   M,
-                                                   N,
-                                                   &h_alpha,
-                                                   nullptr,
-                                                   lda,
-                                                   nnz,
-                                                   nullptr,
-                                                   nullptr,
-                                                   &h_beta,
-                                                   dy,
-                                                   base,
-                                                   buffer),
-                                (M < 0 || N < 0) ? rocsparse_status_invalid_size
-                                                 : rocsparse_status_success);
-
-        CHECK_HIP_ERROR(rocsparse_hipFree(buffer));
-
-        return;
-    }
-
     // Allocate host memory
     host_vector<T>             hA(M * N);
     host_vector<T>             hx_val(nnz);
@@ -157,7 +122,7 @@ void testing_gemvi(const Arguments& arg)
 
     // Initialize data on CPU
     rocsparse_seedrand();
-    rocsparse_init_index(hx_ind, nnz, 1, std::max(N, ((rocsparse_int)1)));
+    rocsparse_init_index(hx_ind, nnz, base, N + base);
     rocsparse_init<T>(hx_val, 1, nnz, 1);
     rocsparse_init<T>(hy_1, 1, M, 1);
     rocsparse_init<T>(hA, M, N, lda, 1);

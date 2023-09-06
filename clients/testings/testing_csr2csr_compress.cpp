@@ -46,8 +46,8 @@ void testing_csr2csr_compress_bad_arg(const Arguments& arg)
     hnnz_per_row[0] = 1;
     device_dense_vector<rocsparse_int> dnnz_per_row(hnnz_per_row);
 
-    rocsparse_int  nnz_per_row_value = safe_size;
-    rocsparse_int* nnz_per_row       = (rocsparse_int*)dnnz_per_row;
+    //rocsparse_int  nnz_per_row_value = safe_size;
+    rocsparse_int* nnz_per_row = (rocsparse_int*)dnnz_per_row;
 
     host_dense_vector<rocsparse_int> hptr(safe_size + 1);
     hptr[0] = 0;

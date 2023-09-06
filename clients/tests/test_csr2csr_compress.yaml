@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ include: known_bugs.yaml
 
 Definitions:
   - &tol_range_quick
-    - { alpha:  -1.0,   alphai:  0.0}
+    - { alpha:   1.0,   alphai:  0.0}
     - { alpha:   0.002, alphai:  0.0}
     - { alpha:   0.5,   alphai:  0.0}
     - { alpha:   1.0,   alphai:  0.0}
@@ -66,8 +66,8 @@ Tests:
   category: quick
   function: csr2csr_compress
   precision: *single_double_precisions_complex_real
-  M: [-1, 0, 1, 8, 10, 872]
-  N: [-1, 0, 1, 8, 33, 623]
+  M: [0, 1, 8, 10, 872]
+  N: [0, 1, 8, 33, 623]
   alpha_alphai: *tol_range_quick
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
@@ -76,8 +76,8 @@ Tests:
   category: pre_checkin
   function: csr2csr_compress
   precision: *single_double_precisions_complex_real
-  M: [-1, 0, 500, 1000]
-  N: [-3, 0, 242, 1000]
+  M: [0, 500, 1000]
+  N: [0, 242, 1000]
   alpha_alphai: *tol_range_checkin
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
