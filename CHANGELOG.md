@@ -2,7 +2,7 @@
 
 Full documentation for rocSPARSE is available at [rocm.docs.amd.com](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
-## rocSPARSE 3.0.1
+## rocSPARSE 3.0.2
 ### Added
 - Added rocsparse_inverse_permutation
 - Added mixed precisions for SpVV
@@ -13,12 +13,15 @@ Full documentation for rocSPARSE is available at [rocm.docs.amd.com](https://roc
 - Removed old deprecated rocsparse_xbsrmv routines, deprecated current rocsparse_xbsrmv_ex routines, and added new rocsparse_xbsrmv routines
 - Removed old deprecated rocsparse_spmm_ex routine
 - doti, dotci, spvv, and csr2ell now require calling hipStreamSynchronize after when using host pointer mode
+- Leading dimensions and stride are now int64_t type
 ### Improved
 - Optimization to doti routine
 - Fixed a bug in rocsparse-bench, where SpMV algorithm was not taken into account in CSR format
 - Fixed the BSR/GEBSR routines bsrmv, bsrsv, bsrmm, bsrgeam, gebsrmv, gebsrmm so that block_dim==0 is considered an invalid size
 - Fixed bug where passing nnz = 0 to doti or dotci did not always return a dot product of 0
 - Improved spin-looping algorithms
+- Improved documentation
+- Improved verbose output during argument checking on API function calls
 ### Known Issues
 
 ## rocSPARSE 2.5.4 for ROCm 5.7.0
