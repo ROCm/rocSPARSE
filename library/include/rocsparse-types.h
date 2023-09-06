@@ -425,7 +425,7 @@ typedef enum rocsparse_status_
     rocsparse_status_thrown_exception        = 13, /**< exception being thrown. */
     rocsparse_status_continue                = 14, /**< Nothing preventing function to proceed */
 
-    rocsparse_status_singular_pivot = 15 /**< encountered negative pivot. */
+    rocsparse_status_singular_pivot = 15 /**< encountered singular pivot. */
 
 } rocsparse_status;
 
