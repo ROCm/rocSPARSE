@@ -2,7 +2,7 @@
 
 Full documentation for rocSPARSE is available at [rocm.docs.amd.com](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
-## rocSPARSE 3.0.2
+## rocSPARSE 3.0.2 for ROCm 6.0.0
 ### Added
 - Added rocsparse_inverse_permutation
 - Added mixed precisions for SpVV
