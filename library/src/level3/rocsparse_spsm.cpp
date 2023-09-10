@@ -68,7 +68,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 matA->info,
                 rocsparse_solve_policy_auto,
                 buffer_size));
-
+            buffer_size[0] = std::max(buffer_size[0], sizeof(int32_t));
             return rocsparse_status_success;
         }
 
@@ -92,6 +92,7 @@ rocsparse_status rocsparse_spsm_template(rocsparse_handle            handle,
                 rocsparse_solve_policy_auto,
                 buffer_size));
 
+            buffer_size[0] = std::max(buffer_size[0], sizeof(int32_t));
             return rocsparse_status_success;
         }
 
@@ -387,6 +388,25 @@ try
 
     ROCSPARSE_CHECKARG_ENUM(8, alg);
     ROCSPARSE_CHECKARG_ENUM(9, stage);
+
+    switch(stage)
+    {
+    case rocsparse_spsm_stage_buffer_size:
+    {
+        ROCSPARSE_CHECKARG_POINTER(10, buffer_size);
+        break;
+    }
+    case rocsparse_spsm_stage_preprocess:
+    {
+        ROCSPARSE_CHECKARG_POINTER(11, temp_buffer);
+        break;
+    }
+    case rocsparse_spsm_stage_compute:
+    {
+        ROCSPARSE_CHECKARG_POINTER(11, temp_buffer);
+        break;
+    }
+    }
 
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_spsm_dynamic_dispatch(matA->row_type,
                                                               matA->col_type,
