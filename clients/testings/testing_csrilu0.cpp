@@ -668,7 +668,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         rocsparse_index_base base = arg.baseA;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
-        double tol = 0.001;
+        double const tol = 0.001;
         CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_set_tolerance(handle, info, tol));
 
         int const M = 4;
@@ -681,7 +681,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
 
         host_vector<rocsparse_int> hcsr_row_ptr{base, base + 2, base + 4, base + 5, base + 6};
         host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base, base + 1, base + 2, base + 3};
-        host_vector<T>             hcsr_val{1, -1, -1, 1.0001, 1, 1};
+        host_vector<T>             hcsr_val{1, -1, -1, 1 + tol/10.0, 1, 1};
 
         bool const need_display = false;
         test_csrilu0_matrix(
