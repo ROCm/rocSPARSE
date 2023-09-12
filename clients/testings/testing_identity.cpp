@@ -30,9 +30,9 @@ void testing_identity_bad_arg(const Arguments& arg)
     rocsparse_local_handle local_handle;
     rocsparse_handle       handle = local_handle;
     rocsparse_int          n      = 100;
-    rocsparse_int*         dp     = (rocsparse_int*)0x4;
+    rocsparse_int*         p      = (rocsparse_int*)0x4;
 
-    bad_arg_analysis(rocsparse_create_identity_permutation, handle, n, dp);
+    bad_arg_analysis(rocsparse_create_identity_permutation, handle, n, p);
 }
 
 template <typename T>
