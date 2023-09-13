@@ -51,9 +51,6 @@ void testing_spsm_coo_bad_arg(const Arguments& arg)
     rocsparse_local_dnmat local_B(m, k, m, (void*)0x4, compute_type, rocsparse_order_column);
     rocsparse_local_dnmat local_C(m, k, m, (void*)0x4, compute_type, rocsparse_order_column);
 
-    int       nargs_to_exclude   = 2;
-    const int args_to_exclude[2] = {10, 11};
-
     rocsparse_handle      handle = local_handle;
     rocsparse_spmat_descr matA   = local_A;
     rocsparse_dnmat_descr matB   = local_B;
@@ -76,18 +73,24 @@ void testing_spsm_coo_bad_arg(const Arguments& arg)
         temp_buffer
 
     {
+        static constexpr int       nargs_to_exclude                  = 1;
+        const int                  args_to_exclude[nargs_to_exclude] = {11};
         const rocsparse_spsm_stage stage = rocsparse_spsm_stage_buffer_size;
         select_bad_arg_analysis(
             rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_BUFFER_SIZE);
     }
 
     {
+        static constexpr int       nargs_to_exclude                  = 2;
+        const int                  args_to_exclude[nargs_to_exclude] = {10, 11};
         const rocsparse_spsm_stage stage = rocsparse_spsm_stage_preprocess;
         select_bad_arg_analysis(rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_ANALYSIS);
     }
 
     {
-        const rocsparse_spsm_stage stage = rocsparse_spsm_stage_compute;
+        static constexpr int       nargs_to_exclude                  = 2;
+        const int                  args_to_exclude[nargs_to_exclude] = {10, 11};
+        const rocsparse_spsm_stage stage                             = rocsparse_spsm_stage_compute;
         select_bad_arg_analysis(rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_SOLVE);
     }
 
