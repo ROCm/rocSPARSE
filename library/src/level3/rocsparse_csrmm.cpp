@@ -203,7 +203,6 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
         case rocsparse_operation_transpose:
         case rocsparse_operation_conjugate_transpose:
         {
-            std::cout << "allo1 " << std::endl;
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse_csrmm_template_general<T>(handle,
                                                     trans_A,
