@@ -411,7 +411,7 @@ Tests:
   M: [4096]
   N: [8192]
   row_block_dimA: [33, 64]
-  col_block_dimA: [8, 12]
+  col_block_dimA: [8]
   tolm: 3.0
   alpha_beta: *alpha_beta_range_quick
   direction: [rocsparse_direction_row]

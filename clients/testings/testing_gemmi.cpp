@@ -107,7 +107,6 @@ void testing_gemmi(const Arguments& arg)
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0 || K < 0)
     {
-        std::cout << "M,N,K, " << M << " " << N << " " << K << std::endl;
         static const size_t safe_size = 100;
         EXPECT_ROCSPARSE_STATUS(rocsparse_gemmi<T>(handle,
                                                    transA,
