@@ -1,0 +1,6 @@
+root: index
+subtrees:
+  - numbered: False
+    entries:
+    - file: design
+    - file: usermanual

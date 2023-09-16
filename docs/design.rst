@@ -1,12 +1,8 @@
-.. _design_document:
+.. _design:
 
 ********************
 Design Documentation
 ********************
-
-.. toctree::
-   :maxdepth: 3
-   :caption: Contents:
 
 Design and Philosophy
 =====================
@@ -29,12 +25,6 @@ For this purpose, routines that require a temporary storage buffer offer a speci
 
 Contributing
 ============
-
-Contribution License Agreement
-------------------------------
-
-#. The code I am contributing is mine, and I have the right to license it.
-#. By submitting a pull request for this project I am granting you a license to distribute said code under the MIT License for the project.
 
 How to contribute
 -----------------
@@ -100,7 +90,7 @@ File                        Description
 `rocsparse.h`               Includes all other API related rocSPARSE header files.
 `rocsparse-auxiliary.h`     Declares all rocSPARSE auxiliary functions, such as handle and descriptor management.
 `rocsparse-complex-types.h` Defines the rocSPARSE complex data types `rocsparse_float_complex` and `rocsparse_double_complex`.
-`rocsparse-functions.h`     Declares all rocSPARSE Sparse Linear Algebra Subroutines of Level1, 2, 3, Extra, Preconditioner and Format Conversion.
+`rocsparse-functions.h`     Declares all rocSPARSE Sparse Linear Algebra Subroutines of Level1, 2, 3, Extra, Preconditioner, Format Conversion, Reordering, and Utility.
 `rocsparse-types.h`         Defines all data types used by rocSPARSE.
 `rocsparse-version.h.in`    Provides the configured version and settings that is initially set by CMake during compilation.
 =========================== ===========
@@ -390,17 +380,17 @@ The following table lists subroutines that can in some cases share meta data:
 Subroutine                         Sharing meta data with
 ================================== ====
 :cpp:func:`rocsparse_scsrsv_solve` :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_scsrilu0`
-:cpp:func:`rocsparse_dcsrsv_solve` :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_dcsrilu0`
-:cpp:func:`rocsparse_ccsrsv_solve` :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_ccsrilu0`
-:cpp:func:`rocsparse_zcsrsv_solve` :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_zcsrilu0`
+:cpp:func:`rocsparse_dcsrsv_solve` :cpp:func:`rocsparse_dcsric0`, :cpp:func:`rocsparse_dcsrilu0`
+:cpp:func:`rocsparse_ccsrsv_solve` :cpp:func:`rocsparse_ccsric0`, :cpp:func:`rocsparse_ccsrilu0`
+:cpp:func:`rocsparse_zcsrsv_solve` :cpp:func:`rocsparse_zcsric0`, :cpp:func:`rocsparse_zcsrilu0`
 :cpp:func:`rocsparse_scsric0`      :cpp:func:`rocsparse_scsrilu0`, :cpp:func:`rocsparse_scsrsv_solve`
-:cpp:func:`rocsparse_dcsric0`      :cpp:func:`rocsparse_scsrilu0`, :cpp:func:`rocsparse_dcsrsv_solve`
-:cpp:func:`rocsparse_ccsric0`      :cpp:func:`rocsparse_scsrilu0`, :cpp:func:`rocsparse_ccsrsv_solve`
-:cpp:func:`rocsparse_zcsric0`      :cpp:func:`rocsparse_scsrilu0`, :cpp:func:`rocsparse_zcsrsv_solve`
+:cpp:func:`rocsparse_dcsric0`      :cpp:func:`rocsparse_dcsrilu0`, :cpp:func:`rocsparse_dcsrsv_solve`
+:cpp:func:`rocsparse_ccsric0`      :cpp:func:`rocsparse_ccsrilu0`, :cpp:func:`rocsparse_ccsrsv_solve`
+:cpp:func:`rocsparse_zcsric0`      :cpp:func:`rocsparse_zcsrilu0`, :cpp:func:`rocsparse_zcsrsv_solve`
 :cpp:func:`rocsparse_scsrilu0`     :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_scsrsv_solve`
-:cpp:func:`rocsparse_dcsrilu0`     :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_dcsrsv_solve`
-:cpp:func:`rocsparse_ccsrilu0`     :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_ccsrsv_solve`
-:cpp:func:`rocsparse_zcsrilu0`     :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_zcsrsv_solve`
+:cpp:func:`rocsparse_dcsrilu0`     :cpp:func:`rocsparse_dcsric0`, :cpp:func:`rocsparse_dcsrsv_solve`
+:cpp:func:`rocsparse_ccsrilu0`     :cpp:func:`rocsparse_ccsric0`, :cpp:func:`rocsparse_ccsrsv_solve`
+:cpp:func:`rocsparse_zcsrilu0`     :cpp:func:`rocsparse_zcsric0`, :cpp:func:`rocsparse_zcsrsv_solve`
 ================================== ====
 
 .. note:: It is important to note, that on rocSPARSE extensions, this functionality can be further expanded to improve meta data collection performance significantly.
