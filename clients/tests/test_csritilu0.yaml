@@ -102,10 +102,56 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion,
-       rocsparse_itilu0_alg_async_split,
+  itilu0_alg: [rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   filename: [Chevron2]
+
+#####################
+
+- name: csritilu0_file
+  category: quick
+  function: csritilu0
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
+  filename: [Chevron2]
+  skip_hardware: gfx942
+
+
+- name: csritilu0_file
+  category: quick
+  function: csritilu0
+  precision: *single_only_precisions_complex
+  M: 1
+  N: 1
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
+  filename: [Chevron2]
+  hardware: gfx942
+  numericboost: [1]
+  boosttol: [1.0e-8]
+
+- name: csritilu0_file
+  category: quick
+  function: csritilu0
+  precision: *double_only_precisions_complex
+  M: 1
+  N: 1
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
+  filename: [Chevron2]
+  hardware: gfx942
+  numericboost: [1]
+  boosttol: [1.0e-16]
+
 
 - name: csritilu0_file
   category: quick
@@ -171,6 +217,9 @@ Tests:
        rocsparse_itilu0_alg_async_split,
        rocsparse_itilu0_alg_async_inplace]
   matrix: [rocsparse_matrix_random]
+
+
+
 
 - name: csritilu0
   category: nightly
@@ -391,4 +440,30 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
   matrix: [rocsparse_matrix_random]
+  skip_hardware: gfx942
 
+- name: csritilu0
+  category: nightly
+  function: csritilu0
+  precision: *single_only_precisions_complex_real
+  M_N: *M_N_range_nightly
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
+  matrix: [rocsparse_matrix_random]
+  hardware: gfx942
+  numericboost: [1]
+  boosttol: [1.0e-8]
+
+- name: csritilu0
+  category: nightly
+  function: csritilu0
+  precision: *double_only_precisions_complex_real
+  M_N: *M_N_range_nightly
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  itilu0_alg: [rocsparse_itilu0_alg_sync_split_fusion]
+  matrix: [rocsparse_matrix_random]
+  hardware: gfx942
+  numericboost: [1]
+  boosttol: [1.0e-16]

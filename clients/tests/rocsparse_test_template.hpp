@@ -132,6 +132,18 @@ namespace
                     }
                 }
 
+                if(strncmp("gfx", arg.skip_hardware, 3) == 0)
+                {
+                    if(strncmp(arg.skip_hardware, prop.gcnArchName, strlen(arg.skip_hardware)) == 0)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+
                 return true;
             }
 
