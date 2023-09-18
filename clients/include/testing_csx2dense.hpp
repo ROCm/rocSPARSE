@@ -98,7 +98,7 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
     rocsparse_int             N      = arg.N;
     rocsparse_int             LD     = arg.denseld;
     rocsparse_int             DIMDIR = (rocsparse_direction_row == DIRA) ? M : N;
-    rocsparse_local_handle    handle;
+    rocsparse_local_handle    handle(arg);
     rocsparse_local_mat_descr descr;
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, arg.baseA));
 
@@ -258,7 +258,7 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
                                         M,
                                         N,
                                         descr,
-                                        d_csx_val,
+                                        (T*)d_csx_val,
                                         d_csx_row_col_ptr,
                                         d_csx_col_row_ind,
                                         (T*)d_dense_val,

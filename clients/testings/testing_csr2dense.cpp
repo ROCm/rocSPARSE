@@ -35,7 +35,17 @@ template <typename T>
 void testing_csr2dense(const Arguments& arg)
 {
     testing_csx2dense<rocsparse_direction_row, T>(
-        arg, rocsparse_csr2dense<T>, rocsparse_dense2csr<T>);
+        arg,
+        (testing::rocsparse_csr2dense<T,
+                                      rocsparse_int&,
+                                      rocsparse_int&,
+                                      rocsparse_mat_descr&,
+                                      const T*,
+                                      rocsparse_int*,
+                                      rocsparse_int*,
+                                      T*,
+                                      rocsparse_int&>),
+        rocsparse_dense2csr<T>);
 }
 
 #define INSTANTIATE(TYPE)                                                \
