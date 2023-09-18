@@ -122,10 +122,6 @@ void testing_spitsv_csr(const Arguments& arg)
     rocsparse_diag_type  diag    = arg.diag;
     rocsparse_fill_mode  uplo    = arg.uplo;
 
-    rocsparse_spitsv_stage buffersize = rocsparse_spitsv_stage_buffer_size;
-    rocsparse_spitsv_stage preprocess = rocsparse_spitsv_stage_preprocess;
-    rocsparse_spitsv_stage compute    = rocsparse_spitsv_stage_compute;
-
     T halpha = arg.get_alpha<T>();
 
     // Index and data type
@@ -135,114 +131,6 @@ void testing_spitsv_csr(const Arguments& arg)
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
-
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0)
-    {
-        // M == 0 means nnz can only be 0, too
-
-        static const I safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<I> dcsr_row_ptr(safe_size);
-        device_vector<J> dcsr_col_ind(safe_size);
-        device_vector<T> dcsr_val(safe_size);
-        device_vector<T> dx(safe_size);
-        device_vector<T> dy(safe_size);
-
-        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dx || !dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        // Check Spitsv when structures can be created
-        if(M == 0 && M == N)
-        {
-            // Pointer mode
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-            // Check structures
-            I                     nnz_A = 0;
-            rocsparse_local_spmat A(M,
-                                    N,
-                                    nnz_A,
-                                    dcsr_row_ptr,
-                                    dcsr_col_ind,
-                                    dcsr_val,
-                                    itype,
-                                    jtype,
-                                    base,
-                                    ttype,
-                                    rocsparse_format_csr);
-
-            rocsparse_local_dnvec x(M, dx, ttype);
-            rocsparse_local_dnvec y(M, dy, ttype);
-
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_spmat_set_attribute(A, rocsparse_spmat_fill_mode, &uplo, sizeof(uplo)),
-                rocsparse_status_success);
-
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_spmat_set_attribute(A, rocsparse_spmat_diag_type, &diag, sizeof(diag)),
-                rocsparse_status_success);
-
-            size_t buffer_size;
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spitsv(handle,
-                                                     host_nmaxiter,
-                                                     host_tol,
-                                                     host_history,
-                                                     trans_A,
-                                                     &halpha,
-                                                     A,
-                                                     x,
-                                                     y,
-                                                     ttype,
-                                                     alg,
-                                                     buffersize,
-                                                     &buffer_size,
-                                                     nullptr),
-                                    rocsparse_status_success);
-
-            void* dbuffer;
-            CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, safe_size));
-
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spitsv(handle,
-                                                     host_nmaxiter,
-                                                     host_tol,
-                                                     host_history,
-                                                     trans_A,
-                                                     &halpha,
-                                                     A,
-                                                     x,
-                                                     y,
-                                                     ttype,
-                                                     alg,
-                                                     preprocess,
-                                                     nullptr,
-                                                     dbuffer),
-                                    rocsparse_status_success);
-
-            EXPECT_ROCSPARSE_STATUS(rocsparse_spitsv(handle,
-                                                     host_nmaxiter,
-                                                     host_tol,
-                                                     host_history,
-                                                     trans_A,
-                                                     &halpha,
-                                                     A,
-                                                     x,
-                                                     y,
-                                                     ttype,
-                                                     alg,
-                                                     compute,
-                                                     &buffer_size,
-                                                     dbuffer),
-                                    rocsparse_status_success);
-            CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
-        }
-
-        return;
-    }
 
     rocsparse_matrix_factory<T, I, J> matrix_factory(arg, false, true);
 
@@ -291,12 +179,6 @@ void testing_spitsv_csr(const Arguments& arg)
     device_vector<T> dy_1(M);
     device_vector<T> dy_2(M);
     device_vector<T> dalpha(1);
-
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dx || !dy_1 || !dy_2 || !dalpha)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(
@@ -482,7 +364,7 @@ void testing_spitsv_csr(const Arguments& arg)
                                                    y1,
                                                    ttype,
                                                    alg,
-                                                   compute,
+                                                   rocsparse_spitsv_stage_compute,
                                                    &buffer_size,
                                                    dbuffer));
         }
@@ -506,7 +388,7 @@ void testing_spitsv_csr(const Arguments& arg)
                                                    y1,
                                                    ttype,
                                                    alg,
-                                                   compute,
+                                                   rocsparse_spitsv_stage_compute,
                                                    &buffer_size,
                                                    dbuffer));
             gpu_time_used_iter = (get_time_us() - gpu_time_used_iter);

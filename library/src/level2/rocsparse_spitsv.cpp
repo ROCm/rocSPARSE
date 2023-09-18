@@ -247,10 +247,9 @@ try
     ROCSPARSE_CHECKARG_ENUM(10, alg);
     ROCSPARSE_CHECKARG_ENUM(11, stage);
 
-    // Check for valid buffer_size pointer only if temp_buffer is nullptr
-    if(temp_buffer == nullptr)
+    if(stage == rocsparse_spitsv_stage_buffer_size)
     {
-        ROCSPARSE_CHECKARG_POINTER(13, buffer_size);
+        ROCSPARSE_CHECKARG_POINTER(12, buffer_size);
     }
 
     // Check if descriptors are initialized
