@@ -72,6 +72,7 @@ void testing_gemmi_bad_arg(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_symmetric));
     EXPECT_ROCSPARSE_STATUS(rocsparse_gemmi<T>(PARAMS), rocsparse_status_not_implemented);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
+#undef PARAMS
 }
 
 template <typename T>
@@ -104,36 +105,6 @@ void testing_gemmi(const Arguments& arg)
     // Set matrix storage mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, storage));
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || K < 0)
-    {
-        static const size_t safe_size = 100;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gemmi<T>(handle,
-                                                   transA,
-                                                   transB,
-                                                   M,
-                                                   N,
-                                                   K,
-                                                   safe_size,
-                                                   nullptr,
-                                                   nullptr,
-                                                   safe_size,
-                                                   descr,
-                                                   nullptr,
-                                                   nullptr,
-                                                   nullptr,
-                                                   nullptr,
-                                                   nullptr,
-                                                   safe_size),
-                                (M < 0 || N < 0 || K < 0) ? rocsparse_status_invalid_size
-                                                          : rocsparse_status_success);
-
-        return;
-    }
-
-    //
-    // Sample matrices.
-    //
     host_csr_matrix<T> hB;
     matrix_factory.init_csr(hB,
                             (transB == rocsparse_operation_none) ? K : N,
@@ -146,76 +117,40 @@ void testing_gemmi(const Arguments& arg)
     device_csr_matrix<T>   dB(hB);
     device_dense_matrix<T> dA(hA), dC(hC);
 
-#define GEMMI(_ta, _tb, _a, _da, _db, _b, _dc)                            \
-    rocsparse_gemmi<T>(handle,                                            \
-                       _ta,                                               \
-                       _tb,                                               \
-                       _dc.m,                                             \
-                       _dc.n,                                             \
-                       (_ta == rocsparse_operation_none) ? _da.n : _da.m, \
-                       _db.nnz,                                           \
-                       _a,                                                \
-                       _da,                                               \
-                       _da.ld,                                            \
-                       descr,                                             \
-                       _db.val,                                           \
-                       _db.ptr,                                           \
-                       _db.ind,                                           \
-                       _b,                                                \
-                       _dc,                                               \
-                       _dc.ld)
+#define PARAMS(_ta, _tb, _a, _da, _db, _b, _dc)                                                 \
+    handle, _ta, _tb, _dc.m, _dc.n, (_ta == rocsparse_operation_none) ? _da.n : _da.m, _db.nnz, \
+        _a, _da, _da.ld, descr, _db.val, _db.ptr, _db.ind, _b, _dc, _dc.ld
 
-#define TESTING_GEMMI(_ta, _tb, _a, _da, _db, _b, _dc)                             \
-    testing::rocsparse_gemmi<T>(handle,                                            \
-                                _ta,                                               \
-                                _tb,                                               \
-                                _dc.m,                                             \
-                                _dc.n,                                             \
-                                (_ta == rocsparse_operation_none) ? _da.n : _da.m, \
-                                _db.nnz,                                           \
-                                _a,                                                \
-                                _da,                                               \
-                                _da.ld,                                            \
-                                descr,                                             \
-                                _db.val,                                           \
-                                _db.ptr,                                           \
-                                _db.ind,                                           \
-                                _b,                                                \
-                                _dc,                                               \
-                                _dc.ld)
-
-    //
-    // Compute host reference.
-    //
     if(arg.unit_check)
     {
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(TESTING_GEMMI(transA, transB, h_alpha, dA, dB, h_beta, dC));
+        CHECK_ROCSPARSE_ERROR(
+            testing::rocsparse_gemmi<T>(PARAMS(transA, transB, h_alpha, dA, dB, h_beta, dC)));
 
-        {
-            host_dense_matrix<T> hC_copy(hC);
-            host_gemmi<T>(M,
-                          N,
-                          transA,
-                          transB,
-                          *h_alpha,
-                          hA,
-                          hA.ld,
-                          hB.ptr,
-                          hB.ind,
-                          hB.val,
-                          *h_beta,
-                          hC,
-                          hC.ld,
-                          base);
-            hC.unit_check(dC);
-            dC = hC_copy;
-        }
+        host_dense_matrix<T> hC_copy(hC);
+        host_gemmi<T>(M,
+                      N,
+                      transA,
+                      transB,
+                      *h_alpha,
+                      hA,
+                      hA.ld,
+                      hB.ptr,
+                      hB.ind,
+                      hB.val,
+                      *h_beta,
+                      hC,
+                      hC.ld,
+                      base);
+
+        hC.unit_check(dC);
+        dC = hC_copy;
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(TESTING_GEMMI(transA, transB, d_alpha, dA, dB, d_beta, dC));
+        CHECK_ROCSPARSE_ERROR(
+            testing::rocsparse_gemmi<T>(PARAMS(transA, transB, d_alpha, dA, dB, d_beta, dC)));
         hC.unit_check(dC);
     }
 
@@ -233,7 +168,8 @@ void testing_gemmi(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, h_alpha, dA, dB, h_beta, dC));
+            CHECK_ROCSPARSE_ERROR(
+                testing::rocsparse_gemmi<T>(PARAMS(transA, transB, h_alpha, dA, dB, h_beta, dC)));
         }
 
         double gpu_time_used = get_time_us();
@@ -241,7 +177,8 @@ void testing_gemmi(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, h_alpha, dA, dB, h_beta, dC));
+            CHECK_ROCSPARSE_ERROR(
+                testing::rocsparse_gemmi<T>(PARAMS(transA, transB, h_alpha, dA, dB, h_beta, dC)));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
@@ -287,6 +224,7 @@ void testing_gemmi(const Arguments& arg)
                             display_key_t::time_ms,
                             get_gpu_time_msec(gpu_time_used));
     }
+#undef PARAMS
 }
 
 #define INSTANTIATE(TYPE)                                            \
