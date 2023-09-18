@@ -55,7 +55,7 @@
         rocsparse_status status;                                                 \
         BEGIN_GRAPH_CAPTURE();                                                   \
                                                                                  \
-        status = ::rocsparse_##NAME_(handle, p...);                              \
+        status = ::rocsparse_##NAME_(handle, std::forward<P>(p)...);             \
                                                                                  \
         END_GRAPH_CAPTURE();                                                     \
                                                                                  \
@@ -69,7 +69,7 @@
         rocsparse_status status;                                                 \
         BEGIN_GRAPH_CAPTURE();                                                   \
                                                                                  \
-        status = ::rocsparse_##NAME_<T>(handle, p...);                           \
+        status = ::rocsparse_##NAME_<T>(handle, std::forward<P>(p)...);          \
                                                                                  \
         END_GRAPH_CAPTURE();                                                     \
                                                                                  \

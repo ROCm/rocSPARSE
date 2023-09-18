@@ -25,6 +25,7 @@
 
 #include "utility.h"
 
+#include "common.h"
 #include "definitions.h"
 #include "rocsparse_csx2dense.hpp"
 #include <rocprim/rocprim.hpp>
@@ -165,14 +166,27 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle, //0
         return rocsparse_status_success;
     }
 
-    const J mn = order == rocsparse_order_column ? m : n;
-    const J nm = order == rocsparse_order_column ? n : m;
+    // Note: hipMemset2DAsync does not seem to be supported by hipgraph but should be in the future.
+    // Once hipgraph supports hipMemset2DAsync then the kernel memset2d_kernel can be replaced
+    // with the hipMemset2DAsync call below.
+    //
+    // const J mn = order == rocsparse_order_column ? m : n;
+    // const J nm = order == rocsparse_order_column ? n : m;
+    // RETURN_IF_HIP_ERROR(
+    //     hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, handle->stream));
 
-    //
     // Set memory to zero.
-    //
-    RETURN_IF_HIP_ERROR(
-        hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, handle->stream));
+    hipLaunchKernelGGL((memset2d_kernel<512>),
+                       dim3((m * n - 1) / 512 + 1),
+                       dim3(512),
+                       0,
+                       handle->stream,
+                       static_cast<I>(m),
+                       static_cast<I>(n),
+                       static_cast<T>(0),
+                       A,
+                       lda,
+                       order);
 
     //
     // Compute the conversion.
