@@ -123,6 +123,8 @@ const char* rocsparse_get_status_name(rocsparse_status status)
         return "rocsparse_status_arch_mismatch";
     case rocsparse_status_zero_pivot:
         return "rocsparse_status_zero_pivot";
+    case rocsparse_status_singular_pivot:
+        return "rocsparse_status_singular_pivot";
     case rocsparse_status_not_initialized:
         return "rocsparse_status_not_initialized";
     case rocsparse_status_type_mismatch:
@@ -165,6 +167,8 @@ const char* rocsparse_get_status_description(rocsparse_status status)
         return "device arch is not supported";
     case rocsparse_status_zero_pivot:
         return "encountered zero pivot";
+    case rocsparse_status_singular_pivot:
+        return "encountered singular pivot";
     case rocsparse_status_not_initialized:
         return "descriptor has not been initialized";
     case rocsparse_status_type_mismatch:
@@ -1149,6 +1153,38 @@ try
             hipMemcpy(dest->zero_pivot, src->zero_pivot, J_size, hipMemcpyDeviceToDevice));
     }
 
+    if(src->singular_pivot != nullptr)
+    {
+        // singular pivot for csric0
+        size_t J_size = sizeof(uint16_t);
+        switch(index_type_J)
+        {
+        case rocsparse_indextype_u16:
+        {
+            J_size = sizeof(uint16_t);
+            break;
+        }
+        case rocsparse_indextype_i32:
+        {
+            J_size = sizeof(int32_t);
+            break;
+        }
+        case rocsparse_indextype_i64:
+        {
+            J_size = sizeof(int64_t);
+            break;
+        }
+        }
+
+        if(dest->singular_pivot == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->singular_pivot, J_size));
+        }
+
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(dest->singular_pivot, src->singular_pivot, J_size, hipMemcpyDeviceToDevice));
+    }
+
     dest->boost_enable        = src->boost_enable;
     dest->use_double_prec_tol = src->use_double_prec_tol;
     dest->boost_tol           = src->boost_tol;
@@ -1390,6 +1426,16 @@ try
         RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->zero_pivot));
         info->zero_pivot = nullptr;
     }
+
+    // Clear singular pivot
+    if(info->singular_pivot != nullptr)
+    {
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->singular_pivot));
+        info->singular_pivot = nullptr;
+    }
+
+    // Clear singular tolerance
+    info->singular_tol = 0;
 
     // Destruct
     try

@@ -109,6 +109,16 @@ rocsparse_csric0_zero_pivot()
 
 .. doxygenfunction:: rocsparse_csric0_zero_pivot
 
+rocsparse_csric0_singular_pivot()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_csric0_singular_pivot
+
+rocsparse_csric0_set_tolerance()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_csric0_set_tolerance
+
 rocsparse_csric0_buffer_size()
 ------------------------------
 

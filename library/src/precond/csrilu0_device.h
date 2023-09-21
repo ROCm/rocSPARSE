@@ -35,6 +35,10 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
                                               int* __restrict__ done,
                                               const rocsparse_int* __restrict__ map,
                                               rocsparse_int* __restrict__ zero_pivot,
+
+                                              rocsparse_int* __restrict__ singular_pivot,
+                                              double tol,
+
                                               rocsparse_index_base idx_base,
                                               int                  boost,
                                               U                    boost_tol,
@@ -67,14 +71,14 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
     }
 
     // Current row this wavefront is working on
-    rocsparse_int row = map[idx];
+    rocsparse_int const row = map[idx];
 
     // Diagonal entry point of the current row
-    rocsparse_int row_diag = csr_diag_ind[row];
+    rocsparse_int const row_diag = csr_diag_ind[row];
 
     // Row entry point
-    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+    rocsparse_int const row_begin = csr_row_ptr[row] - idx_base;
+    rocsparse_int const row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Fill hash table
     // Loop over columns of current row and fill hash table with row dependencies
@@ -156,6 +160,15 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
         }
         else
         {
+            // Row has numerical singular diagonal
+            if(std::abs(diag_val) <= tol)
+            {
+                if(lid == 0)
+                {
+                    rocsparse_atomic_min(singular_pivot, local_col + idx_base);
+                };
+            };
+
             // Row has numerical zero diagonal
             if(diag_val == static_cast<T>(0))
             {
@@ -207,6 +220,32 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
         }
     }
 
+    // Make sure updated csr_val is written to global memory
+    __threadfence();
+
+    if(lid == 0)
+    {
+        bool const is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
+
+        {
+            bool const is_singular_pivot = is_diag && (std::abs(csr_val[row_diag]) <= tol);
+            if(is_singular_pivot)
+            {
+                rocsparse_atomic_min(singular_pivot, (row + idx_base));
+            };
+        };
+
+        {
+            bool const is_zero_pivot = is_diag && (csr_val[row_diag] == static_cast<T>(0));
+            if(is_zero_pivot)
+            {
+                rocsparse_atomic_min(zero_pivot, (row + idx_base));
+            };
+        };
+    };
+
+    __threadfence();
+
     if(lid == 0)
     {
         // First lane writes "we are done" flag
@@ -223,6 +262,10 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
                                                    int* __restrict__ done,
                                                    const rocsparse_int* __restrict__ map,
                                                    rocsparse_int* __restrict__ zero_pivot,
+
+                                                   rocsparse_int* __restrict__ singular_pivot,
+                                                   double tol,
+
                                                    rocsparse_index_base idx_base,
                                                    int                  boost,
                                                    U                    boost_tol,
@@ -240,14 +283,14 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
     }
 
     // Current row this wavefront is working on
-    rocsparse_int row = map[idx];
+    rocsparse_int const row = map[idx];
 
     // Diagonal entry point of the current row
-    rocsparse_int row_diag = csr_diag_ind[row];
+    rocsparse_int const row_diag = csr_diag_ind[row];
 
     // Row entry point
-    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+    rocsparse_int const row_begin = csr_row_ptr[row] - idx_base;
+    rocsparse_int const row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Loop over column of current row
     for(rocsparse_int j = row_begin; j < row_diag; ++j)
@@ -310,9 +353,21 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
             {
                 csr_val[local_diag] = diag_val;
             }
+
+            __threadfence();
         }
         else
         {
+            // Row has numerical singular diagonal
+            if(std::abs(diag_val) <= tol)
+            {
+                if(lid == 0)
+                {
+                    // We are looking for the first singular pivot
+                    rocsparse_atomic_min(singular_pivot, local_col + idx_base);
+                };
+            };
+
             // Row has numerical zero diagonal
             if(diag_val == static_cast<T>(0))
             {
@@ -365,6 +420,33 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
             }
         }
     }
+
+    // Make sure updated csr_val is written to global memory
+    __threadfence();
+
+    // check for singular_pivot
+    if(lid == 0)
+    {
+        bool const is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
+
+        {
+            bool const is_singular_pivot = (is_diag && (std::abs(csr_val[row_diag]) <= tol));
+            if(is_singular_pivot)
+            {
+                rocsparse_atomic_min(singular_pivot, (row + idx_base));
+            };
+        };
+
+        {
+            bool const is_zero_pivot = (is_diag && (csr_val[row_diag] == static_cast<T>(0)));
+            if(is_zero_pivot)
+            {
+                rocsparse_atomic_min(zero_pivot, (row + idx_base));
+            };
+        };
+    };
+
+    __threadfence();
 
     if(lid == 0)
     {

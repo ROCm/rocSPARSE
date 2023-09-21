@@ -860,7 +860,9 @@ void host_csric0(rocsparse_int                     M,
                  std::vector<T>&                   csr_val,
                  rocsparse_index_base              base,
                  rocsparse_int*                    struct_pivot,
-                 rocsparse_int*                    numeric_pivot);
+                 rocsparse_int*                    numeric_pivot,
+                 rocsparse_int*                    singualr_pivot,
+                 double                            tol);
 
 template <typename T, typename U>
 void host_csrilu0(rocsparse_int                     M,
@@ -870,6 +872,8 @@ void host_csrilu0(rocsparse_int                     M,
                   rocsparse_index_base              base,
                   rocsparse_int*                    struct_pivot,
                   rocsparse_int*                    numeric_pivot,
+                  rocsparse_int*                    singular_pivot,
+                  double                            tol,
                   bool                              boost,
                   U                                 boost_tol,
                   T                                 boost_val);

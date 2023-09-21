@@ -72,6 +72,112 @@ rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   handle,
                                               rocsparse_int*     position);
 
 /*! \ingroup precond_module
+*  \brief Incomplete LU factorization with 0 fill-ins and no pivoting using CSR
+*  storage format
+*
+*  \details
+*  \p rocsparse_csrilu0_set_tolerance returns \ref rocsparse_status_singular_pivot, if a
+*  near numerical zero entry has been found during rocsparse_scsrilu0(),
+*  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
+*  first singular pivot \f$j\f$ at \f$|A_{j,j}| <= tol\f$.
+*
+*
+*  \note \p rocsparse_csrilu0_set_tolerance is a blocking function. It might influence
+*  performance negatively.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  info        structure that holds the information collected during the analysis step.
+*  @param[in]
+*  tolerance    tolerance value to determine singular pivot \f$j\f$, tolerance in host memory.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_pointer \p info. 
+*  \retval     rocsparse_status_internal_error an internal error occurred.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrilu0_set_tolerance(rocsparse_handle   handle,
+                                                 rocsparse_mat_info info,
+                                                 double             tolerance);
+
+/*! \ingroup precond_module
+*  \brief Incomplete LU factorization with 0 fill-ins and no pivoting using CSR
+*  storage format
+*
+*  \details
+*  \p rocsparse_csrilu0_get_tolerance returns \ref rocsparse_status_singular_pivot, if a
+*  near numerical zero entry has been found during rocsparse_scsrilu0(),
+*  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
+*  first singular pivot \f$j\f$ at \f$|A_{j,j}| <= tol\f$. 
+*
+*
+*  \note \p rocsparse_csrilu0_get_tolerance is a blocking function. It might influence
+*  performance negatively.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  info        structure that holds the information collected during the analysis step.
+*  @param[out]
+*  tolerance    obtain tolerance value to determine singular pivot \f$j\f$, tolerance in host memory.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_pointer \p info.
+*  \retval     rocsparse_status_internal_error an internal error occurred.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrilu0_get_tolerance(rocsparse_handle   handle,
+                                                 rocsparse_mat_info info,
+                                                 double*            tolerance);
+/*! \ingroup precond_module
+*  \brief Incomplete LU factorization with 0 fill-ins and no pivoting using CSR
+*  storage format
+*
+*  \details
+*  \p rocsparse_csrilu0_singular_pivot returns \ref rocsparse_status_singular_pivot, if either a
+*  near numerical zero entry has been found during rocsparse_scsrilu0(),
+*  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
+*  first singular pivot \f$j\f$ at \f$|A_{j,j}| <= tol\f$ is stored in \p position, using same index
+*  base as the CSR matrix.
+*
+*  \p position can be in host or device memory. If no singular pivot has been found,
+*  \p position is set to -1 and \ref rocsparse_status_success is returned instead.
+*
+*  \note \p rocsparse_csrilu0_singular_pivot is a blocking function. It might influence
+*  performance negatively.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  info        structure that holds the information collected during the analysis step.
+*  @param[inout]
+*  position    pointer to singular pivot \f$j\f$, can be in host or device memory.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_pointer \p info or \p position pointer is
+*              invalid.
+*  \retval     rocsparse_status_internal_error an internal error occurred.
+*  \retval     rocsparse_status_singular_pivot singular pivot has been found.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrilu0_singular_pivot(rocsparse_handle   handle,
+                                                  rocsparse_mat_info info,
+                                                  rocsparse_int*     position);
+
+/*! \ingroup precond_module
  *  \brief Incomplete LU factorization with 0 fill-ins and no pivoting using CSR storage
  *  format
  *

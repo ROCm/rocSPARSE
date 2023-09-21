@@ -26,6 +26,8 @@
 
 #include "testing_csrilu0.hpp"
 
+static int idebug = 1;
+
 template <typename T>
 static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
                                 rocsparse_local_mat_descr& descr,
@@ -44,9 +46,9 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
     rocsparse_solve_policy const    spol = arg.spol;
     rocsparse_index_base const      base = arg.baseA;
 
-    int const boost       = arg.numericboost;
-    T   const h_boost_val = arg.get_boostval<T>();
-    T   const h_boost_tol = static_cast<T>(arg.boosttol);
+    int boost       = arg.numericboost;
+    T   h_boost_val = arg.get_boostval<T>();
+    T   h_boost_tol = static_cast<T>(arg.boosttol);
 
     // Sample matrix
     rocsparse_int const nnz = hcsr_row_ptr[M] - hcsr_row_ptr[0];
@@ -221,8 +223,21 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
         h_solve_pivot_gold.unit_check(h_solve_pivot_1);
         h_solve_pivot_gold.unit_check(h_solve_pivot_2);
 
-        h_singular_pivot_gold.unit_check(h_singular_pivot_1);
-        h_singular_pivot_gold.unit_check(h_singular_pivot_2);
+        if(idebug >= 1)
+        {
+            printf(" __LINE__=%d", __LINE__);
+            printf(" h_singular_pivot_gold[0] = %d", h_singular_pivot_gold[0]);
+            printf(" h_singular_pivot_1[0] = %d", h_singular_pivot_1[0]);
+            printf(" h_singular_pivot_2[0] = %d", h_singular_pivot_2[0]);
+            printf("\n");
+            fflush(stdout);
+
+            assert(h_singular_pivot_gold[0] == h_singular_pivot_1[0]);
+            assert(h_singular_pivot_gold[0] == h_singular_pivot_2[0]);
+
+            h_singular_pivot_gold.unit_check(h_singular_pivot_1);
+            h_singular_pivot_gold.unit_check(h_singular_pivot_2);
+        };
 
         // Check solution vector if no pivot has been found
         if(h_analysis_pivot_gold[0] == -1 && h_solve_pivot_gold[0] == -1)
@@ -371,7 +386,6 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
     rocsparse_mat_info        info        = local_info;
     rocsparse_analysis_policy analysis    = rocsparse_analysis_policy_force;
     rocsparse_solve_policy    solve       = rocsparse_solve_policy_auto;
-    rocsparse_solve_policy    policy      = rocsparse_solve_policy_auto;
     size_t*                   buffer_size = (size_t*)0x4;
     void*                     temp_buffer = (void*)0x4;
 
@@ -382,11 +396,11 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
     handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size
 #define PARAMS_ANALYSIS \
     handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer
-#define PARAMS handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer
+#define PARAMS handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, solve, temp_buffer
 
-    bad_arg_analysis(rocsparse_csrilu0_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    bad_arg_analysis(rocsparse_csrilu0_analysis<T>, PARAMS_ANALYSIS);
-    bad_arg_analysis(rocsparse_csrilu0<T>, PARAMS);
+    auto_testing_bad_arg(rocsparse_csrilu0_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(rocsparse_csrilu0_analysis<T>, PARAMS_ANALYSIS);
+    auto_testing_bad_arg(rocsparse_csrilu0<T>, PARAMS);
 
     for(auto val : rocsparse_matrix_type_t::values)
     {
@@ -669,7 +683,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         rocsparse_index_base base = arg.baseA;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
-        double const tol = 0.001;
+        double tol = 0.001;
         CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_set_tolerance(handle, info, tol));
 
         int const M = 4;
@@ -682,7 +696,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
 
         host_vector<rocsparse_int> hcsr_row_ptr{base, base + 2, base + 4, base + 5, base + 6};
         host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base, base + 1, base + 2, base + 3};
-        host_vector<T>             hcsr_val{1, -1, -1, static_cast<T>(1 + tol / 10.0), 1, 1};
+        host_vector<T>             hcsr_val{1, -1, -1, 1.0001, 1, 1};
 
         bool const need_display = false;
         test_csrilu0_matrix(

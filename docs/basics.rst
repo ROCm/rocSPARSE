@@ -642,12 +642,18 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xcsric0_buffer_size() <rocsparse_scsric0_buffer_size>`                                           x      x      x              x
 :cpp:func:`rocsparse_Xcsric0_analysis() <rocsparse_scsric0_analysis>`                                                 x      x      x              x
 :cpp:func:`rocsparse_csric0_zero_pivot`
+:cpp:func:`rocsparse_csric0_singular_pivot`
+:cpp:func:`rocsparse_csric0_set_tolerance`
+:cpp:func:`rocsparse_csric0_get_tolerance`
 :cpp:func:`rocsparse_csric0_clear`
 :cpp:func:`rocsparse_Xcsric0() <rocsparse_scsric0>`                                                                   x      x      x              x
 :cpp:func:`rocsparse_Xcsrilu0_buffer_size() <rocsparse_scsrilu0_buffer_size>`                                         x      x      x              x
 :cpp:func:`rocsparse_Xcsrilu0_numeric_boost() <rocsparse_scsrilu0_numeric_boost>`                                     x      x      x              x
 :cpp:func:`rocsparse_Xcsrilu0_analysis() <rocsparse_scsrilu0_analysis>`                                               x      x      x              x
 :cpp:func:`rocsparse_csrilu0_zero_pivot`
+:cpp:func:`rocsparse_csrilu0_singular_pivot`
+:cpp:func:`rocsparse_csrilu0_set_tolerance`
+:cpp:func:`rocsparse_csrilu0_get_tolerance`
 :cpp:func:`rocsparse_csrilu0_clear`
 :cpp:func:`rocsparse_Xcsrilu0() <rocsparse_scsrilu0>`                                                                 x      x      x              x
 :cpp:func:`rocsparse_csritilu0_buffer_size`

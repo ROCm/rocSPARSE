@@ -36,7 +36,9 @@ void csric0_hash_kernel(rocsparse_int m,
                         int* __restrict__ done,
                         const rocsparse_int* __restrict__ map,
                         rocsparse_int* __restrict__ zero_pivot,
-                        rocsparse_index_base idx_base)
+                        rocsparse_int* __restrict__ singular_pivot,
+                        rocsparse_index_base idx_base,
+                        double               tol = 0)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -158,6 +160,17 @@ void csric0_hash_kernel(rocsparse_int m,
             break;
         }
 
+        // Row has numerical singular diagonal
+        if((std::real(diag_val) <= tol) && (std::imag(diag_val) == 0))
+        {
+            if(lid == 0)
+            {
+                // We are looking for the first singular pivot
+                rocsparse_atomic_min(singular_pivot, local_col + idx_base);
+            }
+
+            // Don't skip this row if it has a singular pivot
+        }
         // Compute reciprocal
         diag_val = static_cast<T>(1) / diag_val;
 
@@ -207,12 +220,24 @@ void csric0_hash_kernel(rocsparse_int m,
         }
     }
 
-    if(lid == WFSIZE - 1)
+    // Last lane processes the diagonal entry
+    if(lid == (WFSIZE - 1))
     {
-        // Last lane processes the diagonal entry
-        if(row_diag >= 0)
+        if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
         {
+            T const diag_val = csr_val[row_diag] - sum;
+
+            // test for negative value and numerical small value
+            if((std::real(diag_val) <= tol * tol) && (std::imag(diag_val) == 0))
+            {
+                rocsparse_atomic_min(singular_pivot, (row + idx_base));
+            };
+
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
+            if(csr_val[row_diag] == static_cast<T>(0))
+            {
+                rocsparse_atomic_min(zero_pivot, (row + idx_base));
+            };
         }
     }
 
@@ -233,7 +258,9 @@ void csric0_binsearch_kernel(rocsparse_int m,
                              int* __restrict__ done,
                              const rocsparse_int* __restrict__ map,
                              rocsparse_int* __restrict__ zero_pivot,
-                             rocsparse_index_base idx_base)
+                             rocsparse_int* __restrict__ singular_pivot,
+                             rocsparse_index_base idx_base,
+                             double               tol = 0)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -326,6 +353,18 @@ void csric0_binsearch_kernel(rocsparse_int m,
             break;
         }
 
+        // Row has numerical singular diagonal
+        if((std::real(diag_val) <= tol) && (std::imag(diag_val) == 0))
+        {
+            if(lid == 0)
+            {
+                // We are looking for the first singular pivot
+                rocsparse_atomic_min(singular_pivot, local_col + idx_base);
+            }
+
+            // Don't skip this row if it has a singular pivot
+        }
+
         // Compute reciprocal
         diag_val = static_cast<T>(1) / diag_val;
 
@@ -378,12 +417,24 @@ void csric0_binsearch_kernel(rocsparse_int m,
         }
     }
 
-    if(lid == WFSIZE - 1)
+    // Last lane processes the diagonal entry
+    if(lid == (WFSIZE - 1))
     {
-        // Last lane processes the diagonal entry
-        if(row_diag >= 0)
+        if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
         {
+            T const diag_val = csr_val[row_diag] - sum;
+
+            // check for negative value and numerical small value
+            if((std::real(diag_val) <= tol * tol) && (std::imag(diag_val) == 0))
+            {
+                rocsparse_atomic_min(singular_pivot, (row + idx_base));
+            };
+
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
+            if(csr_val[row_diag] == static_cast<T>(0))
+            {
+                rocsparse_atomic_min(zero_pivot, (row + idx_base));
+            };
         }
     }
 
