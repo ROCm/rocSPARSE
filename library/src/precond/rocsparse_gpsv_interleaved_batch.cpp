@@ -75,7 +75,7 @@ rocsparse_status
 
     ROCSPARSE_CHECKARG_ENUM(1, alg);
     ROCSPARSE_CHECKARG_SIZE(2, m);
-    ROCSPARSE_CHECKARG(2, m, (m < 5), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG(2, m, (m < 3), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG_ARRAY(3, batch_count, ds);
     ROCSPARSE_CHECKARG_ARRAY(4, batch_count, dl);
     ROCSPARSE_CHECKARG_ARRAY(5, batch_count, d);
@@ -145,7 +145,7 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
 
     ROCSPARSE_CHECKARG_ENUM(1, alg);
     ROCSPARSE_CHECKARG_SIZE(2, m);
-    ROCSPARSE_CHECKARG(2, m, (m < 5), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG(2, m, (m < 3), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG_ARRAY(3, batch_count, ds);
     ROCSPARSE_CHECKARG_ARRAY(4, batch_count, dl);
     ROCSPARSE_CHECKARG_ARRAY(5, batch_count, d);

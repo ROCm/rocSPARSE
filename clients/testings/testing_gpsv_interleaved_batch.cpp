@@ -54,7 +54,7 @@ void testing_gpsv_interleaved_batch_bad_arg(const Arguments& arg)
     bad_arg_analysis(rocsparse_gpsv_interleaved_batch_buffer_size<T>, PARAMS_BUFFER_SIZE);
     bad_arg_analysis(rocsparse_gpsv_interleaved_batch<T>, PARAMS_SOLVE);
 
-    // m < 5
+    // m < 3
     m = 2;
     EXPECT_ROCSPARSE_STATUS(rocsparse_gpsv_interleaved_batch_buffer_size<T>(PARAMS_BUFFER_SIZE),
                             rocsparse_status_invalid_size);
