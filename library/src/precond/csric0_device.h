@@ -37,8 +37,8 @@ void csric0_hash_kernel(rocsparse_int m,
                         const rocsparse_int* __restrict__ map,
                         rocsparse_int* __restrict__ zero_pivot,
                         rocsparse_int* __restrict__ singular_pivot,
-                        rocsparse_index_base idx_base,
-                        double               tol = 0)
+                        double               tol,
+                        rocsparse_index_base idx_base  )
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -259,8 +259,8 @@ void csric0_binsearch_kernel(rocsparse_int m,
                              const rocsparse_int* __restrict__ map,
                              rocsparse_int* __restrict__ zero_pivot,
                              rocsparse_int* __restrict__ singular_pivot,
-                             rocsparse_index_base idx_base,
-                             double               tol = 0)
+                             double               tol,
+                             rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;

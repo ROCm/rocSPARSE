@@ -442,12 +442,11 @@ void testing_csric0(const Arguments& arg)
     host_vector<rocsparse_int> hcsr_row_ptr;
     host_vector<rocsparse_int> hcsr_col_ind;
     host_vector<T>             hcsr_val;
-    host_vector<T>             hcsr_val_gold;
 
     // Sample matrix
     rocsparse_int nnz;
     matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val, M, N, nnz, base);
-    auto const nnz = hcsr_row_ptr[M] - hcsr_row_ptr[0];
+    nnz = hcsr_row_ptr[M] - hcsr_row_ptr[0];
 
     host_vector<T> hcsr_val_gold;
     hcsr_val_gold = hcsr_val;
