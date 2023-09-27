@@ -7,21 +7,25 @@ Full documentation for rocSPARSE is available at [rocm.docs.amd.com](https://roc
 - Added rocsparse_inverse_permutation
 - Added mixed precisions for SpVV
 - Added uniform int8 precision for Gather and Scatter
-### Changed
-- Removed auto stages from spmv, spmm, spgemm, spsv, spsm, and spitsv.
-- Removed old deprecated rocsparse_spmv, deprecated current rocsparse_spmv_ex, and added new rocsparse_spmv routine
-- Removed old deprecated rocsparse_xbsrmv routines, deprecated current rocsparse_xbsrmv_ex routines, and added new rocsparse_xbsrmv routines
-- Removed old deprecated rocsparse_spmm_ex routine
-- doti, dotci, spvv, and csr2ell now require calling hipStreamSynchronize after when using host pointer mode
-### Improved
+### Optimized
 - Optimization to doti routine
+- Optimization to spin-looping algorithms
+### Changed
+- Changed rocsparse_spmv function arguments
+- Changed rocsparse_xbsrmv routines function arguments
+- doti, dotci, spvv, and csr2ell now require calling hipStreamSynchronize after when using host pointer mode
+- Improved documentation
+- Improved verbose output during argument checking on API function calls
+### Deprecated
+- Deprecated rocsparse_spmv_ex
+- Deprecated rocsparse_xbsrmv_ex routines
+### Removed
+- Removed auto stages from spmv, spmm, spgemm, spsv, spsm, and spitsv.
+- Removed rocsparse_spmm_ex routine
+### Fixed
 - Fixed a bug in rocsparse-bench, where SpMV algorithm was not taken into account in CSR format
 - Fixed the BSR/GEBSR routines bsrmv, bsrsv, bsrmm, bsrgeam, gebsrmv, gebsrmm so that block_dim==0 is considered an invalid size
 - Fixed bug where passing nnz = 0 to doti or dotci did not always return a dot product of 0
-- Improved spin-looping algorithms
-- Improved documentation
-- Improved verbose output during argument checking on API function calls
-### Known Issues
 
 ## rocSPARSE 2.5.4 for ROCm 5.7.0
 ### Added
