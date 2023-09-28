@@ -125,10 +125,11 @@ void host_csr_to_ell(J                     M,
 
     if(required_memory > available_memory)
     {
-        std::cerr << "Error: Insufficient memory available for conversion from CSR to ELL format. "
-                     "Required: "
-                  << required_memory << " available: " << available_memory
-                  << ". (File: " << __FILE__ << " Line: " << __LINE__ << ")" << std::endl;
+        std::cerr
+            << "Warning: Insufficient memory available for conversion from CSR to ELL format. "
+               "Required: "
+            << required_memory << " available: " << available_memory
+            << "Skipping matrix. (File: " << __FILE__ << " Line: " << __LINE__ << ")" << std::endl;
         exit(1);
     }
 
