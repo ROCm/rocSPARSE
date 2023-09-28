@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,66 +28,82 @@ void testing_spvec_descr_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
-    rocsparse_spvec_descr x{};
-    int64_t               size     = safe_size;
-    int64_t               nnz      = safe_size;
-    void*                 val_data = (void*)0x4;
-    void*                 idx_data = (void*)0x4;
-    rocsparse_index_base  base     = rocsparse_index_base_zero;
+    rocsparse_spvec_descr local_descr{};
+    int64_t               local_size     = safe_size;
+    int64_t               local_nnz      = safe_size;
+    rocsparse_index_base  local_idx_base = rocsparse_index_base_zero;
 
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_datatype  ttype = get_datatype<T>();
+    rocsparse_indextype local_idx_type  = get_indextype<I>();
+    rocsparse_datatype  local_data_type = get_datatype<T>();
 
-#define PARAMS_CREATE &x, size, nnz, idx_data, val_data, itype, base, ttype
-    auto_testing_bad_arg(rocsparse_create_spvec_descr, PARAMS_CREATE);
+    {
+        rocsparse_spvec_descr* descr     = &local_descr;
+        int64_t                size      = local_size;
+        int64_t                nnz       = local_nnz;
+        void*                  values    = (void*)0x4;
+        void*                  indices   = (void*)0x4;
+        rocsparse_index_base   idx_base  = local_idx_base;
+        rocsparse_indextype    idx_type  = local_idx_type;
+        rocsparse_datatype     data_type = local_data_type;
+
+#define PARAMS_CREATE descr, size, nnz, indices, values, idx_type, idx_base, data_type
+        bad_arg_analysis(rocsparse_create_spvec_descr, PARAMS_CREATE);
 #undef PARAMS_CREATE
 
-    // rocsparse_destroy_spvec_descr
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(nullptr),
-                            rocsparse_status_invalid_pointer);
+        // size < nnz
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_create_spvec_descr(
+                descr, size, (size + 1), indices, values, idx_type, idx_base, data_type),
+            rocsparse_status_invalid_size);
 
-    // Check valid descriptor creations
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_spvec_descr(&x, 0, 0, nullptr, nullptr, itype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(x), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_spvec_descr(&x, size, 0, nullptr, nullptr, itype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(x), rocsparse_status_success);
+        // rocsparse_destroy_spvec_descr_ex
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(nullptr),
+                                rocsparse_status_invalid_pointer);
 
-    // Create valid descriptor
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_spvec_descr(&x, size, nnz, idx_data, val_data, itype, base, ttype),
-        rocsparse_status_success);
+        // Check valid descriptor creations
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_spvec_descr(
+                                    descr, 0, 0, nullptr, nullptr, idx_type, idx_base, data_type),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(local_descr),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_create_spvec_descr(
+                descr, size, 0, nullptr, nullptr, idx_type, idx_base, data_type),
+            rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(local_descr),
+                                rocsparse_status_success);
 
-    void** val_data_ptr = (void**)0x4;
-    void** idx_data_ptr = (void**)0x4;
+        // Create valid descriptor
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_create_spvec_descr(
+                descr, size, nnz, indices, values, idx_type, idx_base, data_type),
+            rocsparse_status_success);
+    }
 
-#define PARAMS_GET x, &size, &nnz, idx_data_ptr, val_data_ptr, &itype, &base, &ttype
-    auto_testing_bad_arg(rocsparse_spvec_get, PARAMS_GET);
+    {
+        rocsparse_spvec_descr descr     = local_descr;
+        int64_t*              size      = &local_size;
+        int64_t*              nnz       = &local_nnz;
+        void**                values    = (void**)0x4;
+        void**                indices   = (void**)0x4;
+        rocsparse_index_base* idx_base  = &local_idx_base;
+        rocsparse_indextype*  idx_type  = &local_idx_type;
+        rocsparse_datatype*   data_type = &local_data_type;
+
+#define PARAMS_GET descr, size, nnz, indices, values, idx_type, idx_base, data_type
+        bad_arg_analysis(rocsparse_spvec_get, PARAMS_GET);
 #undef PARAMS_GET
 
-    // rocsparse_spvec_get_index_base
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_index_base(nullptr, &base),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_index_base(x, nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_GET_INDEX_BASE descr, idx_base
+        bad_arg_analysis(rocsparse_spvec_get_index_base, PARAMS_GET_INDEX_BASE);
+#undef PARAMS_GET_INDEX_BASE
 
-    // rocsparse_spvec_get_values
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_values(nullptr, val_data_ptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_values(x, nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_GET_VALUES descr, values
+        bad_arg_analysis(rocsparse_spvec_get_values, PARAMS_GET_VALUES);
+#undef PARAMS_GET_VALUES
+    }
 
-    // rocsparse_spvec_set_values
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_set_values(nullptr, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_set_values(x, nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Destroy valid descriptors
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(x), rocsparse_status_success);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(local_descr), rocsparse_status_success);
 }
 
 template <typename I, typename T>

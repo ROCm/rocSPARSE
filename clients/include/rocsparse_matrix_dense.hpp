@@ -97,7 +97,7 @@ private:
 public:
     I               m{};
     I               n{};
-    int64_t         ld{};
+    int64_t         ld{1};
     rocsparse_order order{rocsparse_order_column};
     dense_matrix_view(){};
     ~dense_matrix_view(){};

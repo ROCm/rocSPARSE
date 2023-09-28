@@ -331,6 +331,22 @@ struct rocsparse_enum_utils
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmat_attribute value)
+{
+    switch(value)
+    {
+    case rocsparse_spmat_fill_mode:
+    case rocsparse_spmat_diag_type:
+    case rocsparse_spmat_matrix_type:
+    case rocsparse_spmat_storage_mode:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_itilu0_alg value)
 {
     switch(value)

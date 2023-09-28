@@ -228,6 +228,10 @@ void testing_spsm_csr(const Arguments& arg)
                             base,
                             ttype,
                             rocsparse_format_csr);
+
+    ldb = std::max(int64_t(1), ldb);
+    ldc = std::max(int64_t(1), ldc);
+
     rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, rocsparse_order_column);
     rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, rocsparse_order_column);
     rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, rocsparse_order_column);

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,48 +28,45 @@ void testing_dnvec_descr_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
-    rocsparse_dnvec_descr x{};
-    int64_t               size   = safe_size;
-    void*                 values = (void*)0x4;
-    rocsparse_datatype    ttype  = get_datatype<T>();
+    rocsparse_dnvec_descr local_descr;
+    int64_t               local_size      = safe_size;
+    rocsparse_datatype    local_data_type = get_datatype<T>();
 
-#define PARAMS_CREATE &x, size, values, ttype
-    auto_testing_bad_arg(rocsparse_create_dnvec_descr, PARAMS_CREATE);
+    {
+        rocsparse_dnvec_descr* descr     = &local_descr;
+        int64_t                size      = local_size;
+        void*                  values    = (void*)0x4;
+        rocsparse_datatype     data_type = local_data_type;
+
+#define PARAMS_CREATE descr, size, values, data_type
+        bad_arg_analysis(rocsparse_create_dnvec_descr, PARAMS_CREATE);
 #undef PARAMS_CREATE
+        // Check valid descriptor creations
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnvec_descr(descr, 0, nullptr, data_type),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(local_descr),
+                                rocsparse_status_success);
+        // rocsparse_destroy_dnvec_descr
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(nullptr),
+                                rocsparse_status_invalid_pointer);
 
-    // rocsparse_destroy_dnvec_descr
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(nullptr),
-                            rocsparse_status_invalid_pointer);
+        // Create valid descriptor
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnvec_descr(descr, size, values, data_type),
+                                rocsparse_status_success);
+    }
 
-    // Check valid descriptor creations
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnvec_descr(&x, 0, nullptr, ttype),
-                            rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(x), rocsparse_status_success);
-
-    // Create valid descriptor
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnvec_descr(&x, size, values, ttype),
-                            rocsparse_status_success);
-
-    void** values_ptr = (void**)0x4;
-
-#define PARAMS_GET x, &size, values_ptr, &ttype
-    auto_testing_bad_arg(rocsparse_dnvec_get, PARAMS_GET);
+    {
+        rocsparse_dnvec_descr descr     = local_descr;
+        int64_t*              size      = &local_size;
+        void**                values    = (void**)0x4;
+        rocsparse_datatype*   data_type = &local_data_type;
+#define PARAMS_GET descr, size, values, data_type
+        bad_arg_analysis(rocsparse_dnvec_get, PARAMS_GET);
 #undef PARAMS_GET
-
-    // rocsparse_dnvec_get_values
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnvec_get_values(nullptr, (void**)&values),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnvec_get_values(x, nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // rocsparse_dnvec_set_values
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnvec_set_values(nullptr, values),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnvec_set_values(x, nullptr),
-                            rocsparse_status_invalid_pointer);
+    }
 
     // Destroy valid descriptor
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(x), rocsparse_status_success);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(local_descr), rocsparse_status_success);
 }
 
 template <typename T>
