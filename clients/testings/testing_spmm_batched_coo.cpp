@@ -255,6 +255,10 @@ void testing_spmm_batched_coo(const Arguments& arg)
     // Create descriptors
     rocsparse_local_spmat A(
         A_m, A_n, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
+
+    ldb = std::max(int64_t(1), ldb);
+    ldc = std::max(int64_t(1), ldc);
+
     rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order_B);
     rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order_C);
     rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order_C);

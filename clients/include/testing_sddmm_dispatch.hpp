@@ -410,7 +410,6 @@ public:
         rocsparse_datatype   ttype   = get_datatype<T>();
         rocsparse_order      order_A = arg.order;
         rocsparse_order      order_B = arg.order;
-
         // Create rocsparse handle
         rocsparse_local_handle handle(arg);
 

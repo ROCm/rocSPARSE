@@ -149,10 +149,19 @@ void testing_spmm_bell(const Arguments& arg)
                             ttype);
 
     rocsparse_local_dnmat B(
-        dB.m, dB.n, (order_B == rocsparse_order_column) ? dB.m : dB.n, dB, ttype, order_B);
+        dB.m,
+        dB.n,
+        std::max(rocsparse_int(1), (order_B == rocsparse_order_column) ? dB.m : dB.n),
+        dB,
+        ttype,
+        order_B);
     rocsparse_local_dnmat C(
-        dC.m, dC.n, (order_C == rocsparse_order_column) ? dC.m : dC.n, dC, ttype, order_C);
-
+        dC.m,
+        dC.n,
+        std::max(rocsparse_int(1), (order_C == rocsparse_order_column) ? dC.m : dC.n),
+        dC,
+        ttype,
+        order_C);
     // Query SpMM buffer
     size_t buffer_size;
     CHECK_ROCSPARSE_ERROR(rocsparse_spmm(handle,
