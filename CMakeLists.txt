@@ -185,7 +185,7 @@ endif( )
 
 # Setup version
 set(VERSION_STRING "3.0.2")
-set(SOVERSION_STRING "1.0.0")
+set(SOVERSION_STRING "1.0")
 
 rocm_setup_version(VERSION ${VERSION_STRING})
 set(rocsparse_SOVERSION ${SOVERSION_STRING})
