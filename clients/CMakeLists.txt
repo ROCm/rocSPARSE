@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -94,35 +94,35 @@ endif()
 if(BUILD_CLIENTS_TESTS)
   enable_testing()
   add_subdirectory(tests)
+
+  set(ROCSPARSE_COMMON "${PROJECT_BINARY_DIR}/staging/rocsparse_common.yaml")
+  add_custom_command(OUTPUT "${ROCSPARSE_COMMON}"
+                    COMMAND ${CMAKE_COMMAND} -E copy include/rocsparse_common.yaml "${ROCSPARSE_COMMON}"
+                    DEPENDS include/rocsparse_common.yaml
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
+  set(ROCSPARSE_TEMPLATE "${PROJECT_BINARY_DIR}/staging/rocsparse_template.yaml")
+  add_custom_command(OUTPUT "${ROCSPARSE_TEMPLATE}"
+                    COMMAND ${CMAKE_COMMAND} -E copy include/rocsparse_template.yaml "${ROCSPARSE_TEMPLATE}"
+                    DEPENDS include/rocsparse_template.yaml
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
+  set(ROCSPARSE_GENTEST "${PROJECT_BINARY_DIR}/staging/rocsparse_gentest.py")
+  add_custom_command(OUTPUT "${ROCSPARSE_GENTEST}"
+                    COMMAND ${CMAKE_COMMAND} -E copy common/rocsparse_gentest.py "${ROCSPARSE_GENTEST}"
+                    DEPENDS common/rocsparse_gentest.py
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
+  add_custom_target(rocsparse-common DEPENDS "${ROCSPARSE_COMMON}" "${ROCSPARSE_TEMPLATE}" "${ROCSPARSE_GENTEST}")
+
+  rocm_install(
+    FILES "${ROCSPARSE_COMMON}" "${ROCSPARSE_TEMPLATE}"
+    COMPONENT clients-common
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+  )
+  rocm_install(
+    PROGRAMS "${ROCSPARSE_GENTEST}"
+    COMPONENT clients-common
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+  )
 endif()
-
-set(ROCSPARSE_COMMON "${PROJECT_BINARY_DIR}/staging/rocsparse_common.yaml")
-add_custom_command(OUTPUT "${ROCSPARSE_COMMON}"
-                   COMMAND ${CMAKE_COMMAND} -E copy include/rocsparse_common.yaml "${ROCSPARSE_COMMON}"
-                   DEPENDS include/rocsparse_common.yaml
-                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-
-set(ROCSPARSE_TEMPLATE "${PROJECT_BINARY_DIR}/staging/rocsparse_template.yaml")
-add_custom_command(OUTPUT "${ROCSPARSE_TEMPLATE}"
-                   COMMAND ${CMAKE_COMMAND} -E copy include/rocsparse_template.yaml "${ROCSPARSE_TEMPLATE}"
-                   DEPENDS include/rocsparse_template.yaml
-                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-
-set(ROCSPARSE_GENTEST "${PROJECT_BINARY_DIR}/staging/rocsparse_gentest.py")
-add_custom_command(OUTPUT "${ROCSPARSE_GENTEST}"
-                   COMMAND ${CMAKE_COMMAND} -E copy common/rocsparse_gentest.py "${ROCSPARSE_GENTEST}"
-                   DEPENDS common/rocsparse_gentest.py
-                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-
-add_custom_target(rocsparse-common DEPENDS "${ROCSPARSE_COMMON}" "${ROCSPARSE_TEMPLATE}" "${ROCSPARSE_GENTEST}")
-
-rocm_install(
-  FILES "${ROCSPARSE_COMMON}" "${ROCSPARSE_TEMPLATE}"
-  COMPONENT clients-common
-  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-rocm_install(
-  PROGRAMS "${ROCSPARSE_GENTEST}"
-  COMPONENT clients-common
-  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
