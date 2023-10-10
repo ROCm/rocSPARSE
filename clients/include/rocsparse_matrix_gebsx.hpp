@@ -44,8 +44,8 @@ struct gebsx_matrix
     J                      nb{};
     I                      nnzb{};
     rocsparse_direction    block_direction{};
-    J                      row_block_dim{};
-    J                      col_block_dim{};
+    J                      row_block_dim{1};
+    J                      col_block_dim{1};
     rocsparse_index_base   base{};
     rocsparse_storage_mode storage_mode{rocsparse_storage_mode_sorted};
     array_t<I>             ptr{};

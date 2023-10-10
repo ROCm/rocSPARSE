@@ -75,7 +75,6 @@ extern "C" {
 *  <tr><th>A / X                   <th>Y                        <th>compute_type
 *  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_i32_r <td>rocsparse_datatype_i32_r
 *  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_f32_r <td>rocsparse_datatype_f32_r
-*  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_i32_r <td>rocsparse_datatype_i32_r
 *  </table>
 *
 *  \par Mixed-regular real precisions
@@ -354,7 +353,6 @@ ROCSPARSE_EXPORT rocsparse_status rocsparse_spmv(rocsparse_handle            han
 *  <tr><th>A / X                   <th>Y                        <th>compute_type
 *  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_i32_r <td>rocsparse_datatype_i32_r
 *  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_f32_r <td>rocsparse_datatype_f32_r
-*  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_i32_r <td>rocsparse_datatype_i32_r
 *  </table>
 *
 *  \par Mixed-regular real precisions

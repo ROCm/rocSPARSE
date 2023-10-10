@@ -153,8 +153,12 @@ void testing_spmm_coo(const Arguments& arg)
                                                                : (int64_t(ld_multiplier_B) * N))
                       : ((trans_B == rocsparse_operation_none) ? (int64_t(ld_multiplier_B) * N)
                                                                : (int64_t(ld_multiplier_B) * K));
+
+    ldb = std::max(ldb, int64_t(1));
+
     int64_t ldc = (order_C == rocsparse_order_column) ? (int64_t(ld_multiplier_C) * M)
                                                       : (int64_t(ld_multiplier_C) * N);
+    ldc         = std::max(ldc, int64_t(1));
 
     int64_t nrowB = (order_B == rocsparse_order_column) ? ldb : B_m;
     int64_t ncolB = (order_B == rocsparse_order_column) ? B_n : ldb;

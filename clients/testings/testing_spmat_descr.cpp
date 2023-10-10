@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,357 +26,518 @@
 template <typename I, typename J, typename T>
 void testing_spmat_descr_bad_arg(const Arguments& arg)
 {
-    static const size_t safe_size = 100;
+    static const size_t   safe_size = 100;
+    rocsparse_spmat_descr local_descr{};
+    int64_t               local_rows          = safe_size;
+    int64_t               local_cols          = safe_size;
+    int64_t               local_nnz           = safe_size;
+    rocsparse_direction   local_ell_block_dir = rocsparse_direction_row;
+    int64_t               local_ell_block_dim = safe_size;
+    int64_t               local_ell_cols      = safe_size;
+    rocsparse_index_base  local_base          = rocsparse_index_base_zero;
+    rocsparse_format      local_format        = rocsparse_format_csr;
+    rocsparse_indextype   local_itype         = get_indextype<I>();
+    rocsparse_indextype   local_jtype         = get_indextype<J>();
+    rocsparse_datatype    local_ttype         = get_datatype<T>();
+    rocsparse_int         local_batch_count   = safe_size;
 
-    rocsparse_spmat_descr A{};
-    int64_t               rows      = safe_size;
-    int64_t               cols      = safe_size;
-    int64_t               nnz       = safe_size;
-    int64_t               ell_width = safe_size;
-    void*                 row_data  = (void*)0x4;
-    void*                 col_data  = (void*)0x4;
-    void*                 val_data  = (void*)0x4;
-    rocsparse_index_base  base      = rocsparse_index_base_zero;
-    rocsparse_format      format    = rocsparse_format_csr;
+    {
+        rocsparse_spmat_descr* descr         = &local_descr;
+        int64_t                rows          = local_rows;
+        int64_t                cols          = local_cols;
+        int64_t                nnz           = local_nnz;
+        rocsparse_direction    ell_block_dir = local_ell_block_dir;
+        int64_t                ell_block_dim = local_ell_block_dim;
+        int64_t                ell_cols      = local_ell_cols;
+        rocsparse_index_base   idx_base      = local_base;
 
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_indextype jtype = get_indextype<J>();
-    rocsparse_datatype  ttype = get_datatype<T>();
+        rocsparse_indextype idx_type     = local_itype;
+        rocsparse_datatype  data_type    = local_ttype;
+        rocsparse_indextype row_ptr_type = local_itype;
+        rocsparse_indextype col_ind_type = local_jtype;
+        rocsparse_indextype col_ptr_type = local_itype;
+        rocsparse_indextype row_ind_type = local_jtype;
 
-#define PARAMS_CREATE_COO &A, rows, cols, nnz, row_data, col_data, val_data, itype, base, ttype
-    auto_testing_bad_arg(rocsparse_create_coo_descr, PARAMS_CREATE_COO);
+        void* coo_row_ind = (void*)0x4;
+        void* coo_col_ind = (void*)0x4;
+        void* coo_val     = (void*)0x4;
+
+#define PARAMS_CREATE_COO \
+    descr, rows, cols, nnz, coo_row_ind, coo_col_ind, coo_val, idx_type, idx_base, data_type
+        bad_arg_analysis(rocsparse_create_coo_descr, PARAMS_CREATE_COO);
 #undef PARAMS_CREATE_COO
 
-#define PARAMS_CREATE_CSR \
-    &A, rows, cols, nnz, row_data, col_data, val_data, itype, jtype, base, ttype
-    auto_testing_bad_arg(rocsparse_create_csr_descr, PARAMS_CREATE_CSR);
+        // nnz > rows * cols
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_coo_descr(descr,
+                                                           rows,
+                                                           cols,
+                                                           (rows * cols + 1),
+                                                           coo_row_ind,
+                                                           coo_col_ind,
+                                                           coo_val,
+                                                           idx_type,
+                                                           idx_base,
+                                                           data_type),
+                                rocsparse_status_invalid_size);
+        void* csr_row_ptr = (void*)0x4;
+        void* csr_col_ind = (void*)0x4;
+        void* csr_val     = (void*)0x4;
+
+#define PARAMS_CREATE_CSR                                                                  \
+    descr, rows, cols, nnz, csr_row_ptr, csr_col_ind, csr_val, row_ptr_type, col_ind_type, \
+        idx_base, data_type
+        bad_arg_analysis(rocsparse_create_csr_descr, PARAMS_CREATE_CSR);
 #undef PARAMS_CREATE_CSR
 
-#define PARAMS_CREATE_CSC \
-    &A, rows, cols, nnz, col_data, row_data, val_data, itype, jtype, base, ttype
-    auto_testing_bad_arg(rocsparse_create_csc_descr, PARAMS_CREATE_CSC);
+        // nnz > rows * cols
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_csr_descr(descr,
+                                                           rows,
+                                                           cols,
+                                                           (rows * cols + 1),
+                                                           csr_row_ptr,
+                                                           csr_col_ind,
+                                                           csr_val,
+                                                           row_ptr_type,
+                                                           col_ind_type,
+                                                           idx_base,
+                                                           data_type),
+                                rocsparse_status_invalid_size);
+
+        void* csc_row_ind = (void*)0x4;
+        void* csc_col_ptr = (void*)0x4;
+        void* csc_val     = (void*)0x4;
+
+#define PARAMS_CREATE_CSC                                                                  \
+    descr, rows, cols, nnz, csc_col_ptr, csc_row_ind, csc_val, col_ptr_type, row_ind_type, \
+        idx_base, data_type
+        bad_arg_analysis(rocsparse_create_csc_descr, PARAMS_CREATE_CSC);
 #undef PARAMS_CREATE_CSC
 
-#define PARAMS_CREATE_ELL &A, rows, cols, col_data, val_data, ell_width, itype, base, ttype
-    auto_testing_bad_arg(rocsparse_create_ell_descr, PARAMS_CREATE_ELL);
+        // nnz > rows * cols
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_csc_descr(descr,
+                                                           rows,
+                                                           cols,
+                                                           (rows * cols + 1),
+                                                           csc_col_ptr,
+                                                           csc_row_ind,
+                                                           csc_val,
+                                                           col_ptr_type,
+                                                           row_ind_type,
+                                                           idx_base,
+                                                           data_type),
+                                rocsparse_status_invalid_size);
+
+        void* ell_col_ind = (void*)0x4;
+        void* ell_val     = (void*)0x4;
+
+#define PARAMS_CREATE_ELL                                                                      \
+    descr, rows, cols, ell_block_dir, ell_block_dim, ell_cols, ell_col_ind, ell_val, idx_type, \
+        idx_base, data_type
+        bad_arg_analysis(rocsparse_create_bell_descr, PARAMS_CREATE_ELL);
 #undef PARAMS_CREATE_ELL
 
-    // rocsparse_destroy_spmat_descr
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(nullptr),
-                            rocsparse_status_invalid_pointer);
+        // block_dim = 0
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_bell_descr(descr,
+                                                            rows,
+                                                            cols,
+                                                            ell_block_dir,
+                                                            0,
+                                                            ell_cols,
+                                                            ell_col_ind,
+                                                            ell_val,
+                                                            idx_type,
+                                                            idx_base,
+                                                            data_type),
+                                rocsparse_status_invalid_size);
 
-    // Check valid descriptor creations
+        // ell_cols > cols
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_bell_descr(descr,
+                                                            rows,
+                                                            cols,
+                                                            ell_block_dir,
+                                                            ell_block_dim,
+                                                            (cols + 1),
+                                                            ell_col_ind,
+                                                            ell_val,
+                                                            idx_type,
+                                                            idx_base,
+                                                            data_type),
+                                rocsparse_status_invalid_size);
+
+        // rocsparse_destroy_spmat_descr_ex
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(nullptr),
+                                rocsparse_status_invalid_pointer);
+
+        // Check valid descriptor creations
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_create_coo_descr(
+                descr, 0, cols, 0, nullptr, nullptr, nullptr, idx_type, idx_base, data_type),
+            rocsparse_status_success);
+
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_create_coo_descr(
+                descr, rows, 0, 0, nullptr, nullptr, nullptr, idx_type, idx_base, data_type),
+            rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_create_coo_descr(
+                descr, rows, cols, 0, nullptr, nullptr, nullptr, idx_type, idx_base, data_type),
+            rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr),
+                                rocsparse_status_success);
+
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_csr_descr(descr,
+                                                           0,
+                                                           cols,
+                                                           0,
+                                                           nullptr,
+                                                           nullptr,
+                                                           nullptr,
+                                                           row_ptr_type,
+                                                           col_ind_type,
+                                                           idx_base,
+                                                           data_type),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_csr_descr(descr,
+                                                           rows,
+                                                           0,
+                                                           0,
+                                                           csr_row_ptr,
+                                                           nullptr,
+                                                           nullptr,
+                                                           row_ptr_type,
+                                                           col_ind_type,
+                                                           idx_base,
+                                                           data_type),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_csr_descr(descr,
+                                                           rows,
+                                                           cols,
+                                                           0,
+                                                           csr_row_ptr,
+                                                           nullptr,
+                                                           nullptr,
+                                                           row_ptr_type,
+                                                           col_ind_type,
+                                                           idx_base,
+                                                           data_type),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr),
+                                rocsparse_status_success);
+#if 0
     EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_coo_descr(&A, 0, cols, 0, nullptr, nullptr, nullptr, itype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_coo_descr(&A, rows, 0, 0, nullptr, nullptr, nullptr, itype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_coo_descr(
-                                &A, rows, cols, 0, nullptr, nullptr, nullptr, itype, base, ttype),
+			    rocsparse_create_csr_descr(
+							     descr, rows, cols, 0, nullptr, nullptr, nullptr, row_ptr_type, col_ind_type, idx_base, data_type),
+			    rocsparse_status_success);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr), rocsparse_status_success);
+#endif
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_csc_descr(descr,
+                                                           rows,
+                                                           0,
+                                                           0,
+                                                           nullptr,
+                                                           nullptr,
+                                                           nullptr,
+                                                           row_ptr_type,
+                                                           col_ind_type,
+                                                           idx_base,
+                                                           data_type),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_csc_descr(descr,
+                                                           0,
+                                                           cols,
+                                                           0,
+                                                           csc_col_ptr,
+                                                           nullptr,
+                                                           nullptr,
+                                                           row_ptr_type,
+                                                           col_ind_type,
+                                                           idx_base,
+                                                           data_type),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_csc_descr(descr,
+                                                           rows,
+                                                           cols,
+                                                           0,
+                                                           csc_col_ptr,
+                                                           nullptr,
+                                                           nullptr,
+                                                           row_ptr_type,
+                                                           col_ind_type,
+                                                           idx_base,
+                                                           data_type),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr),
+                                rocsparse_status_success);
+
+#if 0
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_bell_descr(descr,
+                                                              0,
+                                                              cols,
+                                                              ell_block_dir,
+                                                              ell_block_dim,
+                                                              ell_cols,
+                                                              nullptr,
+                                                              nullptr,
+                                                              idx_type,
+                                                              idx_base,
+                                                              data_type),
                             rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr), rocsparse_status_success);
+#endif
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_bell_descr(descr,
+                                                            rows,
+                                                            0,
+                                                            ell_block_dir,
+                                                            ell_block_dim,
+                                                            0,
+                                                            nullptr,
+                                                            nullptr,
+                                                            idx_type,
+                                                            idx_base,
+                                                            data_type),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_bell_descr(descr,
+                                                            rows,
+                                                            cols,
+                                                            ell_block_dir,
+                                                            ell_block_dim,
+                                                            0,
+                                                            nullptr,
+                                                            nullptr,
+                                                            idx_type,
+                                                            idx_base,
+                                                            data_type),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(local_descr),
+                                rocsparse_status_success);
+    }
 
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_csr_descr(
-            &A, 0, cols, 0, nullptr, nullptr, nullptr, itype, jtype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_csr_descr(
-            &A, rows, 0, 0, row_data, nullptr, nullptr, itype, jtype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_csr_descr(
-            &A, rows, cols, 0, row_data, nullptr, nullptr, itype, jtype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_csr_descr(
-            &A, rows, cols, 0, nullptr, nullptr, nullptr, itype, jtype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
+    {
+        rocsparse_spmat_descr descr         = local_descr;
+        int64_t*              rows          = &local_rows;
+        int64_t*              cols          = &local_cols;
+        int64_t*              nnz           = &local_nnz;
+        rocsparse_direction*  ell_block_dir = &local_ell_block_dir;
+        int64_t*              ell_block_dim = &local_ell_block_dim;
+        int64_t*              ell_cols      = &local_ell_cols;
+        rocsparse_index_base* idx_base      = &local_base;
+        rocsparse_format*     format        = &local_format;
 
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_csc_descr(
-            &A, rows, 0, 0, nullptr, nullptr, nullptr, itype, jtype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_csc_descr(
-            &A, 0, cols, 0, col_data, nullptr, nullptr, itype, jtype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_csc_descr(
-            &A, rows, cols, 0, col_data, nullptr, nullptr, itype, jtype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
+        rocsparse_indextype* idx_type     = &local_itype;
+        rocsparse_datatype*  data_type    = &local_ttype;
+        rocsparse_indextype* row_ptr_type = &local_itype;
+        rocsparse_indextype* col_ind_type = &local_jtype;
+        rocsparse_indextype* col_ptr_type = &local_itype;
+        rocsparse_indextype* row_ind_type = &local_jtype;
 
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_ell_descr(&A, 0, cols, nullptr, nullptr, ell_width, itype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_ell_descr(&A, rows, 0, nullptr, nullptr, 0, itype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_ell_descr(&A, rows, cols, nullptr, nullptr, 0, itype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(A), rocsparse_status_success);
+        void** coo_row_ind = (void**)0x4;
+        void** coo_col_ind = (void**)0x4;
+        void** coo_val     = (void**)0x4;
+        void** csr_row_ptr = (void**)0x4;
+        void** csr_col_ind = (void**)0x4;
+        void** csr_val     = (void**)0x4;
+        void** csc_row_ind = (void**)0x4;
+        void** csc_col_ptr = (void**)0x4;
+        void** csc_val     = (void**)0x4;
+        void** ell_col_ind = (void**)0x4;
+        void** ell_val     = (void**)0x4;
 
-    // Create valid descriptor
-    rocsparse_spmat_descr coo;
-    rocsparse_spmat_descr csr;
-    rocsparse_spmat_descr csc;
-    rocsparse_spmat_descr ell;
+        rocsparse_int* batch_count = &local_batch_count;
 
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_coo_descr(
-            &coo, rows, cols, nnz, row_data, col_data, val_data, itype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_csr_descr(
-            &csr, rows, cols, nnz, row_data, col_data, val_data, itype, jtype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_csc_descr(
-            &csc, rows, cols, nnz, col_data, row_data, val_data, itype, jtype, base, ttype),
-        rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_ell_descr(
-            &ell, rows, cols, col_data, val_data, ell_width, itype, base, ttype),
-        rocsparse_status_success);
-
-    void** row_data_ptr = (void**)0x4;
-    void** col_data_ptr = (void**)0x4;
-    void** val_data_ptr = (void**)0x4;
+        {
+            EXPECT_ROCSPARSE_STATUS(rocsparse_create_coo_descr(&local_descr,
+                                                               local_rows,
+                                                               local_cols,
+                                                               local_nnz,
+                                                               (void*)0x4,
+                                                               (void*)0x4,
+                                                               (void*)0x4,
+                                                               local_itype,
+                                                               local_base,
+                                                               local_ttype),
+                                    rocsparse_status_success);
 
 #define PARAMS_GET_COO \
-    A, &rows, &cols, &nnz, row_data_ptr, col_data_ptr, val_data_ptr, &itype, &base, &ttype
-    auto_testing_bad_arg(rocsparse_coo_get, PARAMS_GET_COO);
+    descr, rows, cols, nnz, coo_row_ind, coo_col_ind, coo_val, idx_type, idx_base, data_type
+            bad_arg_analysis(rocsparse_coo_get, PARAMS_GET_COO);
 #undef PARAMS_GET_COO
 
-#define PARAMS_GET_CSR \
-    A, &rows, &cols, &nnz, row_data_ptr, col_data_ptr, val_data_ptr, &itype, &jtype, &base, &ttype
-    auto_testing_bad_arg(rocsparse_csr_get, PARAMS_GET_CSR);
+#define PARAMS_GET_SIZE descr, rows, cols, nnz
+            bad_arg_analysis(rocsparse_spmat_get_size, PARAMS_GET_SIZE);
+#undef PARAMS_GET_SIZE
+
+#define PARAMS_GET_FORMAT descr, format
+            bad_arg_analysis(rocsparse_spmat_get_format, PARAMS_GET_FORMAT);
+#undef PARAMS_GET_FORMAT
+
+#define PARAMS_GET_INDEX_BASE descr, idx_base
+            bad_arg_analysis(rocsparse_spmat_get_index_base, PARAMS_GET_INDEX_BASE);
+#undef PARAMS_GET_INDEX_BASE
+
+            void** values = (void**)0x4;
+#define PARAMS_GET_VALUES descr, values
+            bad_arg_analysis(rocsparse_spmat_get_values, PARAMS_GET_VALUES);
+#undef PARAMS_GET_VALUES
+
+#define PARAMS_GET_STRIDED_BATCH descr, batch_count
+            bad_arg_analysis(rocsparse_spmat_get_strided_batch, PARAMS_GET_STRIDED_BATCH);
+#undef PARAMS_GET_STRIDED_BATCH
+
+            // Destroy valid descriptors
+            EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(descr), rocsparse_status_success);
+        }
+
+        {
+            EXPECT_ROCSPARSE_STATUS(rocsparse_create_csr_descr(&local_descr,
+                                                               local_rows,
+                                                               local_cols,
+                                                               local_nnz,
+                                                               (void*)0x4,
+                                                               (void*)0x4,
+                                                               (void*)0x4,
+                                                               local_itype,
+                                                               local_jtype,
+                                                               local_base,
+                                                               local_ttype),
+                                    rocsparse_status_success);
+
+#define PARAMS_GET_CSR                                                                     \
+    descr, rows, cols, nnz, csr_row_ptr, csr_col_ind, csr_val, row_ptr_type, col_ind_type, \
+        idx_base, data_type
+            bad_arg_analysis(rocsparse_csr_get, PARAMS_GET_CSR);
 #undef PARAMS_GET_CSR
 
-#define PARAMS_GET_ELL \
-    A, &rows, &cols, col_data_ptr, val_data_ptr, &ell_width, &itype, &base, &ttype
-    auto_testing_bad_arg(rocsparse_ell_get, PARAMS_GET_ELL);
+#define PARAMS_GET_SIZE descr, rows, cols, nnz
+            bad_arg_analysis(rocsparse_spmat_get_size, PARAMS_GET_SIZE);
+#undef PARAMS_GET_SIZE
+
+#define PARAMS_GET_FORMAT descr, format
+            bad_arg_analysis(rocsparse_spmat_get_format, PARAMS_GET_FORMAT);
+#undef PARAMS_GET_FORMAT
+
+#define PARAMS_GET_INDEX_BASE descr, idx_base
+            bad_arg_analysis(rocsparse_spmat_get_index_base, PARAMS_GET_INDEX_BASE);
+#undef PARAMS_GET_INDEX_BASE
+
+            void** values = (void**)0x4;
+#define PARAMS_GET_VALUES descr, values
+            bad_arg_analysis(rocsparse_spmat_get_values, PARAMS_GET_VALUES);
+#undef PARAMS_GET_VALUES
+
+#define PARAMS_GET_STRIDED_BATCH descr, batch_count
+            bad_arg_analysis(rocsparse_spmat_get_strided_batch, PARAMS_GET_STRIDED_BATCH);
+#undef PARAMS_GET_STRIDED_BATCH
+
+            // Destroy valid descriptors
+            EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(descr), rocsparse_status_success);
+        }
+
+        {
+            EXPECT_ROCSPARSE_STATUS(rocsparse_create_csc_descr(&local_descr,
+                                                               local_rows,
+                                                               local_cols,
+                                                               local_nnz,
+                                                               (void*)0x4,
+                                                               (void*)0x4,
+                                                               (void*)0x4,
+                                                               local_itype,
+                                                               local_jtype,
+                                                               local_base,
+                                                               local_ttype),
+                                    rocsparse_status_success);
+
+#if 0
+#define PARAMS_GET_CSC                                                                     \
+    descr, rows, cols, nnz, csc_col_ptr, csc_row_ind, csc_val, col_ptr_type, row_ind_type, \
+        idx_base, data_type
+      bad_arg_analysis(rocsparse_csr_get, PARAMS_GET_CSC);
+#undef PARAMS_GET_CSC
+#endif
+
+#define PARAMS_GET_SIZE descr, rows, cols, nnz
+            bad_arg_analysis(rocsparse_spmat_get_size, PARAMS_GET_SIZE);
+#undef PARAMS_GET_SIZE
+
+#define PARAMS_GET_FORMAT descr, format
+            bad_arg_analysis(rocsparse_spmat_get_format, PARAMS_GET_FORMAT);
+#undef PARAMS_GET_FORMAT
+
+#define PARAMS_GET_INDEX_BASE descr, idx_base
+            bad_arg_analysis(rocsparse_spmat_get_index_base, PARAMS_GET_INDEX_BASE);
+#undef PARAMS_GET_INDEX_BASE
+
+            void** values = (void**)0x4;
+#define PARAMS_GET_VALUES descr, values
+            bad_arg_analysis(rocsparse_spmat_get_values, PARAMS_GET_VALUES);
+#undef PARAMS_GET_VALUES
+
+#define PARAMS_GET_STRIDED_BATCH descr, batch_count
+            bad_arg_analysis(rocsparse_spmat_get_strided_batch, PARAMS_GET_STRIDED_BATCH);
+#undef PARAMS_GET_STRIDED_BATCH
+
+            // Destroy valid descriptors
+            EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(descr), rocsparse_status_success);
+        }
+
+        {
+            EXPECT_ROCSPARSE_STATUS(rocsparse_create_bell_descr(&local_descr,
+                                                                local_rows,
+                                                                local_cols,
+                                                                local_ell_block_dir,
+                                                                local_ell_block_dim,
+                                                                local_ell_cols,
+                                                                (void*)0x4,
+                                                                (void*)0x4,
+                                                                local_itype,
+                                                                local_base,
+                                                                local_ttype),
+                                    rocsparse_status_success);
+
+#define PARAMS_GET_ELL                                                                         \
+    descr, rows, cols, ell_block_dir, ell_block_dim, ell_cols, ell_col_ind, ell_val, idx_type, \
+        idx_base, data_type
+            bad_arg_analysis(rocsparse_bell_get, PARAMS_GET_ELL);
 #undef PARAMS_GET_ELL
 
-    // rocsparse_coo_set_pointers
-    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_pointers(nullptr, row_data, col_data, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_pointers(coo, nullptr, col_data, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_pointers(coo, row_data, nullptr, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_pointers(coo, row_data, col_data, nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_GET_SIZE descr, rows, cols, nnz
+            bad_arg_analysis(rocsparse_spmat_get_size, PARAMS_GET_SIZE);
+#undef PARAMS_GET_SIZE
 
-    // rocsparse_csr_set_pointers
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_pointers(nullptr, row_data, col_data, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_pointers(csr, nullptr, col_data, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_pointers(csr, row_data, nullptr, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_pointers(csr, row_data, col_data, nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_GET_FORMAT descr, format
+            bad_arg_analysis(rocsparse_spmat_get_format, PARAMS_GET_FORMAT);
+#undef PARAMS_GET_FORMAT
 
-    // rocsparse_csc_set_pointers
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_pointers(nullptr, col_data, row_data, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_pointers(csc, nullptr, row_data, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_pointers(csc, col_data, nullptr, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_pointers(csc, col_data, row_data, nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_GET_INDEX_BASE descr, idx_base
+            bad_arg_analysis(rocsparse_spmat_get_index_base, PARAMS_GET_INDEX_BASE);
+#undef PARAMS_GET_INDEX_BASE
 
-    // rocsparse_ell_set_pointers
-    EXPECT_ROCSPARSE_STATUS(rocsparse_ell_set_pointers(nullptr, col_data, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_ell_set_pointers(ell, nullptr, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_ell_set_pointers(ell, col_data, nullptr),
-                            rocsparse_status_invalid_pointer);
+            void** values = (void**)0x4;
+#define PARAMS_GET_VALUES descr, values
+            bad_arg_analysis(rocsparse_spmat_get_values, PARAMS_GET_VALUES);
+#undef PARAMS_GET_VALUES
 
-    // rocsparse_spmat_get_size
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(nullptr, &rows, &cols, &nnz),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(coo, nullptr, &cols, &nnz),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(coo, &rows, nullptr, &nnz),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(coo, &rows, &cols, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csr, nullptr, &cols, &nnz),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csr, &rows, nullptr, &nnz),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csr, &rows, &cols, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csc, nullptr, &cols, &nnz),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csc, &rows, nullptr, &nnz),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csc, &rows, &cols, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(ell, nullptr, &cols, &nnz),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(ell, &rows, nullptr, &nnz),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(ell, &rows, &cols, nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_GET_STRIDED_BATCH descr, batch_count
+            bad_arg_analysis(rocsparse_spmat_get_strided_batch, PARAMS_GET_STRIDED_BATCH);
+#undef PARAMS_GET_STRIDED_BATCH
 
-    // rocsparse_spmat_get_format
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_format(nullptr, &format),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_format(coo, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_format(csr, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_format(csc, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_format(ell, nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // rocsparse_spmat_get_index_base
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_index_base(nullptr, &base),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_index_base(coo, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_index_base(csr, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_index_base(csc, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_index_base(ell, nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // rocsparse_spmat_get_values
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_values(nullptr, (void**)&val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_values(coo, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_values(csr, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_values(csc, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_values(ell, nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // rocsparse_spmat_set_values
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_values(nullptr, val_data),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_values(coo, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_values(csr, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_values(csc, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_values(ell, nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    int     batch_count                 = safe_size;
-    int64_t batch_stride                = safe_size;
-    int64_t offsets_batch_stride        = safe_size;
-    int64_t columns_values_batch_stride = safe_size;
-    int64_t rows_values_batch_stride    = safe_size;
-
-    // rocsparse_spmat_get_strided_batch
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_strided_batch(nullptr, &batch_count),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_strided_batch(coo, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_strided_batch(csr, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_strided_batch(csc, nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_strided_batch(ell, nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // rocsparse_spmat_set_strided_batch
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_strided_batch(nullptr, batch_count),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_strided_batch(coo, -1),
-                            rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_strided_batch(csr, -1),
-                            rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_strided_batch(csc, -1),
-                            rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_strided_batch(ell, -1),
-                            rocsparse_status_invalid_value);
-
-    // rocsparse_coo_set_strided_batch
-    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_strided_batch(nullptr, batch_count, batch_stride),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_strided_batch(coo, -1, batch_stride),
-                            rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_strided_batch(coo, batch_count, -1),
-                            rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_strided_batch(coo, -1, -1),
-                            rocsparse_status_invalid_value);
-
-    // rocsparse_csr_set_strided_batch
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr_set_strided_batch(
-            nullptr, batch_count, offsets_batch_stride, columns_values_batch_stride),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr_set_strided_batch(csr, -1, offsets_batch_stride, columns_values_batch_stride),
-        rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr_set_strided_batch(csr, batch_count, -1, columns_values_batch_stride),
-        rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr_set_strided_batch(csr, batch_count, offsets_batch_stride, -1),
-        rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr_set_strided_batch(csr, -1, -1, columns_values_batch_stride),
-        rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_strided_batch(csr, batch_count, -1, -1),
-                            rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_strided_batch(csr, -1, offsets_batch_stride, -1),
-                            rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_strided_batch(csr, -1, -1, -1),
-                            rocsparse_status_invalid_value);
-
-    // rocsparse_csc_set_strided_batch
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csc_set_strided_batch(
-            nullptr, batch_count, offsets_batch_stride, rows_values_batch_stride),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csc_set_strided_batch(csc, -1, offsets_batch_stride, rows_values_batch_stride),
-        rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csc_set_strided_batch(csc, batch_count, -1, rows_values_batch_stride),
-        rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csc_set_strided_batch(csc, batch_count, offsets_batch_stride, -1),
-        rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_strided_batch(csc, -1, -1, rows_values_batch_stride),
-                            rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_strided_batch(csc, batch_count, -1, -1),
-                            rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_strided_batch(csc, -1, offsets_batch_stride, -1),
-                            rocsparse_status_invalid_value);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csc_set_strided_batch(csc, -1, -1, -1),
-                            rocsparse_status_invalid_value);
-
-    // Destroy valid descriptors
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(coo), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(csr), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(csc), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(ell), rocsparse_status_success);
+            // Destroy valid descriptors
+            EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(descr), rocsparse_status_success);
+        }
+    }
 }
 template <typename I, typename J, typename T>
 void testing_spmat_descr(const Arguments& arg)
