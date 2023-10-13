@@ -26,7 +26,7 @@
 #include "testing_spsm_csr.hpp"
 
 TEST_ROUTINE_WITH_CONFIG(spsm_csr,
-                         level2,
+                         level3,
                          rocsparse_test_config_ijt,
                          arg.M,
                          arg.alpha,

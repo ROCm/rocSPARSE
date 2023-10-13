@@ -327,7 +327,6 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
     }
 
     {
-        rocsparse_spmat_descr descr         = local_descr;
         int64_t*              rows          = &local_rows;
         int64_t*              cols          = &local_cols;
         int64_t*              nnz           = &local_nnz;
@@ -370,6 +369,7 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
                                                                local_base,
                                                                local_ttype),
                                     rocsparse_status_success);
+            rocsparse_spmat_descr descr = local_descr;
 
 #define PARAMS_GET_COO \
     descr, rows, cols, nnz, coo_row_ind, coo_col_ind, coo_val, idx_type, idx_base, data_type
@@ -414,6 +414,7 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
                                                                local_base,
                                                                local_ttype),
                                     rocsparse_status_success);
+            rocsparse_spmat_descr descr = local_descr;
 
 #define PARAMS_GET_CSR                                                                     \
     descr, rows, cols, nnz, csr_row_ptr, csr_col_ind, csr_val, row_ptr_type, col_ind_type, \
@@ -459,6 +460,7 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
                                                                local_base,
                                                                local_ttype),
                                     rocsparse_status_success);
+            rocsparse_spmat_descr descr = local_descr;
 
 #if 0
 #define PARAMS_GET_CSC                                                                     \
@@ -506,6 +508,7 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
                                                                 local_base,
                                                                 local_ttype),
                                     rocsparse_status_success);
+            rocsparse_spmat_descr descr = local_descr;
 
 #define PARAMS_GET_ELL                                                                         \
     descr, rows, cols, ell_block_dir, ell_block_dim, ell_cols, ell_col_ind, ell_val, idx_type, \
