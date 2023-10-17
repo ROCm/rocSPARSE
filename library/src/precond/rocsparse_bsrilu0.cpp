@@ -460,7 +460,8 @@ inline void bsrilu0_launcher(rocsparse_handle     handle,
                              U                    boost_tol_device_host,
                              V                    boost_val_device_host)
 {
-    if(handle->properties.gcnArch == 908 && handle->asic_rev < 2)
+    const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+    if(gcn_arch_name == rocpsarse_arch_names::gfx908 && handle->asic_rev < 2)
     {
         LAUNCH_BSRILU65inf(true, 64);
     }
@@ -510,7 +511,9 @@ inline void bsrilu0_launcher(rocsparse_handle     handle,
                              U                    boost_tol_device_host,
                              V                    boost_val_device_host)
 {
-    if(handle->properties.gcnArch == 908 && handle->asic_rev < 2)
+
+    const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+    if(gcn_arch_name == rocpsarse_arch_names::gfx908 && handle->asic_rev < 2)
     {
         LAUNCH_BSRILU65inf(true, 64);
     }
