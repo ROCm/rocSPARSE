@@ -257,8 +257,13 @@ int main(int argc, char** argv)
     std::cout << "rocSPARSE version: " << ver / 100000 << "." << ver / 100 % 1000 << "."
               << ver % 100 << "-" << rev << std::endl;
 
+    std::string datapath = rocsparse_datapath();
+
+    // Print test data path being used
+    std::cout << "rocSPARSE data path: " << datapath << std::endl;
+
     // Set data file path
-    rocsparse_parse_data(argc, argv, rocsparse_exepath() + "rocsparse_test.data");
+    rocsparse_parse_data(argc, argv, datapath + "rocsparse_test.data");
 
     // Initialize google test
     InitGoogleTest(&argc, argv);

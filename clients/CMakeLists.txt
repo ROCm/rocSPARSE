@@ -118,11 +118,11 @@ if(BUILD_CLIENTS_TESTS)
   rocm_install(
     FILES "${ROCSPARSE_COMMON}" "${ROCSPARSE_TEMPLATE}"
     COMPONENT clients-common
-    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/rocsparse/test"
   )
   rocm_install(
     PROGRAMS "${ROCSPARSE_GENTEST}"
     COMPONENT clients-common
-    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/rocsparse/test"
   )
 endif()

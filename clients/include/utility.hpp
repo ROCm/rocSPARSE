@@ -35,12 +35,11 @@
 
 #include <hip/hip_runtime_api.h>
 #include <vector>
-/* ==================================================================================== */
+
 // Return index type
 template <typename I>
 inline rocsparse_indextype get_indextype(void);
 
-/* ==================================================================================== */
 // Return data type
 template <typename T>
 inline rocsparse_datatype get_datatype(void);
@@ -113,7 +112,6 @@ inline rocsparse_datatype get_datatype<rocsparse_double_complex>(void)
     return rocsparse_datatype_f64_c;
 }
 
-/* ==================================================================================== */
 /*! \brief  local handle which is automatically created and destroyed  */
 class rocsparse_local_handle
 {
@@ -220,7 +218,6 @@ private:
     bool        graph_testing;
 };
 
-/* ==================================================================================== */
 /*! \brief  local matrix descriptor which is automatically created and destroyed  */
 class rocsparse_local_mat_descr
 {
@@ -252,7 +249,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local matrix info which is automatically created and destroyed  */
 class rocsparse_local_mat_info
 {
@@ -294,7 +290,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local color info which is automatically created and destroyed  */
 class rocsparse_local_color_info
 {
@@ -336,7 +331,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  hyb matrix structure helper to access data for tests  */
 struct test_hyb
 {
@@ -353,7 +347,6 @@ struct test_hyb
     void*                   coo_val;
 };
 
-/* ==================================================================================== */
 /*! \brief  local hyb matrix structure which is automatically created and destroyed  */
 class rocsparse_local_hyb_mat
 {
@@ -384,7 +377,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local dense vector structure which is automatically created and destroyed  */
 class rocsparse_local_spvec
 {
@@ -425,7 +417,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local sparse matrix structure which is automatically created and destroyed  */
 class rocsparse_local_spmat
 {
@@ -697,7 +688,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local dense vector structure which is automatically created and destroyed  */
 class rocsparse_local_dnvec
 {
@@ -737,7 +727,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local dense matrix structure which is automatically created and destroyed  */
 class rocsparse_local_dnmat
 {
@@ -782,7 +771,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*  timing: HIP only provides very limited timers function clock() and not general;
             rocsparse sync CPU and device and use more accurate CPU timer*/
 
@@ -796,8 +784,10 @@ double get_time_us(void);
  */
 double get_time_us_sync(hipStream_t stream);
 
-/* ==================================================================================== */
-// Return path of this executable
+/*! \brief Return path of this executable */
 std::string rocsparse_exepath();
+
+/*! \brief Return path where the test data file (rocsparse_test.data) is located */
+std::string rocsparse_datapath();
 
 #endif // UTILITY_HPP

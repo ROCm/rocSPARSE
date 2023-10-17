@@ -398,7 +398,7 @@ add_custom_target(rocsparse-test-data
 
 add_dependencies(rocsparse-test  rocsparse-test-data rocsparse-common)
 
-rocm_install(FILES ${ROCSPARSE_TEST_DATA} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT tests)
+rocm_install(FILES ${ROCSPARSE_TEST_DATA} DESTINATION "${CMAKE_INSTALL_DATADIR}/rocsparse/test" COMPONENT tests)
 
 if (WIN32)
   # for now adding in all .dll as dependency chain is not cmake based on win32

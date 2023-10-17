@@ -78,10 +78,11 @@ struct rocsparse_clients_envariables
     ///
     typedef enum var_string_ : int32_t
     {
-        MATRICES_DIR
+        MATRICES_DIR,
+        TEST_DATA_DIR
     } var_string;
 
-    static constexpr var_string s_var_string_all[1] = {MATRICES_DIR};
+    static constexpr var_string s_var_string_all[2] = {MATRICES_DIR, TEST_DATA_DIR};
 
     ///
     /// @brief Return value of a string variable.
