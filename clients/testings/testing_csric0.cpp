@@ -872,8 +872,6 @@ INSTANTIATE(rocsparse_double_complex);
 template <typename T>
 static void testing_csric0_extra_template(const Arguments& arg)
 {
-// debug
- return;
 
 
     // --------------------------------------
