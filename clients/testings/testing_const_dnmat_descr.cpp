@@ -58,25 +58,31 @@ void testing_const_dnmat_descr_bad_arg(const Arguments& arg)
         EXPECT_ROCSPARSE_STATUS(
             rocsparse_create_const_dnmat_descr(descr, 0, cols, ld, nullptr, data_type, order),
             rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(descr[0]), rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(*descr), rocsparse_status_success);
         EXPECT_ROCSPARSE_STATUS(
             rocsparse_create_const_dnmat_descr(descr, rows, 0, ld, nullptr, data_type, order),
             rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(descr[0]), rocsparse_status_success);
-        // Create valid descriptor
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_create_const_dnmat_descr(descr, rows, cols, ld, values, data_type, order),
-            rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(*descr), rocsparse_status_success);
     }
 
     {
-        rocsparse_const_dnmat_descr descr     = local_descr;
-        int64_t*                    rows      = &local_rows;
-        int64_t*                    cols      = &local_cols;
-        int64_t*                    ld        = &local_ld;
-        const void**                values    = (const void**)0x4;
-        rocsparse_order*            order     = &local_order;
-        rocsparse_datatype*         data_type = &local_data_type;
+        int64_t*            rows      = &local_rows;
+        int64_t*            cols      = &local_cols;
+        int64_t*            ld        = &local_ld;
+        const void**        values    = (const void**)0x4;
+        rocsparse_order*    order     = &local_order;
+        rocsparse_datatype* data_type = &local_data_type;
+
+        // Create valid descriptor
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_const_dnmat_descr(&local_descr,
+                                                                   local_rows,
+                                                                   local_cols,
+                                                                   local_ld,
+                                                                   (const void*)0x4,
+                                                                   local_data_type,
+                                                                   local_order),
+                                rocsparse_status_success);
+        rocsparse_const_dnmat_descr descr = local_descr;
 
 #define PARAMS_GET descr, rows, cols, ld, values, data_type, order
         bad_arg_analysis(rocsparse_const_dnmat_get, PARAMS_GET);
@@ -88,9 +94,9 @@ void testing_const_dnmat_descr_bad_arg(const Arguments& arg)
 #define PARAMS_GET descr, batch_count, batch_stride
         bad_arg_analysis(rocsparse_dnmat_get_strided_batch, PARAMS_GET);
 #undef PARAMS_GET
-    }
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(local_descr), rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(descr), rocsparse_status_success);
+    }
 }
 
 template <typename T>
