@@ -157,6 +157,20 @@ rocsparse_status rocsparse_csric0_analysis_template(rocsparse_handle          ha
                                                      (rocsparse_int**)&info->zero_pivot,
                                                      temp_buffer));
 
+    {
+        // setup info->singular_pivot
+        if(info->singular_pivot == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+                (void**)&(info->singular_pivot), sizeof(rocsparse_int), handle->stream));
+        };
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->singular_pivot,
+                                           info->zero_pivot,
+                                           sizeof(rocsparse_int),
+                                           hipMemcpyDeviceToDevice,
+                                           handle->stream));
+    }
+
     return rocsparse_status_success;
 }
 
