@@ -38,7 +38,7 @@ void csric0_hash_kernel(rocsparse_int m,
                         rocsparse_int* __restrict__ zero_pivot,
                         rocsparse_int* __restrict__ singular_pivot,
                         double               tol,
-                        rocsparse_index_base idx_base  )
+                        rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -228,7 +228,7 @@ void csric0_hash_kernel(rocsparse_int m,
             T const diag_val = csr_val[row_diag] - sum;
 
             // test for negative value and numerical small value
-            if((std::real(diag_val) <= tol * tol) && (std::imag(diag_val) == 0))
+            if((std::imag(diag_val) == 0) && (std::real(diag_val) < tol * tol))
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
             };
@@ -425,7 +425,7 @@ void csric0_binsearch_kernel(rocsparse_int m,
             T const diag_val = csr_val[row_diag] - sum;
 
             // check for negative value and numerical small value
-            if((std::real(diag_val) <= tol * tol) && (std::imag(diag_val) == 0))
+            if((std::imag(diag_val) == 0) && (std::real(diag_val) < tol * tol))
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
             };
