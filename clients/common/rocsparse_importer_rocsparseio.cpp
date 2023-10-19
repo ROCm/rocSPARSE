@@ -160,7 +160,7 @@ rocsparse_importer_rocsparseio::rocsparse_importer_rocsparseio(const std::string
     istatus = rocsparseio_open(&this->m_handle, rocsparseio_rwmode_read, this->m_filename.c_str());
     if(istatus != rocsparseio_status_success)
     {
-        std::cerr << "cannot open file '" << this->m_filename << "'" << std::endl;
+        missing_file_error_message(this->m_filename.c_str());
         throw rocsparse_status_internal_error;
     }
 #else

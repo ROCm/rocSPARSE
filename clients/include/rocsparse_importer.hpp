@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -407,5 +407,42 @@ public:
         return rocsparse_status_success;
     }
 };
+
+inline void missing_file_error_message(const char* filename)
+{
+    std::cerr << "#" << std::endl;
+    std::cerr << "# error:" << std::endl;
+    std::cerr << "# cannot open file '" << filename << "'" << std::endl;
+    std::cerr << "#" << std::endl;
+    std::cerr << "# PLEASE READ CAREFULLY !" << std::endl;
+    std::cerr << "#" << std::endl;
+    std::cerr << "# What could be the reason of this error: " << std::endl;
+    std::cerr
+        << "# -1 If you are running the benchmarking application, then the path (or the name) "
+           "of the file you have specified might contain a typo."
+        << std::endl;
+    std::cerr << "# -2 If you are running the benchmarking application, then the file you have "
+                 "specified does not exist."
+              << std::endl;
+    std::cerr
+        << "# -3 If you are running the testing application, then it expects to find the file "
+           "at the specified location. This means that either you did not download the test "
+           "matrices, or you did not specify the location of the folder containing your "
+           "files. If you want to specify the location of the folder containing your files, "
+           "then you will find the needed information with 'rocsparse-test --help'."
+           "If you need to download matrices, then a cmake script "
+           "'rocsparse_clientmatrices.cmake' is available from the rocsparse client package."
+        << std::endl;
+    std::cerr << "#" << std::endl;
+    std::cerr
+        << "# Examples: 'rocsparse_clientmatrices.cmake -DCMAKE_MATRICES_DIR=<path-of-your-folder>'"
+        << std::endl;
+    std::cerr << "#           'rocsparse-test --matrices-dir <path-of-your-folder>'" << std::endl;
+    std::cerr << "# (or        'export "
+                 "ROCSPARSE_CLIENTS_MATRICES_DIR=<path-of-your-folder>;rocsparse-test')"
+              << std::endl;
+    std::cerr << "#" << std::endl;
+    exit(rocsparse_status_internal_error);
+}
 
 #endif
