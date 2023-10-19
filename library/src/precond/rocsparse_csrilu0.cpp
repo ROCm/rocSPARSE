@@ -64,6 +64,12 @@ rocsparse_status rocsparse_csrilu0_numeric_boost_template(rocsparse_handle   han
         info->use_double_prec_tol = std::is_same<U, double>();
         info->boost_tol           = reinterpret_cast<const void*>(boost_tol);
         info->boost_val           = reinterpret_cast<const void*>(boost_val);
+
+        bool const isok = ((*boost_tol) >= 0) && (std::abs(*boost_tol) <= std::abs(*boost_val));
+        if(!isok)
+        {
+            return (rocsparse_status_invalid_value);
+        };
     }
 
     return rocsparse_status_success;
