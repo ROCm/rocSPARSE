@@ -95,6 +95,22 @@ if(BUILD_CLIENTS_TESTS)
   enable_testing()
   add_subdirectory(tests)
 
+  if(NOT CONVERT_SOURCE)
+    set(CONVERT_SOURCE ${CMAKE_SOURCE_DIR}/deps/convert.cpp)
+  endif()
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe RESULT_VARIABLE STATUS)
+  if(STATUS AND NOT STATUS EQUAL 0)
+    message(FATAL_ERROR "mtx2csr.exe failed to build, aborting.")
+  endif()
+
+  set(ROCSPARSE_CLIENTMATRICES "${CMAKE_SOURCE_DIR}/cmake/rocsparse_clientmatrices.cmake")
+
+  set(ROCSPARSE_CONVERT "${PROJECT_BINARY_DIR}/rocsparse_mtx2csr")
+  add_custom_command(OUTPUT "${ROCSPARSE_CONVERT}"
+                    COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_BINARY_DIR}/mtx2csr.exe" "${ROCSPARSE_CONVERT}"
+                    DEPENDS "${PROJECT_BINARY_DIR}/mtx2csr.exe"
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
   set(ROCSPARSE_COMMON "${PROJECT_BINARY_DIR}/staging/rocsparse_common.yaml")
   add_custom_command(OUTPUT "${ROCSPARSE_COMMON}"
                     COMMAND ${CMAKE_COMMAND} -E copy include/rocsparse_common.yaml "${ROCSPARSE_COMMON}"
@@ -113,16 +129,30 @@ if(BUILD_CLIENTS_TESTS)
                     DEPENDS common/rocsparse_gentest.py
                     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
-  add_custom_target(rocsparse-common DEPENDS "${ROCSPARSE_COMMON}" "${ROCSPARSE_TEMPLATE}" "${ROCSPARSE_GENTEST}")
+  add_custom_target(rocsparse-common DEPENDS "${ROCSPARSE_COMMON}" "${ROCSPARSE_TEMPLATE}" "${ROCSPARSE_GENTEST}" "${ROCSPARSE_CONVERT}")
 
   rocm_install(
     FILES "${ROCSPARSE_COMMON}" "${ROCSPARSE_TEMPLATE}"
     COMPONENT clients-common
     DESTINATION "${CMAKE_INSTALL_DATADIR}/rocsparse/test"
-  )
+    )
+  #
   rocm_install(
     PROGRAMS "${ROCSPARSE_GENTEST}"
     COMPONENT clients-common
     DESTINATION "${CMAKE_INSTALL_DATADIR}/rocsparse/test"
-  )
+    )
+  #
+  rocm_install(
+    PROGRAMS "${ROCSPARSE_CONVERT}"
+    COMPONENT clients-common
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+  #
+  rocm_install(
+    FILES "${ROCSPARSE_CLIENTMATRICES}"
+    COMPONENT clients-common
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/rocsparse/test"
+    )
+
 endif()
