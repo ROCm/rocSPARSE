@@ -88,10 +88,40 @@ static inline hipError_t rocsparse_assign_async(T* dest, T value, hipStream_t st
     // Use a kernel instead of memcpy, because memcpy is synchronous if the source is not in
     // pinned memory.
     // Memset lacks a 64bit option, but would involve a similar implicit kernel anyways.
-    auto last_error_cleanup = hipGetLastError();
-    (void)(last_error_cleanup);
-    hipLaunchKernelGGL(rocsparse_assign_kernel, dim3(1), dim3(1), 0, stream, dest, value);
-    return hipGetLastError();
+
+    if(false == rocsparse_debug_variables.get_debug_kernel_launch())
+    {
+        hipLaunchKernelGGL(rocsparse_assign_kernel, dim3(1), dim3(1), 0, stream, dest, value);
+        return hipSuccess;
+    }
+    else
+    {
+        {
+            const hipError_t err = hipGetLastError();
+            if(err != hipSuccess)
+            {
+                std::stringstream s;
+                s << "prior to hipLaunchKernelGGL"
+                  << ", hip error detected: code '" << err << "', name '" << hipGetErrorName(err)
+                  << "', description '" << hipGetErrorString(err) << "'";
+                ROCSPARSE_ERROR_MESSAGE(get_rocsparse_status_for_hip_status(err), s.str().c_str());
+                return err;
+            }
+        }
+        hipLaunchKernelGGL(rocsparse_assign_kernel, dim3(1), dim3(1), 0, stream, dest, value);
+        {
+            const hipError_t err = hipGetLastError();
+            if(err != hipSuccess)
+            {
+                std::stringstream s;
+                s << "hip error detected: code '" << err << "', name '" << hipGetErrorName(err)
+                  << "', description '" << hipGetErrorString(err) << "'";
+                ROCSPARSE_ERROR_MESSAGE(get_rocsparse_status_for_hip_status(err), s.str().c_str());
+                return err;
+            }
+        }
+        return hipSuccess;
+    }
 }
 
 // if trace logging is turned on with
