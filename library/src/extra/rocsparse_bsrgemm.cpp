@@ -498,7 +498,7 @@ static inline rocsparse_status bsrgemm_2x2_group_6_launcher(rocsparse_handle    
 {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_HASHSIZE 512
-    hipLaunchKernelGGL(
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
         (bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE, 16, BSRGEMM_HASHSIZE, BSRGEMM_FLL_HASH>),
         dim3(group_size),
         dim3(BSRGEMM_BLOCKSIZE),
@@ -590,39 +590,40 @@ static inline rocsparse_status
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 16
 #define BSRGEMM_HASHSIZE 8
-        hipLaunchKernelGGL((bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                                        BSRGEMM_WFSIZE,
-                                                        BSRGEMM_HASHSIZE,
-                                                        BSRGEMM_FLL_HASH>),
-                           dim3((BSRGEMM_WFSIZE * (int64_t)group_size[0] - 1) / 256 + 1),
-                           dim3(BSRGEMM_BLOCKSIZE),
-                           0,
-                           stream,
-                           dir,
-                           group_size[0],
-                           std::max(kb, nb),
-                           &group_offset[0],
-                           perm,
-                           alpha_device_host,
-                           bsr_row_ptr_A,
-                           bsr_col_ind_A,
-                           bsr_val_A,
-                           bsr_row_ptr_B,
-                           bsr_col_ind_B,
-                           bsr_val_B,
-                           beta_device_host,
-                           bsr_row_ptr_D,
-                           bsr_col_ind_D,
-                           bsr_val_D,
-                           bsr_row_ptr_C,
-                           bsr_col_ind_C,
-                           bsr_val_C,
-                           base_A,
-                           base_B,
-                           descr_C->base,
-                           base_D,
-                           info_C->csrgemm_info->mul,
-                           info_C->csrgemm_info->add);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                         BSRGEMM_WFSIZE,
+                                         BSRGEMM_HASHSIZE,
+                                         BSRGEMM_FLL_HASH>),
+            dim3((BSRGEMM_WFSIZE * (int64_t)group_size[0] - 1) / 256 + 1),
+            dim3(BSRGEMM_BLOCKSIZE),
+            0,
+            stream,
+            dir,
+            group_size[0],
+            std::max(kb, nb),
+            &group_offset[0],
+            perm,
+            alpha_device_host,
+            bsr_row_ptr_A,
+            bsr_col_ind_A,
+            bsr_val_A,
+            bsr_row_ptr_B,
+            bsr_col_ind_B,
+            bsr_val_B,
+            beta_device_host,
+            bsr_row_ptr_D,
+            bsr_col_ind_D,
+            bsr_val_D,
+            bsr_row_ptr_C,
+            bsr_col_ind_C,
+            bsr_val_C,
+            base_A,
+            base_B,
+            descr_C->base,
+            base_D,
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_WFSIZE
 #undef BSRGEMM_HASHSIZE
@@ -634,39 +635,40 @@ static inline rocsparse_status
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 16
 #define BSRGEMM_HASHSIZE 16
-        hipLaunchKernelGGL((bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                                        BSRGEMM_WFSIZE,
-                                                        BSRGEMM_HASHSIZE,
-                                                        BSRGEMM_FLL_HASH>),
-                           dim3((BSRGEMM_WFSIZE * (int64_t)group_size[1] - 1) / 256 + 1),
-                           dim3(BSRGEMM_BLOCKSIZE),
-                           0,
-                           stream,
-                           dir,
-                           group_size[1],
-                           std::max(kb, nb),
-                           &group_offset[1],
-                           perm,
-                           alpha_device_host,
-                           bsr_row_ptr_A,
-                           bsr_col_ind_A,
-                           bsr_val_A,
-                           bsr_row_ptr_B,
-                           bsr_col_ind_B,
-                           bsr_val_B,
-                           beta_device_host,
-                           bsr_row_ptr_D,
-                           bsr_col_ind_D,
-                           bsr_val_D,
-                           bsr_row_ptr_C,
-                           bsr_col_ind_C,
-                           bsr_val_C,
-                           base_A,
-                           base_B,
-                           descr_C->base,
-                           base_D,
-                           info_C->csrgemm_info->mul,
-                           info_C->csrgemm_info->add);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                         BSRGEMM_WFSIZE,
+                                         BSRGEMM_HASHSIZE,
+                                         BSRGEMM_FLL_HASH>),
+            dim3((BSRGEMM_WFSIZE * (int64_t)group_size[1] - 1) / 256 + 1),
+            dim3(BSRGEMM_BLOCKSIZE),
+            0,
+            stream,
+            dir,
+            group_size[1],
+            std::max(kb, nb),
+            &group_offset[1],
+            perm,
+            alpha_device_host,
+            bsr_row_ptr_A,
+            bsr_col_ind_A,
+            bsr_val_A,
+            bsr_row_ptr_B,
+            bsr_col_ind_B,
+            bsr_val_B,
+            beta_device_host,
+            bsr_row_ptr_D,
+            bsr_col_ind_D,
+            bsr_val_D,
+            bsr_row_ptr_C,
+            bsr_col_ind_C,
+            bsr_val_C,
+            base_A,
+            base_B,
+            descr_C->base,
+            base_D,
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_WFSIZE
 #undef BSRGEMM_HASHSIZE
@@ -678,39 +680,40 @@ static inline rocsparse_status
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 16
 #define BSRGEMM_HASHSIZE 32
-        hipLaunchKernelGGL((bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                                        BSRGEMM_WFSIZE,
-                                                        BSRGEMM_HASHSIZE,
-                                                        BSRGEMM_FLL_HASH>),
-                           dim3((BSRGEMM_WFSIZE * (int64_t)group_size[2] - 1) / 256 + 1),
-                           dim3(BSRGEMM_BLOCKSIZE),
-                           0,
-                           stream,
-                           dir,
-                           group_size[2],
-                           std::max(kb, nb),
-                           &group_offset[2],
-                           perm,
-                           alpha_device_host,
-                           bsr_row_ptr_A,
-                           bsr_col_ind_A,
-                           bsr_val_A,
-                           bsr_row_ptr_B,
-                           bsr_col_ind_B,
-                           bsr_val_B,
-                           beta_device_host,
-                           bsr_row_ptr_D,
-                           bsr_col_ind_D,
-                           bsr_val_D,
-                           bsr_row_ptr_C,
-                           bsr_col_ind_C,
-                           bsr_val_C,
-                           base_A,
-                           base_B,
-                           descr_C->base,
-                           base_D,
-                           info_C->csrgemm_info->mul,
-                           info_C->csrgemm_info->add);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                         BSRGEMM_WFSIZE,
+                                         BSRGEMM_HASHSIZE,
+                                         BSRGEMM_FLL_HASH>),
+            dim3((BSRGEMM_WFSIZE * (int64_t)group_size[2] - 1) / 256 + 1),
+            dim3(BSRGEMM_BLOCKSIZE),
+            0,
+            stream,
+            dir,
+            group_size[2],
+            std::max(kb, nb),
+            &group_offset[2],
+            perm,
+            alpha_device_host,
+            bsr_row_ptr_A,
+            bsr_col_ind_A,
+            bsr_val_A,
+            bsr_row_ptr_B,
+            bsr_col_ind_B,
+            bsr_val_B,
+            beta_device_host,
+            bsr_row_ptr_D,
+            bsr_col_ind_D,
+            bsr_val_D,
+            bsr_row_ptr_C,
+            bsr_col_ind_C,
+            bsr_val_C,
+            base_A,
+            base_B,
+            descr_C->base,
+            base_D,
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_WFSIZE
 #undef BSRGEMM_HASHSIZE
@@ -721,39 +724,39 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_HASHSIZE 64
-        hipLaunchKernelGGL((bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                                           16,
-                                                           BSRGEMM_HASHSIZE,
-                                                           BSRGEMM_FLL_HASH>),
-                           dim3(group_size[3]),
-                           dim3(BSRGEMM_BLOCKSIZE),
-                           0,
-                           stream,
-                           dir,
-                           group_size[3],
-                           std::max(kb, nb),
-                           &group_offset[3],
-                           perm,
-                           alpha_device_host,
-                           bsr_row_ptr_A,
-                           bsr_col_ind_A,
-                           bsr_val_A,
-                           bsr_row_ptr_B,
-                           bsr_col_ind_B,
-                           bsr_val_B,
-                           beta_device_host,
-                           bsr_row_ptr_D,
-                           bsr_col_ind_D,
-                           bsr_val_D,
-                           bsr_row_ptr_C,
-                           bsr_col_ind_C,
-                           bsr_val_C,
-                           base_A,
-                           base_B,
-                           descr_C->base,
-                           base_D,
-                           info_C->csrgemm_info->mul,
-                           info_C->csrgemm_info->add);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                                                           16,
+                                                                           BSRGEMM_HASHSIZE,
+                                                                           BSRGEMM_FLL_HASH>),
+                                           dim3(group_size[3]),
+                                           dim3(BSRGEMM_BLOCKSIZE),
+                                           0,
+                                           stream,
+                                           dir,
+                                           group_size[3],
+                                           std::max(kb, nb),
+                                           &group_offset[3],
+                                           perm,
+                                           alpha_device_host,
+                                           bsr_row_ptr_A,
+                                           bsr_col_ind_A,
+                                           bsr_val_A,
+                                           bsr_row_ptr_B,
+                                           bsr_col_ind_B,
+                                           bsr_val_B,
+                                           beta_device_host,
+                                           bsr_row_ptr_D,
+                                           bsr_col_ind_D,
+                                           bsr_val_D,
+                                           bsr_row_ptr_C,
+                                           bsr_col_ind_C,
+                                           bsr_val_C,
+                                           base_A,
+                                           base_B,
+                                           descr_C->base,
+                                           base_D,
+                                           info_C->csrgemm_info->mul,
+                                           info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_HASHSIZE
     }
@@ -763,39 +766,39 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_HASHSIZE 128
-        hipLaunchKernelGGL((bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                                           16,
-                                                           BSRGEMM_HASHSIZE,
-                                                           BSRGEMM_FLL_HASH>),
-                           dim3(group_size[4]),
-                           dim3(BSRGEMM_BLOCKSIZE),
-                           0,
-                           stream,
-                           dir,
-                           group_size[4],
-                           std::max(kb, nb),
-                           &group_offset[4],
-                           perm,
-                           alpha_device_host,
-                           bsr_row_ptr_A,
-                           bsr_col_ind_A,
-                           bsr_val_A,
-                           bsr_row_ptr_B,
-                           bsr_col_ind_B,
-                           bsr_val_B,
-                           beta_device_host,
-                           bsr_row_ptr_D,
-                           bsr_col_ind_D,
-                           bsr_val_D,
-                           bsr_row_ptr_C,
-                           bsr_col_ind_C,
-                           bsr_val_C,
-                           base_A,
-                           base_B,
-                           descr_C->base,
-                           base_D,
-                           info_C->csrgemm_info->mul,
-                           info_C->csrgemm_info->add);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                                                           16,
+                                                                           BSRGEMM_HASHSIZE,
+                                                                           BSRGEMM_FLL_HASH>),
+                                           dim3(group_size[4]),
+                                           dim3(BSRGEMM_BLOCKSIZE),
+                                           0,
+                                           stream,
+                                           dir,
+                                           group_size[4],
+                                           std::max(kb, nb),
+                                           &group_offset[4],
+                                           perm,
+                                           alpha_device_host,
+                                           bsr_row_ptr_A,
+                                           bsr_col_ind_A,
+                                           bsr_val_A,
+                                           bsr_row_ptr_B,
+                                           bsr_col_ind_B,
+                                           bsr_val_B,
+                                           beta_device_host,
+                                           bsr_row_ptr_D,
+                                           bsr_col_ind_D,
+                                           bsr_val_D,
+                                           bsr_row_ptr_C,
+                                           bsr_col_ind_C,
+                                           bsr_val_C,
+                                           base_A,
+                                           base_B,
+                                           descr_C->base,
+                                           base_D,
+                                           info_C->csrgemm_info->mul,
+                                           info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_HASHSIZE
     }
@@ -805,39 +808,39 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_HASHSIZE 256
-        hipLaunchKernelGGL((bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                                           16,
-                                                           BSRGEMM_HASHSIZE,
-                                                           BSRGEMM_FLL_HASH>),
-                           dim3(group_size[5]),
-                           dim3(BSRGEMM_BLOCKSIZE),
-                           0,
-                           stream,
-                           dir,
-                           group_size[5],
-                           std::max(kb, nb),
-                           &group_offset[5],
-                           perm,
-                           alpha_device_host,
-                           bsr_row_ptr_A,
-                           bsr_col_ind_A,
-                           bsr_val_A,
-                           bsr_row_ptr_B,
-                           bsr_col_ind_B,
-                           bsr_val_B,
-                           beta_device_host,
-                           bsr_row_ptr_D,
-                           bsr_col_ind_D,
-                           bsr_val_D,
-                           bsr_row_ptr_C,
-                           bsr_col_ind_C,
-                           bsr_val_C,
-                           base_A,
-                           base_B,
-                           descr_C->base,
-                           base_D,
-                           info_C->csrgemm_info->mul,
-                           info_C->csrgemm_info->add);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                                                           16,
+                                                                           BSRGEMM_HASHSIZE,
+                                                                           BSRGEMM_FLL_HASH>),
+                                           dim3(group_size[5]),
+                                           dim3(BSRGEMM_BLOCKSIZE),
+                                           0,
+                                           stream,
+                                           dir,
+                                           group_size[5],
+                                           std::max(kb, nb),
+                                           &group_offset[5],
+                                           perm,
+                                           alpha_device_host,
+                                           bsr_row_ptr_A,
+                                           bsr_col_ind_A,
+                                           bsr_val_A,
+                                           bsr_row_ptr_B,
+                                           bsr_col_ind_B,
+                                           bsr_val_B,
+                                           beta_device_host,
+                                           bsr_row_ptr_D,
+                                           bsr_col_ind_D,
+                                           bsr_val_D,
+                                           bsr_row_ptr_C,
+                                           bsr_col_ind_C,
+                                           bsr_val_C,
+                                           base_A,
+                                           base_B,
+                                           descr_C->base,
+                                           base_D,
+                                           info_C->csrgemm_info->mul,
+                                           info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_HASHSIZE
     }
@@ -880,7 +883,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 256
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 2>),
             dim3(group_size[7]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -973,7 +976,7 @@ static inline rocsparse_status
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 64
 #define BSRGEMM_HASHSIZE 8
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_fill_wf_per_row<BSRGEMM_BLOCKSIZE,
                                      BSRGEMM_WFSIZE,
                                      BSRGEMM_HASHSIZE,
@@ -1020,7 +1023,7 @@ static inline rocsparse_status
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 64
 #define BSRGEMM_HASHSIZE 16
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_fill_wf_per_row<BSRGEMM_BLOCKSIZE,
                                      BSRGEMM_WFSIZE,
                                      BSRGEMM_HASHSIZE,
@@ -1066,7 +1069,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 32
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
             dim3(group_size[2]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1107,7 +1110,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 64
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
             dim3(group_size[3]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1148,7 +1151,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 128
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
             dim3(group_size[4]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1189,7 +1192,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 128
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
             dim3(group_size[5]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1230,7 +1233,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 128
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
             dim3(group_size[6]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1271,7 +1274,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 128
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
             dim3(group_size[7]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1363,7 +1366,7 @@ static inline rocsparse_status
     {
         // #define BSRGEMM_BLOCKSIZE 256
         // #define BSRGEMM_HASHSIZE 8
-        //         hipLaunchKernelGGL(
+        //         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
         //             (bsrgemm_fill_block_per_row<BSRGEMM_BLOCKSIZE, BSRGEMM_HASHSIZE, BSRGEMM_FLL_HASH, 8>),
         //             dim3(group_size[0]),
         //             dim3(BSRGEMM_BLOCKSIZE),
@@ -1401,7 +1404,7 @@ static inline rocsparse_status
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 64
 #define BSRGEMM_HASHSIZE 8
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_fill_wf_per_row<BSRGEMM_BLOCKSIZE,
                                      BSRGEMM_WFSIZE,
                                      BSRGEMM_HASHSIZE,
@@ -1447,7 +1450,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 16
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
             dim3(group_size[1]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1488,7 +1491,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 32
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
             dim3(group_size[2]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1529,7 +1532,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 32
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
             dim3(group_size[3]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1570,7 +1573,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 32
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
             dim3(group_size[4]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1611,7 +1614,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 32
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
             dim3(group_size[5]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1652,7 +1655,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 32
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
             dim3(group_size[6]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1693,7 +1696,7 @@ static inline rocsparse_status
     {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 32
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
             dim3(group_size[7]),
             dim3(BSRGEMM_BLOCKSIZE),
@@ -1782,37 +1785,38 @@ static inline rocsparse_status
 
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 8
-    hipLaunchKernelGGL((bsrgemm_block_per_row_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 16>),
-                       dim3(group_size[0]),
-                       dim3(BSRGEMM_BLOCKSIZE),
-                       0,
-                       stream,
-                       dir,
-                       nb,
-                       block_dim,
-                       &group_offset[0],
-                       perm,
-                       alpha_device_host,
-                       bsr_row_ptr_A,
-                       bsr_col_ind_A,
-                       bsr_val_A,
-                       bsr_row_ptr_B,
-                       bsr_col_ind_B,
-                       bsr_val_B,
-                       beta_device_host,
-                       bsr_row_ptr_D,
-                       bsr_col_ind_D,
-                       bsr_val_D,
-                       bsr_row_ptr_C,
-                       bsr_col_ind_C,
-                       bsr_val_C,
-                       workspace,
-                       base_A,
-                       base_B,
-                       descr_C->base,
-                       base_D,
-                       info_C->csrgemm_info->mul,
-                       info_C->csrgemm_info->add);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+        (bsrgemm_block_per_row_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 16>),
+        dim3(group_size[0]),
+        dim3(BSRGEMM_BLOCKSIZE),
+        0,
+        stream,
+        dir,
+        nb,
+        block_dim,
+        &group_offset[0],
+        perm,
+        alpha_device_host,
+        bsr_row_ptr_A,
+        bsr_col_ind_A,
+        bsr_val_A,
+        bsr_row_ptr_B,
+        bsr_col_ind_B,
+        bsr_val_B,
+        beta_device_host,
+        bsr_row_ptr_D,
+        bsr_col_ind_D,
+        bsr_val_D,
+        bsr_row_ptr_C,
+        bsr_col_ind_C,
+        bsr_val_C,
+        workspace,
+        base_A,
+        base_B,
+        descr_C->base,
+        base_D,
+        info_C->csrgemm_info->mul,
+        info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_CHUNKSIZE
 
@@ -1869,37 +1873,38 @@ static inline rocsparse_status
 
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 2
-    hipLaunchKernelGGL((bsrgemm_block_per_row_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 32>),
-                       dim3(group_size[0]),
-                       dim3(BSRGEMM_BLOCKSIZE),
-                       0,
-                       stream,
-                       dir,
-                       nb,
-                       block_dim,
-                       &group_offset[0],
-                       perm,
-                       alpha_device_host,
-                       bsr_row_ptr_A,
-                       bsr_col_ind_A,
-                       bsr_val_A,
-                       bsr_row_ptr_B,
-                       bsr_col_ind_B,
-                       bsr_val_B,
-                       beta_device_host,
-                       bsr_row_ptr_D,
-                       bsr_col_ind_D,
-                       bsr_val_D,
-                       bsr_row_ptr_C,
-                       bsr_col_ind_C,
-                       bsr_val_C,
-                       workspace,
-                       base_A,
-                       base_B,
-                       descr_C->base,
-                       base_D,
-                       info_C->csrgemm_info->mul,
-                       info_C->csrgemm_info->add);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+        (bsrgemm_block_per_row_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 32>),
+        dim3(group_size[0]),
+        dim3(BSRGEMM_BLOCKSIZE),
+        0,
+        stream,
+        dir,
+        nb,
+        block_dim,
+        &group_offset[0],
+        perm,
+        alpha_device_host,
+        bsr_row_ptr_A,
+        bsr_col_ind_A,
+        bsr_val_A,
+        bsr_row_ptr_B,
+        bsr_col_ind_B,
+        bsr_val_B,
+        beta_device_host,
+        bsr_row_ptr_D,
+        bsr_col_ind_D,
+        bsr_val_D,
+        bsr_row_ptr_C,
+        bsr_col_ind_C,
+        bsr_val_C,
+        workspace,
+        base_A,
+        base_B,
+        descr_C->base,
+        base_D,
+        info_C->csrgemm_info->mul,
+        info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_CHUNKSIZE
 
@@ -1954,21 +1959,21 @@ static inline rocsparse_status
     J* workspace1 = reinterpret_cast<J*>(buffer);
 
 #define BSRGEMM_DIM 256
-    hipLaunchKernelGGL((csrgemm_max_row_nnz_part1<BSRGEMM_DIM>),
-                       dim3(BSRGEMM_DIM),
-                       dim3(BSRGEMM_DIM),
-                       0,
-                       stream,
-                       mb,
-                       bsr_row_ptr_C,
-                       workspace1);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_max_row_nnz_part1<BSRGEMM_DIM>),
+                                       dim3(BSRGEMM_DIM),
+                                       dim3(BSRGEMM_DIM),
+                                       0,
+                                       stream,
+                                       mb,
+                                       bsr_row_ptr_C,
+                                       workspace1);
 
-    hipLaunchKernelGGL((csrgemm_max_row_nnz_part2<BSRGEMM_DIM>),
-                       dim3(1),
-                       dim3(BSRGEMM_DIM),
-                       0,
-                       stream,
-                       workspace1);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_max_row_nnz_part2<BSRGEMM_DIM>),
+                                       dim3(1),
+                                       dim3(BSRGEMM_DIM),
+                                       0,
+                                       stream,
+                                       workspace1);
 #undef BSRGEMM_DIM
 
     J nnzb_max;
@@ -2016,35 +2021,38 @@ static inline rocsparse_status
 #define BSRGEMM_DIM 256
         if(block_dim == 2)
         {
-            hipLaunchKernelGGL((bsrgemm_group_reduce_part2<BSRGEMM_DIM, BSRGEMM_MAXGROUPS, 2, T>),
-                               dim3(BSRGEMM_DIM),
-                               dim3(BSRGEMM_DIM),
-                               0,
-                               stream,
-                               mb,
-                               bsr_row_ptr_C,
-                               d_group_size,
-                               tmp_groups);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (bsrgemm_group_reduce_part2<BSRGEMM_DIM, BSRGEMM_MAXGROUPS, 2, T>),
+                dim3(BSRGEMM_DIM),
+                dim3(BSRGEMM_DIM),
+                0,
+                stream,
+                mb,
+                bsr_row_ptr_C,
+                d_group_size,
+                tmp_groups);
         }
         else
         {
-            hipLaunchKernelGGL((bsrgemm_group_reduce_part2<BSRGEMM_DIM, BSRGEMM_MAXGROUPS, 8, T>),
-                               dim3(BSRGEMM_DIM),
-                               dim3(BSRGEMM_DIM),
-                               0,
-                               stream,
-                               mb,
-                               bsr_row_ptr_C,
-                               d_group_size,
-                               tmp_groups);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (bsrgemm_group_reduce_part2<BSRGEMM_DIM, BSRGEMM_MAXGROUPS, 8, T>),
+                dim3(BSRGEMM_DIM),
+                dim3(BSRGEMM_DIM),
+                0,
+                stream,
+                mb,
+                bsr_row_ptr_C,
+                d_group_size,
+                tmp_groups);
         }
 
-        hipLaunchKernelGGL((bsrgemm_group_reduce_part3<BSRGEMM_DIM, BSRGEMM_MAXGROUPS>),
-                           dim3(1),
-                           dim3(BSRGEMM_DIM),
-                           0,
-                           stream,
-                           d_group_size);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (bsrgemm_group_reduce_part3<BSRGEMM_DIM, BSRGEMM_MAXGROUPS>),
+            dim3(1),
+            dim3(BSRGEMM_DIM),
+            0,
+            stream,
+            d_group_size);
 #undef BSRGEMM_DIM
 
         // Exclusive sum to obtain group offsets
@@ -2847,41 +2855,43 @@ static inline rocsparse_status rocsparse_bsrgemm_scal_template(rocsparse_handle 
     // Copy column entries, if D != C
     if(bsr_col_ind_C != bsr_col_ind_D)
     {
-        hipLaunchKernelGGL((bsrgemm_copy<BSRGEMM_DIM>),
-                           dim3((nnzb_D - 1) / BSRGEMM_DIM + 1),
-                           dim3(BSRGEMM_DIM),
-                           0,
-                           stream,
-                           nnzb_D,
-                           bsr_col_ind_D,
-                           bsr_col_ind_C,
-                           descr_D->base,
-                           descr_C->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrgemm_copy<BSRGEMM_DIM>),
+                                           dim3((nnzb_D - 1) / BSRGEMM_DIM + 1),
+                                           dim3(BSRGEMM_DIM),
+                                           0,
+                                           stream,
+                                           nnzb_D,
+                                           bsr_col_ind_D,
+                                           bsr_col_ind_C,
+                                           descr_D->base,
+                                           descr_C->base);
     }
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((bsrgemm_copy_scale<BSRGEMM_DIM>),
-                           dim3((block_dim * block_dim * nnzb_D - 1) / BSRGEMM_DIM + 1),
-                           dim3(BSRGEMM_DIM),
-                           0,
-                           stream,
-                           block_dim * block_dim * nnzb_D,
-                           beta,
-                           bsr_val_D,
-                           bsr_val_C);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (bsrgemm_copy_scale<BSRGEMM_DIM>),
+            dim3((block_dim * block_dim * nnzb_D - 1) / BSRGEMM_DIM + 1),
+            dim3(BSRGEMM_DIM),
+            0,
+            stream,
+            block_dim * block_dim * nnzb_D,
+            beta,
+            bsr_val_D,
+            bsr_val_C);
     }
     else
     {
-        hipLaunchKernelGGL((bsrgemm_copy_scale<BSRGEMM_DIM>),
-                           dim3((block_dim * block_dim * nnzb_D - 1) / BSRGEMM_DIM + 1),
-                           dim3(BSRGEMM_DIM),
-                           0,
-                           stream,
-                           block_dim * block_dim * nnzb_D,
-                           *beta,
-                           bsr_val_D,
-                           bsr_val_C);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (bsrgemm_copy_scale<BSRGEMM_DIM>),
+            dim3((block_dim * block_dim * nnzb_D - 1) / BSRGEMM_DIM + 1),
+            dim3(BSRGEMM_DIM),
+            0,
+            stream,
+            block_dim * block_dim * nnzb_D,
+            *beta,
+            bsr_val_D,
+            bsr_val_C);
     }
 #undef BSRGEMM_DIM
 

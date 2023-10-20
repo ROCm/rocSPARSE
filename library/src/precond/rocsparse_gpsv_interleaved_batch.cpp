@@ -189,35 +189,35 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
         dim3 gpsv_threads(GPSV_DIM);
 
         // Copy strided B into buffer
-        hipLaunchKernelGGL((gpsv_strided_gather<GPSV_DIM>),
-                           gpsv_blocks,
-                           gpsv_threads,
-                           0,
-                           stream,
-                           m,
-                           batch_count,
-                           batch_stride,
-                           x,
-                           B);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gpsv_strided_gather<GPSV_DIM>),
+                                           gpsv_blocks,
+                                           gpsv_threads,
+                                           0,
+                                           stream,
+                                           m,
+                                           batch_count,
+                                           batch_stride,
+                                           x,
+                                           B);
 
         // Launch kernel
-        hipLaunchKernelGGL((gpsv_interleaved_batch_householder_qr_kernel<GPSV_DIM>),
-                           gpsv_blocks,
-                           gpsv_threads,
-                           0,
-                           stream,
-                           m,
-                           batch_count,
-                           batch_stride,
-                           ds,
-                           dl,
-                           d,
-                           du,
-                           dw,
-                           x,
-                           dt1,
-                           dt2,
-                           B);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gpsv_interleaved_batch_householder_qr_kernel<GPSV_DIM>),
+                                           gpsv_blocks,
+                                           gpsv_threads,
+                                           0,
+                                           stream,
+                                           m,
+                                           batch_count,
+                                           batch_stride,
+                                           ds,
+                                           dl,
+                                           d,
+                                           du,
+                                           dw,
+                                           x,
+                                           dt1,
+                                           dt2,
+                                           B);
 #undef GPSV_DIM
     }
     else
@@ -232,22 +232,22 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
         RETURN_IF_HIP_ERROR(hipMemsetAsync(
             r4, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
 
-        hipLaunchKernelGGL((gpsv_interleaved_batch_givens_qr_kernel<128>),
-                           dim3(((batch_count - 1) / 128 + 1), 1, 1),
-                           dim3(128, 1, 1),
-                           0,
-                           handle->stream,
-                           m,
-                           batch_count,
-                           batch_stride,
-                           ds,
-                           dl,
-                           d,
-                           du,
-                           dw,
-                           r3,
-                           r4,
-                           x);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gpsv_interleaved_batch_givens_qr_kernel<128>),
+                                           dim3(((batch_count - 1) / 128 + 1), 1, 1),
+                                           dim3(128, 1, 1),
+                                           0,
+                                           handle->stream,
+                                           m,
+                                           batch_count,
+                                           batch_stride,
+                                           ds,
+                                           dl,
+                                           d,
+                                           du,
+                                           dw,
+                                           r3,
+                                           r4,
+                                           x);
     }
 
     return rocsparse_status_success;

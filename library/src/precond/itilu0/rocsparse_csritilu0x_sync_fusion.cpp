@@ -349,7 +349,8 @@ template <unsigned int BLOCKSIZE,
           typename... P>
 static void kernel_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
 {
-    hipLaunchKernelGGL((kernel<BLOCKSIZE, WFSIZE, T, I, J>), blocks_, threads_, 0, stream_, p...);
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
+        (kernel<BLOCKSIZE, WFSIZE, T, I, J>), blocks_, threads_, 0, stream_, p...);
 }
 
 template <unsigned int BLOCKSIZE, typename T, typename I, typename J, typename... P>
@@ -520,7 +521,7 @@ template <unsigned int BLOCKSIZE,
           typename... P>
 static void kernel_freerun_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
 {
-    hipLaunchKernelGGL(
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
         (kernel_freerun<BLOCKSIZE, WFSIZE, T, I, J>), blocks_, threads_, 0, stream_, p...);
 }
 

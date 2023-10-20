@@ -207,16 +207,16 @@ static rocsparse_status rocsparse_csrcolor_assign_uncolored(rocsparse_handle han
     {
         dim3 kernel_blocks(n);
         dim3 kernel_threads(NB);
-        hipLaunchKernelGGL((count_uncolored<NB, J>),
-                           kernel_blocks,
-                           kernel_threads,
-                           0,
-                           stream,
-                           colors_length,
-                           m,
-                           n,
-                           colors,
-                           seq_ptr + 1);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((count_uncolored<NB, J>),
+                                           kernel_blocks,
+                                           kernel_threads,
+                                           0,
+                                           stream,
+                                           colors_length,
+                                           m,
+                                           n,
+                                           colors,
+                                           seq_ptr + 1);
     }
 
     //
@@ -280,17 +280,18 @@ static rocsparse_status rocsparse_csrcolor_assign_uncolored(rocsparse_handle han
         rocsparse_int                  blocks             = (n - 1) / NCOLUMNS_PER_BLOCK + 1;
         dim3                           k_blocks(blocks), k_threads(WF_SIZE * NCOLUMNS_PER_BLOCK);
 
-        hipLaunchKernelGGL((csrcolor_assign_uncolored_kernel<NCOLUMNS_PER_BLOCK, WF_SIZE>),
-                           k_blocks,
-                           k_threads,
-                           0,
-                           stream,
-                           colors_length,
-                           m,
-                           n,
-                           num_colored,
-                           colors,
-                           seq_ptr);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (csrcolor_assign_uncolored_kernel<NCOLUMNS_PER_BLOCK, WF_SIZE>),
+            k_blocks,
+            k_threads,
+            0,
+            stream,
+            colors_length,
+            m,
+            n,
+            num_colored,
+            colors,
+            seq_ptr);
     }
     else
     {
@@ -300,17 +301,18 @@ static rocsparse_status rocsparse_csrcolor_assign_uncolored(rocsparse_handle han
 
         dim3 k_blocks(blocks), k_threads(WF_SIZE * NCOLUMNS_PER_BLOCK);
 
-        hipLaunchKernelGGL((csrcolor_assign_uncolored_kernel<NCOLUMNS_PER_BLOCK, WF_SIZE>),
-                           k_blocks,
-                           k_threads,
-                           0,
-                           stream,
-                           colors_length,
-                           m,
-                           n,
-                           num_colored,
-                           colors,
-                           seq_ptr);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (csrcolor_assign_uncolored_kernel<NCOLUMNS_PER_BLOCK, WF_SIZE>),
+            k_blocks,
+            k_threads,
+            0,
+            stream,
+            colors_length,
+            m,
+            n,
+            num_colored,
+            colors,
+            seq_ptr);
     }
     return rocsparse_status_success;
 }
@@ -359,39 +361,39 @@ rocsparse_status rocsparse_csrcolor_core(rocsparse_handle          handle,
         //
         // Run Jones-Plassmann Luby algorithm
         //
-        hipLaunchKernelGGL((csrcolor_kernel_jpl<blocksize, I, J>),
-                           dim3((m - 1) / blocksize + 1),
-                           dim3(blocksize),
-                           0,
-                           stream,
-                           m,
-                           *ncolors,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           descr->base,
-                           colors);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrcolor_kernel_jpl<blocksize, I, J>),
+                                           dim3((m - 1) / blocksize + 1),
+                                           dim3(blocksize),
+                                           0,
+                                           stream,
+                                           m,
+                                           *ncolors,
+                                           csr_row_ptr,
+                                           csr_col_ind,
+                                           descr->base,
+                                           colors);
 
         //
         // Count colored vertices
         //
-        hipLaunchKernelGGL((csrcolor_kernel_count_uncolored<blocksize, J>),
-                           dim3(blocksize),
-                           dim3(blocksize),
-                           0,
-                           stream,
-                           m,
-                           colors,
-                           workspace);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrcolor_kernel_count_uncolored<blocksize, J>),
+                                           dim3(blocksize),
+                                           dim3(blocksize),
+                                           0,
+                                           stream,
+                                           m,
+                                           colors,
+                                           workspace);
 
         //
         // Gather results.
         //
-        hipLaunchKernelGGL((csrcolor_kernel_count_uncolored_finalize<blocksize, J>),
-                           dim3(1),
-                           dim3(blocksize),
-                           0,
-                           stream,
-                           workspace);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrcolor_kernel_count_uncolored_finalize<blocksize, J>),
+                                           dim3(1),
+                                           dim3(blocksize),
+                                           0,
+                                           stream,
+                                           workspace);
 
         //
         // Copy colored max vertices for current iteration to host
@@ -407,21 +409,21 @@ rocsparse_status rocsparse_csrcolor_core(rocsparse_handle          handle,
     // *ncolors += 2 is not the right number of colors, sometimes yes, sometimes no.
     //
     {
-        hipLaunchKernelGGL((csrcolor_kernel_count_colors<blocksize, J>),
-                           dim3(blocksize),
-                           dim3(blocksize),
-                           0,
-                           stream,
-                           m,
-                           colors,
-                           workspace);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrcolor_kernel_count_colors<blocksize, J>),
+                                           dim3(blocksize),
+                                           dim3(blocksize),
+                                           0,
+                                           stream,
+                                           m,
+                                           colors,
+                                           workspace);
 
-        hipLaunchKernelGGL((csrcolor_kernel_count_colors_finalize<blocksize, J>),
-                           dim3(1),
-                           dim3(blocksize),
-                           0,
-                           stream,
-                           workspace);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrcolor_kernel_count_colors_finalize<blocksize, J>),
+                                           dim3(1),
+                                           dim3(blocksize),
+                                           0,
+                                           stream,
+                                           workspace);
 
         RETURN_IF_HIP_ERROR(
             hipMemcpyAsync(ncolors, workspace, sizeof(J), hipMemcpyDeviceToHost, stream));
@@ -455,13 +457,13 @@ rocsparse_status rocsparse_csrcolor_core(rocsparse_handle          handle,
         //
         //
         //
-        hipLaunchKernelGGL((csrcolor_reordering_identity<1024, J>),
-                           dim3((m - 1) / 1024 + 1),
-                           dim3(1024),
-                           0,
-                           stream,
-                           m,
-                           reordering_identity);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrcolor_reordering_identity<1024, J>),
+                                           dim3((m - 1) / 1024 + 1),
+                                           dim3(1024),
+                                           0,
+                                           stream,
+                                           m,
+                                           reordering_identity);
 
         //
         // Alloc output sorted colors.

@@ -86,14 +86,14 @@ rocsparse_status rocsparse_gemmi_core(rocsparse_handle          handle,
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            hipLaunchKernelGGL((gemmi_scale_kernel<SCALE_DIM>),
-                               scale_blocks,
-                               scale_threads,
-                               0,
-                               stream,
-                               m * n,
-                               beta,
-                               C);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gemmi_scale_kernel<SCALE_DIM>),
+                                               scale_blocks,
+                                               scale_threads,
+                                               0,
+                                               stream,
+                                               m * n,
+                                               beta,
+                                               C);
         }
         else
         {
@@ -103,14 +103,14 @@ rocsparse_status rocsparse_gemmi_core(rocsparse_handle          handle,
             }
             else if(*beta != static_cast<T>(1))
             {
-                hipLaunchKernelGGL((gemmi_scale_kernel<SCALE_DIM>),
-                                   scale_blocks,
-                                   scale_threads,
-                                   0,
-                                   stream,
-                                   m * n,
-                                   *beta,
-                                   C);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gemmi_scale_kernel<SCALE_DIM>),
+                                                   scale_blocks,
+                                                   scale_threads,
+                                                   0,
+                                                   stream,
+                                                   m * n,
+                                                   *beta,
+                                                   C);
             }
         }
 #undef SCALE_DIM
@@ -124,22 +124,22 @@ rocsparse_status rocsparse_gemmi_core(rocsparse_handle          handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((gemmit_kernel<GEMMIT_DIM>),
-                           gemmit_blocks,
-                           gemmit_threads,
-                           0,
-                           stream,
-                           m,
-                           alpha,
-                           A,
-                           lda,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           csr_val,
-                           beta,
-                           C,
-                           ldc,
-                           descr->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gemmit_kernel<GEMMIT_DIM>),
+                                           gemmit_blocks,
+                                           gemmit_threads,
+                                           0,
+                                           stream,
+                                           m,
+                                           alpha,
+                                           A,
+                                           lda,
+                                           csr_row_ptr,
+                                           csr_col_ind,
+                                           csr_val,
+                                           beta,
+                                           C,
+                                           ldc,
+                                           descr->base);
     }
     else
     {
@@ -160,36 +160,36 @@ rocsparse_status rocsparse_gemmi_core(rocsparse_handle          handle,
                 dim3 scale_blocks((m * n - 1) / SCALE_DIM + 1);
                 dim3 scale_threads(SCALE_DIM);
 
-                hipLaunchKernelGGL((gemmi_scale_kernel<SCALE_DIM>),
-                                   scale_blocks,
-                                   scale_threads,
-                                   0,
-                                   stream,
-                                   m * n,
-                                   *beta,
-                                   C);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gemmi_scale_kernel<SCALE_DIM>),
+                                                   scale_blocks,
+                                                   scale_threads,
+                                                   0,
+                                                   stream,
+                                                   m * n,
+                                                   *beta,
+                                                   C);
 #undef SCALE_DIM
             }
 
             return rocsparse_status_success;
         }
 
-        hipLaunchKernelGGL((gemmit_kernel<GEMMIT_DIM>),
-                           gemmit_blocks,
-                           gemmit_threads,
-                           0,
-                           stream,
-                           m,
-                           *alpha,
-                           A,
-                           lda,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           csr_val,
-                           *beta,
-                           C,
-                           ldc,
-                           descr->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gemmit_kernel<GEMMIT_DIM>),
+                                           gemmit_blocks,
+                                           gemmit_threads,
+                                           0,
+                                           stream,
+                                           m,
+                                           *alpha,
+                                           A,
+                                           lda,
+                                           csr_row_ptr,
+                                           csr_col_ind,
+                                           csr_val,
+                                           *beta,
+                                           C,
+                                           ldc,
+                                           descr->base);
     }
 #undef GEMMIT_DIM
 

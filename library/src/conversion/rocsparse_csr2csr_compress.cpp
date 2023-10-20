@@ -137,15 +137,15 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
     ptr += temp_storage_size_bytes3;
 
     // Copy nnz_per_row to csr_row_ptr_C array
-    hipLaunchKernelGGL((fill_row_ptr_device<1024>),
-                       dim3((m - 1) / 1024 + 1),
-                       dim3(1024),
-                       0,
-                       stream,
-                       m,
-                       descr_A->base,
-                       nnz_per_row,
-                       csr_row_ptr_C);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((fill_row_ptr_device<1024>),
+                                       dim3((m - 1) / 1024 + 1),
+                                       dim3(1024),
+                                       0,
+                                       stream,
+                                       m,
+                                       descr_A->base,
+                                       nnz_per_row,
+                                       csr_row_ptr_C);
 
     // Perform inclusive scan on csr row pointer array
     RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(temp_storage_buffer2,
@@ -183,27 +183,29 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
 #define LOOPS 2
     if(handle->wavefront_size == 32)
     {
-        hipLaunchKernelGGL((csr2csr_compress_fill_warp_start_device<256, 32, LOOPS>),
-                           dim3((nnz_A - 1) / (256 * LOOPS) + 1),
-                           dim3(256),
-                           0,
-                           stream,
-                           nnz_A,
-                           csr_val_A,
-                           warp_start,
-                           tol);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (csr2csr_compress_fill_warp_start_device<256, 32, LOOPS>),
+            dim3((nnz_A - 1) / (256 * LOOPS) + 1),
+            dim3(256),
+            0,
+            stream,
+            nnz_A,
+            csr_val_A,
+            warp_start,
+            tol);
     }
     else if(handle->wavefront_size == 64)
     {
-        hipLaunchKernelGGL((csr2csr_compress_fill_warp_start_device<256, 64, LOOPS>),
-                           dim3((nnz_A - 1) / (256 * LOOPS) + 1),
-                           dim3(256),
-                           0,
-                           stream,
-                           nnz_A,
-                           csr_val_A,
-                           warp_start,
-                           tol);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (csr2csr_compress_fill_warp_start_device<256, 64, LOOPS>),
+            dim3((nnz_A - 1) / (256 * LOOPS) + 1),
+            dim3(256),
+            0,
+            stream,
+            nnz_A,
+            csr_val_A,
+            warp_start,
+            tol);
     }
 
     // Perform inclusive scan on warp start array
@@ -217,37 +219,37 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
 
     if(handle->wavefront_size == 32)
     {
-        hipLaunchKernelGGL((csr2csr_compress_use_warp_start_device<256, 32, LOOPS>),
-                           dim3((nnz_A - 1) / (256 * LOOPS) + 1),
-                           dim3(256),
-                           0,
-                           stream,
-                           nnz_A,
-                           descr_A->base,
-                           csr_val_A,
-                           csr_col_ind_A,
-                           descr_A->base,
-                           csr_val_C,
-                           csr_col_ind_C,
-                           warp_start,
-                           tol);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr2csr_compress_use_warp_start_device<256, 32, LOOPS>),
+                                           dim3((nnz_A - 1) / (256 * LOOPS) + 1),
+                                           dim3(256),
+                                           0,
+                                           stream,
+                                           nnz_A,
+                                           descr_A->base,
+                                           csr_val_A,
+                                           csr_col_ind_A,
+                                           descr_A->base,
+                                           csr_val_C,
+                                           csr_col_ind_C,
+                                           warp_start,
+                                           tol);
     }
     else if(handle->wavefront_size == 64)
     {
-        hipLaunchKernelGGL((csr2csr_compress_use_warp_start_device<256, 64, LOOPS>),
-                           dim3((nnz_A - 1) / (256 * LOOPS) + 1),
-                           dim3(256),
-                           0,
-                           stream,
-                           nnz_A,
-                           descr_A->base,
-                           csr_val_A,
-                           csr_col_ind_A,
-                           descr_A->base,
-                           csr_val_C,
-                           csr_col_ind_C,
-                           warp_start,
-                           tol);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr2csr_compress_use_warp_start_device<256, 64, LOOPS>),
+                                           dim3((nnz_A - 1) / (256 * LOOPS) + 1),
+                                           dim3(256),
+                                           0,
+                                           stream,
+                                           nnz_A,
+                                           descr_A->base,
+                                           csr_val_A,
+                                           csr_col_ind_A,
+                                           descr_A->base,
+                                           csr_val_C,
+                                           csr_col_ind_C,
+                                           warp_start,
+                                           tol);
     }
 #undef LOOPS
 

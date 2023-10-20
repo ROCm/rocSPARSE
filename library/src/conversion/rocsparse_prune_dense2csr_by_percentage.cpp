@@ -176,14 +176,14 @@ rocsparse_status
     {
         if(nnz_total_dev_host_ptr != nullptr && csr_row_ptr != nullptr)
         {
-            hipLaunchKernelGGL((set_array_to_value<256>),
-                               dim3(m / 256 + 1),
-                               dim3(256),
-                               0,
-                               stream,
-                               (m + 1),
-                               csr_row_ptr,
-                               static_cast<rocsparse_int>(descr->base));
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                               dim3(m / 256 + 1),
+                                               dim3(256),
+                                               0,
+                                               stream,
+                                               (m + 1),
+                                               csr_row_ptr,
+                                               static_cast<rocsparse_int>(descr->base));
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
@@ -214,7 +214,8 @@ rocsparse_status
         dim3 grid((nnz_A - 1) / 256 + 1);
         dim3 threads(256);
 
-        hipLaunchKernelGGL((abs_kernel<256, T>), grid, threads, 0, stream, m, n, A, lda, output);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (abs_kernel<256, T>), grid, threads, 0, stream, m, n, A, lda, output);
     }
 
     // Determine amount of temporary storage needed for rocprim sort and inclusive scan and allocate if necessary
@@ -265,17 +266,17 @@ rocsparse_status
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            hipLaunchKernelGGL((prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
-                               grid,
-                               threads,
-                               0,
-                               stream,
-                               m,
-                               n,
-                               A,
-                               lda,
-                               d_threshold,
-                               &csr_row_ptr[1]);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
+                                               grid,
+                                               threads,
+                                               0,
+                                               stream,
+                                               m,
+                                               n,
+                                               A,
+                                               lda,
+                                               d_threshold,
+                                               &csr_row_ptr[1]);
         }
         else
         {
@@ -284,17 +285,17 @@ rocsparse_status
                 &h_threshold, d_threshold, sizeof(T), hipMemcpyDeviceToHost, handle->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-            hipLaunchKernelGGL((prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
-                               grid,
-                               threads,
-                               0,
-                               stream,
-                               m,
-                               n,
-                               A,
-                               lda,
-                               h_threshold,
-                               &csr_row_ptr[1]);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
+                                               grid,
+                                               threads,
+                                               0,
+                                               stream,
+                                               m,
+                                               n,
+                                               A,
+                                               lda,
+                                               h_threshold,
+                                               &csr_row_ptr[1]);
         }
     }
     // Store threshold at first entry in output array
@@ -324,14 +325,14 @@ rocsparse_status
     // Extract nnz_total_dev_host_ptr
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL(nnz_total_device_kernel,
-                           dim3(1),
-                           dim3(1),
-                           0,
-                           stream,
-                           m,
-                           csr_row_ptr,
-                           nnz_total_dev_host_ptr);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(nnz_total_device_kernel,
+                                           dim3(1),
+                                           dim3(1),
+                                           0,
+                                           stream,
+                                           m,
+                                           csr_row_ptr,
+                                           nnz_total_dev_host_ptr);
     }
     else
     {
@@ -440,20 +441,21 @@ rocsparse_status
         dim3                           blocks((m - 1) / NROWS_PER_BLOCK + 1);
         dim3                           threads(WF_SIZE * NROWS_PER_BLOCK);
 
-        hipLaunchKernelGGL((prune_dense2csr_kernel2_device_pointer<NROWS_PER_BLOCK, WF_SIZE, T>),
-                           blocks,
-                           threads,
-                           0,
-                           stream,
-                           descr->base,
-                           m,
-                           n,
-                           A,
-                           lda,
-                           d_threshold,
-                           csr_val,
-                           csr_row_ptr,
-                           csr_col_ind);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (prune_dense2csr_kernel2_device_pointer<NROWS_PER_BLOCK, WF_SIZE, T>),
+            blocks,
+            threads,
+            0,
+            stream,
+            descr->base,
+            m,
+            n,
+            A,
+            lda,
+            d_threshold,
+            csr_val,
+            csr_row_ptr,
+            csr_col_ind);
     }
     else
     {
@@ -462,20 +464,21 @@ rocsparse_status
         dim3                           blocks((m - 1) / NROWS_PER_BLOCK + 1);
         dim3                           threads(WF_SIZE * NROWS_PER_BLOCK);
 
-        hipLaunchKernelGGL((prune_dense2csr_kernel2_device_pointer<NROWS_PER_BLOCK, WF_SIZE, T>),
-                           blocks,
-                           threads,
-                           0,
-                           stream,
-                           descr->base,
-                           m,
-                           n,
-                           A,
-                           lda,
-                           d_threshold,
-                           csr_val,
-                           csr_row_ptr,
-                           csr_col_ind);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (prune_dense2csr_kernel2_device_pointer<NROWS_PER_BLOCK, WF_SIZE, T>),
+            blocks,
+            threads,
+            0,
+            stream,
+            descr->base,
+            m,
+            n,
+            A,
+            lda,
+            d_threshold,
+            csr_val,
+            csr_row_ptr,
+            csr_col_ind);
     }
 
     return rocsparse_status_success;

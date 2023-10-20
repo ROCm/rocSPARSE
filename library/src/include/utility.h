@@ -88,6 +88,8 @@ static inline hipError_t rocsparse_assign_async(T* dest, T value, hipStream_t st
     // Use a kernel instead of memcpy, because memcpy is synchronous if the source is not in
     // pinned memory.
     // Memset lacks a 64bit option, but would involve a similar implicit kernel anyways.
+    auto last_error_cleanup = hipGetLastError();
+    (void)(last_error_cleanup);
     hipLaunchKernelGGL(rocsparse_assign_kernel, dim3(1), dim3(1), 0, stream, dest, value);
     return hipGetLastError();
 }

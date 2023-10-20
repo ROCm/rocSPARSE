@@ -243,25 +243,25 @@ rocsparse_status rocsparse_coosort_by_row_template(rocsparse_handle handle,
         dim3 coosort_blocks((nnz - 1) / COOSORT_DIM + 1);
         dim3 coosort_threads(COOSORT_DIM);
 
-        hipLaunchKernelGGL((coosort_permute_kernel<COOSORT_DIM>),
-                           coosort_blocks,
-                           coosort_threads,
-                           0,
-                           stream,
-                           nnz,
-                           coo_col_ind,
-                           mapping,
-                           work3);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coosort_permute_kernel<COOSORT_DIM>),
+                                           coosort_blocks,
+                                           coosort_threads,
+                                           0,
+                                           stream,
+                                           nnz,
+                                           coo_col_ind,
+                                           mapping,
+                                           work3);
 
-        hipLaunchKernelGGL((coosort_permute_kernel<COOSORT_DIM>),
-                           coosort_blocks,
-                           coosort_threads,
-                           0,
-                           stream,
-                           nnz,
-                           perm,
-                           mapping,
-                           alt_map);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coosort_permute_kernel<COOSORT_DIM>),
+                                           coosort_blocks,
+                                           coosort_threads,
+                                           0,
+                                           stream,
+                                           nnz,
+                                           perm,
+                                           mapping,
+                                           alt_map);
 #undef COOSORT_DIM
 
         // Sort columns per row

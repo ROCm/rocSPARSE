@@ -302,51 +302,51 @@ void coommnn_segmented_atomic(rocsparse_operation trans_B,
     }
 }
 
-#define LAUNCH_COOMMNN_SEGMENTED_ATOMIC_MAIN_KERNEL(WF_SIZE, LOOPS, COLS, NT)   \
-    hipLaunchKernelGGL((coommnn_segmented_atomic<WF_SIZE, LOOPS, COLS, NT, T>), \
-                       dim3(nblocks, (main - 1) / COLS + 1, batch_count_C),     \
-                       dim3(WF_SIZE),                                           \
-                       0,                                                       \
-                       stream,                                                  \
-                       trans_B,                                                 \
-                       nnz,                                                     \
-                       (I)0,                                                    \
-                       batch_stride_A,                                          \
-                       alpha_device_host,                                       \
-                       coo_row_ind,                                             \
-                       coo_col_ind,                                             \
-                       coo_val,                                                 \
-                       dense_B,                                                 \
-                       ldb,                                                     \
-                       batch_stride_B,                                          \
-                       dense_C,                                                 \
-                       ldc,                                                     \
-                       batch_stride_C,                                          \
-                       order_C,                                                 \
-                       descr->base);
+#define LAUNCH_COOMMNN_SEGMENTED_ATOMIC_MAIN_KERNEL(WF_SIZE, LOOPS, COLS, NT)                   \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coommnn_segmented_atomic<WF_SIZE, LOOPS, COLS, NT, T>), \
+                                       dim3(nblocks, (main - 1) / COLS + 1, batch_count_C),     \
+                                       dim3(WF_SIZE),                                           \
+                                       0,                                                       \
+                                       stream,                                                  \
+                                       trans_B,                                                 \
+                                       nnz,                                                     \
+                                       (I)0,                                                    \
+                                       batch_stride_A,                                          \
+                                       alpha_device_host,                                       \
+                                       coo_row_ind,                                             \
+                                       coo_col_ind,                                             \
+                                       coo_val,                                                 \
+                                       dense_B,                                                 \
+                                       ldb,                                                     \
+                                       batch_stride_B,                                          \
+                                       dense_C,                                                 \
+                                       ldc,                                                     \
+                                       batch_stride_C,                                          \
+                                       order_C,                                                 \
+                                       descr->base);
 
-#define LAUNCH_COOMMNN_SEGMENTED_ATOMIC_REMAINDER_KERNEL(WF_SIZE, LOOPS, COLS, NT) \
-    hipLaunchKernelGGL((coommnn_segmented_atomic<WF_SIZE, LOOPS, COLS, NT, T>),    \
-                       dim3(nblocks, 1, batch_count_C),                            \
-                       dim3(WF_SIZE),                                              \
-                       0,                                                          \
-                       stream,                                                     \
-                       trans_B,                                                    \
-                       nnz,                                                        \
-                       main,                                                       \
-                       batch_stride_A,                                             \
-                       alpha_device_host,                                          \
-                       coo_row_ind,                                                \
-                       coo_col_ind,                                                \
-                       coo_val,                                                    \
-                       dense_B,                                                    \
-                       ldb,                                                        \
-                       batch_stride_B,                                             \
-                       dense_C,                                                    \
-                       ldc,                                                        \
-                       batch_stride_C,                                             \
-                       order_C,                                                    \
-                       descr->base);
+#define LAUNCH_COOMMNN_SEGMENTED_ATOMIC_REMAINDER_KERNEL(WF_SIZE, LOOPS, COLS, NT)              \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coommnn_segmented_atomic<WF_SIZE, LOOPS, COLS, NT, T>), \
+                                       dim3(nblocks, 1, batch_count_C),                         \
+                                       dim3(WF_SIZE),                                           \
+                                       0,                                                       \
+                                       stream,                                                  \
+                                       trans_B,                                                 \
+                                       nnz,                                                     \
+                                       main,                                                    \
+                                       batch_stride_A,                                          \
+                                       alpha_device_host,                                       \
+                                       coo_row_ind,                                             \
+                                       coo_col_ind,                                             \
+                                       coo_val,                                                 \
+                                       dense_B,                                                 \
+                                       ldb,                                                     \
+                                       batch_stride_B,                                          \
+                                       dense_C,                                                 \
+                                       ldc,                                                     \
+                                       batch_stride_C,                                          \
+                                       order_C,                                                 \
+                                       descr->base);
 
 template <typename T, typename I, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    handle,

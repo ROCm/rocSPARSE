@@ -101,63 +101,65 @@ struct rocsparse_sddmm_st<rocsparse_format_csc, rocsparse_sddmm_alg_default, I, 
     {
         static constexpr int NB = 512;
 
-#define HLAUNCH(NT_)                                                                     \
-    int64_t num_blocks_x = (n - 1) / (NB / NT_) + 1;                                     \
-    dim3    blocks(num_blocks_x);                                                        \
-    dim3    threads(NB);                                                                 \
-    hipLaunchKernelGGL((sddmm_csx_kernel<NB, NT_, rocsparse_direction_column, I, J, T>), \
-                       blocks,                                                           \
-                       threads,                                                          \
-                       0,                                                                \
-                       handle->stream,                                                   \
-                       trans_A,                                                          \
-                       trans_B,                                                          \
-                       order_A,                                                          \
-                       order_B,                                                          \
-                       m,                                                                \
-                       n,                                                                \
-                       k,                                                                \
-                       nnz,                                                              \
-                       *(const T*)alpha,                                                 \
-                       A_val,                                                            \
-                       A_ld,                                                             \
-                       B_val,                                                            \
-                       B_ld,                                                             \
-                       *(const T*)beta,                                                  \
-                       (T*)C_val_data,                                                   \
-                       (const I*)C_ptr_data,                                             \
-                       (const J*)C_ind_data,                                             \
-                       C_base,                                                           \
-                       (T*)buffer)
+#define HLAUNCH(NT_)                                                      \
+    int64_t num_blocks_x = (n - 1) / (NB / NT_) + 1;                      \
+    dim3    blocks(num_blocks_x);                                         \
+    dim3    threads(NB);                                                  \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                   \
+        (sddmm_csx_kernel<NB, NT_, rocsparse_direction_column, I, J, T>), \
+        blocks,                                                           \
+        threads,                                                          \
+        0,                                                                \
+        handle->stream,                                                   \
+        trans_A,                                                          \
+        trans_B,                                                          \
+        order_A,                                                          \
+        order_B,                                                          \
+        m,                                                                \
+        n,                                                                \
+        k,                                                                \
+        nnz,                                                              \
+        *(const T*)alpha,                                                 \
+        A_val,                                                            \
+        A_ld,                                                             \
+        B_val,                                                            \
+        B_ld,                                                             \
+        *(const T*)beta,                                                  \
+        (T*)C_val_data,                                                   \
+        (const I*)C_ptr_data,                                             \
+        (const J*)C_ind_data,                                             \
+        C_base,                                                           \
+        (T*)buffer)
 
-#define DLAUNCH(NT_)                                                                     \
-    int64_t num_blocks_x = (n - 1) / (NB / NT_) + 1;                                     \
-    dim3    blocks(num_blocks_x);                                                        \
-    dim3    threads(NB);                                                                 \
-    hipLaunchKernelGGL((sddmm_csx_kernel<NB, NT_, rocsparse_direction_column, I, J, T>), \
-                       blocks,                                                           \
-                       threads,                                                          \
-                       0,                                                                \
-                       handle->stream,                                                   \
-                       trans_A,                                                          \
-                       trans_B,                                                          \
-                       order_A,                                                          \
-                       order_B,                                                          \
-                       m,                                                                \
-                       n,                                                                \
-                       k,                                                                \
-                       nnz,                                                              \
-                       alpha,                                                            \
-                       A_val,                                                            \
-                       A_ld,                                                             \
-                       B_val,                                                            \
-                       B_ld,                                                             \
-                       beta,                                                             \
-                       (T*)C_val_data,                                                   \
-                       (const I*)C_ptr_data,                                             \
-                       (const J*)C_ind_data,                                             \
-                       C_base,                                                           \
-                       (T*)buffer)
+#define DLAUNCH(NT_)                                                      \
+    int64_t num_blocks_x = (n - 1) / (NB / NT_) + 1;                      \
+    dim3    blocks(num_blocks_x);                                         \
+    dim3    threads(NB);                                                  \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                   \
+        (sddmm_csx_kernel<NB, NT_, rocsparse_direction_column, I, J, T>), \
+        blocks,                                                           \
+        threads,                                                          \
+        0,                                                                \
+        handle->stream,                                                   \
+        trans_A,                                                          \
+        trans_B,                                                          \
+        order_A,                                                          \
+        order_B,                                                          \
+        m,                                                                \
+        n,                                                                \
+        k,                                                                \
+        nnz,                                                              \
+        alpha,                                                            \
+        A_val,                                                            \
+        A_ld,                                                             \
+        B_val,                                                            \
+        B_ld,                                                             \
+        beta,                                                             \
+        (T*)C_val_data,                                                   \
+        (const I*)C_ptr_data,                                             \
+        (const J*)C_ind_data,                                             \
+        C_base,                                                           \
+        (T*)buffer)
 
         if(handle->pointer_mode == rocsparse_pointer_mode_host)
         {

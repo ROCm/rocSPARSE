@@ -450,33 +450,33 @@ static rocsparse_status rocsparse_csrmm_quickreturn(rocsparse_handle          ha
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-                hipLaunchKernelGGL((scale_array_2d<256>),
-                                   dim3((Csize - 1) / 256 + 1, batch_count_C),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   (trans_A == rocsparse_operation_none) ? m : k,
-                                   n,
-                                   ldc,
-                                   batch_stride_C,
-                                   (T*)dense_C,
-                                   beta,
-                                   order_C);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array_2d<256>),
+                                                   dim3((Csize - 1) / 256 + 1, batch_count_C),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   (trans_A == rocsparse_operation_none) ? m : k,
+                                                   n,
+                                                   ldc,
+                                                   batch_stride_C,
+                                                   (T*)dense_C,
+                                                   beta,
+                                                   order_C);
             }
             else
             {
-                hipLaunchKernelGGL((scale_array_2d<256>),
-                                   dim3((Csize - 1) / 256 + 1, batch_count_C),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   (trans_A == rocsparse_operation_none) ? m : k,
-                                   n,
-                                   ldc,
-                                   batch_stride_C,
-                                   (T*)dense_C,
-                                   *beta,
-                                   order_C);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array_2d<256>),
+                                                   dim3((Csize - 1) / 256 + 1, batch_count_C),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   (trans_A == rocsparse_operation_none) ? m : k,
+                                                   n,
+                                                   ldc,
+                                                   batch_stride_C,
+                                                   (T*)dense_C,
+                                                   *beta,
+                                                   order_C);
             }
         }
 

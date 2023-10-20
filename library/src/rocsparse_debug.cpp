@@ -44,6 +44,11 @@ bool rocsparse_debug_variables_st::get_debug_verbose() const
     return debug_verbose;
 }
 
+bool rocsparse_debug_variables_st::get_debug_kernel_launch() const
+{
+    return debug_kernel_launch;
+}
+
 bool rocsparse_debug_variables_st::get_debug_arguments() const
 {
     return debug_arguments;
@@ -84,6 +89,16 @@ void rocsparse_debug_variables_st::set_debug_arguments(bool value)
     }
 }
 
+void rocsparse_debug_variables_st::set_debug_kernel_launch(bool value)
+{
+    if(value != debug_kernel_launch)
+    {
+        s_mutex.lock();
+        debug_kernel_launch = value;
+        s_mutex.unlock();
+    }
+}
+
 void rocsparse_debug_variables_st::set_debug_arguments_verbose(bool value)
 {
     if(value != debug_arguments_verbose)
@@ -106,6 +121,11 @@ int rocsparse_state_debug_verbose()
     return rocsparse_debug_variables.get_debug_verbose() ? 1 : 0;
 }
 
+int rocsparse_state_debug_kernel_launch()
+{
+    return rocsparse_debug_variables.get_debug_kernel_launch() ? 1 : 0;
+}
+
 int rocsparse_state_debug_arguments()
 {
     return rocsparse_debug_variables.get_debug_arguments() ? 1 : 0;
@@ -124,6 +144,16 @@ void rocsparse_enable_debug_arguments_verbose()
 void rocsparse_disable_debug_arguments_verbose()
 {
     rocsparse_debug_variables.set_debug_arguments_verbose(false);
+}
+
+void rocsparse_enable_debug_kernel_launch()
+{
+    rocsparse_debug_variables.set_debug_kernel_launch(true);
+}
+
+void rocsparse_disable_debug_kernel_launch()
+{
+    rocsparse_debug_variables.set_debug_kernel_launch(false);
 }
 
 void rocsparse_enable_debug_arguments()

@@ -97,51 +97,51 @@ rocsparse_status rocsparse_csrgeam_dispatch(rocsparse_handle          handle,
 #define CSRGEAM_DIM 256
     if(handle->wavefront_size == 32)
     {
-        hipLaunchKernelGGL((csrgeam_fill_multipass_kernel<CSRGEAM_DIM, 32>),
-                           dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
-                           dim3(CSRGEAM_DIM),
-                           0,
-                           stream,
-                           m,
-                           n,
-                           alpha_device_host,
-                           csr_row_ptr_A,
-                           csr_col_ind_A,
-                           csr_val_A,
-                           beta_device_host,
-                           csr_row_ptr_B,
-                           csr_col_ind_B,
-                           csr_val_B,
-                           csr_row_ptr_C,
-                           csr_col_ind_C,
-                           csr_val_C,
-                           descr_A->base,
-                           descr_B->base,
-                           descr_C->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgeam_fill_multipass_kernel<CSRGEAM_DIM, 32>),
+                                           dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
+                                           dim3(CSRGEAM_DIM),
+                                           0,
+                                           stream,
+                                           m,
+                                           n,
+                                           alpha_device_host,
+                                           csr_row_ptr_A,
+                                           csr_col_ind_A,
+                                           csr_val_A,
+                                           beta_device_host,
+                                           csr_row_ptr_B,
+                                           csr_col_ind_B,
+                                           csr_val_B,
+                                           csr_row_ptr_C,
+                                           csr_col_ind_C,
+                                           csr_val_C,
+                                           descr_A->base,
+                                           descr_B->base,
+                                           descr_C->base);
     }
     else
     {
-        hipLaunchKernelGGL((csrgeam_fill_multipass_kernel<CSRGEAM_DIM, 64>),
-                           dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
-                           dim3(CSRGEAM_DIM),
-                           0,
-                           stream,
-                           m,
-                           n,
-                           alpha_device_host,
-                           csr_row_ptr_A,
-                           csr_col_ind_A,
-                           csr_val_A,
-                           beta_device_host,
-                           csr_row_ptr_B,
-                           csr_col_ind_B,
-                           csr_val_B,
-                           csr_row_ptr_C,
-                           csr_col_ind_C,
-                           csr_val_C,
-                           descr_A->base,
-                           descr_B->base,
-                           descr_C->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgeam_fill_multipass_kernel<CSRGEAM_DIM, 64>),
+                                           dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
+                                           dim3(CSRGEAM_DIM),
+                                           0,
+                                           stream,
+                                           m,
+                                           n,
+                                           alpha_device_host,
+                                           csr_row_ptr_A,
+                                           csr_col_ind_A,
+                                           csr_val_A,
+                                           beta_device_host,
+                                           csr_row_ptr_B,
+                                           csr_col_ind_B,
+                                           csr_val_B,
+                                           csr_row_ptr_C,
+                                           csr_col_ind_C,
+                                           csr_val_C,
+                                           descr_A->base,
+                                           descr_B->base,
+                                           descr_C->base);
     }
 
 #undef CSRGEAM_DIM
@@ -438,14 +438,14 @@ try
             }
             else
             {
-                hipLaunchKernelGGL((set_array_to_value<256>),
-                                   dim3(m / 256 + 1),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   m + 1,
-                                   csr_row_ptr_C,
-                                   static_cast<rocsparse_int>(descr_C->base));
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                                   dim3(m / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   m + 1,
+                                                   csr_row_ptr_C,
+                                                   static_cast<rocsparse_int>(descr_C->base));
             }
         }
 
@@ -474,37 +474,37 @@ try
 #define CSRGEAM_DIM 256
     if(handle->wavefront_size == 32)
     {
-        hipLaunchKernelGGL((csrgeam_nnz_multipass_device<CSRGEAM_DIM, 32>),
-                           dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
-                           dim3(CSRGEAM_DIM),
-                           0,
-                           stream,
-                           m,
-                           n,
-                           csr_row_ptr_A,
-                           csr_col_ind_A,
-                           csr_row_ptr_B,
-                           csr_col_ind_B,
-                           csr_row_ptr_C,
-                           descr_A->base,
-                           descr_B->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgeam_nnz_multipass_device<CSRGEAM_DIM, 32>),
+                                           dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
+                                           dim3(CSRGEAM_DIM),
+                                           0,
+                                           stream,
+                                           m,
+                                           n,
+                                           csr_row_ptr_A,
+                                           csr_col_ind_A,
+                                           csr_row_ptr_B,
+                                           csr_col_ind_B,
+                                           csr_row_ptr_C,
+                                           descr_A->base,
+                                           descr_B->base);
     }
     else
     {
-        hipLaunchKernelGGL((csrgeam_nnz_multipass_device<CSRGEAM_DIM, 64>),
-                           dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
-                           dim3(CSRGEAM_DIM),
-                           0,
-                           stream,
-                           m,
-                           n,
-                           csr_row_ptr_A,
-                           csr_col_ind_A,
-                           csr_row_ptr_B,
-                           csr_col_ind_B,
-                           csr_row_ptr_C,
-                           descr_A->base,
-                           descr_B->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgeam_nnz_multipass_device<CSRGEAM_DIM, 64>),
+                                           dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
+                                           dim3(CSRGEAM_DIM),
+                                           0,
+                                           stream,
+                                           m,
+                                           n,
+                                           csr_row_ptr_A,
+                                           csr_col_ind_A,
+                                           csr_row_ptr_B,
+                                           csr_col_ind_B,
+                                           csr_row_ptr_C,
+                                           descr_A->base,
+                                           descr_B->base);
     }
 #undef CSRGEAM_DIM
 
@@ -570,7 +570,8 @@ try
         // Adjust index base of nnz_C
         if(descr_C->base == rocsparse_index_base_one)
         {
-            hipLaunchKernelGGL((csrgeam_index_base<1>), dim3(1), dim3(1), 0, stream, nnz_C);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (csrgeam_index_base<1>), dim3(1), dim3(1), 0, stream, nnz_C);
         }
     }
 

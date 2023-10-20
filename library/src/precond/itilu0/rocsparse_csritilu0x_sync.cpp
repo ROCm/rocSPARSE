@@ -146,7 +146,7 @@ template <unsigned int BLOCKSIZE,
           typename... P>
 static void kernel_nrm_residual_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
 {
-    hipLaunchKernelGGL(
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
         (kernel_nrm_residual<BLOCKSIZE, WFSIZE, T, I, J>), blocks_, threads_, 0, stream_, p...);
 }
 
@@ -307,7 +307,7 @@ template <unsigned int BLOCKSIZE,
           typename... P>
 static void kernel_correction_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
 {
-    hipLaunchKernelGGL(
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
         (kernel_correction<BLOCKSIZE, WFSIZE, T, I, J>), blocks_, threads_, 0, stream_, p...);
 }
 

@@ -130,29 +130,29 @@ rocsparse_status rocsparse_bsrmm_template_large_ext(rocsparse_handle          ha
     hipStream_t stream = handle->stream;
     assert(block_dim <= 32);
 
-#define LAUNCH_LARGE_KERNEL(M_, N_, K_)                               \
-    dim3 bsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / (N_ * K_) + 1);     \
-    dim3 bsrmm_threads(M_, N_);                                       \
-    hipLaunchKernelGGL((bsrmm_large_blockdim_kernel_ext<M_, N_, K_>), \
-                       bsrmm_blocks,                                  \
-                       bsrmm_threads,                                 \
-                       0,                                             \
-                       stream,                                        \
-                       dir,                                           \
-                       trans_B,                                       \
-                       mb,                                            \
-                       n,                                             \
-                       alpha,                                         \
-                       bsr_row_ptr,                                   \
-                       bsr_col_ind,                                   \
-                       bsr_val,                                       \
-                       block_dim,                                     \
-                       B,                                             \
-                       ldb,                                           \
-                       beta,                                          \
-                       C,                                             \
-                       ldc,                                           \
-                       descr->base)
+#define LAUNCH_LARGE_KERNEL(M_, N_, K_)                                               \
+    dim3 bsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / (N_ * K_) + 1);                     \
+    dim3 bsrmm_threads(M_, N_);                                                       \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrmm_large_blockdim_kernel_ext<M_, N_, K_>), \
+                                       bsrmm_blocks,                                  \
+                                       bsrmm_threads,                                 \
+                                       0,                                             \
+                                       stream,                                        \
+                                       dir,                                           \
+                                       trans_B,                                       \
+                                       mb,                                            \
+                                       n,                                             \
+                                       alpha,                                         \
+                                       bsr_row_ptr,                                   \
+                                       bsr_col_ind,                                   \
+                                       bsr_val,                                       \
+                                       block_dim,                                     \
+                                       B,                                             \
+                                       ldb,                                           \
+                                       beta,                                          \
+                                       C,                                             \
+                                       ldc,                                           \
+                                       descr->base)
 
     //
     // Select which tuned kernel to apply.
