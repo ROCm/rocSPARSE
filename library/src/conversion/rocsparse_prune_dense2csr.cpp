@@ -158,14 +158,14 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
     {
         if(nnz_total_dev_host_ptr != nullptr && csr_row_ptr != nullptr)
         {
-            hipLaunchKernelGGL((set_array_to_value<256>),
-                               dim3(m / 256 + 1),
-                               dim3(256),
-                               0,
-                               stream,
-                               (m + 1),
-                               csr_row_ptr,
-                               static_cast<rocsparse_int>(descr->base));
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                               dim3(m / 256 + 1),
+                                               dim3(256),
+                                               0,
+                                               stream,
+                                               (m + 1),
+                                               csr_row_ptr,
+                                               static_cast<rocsparse_int>(descr->base));
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
@@ -193,31 +193,31 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((prune_dense2csr_nnz_kernel<NNZ_DIM_X, NNZ_DIM_Y, T>),
-                           grid,
-                           threads,
-                           0,
-                           stream,
-                           m,
-                           n,
-                           A,
-                           lda,
-                           threshold,
-                           &csr_row_ptr[1]);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((prune_dense2csr_nnz_kernel<NNZ_DIM_X, NNZ_DIM_Y, T>),
+                                           grid,
+                                           threads,
+                                           0,
+                                           stream,
+                                           m,
+                                           n,
+                                           A,
+                                           lda,
+                                           threshold,
+                                           &csr_row_ptr[1]);
     }
     else
     {
-        hipLaunchKernelGGL((prune_dense2csr_nnz_kernel<NNZ_DIM_X, NNZ_DIM_Y, T>),
-                           grid,
-                           threads,
-                           0,
-                           stream,
-                           m,
-                           n,
-                           A,
-                           lda,
-                           *threshold,
-                           &csr_row_ptr[1]);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((prune_dense2csr_nnz_kernel<NNZ_DIM_X, NNZ_DIM_Y, T>),
+                                           grid,
+                                           threads,
+                                           0,
+                                           stream,
+                                           m,
+                                           n,
+                                           A,
+                                           lda,
+                                           *threshold,
+                                           &csr_row_ptr[1]);
     }
 
     // Compute csr_row_ptr with the right index base.
@@ -271,14 +271,14 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
     // Extract nnz_total_dev_host_ptr
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL(nnz_total_device_kernel,
-                           dim3(1),
-                           dim3(1),
-                           0,
-                           stream,
-                           m,
-                           csr_row_ptr,
-                           nnz_total_dev_host_ptr);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(nnz_total_device_kernel,
+                                           dim3(1),
+                                           dim3(1),
+                                           0,
+                                           stream,
+                                           m,
+                                           csr_row_ptr,
+                                           nnz_total_dev_host_ptr);
     }
     else
     {
@@ -375,37 +375,39 @@ rocsparse_status rocsparse_prune_dense2csr_template(rocsparse_handle          ha
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            hipLaunchKernelGGL((prune_dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               descr->base,
-                               m,
-                               n,
-                               A,
-                               lda,
-                               threshold,
-                               csr_val,
-                               csr_row_ptr,
-                               csr_col_ind);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (prune_dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
+                blocks,
+                threads,
+                0,
+                stream,
+                descr->base,
+                m,
+                n,
+                A,
+                lda,
+                threshold,
+                csr_val,
+                csr_row_ptr,
+                csr_col_ind);
         }
         else
         {
-            hipLaunchKernelGGL((prune_dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               descr->base,
-                               m,
-                               n,
-                               A,
-                               lda,
-                               *threshold,
-                               csr_val,
-                               csr_row_ptr,
-                               csr_col_ind);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (prune_dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
+                blocks,
+                threads,
+                0,
+                stream,
+                descr->base,
+                m,
+                n,
+                A,
+                lda,
+                *threshold,
+                csr_val,
+                csr_row_ptr,
+                csr_col_ind);
         }
     }
     else
@@ -417,37 +419,39 @@ rocsparse_status rocsparse_prune_dense2csr_template(rocsparse_handle          ha
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            hipLaunchKernelGGL((prune_dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               descr->base,
-                               m,
-                               n,
-                               A,
-                               lda,
-                               threshold,
-                               csr_val,
-                               csr_row_ptr,
-                               csr_col_ind);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (prune_dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
+                blocks,
+                threads,
+                0,
+                stream,
+                descr->base,
+                m,
+                n,
+                A,
+                lda,
+                threshold,
+                csr_val,
+                csr_row_ptr,
+                csr_col_ind);
         }
         else
         {
-            hipLaunchKernelGGL((prune_dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               descr->base,
-                               m,
-                               n,
-                               A,
-                               lda,
-                               *threshold,
-                               csr_val,
-                               csr_row_ptr,
-                               csr_col_ind);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (prune_dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
+                blocks,
+                threads,
+                0,
+                stream,
+                descr->base,
+                m,
+                n,
+                A,
+                lda,
+                *threshold,
+                csr_val,
+                csr_row_ptr,
+                csr_col_ind);
         }
     }
 

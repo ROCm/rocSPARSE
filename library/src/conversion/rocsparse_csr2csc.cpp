@@ -149,17 +149,17 @@ rocsparse_status rocsparse_csr2csc_core(rocsparse_handle     handle,
 #define CSR2CSC_DIM 512
         dim3 csr2csc_blocks((nnz - 1) / CSR2CSC_DIM + 1);
         dim3 csr2csc_threads(CSR2CSC_DIM);
-        hipLaunchKernelGGL((csr2csc_permute_kernel<CSR2CSC_DIM>),
-                           csr2csc_blocks,
-                           csr2csc_threads,
-                           0,
-                           stream,
-                           nnz,
-                           tmp_work1,
-                           csr_val,
-                           vals.current(),
-                           csc_row_ind,
-                           csc_val);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr2csc_permute_kernel<CSR2CSC_DIM>),
+                                           csr2csc_blocks,
+                                           csr2csc_threads,
+                                           0,
+                                           stream,
+                                           nnz,
+                                           tmp_work1,
+                                           csr_val,
+                                           vals.current(),
+                                           csc_row_ind,
+                                           csc_val);
 #undef CSR2CSC_DIM
     }
 
@@ -190,14 +190,14 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
 
     if(nnz == 0)
     {
-        hipLaunchKernelGGL((set_array_to_value<256>),
-                           dim3(n / 256 + 1),
-                           dim3(256),
-                           0,
-                           handle->stream,
-                           (n + 1),
-                           csc_col_ptr,
-                           static_cast<I>(idx_base));
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                           dim3(n / 256 + 1),
+                                           dim3(256),
+                                           0,
+                                           handle->stream,
+                                           (n + 1),
+                                           csc_col_ptr,
+                                           static_cast<I>(idx_base));
 
         return rocsparse_status_success;
     }
@@ -293,14 +293,14 @@ rocsparse_status rocsparse_csr2csc_impl(rocsparse_handle     handle, //0
     {
         if(nnz == 0 && csc_col_ptr != nullptr)
         {
-            hipLaunchKernelGGL((set_array_to_value<256>),
-                               dim3(n / 256 + 1),
-                               dim3(256),
-                               0,
-                               handle->stream,
-                               (n + 1),
-                               csc_col_ptr,
-                               static_cast<I>(idx_base));
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                               dim3(n / 256 + 1),
+                                               dim3(256),
+                                               0,
+                                               handle->stream,
+                                               (n + 1),
+                                               csc_col_ptr,
+                                               static_cast<I>(idx_base));
         }
         return rocsparse_status_success;
     }

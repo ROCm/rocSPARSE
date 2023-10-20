@@ -183,14 +183,14 @@ try
         dim3 csrsort_blocks(m / CSRSORT_DIM + 1);
         dim3 csrsort_threads(CSRSORT_DIM);
 
-        hipLaunchKernelGGL((csrsort_shift_kernel<CSRSORT_DIM>),
-                           csrsort_blocks,
-                           csrsort_threads,
-                           0,
-                           stream,
-                           m + 1,
-                           csr_row_ptr,
-                           tmp_segm);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrsort_shift_kernel<CSRSORT_DIM>),
+                                           csrsort_blocks,
+                                           csrsort_threads,
+                                           0,
+                                           stream,
+                                           m + 1,
+                                           csr_row_ptr,
+                                           tmp_segm);
 #undef CSRSORT_DIM
     }
 

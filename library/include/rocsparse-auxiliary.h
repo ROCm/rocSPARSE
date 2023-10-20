@@ -2152,6 +2152,25 @@ rocsparse_status rocsparse_dnmat_set_strided_batch(rocsparse_dnmat_descr descr,
                                                    int64_t               batch_stride);
 
 /*! \ingroup aux_module
+   *  \brief Enable debug kernel launch.
+   * \details If the debug kernel launch is enabled then hip errors are checked before and after every kernel launch.
+   * \note This routine ignores the environment variable ROCSPARSE_DEBUG_KERNEL_LAUNCH.
+   */
+ROCSPARSE_EXPORT
+void rocsparse_enable_debug_kernel_launch();
+
+/*! \ingroup aux_module
+   *  \brief Disable debug kernel launch.
+   *  \note This routine ignores the environment variable ROCSPARSE_DEBUG_KERNEL_LAUNCH.
+   */
+ROCSPARSE_EXPORT void rocsparse_disable_debug_kernel_launch();
+
+/*! \ingroup aux_module
+   * \return 1 if enabled, 0 otherwise.
+   */
+ROCSPARSE_EXPORT int rocsparse_state_debug_kernel_launch();
+
+/*! \ingroup aux_module
    *  \brief Enable debug arguments.
    * \details If the debug arguments is enabled then argument descriptors are internally available when an argument checking occurs. It provide information to the user depending of the setup of the verbosity
    * \ref rocsparse_enable_debug_arguments_verbose, \ref rocsparse_disable_debug_arguments_verbose and \ref rocsparse_state_debug_arguments_verbose.

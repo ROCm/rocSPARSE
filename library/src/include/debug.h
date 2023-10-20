@@ -38,16 +38,19 @@ private:
     bool debug_arguments;
     bool debug_verbose;
     bool debug_arguments_verbose;
+    bool debug_kernel_launch;
 
 public:
     bool get_debug() const;
     bool get_debug_verbose() const;
+    bool get_debug_kernel_launch() const;
     bool get_debug_arguments() const;
     bool get_debug_arguments_verbose() const;
 
     void set_debug(bool value);
     void set_debug_verbose(bool value);
     void set_debug_arguments(bool value);
+    void set_debug_kernel_launch(bool value);
     void set_debug_arguments_verbose(bool value);
 };
 
@@ -90,6 +93,10 @@ private:
             (!getenv(rocsparse_envariables::names[rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE]))
                 ? debug_arguments
                 : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE));
+
+        const bool debug_kernel_launch
+            = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_KERNEL_LAUNCH);
+        m_var.set_debug_kernel_launch(debug_kernel_launch);
     };
 };
 

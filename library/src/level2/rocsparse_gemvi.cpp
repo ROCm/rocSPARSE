@@ -84,14 +84,14 @@ rocsparse_status rocsparse_gemvi_dispatch(rocsparse_handle     handle,
     // If nnz is zero, only compute beta * y
     if(nnz == 0)
     {
-        hipLaunchKernelGGL((gemvi_scale_kernel<GEMVI_DIM>),
-                           dim3((m - 1) / GEMVI_DIM + 1),
-                           dim3(GEMVI_DIM),
-                           0,
-                           handle->stream,
-                           m,
-                           beta_device_host,
-                           y);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gemvi_scale_kernel<GEMVI_DIM>),
+                                           dim3((m - 1) / GEMVI_DIM + 1),
+                                           dim3(GEMVI_DIM),
+                                           0,
+                                           handle->stream,
+                                           m,
+                                           beta_device_host,
+                                           y);
 
         return rocsparse_status_success;
     }
@@ -103,22 +103,22 @@ rocsparse_status rocsparse_gemvi_dispatch(rocsparse_handle     handle,
             dim3 gemvi_blocks((m - 1) / 32 + 1);
             dim3 gemvi_threads(GEMVI_DIM);
 
-            hipLaunchKernelGGL((gemvi_kernel<GEMVI_DIM, 32>),
-                               gemvi_blocks,
-                               gemvi_threads,
-                               0,
-                               handle->stream,
-                               m,
-                               n,
-                               alpha_device_host,
-                               A,
-                               lda,
-                               nnz,
-                               x_val,
-                               x_ind,
-                               beta_device_host,
-                               y,
-                               idx_base);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gemvi_kernel<GEMVI_DIM, 32>),
+                                               gemvi_blocks,
+                                               gemvi_threads,
+                                               0,
+                                               handle->stream,
+                                               m,
+                                               n,
+                                               alpha_device_host,
+                                               A,
+                                               lda,
+                                               nnz,
+                                               x_val,
+                                               x_ind,
+                                               beta_device_host,
+                                               y,
+                                               idx_base);
         }
         else
         {
@@ -127,22 +127,22 @@ rocsparse_status rocsparse_gemvi_dispatch(rocsparse_handle     handle,
             dim3 gemvi_blocks((m - 1) / 64 + 1);
             dim3 gemvi_threads(GEMVI_DIM);
 
-            hipLaunchKernelGGL((gemvi_kernel<GEMVI_DIM, 64>),
-                               gemvi_blocks,
-                               gemvi_threads,
-                               0,
-                               handle->stream,
-                               m,
-                               n,
-                               alpha_device_host,
-                               A,
-                               lda,
-                               nnz,
-                               x_val,
-                               x_ind,
-                               beta_device_host,
-                               y,
-                               idx_base);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gemvi_kernel<GEMVI_DIM, 64>),
+                                               gemvi_blocks,
+                                               gemvi_threads,
+                                               0,
+                                               handle->stream,
+                                               m,
+                                               n,
+                                               alpha_device_host,
+                                               A,
+                                               lda,
+                                               nnz,
+                                               x_val,
+                                               x_ind,
+                                               beta_device_host,
+                                               y,
+                                               idx_base);
         }
 #undef GEMVI_DIM
     }

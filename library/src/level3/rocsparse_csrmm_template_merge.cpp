@@ -340,17 +340,17 @@ rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle       
         J*    row_limits = reinterpret_cast<J*>(ptr);
 
         I nblocks = (nnz - 1) / NNZ_PER_BLOCK + 1;
-        hipLaunchKernelGGL((csrmmnn_merge_compute_row_limits<256, NNZ_PER_BLOCK>),
-                           dim3((nblocks - 1) / 256 + 1),
-                           dim3(256),
-                           0,
-                           handle->stream,
-                           m,
-                           nblocks,
-                           nnz,
-                           csr_row_ptr,
-                           row_limits,
-                           descr->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmmnn_merge_compute_row_limits<256, NNZ_PER_BLOCK>),
+                                           dim3((nblocks - 1) / 256 + 1),
+                                           dim3(256),
+                                           0,
+                                           handle->stream,
+                                           m,
+                                           nblocks,
+                                           nnz,
+                                           csr_row_ptr,
+                                           row_limits,
+                                           descr->base);
 
         return rocsparse_status_success;
     }
@@ -362,61 +362,62 @@ rocsparse_status rocsparse_csrmm_analysis_template_merge(rocsparse_handle       
     }
 }
 
-#define LAUNCH_CSRMMNN_MERGE_MAIN_KERNEL(CSRMMNT_DIM, WF_SIZE, TRANSB)            \
-    hipLaunchKernelGGL((csrmmnn_merge_main_kernel<CSRMMNT_DIM, WF_SIZE, TRANSB>), \
-                       dim3(nblocks),                                             \
-                       dim3(CSRMMNT_DIM),                                         \
-                       0,                                                         \
-                       handle->stream,                                            \
-                       conj_A,                                                    \
-                       conj_B,                                                    \
-                       main,                                                      \
-                       m,                                                         \
-                       n,                                                         \
-                       k,                                                         \
-                       nnz,                                                       \
-                       alpha_device_host,                                         \
-                       row_block_red,                                             \
-                       val_block_red,                                             \
-                       row_limits,                                                \
-                       csr_row_ptr,                                               \
-                       csr_col_ind,                                               \
-                       csr_val,                                                   \
-                       dense_B,                                                   \
-                       ldb,                                                       \
-                       beta_device_host,                                          \
-                       dense_C,                                                   \
-                       ldc,                                                       \
-                       order_C,                                                   \
-                       descr->base);
+#define LAUNCH_CSRMMNN_MERGE_MAIN_KERNEL(CSRMMNT_DIM, WF_SIZE, TRANSB)                            \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmmnn_merge_main_kernel<CSRMMNT_DIM, WF_SIZE, TRANSB>), \
+                                       dim3(nblocks),                                             \
+                                       dim3(CSRMMNT_DIM),                                         \
+                                       0,                                                         \
+                                       handle->stream,                                            \
+                                       conj_A,                                                    \
+                                       conj_B,                                                    \
+                                       main,                                                      \
+                                       m,                                                         \
+                                       n,                                                         \
+                                       k,                                                         \
+                                       nnz,                                                       \
+                                       alpha_device_host,                                         \
+                                       row_block_red,                                             \
+                                       val_block_red,                                             \
+                                       row_limits,                                                \
+                                       csr_row_ptr,                                               \
+                                       csr_col_ind,                                               \
+                                       csr_val,                                                   \
+                                       dense_B,                                                   \
+                                       ldb,                                                       \
+                                       beta_device_host,                                          \
+                                       dense_C,                                                   \
+                                       ldc,                                                       \
+                                       order_C,                                                   \
+                                       descr->base);
 
-#define LAUNCH_CSRMMNN_MERGE_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE, TRANSB)            \
-    hipLaunchKernelGGL((csrmmnn_merge_remainder_kernel<CSRMMNT_DIM, WF_SIZE, TRANSB>), \
-                       dim3(nblocks),                                                  \
-                       dim3(CSRMMNT_DIM),                                              \
-                       0,                                                              \
-                       handle->stream,                                                 \
-                       conj_A,                                                         \
-                       conj_B,                                                         \
-                       main,                                                           \
-                       m,                                                              \
-                       n,                                                              \
-                       k,                                                              \
-                       nnz,                                                            \
-                       alpha_device_host,                                              \
-                       row_block_red,                                                  \
-                       val_block_red,                                                  \
-                       row_limits,                                                     \
-                       csr_row_ptr,                                                    \
-                       csr_col_ind,                                                    \
-                       csr_val,                                                        \
-                       dense_B,                                                        \
-                       ldb,                                                            \
-                       beta_device_host,                                               \
-                       dense_C,                                                        \
-                       ldc,                                                            \
-                       order_C,                                                        \
-                       descr->base);
+#define LAUNCH_CSRMMNN_MERGE_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE, TRANSB) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                     \
+        (csrmmnn_merge_remainder_kernel<CSRMMNT_DIM, WF_SIZE, TRANSB>),     \
+        dim3(nblocks),                                                      \
+        dim3(CSRMMNT_DIM),                                                  \
+        0,                                                                  \
+        handle->stream,                                                     \
+        conj_A,                                                             \
+        conj_B,                                                             \
+        main,                                                               \
+        m,                                                                  \
+        n,                                                                  \
+        k,                                                                  \
+        nnz,                                                                \
+        alpha_device_host,                                                  \
+        row_block_red,                                                      \
+        val_block_red,                                                      \
+        row_limits,                                                         \
+        csr_row_ptr,                                                        \
+        csr_col_ind,                                                        \
+        csr_val,                                                            \
+        dense_B,                                                            \
+        ldb,                                                                \
+        beta_device_host,                                                   \
+        dense_C,                                                            \
+        ldc,                                                                \
+        order_C,                                                            \
+        descr->base);
 
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
@@ -449,17 +450,17 @@ rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
                                         void*                     temp_buffer)
 {
     // Scale C with beta
-    hipLaunchKernelGGL((csrmmnn_merge_scale<256>),
-                       dim3((int64_t(m) * n - 1) / 256 + 1),
-                       dim3(256),
-                       0,
-                       handle->stream,
-                       m,
-                       n,
-                       beta_device_host,
-                       dense_C,
-                       ldc,
-                       order_C);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmmnn_merge_scale<256>),
+                                       dim3((int64_t(m) * n - 1) / 256 + 1),
+                                       dim3(256),
+                                       0,
+                                       handle->stream,
+                                       m,
+                                       n,
+                                       beta_device_host,
+                                       dense_C,
+                                       ldc,
+                                       order_C);
 
     I nblocks = (nnz - 1) / NNZ_PER_BLOCK + 1;
 
@@ -522,70 +523,72 @@ rocsparse_status csrmmnn_merge_dispatch(rocsparse_handle          handle,
         }
     }
 
-    hipLaunchKernelGGL((csrmmnn_general_block_reduce<1024>),
-                       dim3(n),
-                       dim3(1024),
-                       0,
-                       handle->stream,
-                       nblocks,
-                       row_block_red,
-                       val_block_red,
-                       dense_C,
-                       ldc,
-                       order_C);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmmnn_general_block_reduce<1024>),
+                                       dim3(n),
+                                       dim3(1024),
+                                       0,
+                                       handle->stream,
+                                       nblocks,
+                                       row_block_red,
+                                       val_block_red,
+                                       dense_C,
+                                       ldc,
+                                       order_C);
 
     return rocsparse_status_success;
 }
 
-#define LAUNCH_CSRMMNT_MERGE_MAIN_KERNEL(CSRMMNT_DIM, WF_SIZE, LOOPS, TRANSB)               \
-    hipLaunchKernelGGL((csrmmnt_merge_main_kernel<CSRMMNT_DIM, WF_SIZE, LOOPS, TRANSB, T>), \
-                       dim3((nnz - 1) / CSRMMNT_DIM + 1),                                   \
-                       dim3(CSRMMNT_DIM),                                                   \
-                       0,                                                                   \
-                       handle->stream,                                                      \
-                       conj_A,                                                              \
-                       conj_B,                                                              \
-                       main,                                                                \
-                       m,                                                                   \
-                       n,                                                                   \
-                       k,                                                                   \
-                       nnz,                                                                 \
-                       alpha_device_host,                                                   \
-                       row_limits,                                                          \
-                       csr_row_ptr,                                                         \
-                       csr_col_ind,                                                         \
-                       csr_val,                                                             \
-                       dense_B,                                                             \
-                       ldb,                                                                 \
-                       dense_C,                                                             \
-                       ldc,                                                                 \
-                       order_C,                                                             \
-                       descr->base);
+#define LAUNCH_CSRMMNT_MERGE_MAIN_KERNEL(CSRMMNT_DIM, WF_SIZE, LOOPS, TRANSB) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                       \
+        (csrmmnt_merge_main_kernel<CSRMMNT_DIM, WF_SIZE, LOOPS, TRANSB, T>),  \
+        dim3((nnz - 1) / CSRMMNT_DIM + 1),                                    \
+        dim3(CSRMMNT_DIM),                                                    \
+        0,                                                                    \
+        handle->stream,                                                       \
+        conj_A,                                                               \
+        conj_B,                                                               \
+        main,                                                                 \
+        m,                                                                    \
+        n,                                                                    \
+        k,                                                                    \
+        nnz,                                                                  \
+        alpha_device_host,                                                    \
+        row_limits,                                                           \
+        csr_row_ptr,                                                          \
+        csr_col_ind,                                                          \
+        csr_val,                                                              \
+        dense_B,                                                              \
+        ldb,                                                                  \
+        dense_C,                                                              \
+        ldc,                                                                  \
+        order_C,                                                              \
+        descr->base);
 
-#define LAUNCH_CSRMMNT_MERGE_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE, TRANSB)               \
-    hipLaunchKernelGGL((csrmmnt_merge_remainder_kernel<CSRMMNT_DIM, WF_SIZE, TRANSB, T>), \
-                       dim3((nnz - 1) / CSRMMNT_DIM + 1),                                 \
-                       dim3(CSRMMNT_DIM),                                                 \
-                       0,                                                                 \
-                       handle->stream,                                                    \
-                       conj_A,                                                            \
-                       conj_B,                                                            \
-                       main,                                                              \
-                       m,                                                                 \
-                       n,                                                                 \
-                       k,                                                                 \
-                       nnz,                                                               \
-                       alpha_device_host,                                                 \
-                       row_limits,                                                        \
-                       csr_row_ptr,                                                       \
-                       csr_col_ind,                                                       \
-                       csr_val,                                                           \
-                       dense_B,                                                           \
-                       ldb,                                                               \
-                       dense_C,                                                           \
-                       ldc,                                                               \
-                       order_C,                                                           \
-                       descr->base);
+#define LAUNCH_CSRMMNT_MERGE_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE, TRANSB) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                     \
+        (csrmmnt_merge_remainder_kernel<CSRMMNT_DIM, WF_SIZE, TRANSB, T>),  \
+        dim3((nnz - 1) / CSRMMNT_DIM + 1),                                  \
+        dim3(CSRMMNT_DIM),                                                  \
+        0,                                                                  \
+        handle->stream,                                                     \
+        conj_A,                                                             \
+        conj_B,                                                             \
+        main,                                                               \
+        m,                                                                  \
+        n,                                                                  \
+        k,                                                                  \
+        nnz,                                                                \
+        alpha_device_host,                                                  \
+        row_limits,                                                         \
+        csr_row_ptr,                                                        \
+        csr_col_ind,                                                        \
+        csr_val,                                                            \
+        dense_B,                                                            \
+        ldb,                                                                \
+        dense_C,                                                            \
+        ldc,                                                                \
+        order_C,                                                            \
+        descr->base);
 
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
@@ -618,17 +621,17 @@ rocsparse_status csrmmnt_merge_dispatch(rocsparse_handle          handle,
                                         void*                     temp_buffer)
 {
     // Scale C with beta
-    hipLaunchKernelGGL((csrmmnn_merge_scale<256>),
-                       dim3((int64_t(m) * n - 1) / 256 + 1),
-                       dim3(256),
-                       0,
-                       handle->stream,
-                       m,
-                       n,
-                       beta_device_host,
-                       dense_C,
-                       ldc,
-                       order_C);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmmnn_merge_scale<256>),
+                                       dim3((int64_t(m) * n - 1) / 256 + 1),
+                                       dim3(256),
+                                       0,
+                                       handle->stream,
+                                       m,
+                                       n,
+                                       beta_device_host,
+                                       dense_C,
+                                       ldc,
+                                       order_C);
 
     char* ptr        = reinterpret_cast<char*>(temp_buffer);
     J*    row_limits = reinterpret_cast<J*>(ptr);

@@ -33,24 +33,24 @@ std::string rocsparse_matrixtype2string(rocsparse_matrix_type type);
 
 const char* rocsparse_datastatus2string(rocsparse_data_status data_status);
 
-#define LAUNCH_CHECK_MATRIX_CSR(block_size, wf_size)                   \
-    hipLaunchKernelGGL((check_matrix_csr_device<block_size, wf_size>), \
-                       dim3((wf_size * m - 1) / block_size + 1),       \
-                       dim3(block_size),                               \
-                       0,                                              \
-                       handle->stream,                                 \
-                       m,                                              \
-                       n,                                              \
-                       nnz,                                            \
-                       csr_val,                                        \
-                       csr_row_ptr,                                    \
-                       csr_col_ind,                                    \
-                       csr_col_ind_sorted,                             \
-                       idx_base,                                       \
-                       matrix_type,                                    \
-                       uplo,                                           \
-                       storage,                                        \
-                       d_data_status);
+#define LAUNCH_CHECK_MATRIX_CSR(block_size, wf_size)                                   \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((check_matrix_csr_device<block_size, wf_size>), \
+                                       dim3((wf_size * m - 1) / block_size + 1),       \
+                                       dim3(block_size),                               \
+                                       0,                                              \
+                                       handle->stream,                                 \
+                                       m,                                              \
+                                       n,                                              \
+                                       nnz,                                            \
+                                       csr_val,                                        \
+                                       csr_row_ptr,                                    \
+                                       csr_col_ind,                                    \
+                                       csr_col_ind_sorted,                             \
+                                       idx_base,                                       \
+                                       matrix_type,                                    \
+                                       uplo,                                           \
+                                       storage,                                        \
+                                       d_data_status);
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse_check_matrix_csr_core(rocsparse_handle       handle,
@@ -96,14 +96,14 @@ rocsparse_status rocsparse_check_matrix_csr_core(rocsparse_handle       handle,
     RETURN_IF_HIP_ERROR(hipMemsetAsync(d_data_status, 0, sizeof(rocsparse_data_status)));
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-    hipLaunchKernelGGL((check_row_ptr_array<256>),
-                       dim3((m - 1) / 256 + 1),
-                       dim3(256),
-                       0,
-                       handle->stream,
-                       m,
-                       csr_row_ptr,
-                       d_data_status);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((check_row_ptr_array<256>),
+                                       dim3((m - 1) / 256 + 1),
+                                       dim3(256),
+                                       0,
+                                       handle->stream,
+                                       m,
+                                       csr_row_ptr,
+                                       d_data_status);
 
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(data_status,
                                        d_data_status,
@@ -144,14 +144,14 @@ rocsparse_status rocsparse_check_matrix_csr_core(rocsparse_handle       handle,
         tmp_cols2 = reinterpret_cast<J*>(ptr);
         ptr += ((sizeof(J) * nnz - 1) / 256 + 1) * 256;
 
-        hipLaunchKernelGGL((shift_offsets_kernel<512>),
-                           dim3(m / 512 + 1),
-                           dim3(512),
-                           0,
-                           handle->stream,
-                           m + 1,
-                           csr_row_ptr,
-                           tmp_offsets);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((shift_offsets_kernel<512>),
+                                           dim3(m / 512 + 1),
+                                           dim3(512),
+                                           0,
+                                           handle->stream,
+                                           m + 1,
+                                           csr_row_ptr,
+                                           tmp_offsets);
 
         RETURN_IF_HIP_ERROR(
             hipMemcpyAsync(tmp_cols1, csr_col_ind, sizeof(J) * nnz, hipMemcpyDeviceToDevice));

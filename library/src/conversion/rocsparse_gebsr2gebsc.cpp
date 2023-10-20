@@ -55,14 +55,14 @@ static rocsparse_status rocsparse_gebsr2gebsc_quickreturn(rocsparse_handle     h
     {
         if(bsc_col_ptr != nullptr)
         {
-            hipLaunchKernelGGL((set_array_to_value<256>),
-                               dim3(nb / 256 + 1),
-                               dim3(256),
-                               0,
-                               handle->stream,
-                               (nb + 1),
-                               bsc_col_ptr,
-                               static_cast<rocsparse_int>(idx_base));
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                               dim3(nb / 256 + 1),
+                                               dim3(256),
+                                               0,
+                                               handle->stream,
+                                               (nb + 1),
+                                               bsc_col_ptr,
+                                               static_cast<rocsparse_int>(idx_base));
         }
 
         return rocsparse_status_success;
@@ -70,14 +70,14 @@ static rocsparse_status rocsparse_gebsr2gebsc_quickreturn(rocsparse_handle     h
 
     if(nnzb == 0)
     {
-        hipLaunchKernelGGL((set_array_to_value<256>),
-                           dim3(nb / 256 + 1),
-                           dim3(256),
-                           0,
-                           handle->stream,
-                           (nb + 1),
-                           bsc_col_ptr,
-                           static_cast<rocsparse_int>(idx_base));
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                           dim3(nb / 256 + 1),
+                                           dim3(256),
+                                           0,
+                                           handle->stream,
+                                           (nb + 1),
+                                           bsc_col_ptr,
+                                           static_cast<rocsparse_int>(idx_base));
 
         return rocsparse_status_success;
     }
@@ -257,18 +257,18 @@ rocsparse_status rocsparse_gebsr2gebsc_template(rocsparse_handle     handle, //0
         dim3 gebsr2gebsc_blocks((nnzb - 1) / GEBSR2GEBSC_DIM + 1);
         dim3 gebsr2gebsc_threads(GEBSR2GEBSC_DIM);
 
-        hipLaunchKernelGGL((gebsr2gebsc_permute_kernel<GEBSR2GEBSC_DIM>),
-                           gebsr2gebsc_blocks,
-                           gebsr2gebsc_threads,
-                           0,
-                           stream,
-                           nnzb,
-                           col_block_dim * row_block_dim,
-                           tmp_work1,
-                           bsr_val,
-                           vals.current(),
-                           bsc_row_ind,
-                           bsc_val);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gebsr2gebsc_permute_kernel<GEBSR2GEBSC_DIM>),
+                                           gebsr2gebsc_blocks,
+                                           gebsr2gebsc_threads,
+                                           0,
+                                           stream,
+                                           nnzb,
+                                           col_block_dim * row_block_dim,
+                                           tmp_work1,
+                                           bsr_val,
+                                           vals.current(),
+                                           bsc_row_ind,
+                                           bsc_val);
 #undef GEBSR2GEBSC_DIM
     }
 

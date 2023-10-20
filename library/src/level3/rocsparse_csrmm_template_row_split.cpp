@@ -200,57 +200,58 @@ void csrmmnt_row_split_remainder_kernel(bool conj_A,
                                                            idx_base);
 }
 
-#define LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(CSRMMNT_DIM, WF_SIZE, LOOPS)            \
-    hipLaunchKernelGGL((csrmmnt_row_split_main_kernel<CSRMMNT_DIM, WF_SIZE, LOOPS>), \
-                       dim3((m - 1) / (CSRMMNT_DIM / WF_SIZE) + 1),                  \
-                       dim3(CSRMMNT_DIM),                                            \
-                       0,                                                            \
-                       handle->stream,                                               \
-                       conj_A,                                                       \
-                       conj_B,                                                       \
-                       (J)0,                                                         \
-                       main,                                                         \
-                       m,                                                            \
-                       n,                                                            \
-                       k,                                                            \
-                       nnz,                                                          \
-                       alpha_device_host,                                            \
-                       csr_row_ptr,                                                  \
-                       csr_col_ind,                                                  \
-                       csr_val,                                                      \
-                       dense_B,                                                      \
-                       ldb,                                                          \
-                       beta_device_host,                                             \
-                       dense_C,                                                      \
-                       ldc,                                                          \
-                       order_C,                                                      \
-                       descr->base);
+#define LAUNCH_CSRMMNT_ROW_SPLIT_MAIN_KERNEL(CSRMMNT_DIM, WF_SIZE, LOOPS) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                   \
+        (csrmmnt_row_split_main_kernel<CSRMMNT_DIM, WF_SIZE, LOOPS>),     \
+        dim3((m - 1) / (CSRMMNT_DIM / WF_SIZE) + 1),                      \
+        dim3(CSRMMNT_DIM),                                                \
+        0,                                                                \
+        handle->stream,                                                   \
+        conj_A,                                                           \
+        conj_B,                                                           \
+        (J)0,                                                             \
+        main,                                                             \
+        m,                                                                \
+        n,                                                                \
+        k,                                                                \
+        nnz,                                                              \
+        alpha_device_host,                                                \
+        csr_row_ptr,                                                      \
+        csr_col_ind,                                                      \
+        csr_val,                                                          \
+        dense_B,                                                          \
+        ldb,                                                              \
+        beta_device_host,                                                 \
+        dense_C,                                                          \
+        ldc,                                                              \
+        order_C,                                                          \
+        descr->base);
 
-#define LAUNCH_CSRMMNT_ROW_SPLIT_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE)            \
-    hipLaunchKernelGGL((csrmmnt_row_split_remainder_kernel<CSRMMNT_DIM, WF_SIZE>), \
-                       dim3((m - 1) / (CSRMMNT_DIM / WF_SIZE) + 1),                \
-                       dim3(CSRMMNT_DIM),                                          \
-                       0,                                                          \
-                       handle->stream,                                             \
-                       conj_A,                                                     \
-                       conj_B,                                                     \
-                       main,                                                       \
-                       n,                                                          \
-                       m,                                                          \
-                       n,                                                          \
-                       k,                                                          \
-                       nnz,                                                        \
-                       alpha_device_host,                                          \
-                       csr_row_ptr,                                                \
-                       csr_col_ind,                                                \
-                       csr_val,                                                    \
-                       dense_B,                                                    \
-                       ldb,                                                        \
-                       beta_device_host,                                           \
-                       dense_C,                                                    \
-                       ldc,                                                        \
-                       order_C,                                                    \
-                       descr->base);
+#define LAUNCH_CSRMMNT_ROW_SPLIT_REMAINDER_KERNEL(CSRMMNT_DIM, WF_SIZE)                            \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmmnt_row_split_remainder_kernel<CSRMMNT_DIM, WF_SIZE>), \
+                                       dim3((m - 1) / (CSRMMNT_DIM / WF_SIZE) + 1),                \
+                                       dim3(CSRMMNT_DIM),                                          \
+                                       0,                                                          \
+                                       handle->stream,                                             \
+                                       conj_A,                                                     \
+                                       conj_B,                                                     \
+                                       main,                                                       \
+                                       n,                                                          \
+                                       m,                                                          \
+                                       n,                                                          \
+                                       k,                                                          \
+                                       nnz,                                                        \
+                                       alpha_device_host,                                          \
+                                       csr_row_ptr,                                                \
+                                       csr_col_ind,                                                \
+                                       csr_val,                                                    \
+                                       dense_B,                                                    \
+                                       ldb,                                                        \
+                                       beta_device_host,                                           \
+                                       dense_C,                                                    \
+                                       ldc,                                                        \
+                                       order_C,                                                    \
+                                       descr->base);
 
 template <typename I, typename J, typename A, typename B, typename C, typename U>
 rocsparse_status rocsparse_csrmmnn_template_row_split(rocsparse_handle          handle,
@@ -281,58 +282,58 @@ rocsparse_status rocsparse_csrmmnn_template_row_split(rocsparse_handle          
     {
         dim3 csrmmnn_blocks((m - 1) / (CSRMMNN_DIM / SUB_WF_SIZE) + 1, (main - 1) / 8 + 1);
         dim3 csrmmnn_threads(CSRMMNN_DIM);
-        hipLaunchKernelGGL((csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 8>),
-                           csrmmnn_blocks,
-                           csrmmnn_threads,
-                           0,
-                           handle->stream,
-                           conj_A,
-                           conj_B,
-                           (J)0,
-                           m,
-                           n,
-                           k,
-                           nnz,
-                           alpha_device_host,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           csr_val,
-                           dense_B,
-                           ldb,
-                           beta_device_host,
-                           dense_C,
-                           ldc,
-                           order_C,
-                           descr->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 8>),
+                                           csrmmnn_blocks,
+                                           csrmmnn_threads,
+                                           0,
+                                           handle->stream,
+                                           conj_A,
+                                           conj_B,
+                                           (J)0,
+                                           m,
+                                           n,
+                                           k,
+                                           nnz,
+                                           alpha_device_host,
+                                           csr_row_ptr,
+                                           csr_col_ind,
+                                           csr_val,
+                                           dense_B,
+                                           ldb,
+                                           beta_device_host,
+                                           dense_C,
+                                           ldc,
+                                           order_C,
+                                           descr->base);
     }
 
     if(remainder > 0)
     {
         dim3 csrmmnn_blocks((m - 1) / (CSRMMNN_DIM / SUB_WF_SIZE) + 1, (remainder - 1) / 1 + 1);
         dim3 csrmmnn_threads(CSRMMNN_DIM);
-        hipLaunchKernelGGL((csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 1>),
-                           csrmmnn_blocks,
-                           csrmmnn_threads,
-                           0,
-                           handle->stream,
-                           conj_A,
-                           conj_B,
-                           main,
-                           m,
-                           n,
-                           k,
-                           nnz,
-                           alpha_device_host,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           csr_val,
-                           dense_B,
-                           ldb,
-                           beta_device_host,
-                           dense_C,
-                           ldc,
-                           order_C,
-                           descr->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 1>),
+                                           csrmmnn_blocks,
+                                           csrmmnn_threads,
+                                           0,
+                                           handle->stream,
+                                           conj_A,
+                                           conj_B,
+                                           main,
+                                           m,
+                                           n,
+                                           k,
+                                           nnz,
+                                           alpha_device_host,
+                                           csr_row_ptr,
+                                           csr_col_ind,
+                                           csr_val,
+                                           dense_B,
+                                           ldb,
+                                           beta_device_host,
+                                           dense_C,
+                                           ldc,
+                                           order_C,
+                                           descr->base);
     }
 #undef SUB_WF_SIZE
 #undef CSRMMNN_DIM

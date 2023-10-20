@@ -93,17 +93,17 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((axpyi_kernel<AXPYI_DIM>),
-                           axpyi_blocks,
-                           axpyi_threads,
-                           0,
-                           stream,
-                           nnz,
-                           alpha,
-                           x_val,
-                           x_ind,
-                           y,
-                           idx_base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((axpyi_kernel<AXPYI_DIM>),
+                                           axpyi_blocks,
+                                           axpyi_threads,
+                                           0,
+                                           stream,
+                                           nnz,
+                                           alpha,
+                                           x_val,
+                                           x_ind,
+                                           y,
+                                           idx_base);
     }
     else
     {
@@ -112,17 +112,17 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
             return rocsparse_status_success;
         }
 
-        hipLaunchKernelGGL((axpyi_kernel<AXPYI_DIM>),
-                           axpyi_blocks,
-                           axpyi_threads,
-                           0,
-                           stream,
-                           nnz,
-                           *alpha,
-                           x_val,
-                           x_ind,
-                           y,
-                           idx_base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((axpyi_kernel<AXPYI_DIM>),
+                                           axpyi_blocks,
+                                           axpyi_threads,
+                                           0,
+                                           stream,
+                                           nnz,
+                                           *alpha,
+                                           x_val,
+                                           x_ind,
+                                           y,
+                                           idx_base);
     }
 #undef AXPYI_DIM
     return rocsparse_status_success;

@@ -122,31 +122,33 @@ rocsparse_status rocsparse_csxsldu_fill_kernel_dispatch(rocsparse_handle    hand
         {
         case rocsparse_diag_type_non_unit:
         {
-            hipLaunchKernelGGL((rocsparse_csxsldu_fill_kernel<nthreads_per_block,
-                                                              rocsparse_diag_type_unit,
-                                                              rocsparse_diag_type_non_unit,
-                                                              I,
-                                                              J>),
-                               blocks,
-                               threads,
-                               0,
-                               handle_->stream,
-                               p...);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse_csxsldu_fill_kernel<nthreads_per_block,
+                                               rocsparse_diag_type_unit,
+                                               rocsparse_diag_type_non_unit,
+                                               I,
+                                               J>),
+                blocks,
+                threads,
+                0,
+                handle_->stream,
+                p...);
             break;
         }
         case rocsparse_diag_type_unit:
         {
 
-            hipLaunchKernelGGL((rocsparse_csxsldu_fill_kernel<nthreads_per_block,
-                                                              rocsparse_diag_type_unit,
-                                                              rocsparse_diag_type_unit,
-                                                              I,
-                                                              J>),
-                               blocks,
-                               threads,
-                               0,
-                               handle_->stream,
-                               p...);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse_csxsldu_fill_kernel<nthreads_per_block,
+                                               rocsparse_diag_type_unit,
+                                               rocsparse_diag_type_unit,
+                                               I,
+                                               J>),
+                blocks,
+                threads,
+                0,
+                handle_->stream,
+                p...);
             break;
         }
         }
@@ -162,16 +164,17 @@ rocsparse_status rocsparse_csxsldu_fill_kernel_dispatch(rocsparse_handle    hand
         }
         case rocsparse_diag_type_unit:
         {
-            hipLaunchKernelGGL((rocsparse_csxsldu_fill_kernel<nthreads_per_block,
-                                                              rocsparse_diag_type_non_unit,
-                                                              rocsparse_diag_type_unit,
-                                                              I,
-                                                              J>),
-                               blocks,
-                               threads,
-                               0,
-                               handle_->stream,
-                               p...);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse_csxsldu_fill_kernel<nthreads_per_block,
+                                               rocsparse_diag_type_non_unit,
+                                               rocsparse_diag_type_unit,
+                                               I,
+                                               J>),
+                blocks,
+                threads,
+                0,
+                handle_->stream,
+                p...);
             break;
         }
         }
@@ -305,14 +308,15 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
                 }
                 else
                 {
-                    hipLaunchKernelGGL((set_array_to_value<256>),
-                                       dim3(((sizet + 1) - 1) / 256 + 1),
-                                       dim3(256),
-                                       0,
-                                       handle_->stream,
-                                       (sizet + 1),
-                                       uptr_,
-                                       static_cast<rocsparse_int>(rocsparse_index_base_one));
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (set_array_to_value<256>),
+                        dim3(((sizet + 1) - 1) / 256 + 1),
+                        dim3(256),
+                        0,
+                        handle_->stream,
+                        (sizet + 1),
+                        uptr_,
+                        static_cast<rocsparse_int>(rocsparse_index_base_one));
                 }
             }
         }
@@ -379,14 +383,15 @@ rocsparse_status rocsparse_csxsldu_compute_template(rocsparse_handle handle_,
                 }
                 else
                 {
-                    hipLaunchKernelGGL((set_array_to_value<256>),
-                                       dim3(((sizet + 1) - 1) / 256 + 1),
-                                       dim3(256),
-                                       0,
-                                       handle_->stream,
-                                       (sizet + 1),
-                                       lptr_,
-                                       static_cast<rocsparse_int>(rocsparse_index_base_one));
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (set_array_to_value<256>),
+                        dim3(((sizet + 1) - 1) / 256 + 1),
+                        dim3(256),
+                        0,
+                        handle_->stream,
+                        (sizet + 1),
+                        lptr_,
+                        static_cast<rocsparse_int>(rocsparse_index_base_one));
                 }
             }
         }

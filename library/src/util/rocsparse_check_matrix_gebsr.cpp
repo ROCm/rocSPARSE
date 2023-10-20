@@ -76,14 +76,14 @@ rocsparse_status rocsparse_check_matrix_gebsr_core(rocsparse_handle       handle
     RETURN_IF_HIP_ERROR(hipMemsetAsync(d_data_status, 0, sizeof(rocsparse_data_status)));
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-    hipLaunchKernelGGL((check_row_ptr_array<256>),
-                       dim3((mb - 1) / 256 + 1),
-                       dim3(256),
-                       0,
-                       handle->stream,
-                       mb,
-                       bsr_row_ptr,
-                       d_data_status);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((check_row_ptr_array<256>),
+                                       dim3((mb - 1) / 256 + 1),
+                                       dim3(256),
+                                       0,
+                                       handle->stream,
+                                       mb,
+                                       bsr_row_ptr,
+                                       d_data_status);
 
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(data_status,
                                        d_data_status,
@@ -122,14 +122,14 @@ rocsparse_status rocsparse_check_matrix_gebsr_core(rocsparse_handle       handle
         tmp_cols2 = reinterpret_cast<J*>(ptr);
         ptr += ((sizeof(J) * nnzb - 1) / 256 + 1) * 256;
 
-        hipLaunchKernelGGL((shift_offsets_kernel<512>),
-                           dim3(mb / 512 + 1),
-                           dim3(512),
-                           0,
-                           handle->stream,
-                           mb + 1,
-                           bsr_row_ptr,
-                           tmp_offsets);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((shift_offsets_kernel<512>),
+                                           dim3(mb / 512 + 1),
+                                           dim3(512),
+                                           0,
+                                           handle->stream,
+                                           mb + 1,
+                                           bsr_row_ptr,
+                                           tmp_offsets);
 
         RETURN_IF_HIP_ERROR(
             hipMemcpyAsync(tmp_cols1, bsr_col_ind, sizeof(J) * nnzb, hipMemcpyDeviceToDevice));
@@ -229,26 +229,26 @@ rocsparse_status rocsparse_check_matrix_gebsr_core(rocsparse_handle       handle
     const J* bsr_col_ind_sorted
         = (storage == rocsparse_storage_mode_unsorted) ? tmp_cols2 : bsr_col_ind;
 
-    hipLaunchKernelGGL((check_matrix_gebsr_device<256>),
-                       dim3((mb - 1) / 256 + 1),
-                       dim3(256),
-                       0,
-                       handle->stream,
-                       dir,
-                       mb,
-                       nb,
-                       nnzb,
-                       row_block_dim,
-                       col_block_dim,
-                       bsr_val,
-                       bsr_row_ptr,
-                       bsr_col_ind,
-                       bsr_col_ind_sorted,
-                       idx_base,
-                       matrix_type,
-                       uplo,
-                       storage,
-                       d_data_status);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((check_matrix_gebsr_device<256>),
+                                       dim3((mb - 1) / 256 + 1),
+                                       dim3(256),
+                                       0,
+                                       handle->stream,
+                                       dir,
+                                       mb,
+                                       nb,
+                                       nnzb,
+                                       row_block_dim,
+                                       col_block_dim,
+                                       bsr_val,
+                                       bsr_row_ptr,
+                                       bsr_col_ind,
+                                       bsr_col_ind_sorted,
+                                       idx_base,
+                                       matrix_type,
+                                       uplo,
+                                       storage,
+                                       d_data_status);
 
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(data_status,
                                        d_data_status,

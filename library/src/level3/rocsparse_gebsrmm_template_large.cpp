@@ -139,30 +139,30 @@ rocsparse_status rocsparse_gebsrmm_template_large(rocsparse_handle          hand
     hipStream_t stream = handle->stream;
     assert(row_block_dim <= 32);
 
-#define LAUNCH_LARGE_KERNEL(M_, N_)                             \
-    dim3 gebsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / N_ + 1);    \
-    dim3 gebsrmm_threads(M_, N_);                               \
-    hipLaunchKernelGGL((gebsrmm_large_blockdim_kernel<M_, N_>), \
-                       gebsrmm_blocks,                          \
-                       gebsrmm_threads,                         \
-                       0,                                       \
-                       stream,                                  \
-                       dir,                                     \
-                       trans_B,                                 \
-                       mb,                                      \
-                       n,                                       \
-                       alpha,                                   \
-                       bsr_row_ptr,                             \
-                       bsr_col_ind,                             \
-                       bsr_val,                                 \
-                       row_block_dim,                           \
-                       col_block_dim,                           \
-                       B,                                       \
-                       ldb,                                     \
-                       beta,                                    \
-                       C,                                       \
-                       ldc,                                     \
-                       descr->base)
+#define LAUNCH_LARGE_KERNEL(M_, N_)                                             \
+    dim3 gebsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / N_ + 1);                    \
+    dim3 gebsrmm_threads(M_, N_);                                               \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gebsrmm_large_blockdim_kernel<M_, N_>), \
+                                       gebsrmm_blocks,                          \
+                                       gebsrmm_threads,                         \
+                                       0,                                       \
+                                       stream,                                  \
+                                       dir,                                     \
+                                       trans_B,                                 \
+                                       mb,                                      \
+                                       n,                                       \
+                                       alpha,                                   \
+                                       bsr_row_ptr,                             \
+                                       bsr_col_ind,                             \
+                                       bsr_val,                                 \
+                                       row_block_dim,                           \
+                                       col_block_dim,                           \
+                                       B,                                       \
+                                       ldb,                                     \
+                                       beta,                                    \
+                                       C,                                       \
+                                       ldc,                                     \
+                                       descr->base)
 
     //
     // Select which tuned kernel to apply.

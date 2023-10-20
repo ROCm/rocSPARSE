@@ -72,16 +72,16 @@ rocsparse_status rocsparse_sctr_template(rocsparse_handle     handle,
     dim3 sctr_blocks((nnz - 1) / SCTR_DIM + 1);
     dim3 sctr_threads(SCTR_DIM);
 
-    hipLaunchKernelGGL((sctr_kernel<SCTR_DIM>),
-                       sctr_blocks,
-                       sctr_threads,
-                       0,
-                       stream,
-                       nnz,
-                       x_val,
-                       x_ind,
-                       y,
-                       idx_base);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((sctr_kernel<SCTR_DIM>),
+                                       sctr_blocks,
+                                       sctr_threads,
+                                       0,
+                                       stream,
+                                       nnz,
+                                       x_val,
+                                       x_ind,
+                                       y,
+                                       idx_base);
 #undef SCTR_DIM
     return rocsparse_status_success;
 }

@@ -29,41 +29,41 @@
 
 #include <hip/hip_runtime.h>
 
-#define LAUNCH_GEBSRMV_GENERAL_KERNEL(BLOCKSIZE, WFSIZE)             \
-    hipLaunchKernelGGL((gebsrmvn_general_kernel<BLOCKSIZE, WFSIZE>), \
-                       dim3(mb),                                     \
-                       dim3(BLOCKSIZE),                              \
-                       0,                                            \
-                       handle->stream,                               \
-                       mb,                                           \
-                       dir,                                          \
-                       alpha,                                        \
-                       bsr_row_ptr,                                  \
-                       bsr_col_ind,                                  \
-                       bsr_val,                                      \
-                       row_block_dim,                                \
-                       col_block_dim,                                \
-                       x,                                            \
-                       beta,                                         \
-                       y,                                            \
-                       base);
+#define LAUNCH_GEBSRMV_GENERAL_KERNEL(BLOCKSIZE, WFSIZE)                            \
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((gebsrmvn_general_kernel<BLOCKSIZE, WFSIZE>), \
+                                      dim3(mb),                                     \
+                                      dim3(BLOCKSIZE),                              \
+                                      0,                                            \
+                                      handle->stream,                               \
+                                      mb,                                           \
+                                      dir,                                          \
+                                      alpha,                                        \
+                                      bsr_row_ptr,                                  \
+                                      bsr_col_ind,                                  \
+                                      bsr_val,                                      \
+                                      row_block_dim,                                \
+                                      col_block_dim,                                \
+                                      x,                                            \
+                                      beta,                                         \
+                                      y,                                            \
+                                      base);
 
-#define LAUNCH_GEBSRMV_1XN_KERNEL(BLOCKSIZE, COLBSRDIM, WFSIZE)             \
-    hipLaunchKernelGGL((gebsrmvn_1xn_kernel<BLOCKSIZE, COLBSRDIM, WFSIZE>), \
-                       dim3((mb - 1) / (BLOCKSIZE / WFSIZE) + 1),           \
-                       dim3(BLOCKSIZE),                                     \
-                       0,                                                   \
-                       handle->stream,                                      \
-                       mb,                                                  \
-                       dir,                                                 \
-                       alpha,                                               \
-                       bsr_row_ptr,                                         \
-                       bsr_col_ind,                                         \
-                       bsr_val,                                             \
-                       x,                                                   \
-                       beta,                                                \
-                       y,                                                   \
-                       base);
+#define LAUNCH_GEBSRMV_1XN_KERNEL(BLOCKSIZE, COLBSRDIM, WFSIZE)                            \
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((gebsrmvn_1xn_kernel<BLOCKSIZE, COLBSRDIM, WFSIZE>), \
+                                      dim3((mb - 1) / (BLOCKSIZE / WFSIZE) + 1),           \
+                                      dim3(BLOCKSIZE),                                     \
+                                      0,                                                   \
+                                      handle->stream,                                      \
+                                      mb,                                                  \
+                                      dir,                                                 \
+                                      alpha,                                               \
+                                      bsr_row_ptr,                                         \
+                                      bsr_col_ind,                                         \
+                                      bsr_val,                                             \
+                                      x,                                                   \
+                                      beta,                                                \
+                                      y,                                                   \
+                                      base);
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T, typename U>
 ROCSPARSE_KERNEL(BLOCKSIZE)

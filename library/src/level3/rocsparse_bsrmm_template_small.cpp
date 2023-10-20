@@ -123,50 +123,51 @@ rocsparse_status rocsparse_bsrmm_template_small(rocsparse_handle          handle
 
         dim3 bsrmm_blocks((m - 1) / (BSRMMNN_DIM / SUB_WF_SIZE) + 1, (n - 1) / SUB_WF_SIZE + 1);
         dim3 bsrmm_threads(BSRMMNN_DIM);
-        hipLaunchKernelGGL((bsrmmnn_small_blockdim_kernel<BSRMMNN_DIM, SUB_WF_SIZE, 2>),
-                           bsrmm_blocks,
-                           bsrmm_threads,
-                           0,
-                           stream,
-                           dir,
-                           mb,
-                           n,
-                           alpha,
-                           bsr_row_ptr,
-                           bsr_col_ind,
-                           bsr_val,
-                           B,
-                           ldb,
-                           beta,
-                           C,
-                           ldc,
-                           descr->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (bsrmmnn_small_blockdim_kernel<BSRMMNN_DIM, SUB_WF_SIZE, 2>),
+            bsrmm_blocks,
+            bsrmm_threads,
+            0,
+            stream,
+            dir,
+            mb,
+            n,
+            alpha,
+            bsr_row_ptr,
+            bsr_col_ind,
+            bsr_val,
+            B,
+            ldb,
+            beta,
+            C,
+            ldc,
+            descr->base);
     }
     else
     {
         constexpr rocsparse_int BSRMMNT_DIM = 64;
 
-#define UNROLL_SMALL_TRANSPOSE_KERNEL(M_)                                   \
-    dim3 bsrmm_blocks((m - 1) / (BSRMMNT_DIM / M_) + 1);                    \
-    dim3 bsrmm_threads(BSRMMNT_DIM);                                        \
-    hipLaunchKernelGGL((bsrmmnt_small_blockdim_kernel<BSRMMNT_DIM, M_, 2>), \
-                       bsrmm_blocks,                                        \
-                       bsrmm_threads,                                       \
-                       0,                                                   \
-                       stream,                                              \
-                       dir,                                                 \
-                       mb,                                                  \
-                       n,                                                   \
-                       alpha,                                               \
-                       bsr_row_ptr,                                         \
-                       bsr_col_ind,                                         \
-                       bsr_val,                                             \
-                       B,                                                   \
-                       ldb,                                                 \
-                       beta,                                                \
-                       C,                                                   \
-                       ldc,                                                 \
-                       descr->base)
+#define UNROLL_SMALL_TRANSPOSE_KERNEL(M_)                                                   \
+    dim3 bsrmm_blocks((m - 1) / (BSRMMNT_DIM / M_) + 1);                                    \
+    dim3 bsrmm_threads(BSRMMNT_DIM);                                                        \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrmmnt_small_blockdim_kernel<BSRMMNT_DIM, M_, 2>), \
+                                       bsrmm_blocks,                                        \
+                                       bsrmm_threads,                                       \
+                                       0,                                                   \
+                                       stream,                                              \
+                                       dir,                                                 \
+                                       mb,                                                  \
+                                       n,                                                   \
+                                       alpha,                                               \
+                                       bsr_row_ptr,                                         \
+                                       bsr_col_ind,                                         \
+                                       bsr_val,                                             \
+                                       B,                                                   \
+                                       ldb,                                                 \
+                                       beta,                                                \
+                                       C,                                                   \
+                                       ldc,                                                 \
+                                       descr->base)
 
         // Average nnzb per row of A
         rocsparse_int avg_row_nnzb = (nnzb - 1) / mb + 1;

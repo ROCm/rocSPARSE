@@ -118,30 +118,32 @@ rocsparse_status rocsparse_csxtril_count_kernel_dispatch(rocsparse_handle    han
         {
         case rocsparse_diag_type_non_unit:
         {
-            hipLaunchKernelGGL((rocsparse_csxtril_count_kernel<nthreads_per_block,
-                                                               rocsparse_diag_type_unit,
-                                                               rocsparse_diag_type_non_unit,
-                                                               I,
-                                                               J>),
-                               blocks,
-                               threads,
-                               0,
-                               handle_->stream,
-                               p...);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse_csxtril_count_kernel<nthreads_per_block,
+                                                rocsparse_diag_type_unit,
+                                                rocsparse_diag_type_non_unit,
+                                                I,
+                                                J>),
+                blocks,
+                threads,
+                0,
+                handle_->stream,
+                p...);
             break;
         }
         case rocsparse_diag_type_unit:
         {
-            hipLaunchKernelGGL((rocsparse_csxtril_count_kernel<nthreads_per_block,
-                                                               rocsparse_diag_type_unit,
-                                                               rocsparse_diag_type_unit,
-                                                               I,
-                                                               J>),
-                               blocks,
-                               threads,
-                               0,
-                               handle_->stream,
-                               p...);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse_csxtril_count_kernel<nthreads_per_block,
+                                                rocsparse_diag_type_unit,
+                                                rocsparse_diag_type_unit,
+                                                I,
+                                                J>),
+                blocks,
+                threads,
+                0,
+                handle_->stream,
+                p...);
             break;
         }
         }
@@ -157,16 +159,17 @@ rocsparse_status rocsparse_csxtril_count_kernel_dispatch(rocsparse_handle    han
         }
         case rocsparse_diag_type_unit:
         {
-            hipLaunchKernelGGL((rocsparse_csxtril_count_kernel<nthreads_per_block,
-                                                               rocsparse_diag_type_non_unit,
-                                                               rocsparse_diag_type_unit,
-                                                               I,
-                                                               J>),
-                               blocks,
-                               threads,
-                               0,
-                               handle_->stream,
-                               p...);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse_csxtril_count_kernel<nthreads_per_block,
+                                                rocsparse_diag_type_non_unit,
+                                                rocsparse_diag_type_unit,
+                                                I,
+                                                J>),
+                blocks,
+                threads,
+                0,
+                handle_->stream,
+                p...);
             break;
         }
         }

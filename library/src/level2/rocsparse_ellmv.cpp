@@ -201,25 +201,25 @@ rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle, // 0
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-                hipLaunchKernelGGL((scale_array<256>),
-                                   dim3((ysize - 1) / 256 + 1),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   ysize,
-                                   y,
-                                   beta_device_host);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<256>),
+                                                   dim3((ysize - 1) / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   ysize,
+                                                   y,
+                                                   beta_device_host);
             }
             else
             {
-                hipLaunchKernelGGL((scale_array<256>),
-                                   dim3((ysize - 1) / 256 + 1),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   ysize,
-                                   y,
-                                   *beta_device_host);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<256>),
+                                                   dim3((ysize - 1) / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   ysize,
+                                                   y,
+                                                   *beta_device_host);
             }
         }
 

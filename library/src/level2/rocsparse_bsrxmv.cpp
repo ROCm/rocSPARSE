@@ -314,33 +314,33 @@ rocsparse_status rocsparse_bsrxmv_template(rocsparse_handle          handle,
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-                hipLaunchKernelGGL((bsrxmv_scale_array<256>),
-                                   dim3((ysize - 1) / 256 + 1),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   mb,
-                                   size_of_mask,
-                                   block_dim,
-                                   bsr_mask_ptr,
-                                   y,
-                                   beta_device_host,
-                                   descr->base);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrxmv_scale_array<256>),
+                                                   dim3((ysize - 1) / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   mb,
+                                                   size_of_mask,
+                                                   block_dim,
+                                                   bsr_mask_ptr,
+                                                   y,
+                                                   beta_device_host,
+                                                   descr->base);
             }
             else
             {
-                hipLaunchKernelGGL((bsrxmv_scale_array<256>),
-                                   dim3((ysize - 1) / 256 + 1),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   mb,
-                                   size_of_mask,
-                                   block_dim,
-                                   bsr_mask_ptr,
-                                   y,
-                                   *beta_device_host,
-                                   descr->base);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrxmv_scale_array<256>),
+                                                   dim3((ysize - 1) / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   mb,
+                                                   size_of_mask,
+                                                   block_dim,
+                                                   bsr_mask_ptr,
+                                                   y,
+                                                   *beta_device_host,
+                                                   descr->base);
             }
         }
 

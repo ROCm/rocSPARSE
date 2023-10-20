@@ -209,24 +209,24 @@ void bsrxmvn_16x16(rocsparse_handle     handle,
                    rocsparse_index_base base)
 {
     const J size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
-    hipLaunchKernelGGL((bsrxmvn_16x16_kernel<256, T>),
-                       dim3(size),
-                       dim3(256),
-                       0,
-                       handle->stream,
-                       mb,
-                       dir,
-                       alpha_device_host,
-                       size_of_mask,
-                       bsr_mask_ptr,
-                       bsr_row_ptr,
-                       bsr_end_ptr,
-                       bsr_col_ind,
-                       bsr_val,
-                       x,
-                       beta_device_host,
-                       y,
-                       base);
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((bsrxmvn_16x16_kernel<256, T>),
+                                      dim3(size),
+                                      dim3(256),
+                                      0,
+                                      handle->stream,
+                                      mb,
+                                      dir,
+                                      alpha_device_host,
+                                      size_of_mask,
+                                      bsr_mask_ptr,
+                                      bsr_row_ptr,
+                                      bsr_end_ptr,
+                                      bsr_col_ind,
+                                      bsr_val,
+                                      x,
+                                      beta_device_host,
+                                      y,
+                                      base);
 }
 
 //

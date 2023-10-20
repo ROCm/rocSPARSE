@@ -58,14 +58,14 @@ rocsparse_status rocsparse_axpby_template(rocsparse_handle            handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((axpby_scale_kernel<SCALE_DIM>),
-                           scale_blocks,
-                           scale_threads,
-                           0,
-                           handle->stream,
-                           (I)y->size,
-                           (const T*)beta,
-                           (T*)y->values);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((axpby_scale_kernel<SCALE_DIM>),
+                                           scale_blocks,
+                                           scale_threads,
+                                           0,
+                                           handle->stream,
+                                           (I)y->size,
+                                           (const T*)beta,
+                                           (T*)y->values);
     }
     else
     {
@@ -73,14 +73,14 @@ rocsparse_status rocsparse_axpby_template(rocsparse_handle            handle,
 
         if(*beta_ptr != static_cast<T>(1))
         {
-            hipLaunchKernelGGL((axpby_scale_kernel<SCALE_DIM>),
-                               scale_blocks,
-                               scale_threads,
-                               0,
-                               handle->stream,
-                               (I)y->size,
-                               *beta_ptr,
-                               (T*)y->values);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((axpby_scale_kernel<SCALE_DIM>),
+                                               scale_blocks,
+                                               scale_threads,
+                                               0,
+                                               handle->stream,
+                                               (I)y->size,
+                                               *beta_ptr,
+                                               (T*)y->values);
         }
     }
 #undef SCALE_DIM

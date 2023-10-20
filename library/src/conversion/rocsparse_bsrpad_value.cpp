@@ -86,35 +86,35 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
     // Check matrix sorting mode
     if(bsr_descr->storage_mode == rocsparse_storage_mode_sorted)
     {
-        hipLaunchKernelGGL((bsrpad_value_kernel_sorted<block_size>),
-                           dim3(grid_size),
-                           dim3(block_size),
-                           0,
-                           handle->stream,
-                           m,
-                           mb,
-                           block_dim,
-                           value,
-                           bsr_descr->base,
-                           bsr_val,
-                           bsr_row_ptr,
-                           bsr_col_ind);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrpad_value_kernel_sorted<block_size>),
+                                           dim3(grid_size),
+                                           dim3(block_size),
+                                           0,
+                                           handle->stream,
+                                           m,
+                                           mb,
+                                           block_dim,
+                                           value,
+                                           bsr_descr->base,
+                                           bsr_val,
+                                           bsr_row_ptr,
+                                           bsr_col_ind);
     }
     else
     {
-        hipLaunchKernelGGL((bsrpad_value_kernel_unsorted<block_size>),
-                           dim3(grid_size),
-                           dim3(block_size),
-                           0,
-                           handle->stream,
-                           m,
-                           mb,
-                           block_dim,
-                           value,
-                           bsr_descr->base,
-                           bsr_val,
-                           bsr_row_ptr,
-                           bsr_col_ind);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrpad_value_kernel_unsorted<block_size>),
+                                           dim3(grid_size),
+                                           dim3(block_size),
+                                           0,
+                                           handle->stream,
+                                           m,
+                                           mb,
+                                           block_dim,
+                                           value,
+                                           bsr_descr->base,
+                                           bsr_val,
+                                           bsr_row_ptr,
+                                           bsr_col_ind);
     }
 
     return rocsparse_status_success;

@@ -104,21 +104,21 @@ rocsparse_status rocsparse_ell2csr_template(rocsparse_handle          handle, //
     dim3 ell2csr_blocks((m - 1) / ELL2CSR_DIM + 1);
     dim3 ell2csr_threads(ELL2CSR_DIM);
 
-    hipLaunchKernelGGL((ell2csr_fill<ELL2CSR_DIM>),
-                       ell2csr_blocks,
-                       ell2csr_threads,
-                       0,
-                       stream,
-                       m,
-                       n,
-                       ell_width,
-                       ell_col_ind,
-                       ell_val,
-                       ell_descr->base,
-                       csr_row_ptr,
-                       csr_col_ind,
-                       csr_val,
-                       csr_descr->base);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((ell2csr_fill<ELL2CSR_DIM>),
+                                       ell2csr_blocks,
+                                       ell2csr_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       n,
+                                       ell_width,
+                                       ell_col_ind,
+                                       ell_val,
+                                       ell_descr->base,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       csr_descr->base);
 #undef ELL2CSR_DIM
     return rocsparse_status_success;
 }
@@ -209,18 +209,18 @@ try
     dim3 ell2csr_blocks((m + 1) / ELL2CSR_DIM + 1);
     dim3 ell2csr_threads(ELL2CSR_DIM);
 
-    hipLaunchKernelGGL((ell2csr_nnz_per_row<ELL2CSR_DIM>),
-                       ell2csr_blocks,
-                       ell2csr_threads,
-                       0,
-                       stream,
-                       m,
-                       n,
-                       ell_width,
-                       ell_col_ind,
-                       ell_descr->base,
-                       csr_row_ptr,
-                       csr_descr->base);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((ell2csr_nnz_per_row<ELL2CSR_DIM>),
+                                       ell2csr_blocks,
+                                       ell2csr_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       n,
+                                       ell_width,
+                                       ell_col_ind,
+                                       ell_descr->base,
+                                       csr_row_ptr,
+                                       csr_descr->base);
 #undef ELL2CSR_DIM
 
     // Exclusive sum to obtain csr_row_ptr array and number of non-zero elements
@@ -270,7 +270,8 @@ try
                 csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
 
             // Adjust nnz according to index base
-            hipLaunchKernelGGL((ell2csr_index_base<1>), dim3(1), dim3(1), 0, stream, csr_nnz);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (ell2csr_index_base<1>), dim3(1), dim3(1), 0, stream, csr_nnz);
         }
         else
         {

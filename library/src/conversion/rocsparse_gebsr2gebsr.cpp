@@ -36,28 +36,29 @@
 
 #include <rocprim/rocprim.hpp>
 
-#define launch_gebsr2gebsr_fast_kernel(T, direction, block_size, segment_size)         \
-    hipLaunchKernelGGL((gebsr2gebsr_fast_kernel<direction, block_size, segment_size>), \
-                       grid_size,                                                      \
-                       block_size,                                                     \
-                       0,                                                              \
-                       stream,                                                         \
-                       mb,                                                             \
-                       nb,                                                             \
-                       descr_A->base,                                                  \
-                       bsr_val_A,                                                      \
-                       bsr_row_ptr_A,                                                  \
-                       bsr_col_ind_A,                                                  \
-                       row_block_dim_A,                                                \
-                       col_block_dim_A,                                                \
-                       mb_c,                                                           \
-                       nb_c,                                                           \
-                       descr_C->base,                                                  \
-                       bsr_val_C,                                                      \
-                       bsr_row_ptr_C,                                                  \
-                       bsr_col_ind_C,                                                  \
-                       row_block_dim_C,                                                \
-                       col_block_dim_C);
+#define launch_gebsr2gebsr_fast_kernel(T, direction, block_size, segment_size) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                        \
+        (gebsr2gebsr_fast_kernel<direction, block_size, segment_size>),        \
+        grid_size,                                                             \
+        block_size,                                                            \
+        0,                                                                     \
+        stream,                                                                \
+        mb,                                                                    \
+        nb,                                                                    \
+        descr_A->base,                                                         \
+        bsr_val_A,                                                             \
+        bsr_row_ptr_A,                                                         \
+        bsr_col_ind_A,                                                         \
+        row_block_dim_A,                                                       \
+        col_block_dim_A,                                                       \
+        mb_c,                                                                  \
+        nb_c,                                                                  \
+        descr_C->base,                                                         \
+        bsr_val_C,                                                             \
+        bsr_row_ptr_C,                                                         \
+        bsr_col_ind_C,                                                         \
+        row_block_dim_C,                                                       \
+        col_block_dim_C);
 
 template <typename T>
 rocsparse_status rocsparse_gebsr2gebsr_buffer_size_template(rocsparse_handle          handle, //0
@@ -469,25 +470,25 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
  * ===========================================================================
  */
 
-#define launch_gebsr2gebsr_nnz_fast_kernel(block_size, segment_size)            \
-    hipLaunchKernelGGL((gebsr2gebsr_nnz_fast_kernel<block_size, segment_size>), \
-                       dim3(grid_size),                                         \
-                       dim3(block_size),                                        \
-                       0,                                                       \
-                       handle->stream,                                          \
-                       mb,                                                      \
-                       nb,                                                      \
-                       descr_A->base,                                           \
-                       bsr_row_ptr_A,                                           \
-                       bsr_col_ind_A,                                           \
-                       row_block_dim_A,                                         \
-                       col_block_dim_A,                                         \
-                       mb_c,                                                    \
-                       nb_c,                                                    \
-                       descr_C->base,                                           \
-                       bsr_row_ptr_C,                                           \
-                       row_block_dim_C,                                         \
-                       col_block_dim_C);
+#define launch_gebsr2gebsr_nnz_fast_kernel(block_size, segment_size)                            \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gebsr2gebsr_nnz_fast_kernel<block_size, segment_size>), \
+                                       dim3(grid_size),                                         \
+                                       dim3(block_size),                                        \
+                                       0,                                                       \
+                                       handle->stream,                                          \
+                                       mb,                                                      \
+                                       nb,                                                      \
+                                       descr_A->base,                                           \
+                                       bsr_row_ptr_A,                                           \
+                                       bsr_col_ind_A,                                           \
+                                       row_block_dim_A,                                         \
+                                       col_block_dim_A,                                         \
+                                       mb_c,                                                    \
+                                       nb_c,                                                    \
+                                       descr_C->base,                                           \
+                                       bsr_row_ptr_C,                                           \
+                                       row_block_dim_C,                                         \
+                                       col_block_dim_C);
 
 // Performs gebsr2csr conversion without computing the values. Used in rocsparse_gebsr2gebsr_nnz()
 extern "C" rocsparse_status rocsparse_gebsr2csr_nnz(rocsparse_handle          handle, //0
@@ -581,39 +582,41 @@ try
     {
         if(direction == rocsparse_direction_row)
         {
-            hipLaunchKernelGGL((gebsr2csr_nnz_kernel<rocsparse_direction_row, block_size, 32>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               mb,
-                               nb,
-                               bsr_descr->base,
-                               bsr_row_ptr,
-                               bsr_col_ind,
-                               row_block_dim,
-                               col_block_dim,
-                               csr_descr->base,
-                               csr_row_ptr,
-                               csr_col_ind);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (gebsr2csr_nnz_kernel<rocsparse_direction_row, block_size, 32>),
+                blocks,
+                threads,
+                0,
+                stream,
+                mb,
+                nb,
+                bsr_descr->base,
+                bsr_row_ptr,
+                bsr_col_ind,
+                row_block_dim,
+                col_block_dim,
+                csr_descr->base,
+                csr_row_ptr,
+                csr_col_ind);
         }
         else
         {
-            hipLaunchKernelGGL((gebsr2csr_nnz_kernel<rocsparse_direction_column, block_size, 32>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               mb,
-                               nb,
-                               bsr_descr->base,
-                               bsr_row_ptr,
-                               bsr_col_ind,
-                               row_block_dim,
-                               col_block_dim,
-                               csr_descr->base,
-                               csr_row_ptr,
-                               csr_col_ind);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (gebsr2csr_nnz_kernel<rocsparse_direction_column, block_size, 32>),
+                blocks,
+                threads,
+                0,
+                stream,
+                mb,
+                nb,
+                bsr_descr->base,
+                bsr_row_ptr,
+                bsr_col_ind,
+                row_block_dim,
+                col_block_dim,
+                csr_descr->base,
+                csr_row_ptr,
+                csr_col_ind);
         }
     }
     else
@@ -621,39 +624,41 @@ try
         assert(wavefront_size == 64);
         if(direction == rocsparse_direction_row)
         {
-            hipLaunchKernelGGL((gebsr2csr_nnz_kernel<rocsparse_direction_row, block_size, 64>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               mb,
-                               nb,
-                               bsr_descr->base,
-                               bsr_row_ptr,
-                               bsr_col_ind,
-                               row_block_dim,
-                               col_block_dim,
-                               csr_descr->base,
-                               csr_row_ptr,
-                               csr_col_ind);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (gebsr2csr_nnz_kernel<rocsparse_direction_row, block_size, 64>),
+                blocks,
+                threads,
+                0,
+                stream,
+                mb,
+                nb,
+                bsr_descr->base,
+                bsr_row_ptr,
+                bsr_col_ind,
+                row_block_dim,
+                col_block_dim,
+                csr_descr->base,
+                csr_row_ptr,
+                csr_col_ind);
         }
         else
         {
-            hipLaunchKernelGGL((gebsr2csr_nnz_kernel<rocsparse_direction_column, block_size, 64>),
-                               blocks,
-                               threads,
-                               0,
-                               stream,
-                               mb,
-                               nb,
-                               bsr_descr->base,
-                               bsr_row_ptr,
-                               bsr_col_ind,
-                               row_block_dim,
-                               col_block_dim,
-                               csr_descr->base,
-                               csr_row_ptr,
-                               csr_col_ind);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (gebsr2csr_nnz_kernel<rocsparse_direction_column, block_size, 64>),
+                blocks,
+                threads,
+                0,
+                stream,
+                mb,
+                nb,
+                bsr_descr->base,
+                bsr_row_ptr,
+                bsr_col_ind,
+                row_block_dim,
+                col_block_dim,
+                csr_descr->base,
+                csr_row_ptr,
+                csr_col_ind);
         }
     }
 
@@ -682,7 +687,6 @@ extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          
                                                       void*          temp_buffer) //15
 try
 {
-
     // Logging
     log_trace(handle,
               "rocsparse_gebsr2gebsr_nnz",
@@ -765,17 +769,19 @@ try
         {
             rocsparse_pointer_mode mode;
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_get_pointer_mode(handle, &mode));
-
-            constexpr rocsparse_int block_size = 1024;
-            const rocsparse_int     grid_size  = (mb_c + block_size - 1) / block_size;
-            hipLaunchKernelGGL((gebsr2gebsr_fill_row_ptr_kernel<block_size>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               mb_c,
-                               descr_C->base,
-                               bsr_row_ptr_C);
+            if(mb_c > 0)
+            {
+                constexpr rocsparse_int block_size = 1024;
+                const rocsparse_int     grid_size  = (mb_c + block_size - 1) / block_size;
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gebsr2gebsr_fill_row_ptr_kernel<block_size>),
+                                                   dim3(grid_size),
+                                                   dim3(block_size),
+                                                   0,
+                                                   stream,
+                                                   mb_c,
+                                                   descr_C->base,
+                                                   bsr_row_ptr_C);
+            }
 
             if(rocsparse_pointer_mode_device == mode)
             {
@@ -806,7 +812,6 @@ try
         // BSR block row of matrix C where the segment size matches the row block
         // dimension (row_block_dim_C) as closely as possible while still being
         // greater than or equal to the row block dimension.
-
         // Note: block_size must be less than or equal to wavefront size
         rocsparse_int block_size   = row_block_dim_C > 16 ? 32 : 16;
         rocsparse_int segment_size = row_block_dim_C == 1 ? 2 : row_block_dim_C;
@@ -886,14 +891,14 @@ try
         // Compute nnz_total_dev_host_ptr
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            hipLaunchKernelGGL(gebsr2gebsr_compute_nnz_total_kernel<1>,
-                               dim3(1),
-                               dim3(1),
-                               0,
-                               handle->stream,
-                               mb_c,
-                               bsr_row_ptr_C,
-                               nnz_total_dev_host_ptr);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(gebsr2gebsr_compute_nnz_total_kernel<1>,
+                                               dim3(1),
+                                               dim3(1),
+                                               0,
+                                               handle->stream,
+                                               mb_c,
+                                               bsr_row_ptr_C,
+                                               nnz_total_dev_host_ptr);
         }
         else
         {

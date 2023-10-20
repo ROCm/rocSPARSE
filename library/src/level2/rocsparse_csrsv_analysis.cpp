@@ -135,14 +135,14 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
         }
         else
         {
-            hipLaunchKernelGGL((set_array_to_value<256, J, I>),
-                               dim3(m / 256 + 1),
-                               dim3(256),
-                               0,
-                               stream,
-                               (m + 1),
-                               (I*)info->trmt_row_ptr,
-                               static_cast<I>(descr->base));
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256, J, I>),
+                                               dim3(m / 256 + 1),
+                                               dim3(256),
+                                               0,
+                                               stream,
+                                               (m + 1),
+                                               (I*)info->trmt_row_ptr,
+                                               static_cast<I>(descr->base));
         }
     }
 
@@ -204,37 +204,39 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
             // LCOV_EXCL_START
             if(descr->fill_mode == rocsparse_fill_mode_upper)
             {
-                hipLaunchKernelGGL((csrsv_analysis_upper_kernel<CSRSV_DIM, 64, true>),
-                                   csrsv_blocks,
-                                   csrsv_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   (I*)info->trm_diag_ind,
-                                   done_array,
-                                   d_max_nnz,
-                                   (J*)*zero_pivot,
-                                   descr->base,
-                                   descr->diag_type);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (csrsv_analysis_upper_kernel<CSRSV_DIM, 64, true>),
+                    csrsv_blocks,
+                    csrsv_threads,
+                    0,
+                    stream,
+                    m,
+                    csr_row_ptr,
+                    csr_col_ind,
+                    (I*)info->trm_diag_ind,
+                    done_array,
+                    d_max_nnz,
+                    (J*)*zero_pivot,
+                    descr->base,
+                    descr->diag_type);
             }
             else if(descr->fill_mode == rocsparse_fill_mode_lower)
             {
-                hipLaunchKernelGGL((csrsv_analysis_lower_kernel<CSRSV_DIM, 64, true>),
-                                   csrsv_blocks,
-                                   csrsv_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   (I*)info->trm_diag_ind,
-                                   done_array,
-                                   d_max_nnz,
-                                   (J*)*zero_pivot,
-                                   descr->base,
-                                   descr->diag_type);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (csrsv_analysis_lower_kernel<CSRSV_DIM, 64, true>),
+                    csrsv_blocks,
+                    csrsv_threads,
+                    0,
+                    stream,
+                    m,
+                    csr_row_ptr,
+                    csr_col_ind,
+                    (I*)info->trm_diag_ind,
+                    done_array,
+                    d_max_nnz,
+                    (J*)*zero_pivot,
+                    descr->base,
+                    descr->diag_type);
             }
             // LCOV_EXCL_STOP
         }
@@ -245,37 +247,39 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                 // LCOV_EXCL_START
                 if(descr->fill_mode == rocsparse_fill_mode_upper)
                 {
-                    hipLaunchKernelGGL((csrsv_analysis_upper_kernel<CSRSV_DIM, 32, false>),
-                                       csrsv_blocks,
-                                       csrsv_threads,
-                                       0,
-                                       stream,
-                                       m,
-                                       csr_row_ptr,
-                                       csr_col_ind,
-                                       (I*)info->trm_diag_ind,
-                                       done_array,
-                                       d_max_nnz,
-                                       (J*)*zero_pivot,
-                                       descr->base,
-                                       descr->diag_type);
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (csrsv_analysis_upper_kernel<CSRSV_DIM, 32, false>),
+                        csrsv_blocks,
+                        csrsv_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        (I*)info->trm_diag_ind,
+                        done_array,
+                        d_max_nnz,
+                        (J*)*zero_pivot,
+                        descr->base,
+                        descr->diag_type);
                 }
                 else if(descr->fill_mode == rocsparse_fill_mode_lower)
                 {
-                    hipLaunchKernelGGL((csrsv_analysis_lower_kernel<CSRSV_DIM, 32, false>),
-                                       csrsv_blocks,
-                                       csrsv_threads,
-                                       0,
-                                       stream,
-                                       m,
-                                       csr_row_ptr,
-                                       csr_col_ind,
-                                       (I*)info->trm_diag_ind,
-                                       done_array,
-                                       d_max_nnz,
-                                       (J*)*zero_pivot,
-                                       descr->base,
-                                       descr->diag_type);
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (csrsv_analysis_lower_kernel<CSRSV_DIM, 32, false>),
+                        csrsv_blocks,
+                        csrsv_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        (I*)info->trm_diag_ind,
+                        done_array,
+                        d_max_nnz,
+                        (J*)*zero_pivot,
+                        descr->base,
+                        descr->diag_type);
                 }
                 // LCOV_EXCL_STOP
             }
@@ -284,37 +288,39 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                 assert(handle->wavefront_size == 64);
                 if(descr->fill_mode == rocsparse_fill_mode_upper)
                 {
-                    hipLaunchKernelGGL((csrsv_analysis_upper_kernel<CSRSV_DIM, 64, false>),
-                                       csrsv_blocks,
-                                       csrsv_threads,
-                                       0,
-                                       stream,
-                                       m,
-                                       csr_row_ptr,
-                                       csr_col_ind,
-                                       (I*)info->trm_diag_ind,
-                                       done_array,
-                                       d_max_nnz,
-                                       (J*)*zero_pivot,
-                                       descr->base,
-                                       descr->diag_type);
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (csrsv_analysis_upper_kernel<CSRSV_DIM, 64, false>),
+                        csrsv_blocks,
+                        csrsv_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        (I*)info->trm_diag_ind,
+                        done_array,
+                        d_max_nnz,
+                        (J*)*zero_pivot,
+                        descr->base,
+                        descr->diag_type);
                 }
                 else if(descr->fill_mode == rocsparse_fill_mode_lower)
                 {
-                    hipLaunchKernelGGL((csrsv_analysis_lower_kernel<CSRSV_DIM, 64, false>),
-                                       csrsv_blocks,
-                                       csrsv_threads,
-                                       0,
-                                       stream,
-                                       m,
-                                       csr_row_ptr,
-                                       csr_col_ind,
-                                       (I*)info->trm_diag_ind,
-                                       done_array,
-                                       d_max_nnz,
-                                       (J*)*zero_pivot,
-                                       descr->base,
-                                       descr->diag_type);
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (csrsv_analysis_lower_kernel<CSRSV_DIM, 64, false>),
+                        csrsv_blocks,
+                        csrsv_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        (I*)info->trm_diag_ind,
+                        done_array,
+                        d_max_nnz,
+                        (J*)*zero_pivot,
+                        descr->base,
+                        descr->diag_type);
                 }
             }
         }
@@ -327,37 +333,39 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
             // LCOV_EXCL_START
             if(descr->fill_mode == rocsparse_fill_mode_upper)
             {
-                hipLaunchKernelGGL((csrsv_analysis_lower_kernel<CSRSV_DIM, 64, true>),
-                                   csrsv_blocks,
-                                   csrsv_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   (const I*)info->trmt_row_ptr,
-                                   (const J*)info->trmt_col_ind,
-                                   (I*)info->trm_diag_ind,
-                                   done_array,
-                                   d_max_nnz,
-                                   (J*)*zero_pivot,
-                                   descr->base,
-                                   descr->diag_type);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (csrsv_analysis_lower_kernel<CSRSV_DIM, 64, true>),
+                    csrsv_blocks,
+                    csrsv_threads,
+                    0,
+                    stream,
+                    m,
+                    (const I*)info->trmt_row_ptr,
+                    (const J*)info->trmt_col_ind,
+                    (I*)info->trm_diag_ind,
+                    done_array,
+                    d_max_nnz,
+                    (J*)*zero_pivot,
+                    descr->base,
+                    descr->diag_type);
             }
             else if(descr->fill_mode == rocsparse_fill_mode_lower)
             {
-                hipLaunchKernelGGL((csrsv_analysis_upper_kernel<CSRSV_DIM, 64, true>),
-                                   csrsv_blocks,
-                                   csrsv_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   (const I*)info->trmt_row_ptr,
-                                   (const J*)info->trmt_col_ind,
-                                   (I*)info->trm_diag_ind,
-                                   done_array,
-                                   d_max_nnz,
-                                   (J*)*zero_pivot,
-                                   descr->base,
-                                   descr->diag_type);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (csrsv_analysis_upper_kernel<CSRSV_DIM, 64, true>),
+                    csrsv_blocks,
+                    csrsv_threads,
+                    0,
+                    stream,
+                    m,
+                    (const I*)info->trmt_row_ptr,
+                    (const J*)info->trmt_col_ind,
+                    (I*)info->trm_diag_ind,
+                    done_array,
+                    d_max_nnz,
+                    (J*)*zero_pivot,
+                    descr->base,
+                    descr->diag_type);
             }
             // LCOV_EXCL_STOP
         }
@@ -368,37 +376,39 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                 // LCOV_EXCL_START
                 if(descr->fill_mode == rocsparse_fill_mode_upper)
                 {
-                    hipLaunchKernelGGL((csrsv_analysis_lower_kernel<CSRSV_DIM, 32, false>),
-                                       csrsv_blocks,
-                                       csrsv_threads,
-                                       0,
-                                       stream,
-                                       m,
-                                       (const I*)info->trmt_row_ptr,
-                                       (const J*)info->trmt_col_ind,
-                                       (I*)info->trm_diag_ind,
-                                       done_array,
-                                       d_max_nnz,
-                                       (J*)*zero_pivot,
-                                       descr->base,
-                                       descr->diag_type);
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (csrsv_analysis_lower_kernel<CSRSV_DIM, 32, false>),
+                        csrsv_blocks,
+                        csrsv_threads,
+                        0,
+                        stream,
+                        m,
+                        (const I*)info->trmt_row_ptr,
+                        (const J*)info->trmt_col_ind,
+                        (I*)info->trm_diag_ind,
+                        done_array,
+                        d_max_nnz,
+                        (J*)*zero_pivot,
+                        descr->base,
+                        descr->diag_type);
                 }
                 else if(descr->fill_mode == rocsparse_fill_mode_lower)
                 {
-                    hipLaunchKernelGGL((csrsv_analysis_upper_kernel<CSRSV_DIM, 32, false>),
-                                       csrsv_blocks,
-                                       csrsv_threads,
-                                       0,
-                                       stream,
-                                       m,
-                                       (const I*)info->trmt_row_ptr,
-                                       (const J*)info->trmt_col_ind,
-                                       (I*)info->trm_diag_ind,
-                                       done_array,
-                                       d_max_nnz,
-                                       (J*)*zero_pivot,
-                                       descr->base,
-                                       descr->diag_type);
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (csrsv_analysis_upper_kernel<CSRSV_DIM, 32, false>),
+                        csrsv_blocks,
+                        csrsv_threads,
+                        0,
+                        stream,
+                        m,
+                        (const I*)info->trmt_row_ptr,
+                        (const J*)info->trmt_col_ind,
+                        (I*)info->trm_diag_ind,
+                        done_array,
+                        d_max_nnz,
+                        (J*)*zero_pivot,
+                        descr->base,
+                        descr->diag_type);
                 }
                 // LCOV_EXCL_STOP
             }
@@ -407,37 +417,39 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                 assert(handle->wavefront_size == 64);
                 if(descr->fill_mode == rocsparse_fill_mode_upper)
                 {
-                    hipLaunchKernelGGL((csrsv_analysis_lower_kernel<CSRSV_DIM, 64, false>),
-                                       csrsv_blocks,
-                                       csrsv_threads,
-                                       0,
-                                       stream,
-                                       m,
-                                       (const I*)info->trmt_row_ptr,
-                                       (const J*)info->trmt_col_ind,
-                                       (I*)info->trm_diag_ind,
-                                       done_array,
-                                       d_max_nnz,
-                                       (J*)*zero_pivot,
-                                       descr->base,
-                                       descr->diag_type);
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (csrsv_analysis_lower_kernel<CSRSV_DIM, 64, false>),
+                        csrsv_blocks,
+                        csrsv_threads,
+                        0,
+                        stream,
+                        m,
+                        (const I*)info->trmt_row_ptr,
+                        (const J*)info->trmt_col_ind,
+                        (I*)info->trm_diag_ind,
+                        done_array,
+                        d_max_nnz,
+                        (J*)*zero_pivot,
+                        descr->base,
+                        descr->diag_type);
                 }
                 else if(descr->fill_mode == rocsparse_fill_mode_lower)
                 {
-                    hipLaunchKernelGGL((csrsv_analysis_upper_kernel<CSRSV_DIM, 64, false>),
-                                       csrsv_blocks,
-                                       csrsv_threads,
-                                       0,
-                                       stream,
-                                       m,
-                                       (const I*)info->trmt_row_ptr,
-                                       (const J*)info->trmt_col_ind,
-                                       (I*)info->trm_diag_ind,
-                                       done_array,
-                                       d_max_nnz,
-                                       (J*)*zero_pivot,
-                                       descr->base,
-                                       descr->diag_type);
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (csrsv_analysis_upper_kernel<CSRSV_DIM, 64, false>),
+                        csrsv_blocks,
+                        csrsv_threads,
+                        0,
+                        stream,
+                        m,
+                        (const I*)info->trmt_row_ptr,
+                        (const J*)info->trmt_col_ind,
+                        (I*)info->trm_diag_ind,
+                        done_array,
+                        d_max_nnz,
+                        (J*)*zero_pivot,
+                        descr->base,
+                        descr->diag_type);
                 }
             }
         }

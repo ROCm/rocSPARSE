@@ -88,8 +88,28 @@ constexpr auto rocsparse_status2string(rocsparse_status status)
         const hipError_t TMP_STATUS_FOR_CHECK = (INPUT_STATUS_FOR_CHECK);                      \
         if(TMP_STATUS_FOR_CHECK != hipSuccess)                                                 \
         {                                                                                      \
+            std::stringstream s;                                                               \
+            s << "hip error detected: code '" << TMP_STATUS_FOR_CHECK << "', name '"           \
+              << hipGetErrorName(TMP_STATUS_FOR_CHECK) << "', description '"                   \
+              << hipGetErrorString(TMP_STATUS_FOR_CHECK) << "'";                               \
             ROCSPARSE_ERROR_MESSAGE(get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK), \
-                                    "hip error detected");                                     \
+                                    s.str().c_str());                                          \
+            return get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK);                  \
+        }                                                                                      \
+    } while(false)
+
+#define RETURN_WITH_MESSAGE_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK, MESSAGE)                      \
+    do                                                                                         \
+    {                                                                                          \
+        const hipError_t TMP_STATUS_FOR_CHECK = (INPUT_STATUS_FOR_CHECK);                      \
+        if(TMP_STATUS_FOR_CHECK != hipSuccess)                                                 \
+        {                                                                                      \
+            std::stringstream s;                                                               \
+            s << (MESSAGE) << ", hip error detected: code '" << TMP_STATUS_FOR_CHECK           \
+              << "', name '" << hipGetErrorName(TMP_STATUS_FOR_CHECK) << "', description '"    \
+              << hipGetErrorString(TMP_STATUS_FOR_CHECK) << "'";                               \
+            ROCSPARSE_ERROR_MESSAGE(get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK), \
+                                    s.str().c_str());                                          \
             return get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK);                  \
         }                                                                                      \
     } while(false)
@@ -97,14 +117,35 @@ constexpr auto rocsparse_status2string(rocsparse_status status)
 //
 //
 //
-#define THROW_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                                             \
+
+#define THROW_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                                              \
+    do                                                                                          \
+    {                                                                                           \
+        const hipError_t TMP_STATUS_FOR_CHECK = (INPUT_STATUS_FOR_CHECK);                       \
+        if(TMP_STATUS_FOR_CHECK != hipSuccess)                                                  \
+        {                                                                                       \
+            std::stringstream s;                                                                \
+            s << "throwing exception due to hip error detected: code '" << TMP_STATUS_FOR_CHECK \
+              << "', name '" << hipGetErrorName(TMP_STATUS_FOR_CHECK) << "', description '"     \
+              << hipGetErrorString(TMP_STATUS_FOR_CHECK) << "'";                                \
+            ROCSPARSE_ERROR_MESSAGE(get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK),  \
+                                    s.str().c_str());                                           \
+            throw get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK);                    \
+        }                                                                                       \
+    } while(false)
+
+#define THROW_WITH_MESSAGE_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK, MESSAGE)                       \
     do                                                                                         \
     {                                                                                          \
         const hipError_t TMP_STATUS_FOR_CHECK = (INPUT_STATUS_FOR_CHECK);                      \
         if(TMP_STATUS_FOR_CHECK != hipSuccess)                                                 \
         {                                                                                      \
+            std::stringstream s;                                                               \
+            s << (MESSAGE) << ", throwing exception due to hip error detected: code '"         \
+              << TMP_STATUS_FOR_CHECK << "', name '" << hipGetErrorName(TMP_STATUS_FOR_CHECK)  \
+              << "', description '" << hipGetErrorString(TMP_STATUS_FOR_CHECK) << "'";         \
             ROCSPARSE_ERROR_MESSAGE(get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK), \
-                                    "hip error detected, throwing exception");                 \
+                                    s.str().c_str());                                          \
             throw get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK);                   \
         }                                                                                      \
     } while(false)
@@ -175,3 +216,33 @@ inline void dprint(I size_, const T* v, const char* name_ = nullptr, I short_siz
     }
     delete[] p;
 }
+
+#define THROW_IF_HIPLAUNCHKERNELGGL_ERROR(...)                                                 \
+    do                                                                                         \
+    {                                                                                          \
+        if(false == rocsparse_debug_variables.get_debug_kernel_launch())                       \
+        {                                                                                      \
+            hipLaunchKernelGGL(__VA_ARGS__);                                                   \
+        }                                                                                      \
+        else                                                                                   \
+        {                                                                                      \
+            THROW_WITH_MESSAGE_IF_HIP_ERROR(hipGetLastError(), "prior to hipLaunchKernelGGL"); \
+            hipLaunchKernelGGL(__VA_ARGS__);                                                   \
+            THROW_IF_HIP_ERROR(hipGetLastError());                                             \
+        }                                                                                      \
+    } while(false)
+
+#define RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(...)                                                 \
+    do                                                                                          \
+    {                                                                                           \
+        if(false == rocsparse_debug_variables.get_debug_kernel_launch())                        \
+        {                                                                                       \
+            hipLaunchKernelGGL(__VA_ARGS__);                                                    \
+        }                                                                                       \
+        else                                                                                    \
+        {                                                                                       \
+            RETURN_WITH_MESSAGE_IF_HIP_ERROR(hipGetLastError(), "prior to hipLaunchKernelGGL"); \
+            hipLaunchKernelGGL(__VA_ARGS__);                                                    \
+            RETURN_IF_HIP_ERROR(hipGetLastError());                                             \
+        }                                                                                       \
+    } while(false)

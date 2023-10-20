@@ -90,17 +90,17 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle, 
     // RETURN_IF_HIP_ERROR(hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, stream));
 
     // Set memory to zero.
-    hipLaunchKernelGGL((memset2d_kernel<512>),
-                       dim3((m * n - 1) / 512 + 1),
-                       dim3(512),
-                       0,
-                       stream,
-                       m,
-                       n,
-                       static_cast<T>(0),
-                       A,
-                       lda,
-                       order);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((memset2d_kernel<512>),
+                                       dim3((m * n - 1) / 512 + 1),
+                                       dim3(512),
+                                       0,
+                                       stream,
+                                       m,
+                                       n,
+                                       static_cast<T>(0),
+                                       A,
+                                       lda,
+                                       order);
 
     if(nnz > 0)
     {
@@ -108,21 +108,21 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle, 
         dim3 blocks((nnz - 1) / COO2DENSE_DIM + 1);
         dim3 threads(COO2DENSE_DIM);
 
-        hipLaunchKernelGGL((coo2dense_kernel<COO2DENSE_DIM>),
-                           blocks,
-                           threads,
-                           0,
-                           stream,
-                           m,
-                           n,
-                           nnz,
-                           lda,
-                           descr->base,
-                           coo_val,
-                           coo_row_ind,
-                           coo_col_ind,
-                           A,
-                           order);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coo2dense_kernel<COO2DENSE_DIM>),
+                                           blocks,
+                                           threads,
+                                           0,
+                                           stream,
+                                           m,
+                                           n,
+                                           nnz,
+                                           lda,
+                                           descr->base,
+                                           coo_val,
+                                           coo_row_ind,
+                                           coo_col_ind,
+                                           A,
+                                           order);
 #undef COO2DENSE_DIM
     }
 

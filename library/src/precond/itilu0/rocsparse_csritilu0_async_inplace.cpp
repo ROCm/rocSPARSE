@@ -263,12 +263,12 @@ template <unsigned int BLOCKSIZE,
           typename... P>
 static void kernel_calculate_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
 {
-    hipLaunchKernelGGL((kernel_calculate<BLOCKSIZE, WFSIZE, RESIDUAL, T, I, J>),
-                       blocks_,
-                       threads_,
-                       0,
-                       stream_,
-                       p...);
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_calculate<BLOCKSIZE, WFSIZE, RESIDUAL, T, I, J>),
+                                      blocks_,
+                                      threads_,
+                                      0,
+                                      stream_,
+                                      p...);
 }
 
 template <unsigned int BLOCKSIZE, bool RESIDUAL, typename T, typename I, typename J, typename... P>
@@ -399,12 +399,12 @@ template <unsigned int BLOCKSIZE,
 static inline void
     kernel_calculate_coo_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
 {
-    hipLaunchKernelGGL((kernel_calculate_coo<BLOCKSIZE, WFSIZE, RESIDUAL, T, I, J>),
-                       blocks_,
-                       threads_,
-                       0,
-                       stream_,
-                       p...);
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_calculate_coo<BLOCKSIZE, WFSIZE, RESIDUAL, T, I, J>),
+                                      blocks_,
+                                      threads_,
+                                      0,
+                                      stream_,
+                                      p...);
 }
 
 template <unsigned int BLOCKSIZE, bool RESIDUAL, typename T, typename I, typename J, typename... P>
@@ -891,7 +891,7 @@ template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J, t
 static void
     kernel_compute_lptr_end_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
 {
-    hipLaunchKernelGGL(
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
         (kernel_compute_lptr_end<BLOCKSIZE, WFSIZE, I, J>), blocks_, threads_, 0, stream_, p...);
 }
 
@@ -944,7 +944,7 @@ void kernel_compute_coo(J m_,
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J, typename... P>
 static void kernel_compute_coo_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
 {
-    hipLaunchKernelGGL(
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
         (kernel_compute_coo<BLOCKSIZE, WFSIZE, I, J>), blocks_, threads_, 0, stream_, p...);
 }
 
@@ -993,7 +993,7 @@ template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J, t
 static void
     kernel_initialize_ucsr_ptr_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
 {
-    hipLaunchKernelGGL(
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
         (kernel_initialize_ucsr_ptr<BLOCKSIZE, WFSIZE, I, J>), blocks_, threads_, 0, stream_, p...);
 }
 
@@ -1067,7 +1067,7 @@ void kernel_compute_unnz(J m_,
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J, typename... P>
 static void kernel_compute_unnz_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
 {
-    hipLaunchKernelGGL(
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
         (kernel_compute_unnz<BLOCKSIZE, WFSIZE, I, J>), blocks_, threads_, 0, stream_, p...);
 }
 

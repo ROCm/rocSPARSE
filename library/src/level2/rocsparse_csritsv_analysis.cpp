@@ -207,16 +207,16 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
 
             dim3 blocks((m - 1) / BLOCKSIZE + 1);
             dim3 threads(BLOCKSIZE);
-            hipLaunchKernelGGL((kernel_ptr_end_unit<1024, I, J>),
-                               blocks,
-                               threads,
-                               0,
-                               handle->stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               (I*)info->ptr_end,
-                               descr->base);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_ptr_end_unit<1024, I, J>),
+                                               blocks,
+                                               threads,
+                                               0,
+                                               handle->stream,
+                                               m,
+                                               csr_row_ptr,
+                                               csr_col_ind,
+                                               (I*)info->ptr_end,
+                                               descr->base);
         }
         else if((fill_mode == rocsparse_fill_mode_lower
                  && diag_type == rocsparse_diag_type_non_unit)
@@ -226,16 +226,16 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
 
             dim3 blocks((m - 1) / BLOCKSIZE + 1);
             dim3 threads(BLOCKSIZE);
-            hipLaunchKernelGGL((kernel_ptr_end_non_unit<1024, I, J>),
-                               blocks,
-                               threads,
-                               0,
-                               handle->stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               (I*)info->ptr_end,
-                               descr->base);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_ptr_end_non_unit<1024, I, J>),
+                                               blocks,
+                                               threads,
+                                               0,
+                                               handle->stream,
+                                               m,
+                                               csr_row_ptr,
+                                               csr_col_ind,
+                                               (I*)info->ptr_end,
+                                               descr->base);
         }
 
         break;
@@ -273,18 +273,18 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
             const J ptr_shift = (fill_mode == rocsparse_fill_mode_upper) ? 0 : -1;
             dim3    blocks((m - 1) / BLOCKSIZE + 1);
             dim3    threads(BLOCKSIZE);
-            hipLaunchKernelGGL((kernel_count_missing_diagonal<1024, I, J>),
-                               blocks,
-                               threads,
-                               0,
-                               handle->stream,
-                               m,
-                               (const I*)info->ptr_end,
-                               ptr_shift,
-                               csr_col_ind,
-                               descr->base,
-                               (J*)temp_buffer,
-                               zero_pivot[0]);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_count_missing_diagonal<1024, I, J>),
+                                               blocks,
+                                               threads,
+                                               0,
+                                               handle->stream,
+                                               m,
+                                               (const I*)info->ptr_end,
+                                               ptr_shift,
+                                               csr_col_ind,
+                                               descr->base,
+                                               (J*)temp_buffer,
+                                               zero_pivot[0]);
         }
         else
         {
@@ -292,7 +292,7 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
             dim3 threads(BLOCKSIZE);
             if(fill_mode == rocsparse_fill_mode_lower)
             {
-                hipLaunchKernelGGL(
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                     (kernel_count_missing_diagonal2<rocsparse_fill_mode_lower, 1024, I, J>),
                     blocks,
                     threads,
@@ -307,7 +307,7 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
             }
             else
             {
-                hipLaunchKernelGGL(
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                     (kernel_count_missing_diagonal2<rocsparse_fill_mode_upper, 1024, I, J>),
                     blocks,
                     threads,
@@ -355,7 +355,7 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
                     dim3 threads(BLOCKSIZE);
                     if(fill_mode == rocsparse_fill_mode_lower)
                     {
-                        hipLaunchKernelGGL(
+                        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                             (kernel_count_diagonal_triangular<rocsparse_fill_mode_lower,
                                                               1024,
                                                               I,
@@ -372,7 +372,7 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
                     }
                     else
                     {
-                        hipLaunchKernelGGL(
+                        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                             (kernel_count_diagonal_triangular<rocsparse_fill_mode_upper,
                                                               1024,
                                                               I,

@@ -176,17 +176,17 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle, //0
     //     hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, handle->stream));
 
     // Set memory to zero.
-    hipLaunchKernelGGL((memset2d_kernel<512>),
-                       dim3((m * n - 1) / 512 + 1),
-                       dim3(512),
-                       0,
-                       handle->stream,
-                       static_cast<I>(m),
-                       static_cast<I>(n),
-                       static_cast<T>(0),
-                       A,
-                       lda,
-                       order);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((memset2d_kernel<512>),
+                                       dim3((m * n - 1) / 512 + 1),
+                                       dim3(512),
+                                       0,
+                                       handle->stream,
+                                       static_cast<I>(m),
+                                       static_cast<I>(n),
+                                       static_cast<T>(0),
+                                       A,
+                                       lda,
+                                       order);
 
     //
     // Compute the conversion.

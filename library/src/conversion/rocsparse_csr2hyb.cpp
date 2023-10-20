@@ -185,22 +185,22 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
             (void**)&workspace, sizeof(rocsparse_int) * blocks, handle->stream));
 
         // HYB == ELL - no COO part - compute maximum nnz per row
-        hipLaunchKernelGGL((ell_width_kernel_part1<CSR2ELL_DIM>),
-                           dim3(blocks),
-                           dim3(CSR2ELL_DIM),
-                           0,
-                           stream,
-                           m,
-                           csr_row_ptr,
-                           workspace);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((ell_width_kernel_part1<CSR2ELL_DIM>),
+                                           dim3(blocks),
+                                           dim3(CSR2ELL_DIM),
+                                           0,
+                                           stream,
+                                           m,
+                                           csr_row_ptr,
+                                           workspace);
 
-        hipLaunchKernelGGL((ell_width_kernel_part2<CSR2ELL_DIM>),
-                           dim3(1),
-                           dim3(CSR2ELL_DIM),
-                           0,
-                           stream,
-                           blocks,
-                           workspace);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((ell_width_kernel_part2<CSR2ELL_DIM>),
+                                           dim3(1),
+                                           dim3(CSR2ELL_DIM),
+                                           0,
+                                           stream,
+                                           blocks,
+                                           workspace);
         // Copy ell width back to host
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
             &hyb->ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
@@ -249,16 +249,16 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
         }
         else
         {
-            hipLaunchKernelGGL((hyb_coo_nnz<CSR2ELL_DIM>),
-                               dim3((m - 1) / CSR2ELL_DIM + 1),
-                               dim3(CSR2ELL_DIM),
-                               0,
-                               stream,
-                               m,
-                               hyb->ell_width,
-                               csr_row_ptr,
-                               workspace,
-                               descr->base);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((hyb_coo_nnz<CSR2ELL_DIM>),
+                                               dim3((m - 1) / CSR2ELL_DIM + 1),
+                                               dim3(CSR2ELL_DIM),
+                                               0,
+                                               stream,
+                                               m,
+                                               hyb->ell_width,
+                                               csr_row_ptr,
+                                               workspace,
+                                               descr->base);
 
             // Inclusive sum on workspace
             void*  d_temp_storage     = nullptr;
@@ -317,23 +317,23 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
     dim3 csr2ell_blocks((m - 1) / CSR2ELL_DIM + 1);
     dim3 csr2ell_threads(CSR2ELL_DIM);
 
-    hipLaunchKernelGGL((csr2hyb_kernel<CSR2ELL_DIM>),
-                       csr2ell_blocks,
-                       csr2ell_threads,
-                       0,
-                       stream,
-                       m,
-                       csr_val,
-                       csr_row_ptr,
-                       csr_col_ind,
-                       hyb->ell_width,
-                       hyb->ell_col_ind,
-                       (T*)hyb->ell_val,
-                       hyb->coo_row_ind,
-                       hyb->coo_col_ind,
-                       (T*)hyb->coo_val,
-                       workspace,
-                       descr->base);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr2hyb_kernel<CSR2ELL_DIM>),
+                                       csr2ell_blocks,
+                                       csr2ell_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_val,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       hyb->ell_width,
+                                       hyb->ell_col_ind,
+                                       (T*)hyb->ell_val,
+                                       hyb->coo_row_ind,
+                                       hyb->coo_col_ind,
+                                       (T*)hyb->coo_val,
+                                       workspace,
+                                       descr->base);
 
     RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(workspace, handle->stream));
 #undef CSR2ELL_DIM

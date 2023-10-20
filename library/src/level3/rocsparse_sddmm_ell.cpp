@@ -201,61 +201,61 @@ struct rocsparse_sddmm_st<rocsparse_format_ell, rocsparse_sddmm_alg_default, I, 
     {
 
         static constexpr int NB = 512;
-#define HLAUNCH(K_)                                         \
-    int64_t num_blocks_x = (nnz - 1) / (NB / K_) + 1;       \
-    dim3    blocks(num_blocks_x);                           \
-    dim3    threads(NB);                                    \
-    hipLaunchKernelGGL((sddmm_ell_kernel<NB, K_, I, J, T>), \
-                       blocks,                              \
-                       threads,                             \
-                       0,                                   \
-                       handle->stream,                      \
-                       trans_A,                             \
-                       trans_B,                             \
-                       order_A,                             \
-                       order_B,                             \
-                       m,                                   \
-                       n,                                   \
-                       k,                                   \
-                       nnz,                                 \
-                       *(const T*)alpha,                    \
-                       A_val,                               \
-                       A_ld,                                \
-                       B_val,                               \
-                       B_ld,                                \
-                       *(const T*)beta,                     \
-                       (T*)C_val_data,                      \
-                       (const J*)C_col_data,                \
-                       C_base,                              \
-                       (T*)buffer)
+#define HLAUNCH(K_)                                                         \
+    int64_t num_blocks_x = (nnz - 1) / (NB / K_) + 1;                       \
+    dim3    blocks(num_blocks_x);                                           \
+    dim3    threads(NB);                                                    \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((sddmm_ell_kernel<NB, K_, I, J, T>), \
+                                       blocks,                              \
+                                       threads,                             \
+                                       0,                                   \
+                                       handle->stream,                      \
+                                       trans_A,                             \
+                                       trans_B,                             \
+                                       order_A,                             \
+                                       order_B,                             \
+                                       m,                                   \
+                                       n,                                   \
+                                       k,                                   \
+                                       nnz,                                 \
+                                       *(const T*)alpha,                    \
+                                       A_val,                               \
+                                       A_ld,                                \
+                                       B_val,                               \
+                                       B_ld,                                \
+                                       *(const T*)beta,                     \
+                                       (T*)C_val_data,                      \
+                                       (const J*)C_col_data,                \
+                                       C_base,                              \
+                                       (T*)buffer)
 
-#define DLAUNCH(K_)                                         \
-    int64_t num_blocks_x = (nnz - 1) / (NB / K_) + 1;       \
-    dim3    blocks(num_blocks_x);                           \
-    dim3    threads(NB);                                    \
-    hipLaunchKernelGGL((sddmm_ell_kernel<NB, K_, I, J, T>), \
-                       blocks,                              \
-                       threads,                             \
-                       0,                                   \
-                       handle->stream,                      \
-                       trans_A,                             \
-                       trans_B,                             \
-                       order_A,                             \
-                       order_B,                             \
-                       m,                                   \
-                       n,                                   \
-                       k,                                   \
-                       nnz,                                 \
-                       alpha,                               \
-                       A_val,                               \
-                       A_ld,                                \
-                       B_val,                               \
-                       B_ld,                                \
-                       beta,                                \
-                       (T*)C_val_data,                      \
-                       (const J*)C_col_data,                \
-                       C_base,                              \
-                       (T*)buffer)
+#define DLAUNCH(K_)                                                         \
+    int64_t num_blocks_x = (nnz - 1) / (NB / K_) + 1;                       \
+    dim3    blocks(num_blocks_x);                                           \
+    dim3    threads(NB);                                                    \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((sddmm_ell_kernel<NB, K_, I, J, T>), \
+                                       blocks,                              \
+                                       threads,                             \
+                                       0,                                   \
+                                       handle->stream,                      \
+                                       trans_A,                             \
+                                       trans_B,                             \
+                                       order_A,                             \
+                                       order_B,                             \
+                                       m,                                   \
+                                       n,                                   \
+                                       k,                                   \
+                                       nnz,                                 \
+                                       alpha,                               \
+                                       A_val,                               \
+                                       A_ld,                                \
+                                       B_val,                               \
+                                       B_ld,                                \
+                                       beta,                                \
+                                       (T*)C_val_data,                      \
+                                       (const J*)C_col_data,                \
+                                       C_base,                              \
+                                       (T*)buffer)
 
         if(handle->pointer_mode == rocsparse_pointer_mode_host)
         {

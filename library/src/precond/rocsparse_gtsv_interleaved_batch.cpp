@@ -120,20 +120,20 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_thomas_template(rocsparse_hand
     T* dx1 = reinterpret_cast<T*>(reinterpret_cast<void*>(ptr));
     //  ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
 
-    hipLaunchKernelGGL((gtsv_interleaved_batch_thomas_kernel<128>),
-                       dim3(((batch_count - 1) / 128 + 1), 1, 1),
-                       dim3(128, 1, 1),
-                       0,
-                       handle->stream,
-                       m,
-                       batch_count,
-                       batch_stride,
-                       dl,
-                       d,
-                       du,
-                       dc1,
-                       dx1,
-                       x);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gtsv_interleaved_batch_thomas_kernel<128>),
+                                       dim3(((batch_count - 1) / 128 + 1), 1, 1),
+                                       dim3(128, 1, 1),
+                                       0,
+                                       handle->stream,
+                                       m,
+                                       batch_count,
+                                       batch_stride,
+                                       dl,
+                                       d,
+                                       du,
+                                       dc1,
+                                       dx1,
+                                       x);
 
     return rocsparse_status_success;
 }
@@ -158,20 +158,20 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_lu_template(rocsparse_handle h
     RETURN_IF_HIP_ERROR(
         hipMemsetAsync(u2, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
 
-    hipLaunchKernelGGL((gtsv_interleaved_batch_lu_kernel<128>),
-                       dim3(((batch_count - 1) / 128 + 1), 1, 1),
-                       dim3(128, 1, 1),
-                       0,
-                       handle->stream,
-                       m,
-                       batch_count,
-                       batch_stride,
-                       dl,
-                       d,
-                       du,
-                       u2,
-                       p,
-                       x);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gtsv_interleaved_batch_lu_kernel<128>),
+                                       dim3(((batch_count - 1) / 128 + 1), 1, 1),
+                                       dim3(128, 1, 1),
+                                       0,
+                                       handle->stream,
+                                       m,
+                                       batch_count,
+                                       batch_stride,
+                                       dl,
+                                       d,
+                                       du,
+                                       u2,
+                                       p,
+                                       x);
 
     return rocsparse_status_success;
 }
@@ -194,19 +194,19 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_qr_template(rocsparse_handle h
     RETURN_IF_HIP_ERROR(
         hipMemsetAsync(r2, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
 
-    hipLaunchKernelGGL((gtsv_interleaved_batch_qr_kernel<128>),
-                       dim3(((batch_count - 1) / 128 + 1), 1, 1),
-                       dim3(128, 1, 1),
-                       0,
-                       handle->stream,
-                       m,
-                       batch_count,
-                       batch_stride,
-                       dl,
-                       d,
-                       du,
-                       r2,
-                       x);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gtsv_interleaved_batch_qr_kernel<128>),
+                                       dim3(((batch_count - 1) / 128 + 1), 1, 1),
+                                       dim3(128, 1, 1),
+                                       0,
+                                       handle->stream,
+                                       m,
+                                       batch_count,
+                                       batch_stride,
+                                       dl,
+                                       d,
+                                       du,
+                                       r2,
+                                       x);
 
     return rocsparse_status_success;
 }

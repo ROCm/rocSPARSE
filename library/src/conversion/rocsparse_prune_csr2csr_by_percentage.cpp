@@ -87,7 +87,7 @@ void csr2csr_compress(rocsparse_handle     handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL(
+        THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
             (csr2csr_compress_kernel<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>),
             dim3(grid_size),
             dim3(BLOCK_SIZE),
@@ -108,7 +108,7 @@ void csr2csr_compress(rocsparse_handle     handle,
     }
     else
     {
-        hipLaunchKernelGGL(
+        THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
             (csr2csr_compress_kernel<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>),
             dim3(grid_size),
             dim3(BLOCK_SIZE),
@@ -276,14 +276,14 @@ rocsparse_status
     {
         if(nnz_total_dev_host_ptr != nullptr && csr_row_ptr_C != nullptr)
         {
-            hipLaunchKernelGGL((set_array_to_value<256>),
-                               dim3(m / 256 + 1),
-                               dim3(256),
-                               0,
-                               stream,
-                               (m + 1),
-                               csr_row_ptr_C,
-                               static_cast<rocsparse_int>(csr_descr_C->base));
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                               dim3(m / 256 + 1),
+                                               dim3(256),
+                                               0,
+                                               stream,
+                                               (m + 1),
+                                               csr_row_ptr_C,
+                                               static_cast<rocsparse_int>(csr_descr_C->base));
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
@@ -309,14 +309,14 @@ rocsparse_status
     T* output = reinterpret_cast<T*>(temp_buffer);
 
     // Compute absolute value of csr_val_A and store in first half of output array
-    hipLaunchKernelGGL((abs_kernel<256, T>),
-                       dim3((nnz_A - 1) / 256 + 1),
-                       dim3(256),
-                       0,
-                       stream,
-                       nnz_A,
-                       csr_val_A,
-                       output);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((abs_kernel<256, T>),
+                                       dim3((nnz_A - 1) / 256 + 1),
+                                       dim3(256),
+                                       0,
+                                       stream,
+                                       nnz_A,
+                                       csr_val_A,
+                                       output);
 
     // Determine amount of temporary storage needed for rocprim sort and inclusive scan and allocate if necessary
     size_t temp_storage_size_bytes_sort = 0;

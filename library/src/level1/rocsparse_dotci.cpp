@@ -87,37 +87,37 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
     // Get workspace from handle device buffer
     T* workspace = reinterpret_cast<T*>(handle->buffer);
 
-    hipLaunchKernelGGL((dotci_kernel_part1<DOTCI_DIM>),
-                       dim3(DOTCI_DIM),
-                       dim3(DOTCI_DIM),
-                       0,
-                       stream,
-                       nnz,
-                       x_val,
-                       x_ind,
-                       y,
-                       workspace,
-                       idx_base);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((dotci_kernel_part1<DOTCI_DIM>),
+                                       dim3(DOTCI_DIM),
+                                       dim3(DOTCI_DIM),
+                                       0,
+                                       stream,
+                                       nnz,
+                                       x_val,
+                                       x_ind,
+                                       y,
+                                       workspace,
+                                       idx_base);
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((dotci_kernel_part2<DOTCI_DIM>),
-                           dim3(1),
-                           dim3(DOTCI_DIM),
-                           0,
-                           stream,
-                           workspace,
-                           result);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((dotci_kernel_part2<DOTCI_DIM>),
+                                           dim3(1),
+                                           dim3(DOTCI_DIM),
+                                           0,
+                                           stream,
+                                           workspace,
+                                           result);
     }
     else
     {
-        hipLaunchKernelGGL((dotci_kernel_part2<DOTCI_DIM>),
-                           dim3(1),
-                           dim3(DOTCI_DIM),
-                           0,
-                           stream,
-                           workspace,
-                           (T*)nullptr);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((dotci_kernel_part2<DOTCI_DIM>),
+                                           dim3(1),
+                                           dim3(DOTCI_DIM),
+                                           0,
+                                           stream,
+                                           workspace,
+                                           (T*)nullptr);
 
         RETURN_IF_HIP_ERROR(
             hipMemcpyAsync(result, workspace, sizeof(T), hipMemcpyDeviceToHost, stream));

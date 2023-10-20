@@ -32,89 +32,89 @@
 #include "definitions.h"
 #include "utility.h"
 
-#define LAUNCH_BSRILU28()                                                \
-    hipLaunchKernelGGL((bsrilu0_2_8<64, 64, 8>),                         \
-                       dim3(mb),                                         \
-                       dim3(8, 8),                                       \
-                       0,                                                \
-                       handle->stream,                                   \
-                       dir,                                              \
-                       mb,                                               \
-                       bsr_row_ptr,                                      \
-                       bsr_col_ind,                                      \
-                       bsr_val,                                          \
-                       (rocsparse_int*)info->bsrilu0_info->trm_diag_ind, \
-                       block_dim,                                        \
-                       done_array,                                       \
-                       (rocsparse_int*)info->bsrilu0_info->row_map,      \
-                       (rocsparse_int*)info->zero_pivot,                 \
-                       base,                                             \
-                       info->boost_enable,                               \
-                       boost_tol_device_host,                            \
-                       boost_val_device_host)
+#define LAUNCH_BSRILU28()                                                               \
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((bsrilu0_2_8<64, 64, 8>),                         \
+                                      dim3(mb),                                         \
+                                      dim3(8, 8),                                       \
+                                      0,                                                \
+                                      handle->stream,                                   \
+                                      dir,                                              \
+                                      mb,                                               \
+                                      bsr_row_ptr,                                      \
+                                      bsr_col_ind,                                      \
+                                      bsr_val,                                          \
+                                      (rocsparse_int*)info->bsrilu0_info->trm_diag_ind, \
+                                      block_dim,                                        \
+                                      done_array,                                       \
+                                      (rocsparse_int*)info->bsrilu0_info->row_map,      \
+                                      (rocsparse_int*)info->zero_pivot,                 \
+                                      base,                                             \
+                                      info->boost_enable,                               \
+                                      boost_tol_device_host,                            \
+                                      boost_val_device_host)
 
-#define LAUNCH_BSRILU932(dim)                                            \
-    hipLaunchKernelGGL((bsrilu0_9_32<64, 64, dim>),                      \
-                       dim3(mb),                                         \
-                       dim3(dim, 64 / dim),                              \
-                       0,                                                \
-                       handle->stream,                                   \
-                       dir,                                              \
-                       mb,                                               \
-                       bsr_row_ptr,                                      \
-                       bsr_col_ind,                                      \
-                       bsr_val,                                          \
-                       (rocsparse_int*)info->bsrilu0_info->trm_diag_ind, \
-                       block_dim,                                        \
-                       done_array,                                       \
-                       (rocsparse_int*)info->bsrilu0_info->row_map,      \
-                       (rocsparse_int*)info->zero_pivot,                 \
-                       base,                                             \
-                       info->boost_enable,                               \
-                       boost_tol_device_host,                            \
-                       boost_val_device_host)
+#define LAUNCH_BSRILU932(dim)                                                           \
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((bsrilu0_9_32<64, 64, dim>),                      \
+                                      dim3(mb),                                         \
+                                      dim3(dim, 64 / dim),                              \
+                                      0,                                                \
+                                      handle->stream,                                   \
+                                      dir,                                              \
+                                      mb,                                               \
+                                      bsr_row_ptr,                                      \
+                                      bsr_col_ind,                                      \
+                                      bsr_val,                                          \
+                                      (rocsparse_int*)info->bsrilu0_info->trm_diag_ind, \
+                                      block_dim,                                        \
+                                      done_array,                                       \
+                                      (rocsparse_int*)info->bsrilu0_info->row_map,      \
+                                      (rocsparse_int*)info->zero_pivot,                 \
+                                      base,                                             \
+                                      info->boost_enable,                               \
+                                      boost_tol_device_host,                            \
+                                      boost_val_device_host)
 
-#define LAUNCH_BSRILU3364()                                              \
-    hipLaunchKernelGGL((bsrilu0_33_64<64, 64, 64>),                      \
-                       dim3(mb),                                         \
-                       dim3(64),                                         \
-                       0,                                                \
-                       handle->stream,                                   \
-                       dir,                                              \
-                       mb,                                               \
-                       bsr_row_ptr,                                      \
-                       bsr_col_ind,                                      \
-                       bsr_val,                                          \
-                       (rocsparse_int*)info->bsrilu0_info->trm_diag_ind, \
-                       block_dim,                                        \
-                       done_array,                                       \
-                       (rocsparse_int*)info->bsrilu0_info->row_map,      \
-                       (rocsparse_int*)info->zero_pivot,                 \
-                       base,                                             \
-                       info->boost_enable,                               \
-                       boost_tol_device_host,                            \
-                       boost_val_device_host)
+#define LAUNCH_BSRILU3364()                                                             \
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((bsrilu0_33_64<64, 64, 64>),                      \
+                                      dim3(mb),                                         \
+                                      dim3(64),                                         \
+                                      0,                                                \
+                                      handle->stream,                                   \
+                                      dir,                                              \
+                                      mb,                                               \
+                                      bsr_row_ptr,                                      \
+                                      bsr_col_ind,                                      \
+                                      bsr_val,                                          \
+                                      (rocsparse_int*)info->bsrilu0_info->trm_diag_ind, \
+                                      block_dim,                                        \
+                                      done_array,                                       \
+                                      (rocsparse_int*)info->bsrilu0_info->row_map,      \
+                                      (rocsparse_int*)info->zero_pivot,                 \
+                                      base,                                             \
+                                      info->boost_enable,                               \
+                                      boost_tol_device_host,                            \
+                                      boost_val_device_host)
 
-#define LAUNCH_BSRILU65inf(sleep, wfsize)                                \
-    hipLaunchKernelGGL((bsrilu0_general<128, wfsize, sleep>),            \
-                       dim3((wfsize * mb - 1) / 128 + 1),                \
-                       dim3(128),                                        \
-                       0,                                                \
-                       handle->stream,                                   \
-                       dir,                                              \
-                       mb,                                               \
-                       bsr_row_ptr,                                      \
-                       bsr_col_ind,                                      \
-                       bsr_val,                                          \
-                       (rocsparse_int*)info->bsrilu0_info->trm_diag_ind, \
-                       block_dim,                                        \
-                       done_array,                                       \
-                       (rocsparse_int*)info->bsrilu0_info->row_map,      \
-                       (rocsparse_int*)info->zero_pivot,                 \
-                       base,                                             \
-                       info->boost_enable,                               \
-                       boost_tol_device_host,                            \
-                       boost_val_device_host)
+#define LAUNCH_BSRILU65inf(sleep, wfsize)                                               \
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((bsrilu0_general<128, wfsize, sleep>),            \
+                                      dim3((wfsize * mb - 1) / 128 + 1),                \
+                                      dim3(128),                                        \
+                                      0,                                                \
+                                      handle->stream,                                   \
+                                      dir,                                              \
+                                      mb,                                               \
+                                      bsr_row_ptr,                                      \
+                                      bsr_col_ind,                                      \
+                                      bsr_val,                                          \
+                                      (rocsparse_int*)info->bsrilu0_info->trm_diag_ind, \
+                                      block_dim,                                        \
+                                      done_array,                                       \
+                                      (rocsparse_int*)info->bsrilu0_info->row_map,      \
+                                      (rocsparse_int*)info->zero_pivot,                 \
+                                      base,                                             \
+                                      info->boost_enable,                               \
+                                      boost_tol_device_host,                            \
+                                      boost_val_device_host)
 
 template <typename T, typename U>
 rocsparse_status rocsparse_bsrilu0_numeric_boost_template(rocsparse_handle   handle,

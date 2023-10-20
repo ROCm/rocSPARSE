@@ -87,32 +87,32 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle     handle,
     // Get workspace from handle device buffer
     T* workspace = reinterpret_cast<T*>(handle->buffer);
 
-    hipLaunchKernelGGL((doti_kernel_part1<DOTI_DIM, 2>),
-                       dim3(DOTI_DIM),
-                       dim3(DOTI_DIM),
-                       0,
-                       stream,
-                       nnz,
-                       x_val,
-                       x_ind,
-                       y,
-                       workspace,
-                       idx_base);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((doti_kernel_part1<DOTI_DIM, 2>),
+                                       dim3(DOTI_DIM),
+                                       dim3(DOTI_DIM),
+                                       0,
+                                       stream,
+                                       nnz,
+                                       x_val,
+                                       x_ind,
+                                       y,
+                                       workspace,
+                                       idx_base);
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL(
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (doti_kernel_part2<DOTI_DIM>), dim3(1), dim3(DOTI_DIM), 0, stream, workspace, result);
     }
     else
     {
-        hipLaunchKernelGGL((doti_kernel_part2<DOTI_DIM>),
-                           dim3(1),
-                           dim3(DOTI_DIM),
-                           0,
-                           stream,
-                           workspace,
-                           (T*)nullptr);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((doti_kernel_part2<DOTI_DIM>),
+                                           dim3(1),
+                                           dim3(DOTI_DIM),
+                                           0,
+                                           stream,
+                                           workspace,
+                                           (T*)nullptr);
 
         RETURN_IF_HIP_ERROR(
             hipMemcpyAsync(result, workspace, sizeof(T), hipMemcpyDeviceToHost, stream));
