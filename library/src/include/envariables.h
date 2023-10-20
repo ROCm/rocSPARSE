@@ -94,8 +94,8 @@ public:
 
 private:
     rocsparse_envariables();
-    ~rocsparse_envariables()                                       = default;
-    rocsparse_envariables(const rocsparse_envariables&)            = delete;
+    ~rocsparse_envariables()                            = default;
+    rocsparse_envariables(const rocsparse_envariables&) = delete;
     rocsparse_envariables& operator=(const rocsparse_envariables&) = delete;
     bool                   m_bool_var[bool_var_size]{};
 };
