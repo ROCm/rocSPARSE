@@ -117,20 +117,20 @@ rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
     dim3 hyb2csr_blocks((hyb->m - 1) / HYB2CSR_DIM + 1);
     dim3 hyb2csr_threads(HYB2CSR_DIM);
 
-    hipLaunchKernelGGL((hyb2csr_nnz_kernel<HYB2CSR_DIM>),
-                       hyb2csr_blocks,
-                       hyb2csr_threads,
-                       0,
-                       stream,
-                       hyb->m,
-                       hyb->n,
-                       hyb->ell_nnz,
-                       hyb->ell_width,
-                       hyb->ell_col_ind,
-                       hyb->coo_nnz,
-                       workspace,
-                       csr_row_ptr,
-                       descr->base);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((hyb2csr_nnz_kernel<HYB2CSR_DIM>),
+                                       hyb2csr_blocks,
+                                       hyb2csr_threads,
+                                       0,
+                                       stream,
+                                       hyb->m,
+                                       hyb->n,
+                                       hyb->ell_nnz,
+                                       hyb->ell_width,
+                                       hyb->ell_col_ind,
+                                       hyb->coo_nnz,
+                                       workspace,
+                                       csr_row_ptr,
+                                       descr->base);
 
     // Exclusive sum to obtain csr_row_ptr array
     size_t rocprim_size;
@@ -154,25 +154,25 @@ rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
                                                 stream));
 
     // Fill columns and values
-    hipLaunchKernelGGL((hyb2csr_fill_kernel<HYB2CSR_DIM>),
-                       hyb2csr_blocks,
-                       hyb2csr_threads,
-                       0,
-                       stream,
-                       hyb->m,
-                       hyb->n,
-                       hyb->ell_nnz,
-                       hyb->ell_width,
-                       hyb->ell_col_ind,
-                       reinterpret_cast<T*>(hyb->ell_val),
-                       hyb->coo_nnz,
-                       workspace,
-                       hyb->coo_col_ind,
-                       reinterpret_cast<T*>(hyb->coo_val),
-                       csr_row_ptr,
-                       csr_col_ind,
-                       csr_val,
-                       descr->base);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((hyb2csr_fill_kernel<HYB2CSR_DIM>),
+                                       hyb2csr_blocks,
+                                       hyb2csr_threads,
+                                       0,
+                                       stream,
+                                       hyb->m,
+                                       hyb->n,
+                                       hyb->ell_nnz,
+                                       hyb->ell_width,
+                                       hyb->ell_col_ind,
+                                       reinterpret_cast<T*>(hyb->ell_val),
+                                       hyb->coo_nnz,
+                                       workspace,
+                                       hyb->coo_col_ind,
+                                       reinterpret_cast<T*>(hyb->coo_val),
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       descr->base);
 #undef HYB2CSR_DIM
 
     return rocsparse_status_success;

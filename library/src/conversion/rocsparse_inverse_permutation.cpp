@@ -62,11 +62,13 @@ rocsparse_status rocsparse_inverse_permutation_core(rocsparse_handle handle_,
     dim3                          threads(BLOCKSIZE);
     if(base_ == rocsparse_index_base_zero)
     {
-        hipLaunchKernelGGL((kernel0<BLOCKSIZE>), blocks, threads, 0, handle_->stream, n_, p_, q_);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (kernel0<BLOCKSIZE>), blocks, threads, 0, handle_->stream, n_, p_, q_);
     }
     else
     {
-        hipLaunchKernelGGL((kernel1<BLOCKSIZE>), blocks, threads, 0, handle_->stream, n_, p_, q_);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (kernel1<BLOCKSIZE>), blocks, threads, 0, handle_->stream, n_, p_, q_);
     }
     return rocsparse_status_success;
 }

@@ -335,24 +335,24 @@ struct kernels_type_dispatch
                             rocsparse_index_base base)
     {
         const J size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
-        hipLaunchKernelGGL((bsrxmvn_5x5_kernel<50, T>),
-                           dim3(size),
-                           dim3(50),
-                           0,
-                           handle->stream,
-                           mb,
-                           dir,
-                           alpha_device_host,
-                           size_of_mask,
-                           bsr_mask_ptr,
-                           bsr_row_ptr,
-                           bsr_end_ptr,
-                           bsr_col_ind,
-                           bsr_val,
-                           x,
-                           beta_device_host,
-                           y,
-                           base);
+        THROW_IF_HIPLAUNCHKERNELGGL_ERROR((bsrxmvn_5x5_kernel<50, T>),
+                                          dim3(size),
+                                          dim3(50),
+                                          0,
+                                          handle->stream,
+                                          mb,
+                                          dir,
+                                          alpha_device_host,
+                                          size_of_mask,
+                                          bsr_mask_ptr,
+                                          bsr_row_ptr,
+                                          bsr_end_ptr,
+                                          bsr_col_ind,
+                                          bsr_val,
+                                          x,
+                                          beta_device_host,
+                                          y,
+                                          base);
     }
 };
 
@@ -383,24 +383,24 @@ struct kernels_type_dispatch<float, float, float, float>
         if(wsize == 32)
         {
             const J size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
-            hipLaunchKernelGGL((bsrxmvn_5x5_kernel<50, float>),
-                               dim3(size),
-                               dim3(50),
-                               0,
-                               handle->stream,
-                               mb,
-                               dir,
-                               alpha_device_host,
-                               size_of_mask,
-                               bsr_mask_ptr,
-                               bsr_row_ptr,
-                               bsr_end_ptr,
-                               bsr_col_ind,
-                               bsr_val,
-                               x,
-                               beta_device_host,
-                               y,
-                               base);
+            THROW_IF_HIPLAUNCHKERNELGGL_ERROR((bsrxmvn_5x5_kernel<50, float>),
+                                              dim3(size),
+                                              dim3(50),
+                                              0,
+                                              handle->stream,
+                                              mb,
+                                              dir,
+                                              alpha_device_host,
+                                              size_of_mask,
+                                              bsr_mask_ptr,
+                                              bsr_row_ptr,
+                                              bsr_end_ptr,
+                                              bsr_col_ind,
+                                              bsr_val,
+                                              x,
+                                              beta_device_host,
+                                              y,
+                                              base);
         }
         else
         {
@@ -412,7 +412,7 @@ struct kernels_type_dispatch<float, float, float, float>
 
             if(rocsparse_direction_row == dir)
             {
-                hipLaunchKernelGGL(
+                THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
                     (sbsrxmvn_5x5_kernel<nthreads_per_halfwarp * nhalfwarps_per_block,
                                          rocsparse_direction_row>),
                     nBlocks_solver,
@@ -434,7 +434,7 @@ struct kernels_type_dispatch<float, float, float, float>
             }
             else
             {
-                hipLaunchKernelGGL(
+                THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
                     (sbsrxmvn_5x5_kernel<nthreads_per_halfwarp * nhalfwarps_per_block,
                                          rocsparse_direction_column>),
                     nBlocks_solver,

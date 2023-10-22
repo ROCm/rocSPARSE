@@ -28,18 +28,18 @@
 #include "rocsparse_bsrsm.hpp"
 #include "utility.h"
 
-#define LAUNCH_BSRSM_GTHR_DIM(bsize, wfsize, dim)                 \
-    hipLaunchKernelGGL((bsr_gather<wfsize, bsize / wfsize, dim>), \
-                       dim3((wfsize * nnzb - 1) / bsize + 1),     \
-                       dim3(wfsize, bsize / wfsize),              \
-                       0,                                         \
-                       stream,                                    \
-                       dir,                                       \
-                       nnzb,                                      \
-                       (rocsparse_int*)bsrsm_info->trmt_perm,     \
-                       bsr_val,                                   \
-                       bsrt_val,                                  \
-                       block_dim)
+#define LAUNCH_BSRSM_GTHR_DIM(bsize, wfsize, dim)                                 \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsr_gather<wfsize, bsize / wfsize, dim>), \
+                                       dim3((wfsize * nnzb - 1) / bsize + 1),     \
+                                       dim3(wfsize, bsize / wfsize),              \
+                                       0,                                         \
+                                       stream,                                    \
+                                       dir,                                       \
+                                       nnzb,                                      \
+                                       (rocsparse_int*)bsrsm_info->trmt_perm,     \
+                                       bsr_val,                                   \
+                                       bsrt_val,                                  \
+                                       block_dim)
 
 #define LAUNCH_BSRSM_GTHR(bsize, wfsize, dim) \
     if(dim <= 2)                              \
@@ -110,28 +110,28 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
                                                       int64_t                   ldx,
                                                       void*                     temp_buffer)
 {
-#define LAUNCH_LARGE_KERNEL(K_, M_, S_)                     \
-    dim3 bsrsm_blocks(((nrhs - 1) / NCOL + 1) * mb);        \
-    dim3 bsrsm_threads(NCOL* M_);                           \
-    hipLaunchKernelGGL((K_<NCOL * M_, NCOL, S_>),           \
-                       bsrsm_blocks,                        \
-                       bsrsm_threads,                       \
-                       0,                                   \
-                       stream,                              \
-                       mb,                                  \
-                       nrhs,                                \
-                       local_bsr_row_ptr,                   \
-                       local_bsr_col_ind,                   \
-                       local_bsr_val,                       \
-                       block_dim,                           \
-                       Xt,                                  \
-                       ldimX,                               \
-                       done_array,                          \
-                       (rocsparse_int*)bsrsm_info->row_map, \
-                       (rocsparse_int*)info->zero_pivot,    \
-                       descr->base,                         \
-                       descr->diag_type,                    \
-                       dir);
+#define LAUNCH_LARGE_KERNEL(K_, M_, S_)                                     \
+    dim3 bsrsm_blocks(((nrhs - 1) / NCOL + 1) * mb);                        \
+    dim3 bsrsm_threads(NCOL* M_);                                           \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((K_<NCOL * M_, NCOL, S_>),           \
+                                       bsrsm_blocks,                        \
+                                       bsrsm_threads,                       \
+                                       0,                                   \
+                                       stream,                              \
+                                       mb,                                  \
+                                       nrhs,                                \
+                                       local_bsr_row_ptr,                   \
+                                       local_bsr_col_ind,                   \
+                                       local_bsr_val,                       \
+                                       block_dim,                           \
+                                       Xt,                                  \
+                                       ldimX,                               \
+                                       done_array,                          \
+                                       (rocsparse_int*)bsrsm_info->row_map, \
+                                       (rocsparse_int*)info->zero_pivot,    \
+                                       descr->base,                         \
+                                       descr->diag_type,                    \
+                                       dir);
 
     hipStream_t stream = handle->stream;
 
@@ -189,36 +189,36 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
         dim3 bsrsm_blocks((mb * block_dim - 1) / BSRSM_DIM_X + 1);
         dim3 bsrsm_threads(BSRSM_DIM_X * BSRSM_DIM_Y);
 
-        hipLaunchKernelGGL((bsrsm_transpose<BSRSM_DIM_X, BSRSM_DIM_Y>),
-                           bsrsm_blocks,
-                           bsrsm_threads,
-                           0,
-                           stream,
-                           mb * block_dim,
-                           nrhs,
-                           alpha,
-                           B,
-                           ldb,
-                           Xt,
-                           ldimX);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrsm_transpose<BSRSM_DIM_X, BSRSM_DIM_Y>),
+                                           bsrsm_blocks,
+                                           bsrsm_threads,
+                                           0,
+                                           stream,
+                                           mb * block_dim,
+                                           nrhs,
+                                           alpha,
+                                           B,
+                                           ldb,
+                                           Xt,
+                                           ldimX);
 #undef BSRSM_DIM_X
 #undef BSRSM_DIM_Y
     }
     else
     {
         // Copy B into X and scale it with alpha
-        hipLaunchKernelGGL((bsrsm_copy_scale<1024>),
-                           dim3((mb * block_dim - 1) / 1024 + 1),
-                           dim3(1024),
-                           0,
-                           stream,
-                           mb * block_dim,
-                           nrhs,
-                           alpha,
-                           B,
-                           ldb,
-                           X,
-                           ldx);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrsm_copy_scale<1024>),
+                                           dim3((mb * block_dim - 1) / 1024 + 1),
+                                           dim3(1024),
+                                           0,
+                                           stream,
+                                           mb * block_dim,
+                                           nrhs,
+                                           alpha,
+                                           B,
+                                           ldb,
+                                           X,
+                                           ldx);
     }
 
     // Pointers to differentiate between transpose mode
@@ -303,17 +303,17 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
         dim3 bsrsm_blocks((mb * block_dim - 1) / BSRSM_DIM_X + 1);
         dim3 bsrsm_threads(BSRSM_DIM_X * BSRSM_DIM_Y);
 
-        hipLaunchKernelGGL((dense_transpose_back<BSRSM_DIM_X, BSRSM_DIM_Y>),
-                           bsrsm_blocks,
-                           bsrsm_threads,
-                           0,
-                           stream,
-                           mb * block_dim,
-                           nrhs,
-                           Xt,
-                           ldimX,
-                           X,
-                           ldx);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((dense_transpose_back<BSRSM_DIM_X, BSRSM_DIM_Y>),
+                                           bsrsm_blocks,
+                                           bsrsm_threads,
+                                           0,
+                                           stream,
+                                           mb * block_dim,
+                                           nrhs,
+                                           Xt,
+                                           ldimX,
+                                           X,
+                                           ldx);
 #undef BSRSM_DIM_X
 #undef BSRSM_DIM_Y
     }

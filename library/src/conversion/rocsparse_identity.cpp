@@ -36,7 +36,7 @@ rocsparse_status rocsparse_create_identity_permutation_core(rocsparse_handle han
     dim3 identity_blocks((n - 1) / IDENTITY_DIM + 1);
     dim3 identity_threads(IDENTITY_DIM);
 
-    hipLaunchKernelGGL(
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
         (identity_kernel<IDENTITY_DIM>), identity_blocks, identity_threads, 0, stream, n, p);
 #undef IDENTITY_DIM
 

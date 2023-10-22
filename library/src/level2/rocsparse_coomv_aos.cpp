@@ -160,14 +160,14 @@ rocsparse_status rocsparse_coomv_aos_atomic_dispatch(rocsparse_handle          h
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
         // Scale y with beta
-        hipLaunchKernelGGL((coomv_scale<1024>),
-                           dim3((ysize - 1) / 1024 + 1),
-                           dim3(1024),
-                           0,
-                           handle->stream,
-                           ysize,
-                           beta_device_host,
-                           y);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coomv_scale<1024>),
+                                           dim3((ysize - 1) / 1024 + 1),
+                                           dim3(1024),
+                                           0,
+                                           handle->stream,
+                                           ysize,
+                                           beta_device_host,
+                                           y);
     }
     else
     {
@@ -179,14 +179,14 @@ rocsparse_status rocsparse_coomv_aos_atomic_dispatch(rocsparse_handle          h
         }
         else if(beta != 1)
         {
-            hipLaunchKernelGGL((coomv_scale<1024>),
-                               dim3((ysize - 1) / 1024 + 1),
-                               dim3(1024),
-                               0,
-                               handle->stream,
-                               ysize,
-                               beta,
-                               y);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coomv_scale<1024>),
+                                               dim3((ysize - 1) / 1024 + 1),
+                                               dim3(1024),
+                                               0,
+                                               handle->stream,
+                                               ysize,
+                                               beta,
+                                               y);
         }
     }
 
@@ -195,18 +195,18 @@ rocsparse_status rocsparse_coomv_aos_atomic_dispatch(rocsparse_handle          h
     {
     case rocsparse_operation_none:
     {
-        hipLaunchKernelGGL((coomvn_aos_atomic_loops<256, 1>),
-                           dim3((nnz - 1) / 256 + 1),
-                           dim3(256),
-                           0,
-                           stream,
-                           nnz,
-                           alpha_device_host,
-                           coo_ind,
-                           coo_val,
-                           x,
-                           y,
-                           descr->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coomvn_aos_atomic_loops<256, 1>),
+                                           dim3((nnz - 1) / 256 + 1),
+                                           dim3(256),
+                                           0,
+                                           stream,
+                                           nnz,
+                                           alpha_device_host,
+                                           coo_ind,
+                                           coo_val,
+                                           x,
+                                           y,
+                                           descr->base);
         break;
     }
     case rocsparse_operation_transpose:
@@ -243,14 +243,14 @@ rocsparse_status rocsparse_coomv_aos_segmented_dispatch(rocsparse_handle        
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
         // Scale y with beta
-        hipLaunchKernelGGL((coomv_scale<1024>),
-                           dim3((ysize - 1) / 1024 + 1),
-                           dim3(1024),
-                           0,
-                           handle->stream,
-                           ysize,
-                           beta_device_host,
-                           y);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coomv_scale<1024>),
+                                           dim3((ysize - 1) / 1024 + 1),
+                                           dim3(1024),
+                                           0,
+                                           handle->stream,
+                                           ysize,
+                                           beta_device_host,
+                                           y);
     }
     else
     {
@@ -262,14 +262,14 @@ rocsparse_status rocsparse_coomv_aos_segmented_dispatch(rocsparse_handle        
         }
         else if(beta != static_cast<T>(1))
         {
-            hipLaunchKernelGGL((coomv_scale<1024>),
-                               dim3((ysize - 1) / 1024 + 1),
-                               dim3(1024),
-                               0,
-                               handle->stream,
-                               ysize,
-                               beta,
-                               y);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coomv_scale<1024>),
+                                               dim3((ysize - 1) / 1024 + 1),
+                                               dim3(1024),
+                                               0,
+                                               handle->stream,
+                                               ysize,
+                                               beta,
+                                               y);
         }
     }
 
@@ -298,32 +298,32 @@ rocsparse_status rocsparse_coomv_aos_segmented_dispatch(rocsparse_handle        
         // val block reduction buffer
         T* val_block_red = reinterpret_cast<T*>(ptr);
 
-        hipLaunchKernelGGL((coomvn_aos_segmented_loops<COOMVN_DIM>),
-                           dim3(nblocks),
-                           dim3(COOMVN_DIM),
-                           0,
-                           stream,
-                           nnz,
-                           nloops,
-                           alpha_device_host,
-                           coo_ind,
-                           coo_val,
-                           x,
-                           y,
-                           row_block_red,
-                           val_block_red,
-                           descr->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coomvn_aos_segmented_loops<COOMVN_DIM>),
+                                           dim3(nblocks),
+                                           dim3(COOMVN_DIM),
+                                           0,
+                                           stream,
+                                           nnz,
+                                           nloops,
+                                           alpha_device_host,
+                                           coo_ind,
+                                           coo_val,
+                                           x,
+                                           y,
+                                           row_block_red,
+                                           val_block_red,
+                                           descr->base);
 
-        hipLaunchKernelGGL((coomvn_segmented_loops_reduce<COOMVN_DIM>),
-                           dim3(1),
-                           dim3(COOMVN_DIM),
-                           0,
-                           stream,
-                           nblocks,
-                           alpha_device_host,
-                           row_block_red,
-                           val_block_red,
-                           y);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coomvn_segmented_loops_reduce<COOMVN_DIM>),
+                                           dim3(1),
+                                           dim3(COOMVN_DIM),
+                                           0,
+                                           stream,
+                                           nblocks,
+                                           alpha_device_host,
+                                           row_block_red,
+                                           val_block_red,
+                                           y);
 #undef COOMVN_DIM
         break;
     }
@@ -457,25 +457,25 @@ rocsparse_status rocsparse_coomv_aos_template(rocsparse_handle          handle,
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-                hipLaunchKernelGGL((scale_array<256>),
-                                   dim3((ysize - 1) / 256 + 1),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   ysize,
-                                   y,
-                                   beta_device_host);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<256>),
+                                                   dim3((ysize - 1) / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   ysize,
+                                                   y,
+                                                   beta_device_host);
             }
             else
             {
-                hipLaunchKernelGGL((scale_array<256>),
-                                   dim3((ysize - 1) / 256 + 1),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   ysize,
-                                   y,
-                                   *beta_device_host);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<256>),
+                                                   dim3((ysize - 1) / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   ysize,
+                                                   y,
+                                                   *beta_device_host);
             }
         }
 

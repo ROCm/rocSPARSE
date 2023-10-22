@@ -42,11 +42,11 @@ static constexpr size_t s_var_string_size
 static constexpr const char* s_var_bool_names[s_var_bool_size]
     = {"ROCSPARSE_CLIENTS_VERBOSE", "ROCSPARSE_CLIENTS_TEST_DEBUG_ARGUMENTS"};
 static constexpr const char* s_var_string_names[s_var_string_size]
-    = {"ROCSPARSE_CLIENTS_MATRICES_DIR"};
+    = {"ROCSPARSE_CLIENTS_MATRICES_DIR", "ROCSPARSE_TEST_DATA"};
 static constexpr const char* s_var_bool_descriptions[s_var_bool_size]
     = {"0: disabled, 1: enabled", "0: disabled, 1: enabled"};
 static constexpr const char* s_var_string_descriptions[s_var_string_size]
-    = {"Full path of the matrices directory"};
+    = {"Full path of the matrices directory", "The path where the test data file is located"};
 
 ///
 /// @brief Grab an environment variable value.
@@ -220,6 +220,19 @@ private:
                 }
                 break;
             }
+            case rocsparse_clients_envariables::TEST_DATA_DIR:
+            {
+                const bool success = rocsparse_getenv(s_var_string_names[tag],
+                                                      this->m_var_string_defined[tag],
+                                                      this->m_var_string[tag]);
+                if(!success)
+                {
+                    std::cerr << "rocsparse_getenv failed on fetching " << s_var_string_names[tag]
+                              << std::endl;
+                    throw(rocsparse_status_invalid_value);
+                }
+                break;
+            }
             }
         }
 
@@ -257,6 +270,16 @@ private:
                 switch(tag)
                 {
                 case rocsparse_clients_envariables::MATRICES_DIR:
+                {
+                    const std::string v = this->m_var_string[tag];
+                    std::cout << ""
+                              << "env variable " << s_var_string_names[tag] << " : "
+                              << ((this->m_var_string_defined[tag]) ? this->m_var_string[tag]
+                                                                    : "<undefined>")
+                              << std::endl;
+                    break;
+                }
+                case rocsparse_clients_envariables::TEST_DATA_DIR:
                 {
                     const std::string v = this->m_var_string[tag];
                     std::cout << ""

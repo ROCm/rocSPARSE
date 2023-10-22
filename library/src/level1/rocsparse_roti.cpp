@@ -112,18 +112,18 @@ rocsparse_status rocsparse_roti_template(rocsparse_handle     handle, //0
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((roti_kernel<ROTI_DIM>),
-                           roti_blocks,
-                           roti_threads,
-                           0,
-                           stream,
-                           nnz,
-                           x_val,
-                           x_ind,
-                           y,
-                           c,
-                           s,
-                           idx_base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((roti_kernel<ROTI_DIM>),
+                                           roti_blocks,
+                                           roti_threads,
+                                           0,
+                                           stream,
+                                           nnz,
+                                           x_val,
+                                           x_ind,
+                                           y,
+                                           c,
+                                           s,
+                                           idx_base);
     }
     else
     {
@@ -132,18 +132,18 @@ rocsparse_status rocsparse_roti_template(rocsparse_handle     handle, //0
             return rocsparse_status_success;
         }
 
-        hipLaunchKernelGGL((roti_kernel<ROTI_DIM>),
-                           roti_blocks,
-                           roti_threads,
-                           0,
-                           stream,
-                           nnz,
-                           x_val,
-                           x_ind,
-                           y,
-                           *c,
-                           *s,
-                           idx_base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((roti_kernel<ROTI_DIM>),
+                                           roti_blocks,
+                                           roti_threads,
+                                           0,
+                                           stream,
+                                           nnz,
+                                           x_val,
+                                           x_ind,
+                                           y,
+                                           *c,
+                                           *s,
+                                           idx_base);
     }
 #undef ROTI_DIM
     return rocsparse_status_success;

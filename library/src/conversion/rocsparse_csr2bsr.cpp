@@ -31,47 +31,49 @@
 
 #include <rocprim/rocprim.hpp>
 
-#define launch_csr2bsr_wavefront_per_row_multipass_kernel(blocksize, wfsize, blockdim)            \
-    hipLaunchKernelGGL((csr2bsr_wavefront_per_row_multipass_kernel<blocksize, wfsize, blockdim>), \
-                       dim3((mb - 1) / (blocksize / wfsize) + 1),                                 \
-                       dim3(blocksize),                                                           \
-                       0,                                                                         \
-                       stream,                                                                    \
-                       dir,                                                                       \
-                       m,                                                                         \
-                       n,                                                                         \
-                       mb,                                                                        \
-                       nb,                                                                        \
-                       block_dim,                                                                 \
-                       csr_descr->base,                                                           \
-                       csr_val,                                                                   \
-                       csr_row_ptr,                                                               \
-                       csr_col_ind,                                                               \
-                       bsr_descr->base,                                                           \
-                       bsr_val,                                                                   \
-                       bsr_row_ptr,                                                               \
-                       bsr_col_ind);
+#define launch_csr2bsr_wavefront_per_row_multipass_kernel(blocksize, wfsize, blockdim) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                                \
+        (csr2bsr_wavefront_per_row_multipass_kernel<blocksize, wfsize, blockdim>),     \
+        dim3((mb - 1) / (blocksize / wfsize) + 1),                                     \
+        dim3(blocksize),                                                               \
+        0,                                                                             \
+        stream,                                                                        \
+        dir,                                                                           \
+        m,                                                                             \
+        n,                                                                             \
+        mb,                                                                            \
+        nb,                                                                            \
+        block_dim,                                                                     \
+        csr_descr->base,                                                               \
+        csr_val,                                                                       \
+        csr_row_ptr,                                                                   \
+        csr_col_ind,                                                                   \
+        bsr_descr->base,                                                               \
+        bsr_val,                                                                       \
+        bsr_row_ptr,                                                                   \
+        bsr_col_ind);
 
-#define launch_csr2bsr_block_per_row_multipass_kernel(blocksize, blockdim)            \
-    hipLaunchKernelGGL((csr2bsr_block_per_row_multipass_kernel<blocksize, blockdim>), \
-                       dim3(mb),                                                      \
-                       dim3(blocksize),                                               \
-                       0,                                                             \
-                       stream,                                                        \
-                       dir,                                                           \
-                       m,                                                             \
-                       n,                                                             \
-                       mb,                                                            \
-                       nb,                                                            \
-                       block_dim,                                                     \
-                       csr_descr->base,                                               \
-                       csr_val,                                                       \
-                       csr_row_ptr,                                                   \
-                       csr_col_ind,                                                   \
-                       bsr_descr->base,                                               \
-                       bsr_val,                                                       \
-                       bsr_row_ptr,                                                   \
-                       bsr_col_ind);
+#define launch_csr2bsr_block_per_row_multipass_kernel(blocksize, blockdim) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                    \
+        (csr2bsr_block_per_row_multipass_kernel<blocksize, blockdim>),     \
+        dim3(mb),                                                          \
+        dim3(blocksize),                                                   \
+        0,                                                                 \
+        stream,                                                            \
+        dir,                                                               \
+        m,                                                                 \
+        n,                                                                 \
+        mb,                                                                \
+        nb,                                                                \
+        block_dim,                                                         \
+        csr_descr->base,                                                   \
+        csr_val,                                                           \
+        csr_row_ptr,                                                       \
+        csr_col_ind,                                                       \
+        bsr_descr->base,                                                   \
+        bsr_val,                                                           \
+        bsr_row_ptr,                                                       \
+        bsr_col_ind);
 
 template <typename T,
           typename std::enable_if<std::is_same<T, rocsparse_double_complex>::value, int>::type = 0>
@@ -219,23 +221,23 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle, //
 
     if(block_dim == 1)
     {
-        hipLaunchKernelGGL((csr2bsr_block_dim_equals_one_kernel<256>),
-                           dim3((mb - 1) / 256 + 1),
-                           dim3(256),
-                           0,
-                           stream,
-                           m,
-                           n,
-                           mb,
-                           nb,
-                           csr_descr->base,
-                           csr_val,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           bsr_descr->base,
-                           bsr_val,
-                           bsr_row_ptr,
-                           bsr_col_ind);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr2bsr_block_dim_equals_one_kernel<256>),
+                                           dim3((mb - 1) / 256 + 1),
+                                           dim3(256),
+                                           0,
+                                           stream,
+                                           m,
+                                           n,
+                                           mb,
+                                           nb,
+                                           csr_descr->base,
+                                           csr_val,
+                                           csr_row_ptr,
+                                           csr_col_ind,
+                                           bsr_descr->base,
+                                           bsr_val,
+                                           bsr_row_ptr,
+                                           bsr_col_ind);
 
         return rocsparse_status_success;
     }
@@ -320,28 +322,28 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle, //
                * ((size_t(mb) * block_size * 3 * rows_per_segment - 1) / 256 + 1) * 256;
         T* temp2 = reinterpret_cast<T*>(ptr);
 
-        hipLaunchKernelGGL((csr2bsr_65_inf_kernel<block_size>),
-                           dim3(mb),
-                           dim3(block_size),
-                           0,
-                           handle->stream,
-                           dir,
-                           m,
-                           n,
-                           mb,
-                           nb,
-                           block_dim,
-                           rows_per_segment,
-                           csr_descr->base,
-                           csr_val,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           bsr_descr->base,
-                           bsr_val,
-                           bsr_row_ptr,
-                           bsr_col_ind,
-                           temp1,
-                           temp2);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr2bsr_65_inf_kernel<block_size>),
+                                           dim3(mb),
+                                           dim3(block_size),
+                                           0,
+                                           handle->stream,
+                                           dir,
+                                           m,
+                                           n,
+                                           mb,
+                                           nb,
+                                           block_dim,
+                                           rows_per_segment,
+                                           csr_descr->base,
+                                           csr_val,
+                                           csr_row_ptr,
+                                           csr_col_ind,
+                                           bsr_descr->base,
+                                           bsr_val,
+                                           bsr_row_ptr,
+                                           bsr_col_ind,
+                                           temp1,
+                                           temp2);
 
         if(temp_alloc)
         {
@@ -358,7 +360,7 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle, //
  * ===========================================================================
  */
 #define launch_csr2bsr_nnz_wavefront_per_row_multipass_kernel(blocksize, wfsize, blockdim) \
-    hipLaunchKernelGGL(                                                                    \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                                    \
         (csr2bsr_nnz_wavefront_per_row_multipass_kernel<blocksize, wfsize, blockdim>),     \
         dim3((mb - 1) / (blocksize / wfsize) + 1),                                         \
         dim3(blocksize),                                                                   \
@@ -375,22 +377,23 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle, //
         bsr_descr->base,                                                                   \
         bsr_row_ptr);
 
-#define launch_csr2bsr_nnz_block_per_row_multipass_kernel(blocksize, blockdim)            \
-    hipLaunchKernelGGL((csr2bsr_nnz_block_per_row_multipass_kernel<blocksize, blockdim>), \
-                       dim3(mb),                                                          \
-                       dim3(blocksize),                                                   \
-                       0,                                                                 \
-                       handle->stream,                                                    \
-                       m,                                                                 \
-                       n,                                                                 \
-                       mb,                                                                \
-                       nb,                                                                \
-                       block_dim,                                                         \
-                       csr_descr->base,                                                   \
-                       csr_row_ptr,                                                       \
-                       csr_col_ind,                                                       \
-                       bsr_descr->base,                                                   \
-                       bsr_row_ptr);
+#define launch_csr2bsr_nnz_block_per_row_multipass_kernel(blocksize, blockdim) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                        \
+        (csr2bsr_nnz_block_per_row_multipass_kernel<blocksize, blockdim>),     \
+        dim3(mb),                                                              \
+        dim3(blocksize),                                                       \
+        0,                                                                     \
+        handle->stream,                                                        \
+        m,                                                                     \
+        n,                                                                     \
+        mb,                                                                    \
+        nb,                                                                    \
+        block_dim,                                                             \
+        csr_descr->base,                                                       \
+        csr_row_ptr,                                                           \
+        csr_col_ind,                                                           \
+        bsr_descr->base,                                                       \
+        bsr_row_ptr);
 
 extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          handle, //0
                                                   rocsparse_direction       dir, //1
@@ -458,14 +461,14 @@ try
 
         if(bsr_row_ptr != nullptr)
         {
-            hipLaunchKernelGGL((set_array_to_value<256>),
-                               dim3(((mb + 1) - 1) / 256 + 1),
-                               dim3(256),
-                               0,
-                               handle->stream,
-                               (mb + 1),
-                               bsr_row_ptr,
-                               static_cast<rocsparse_int>(bsr_descr->base));
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                               dim3(((mb + 1) - 1) / 256 + 1),
+                                               dim3(256),
+                                               0,
+                                               handle->stream,
+                                               (mb + 1),
+                                               bsr_row_ptr,
+                                               static_cast<rocsparse_int>(bsr_descr->base));
         }
 
         return rocsparse_status_success;
@@ -496,30 +499,30 @@ try
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            hipLaunchKernelGGL(csr2bsr_nnz_block_dim_equals_one_kernel<256>,
-                               dim3(m / 256 + 1),
-                               dim3(256),
-                               0,
-                               handle->stream,
-                               m,
-                               csr_descr->base,
-                               csr_row_ptr,
-                               bsr_descr->base,
-                               bsr_row_ptr,
-                               bsr_nnz);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(csr2bsr_nnz_block_dim_equals_one_kernel<256>,
+                                               dim3(m / 256 + 1),
+                                               dim3(256),
+                                               0,
+                                               handle->stream,
+                                               m,
+                                               csr_descr->base,
+                                               csr_row_ptr,
+                                               bsr_descr->base,
+                                               bsr_row_ptr,
+                                               bsr_nnz);
         }
         else
         {
-            hipLaunchKernelGGL(csr2bsr_nnz_block_dim_equals_one_kernel<256>,
-                               dim3(m / 256 + 1),
-                               dim3(256),
-                               0,
-                               handle->stream,
-                               m,
-                               csr_descr->base,
-                               csr_row_ptr,
-                               bsr_descr->base,
-                               bsr_row_ptr);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(csr2bsr_nnz_block_dim_equals_one_kernel<256>,
+                                               dim3(m / 256 + 1),
+                                               dim3(256),
+                                               0,
+                                               handle->stream,
+                                               m,
+                                               csr_descr->base,
+                                               csr_row_ptr,
+                                               bsr_descr->base,
+                                               bsr_row_ptr);
 
             rocsparse_int start = 0;
             rocsparse_int end   = 0;
@@ -601,23 +604,23 @@ try
 
         rocsparse_int* temp1 = reinterpret_cast<rocsparse_int*>(temp_storage_ptr);
 
-        hipLaunchKernelGGL((csr2bsr_nnz_65_inf_kernel<block_size>),
-                           dim3(mb),
-                           dim3(block_size),
-                           0,
-                           handle->stream,
-                           m,
-                           n,
-                           mb,
-                           nb,
-                           block_dim,
-                           rows_per_segment,
-                           csr_descr->base,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           bsr_descr->base,
-                           bsr_row_ptr,
-                           temp1);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr2bsr_nnz_65_inf_kernel<block_size>),
+                                           dim3(mb),
+                                           dim3(block_size),
+                                           0,
+                                           handle->stream,
+                                           m,
+                                           n,
+                                           mb,
+                                           nb,
+                                           block_dim,
+                                           rows_per_segment,
+                                           csr_descr->base,
+                                           csr_row_ptr,
+                                           csr_col_ind,
+                                           bsr_descr->base,
+                                           bsr_row_ptr,
+                                           temp1);
 
         if(temp_alloc)
         {
@@ -661,14 +664,14 @@ try
     // Compute bsr_nnz
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL(csr2bsr_nnz_compute_nnz_total_kernel<1>,
-                           dim3(1),
-                           dim3(1),
-                           0,
-                           handle->stream,
-                           mb,
-                           bsr_row_ptr,
-                           bsr_nnz);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(csr2bsr_nnz_compute_nnz_total_kernel<1>,
+                                           dim3(1),
+                                           dim3(1),
+                                           0,
+                                           handle->stream,
+                                           mb,
+                                           bsr_row_ptr,
+                                           bsr_nnz);
     }
     else
     {

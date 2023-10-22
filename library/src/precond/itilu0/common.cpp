@@ -50,15 +50,15 @@ void rocsparse_get_permuted_array(
 {
     dim3 blocks((size_ - 1) / BLOCKSIZE + 1);
     dim3 threads(BLOCKSIZE);
-    hipLaunchKernelGGL((kernel_get_permuted_array<BLOCKSIZE, T, I>),
-                       blocks,
-                       threads,
-                       0,
-                       handle_->stream,
-                       size_,
-                       a_,
-                       x_,
-                       perm_);
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_get_permuted_array<BLOCKSIZE, T, I>),
+                                      blocks,
+                                      threads,
+                                      0,
+                                      handle_->stream,
+                                      size_,
+                                      a_,
+                                      x_,
+                                      perm_);
 }
 
 //
@@ -81,13 +81,13 @@ void rocsparse_set_identity_array(rocsparse_handle handle_, I size_, T* x_)
     dim3 blocks((size_ - 1) / BLOCKSIZE + 1);
     dim3 threads(BLOCKSIZE);
 
-    hipLaunchKernelGGL((kernel_set_identity_array<BLOCKSIZE, T, I>),
-                       blocks,
-                       threads,
-                       0,
-                       handle_->stream,
-                       size_,
-                       x_);
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_set_identity_array<BLOCKSIZE, T, I>),
+                                      blocks,
+                                      threads,
+                                      0,
+                                      handle_->stream,
+                                      size_,
+                                      x_);
 }
 
 //
@@ -110,15 +110,15 @@ void rocsparse_set_permuted_array(
 {
     dim3 blocks((size_ - 1) / BLOCKSIZE + 1);
     dim3 threads(BLOCKSIZE);
-    hipLaunchKernelGGL((kernel_set_permuted_array<BLOCKSIZE, T, I>),
-                       blocks,
-                       threads,
-                       0,
-                       handle_->stream,
-                       size_,
-                       a_,
-                       x_,
-                       perm_);
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_set_permuted_array<BLOCKSIZE, T, I>),
+                                      blocks,
+                                      threads,
+                                      0,
+                                      handle_->stream,
+                                      size_,
+                                      a_,
+                                      x_,
+                                      perm_);
 }
 
 template <unsigned int BLOCKSIZE, typename T>
@@ -210,15 +210,15 @@ rocsparse_status rocsparse_nrminf(rocsparse_handle          handle_,
     size_t nitems_nblocks = (nitems_ - 1) / BLOCKSIZE + 1;
     dim3   blocks(nitems_nblocks);
     dim3   threads(BLOCKSIZE);
-    hipLaunchKernelGGL((kernel_nrminf<BLOCKSIZE, T>),
-                       blocks,
-                       threads,
-                       0,
-                       handle_->stream,
-                       nitems_,
-                       x_,
-                       nrm_,
-                       nrm0_);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_nrminf<BLOCKSIZE, T>),
+                                       blocks,
+                                       threads,
+                                       0,
+                                       handle_->stream,
+                                       nitems_,
+                                       x_,
+                                       nrm_,
+                                       nrm0_);
 
     return rocsparse_status_success;
 }
@@ -244,16 +244,16 @@ rocsparse_status rocsparse_nrminf_diff(rocsparse_handle          handle_,
         RETURN_IF_HIP_ERROR(hipMemsetAsync(nrm_, 0, sizeof(floating_data_t<T>), handle_->stream));
     }
 
-    hipLaunchKernelGGL((kernel_nrminf_diff<BLOCKSIZE, T>),
-                       blocks,
-                       threads,
-                       0,
-                       handle_->stream,
-                       nitems_,
-                       x_,
-                       y_,
-                       nrm_,
-                       nrm0_);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_nrminf_diff<BLOCKSIZE, T>),
+                                       blocks,
+                                       threads,
+                                       0,
+                                       handle_->stream,
+                                       nitems_,
+                                       x_,
+                                       y_,
+                                       nrm_,
+                                       nrm0_);
     return rocsparse_status_success;
 }
 

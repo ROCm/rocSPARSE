@@ -96,27 +96,27 @@ rocsparse_status rocsparse_gebsrmm_template_general(rocsparse_handle          ha
 
     dim3 gebsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / 32 + 1);
     dim3 gebsrmm_threads(32, 32, 1);
-    hipLaunchKernelGGL((gebsrmm_general_blockdim_kernel<32, 32>),
-                       gebsrmm_blocks,
-                       gebsrmm_threads,
-                       0,
-                       stream,
-                       dir,
-                       trans_B,
-                       mb,
-                       n,
-                       alpha,
-                       bsr_row_ptr,
-                       bsr_col_ind,
-                       bsr_val,
-                       row_block_dim,
-                       col_block_dim,
-                       B,
-                       ldb,
-                       beta,
-                       C,
-                       ldc,
-                       descr->base);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gebsrmm_general_blockdim_kernel<32, 32>),
+                                       gebsrmm_blocks,
+                                       gebsrmm_threads,
+                                       0,
+                                       stream,
+                                       dir,
+                                       trans_B,
+                                       mb,
+                                       n,
+                                       alpha,
+                                       bsr_row_ptr,
+                                       bsr_col_ind,
+                                       bsr_val,
+                                       row_block_dim,
+                                       col_block_dim,
+                                       B,
+                                       ldb,
+                                       beta,
+                                       C,
+                                       ldc,
+                                       descr->base);
 
     return rocsparse_status_success;
 }

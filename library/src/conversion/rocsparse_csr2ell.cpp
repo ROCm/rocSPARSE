@@ -97,20 +97,20 @@ rocsparse_status rocsparse_csr2ell_template(rocsparse_handle          handle, //
     dim3 csr2ell_blocks((m - 1) / CSR2ELL_DIM + 1);
     dim3 csr2ell_threads(CSR2ELL_DIM);
 
-    hipLaunchKernelGGL((csr2ell_kernel<CSR2ELL_DIM>),
-                       csr2ell_blocks,
-                       csr2ell_threads,
-                       0,
-                       stream,
-                       m,
-                       csr_val,
-                       csr_row_ptr,
-                       csr_col_ind,
-                       csr_descr->base,
-                       ell_width,
-                       ell_col_ind,
-                       ell_val,
-                       ell_descr->base);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr2ell_kernel<CSR2ELL_DIM>),
+                                       csr2ell_blocks,
+                                       csr2ell_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_val,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_descr->base,
+                                       ell_width,
+                                       ell_col_ind,
+                                       ell_val,
+                                       ell_descr->base);
 #undef CSR2ELL_DIM
     return rocsparse_status_success;
 }
@@ -192,22 +192,22 @@ try
     dim3 csr2ell_threads(CSR2ELL_DIM);
 
     // Compute maximum nnz per row
-    hipLaunchKernelGGL((ell_width_kernel_part1<CSR2ELL_DIM>),
-                       csr2ell_blocks,
-                       csr2ell_threads,
-                       0,
-                       stream,
-                       m,
-                       csr_row_ptr,
-                       workspace);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((ell_width_kernel_part1<CSR2ELL_DIM>),
+                                       csr2ell_blocks,
+                                       csr2ell_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_row_ptr,
+                                       workspace);
 
-    hipLaunchKernelGGL((ell_width_kernel_part2<CSR2ELL_DIM>),
-                       dim3(1),
-                       csr2ell_threads,
-                       0,
-                       stream,
-                       nblocks,
-                       workspace);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((ell_width_kernel_part2<CSR2ELL_DIM>),
+                                       dim3(1),
+                                       csr2ell_threads,
+                                       0,
+                                       stream,
+                                       nblocks,
+                                       workspace);
 
     // Copy ELL width back to host, if handle says so
     if(handle->pointer_mode == rocsparse_pointer_mode_device)

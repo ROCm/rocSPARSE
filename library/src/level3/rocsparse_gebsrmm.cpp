@@ -280,33 +280,33 @@ static rocsparse_status rocsparse_gebsrmm_quickreturn(rocsparse_handle          
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-                hipLaunchKernelGGL((scale_array_2d<256>),
-                                   dim3((C_size - 1) / 256 + 1),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   m,
-                                   n,
-                                   ldc,
-                                   0,
-                                   C,
-                                   beta,
-                                   rocsparse_order_column);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array_2d<256>),
+                                                   dim3((C_size - 1) / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   m,
+                                                   n,
+                                                   ldc,
+                                                   0,
+                                                   C,
+                                                   beta,
+                                                   rocsparse_order_column);
             }
             else
             {
-                hipLaunchKernelGGL((scale_array_2d<256>),
-                                   dim3((C_size - 1) / 256 + 1),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   m,
-                                   n,
-                                   ldc,
-                                   0,
-                                   C,
-                                   *beta,
-                                   rocsparse_order_column);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array_2d<256>),
+                                                   dim3((C_size - 1) / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   m,
+                                                   n,
+                                                   ldc,
+                                                   0,
+                                                   C,
+                                                   *beta,
+                                                   rocsparse_order_column);
             }
         }
 

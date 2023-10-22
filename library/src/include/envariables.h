@@ -44,9 +44,10 @@ class rocsparse_envariables
 public:
 #define ROCSPARSE_FOREACH_ENVARIABLES   \
     ENVARIABLE(DEBUG)                   \
-    ENVARIABLE(DEBUG_VERBOSE)           \
     ENVARIABLE(DEBUG_ARGUMENTS)         \
     ENVARIABLE(DEBUG_ARGUMENTS_VERBOSE) \
+    ENVARIABLE(DEBUG_KERNEL_LAUNCH)     \
+    ENVARIABLE(DEBUG_VERBOSE)           \
     ENVARIABLE(VERBOSE)                 \
     ENVARIABLE(MEMSTAT)                 \
     ENVARIABLE(MEMSTAT_FORCE_MANAGED)   \
