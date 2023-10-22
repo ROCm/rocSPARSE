@@ -45,8 +45,8 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
     rocsparse_index_base const      base = arg.baseA;
 
     int const boost       = arg.numericboost;
-    T   const h_boost_val = arg.get_boostval<T>();
-    T   const h_boost_tol = static_cast<T>(arg.boosttol);
+    T const   h_boost_val = arg.get_boostval<T>();
+    T const   h_boost_tol = static_cast<T>(arg.boosttol);
 
     // Sample matrix
     rocsparse_int const nnz = hcsr_row_ptr[M] - hcsr_row_ptr[0];
