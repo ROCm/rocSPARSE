@@ -5786,7 +5786,7 @@ void host_csric0(rocsparse_int                     M,
             T const diag_entry = csr_val[j] - sum;
             csr_val[j]         = std::sqrt(std::abs(diag_entry));
 
-            if((std::real(diag_entry) <= tol*tol) && (std::imag(diag_entry) == 0))
+            if((std::real(diag_entry) <= tol * tol) && (std::imag(diag_entry) == 0))
             {
                 *singular_pivot = std::min(*singular_pivot, ai + base);
             };
