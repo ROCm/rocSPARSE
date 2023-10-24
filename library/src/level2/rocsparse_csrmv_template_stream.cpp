@@ -30,59 +30,75 @@
 #include "csrmv_device.h"
 #include "csrmv_symm_device.h"
 
-#define LAUNCH_CSRMVN_GENERAL(wfsize)                                     \
-    csrmvn_general_kernel<CSRMVN_DIM, wfsize>                             \
-        <<<csrmvn_blocks, csrmvn_threads, 0, stream>>>(conj,              \
-                                                       m,                 \
-                                                       alpha_device_host, \
-                                                       csr_row_ptr_begin, \
-                                                       csr_row_ptr_end,   \
-                                                       csr_col_ind,       \
-                                                       csr_val,           \
-                                                       x,                 \
-                                                       beta_device_host,  \
-                                                       y,                 \
-                                                       descr->base)
+#define LAUNCH_CSRMVN_GENERAL(wfsize)                                               \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_general_kernel<CSRMVN_DIM, wfsize>), \
+                                       dim3(csrmvn_blocks),                         \
+                                       dim3(csrmvn_threads),                        \
+                                       0,                                           \
+                                       stream,                                      \
+                                       conj,                                        \
+                                       m,                                           \
+                                       alpha_device_host,                           \
+                                       csr_row_ptr_begin,                           \
+                                       csr_row_ptr_end,                             \
+                                       csr_col_ind,                                 \
+                                       csr_val,                                     \
+                                       x,                                           \
+                                       beta_device_host,                            \
+                                       y,                                           \
+                                       descr->base)
 
-#define LAUNCH_CSRMVT(wfsize)                                             \
-    csrmvt_general_kernel<CSRMVT_DIM, wfsize>                             \
-        <<<csrmvt_blocks, csrmvt_threads, 0, stream>>>(conj,              \
-                                                       m,                 \
-                                                       alpha_device_host, \
-                                                       csr_row_ptr_begin, \
-                                                       csr_row_ptr_end,   \
-                                                       csr_col_ind,       \
-                                                       csr_val,           \
-                                                       x,                 \
-                                                       y,                 \
-                                                       descr->base)
+#define LAUNCH_CSRMVT(wfsize)                                                       \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvt_general_kernel<CSRMVT_DIM, wfsize>), \
+                                       dim3(csrmvt_blocks),                         \
+                                       dim3(csrmvt_threads),                        \
+                                       0,                                           \
+                                       stream,                                      \
+                                       conj,                                        \
+                                       m,                                           \
+                                       alpha_device_host,                           \
+                                       csr_row_ptr_begin,                           \
+                                       csr_row_ptr_end,                             \
+                                       csr_col_ind,                                 \
+                                       csr_val,                                     \
+                                       x,                                           \
+                                       y,                                           \
+                                       descr->base)
 
-#define LAUNCH_CSRMVN_SYMM_GENERAL(wfsize)                                \
-    csrmvn_symm_general_kernel<CSRMV_SYMM_DIM, wfsize>                    \
-        <<<csrmvn_blocks, csrmvn_threads, 0, stream>>>(conj,              \
-                                                       m,                 \
-                                                       alpha_device_host, \
-                                                       csr_row_ptr_begin, \
-                                                       csr_row_ptr_end,   \
-                                                       csr_col_ind,       \
-                                                       csr_val,           \
-                                                       x,                 \
-                                                       beta_device_host,  \
-                                                       y,                 \
-                                                       descr->base)
+#define LAUNCH_CSRMVN_SYMM_GENERAL(wfsize)                                                   \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_symm_general_kernel<CSRMV_SYMM_DIM, wfsize>), \
+                                       dim3(csrmvn_blocks),                                  \
+                                       dim3(csrmvn_threads),                                 \
+                                       0,                                                    \
+                                       stream,                                               \
+                                       conj,                                                 \
+                                       m,                                                    \
+                                       alpha_device_host,                                    \
+                                       csr_row_ptr_begin,                                    \
+                                       csr_row_ptr_end,                                      \
+                                       csr_col_ind,                                          \
+                                       csr_val,                                              \
+                                       x,                                                    \
+                                       beta_device_host,                                     \
+                                       y,                                                    \
+                                       descr->base)
 
-#define LAUNCH_CSRMVT_SYMM(wfsize)                                        \
-    csrmvt_symm_general_kernel<CSRMV_SYMM_DIM, wfsize>                    \
-        <<<csrmvt_blocks, csrmvt_threads, 0, stream>>>(conj,              \
-                                                       m,                 \
-                                                       alpha_device_host, \
-                                                       csr_row_ptr_begin, \
-                                                       csr_row_ptr_end,   \
-                                                       csr_col_ind,       \
-                                                       csr_val,           \
-                                                       x,                 \
-                                                       y,                 \
-                                                       descr->base)
+#define LAUNCH_CSRMVT_SYMM(wfsize)                                                           \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvt_symm_general_kernel<CSRMV_SYMM_DIM, wfsize>), \
+                                       dim3(csrmvt_blocks),                                  \
+                                       dim3(csrmvt_threads),                                 \
+                                       0,                                                    \
+                                       stream,                                               \
+                                       conj,                                                 \
+                                       m,                                                    \
+                                       alpha_device_host,                                    \
+                                       csr_row_ptr_begin,                                    \
+                                       csr_row_ptr_end,                                      \
+                                       csr_col_ind,                                          \
+                                       csr_val,                                              \
+                                       x,                                                    \
+                                       y,                                                    \
+                                       descr->base)
 
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
@@ -308,8 +324,15 @@ rocsparse_status rocsparse_csrmv_stream_template_dispatch(rocsparse_handle    ha
         {
 #define CSRMVT_DIM 256
             // Scale y with beta
-            csrmvt_scale_kernel<CSRMVT_DIM>
-                <<<(n - 1) / CSRMVT_DIM + 1, CSRMVT_DIM, 0, stream>>>(n, beta_device_host, y);
+
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvt_scale_kernel<CSRMVT_DIM>),
+                                               dim3((n - 1) / CSRMVT_DIM + 1),
+                                               dim3(CSRMVT_DIM),
+                                               0,
+                                               stream,
+                                               n,
+                                               beta_device_host,
+                                               y);
 
             rocsparse_int max_blocks = 1024;
             rocsparse_int min_blocks = (m - 1) / CSRMVT_DIM + 1;
