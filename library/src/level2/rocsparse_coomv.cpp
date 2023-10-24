@@ -378,8 +378,20 @@ static rocsparse_status rocsparse_coomv_atomic_dispatch(rocsparse_handle        
     case rocsparse_operation_transpose:
     case rocsparse_operation_conjugate_transpose:
     {
-        coomvt_kernel<1024><<<(nnz - 1) / 1024 + 1, 1024, 0, handle->stream>>>(
-            trans, nnz, alpha_device_host, coo_row_ind, coo_col_ind, coo_val, x, y, descr->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coomvt_kernel<1024>),
+                                           dim3((nnz - 1) / 1024 + 1),
+                                           dim3(1024),
+                                           0,
+                                           handle->stream,
+                                           trans,
+                                           nnz,
+                                           alpha_device_host,
+                                           coo_row_ind,
+                                           coo_col_ind,
+                                           coo_val,
+                                           x,
+                                           y,
+                                           descr->base);
         break;
     }
     }
@@ -499,8 +511,20 @@ static rocsparse_status rocsparse_coomv_segmented_dispatch(rocsparse_handle    h
     case rocsparse_operation_transpose:
     case rocsparse_operation_conjugate_transpose:
     {
-        coomvt_kernel<1024><<<(nnz - 1) / 1024 + 1, 1024, 0, handle->stream>>>(
-            trans, nnz, alpha_device_host, coo_row_ind, coo_col_ind, coo_val, x, y, descr->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coomvt_kernel<1024>),
+                                           dim3((nnz - 1) / 1024 + 1),
+                                           dim3(1024),
+                                           0,
+                                           handle->stream,
+                                           trans,
+                                           nnz,
+                                           alpha_device_host,
+                                           coo_row_ind,
+                                           coo_col_ind,
+                                           coo_val,
+                                           x,
+                                           y,
+                                           descr->base);
         break;
     }
     }

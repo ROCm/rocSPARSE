@@ -104,28 +104,53 @@ rocsparse_status rocsparse_ellmv_dispatch(rocsparse_handle          handle,
     if(trans == rocsparse_operation_none)
     {
 #define ELLMVN_DIM 512
-        ellmvn_kernel<ELLMVN_DIM>
-            <<<(m - 1) / ELLMVN_DIM + 1, ELLMVN_DIM, 0, stream>>>(m,
-                                                                  n,
-                                                                  ell_width,
-                                                                  alpha_device_host,
-                                                                  ell_col_ind,
-                                                                  ell_val,
-                                                                  x,
-                                                                  beta_device_host,
-                                                                  y,
-                                                                  descr->base);
+
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((ellmvn_kernel<ELLMVN_DIM>),
+                                           dim3((m - 1) / ELLMVN_DIM + 1),
+                                           dim3(ELLMVN_DIM),
+                                           0,
+                                           stream,
+                                           m,
+                                           n,
+                                           ell_width,
+                                           alpha_device_host,
+                                           ell_col_ind,
+                                           ell_val,
+                                           x,
+                                           beta_device_host,
+                                           y,
+                                           descr->base);
+
 #undef ELLMVN_DIM
     }
     else
     {
 #define ELLMVT_DIM 1024
         // Scale y with beta
-        ellmvt_scale_kernel<ELLMVT_DIM>
-            <<<(n - 1) / ELLMVT_DIM + 1, ELLMVT_DIM, 0, stream>>>(n, beta_device_host, y);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((ellmvt_scale_kernel<ELLMVT_DIM>),
+                                           dim3((n - 1) / ELLMVT_DIM + 1),
+                                           dim3(ELLMVT_DIM),
+                                           0,
+                                           stream,
+                                           n,
+                                           beta_device_host,
+                                           y);
 
-        ellmvt_kernel<ELLMVT_DIM><<<(m - 1) / ELLMVT_DIM + 1, ELLMVT_DIM, 0, stream>>>(
-            trans, m, n, ell_width, alpha_device_host, ell_col_ind, ell_val, x, y, descr->base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((ellmvt_kernel<ELLMVT_DIM>),
+                                           dim3((m - 1) / ELLMVT_DIM + 1),
+                                           dim3(ELLMVT_DIM),
+                                           0,
+                                           stream,
+                                           trans,
+                                           m,
+                                           n,
+                                           ell_width,
+                                           alpha_device_host,
+                                           ell_col_ind,
+                                           ell_val,
+                                           x,
+                                           y,
+                                           descr->base);
 #undef ELLMVT_DIM
     }
 
