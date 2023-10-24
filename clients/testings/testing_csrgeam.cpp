@@ -470,7 +470,7 @@ void testing_csrgeam(const Arguments& arg)
                                                         &nnz_C));
         }
 
-        gpu_analysis_time_used = get_time_us() - gpu_analysis_time_used;
+        gpu_analysis_time_used = (get_time_us() - gpu_analysis_time_used) / number_hot_calls;
 
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)

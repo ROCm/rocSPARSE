@@ -201,6 +201,26 @@ struct _rocsparse_color_info
 {
 };
 
+struct rocsparse_adaptive_info
+{
+    size_t        size{}; // num row blocks
+    void*         row_blocks{};
+    unsigned int* wg_flags{};
+    void*         wg_ids{};
+};
+
+struct rocsparse_lrb_info
+{
+    void* rows_offsets_scratch{}; // size of m
+    void* rows_bins{}; // size of m
+    void* n_rows_bins{}; // size of 32
+
+    size_t        size{};
+    unsigned int* wg_flags{};
+
+    int64_t nRowsBins[32]{}; // host array
+};
+
 /********************************************************************************
  * \brief rocsparse_csrmv_info is a structure holding the rocsparse csrmv info
  * data gathered during csrmv_analysis. It must be initialized using the
@@ -209,12 +229,8 @@ struct _rocsparse_color_info
  *******************************************************************************/
 struct _rocsparse_csrmv_info
 {
-    // num row blocks
-    size_t size{};
-    // row blocks
-    void*         row_blocks{};
-    unsigned int* wg_flags{};
-    void*         wg_ids{};
+    rocsparse_adaptive_info adaptive;
+    rocsparse_lrb_info      lrb;
 
     // some data to verify correct execution
     rocsparse_operation         trans = rocsparse_operation_none;

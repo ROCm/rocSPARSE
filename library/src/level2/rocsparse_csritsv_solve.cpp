@@ -470,6 +470,9 @@ rocsparse_status rocsparse_csritsv_solve_template(rocsparse_handle          hand
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse_csrmv_template<T, I, J, T, T, T>)(handle,
                                                              trans,
+                                                             info != nullptr
+                                                                 ? rocsparse_csrmv_alg_adaptive
+                                                                 : rocsparse_csrmv_alg_stream,
                                                              m,
                                                              m,
                                                              nnz,
@@ -564,6 +567,9 @@ rocsparse_status rocsparse_csritsv_solve_template(rocsparse_handle          hand
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse_csrmv_template<T, I, J, T, T, T>)(handle,
                                                              trans,
+                                                             info != nullptr
+                                                                 ? rocsparse_csrmv_alg_adaptive
+                                                                 : rocsparse_csrmv_alg_stream,
                                                              m,
                                                              m,
                                                              nnz,

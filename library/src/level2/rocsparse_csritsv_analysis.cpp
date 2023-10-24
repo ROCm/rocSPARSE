@@ -472,8 +472,17 @@ rocsparse_status rocsparse_csritsv_analysis_template(rocsparse_handle          h
 
     if(false == info->csritsv_info->is_submatrix)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_template(
-            handle, trans, m, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_template(handle,
+                                                                    trans,
+                                                                    rocsparse_csrmv_alg_adaptive,
+                                                                    m,
+                                                                    m,
+                                                                    nnz,
+                                                                    descr,
+                                                                    csr_val,
+                                                                    csr_row_ptr,
+                                                                    csr_col_ind,
+                                                                    info));
     }
 
     return rocsparse_status_success;
