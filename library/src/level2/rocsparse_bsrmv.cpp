@@ -96,8 +96,18 @@ rocsparse_status rocsparse_bsrmv_analysis_template(rocsparse_handle          han
     {
         if(block_dim == 1)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_template(
-                handle, trans, mb, nb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, info));
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_csrmv_analysis_template(handle,
+                                                  trans,
+                                                  rocsparse_csrmv_alg_adaptive,
+                                                  mb,
+                                                  nb,
+                                                  nnzb,
+                                                  descr,
+                                                  bsr_val,
+                                                  bsr_row_ptr,
+                                                  bsr_col_ind,
+                                                  info));
             return rocsparse_status_success;
         }
     }
@@ -132,21 +142,21 @@ rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          han
     //
     if(block_dim == 1)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template_dispatch<T>(handle,
-                                                                       trans,
-                                                                       mb,
-                                                                       nb,
-                                                                       nnzb,
-                                                                       alpha_device_host,
-                                                                       descr,
-                                                                       bsr_val,
-                                                                       bsr_row_ptr,
-                                                                       bsr_row_ptr + 1,
-                                                                       bsr_col_ind,
-                                                                       x,
-                                                                       beta_device_host,
-                                                                       y,
-                                                                       false));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_stream_template_dispatch<T>(handle,
+                                                                              trans,
+                                                                              mb,
+                                                                              nb,
+                                                                              nnzb,
+                                                                              alpha_device_host,
+                                                                              descr,
+                                                                              bsr_val,
+                                                                              bsr_row_ptr,
+                                                                              bsr_row_ptr + 1,
+                                                                              bsr_col_ind,
+                                                                              x,
+                                                                              beta_device_host,
+                                                                              y,
+                                                                              false));
         return rocsparse_status_success;
     }
 

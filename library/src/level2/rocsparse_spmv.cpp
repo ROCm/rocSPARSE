@@ -45,6 +45,7 @@ static rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocspa
         case rocsparse_spmv_alg_default:
         case rocsparse_spmv_alg_csr_stream:
         case rocsparse_spmv_alg_csr_adaptive:
+        case rocsparse_spmv_alg_csr_lrb:
         {
             return rocsparse_status_success;
         }
@@ -74,6 +75,7 @@ static rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocspa
         case rocsparse_spmv_alg_csr_adaptive:
         case rocsparse_spmv_alg_bsr:
         case rocsparse_spmv_alg_ell:
+        case rocsparse_spmv_alg_csr_lrb:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
         }
@@ -95,6 +97,7 @@ static rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocspa
         case rocsparse_spmv_alg_bsr:
         case rocsparse_spmv_alg_coo:
         case rocsparse_spmv_alg_coo_atomic:
+        case rocsparse_spmv_alg_csr_lrb:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
         }
@@ -113,6 +116,7 @@ static rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocspa
         case rocsparse_spmv_alg_ell:
         case rocsparse_spmv_alg_bsr:
         case rocsparse_spmv_alg_coo_atomic:
+        case rocsparse_spmv_alg_csr_lrb:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
         }
@@ -135,6 +139,7 @@ static rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocspa
         case rocsparse_spmv_alg_csr_adaptive:
         case rocsparse_spmv_alg_coo:
         case rocsparse_spmv_alg_coo_atomic:
+        case rocsparse_spmv_alg_csr_lrb:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
         }
@@ -145,6 +150,41 @@ static rocsparse_status rocsparse_check_spmv_alg(rocsparse_format format, rocspa
     }
 
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+}
+
+static rocsparse_status rocsparse_spmv_alg2csrmv_alg(rocsparse_spmv_alg   spmv_alg,
+                                                     rocsparse_csrmv_alg& csrmv_alg)
+{
+    switch(spmv_alg)
+    {
+    case rocsparse_spmv_alg_default:
+    case rocsparse_spmv_alg_csr_stream:
+    {
+        csrmv_alg = rocsparse_csrmv_alg_stream;
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_spmv_alg_csr_adaptive:
+    {
+        csrmv_alg = rocsparse_csrmv_alg_adaptive;
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_spmv_alg_csr_lrb:
+    {
+        csrmv_alg = rocsparse_csrmv_alg_lrb;
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_spmv_alg_coo:
+    case rocsparse_spmv_alg_coo_atomic:
+    case rocsparse_spmv_alg_bsr:
+    case rocsparse_spmv_alg_ell:
+    {
+        return rocsparse_status_invalid_value;
+    }
+    }
+    return rocsparse_status_invalid_value;
 }
 
 static rocsparse_status rocsparse_spmv_alg2coomv_alg(rocsparse_spmv_alg   spmv_alg,
@@ -174,6 +214,7 @@ static rocsparse_status rocsparse_spmv_alg2coomv_alg(rocsparse_spmv_alg   spmv_a
     case rocsparse_spmv_alg_csr_stream:
     case rocsparse_spmv_alg_bsr:
     case rocsparse_spmv_alg_ell:
+    case rocsparse_spmv_alg_csr_lrb:
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
@@ -208,6 +249,7 @@ static rocsparse_status rocsparse_spmv_alg2coomv_aos_alg(rocsparse_spmv_alg     
     case rocsparse_spmv_alg_csr_stream:
     case rocsparse_spmv_alg_bsr:
     case rocsparse_spmv_alg_ell:
+    case rocsparse_spmv_alg_csr_lrb:
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
@@ -422,6 +464,9 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
 
     case rocsparse_format_csr:
     {
+        rocsparse_csrmv_alg csrmv_alg;
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_spmv_alg2csrmv_alg(alg, csrmv_alg)));
+
         switch(stage)
         {
         case rocsparse_spmv_stage_buffer_size:
@@ -436,12 +481,14 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
             //
             // If algorithm 1 or default is selected and analysis step is required
             //
-            if((alg == rocsparse_spmv_alg_default || alg == rocsparse_spmv_alg_csr_adaptive)
+            if((alg == rocsparse_spmv_alg_default || alg == rocsparse_spmv_alg_csr_adaptive
+                || alg == rocsparse_spmv_alg_csr_lrb)
                && mat->analysed == false)
             {
                 RETURN_IF_ROCSPARSE_ERROR(
                     rocsparse_csrmv_analysis_template(handle,
                                                       trans,
+                                                      csrmv_alg,
                                                       (J)mat->rows,
                                                       (J)mat->cols,
                                                       (I)mat->nnz,
@@ -462,6 +509,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template(
                 handle,
                 trans,
+                csrmv_alg,
                 (J)mat->rows,
                 (J)mat->cols,
                 (I)mat->nnz,
@@ -483,6 +531,9 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
 
     case rocsparse_format_csc:
     {
+        rocsparse_csrmv_alg csrmv_alg;
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse_spmv_alg2csrmv_alg(alg, csrmv_alg)));
+
         switch(stage)
         {
         case rocsparse_spmv_stage_buffer_size:
@@ -496,12 +547,14 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
             //
             // If algorithm 1 or default is selected and analysis step is required
             //
-            if((alg == rocsparse_spmv_alg_default || alg == rocsparse_spmv_alg_csr_adaptive)
+            if((alg == rocsparse_spmv_alg_default || alg == rocsparse_spmv_alg_csr_adaptive
+                || alg == rocsparse_spmv_alg_csr_lrb)
                && mat->analysed == false)
             {
                 RETURN_IF_ROCSPARSE_ERROR(
                     rocsparse_cscmv_analysis_template(handle,
                                                       trans,
+                                                      csrmv_alg,
                                                       (J)mat->rows,
                                                       (J)mat->cols,
                                                       (I)mat->nnz,
@@ -521,6 +574,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_cscmv_template(
                 handle,
                 trans,
+                csrmv_alg,
                 (J)mat->rows,
                 (J)mat->cols,
                 (I)mat->nnz,

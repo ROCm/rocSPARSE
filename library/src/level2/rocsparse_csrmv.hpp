@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,42 @@
 
 #include "handle.h"
 
+typedef enum rocsparse_csrmv_alg_
+{
+    rocsparse_csrmv_alg_stream = 0,
+    rocsparse_csrmv_alg_adaptive,
+    rocsparse_csrmv_alg_lrb
+} rocsparse_csrmv_alg;
+
+template <typename I, typename J, typename A>
+rocsparse_status
+    rocsparse_csrmv_analysis_adaptive_template_dispatch(rocsparse_handle          handle,
+                                                        rocsparse_operation       trans,
+                                                        J                         m,
+                                                        J                         n,
+                                                        I                         nnz,
+                                                        const rocsparse_mat_descr descr,
+                                                        const A*                  csr_val,
+                                                        const I*                  csr_row_ptr,
+                                                        const J*                  csr_col_ind,
+                                                        rocsparse_mat_info        info);
+
+template <typename I, typename J, typename A>
+rocsparse_status rocsparse_csrmv_analysis_lrb_template_dispatch(rocsparse_handle          handle,
+                                                                rocsparse_operation       trans,
+                                                                J                         m,
+                                                                J                         n,
+                                                                I                         nnz,
+                                                                const rocsparse_mat_descr descr,
+                                                                const A*                  csr_val,
+                                                                const I*           csr_row_ptr,
+                                                                const J*           csr_col_ind,
+                                                                rocsparse_mat_info info);
+
 template <typename I, typename J, typename A>
 rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans,
+                                                   rocsparse_csrmv_alg       alg,
                                                    J                         m,
                                                    J                         n,
                                                    I                         nnz,
@@ -39,21 +72,21 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
                                                    rocsparse_mat_info        info);
 
 template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
-rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          handle,
-                                                   rocsparse_operation       trans,
-                                                   J                         m,
-                                                   J                         n,
-                                                   I                         nnz,
-                                                   U                         alpha_device_host,
-                                                   const rocsparse_mat_descr descr,
-                                                   const A*                  csr_val,
-                                                   const I*                  csr_row_ptr_begin,
-                                                   const I*                  csr_row_ptr_end,
-                                                   const J*                  csr_col_ind,
-                                                   const X*                  x,
-                                                   U                         beta_device_host,
-                                                   Y*                        y,
-                                                   bool                      force_conj);
+rocsparse_status rocsparse_csrmv_stream_template_dispatch(rocsparse_handle    handle,
+                                                          rocsparse_operation trans,
+                                                          J                   m,
+                                                          J                   n,
+                                                          I                   nnz,
+                                                          U                   alpha_device_host,
+                                                          const rocsparse_mat_descr descr,
+                                                          const A*                  csr_val,
+                                                          const I* csr_row_ptr_begin,
+                                                          const I* csr_row_ptr_end,
+                                                          const J* csr_col_ind,
+                                                          const X* x,
+                                                          U        beta_device_host,
+                                                          Y*       y,
+                                                          bool     force_conj);
 
 template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    handle,
@@ -72,9 +105,27 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
                                                             Y*   y,
                                                             bool force_conj);
 
+template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
+rocsparse_status rocsparse_csrmv_lrb_template_dispatch(rocsparse_handle          handle,
+                                                       rocsparse_operation       trans,
+                                                       J                         m,
+                                                       J                         n,
+                                                       I                         nnz,
+                                                       U                         alpha_device_host,
+                                                       const rocsparse_mat_descr descr,
+                                                       const A*                  csr_val,
+                                                       const I*                  csr_row_ptr,
+                                                       const J*                  csr_col_ind,
+                                                       rocsparse_csrmv_info      info,
+                                                       const X*                  x,
+                                                       U                         beta_device_host,
+                                                       Y*                        y,
+                                                       bool                      force_conj);
+
 template <typename T, typename I, typename J, typename A, typename X, typename Y>
 rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
+                                          rocsparse_csrmv_alg       alg,
                                           J                         m,
                                           J                         n,
                                           I                         nnz,

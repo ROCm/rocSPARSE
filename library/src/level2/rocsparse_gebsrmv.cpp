@@ -411,6 +411,7 @@ rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle, //
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template(handle,
                                                            trans,
+                                                           rocsparse_csrmv_alg_stream,
                                                            mb,
                                                            nb,
                                                            nnzb,

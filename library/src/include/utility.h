@@ -628,6 +628,7 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
     case rocsparse_spmv_alg_ell:
     case rocsparse_spmv_alg_coo_atomic:
     case rocsparse_spmv_alg_bsr:
+    case rocsparse_spmv_alg_csr_lrb:
     {
         return false;
     }

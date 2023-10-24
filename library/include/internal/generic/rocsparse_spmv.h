@@ -54,6 +54,41 @@ extern "C" {
 *  \f]
 *
 *  \details
+*  \ref rocsparse_spmv supports multiple different algorithms. These algorithms have different trade offs depending on the sparsity
+*  pattern of the matrix, whether or not the results need to be deterministic, and how many times the sparse-vector product will
+*  be performed.
+*
+*  <table>
+*  <caption id="spmv_csr_algorithms">CSR Algorithms</caption>
+*  <tr><th>Algorithm                            <th>Deterministic  <th>Preprocessing  <th>Notes
+*  <tr><td>rocsparse_spmv_alg_csr_stream</td>   <td>Yes</td>       <td>No</td>        <td>Is best suited for matrices with all rows having a similar number of non-zeros. Can out perform adaptive and LRB algirthms in certain sparsity patterns. Will perform very poorly if some rows have few non-zeros and some rows have many non-zeros.</td>
+*  <tr><td>rocsparse_spmv_alg_csr_adaptive</td> <td>No</td>        <td>Yes</td>       <td>Generally the fastest algorithm across all matrix sparsity patterns. This includes matrices that have some rows with many non-zeros and some rows with few non-zeros. Requires a lengthy preprocessing that needs to be amortized over many subsequent sparse vector products.</td>
+*  <tr><td>rocsparse_spmv_alg_csr_lrb</td>      <td>No</td>        <td>Yes</td>       <td>Like adaptive algorithm, generally performs well accross all matrix sparsity patterns. Generally not as fast as adaptive algorithm, however uses a much faster pre-processing step. Good for when only a few number of sparse vector products will be performed.</td>
+*  </table>
+*
+*  <table>
+*  <caption id="spmv_coo_algorithms">COO Algorithms</caption>
+*  <tr><th>Algorithm                          <th>Deterministic   <th>Preprocessing <th>Notes
+*  <tr><td>rocsparse_spmv_alg_coo</td>        <td>Yes</td>        <td>Yes</td>      <td>Generally not as fast as atomic algorithm but is deterministic</td>
+*  <tr><td>rocsparse_spmv_alg_coo_atomic</td> <td>No</td>         <td>No</td>       <td>Generally the fastest COO algorithm</td>
+*  </table>
+*
+*  <table>
+*  <caption id="spmv_ell_algorithms">ELL Algorithms</caption>
+*  <tr><th>Algorithm                     <th>Deterministic   <th>Preprocessing <th>Notes
+*  <tr><td>rocsparse_spmv_alg_ell</td>   <td>Yes</td>        <td>No</td>       <td></td>
+*  </table>
+*
+*  <table>
+*  <caption id="spmv_bsr_algorithms">BSR Algorithms</caption>
+*  <tr><th>Algorithm                     <th>Deterministic   <th>Preprocessing <th>Notes
+*  <tr><td>rocsparse_spmv_alg_bsr</td>   <td>Yes</td>        <td>No</td>       <td></td>
+*  </table>
+*
+*  \note
+*  None of the algorithms above are deterministic when A is transposed.
+*
+*  \details
 *  \ref rocsparse_spmv supports multiple combinations of data types and compute types. The tables below indicate the currently
 *  supported different data types that can be used for for the sparse matrix A and the dense vectors X and Y and the compute
 *  type for \f$\alpha\f$ and \f$\beta\f$. The advantage of using different data types is to save on memory bandwidth and storage
@@ -330,6 +365,41 @@ ROCSPARSE_EXPORT rocsparse_status rocsparse_spmv(rocsparse_handle            han
 *    \end{array}
 *    \right.
 *  \f]
+*
+*  \details
+*  \ref rocsparse_spmv supports multiple different algorithms. These algorithms have different trade offs depending on the sparsity
+*  pattern of the matrix, whether or not the results need to be deterministic, and how many times the sparse-vector product will
+*  be performed.
+*
+*  <table>
+*  <caption id="spmv_ex_csr_algorithms">CSR Algorithms</caption>
+*  <tr><th>Algorithm                            <th>Deterministic  <th>Preprocessing  <th>Notes
+*  <tr><td>rocsparse_spmv_alg_csr_stream</td>   <td>Yes</td>       <td>No</td>        <td>Is best suited for matrices with all rows having a similar number of non-zeros. Can out perform adaptive and LRB algirthms in certain sparsity patterns. Will perform very poorly if some rows have few non-zeros and some rows have many non-zeros.</td>
+*  <tr><td>rocsparse_spmv_alg_csr_adaptive</td> <td>No</td>        <td>Yes</td>       <td>Generally the fastest algorithm across all matrix sparsity patterns. This includes matrices that have some rows with many non-zeros and some rows with few non-zeros. Requires a lengthy preprocessing that needs to be amortized over many subsequent sparse vector products.</td>
+*  <tr><td>rocsparse_spmv_alg_csr_lrb</td>      <td>No</td>        <td>Yes</td>       <td>Like adaptive algorithm, generally performs well accross all matrix sparsity patterns. Generally not as fast as adaptive algorithm, however uses a much faster pre-processing step. Good for when only a few number of sparse vector products will be performed.</td>
+*  </table>
+*
+*  <table>
+*  <caption id="spmv_ex_coo_algorithms">COO Algorithms</caption>
+*  <tr><th>Algorithm                          <th>Deterministic   <th>Preprocessing <th>Notes
+*  <tr><td>rocsparse_spmv_alg_coo</td>        <td>Yes</td>        <td>Yes</td>      <td>Generally not as fast as atomic algorithm but is deterministic</td>
+*  <tr><td>rocsparse_spmv_alg_coo_atomic</td> <td>No</td>         <td>No</td>       <td>Generally the fastest COO algorithm</td>
+*  </table>
+*
+*  <table>
+*  <caption id="spmv_ex_ell_algorithms">ELL Algorithms</caption>
+*  <tr><th>Algorithm                     <th>Deterministic   <th>Preprocessing <th>Notes
+*  <tr><td>rocsparse_spmv_alg_ell</td>   <td>Yes</td>        <td>No</td>       <td></td>
+*  </table>
+*
+*  <table>
+*  <caption id="spmv_ex_bsr_algorithms">BSR Algorithms</caption>
+*  <tr><th>Algorithm                     <th>Deterministic   <th>Preprocessing <th>Notes
+*  <tr><td>rocsparse_spmv_alg_bsr</td>   <td>Yes</td>        <td>No</td>       <td></td>
+*  </table>
+*
+*  \note
+*  None of the algorithms above are deterministic when A is transposed.
 *
 *  \details
 *  \ref rocsparse_spmv_ex supports multiple combinations of data types and compute types. The tables below indicate the currently
