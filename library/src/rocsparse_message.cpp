@@ -28,9 +28,6 @@
 #include "envariables.h"
 #include <map>
 
-#include <sys/types.h>
-#include <unistd.h>
-
 void rocsparse_message(const char* msg_, const char* function_, const char* file_, int line_)
 {
     if(rocsparse_debug_variables.get_debug_verbose())
