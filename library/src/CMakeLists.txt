@@ -152,10 +152,13 @@ set(rocsparse_source
 
 # Extra
   src/extra/rocsparse_bsrgeam.cpp
+  src/extra/rocsparse_bsrgeam_nnzb.cpp
+  src/extra/rocsparse_csrgeam.cpp
+  src/extra/rocsparse_csrgeam_nnz.cpp
+  #
   src/extra/rocsparse_bsrgemm_buffer_size.cpp
   src/extra/rocsparse_bsrgemm_nnz.cpp
   src/extra/rocsparse_bsrgemm.cpp
-  src/extra/rocsparse_csrgeam.cpp
   src/extra/rocsparse_csrgemm.cpp
   src/extra/rocsparse_csrgemm_symbolic.cpp
   src/extra/rocsparse_csrgemm_numeric.cpp
