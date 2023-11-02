@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,46 +24,104 @@
 
 #pragma once
 
-#include "handle.h"
+#include "definitions.h"
 
-template <typename T, typename U>
-rocsparse_status rocsparse_csrgeam_dispatch(rocsparse_handle          handle,
+rocsparse_status rocsparse_csrgeam_nnz_core(rocsparse_handle          handle,
                                             rocsparse_int             m,
                                             rocsparse_int             n,
-                                            U                         alpha_device_host,
                                             const rocsparse_mat_descr descr_A,
                                             rocsparse_int             nnz_A,
-                                            const T*                  csr_val_A,
                                             const rocsparse_int*      csr_row_ptr_A,
                                             const rocsparse_int*      csr_col_ind_A,
-                                            U                         beta_device_host,
                                             const rocsparse_mat_descr descr_B,
                                             rocsparse_int             nnz_B,
-                                            const T*                  csr_val_B,
                                             const rocsparse_int*      csr_row_ptr_B,
                                             const rocsparse_int*      csr_col_ind_B,
                                             const rocsparse_mat_descr descr_C,
-                                            T*                        csr_val_C,
-                                            const rocsparse_int*      csr_row_ptr_C,
-                                            rocsparse_int*            csr_col_ind_C);
+                                            rocsparse_int*            csr_row_ptr_C,
+                                            rocsparse_int*            nnz_C);
+
+rocsparse_status rocsparse_csrgeam_nnz_quickreturn(rocsparse_handle          handle,
+                                                   rocsparse_int             m,
+                                                   rocsparse_int             n,
+                                                   const rocsparse_mat_descr descr_A,
+                                                   rocsparse_int             nnz_A,
+                                                   const rocsparse_int*      csr_row_ptr_A,
+                                                   const rocsparse_int*      csr_col_ind_A,
+                                                   const rocsparse_mat_descr descr_B,
+                                                   rocsparse_int             nnz_B,
+                                                   const rocsparse_int*      csr_row_ptr_B,
+                                                   const rocsparse_int*      csr_col_ind_B,
+                                                   const rocsparse_mat_descr descr_C,
+                                                   rocsparse_int*            csr_row_ptr_C,
+                                                   rocsparse_int*            nnz_C);
+
+template <typename... P>
+rocsparse_status rocsparse_csrgeam_nnz_template(P&&... p)
+{
+
+    const rocsparse_status status = rocsparse_csrgeam_nnz_quickreturn(p...);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgeam_nnz_core(p...));
+    return rocsparse_status_success;
+}
+
+rocsparse_status rocsparse_csrgeam_quickreturn(rocsparse_handle          handle,
+                                               rocsparse_int             m,
+                                               rocsparse_int             n,
+                                               const void*               alpha,
+                                               const rocsparse_mat_descr descr_A,
+                                               rocsparse_int             nnz_A,
+                                               const void*               csr_val_A,
+                                               const rocsparse_int*      csr_row_ptr_A,
+                                               const rocsparse_int*      csr_col_ind_A,
+                                               const void*               beta,
+                                               const rocsparse_mat_descr descr_B,
+                                               rocsparse_int             nnz_B,
+                                               const void*               csr_val_B,
+                                               const rocsparse_int*      csr_row_ptr_B,
+                                               const rocsparse_int*      csr_col_ind_B,
+                                               const rocsparse_mat_descr descr_C,
+                                               void*                     csr_val_C,
+                                               const rocsparse_int*      csr_row_ptr_C,
+                                               rocsparse_int*            csr_col_ind_C);
 
 template <typename T>
-rocsparse_status rocsparse_csrgeam_template(rocsparse_handle          handle,
-                                            rocsparse_int             m,
-                                            rocsparse_int             n,
-                                            const T*                  alpha,
-                                            const rocsparse_mat_descr descr_A,
-                                            rocsparse_int             nnz_A,
-                                            const T*                  csr_val_A,
-                                            const rocsparse_int*      csr_row_ptr_A,
-                                            const rocsparse_int*      csr_col_ind_A,
-                                            const T*                  beta,
-                                            const rocsparse_mat_descr descr_B,
-                                            rocsparse_int             nnz_B,
-                                            const T*                  csr_val_B,
-                                            const rocsparse_int*      csr_row_ptr_B,
-                                            const rocsparse_int*      csr_col_ind_B,
-                                            const rocsparse_mat_descr descr_C,
-                                            T*                        csr_val_C,
-                                            const rocsparse_int*      csr_row_ptr_C,
-                                            rocsparse_int*            csr_col_ind_C);
+rocsparse_status rocsparse_csrgeam_core(rocsparse_handle          handle,
+                                        rocsparse_int             m,
+                                        rocsparse_int             n,
+                                        const T*                  alpha,
+                                        const rocsparse_mat_descr descr_A,
+                                        rocsparse_int             nnz_A,
+                                        const T*                  csr_val_A,
+                                        const rocsparse_int*      csr_row_ptr_A,
+                                        const rocsparse_int*      csr_col_ind_A,
+                                        const T*                  beta,
+                                        const rocsparse_mat_descr descr_B,
+                                        rocsparse_int             nnz_B,
+                                        const T*                  csr_val_B,
+                                        const rocsparse_int*      csr_row_ptr_B,
+                                        const rocsparse_int*      csr_col_ind_B,
+                                        const rocsparse_mat_descr descr_C,
+                                        T*                        csr_val_C,
+                                        const rocsparse_int*      csr_row_ptr_C,
+                                        rocsparse_int*            csr_col_ind_C);
+
+template <typename... P>
+rocsparse_status rocsparse_csrgeam_template(P&&... p)
+{
+    const rocsparse_status status = rocsparse_csrgeam_quickreturn(p...);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgeam_core(p...));
+    return rocsparse_status_success;
+}
