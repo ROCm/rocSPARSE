@@ -83,7 +83,6 @@ void testing_bsr2csr(const Arguments& arg)
     rocsparse_int        N         = arg.N;
     rocsparse_index_base bsr_base  = arg.baseA;
     rocsparse_index_base csr_base  = arg.baseB;
-    rocsparse_direction  direction = arg.direction;
     rocsparse_int        block_dim = arg.block_dim;
 
     rocsparse_int Mb = (M + block_dim - 1) / block_dim;

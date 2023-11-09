@@ -355,7 +355,7 @@ add_executable(rocsparse-test rocsparse_test_main.cpp ${ROCSPARSE_TEST_SOURCES} 
 target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
 
 # Target compile options
-target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-unused-command-line-argument -Wall)
+target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-deprecated -Wno-unused-command-line-argument -Wall)
 if (rocsparseio_FOUND)
   message("Compiles rocSPARSE client with rocSPARSEIO to import/export matrices.")
   target_compile_options(rocsparse-test PRIVATE -DROCSPARSEIO)

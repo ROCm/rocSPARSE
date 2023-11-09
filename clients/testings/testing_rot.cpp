@@ -26,7 +26,6 @@
 template <typename I, typename T>
 void testing_rot_bad_arg(const Arguments& arg)
 {
-    static const size_t    safe_size = 100;
     rocsparse_local_handle local_handle;
     rocsparse_handle       handle = local_handle;
     const void*            c      = (const void*)0x4;

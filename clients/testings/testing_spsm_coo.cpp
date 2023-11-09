@@ -211,7 +211,7 @@ void testing_spsm_coo(const Arguments& arg)
                                          C1,
                                          ttype,
                                          alg,
-                                         rocsparse_spsm_stage_buffer_size,
+                                         buffersize,
                                          &buffer_size,
                                          nullptr));
 
@@ -221,33 +221,13 @@ void testing_spsm_coo(const Arguments& arg)
 
     // Perform analysis on host
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-    CHECK_ROCSPARSE_ERROR(rocsparse_spsm(handle,
-                                         trans_A,
-                                         trans_B,
-                                         &halpha,
-                                         A,
-                                         B,
-                                         C1,
-                                         ttype,
-                                         alg,
-                                         rocsparse_spsm_stage_preprocess,
-                                         nullptr,
-                                         dbuffer));
+    CHECK_ROCSPARSE_ERROR(rocsparse_spsm(
+        handle, trans_A, trans_B, &halpha, A, B, C1, ttype, alg, preprocess, nullptr, dbuffer));
 
     // Perform analysis on device
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-    CHECK_ROCSPARSE_ERROR(rocsparse_spsm(handle,
-                                         trans_A,
-                                         trans_B,
-                                         dalpha,
-                                         A,
-                                         B,
-                                         C2,
-                                         ttype,
-                                         alg,
-                                         rocsparse_spsm_stage_preprocess,
-                                         nullptr,
-                                         dbuffer));
+    CHECK_ROCSPARSE_ERROR(rocsparse_spsm(
+        handle, trans_A, trans_B, dalpha, A, B, C2, ttype, alg, preprocess, nullptr, dbuffer));
 
     if(arg.unit_check)
     {
@@ -262,7 +242,7 @@ void testing_spsm_coo(const Arguments& arg)
                                                       C1,
                                                       ttype,
                                                       alg,
-                                                      rocsparse_spsm_stage_compute,
+                                                      compute,
                                                       &buffer_size,
                                                       dbuffer));
 
@@ -277,7 +257,7 @@ void testing_spsm_coo(const Arguments& arg)
                                                       C2,
                                                       ttype,
                                                       alg,
-                                                      rocsparse_spsm_stage_compute,
+                                                      compute,
                                                       &buffer_size,
                                                       dbuffer));
 

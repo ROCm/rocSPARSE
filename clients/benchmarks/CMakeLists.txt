@@ -184,7 +184,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})
 
 # Target compile options
-target_compile_options(rocsparse-bench PRIVATE -Wno-unused-command-line-argument -Wall)
+target_compile_options(rocsparse-bench PRIVATE -Wno-deprecated -Wno-unused-command-line-argument -Wall)
 if (rocsparseio_FOUND)
   message("Compile with ROCSPARSEIO")
   target_compile_options(rocsparse-bench PRIVATE -DROCSPARSEIO)
