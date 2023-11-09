@@ -105,8 +105,11 @@ std::string rocsparse_datapath()
     fs::path        path = fs::canonical(share_path, ec);
     if(!ec)
     {
-        path += path.empty() ? "" : "/";
-        return path.string();
+        if(fs::exists(path, ec) && !ec)
+        {
+            path += path.empty() ? "" : "/";
+            return path.string();
+        }
     }
 #else
     std::string pathstr;

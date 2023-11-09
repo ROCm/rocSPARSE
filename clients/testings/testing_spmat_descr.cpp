@@ -340,8 +340,6 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
         rocsparse_datatype*  data_type    = &local_ttype;
         rocsparse_indextype* row_ptr_type = &local_itype;
         rocsparse_indextype* col_ind_type = &local_jtype;
-        rocsparse_indextype* col_ptr_type = &local_itype;
-        rocsparse_indextype* row_ind_type = &local_jtype;
 
         void** coo_row_ind = (void**)0x4;
         void** coo_col_ind = (void**)0x4;
@@ -349,9 +347,6 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
         void** csr_row_ptr = (void**)0x4;
         void** csr_col_ind = (void**)0x4;
         void** csr_val     = (void**)0x4;
-        void** csc_row_ind = (void**)0x4;
-        void** csc_col_ptr = (void**)0x4;
-        void** csc_val     = (void**)0x4;
         void** ell_col_ind = (void**)0x4;
         void** ell_val     = (void**)0x4;
 
@@ -463,10 +458,15 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
             rocsparse_spmat_descr descr = local_descr;
 
 #if 0
+        rocsparse_indextype* col_ptr_type = &local_itype;
+        rocsparse_indextype* row_ind_type = &local_jtype;
+        void** csc_row_ind = (void**)0x4;
+        void** csc_col_ptr = (void**)0x4;
+        void** csc_val     = (void**)0x4;
 #define PARAMS_GET_CSC                                                                     \
     descr, rows, cols, nnz, csc_col_ptr, csc_row_ind, csc_val, col_ptr_type, row_ind_type, \
         idx_base, data_type
-      bad_arg_analysis(rocsparse_csr_get, PARAMS_GET_CSC);
+        bad_arg_analysis(rocsparse_csr_get, PARAMS_GET_CSC);
 #undef PARAMS_GET_CSC
 #endif
 

@@ -189,17 +189,8 @@ void testing_spsv_csr(const Arguments& arg)
 
     // Query SpSV buffer
     size_t buffer_size;
-    CHECK_ROCSPARSE_ERROR(rocsparse_spsv(handle,
-                                         trans_A,
-                                         &halpha,
-                                         A,
-                                         x,
-                                         y1,
-                                         ttype,
-                                         alg,
-                                         rocsparse_spsv_stage_buffer_size,
-                                         &buffer_size,
-                                         nullptr));
+    CHECK_ROCSPARSE_ERROR(rocsparse_spsv(
+        handle, trans_A, &halpha, A, x, y1, ttype, alg, buffersize, &buffer_size, nullptr));
 
     // Allocate buffer
     void* dbuffer;
@@ -207,61 +198,25 @@ void testing_spsv_csr(const Arguments& arg)
 
     // Perform analysis on host
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-    CHECK_ROCSPARSE_ERROR(rocsparse_spsv(handle,
-                                         trans_A,
-                                         &halpha,
-                                         A,
-                                         x,
-                                         y1,
-                                         ttype,
-                                         alg,
-                                         rocsparse_spsv_stage_preprocess,
-                                         nullptr,
-                                         dbuffer));
+    CHECK_ROCSPARSE_ERROR(rocsparse_spsv(
+        handle, trans_A, &halpha, A, x, y1, ttype, alg, preprocess, nullptr, dbuffer));
 
     // Perform analysis on device
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-    CHECK_ROCSPARSE_ERROR(rocsparse_spsv(handle,
-                                         trans_A,
-                                         dalpha,
-                                         A,
-                                         x,
-                                         y2,
-                                         ttype,
-                                         alg,
-                                         rocsparse_spsv_stage_preprocess,
-                                         nullptr,
-                                         dbuffer));
+    CHECK_ROCSPARSE_ERROR(rocsparse_spsv(
+        handle, trans_A, dalpha, A, x, y2, ttype, alg, preprocess, nullptr, dbuffer));
 
     if(arg.unit_check)
     {
         // Solve on host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(testing::rocsparse_spsv(handle,
-                                                      trans_A,
-                                                      &halpha,
-                                                      A,
-                                                      x,
-                                                      y1,
-                                                      ttype,
-                                                      alg,
-                                                      rocsparse_spsv_stage_compute,
-                                                      &buffer_size,
-                                                      dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_spsv(
+            handle, trans_A, &halpha, A, x, y1, ttype, alg, compute, &buffer_size, dbuffer));
 
         // Solve on device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(testing::rocsparse_spsv(handle,
-                                                      trans_A,
-                                                      dalpha,
-                                                      A,
-                                                      x,
-                                                      y2,
-                                                      ttype,
-                                                      alg,
-                                                      rocsparse_spsv_stage_compute,
-                                                      &buffer_size,
-                                                      dbuffer));
+        CHECK_ROCSPARSE_ERROR(testing::rocsparse_spsv(
+            handle, trans_A, dalpha, A, x, y2, ttype, alg, compute, &buffer_size, dbuffer));
 
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
