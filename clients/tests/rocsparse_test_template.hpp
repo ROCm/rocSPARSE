@@ -132,15 +132,30 @@ namespace
                     }
                 }
 
-                if(strncmp("gfx", arg.skip_hardware, 3) == 0)
+                if(strncmp("none", arg.skip_hardware, 4) != 0)
                 {
-                    if(strncmp(arg.skip_hardware, prop.gcnArchName, strlen(arg.skip_hardware)) == 0)
+                    const char* b = arg.skip_hardware;
+                    const char* e;
+
+                    for(e = b; *e != '\0' && *e != ',' && *e != ' '; ++e)
+                        ;
+                    while(strncmp("gfx", b, 3) == 0)
                     {
-                        return false;
-                    }
-                    else
-                    {
-                        return true;
+                        if(strncmp(b, prop.gcnArchName, e - b) == 0)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            for(; *b != '\0' && *b != ',' && *b != ' '; ++b)
+                                ;
+                            if(*b == ',')
+                                ++b;
+                            for(; *b != '\0' && *b == ' '; ++b)
+                                ;
+                            for(e = b; *e != '\0' && *e != ',' && *e != ' '; ++e)
+                                ;
+                        }
                     }
                 }
 
