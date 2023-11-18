@@ -386,6 +386,7 @@ rocsparse_status rocsparse_coosv_solve_template(rocsparse_handle          handle
                                                                  csr_col_ind,
                                                                  info,
                                                                  x,
+                                                                 (int64_t)1,
                                                                  y,
                                                                  policy,
                                                                  ptr));
@@ -410,6 +411,7 @@ rocsparse_status rocsparse_coosv_solve_template(rocsparse_handle          handle
                                                                  csr_col_ind,
                                                                  info,
                                                                  x,
+                                                                 (int64_t)1,
                                                                  y,
                                                                  policy,
                                                                  ptr));

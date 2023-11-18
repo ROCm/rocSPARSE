@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,6 +77,7 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
                                                 const J*                  csr_col_ind,
                                                 rocsparse_mat_info        info,
                                                 const T*                  x,
+                                                int64_t                   x_inc,
                                                 T*                        y,
                                                 rocsparse_solve_policy    policy,
                                                 void*                     temp_buffer);

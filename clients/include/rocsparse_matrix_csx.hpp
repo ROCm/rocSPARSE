@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,11 +98,18 @@ struct csx_matrix
                     mx = std::max(mx, std::abs(this->val[k]));
                 }
 
+                if(mx == floating_data_t<T>(0))
+                {
+                    mx = floating_data_t<T>(1);
+                }
+
+                mx = floating_data_t<T>(1.0) / mx;
                 for(I k = this->ptr[i] - this->base; k < end; ++k)
                 {
-                    this->val[k] /= mx;
+                    this->val[k] *= mx;
                 }
             }
+
             return rocsparse_status_success;
         }
         case memory_mode::device:

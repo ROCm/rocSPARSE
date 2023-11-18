@@ -44,6 +44,7 @@ void csrsv_kernel(J m,
                   const J* __restrict__ csr_col_ind,
                   const T* __restrict__ csr_val,
                   const T* __restrict__ x,
+                  int64_t x_inc,
                   T* __restrict__ y,
                   int* __restrict__ done_array,
                   J* __restrict__ map,
@@ -60,6 +61,7 @@ void csrsv_kernel(J m,
                                             csr_col_ind,
                                             csr_val,
                                             x,
+                                            x_inc,
                                             y,
                                             done_array,
                                             map,
@@ -82,6 +84,7 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
                                                 const J*                  csr_col_ind,
                                                 rocsparse_mat_info        info,
                                                 const T*                  x,
+                                                int64_t                   x_inc,
                                                 T*                        y,
                                                 rocsparse_solve_policy    policy,
                                                 void*                     temp_buffer)
@@ -180,6 +183,7 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
                                            local_csr_col_ind,
                                            local_csr_val,
                                            x,
+                                           x_inc,
                                            y,
                                            done_array,
                                            (J*)csrsv->row_map,
@@ -207,6 +211,7 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
                                                local_csr_col_ind,
                                                local_csr_val,
                                                x,
+                                               x_inc,
                                                y,
                                                done_array,
                                                (J*)csrsv->row_map,
@@ -231,6 +236,7 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
                                                local_csr_col_ind,
                                                local_csr_val,
                                                x,
+                                               x_inc,
                                                y,
                                                done_array,
                                                (J*)csrsv->row_map,
@@ -258,6 +264,7 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
                                                 const J*                  csr_col_ind, //8
                                                 rocsparse_mat_info        info, //9
                                                 const T*                  x, //10
+                                                int64_t                   x_inc, // non-classified
                                                 T*                        y, //11
                                                 rocsparse_solve_policy    policy, //12
                                                 void*                     temp_buffer) //13
@@ -331,6 +338,7 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
                                                                  csr_col_ind,
                                                                  info,
                                                                  x,
+                                                                 x_inc,
                                                                  y,
                                                                  policy,
                                                                  temp_buffer));
@@ -349,6 +357,7 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
                                                                  csr_col_ind,
                                                                  info,
                                                                  x,
+                                                                 x_inc,
                                                                  y,
                                                                  policy,
                                                                  temp_buffer));
@@ -369,6 +378,7 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
         const JTYPE*              csr_col_ind,                                     \
         rocsparse_mat_info        info,                                            \
         const TTYPE*              x,                                               \
+        int64_t                   x_inc,                                           \
         TTYPE*                    y,                                               \
         rocsparse_solve_policy    policy,                                          \
         void*                     temp_buffer);
@@ -421,6 +431,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                                                  csr_col_ind,   \
                                                                  info,          \
                                                                  x,             \
+                                                                 (int64_t)1,    \
                                                                  y,             \
                                                                  policy,        \
                                                                  temp_buffer)); \

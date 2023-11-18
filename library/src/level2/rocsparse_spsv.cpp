@@ -148,6 +148,7 @@ rocsparse_status rocsparse_spsv_template(rocsparse_handle            handle,
                                                                      (const J*)mat->const_col_data,
                                                                      mat->info,
                                                                      (const T*)x->const_values,
+                                                                     (int64_t)1,
                                                                      (T*)y->values,
                                                                      rocsparse_solve_policy_auto,
                                                                      temp_buffer));

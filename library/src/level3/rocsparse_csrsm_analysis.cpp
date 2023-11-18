@@ -49,6 +49,26 @@ rocsparse_status rocsparse_csrsm_analysis_core(rocsparse_handle          handle,
                                                void*                     temp_buffer)
 {
 
+    if(nrhs == 1)
+    {
+        //
+        // Call csrsv.
+        //
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_analysis_template(handle,
+                                                                    trans_A,
+                                                                    m,
+                                                                    nnz,
+                                                                    descr,
+                                                                    csr_val,
+                                                                    csr_row_ptr,
+                                                                    csr_col_ind,
+                                                                    info,
+                                                                    analysis,
+                                                                    solve,
+                                                                    temp_buffer));
+        return rocsparse_status_success;
+    }
+
     // Switch between lower and upper triangular analysis
     if(descr->fill_mode == rocsparse_fill_mode_upper)
     {
