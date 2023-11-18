@@ -238,6 +238,11 @@ void testing_csrsm(const Arguments& arg)
     host_csr_matrix<T> hcsr;
     matrix_factory.init_csr(hcsr);
 
+    //
+    // Scale the matrix.
+    //
+    hcsr.scale();
+
     rocsparse_int nnz  = hcsr.nnz;
     M                  = hcsr.m;
     rocsparse_int hB_m = (transB == rocsparse_operation_none) ? M : nrhs;

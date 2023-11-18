@@ -136,6 +136,23 @@ void testing_spsm_coo(const Arguments& arg)
     int64_t nnz_A;
     matrix_factory.init_coo(hcoo_row_ind, hcoo_col_ind, hcoo_val, M, N, nnz_A, base);
 
+    //
+    // Scale values.
+    //
+    {
+        const size_t       size = hcoo_val.size();
+        floating_data_t<T> mx   = floating_data_t<T>(0);
+        for(size_t i = 0; i < size; ++i)
+        {
+            mx = std::max(mx, std::abs(hcoo_val[i]));
+        }
+        mx = floating_data_t<T>(1.0) / mx;
+        for(size_t i = 0; i < size; ++i)
+        {
+            hcoo_val[i] *= mx;
+        }
+    }
+
     I B_m = (trans_B == rocsparse_operation_none) ? M : K;
     I B_n = (trans_B == rocsparse_operation_none) ? K : M;
 

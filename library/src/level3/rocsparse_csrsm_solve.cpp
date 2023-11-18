@@ -518,6 +518,17 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
     return rocsparse_status_success;
 }
 
+template <unsigned int BLOCKSIZE, typename T>
+__launch_bounds__(BLOCKSIZE) __global__
+    static void csrsm_solve_copy_y_to_B(const int64_t m, T* B, const int64_t ldb, const T* y)
+{
+    const size_t tid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    if(tid < m)
+    {
+        B[tid * ldb] = y[tid];
+    }
+}
+
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrsm_solve_core(rocsparse_handle          handle,
                                             rocsparse_operation       trans_A,
@@ -536,6 +547,67 @@ rocsparse_status rocsparse_csrsm_solve_core(rocsparse_handle          handle,
                                             rocsparse_solve_policy    policy,
                                             void*                     temp_buffer)
 {
+
+    if(nrhs == 1)
+    {
+        //
+        // Call csrsv.
+        //
+        T* y                = reinterpret_cast<T*>(temp_buffer);
+        temp_buffer         = reinterpret_cast<void*>(reinterpret_cast<char*>(temp_buffer)
+                                              + ((sizeof(T) * m - 1) / 256 + 1) * 256);
+        const int64_t b_inc = (trans_B == rocsparse_operation_none) ? 1 : ldb;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_solve_template(handle,
+                                                                 trans_A,
+                                                                 m,
+                                                                 nnz,
+                                                                 alpha,
+                                                                 descr,
+                                                                 csr_val,
+                                                                 csr_row_ptr,
+                                                                 csr_col_ind,
+                                                                 info,
+                                                                 B,
+                                                                 b_inc,
+                                                                 y,
+                                                                 policy,
+                                                                 temp_buffer));
+
+        switch(trans_B)
+        {
+        case rocsparse_operation_none:
+        {
+            RETURN_IF_HIP_ERROR(
+                hipMemcpyAsync(B, y, m * sizeof(T), hipMemcpyDeviceToDevice, handle->stream));
+            break;
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            if(ldb == 1)
+            {
+                RETURN_IF_HIP_ERROR(
+                    hipMemcpyAsync(B, y, m * sizeof(T), hipMemcpyDeviceToDevice, handle->stream));
+            }
+            else
+            {
+                static constexpr unsigned int BLOCKSIZE = 1024;
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrsm_solve_copy_y_to_B<BLOCKSIZE, T>),
+                                                   dim3((m - 1) / BLOCKSIZE + 1),
+                                                   dim3(BLOCKSIZE),
+                                                   0,
+                                                   handle->stream,
+                                                   m,
+                                                   B,
+                                                   ldb,
+                                                   y);
+            }
+            break;
+        }
+        }
+        return rocsparse_status_success;
+    }
+
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsm_solve_dispatch(handle,

@@ -92,7 +92,7 @@ Tests:
   function: csrsm
   precision: *single_double_precisions
   M_N: *M_N_range_checkin_1
-  K: [7, 16]
+  K: [1, 7, 16]
   alpha_alphai: *alpha_range_checkin
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_transpose]
@@ -108,7 +108,7 @@ Tests:
   function: csrsm
   precision: *single_double_precisions
   M_N: *M_N_range_checkin_1
-  K: [32,96, 244, 764]
+  K: [1, 32,96, 244, 764]
   alpha_alphai: *alpha_range_checkin
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_transpose]
@@ -123,7 +123,7 @@ Tests:
   category: pre_checkin
   function: csrsm
   precision: *single_double_precisions
-  K: [141, 875]
+  K: [1, 141, 875]
   alpha_alphai: *alpha_range_checkin
   transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]
@@ -145,7 +145,7 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: 1
   N: 1
-  K: [2, 4]
+  K: [1, 2, 4]
   alpha_alphai: *alpha_range_checkin
   transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]
@@ -200,7 +200,7 @@ Tests:
   function: csrsm
   precision: *single_double_precisions_complex_real
   M_N: *M_N_range_quick
-  K: [65, 153, 280]
+  K: [1, 65, 153, 280]
   alpha_alphai: *alpha_range_quick
   transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]

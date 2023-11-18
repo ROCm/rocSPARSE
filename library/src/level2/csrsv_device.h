@@ -360,6 +360,7 @@ ROCSPARSE_DEVICE_ILF void csrsv_device(J m,
                                        const J* __restrict__ csr_col_ind,
                                        const T* __restrict__ csr_val,
                                        const T* __restrict__ x,
+                                       int64_t x_inc,
                                        T* __restrict__ y,
                                        int* __restrict__ done_array,
                                        J* __restrict__ map,
@@ -400,7 +401,7 @@ ROCSPARSE_DEVICE_ILF void csrsv_device(J m,
     if(lid == 0)
     {
         // Lane 0 initializes its local sum with alpha and x
-        local_sum = alpha * rocsparse_nontemporal_load(x + row);
+        local_sum = alpha * rocsparse_nontemporal_load(x + x_inc * row);
     }
 
     for(I j = row_begin + lid; j < row_end; j += WF_SIZE)

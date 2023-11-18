@@ -21,6 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "../level2/rocsparse_csrsv.hpp"
 #include "internal/level3/rocsparse_csrsm.h"
 #include "rocsparse_csrsm.hpp"
 
@@ -47,6 +48,18 @@ rocsparse_status rocsparse_csrsm_buffer_size_core(rocsparse_handle          hand
                                                   rocsparse_solve_policy    policy,
                                                   size_t*                   buffer_size)
 {
+
+    if(nrhs == 1)
+    {
+        //
+        // Call csrsv.
+        //
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size_template(
+            handle, trans_A, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size));
+        *buffer_size += ((sizeof(T) * m - 1) / 256 + 1) * 256;
+        return rocsparse_status_success;
+    }
+
     hipStream_t stream = handle->stream;
 
     // max_nnz
