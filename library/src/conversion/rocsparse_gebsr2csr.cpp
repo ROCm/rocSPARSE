@@ -98,19 +98,20 @@ rocsparse_status rocsparse_gebsr2csr_template_dispatch(rocsparse_handle         
 
     if(row_block_dim == col_block_dim)
     {
-        return rocsparse_bsr2csr_template_dispatch(handle,
-                                                   dir,
-                                                   mb,
-                                                   nb,
-                                                   bsr_descr,
-                                                   bsr_val,
-                                                   bsr_row_ptr,
-                                                   bsr_col_ind,
-                                                   row_block_dim,
-                                                   csr_descr,
-                                                   csr_val,
-                                                   csr_row_ptr,
-                                                   csr_col_ind);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsr2csr_core(handle,
+                                                         dir,
+                                                         mb,
+                                                         nb,
+                                                         bsr_descr,
+                                                         bsr_val,
+                                                         bsr_row_ptr,
+                                                         bsr_col_ind,
+                                                         row_block_dim,
+                                                         csr_descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind));
+        return rocsparse_status_success;
     }
 
     if(row_block_dim <= 2)

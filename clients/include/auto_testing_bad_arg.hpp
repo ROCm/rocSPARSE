@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 /*! \file
- *  \brief auto_testing_bad_arg.hpp provides common testing utilities.
+ *  \brief auto_testing_bad_arg.hpp provides common testing utilities
  */
 
 #pragma once

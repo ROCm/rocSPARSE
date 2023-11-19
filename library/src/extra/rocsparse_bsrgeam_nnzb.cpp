@@ -94,14 +94,14 @@ static rocsparse_status rocsparse_bsrgeam_nnzb_quickreturn(rocsparse_handle     
         {
             if(bsr_row_ptr_C != nullptr)
             {
-                hipLaunchKernelGGL((set_array_to_value<256>),
-                                   dim3(mb / 256 + 1),
-                                   dim3(256),
-                                   0,
-                                   handle->stream,
-                                   mb + 1,
-                                   bsr_row_ptr_C,
-                                   static_cast<rocsparse_int>(descr_C->base));
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                                   dim3(mb / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   mb + 1,
+                                                   bsr_row_ptr_C,
+                                                   static_cast<rocsparse_int>(descr_C->base));
             }
         }
 
