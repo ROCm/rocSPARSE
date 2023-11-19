@@ -887,3 +887,17 @@ rocsparse_status   rocsparse_calculate_nnz(
       int64_t m, rocsparse_indextype indextype, const void* ptr, int64_t* nnz, hipStream_t stream);
 size_t rocsparse_indextype_sizeof(rocsparse_indextype that);
 size_t rocsparse_datatype_sizeof(rocsparse_datatype that);
+
+template <typename S, typename T>
+inline rocsparse_status rocsparse_internal_convert_scalar(const S s, T& t)
+{
+    if(s <= std::numeric_limits<T>::max() && s >= std::numeric_limits<T>::min())
+    {
+        t = static_cast<T>(s);
+        return rocsparse_status_success;
+    }
+    else
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_type_mismatch);
+    }
+}

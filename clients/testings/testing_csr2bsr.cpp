@@ -27,7 +27,13 @@
 template <typename T>
 void testing_csr2bsr_bad_arg(const Arguments& arg)
 {
-    static const size_t safe_size = 100;
+    static const size_t safe_size = 1;
+
+    host_dense_vector<rocsparse_int> hptr(safe_size + 1);
+    hptr[0] = 0;
+    hptr[1] = 1;
+    device_dense_vector<rocsparse_int> dcsr_row_ptr(hptr);
+    device_dense_vector<rocsparse_int> dbsr_row_ptr(hptr);
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
@@ -42,12 +48,12 @@ void testing_csr2bsr_bad_arg(const Arguments& arg)
     rocsparse_int             n           = safe_size;
     const rocsparse_mat_descr csr_descr   = local_csr_descr;
     const T*                  csr_val     = (const T*)0x4;
-    const rocsparse_int*      csr_row_ptr = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_row_ptr = (const rocsparse_int*)dcsr_row_ptr;
     const rocsparse_int*      csr_col_ind = (const rocsparse_int*)0x4;
     rocsparse_int             block_dim   = safe_size;
     const rocsparse_mat_descr bsr_descr   = local_bsr_descr;
     T*                        bsr_val     = (T*)0x4;
-    rocsparse_int*            bsr_row_ptr = (rocsparse_int*)0x4;
+    rocsparse_int*            bsr_row_ptr = (rocsparse_int*)dbsr_row_ptr;
     rocsparse_int*            bsr_col_ind = (rocsparse_int*)0x4;
     rocsparse_int*            bsr_nnz     = (rocsparse_int*)0x4;
 
@@ -57,7 +63,6 @@ void testing_csr2bsr_bad_arg(const Arguments& arg)
 #define PARAMS                                                                             \
     handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, csr_col_ind, block_dim, bsr_descr, \
         bsr_val, bsr_row_ptr, bsr_col_ind
-
     {
         static constexpr int nargs_to_exclude                  = 1;
         const int            args_to_exclude[nargs_to_exclude] = {6};

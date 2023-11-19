@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,24 +28,24 @@
 
 #include <hip/hip_runtime.h>
 
-template <unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename I>
 ROCSPARSE_KERNEL(BLOCKSIZE)
-void ell2csr_index_base(rocsparse_int* __restrict__ nnz)
+void ell2csr_index_base(I* __restrict__ nnz)
 {
     --(*nnz);
 }
 
-template <unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename I, typename J>
 ROCSPARSE_KERNEL(BLOCKSIZE)
-void ell2csr_nnz_per_row(rocsparse_int m,
-                         rocsparse_int n,
-                         rocsparse_int ell_width,
-                         const rocsparse_int* __restrict__ ell_col_ind,
+void ell2csr_nnz_per_row(J m,
+                         J n,
+                         J ell_width,
+                         const J* __restrict__ ell_col_ind,
                          rocsparse_index_base ell_base,
-                         rocsparse_int* __restrict__ csr_row_ptr,
+                         I* __restrict__ csr_row_ptr,
                          rocsparse_index_base csr_base)
 {
-    rocsparse_int ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+    const J ai = ((J)BLOCKSIZE) * hipBlockIdx_x + hipThreadIdx_x;
 
     if(ai >= m)
     {
@@ -57,13 +57,12 @@ void ell2csr_nnz_per_row(rocsparse_int m,
         csr_row_ptr[0] = csr_base;
     }
 
-    rocsparse_int nnz = 0;
+    I nnz = 0;
 
     for(rocsparse_int p = 0; p < ell_width; ++p)
     {
-        rocsparse_int idx = ELL_IND(ai, p, m, ell_width);
-        rocsparse_int col = ell_col_ind[idx] - ell_base;
-
+        const I idx = ELL_IND(ai, p, m, ell_width);
+        const J col = ell_col_ind[idx] - ell_base;
         if(col >= 0 && col < n)
         {
             ++nnz;
@@ -73,37 +72,34 @@ void ell2csr_nnz_per_row(rocsparse_int m,
             break;
         }
     }
-
     csr_row_ptr[ai + 1] = nnz;
 }
 
-template <unsigned int BLOCKSIZE, typename T>
+template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
 ROCSPARSE_KERNEL(BLOCKSIZE)
-void ell2csr_fill(rocsparse_int m,
-                  rocsparse_int n,
-                  rocsparse_int ell_width,
-                  const rocsparse_int* __restrict__ ell_col_ind,
+void ell2csr_fill(J m,
+                  J n,
+                  J ell_width,
+                  const J* __restrict__ ell_col_ind,
                   const T* __restrict__ ell_val,
                   rocsparse_index_base ell_base,
-                  const rocsparse_int* __restrict__ csr_row_ptr,
-                  rocsparse_int* __restrict__ csr_col_ind,
+                  const I* __restrict__ csr_row_ptr,
+                  J* __restrict__ csr_col_ind,
                   T* __restrict__ csr_val,
                   rocsparse_index_base csr_base)
 {
-    rocsparse_int ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+    const J ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 
     if(ai >= m)
     {
         return;
     }
 
-    rocsparse_int csr_idx = csr_row_ptr[ai] - csr_base;
-
-    for(rocsparse_int p = 0; p < ell_width; ++p)
+    I csr_idx = csr_row_ptr[ai] - csr_base;
+    for(J p = 0; p < ell_width; ++p)
     {
-        rocsparse_int ell_idx = ELL_IND(ai, p, m, ell_width);
-        rocsparse_int ell_col = ell_col_ind[ell_idx] - ell_base;
-
+        const I ell_idx = ELL_IND(ai, p, m, ell_width);
+        const J ell_col = ell_col_ind[ell_idx] - ell_base;
         if(ell_col >= 0 && ell_col < n)
         {
             csr_col_ind[csr_idx] = ell_col + csr_base;

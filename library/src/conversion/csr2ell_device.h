@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,19 +29,17 @@
 
 // Compute non-zero entries per CSR row and do a block reduction over the maximum
 // Store result in a workspace for final reduction on part2
-template <unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename I, typename J>
 ROCSPARSE_KERNEL(BLOCKSIZE)
-void ell_width_kernel_part1(rocsparse_int        m,
-                            const rocsparse_int* csr_row_ptr,
-                            rocsparse_int*       workspace)
+void ell_width_kernel_part1(J m, const I* csr_row_ptr, J* workspace)
 {
-    rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    const unsigned int tid = hipThreadIdx_x;
+    const unsigned int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
-    __shared__ rocsparse_int sdata[BLOCKSIZE];
+    __shared__ J sdata[BLOCKSIZE];
     sdata[tid] = 0;
 
-    for(rocsparse_int idx = gid; idx < m; idx += hipGridDim_x * BLOCKSIZE)
+    for(unsigned int idx = gid; idx < m; idx += hipGridDim_x * BLOCKSIZE)
     {
         sdata[tid] = max(sdata[tid], csr_row_ptr[idx + 1] - csr_row_ptr[idx]);
     }
@@ -57,16 +55,16 @@ void ell_width_kernel_part1(rocsparse_int        m,
 }
 
 // Part2 kernel for final reduction over the maximum CSR nnz row entries
-template <unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename J>
 ROCSPARSE_KERNEL(BLOCKSIZE)
-void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace)
+void ell_width_kernel_part2(J m, J* workspace)
 {
-    rocsparse_int tid = hipThreadIdx_x;
+    const unsigned int tid = hipThreadIdx_x;
 
-    __shared__ rocsparse_int sdata[BLOCKSIZE];
+    __shared__ J sdata[BLOCKSIZE];
     sdata[tid] = 0;
 
-    for(rocsparse_int i = tid; i < m; i += BLOCKSIZE)
+    for(unsigned int i = tid; i < m; i += BLOCKSIZE)
     {
         sdata[tid] = max(sdata[tid], workspace[i]);
     }
@@ -82,29 +80,28 @@ void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace)
 }
 
 // CSR to ELL format conversion kernel
-template <unsigned int BLOCKSIZE, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void csr2ell_kernel(rocsparse_int        m,
-                    const T*             csr_val,
-                    const rocsparse_int* csr_row_ptr,
-                    const rocsparse_int* csr_col_ind,
-                    rocsparse_index_base csr_idx_base,
-                    rocsparse_int        ell_width,
-                    rocsparse_int*       ell_col_ind,
-                    T*                   ell_val,
-                    rocsparse_index_base ell_idx_base)
+template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+__device__ void csr2ell_device(J                    m,
+                               const T*             csr_val,
+                               const I*             csr_row_ptr,
+                               const J*             csr_col_ind,
+                               rocsparse_index_base csr_idx_base,
+                               J                    ell_width,
+                               J*                   ell_col_ind,
+                               T*                   ell_val,
+                               rocsparse_index_base ell_idx_base)
 {
-    rocsparse_int ai = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    const J ai = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(ai >= m)
     {
         return;
     }
 
-    rocsparse_int p = 0;
+    J p = 0;
 
-    rocsparse_int row_begin = csr_row_ptr[ai] - csr_idx_base;
-    rocsparse_int row_end   = csr_row_ptr[ai + 1] - csr_idx_base;
+    const I row_begin = csr_row_ptr[ai] - csr_idx_base;
+    const I row_end   = csr_row_ptr[ai + 1] - csr_idx_base;
 
     // Fill ELL matrix
     for(rocsparse_int aj = row_begin; aj < row_end; ++aj)
@@ -120,10 +117,61 @@ void csr2ell_kernel(rocsparse_int        m,
     }
 
     // Pad remaining ELL structure
-    for(rocsparse_int aj = row_end - row_begin; aj < ell_width; ++aj)
+    for(J aj = row_end - row_begin; aj < ell_width; ++aj)
     {
-        rocsparse_int idx = ELL_IND(ai, aj, m, ell_width);
-        ell_col_ind[idx]  = -1;
-        ell_val[idx]      = static_cast<T>(0);
+        const I idx      = ELL_IND(ai, aj, m, ell_width);
+        ell_col_ind[idx] = -1;
+        ell_val[idx]     = static_cast<T>(0);
     }
+}
+
+// CSR to ELL format conversion kernel
+template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2ell_kernel(J                    m,
+                    const T*             csr_val,
+                    const I*             csr_row_ptr,
+                    const J*             csr_col_ind,
+                    rocsparse_index_base csr_idx_base,
+                    J                    ell_width,
+                    J*                   ell_col_ind,
+                    T*                   ell_val,
+                    rocsparse_index_base ell_idx_base)
+{
+    csr2ell_device<BLOCKSIZE, T, I, J>(m,
+                                       csr_val,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_idx_base,
+                                       ell_width,
+                                       ell_col_ind,
+                                       ell_val,
+                                       ell_idx_base);
+}
+// CSR to ELL format conversion kernel
+template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csr2ell_strided_batched_kernel(J                    m,
+                                    const T*             csr_val,
+                                    int64_t              csr_val_stride,
+                                    const I*             csr_row_ptr,
+                                    const J*             csr_col_ind,
+                                    rocsparse_index_base csr_idx_base,
+                                    J                    ell_width,
+                                    J*                   ell_col_ind,
+                                    T*                   ell_val,
+                                    int64_t              ell_val_stride,
+                                    rocsparse_index_base ell_idx_base)
+{
+    const T* batch_csr_val = csr_val + csr_val_stride * blockIdx.y;
+    T*       batch_ell_val = ell_val + ell_val_stride * blockIdx.y;
+    csr2ell_device<BLOCKSIZE, T, I, J>(m,
+                                       batch_csr_val,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_idx_base,
+                                       ell_width,
+                                       ell_col_ind,
+                                       batch_ell_val,
+                                       ell_idx_base);
 }

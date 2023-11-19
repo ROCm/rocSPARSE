@@ -216,6 +216,7 @@ rocsparse_status rocsparse_csr2coo_impl(rocsparse_handle     handle,
 
 INSTANTIATE(int32_t, int32_t);
 INSTANTIATE(int64_t, int32_t);
+INSTANTIATE(int32_t, int64_t);
 INSTANTIATE(int64_t, int64_t);
 #undef INSTANTIATE
 

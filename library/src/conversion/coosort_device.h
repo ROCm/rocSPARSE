@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,11 @@
 #include <hip/hip_runtime.h>
 
 // COO to CSR matrix conversion kernel
-template <unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename J>
 ROCSPARSE_KERNEL(BLOCKSIZE)
-void coosort_permute_kernel(rocsparse_int        nnz,
-                            const rocsparse_int* in,
-                            const rocsparse_int* perm,
-                            rocsparse_int*       out)
+void coosort_permute_kernel(J nnz, const J* in, const J* perm, J* out)
 {
-    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(gid >= nnz)
     {

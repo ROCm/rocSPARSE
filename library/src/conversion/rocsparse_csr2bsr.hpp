@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,91 @@
 
 #pragma once
 
-#include "handle.h"
+#include "definitions.h"
 
-template <typename T>
-rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
-                                            rocsparse_direction       direction,
-                                            rocsparse_int             m,
-                                            rocsparse_int             n,
+template <typename I>
+rocsparse_status rocsparse_csr2bsr_quickreturn(rocsparse_handle          handle,
+                                               rocsparse_direction       direction,
+                                               int64_t                   m,
+                                               int64_t                   n,
+                                               const rocsparse_mat_descr csr_descr,
+                                               const void*               csr_val,
+                                               const void*               csr_row_ptr,
+                                               const void*               csr_col_ind,
+                                               int64_t                   block_dim,
+                                               const rocsparse_mat_descr bsr_descr,
+                                               void*                     bsr_val,
+                                               I*                        bsr_row_ptr,
+                                               void*                     bsr_col_ind,
+                                               int64_t*                  nnzb);
+
+template <typename T, typename I, typename J>
+rocsparse_status rocsparse_csr2bsr_core(rocsparse_handle          handle,
+                                        rocsparse_direction       direction,
+                                        J                         m,
+                                        J                         n,
+                                        const rocsparse_mat_descr csr_descr,
+                                        const T*                  csr_val,
+                                        const I*                  csr_row_ptr,
+                                        const J*                  csr_col_ind,
+                                        J                         block_dim,
+                                        const rocsparse_mat_descr bsr_descr,
+                                        T*                        bsr_val,
+                                        I*                        bsr_row_ptr,
+                                        J*                        bsr_col_ind,
+                                        int64_t                   nnzb);
+
+template <typename... P>
+rocsparse_status rocsparse_csr2bsr_template(P&&... p)
+{
+    int64_t                nnzb;
+    const rocsparse_status status = rocsparse_csr2bsr_quickreturn(p..., &nnzb);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2bsr_core(p..., nnzb));
+    return rocsparse_status_success;
+}
+
+template <typename I, typename J>
+rocsparse_status rocsparse_csr2bsr_nnz_quickreturn(rocsparse_handle          handle,
+                                                   rocsparse_direction       dir,
+                                                   J                         m,
+                                                   J                         n,
+                                                   const rocsparse_mat_descr csr_descr,
+                                                   const I*                  csr_row_ptr,
+                                                   const J*                  csr_col_ind,
+                                                   J                         block_dim,
+                                                   const rocsparse_mat_descr bsr_descr,
+                                                   I*                        bsr_row_ptr,
+                                                   I*                        bsr_nnz);
+
+template <typename I, typename J>
+rocsparse_status rocsparse_csr2bsr_nnz_core(rocsparse_handle          handle,
+                                            rocsparse_direction       dir,
+                                            J                         m,
+                                            J                         n,
                                             const rocsparse_mat_descr csr_descr,
-                                            const T*                  csr_val,
-                                            const rocsparse_int*      csr_row_ptr,
-                                            const rocsparse_int*      csr_col_ind,
-                                            rocsparse_int             block_dim,
+                                            const I*                  csr_row_ptr,
+                                            const J*                  csr_col_ind,
+                                            J                         block_dim,
                                             const rocsparse_mat_descr bsr_descr,
-                                            T*                        bsr_val,
-                                            rocsparse_int*            bsr_row_ptr,
-                                            rocsparse_int*            bsr_col_ind);
+                                            I*                        bsr_row_ptr,
+                                            I*                        bsr_nnz);
+
+template <typename... P>
+rocsparse_status rocsparse_csr2bsr_nnz_template(P&&... p)
+{
+    const rocsparse_status status = rocsparse_csr2bsr_nnz_quickreturn(p...);
+    if(status != rocsparse_status_continue)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
+    }
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2bsr_nnz_core(p...));
+    return rocsparse_status_success;
+}

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,5 +67,6 @@ void coo2csr_kernel(J m, I nnz, const J* coo_row_ind, I* csr_row_ptr, rocsparse_
     }
 
     // Binary search
-    csr_row_ptr[gid] = lower_bound(coo_row_ind, gid + idx_base, static_cast<I>(0), nnz) + idx_base;
+    csr_row_ptr[gid]
+        = lower_bound<I, J>(coo_row_ind, gid + idx_base, static_cast<I>(0), nnz) + idx_base;
 }
