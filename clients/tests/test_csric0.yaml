@@ -41,11 +41,24 @@ Definitions:
     - { M:  37017, N:  37017 }
     - { M: 505194, N: 505194 }
 
+  - &M_N_range_extra
+    - { M: 10, N: 10 }
+    - { M: 235, N: 235 }
+    - { M: 1200, N: 1200 }
+
 Tests:
 - name: csric0_bad_arg
   category: pre_checkin
   function: csric0_bad_arg
   precision: *single_double_precisions_complex_real
+
+- name: csric0_extra
+  category: quick
+  M_N: *M_N_range_extra
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  function: csric0_extra
 
 - name: csric0
   category: quick
