@@ -497,4 +497,181 @@ INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
-void testing_csric0_extra(const Arguments& arg) {}
+
+void testing_csric0_extra(const Arguments& arg)
+{
+    rocsparse_int             M    = arg.M;
+    rocsparse_int             N    = arg.N;
+    rocsparse_analysis_policy apol = arg.apol;
+    rocsparse_solve_policy    spol = arg.spol;
+    rocsparse_index_base      base = arg.baseA;
+
+    // Create rocsparse handle
+    rocsparse_local_handle handle(arg);
+
+    // Create matrix descriptor
+    rocsparse_local_mat_descr descr;
+
+    // Create matrix info
+    rocsparse_local_mat_info info;
+
+    // Set matrix index base
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
+
+    rocsparse_int nnz = M * N;
+
+    // Allocate host memory for matrix
+    host_vector<rocsparse_int> hcsr_row_ptr(M + 1);
+    host_vector<rocsparse_int> hcsr_col_ind(nnz);
+    host_vector<float>         hcsr_val(nnz);
+
+    // Create dense matrix
+    hcsr_row_ptr[0] = base;
+    for(rocsparse_int i = 0; i < M; i++)
+    {
+        hcsr_row_ptr[i + 1] = hcsr_row_ptr[i] + N;
+    }
+
+    for(rocsparse_int i = 0; i < M; i++)
+    {
+        rocsparse_int start = hcsr_row_ptr[i] - base;
+
+        for(rocsparse_int j = 0; j < N; j++)
+        {
+            hcsr_col_ind[start + j] = j + base;
+            hcsr_val[start + j]     = random_cached_generator_normal<float>();
+            if(i == j)
+            {
+                hcsr_val[start + j] += N + 1;
+            }
+        }
+    }
+
+    host_vector<float> hcsr_val_gold = hcsr_val;
+
+    // Allocate host memory for vectors
+    host_vector<float>         hcsr_val_1(nnz);
+    host_vector<float>         hcsr_val_2(nnz);
+    host_vector<rocsparse_int> h_analysis_pivot_1(1);
+    host_vector<rocsparse_int> h_analysis_pivot_2(1);
+    host_vector<rocsparse_int> h_analysis_pivot_gold(1);
+    host_vector<rocsparse_int> h_solve_pivot_1(1);
+    host_vector<rocsparse_int> h_solve_pivot_2(1);
+    host_vector<rocsparse_int> h_solve_pivot_gold(1);
+
+    // Allocate device memory
+    device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
+    device_vector<rocsparse_int> dcsr_col_ind(nnz);
+    device_vector<float>         dcsr_val_1(nnz);
+    device_vector<float>         dcsr_val_2(nnz);
+    device_vector<rocsparse_int> d_analysis_pivot_2(1);
+    device_vector<rocsparse_int> d_solve_pivot_2(1);
+
+    // Copy data from CPU to device
+    CHECK_HIP_ERROR(hipMemcpy(
+        dcsr_row_ptr, hcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(
+        hipMemcpy(dcsr_col_ind, hcsr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcsr_val_1, hcsr_val, sizeof(float) * nnz, hipMemcpyHostToDevice));
+
+    // Obtain required buffer size
+    size_t buffer_size;
+    CHECK_ROCSPARSE_ERROR(rocsparse_csric0_buffer_size<float>(
+        handle, M, nnz, descr, dcsr_val_1, dcsr_row_ptr, dcsr_col_ind, info, &buffer_size));
+
+    void* dbuffer;
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
+
+    // Copy data from CPU to device
+    CHECK_HIP_ERROR(hipMemcpy(dcsr_val_2, hcsr_val, sizeof(float) * nnz, hipMemcpyHostToDevice));
+
+    // Perform analysis step
+
+    // Pointer mode host
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csric0_analysis<float>(
+        handle, M, nnz, descr, dcsr_val_1, dcsr_row_ptr, dcsr_col_ind, info, apol, spol, dbuffer));
+    {
+        auto st = rocsparse_csric0_zero_pivot(handle, info, h_analysis_pivot_1);
+        EXPECT_ROCSPARSE_STATUS(st,
+                                (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                              : rocsparse_status_success);
+    }
+
+    // Sync to force updated pivots
+    CHECK_HIP_ERROR(hipDeviceSynchronize());
+
+    // Pointer mode device
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csric0_analysis<float>(
+        handle, M, nnz, descr, dcsr_val_2, dcsr_row_ptr, dcsr_col_ind, info, apol, spol, dbuffer));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, d_analysis_pivot_2),
+                            (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                          : rocsparse_status_success);
+
+    // Sync to force updated pivots
+    CHECK_HIP_ERROR(hipDeviceSynchronize());
+
+    // Perform solve step
+
+    // Pointer mode host
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+    CHECK_ROCSPARSE_ERROR(testing::rocsparse_csric0<float>(
+        handle, M, nnz, descr, dcsr_val_1, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
+    {
+        auto st = rocsparse_csric0_zero_pivot(handle, info, h_solve_pivot_1);
+        EXPECT_ROCSPARSE_STATUS(st,
+                                (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                           : rocsparse_status_success);
+    }
+
+    // Sync to force updated pivots
+    CHECK_HIP_ERROR(hipDeviceSynchronize());
+
+    // Pointer mode device
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+    CHECK_ROCSPARSE_ERROR(testing::rocsparse_csric0<float>(
+        handle, M, nnz, descr, dcsr_val_2, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, d_solve_pivot_2),
+                            (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                       : rocsparse_status_success);
+
+    // Sync to force updated pivots
+    CHECK_HIP_ERROR(hipDeviceSynchronize());
+
+    // Copy output to host
+    CHECK_HIP_ERROR(hipMemcpy(hcsr_val_1, dcsr_val_1, sizeof(float) * nnz, hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(hcsr_val_2, dcsr_val_2, sizeof(float) * nnz, hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(
+        h_analysis_pivot_2, d_analysis_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(
+        hipMemcpy(h_solve_pivot_2, d_solve_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+    // CPU csric0
+    host_csric0<float>(M,
+                       hcsr_row_ptr,
+                       hcsr_col_ind,
+                       hcsr_val_gold,
+                       base,
+                       h_analysis_pivot_gold,
+                       h_solve_pivot_gold);
+
+    // Check pivots
+    h_analysis_pivot_gold.unit_check(h_analysis_pivot_1);
+    h_analysis_pivot_gold.unit_check(h_analysis_pivot_2);
+    h_solve_pivot_gold.unit_check(h_solve_pivot_1);
+    h_solve_pivot_gold.unit_check(h_solve_pivot_2);
+
+    // Check solution vector if no pivot has been found
+    if(h_analysis_pivot_gold[0] == -1 && h_solve_pivot_gold[0] == -1)
+    {
+        hcsr_val_gold.near_check(hcsr_val_1);
+        hcsr_val_gold.near_check(hcsr_val_2);
+    }
+
+    // Clear csric0 meta data
+    CHECK_ROCSPARSE_ERROR(rocsparse_csric0_clear(handle, info));
+
+    // Free buffer
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
+}

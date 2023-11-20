@@ -390,6 +390,6 @@ void csric0_binsearch_kernel(rocsparse_int m,
     if(lid == WFSIZE - 1)
     {
         // Last lane writes "we are done" flag
-        __hip_atomic_store(&done[row], 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+        __hip_atomic_store(&done[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
     }
 }
