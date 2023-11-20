@@ -30,8 +30,6 @@
 #include <map>
 
 #include "debug.h"
-#include <sys/types.h>
-#include <unistd.h>
 
 int64_t rocsparse_get_pid()
 {
