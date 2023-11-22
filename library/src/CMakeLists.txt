@@ -34,6 +34,7 @@ set(rocsparse_source
   src/handle.cpp
   src/status.cpp
   src/rocsparse_auxiliary.cpp
+  src/rocsparse_blas.cpp
   src/rocsparse_envariables.cpp
   src/rocsparse_memstat.cpp
   ##
@@ -208,6 +209,7 @@ set(rocsparse_source
   src/conversion/rocsparse_csr2dense.cpp
   src/conversion/rocsparse_csc2dense.cpp
   src/conversion/rocsparse_coo2dense.cpp
+  src/conversion/rocsparse_coo2dense_aos.cpp
   src/conversion/rocsparse_nnz_compress.cpp
   src/conversion/rocsparse_csr2coo.cpp
   src/conversion/rocsparse_csr2csc.cpp
@@ -224,6 +226,7 @@ set(rocsparse_source
   src/conversion/rocsparse_prune_csr2csr_by_percentage.cpp
   src/conversion/rocsparse_coo2csr.cpp
   src/conversion/rocsparse_ell2csr.cpp
+  src/conversion/rocsparse_ell2dense.cpp
   src/conversion/rocsparse_hyb2csr.cpp
   src/conversion/rocsparse_bsr2csr.cpp
   src/conversion/rocsparse_gebsr2csr.cpp

@@ -27,6 +27,7 @@
 #include "rocsparse-auxiliary.h"
 #include "rocsparse-version.h"
 
+#include "rocsparse_blas.h"
 #include <fstream>
 #include <hip/hip_runtime_api.h>
 #include <iostream>
@@ -56,6 +57,10 @@ struct _rocsparse_handle
     rocsparse_status set_stream(hipStream_t user_stream);
     // get stream
     rocsparse_status get_stream(hipStream_t* user_stream) const;
+    // set pointer mode
+    rocsparse_status set_pointer_mode(rocsparse_pointer_mode user_mode);
+    // get pointer mode
+    rocsparse_status get_pointer_mode(rocsparse_pointer_mode* user_mode) const;
 
     // device id
     int device;
@@ -80,6 +85,8 @@ struct _rocsparse_handle
     // device complex one
     rocsparse_float_complex*  cone;
     rocsparse_double_complex* zone;
+    // blas handle
+    rocsparse_blas_handle blas_handle;
 
     // logging streams
     std::ofstream log_trace_ofs;

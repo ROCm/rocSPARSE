@@ -394,6 +394,57 @@ public:
             auto_testing_bad_arg(rocsparse_sddmm, num_to_exclude, to_exclude, PARAMS);
         }
 
+        // conjugate transpose
+        {
+            device_dense_matrix<T> dA, dB;
+            rocsparse_local_dnmat  A(dA), B(dB);
+
+            device_sparse_matrix<T> dC;
+            rocsparse_local_spmat   C(dC);
+
+            trans_A = rocsparse_operation_conjugate_transpose;
+            trans_B = rocsparse_operation_none;
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm_buffer_size(PARAMS_BUFFER_SIZE),
+                                    rocsparse_status_not_implemented);
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm_preprocess(PARAMS),
+                                    rocsparse_status_not_implemented);
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm(PARAMS), rocsparse_status_not_implemented);
+
+            trans_A = rocsparse_operation_none;
+            trans_B = rocsparse_operation_conjugate_transpose;
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm_buffer_size(PARAMS_BUFFER_SIZE),
+                                    rocsparse_status_not_implemented);
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm_preprocess(PARAMS),
+                                    rocsparse_status_not_implemented);
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm(PARAMS), rocsparse_status_not_implemented);
+
+            trans_A = rocsparse_operation_none;
+            trans_B = rocsparse_operation_none;
+        }
+
+        // buffer size
+        {
+            device_dense_matrix<T> dA, dB;
+            rocsparse_local_dnmat  A(dA), B(dB);
+
+            device_sparse_matrix<T> dC(10, 10, 10, rocsparse_index_base_zero);
+            rocsparse_local_spmat   C(dC);
+
+            alg         = rocsparse_sddmm_alg_dense;
+            temp_buffer = nullptr;
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm(PARAMS), rocsparse_status_invalid_pointer);
+
+            alg         = rocsparse_sddmm_alg_default;
+            temp_buffer = (void*)0x4;
+        }
+
 #undef PARAMS
 #undef PARAMS_BUFFER_SIZE
     }
@@ -406,7 +457,7 @@ public:
         rocsparse_operation  trans_A = arg.transA;
         rocsparse_operation  trans_B = arg.transB;
         rocsparse_index_base base    = arg.baseA;
-        rocsparse_sddmm_alg  alg     = rocsparse_sddmm_alg_default;
+        rocsparse_sddmm_alg  alg     = arg.sddmm_alg;
         rocsparse_datatype   ttype   = get_datatype<T>();
         rocsparse_order      order_A = arg.order;
         rocsparse_order      order_B = arg.order;
@@ -593,6 +644,8 @@ public:
                                 *h_alpha,
                                 display_key_t::beta,
                                 *h_beta,
+                                display_key_t::algorithm,
+                                rocsparse_sddmmalg2string(alg),
                                 display_key_t::gflops,
                                 gpu_gflops,
                                 display_key_t::bandwidth,

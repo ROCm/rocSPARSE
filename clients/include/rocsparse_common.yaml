@@ -148,6 +148,7 @@ Datatypes:
       bases: [c_int ]
       attr:
         rocsparse_sddmm_alg_default: 0
+        rocsparse_sddmm_alg_dense: 1
   - rocsparse_spmv_alg:
       bases: [c_int ]
       attr:

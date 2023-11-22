@@ -136,3 +136,46 @@ void sddmm_csx_kernel(rocsparse_operation transA,
         }
     }
 }
+
+template <rocsparse_int       BLOCKSIZE,
+          rocsparse_int       NTHREADS_PER_GROUP,
+          rocsparse_direction DIRECTION,
+          typename I,
+          typename J,
+          typename T>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void sddmm_csx_sample_kernel(J M,
+                             J N,
+                             I nnz,
+                             const T* __restrict__ A,
+                             J lda,
+                             T* __restrict__ csx_val,
+                             const I* __restrict__ csx_ptr,
+                             const J* __restrict__ csx_ind,
+                             rocsparse_index_base csx_base)
+{
+    static constexpr auto GROUPS_PER_BLOCK = BLOCKSIZE / NTHREADS_PER_GROUP;
+
+    const auto lid  = hipThreadIdx_x & (NTHREADS_PER_GROUP - 1);
+    const auto wid  = hipThreadIdx_x / NTHREADS_PER_GROUP;
+    const auto gwid = wid + hipBlockIdx_x * GROUPS_PER_BLOCK;
+
+    static constexpr bool row_oriented = (DIRECTION == rocsparse_direction_row);
+
+#define BOUND ((row_oriented) ? M : N)
+    if(gwid >= BOUND)
+    {
+        return;
+    }
+
+    for(I at = csx_ptr[gwid] - csx_base + lid; at < csx_ptr[gwid + 1] - csx_base;
+        at += NTHREADS_PER_GROUP)
+    {
+        const I ind = csx_ind[at] - csx_base;
+
+        const J row = (row_oriented) ? gwid : ind;
+        const J col = (row_oriented) ? ind : gwid;
+
+        csx_val[at] = A[col * lda + row];
+    }
+}
