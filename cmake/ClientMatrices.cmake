@@ -90,12 +90,12 @@ get_filename_component(CMAKE_MATRICES_DIR "${CMAKE_MATRICES_DIR}"
                        ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR})
-
+# Set relative RUNPATH to the executable
 if(BUILD_ADDRESS_SANITIZER)
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -fsanitize=address -shared-libasan -o ${PROJECT_BINARY_DIR}/mtx2csr.exe
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -fsanitize=address -shared-libasan -Wl,--enable-new-dtags,--build-id=sha1,--rpath,$ENV{ROCM_ASAN_EXE_RPATH} -o ${PROJECT_BINARY_DIR}/mtx2csr.exe
     RESULT_VARIABLE STATUS)
 else()
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -Wl,--enable-new-dtags,--build-id=sha1,--rpath,$ENV{ROCM_EXE_RPATH} -o ${PROJECT_BINARY_DIR}/mtx2csr.exe
     RESULT_VARIABLE STATUS)
 endif()
 
@@ -174,6 +174,9 @@ foreach(i RANGE 0 ${len1})
     else()
       file(RENAME ${ROCSPARSE_MTX_DIR}/${mat}/${mat}.mtx ${CMAKE_MATRICES_DIR}/${mat}.mtx)
     endif()
+    # mtx2csr.exe is having relative RUNPATH with respect to package install directory
+    # Set LD_LIBRARY_PATH for running the executable from build directory
+    set(ENV{LD_LIBRARY_PATH} "${ROCM_PATH}/${CMAKE_INSTALL_LIBDIR}")
     execute_process(COMMAND ${PROJECT_BINARY_DIR}/mtx2csr.exe ${mat}.mtx ${mat}.csr
       RESULT_VARIABLE STATUS
       WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
