@@ -176,7 +176,7 @@ foreach(i RANGE 0 ${len1})
     endif()
     # mtx2csr.exe is having relative RUNPATH with respect to package install directory
     # Set LD_LIBRARY_PATH for running the executable from build directory
-    set(ENV{LD_LIBRARY_PATH} "${ROCM_PATH}/${CMAKE_INSTALL_LIBDIR}")
+    set(ENV{LD_LIBRARY_PATH} "$ENV{LD_LIBRARY_PATH}:${ROCM_PATH}/${CMAKE_INSTALL_LIBDIR}")
     execute_process(COMMAND ${PROJECT_BINARY_DIR}/mtx2csr.exe ${mat}.mtx ${mat}.csr
       RESULT_VARIABLE STATUS
       WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
