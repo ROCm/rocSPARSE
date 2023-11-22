@@ -165,9 +165,10 @@ rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle handle, rocsparse_p
 try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
-
     handle->pointer_mode = mode;
     log_trace(handle, "rocsparse_set_pointer_mode", mode);
+
+    RETURN_IF_ROCSPARSE_ERROR(handle->set_pointer_mode(mode));
     return rocsparse_status_success;
 }
 catch(...)
@@ -184,6 +185,8 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     *mode = handle->pointer_mode;
     log_trace(handle, "rocsparse_get_pointer_mode", *mode);
+
+    RETURN_IF_ROCSPARSE_ERROR(handle->get_pointer_mode(mode));
     return rocsparse_status_success;
 }
 catch(...)
@@ -200,7 +203,9 @@ try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     log_trace(handle, "rocsparse_set_stream", stream_id);
-    return handle->set_stream(stream_id);
+
+    RETURN_IF_ROCSPARSE_ERROR(handle->set_stream(stream_id));
+    return rocsparse_status_success;
 }
 catch(...)
 {
@@ -215,7 +220,9 @@ try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     log_trace(handle, "rocsparse_get_stream", *stream_id);
-    return handle->get_stream(stream_id);
+
+    RETURN_IF_ROCSPARSE_ERROR(handle->get_stream(stream_id));
+    return rocsparse_status_success;
 }
 catch(...)
 {

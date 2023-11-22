@@ -39,6 +39,7 @@ TEST_ROUTINE_WITH_CONFIG(sddmm,
                          arg.transB,
                          arg.baseA,
                          arg.order,
+                         arg.sddmm_alg,
                          arg.format,
                          arg.matrix,
                          arg.graph_test);

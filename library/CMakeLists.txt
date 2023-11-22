@@ -86,7 +86,7 @@ target_include_directories(rocsparse
 )
 
 # Target link libraries
-target_link_libraries(rocsparse PRIVATE roc::rocprim hip::device)
+target_link_libraries(rocsparse PRIVATE roc::rocblas roc::rocprim hip::device)
 # Target properties
 rocm_set_soversion(rocsparse ${rocsparse_SOVERSION})
 set_target_properties(rocsparse PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON)

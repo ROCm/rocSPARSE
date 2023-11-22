@@ -183,7 +183,13 @@ rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle            handle,
 *  \note \p opA == \ref rocsparse_operation_conjugate_transpose is not supported.
 *  \note \p opB == \ref rocsparse_operation_conjugate_transpose is not supported.
 *  \note
-*  This routine supports execution in a hipGraph context.
+*  This routine supports execution in a hipGraph context only when \p alg == \ref rocsparse_sddmm_alg_default.
+*
+*  \note
+*  Different algorithms are available which can provide better performance for different matrices.
+*  Currently, the available algorithms are rocsparse_sddmm_alg_default or rocsparse_sddmm_alg_dense.
+*  The algorithm rocsparse_sddmm_alg_default uses the sparsity pattern of matrix C to perform a limited set of dot products.
+*  On the other hand, rocsparse_sddmm_alg_dense explicitly converts the matrix C into a dense matrix to perform a dense matrix multiply and add.
 *
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.

@@ -40,6 +40,13 @@ rocsparse_status rocsparse_sddmm_buffer_size_dispatch_alg(rocsparse_sddmm_alg al
                 ts...)));
         return rocsparse_status_success;
     }
+    case rocsparse_sddmm_alg_dense:
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_st<FORMAT, rocsparse_sddmm_alg_dense, I, J, T>::buffer_size_template(
+                ts...)));
+        return rocsparse_status_success;
+    }
     }
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
@@ -235,6 +242,15 @@ try
     ROCSPARSE_CHECKARG_ENUM(9, alg);
     ROCSPARSE_CHECKARG_POINTER(10, buffer_size);
 
+    ROCSPARSE_CHECKARG(1,
+                       trans_A,
+                       (trans_A == rocsparse_operation_conjugate_transpose),
+                       rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(2,
+                       trans_B,
+                       (trans_B == rocsparse_operation_conjugate_transpose),
+                       rocsparse_status_not_implemented);
+
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_sddmm_buffer_size_dispatch(
         mat_C->format,
         (mat_C->format == rocsparse_format_csc) ? mat_C->col_type : mat_C->row_type,
@@ -269,6 +285,13 @@ rocsparse_status rocsparse_sddmm_preprocess_dispatch_alg(rocsparse_sddmm_alg alg
     {
         RETURN_IF_ROCSPARSE_ERROR(
             (rocsparse_sddmm_st<FORMAT, rocsparse_sddmm_alg_default, I, J, T>::preprocess_template(
+                ts...)));
+        return rocsparse_status_success;
+    }
+    case rocsparse_sddmm_alg_dense:
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse_sddmm_st<FORMAT, rocsparse_sddmm_alg_dense, I, J, T>::preprocess_template(
                 ts...)));
         return rocsparse_status_success;
     }
@@ -469,6 +492,15 @@ try
                        rocsparse_status_not_implemented);
     ROCSPARSE_CHECKARG_ENUM(9, alg);
 
+    ROCSPARSE_CHECKARG(1,
+                       trans_A,
+                       (trans_A == rocsparse_operation_conjugate_transpose),
+                       rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(2,
+                       trans_B,
+                       (trans_B == rocsparse_operation_conjugate_transpose),
+                       rocsparse_status_not_implemented);
+
     if(mat_C->nnz == 0)
     {
         return rocsparse_status_success;
@@ -510,6 +542,11 @@ rocsparse_status rocsparse_sddmm_dispatch_alg(rocsparse_sddmm_alg alg, Ts&&... t
             (rocsparse_sddmm_st<FORMAT, rocsparse_sddmm_alg_default, I, J, T>::compute_template(
                 ts...)));
         return rocsparse_status_success;
+    }
+    case rocsparse_sddmm_alg_dense:
+    {
+        return rocsparse_sddmm_st<FORMAT, rocsparse_sddmm_alg_dense, I, J, T>::compute_template(
+            ts...);
     }
     }
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
@@ -703,6 +740,15 @@ try
                         || compute_type != mat_C->data_type),
                        rocsparse_status_not_implemented);
     ROCSPARSE_CHECKARG_ENUM(9, alg);
+
+    ROCSPARSE_CHECKARG(1,
+                       trans_A,
+                       (trans_A == rocsparse_operation_conjugate_transpose),
+                       rocsparse_status_not_implemented);
+    ROCSPARSE_CHECKARG(2,
+                       trans_B,
+                       (trans_B == rocsparse_operation_conjugate_transpose),
+                       rocsparse_status_not_implemented);
 
     if(mat_C->nnz == 0)
     {

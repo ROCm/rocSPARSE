@@ -794,6 +794,10 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_sddmm_alg value_)
     {
         return false;
     }
+    case rocsparse_sddmm_alg_dense:
+    {
+        return false;
+    }
     }
     return true;
 };
@@ -875,6 +879,33 @@ struct floating_traits<rocsparse_double_complex>
 
 template <typename T>
 using floating_data_t = typename floating_traits<T>::data_t;
+
+template <typename T>
+rocsparse_datatype get_datatype();
+
+template <>
+inline rocsparse_datatype get_datatype<float>()
+{
+    return rocsparse_datatype_f32_r;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<double>()
+{
+    return rocsparse_datatype_f64_r;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<rocsparse_float_complex>()
+{
+    return rocsparse_datatype_f32_c;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<rocsparse_double_complex>()
+{
+    return rocsparse_datatype_f64_c;
+}
 
 #include "envariables.h"
 #include "memstat.h"

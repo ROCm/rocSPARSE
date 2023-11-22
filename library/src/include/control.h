@@ -180,6 +180,21 @@ constexpr auto rocsparse_status2string(rocsparse_status status)
 //
 //
 //
+#define THROW_IF_ROCSPARSE_ERROR(INPUT_STATUS_FOR_CHECK)                             \
+    do                                                                               \
+    {                                                                                \
+        const rocsparse_status TMP_STATUS_FOR_CHECK = (INPUT_STATUS_FOR_CHECK);      \
+        if(TMP_STATUS_FOR_CHECK != rocsparse_status_success)                         \
+        {                                                                            \
+            ROCSPARSE_ERROR_MESSAGE(TMP_STATUS_FOR_CHECK,                            \
+                                    "rocSPARSE error detected, throwing exception"); \
+            throw TMP_STATUS_FOR_CHECK;                                              \
+        }                                                                            \
+    } while(false)
+
+//
+//
+//
 #define RETURN_IF_ROCSPARSE_ERROR_WMSG(INPUT_STATUS_FOR_CHECK, MSG)             \
     do                                                                          \
     {                                                                           \

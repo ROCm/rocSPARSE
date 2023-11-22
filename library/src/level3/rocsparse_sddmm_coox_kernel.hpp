@@ -120,3 +120,28 @@ void sddmm_coox_kernel(rocsparse_operation transA,
         coo_val[innz] = coo_val[innz] * beta + alpha * s[local_coeff_index][0];
     }
 }
+
+template <rocsparse_int BLOCKSIZE, bool AOS, typename I, typename J, typename T>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void sddmm_coox_sample_kernel(J M,
+                              J N,
+                              I nnz,
+                              const T* __restrict__ A,
+                              J lda,
+                              T* __restrict__ coo_val,
+                              const I* __restrict__ coo_row,
+                              const I* __restrict__ coo_col,
+                              rocsparse_index_base coo_base)
+{
+    const auto NUM_THREADS = hipGridDim_x * BLOCKSIZE;
+
+    const auto gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+    for(auto idx = gid; idx < nnz; idx += NUM_THREADS)
+    {
+        const I row = coo_row[idx * ((AOS) ? 2 : 1)] - coo_base;
+        const I col = coo_col[idx * ((AOS) ? 2 : 1)] - coo_base;
+
+        coo_val[idx] = A[col * lda + row];
+    }
+}

@@ -396,6 +396,10 @@ void rocsparse_arguments_config::set_description(options_description& desc)
       value<rocsparse_int>(&this->b_spmm_alg)->default_value(rocsparse_spmm_alg_default),
       "Indicates what algorithm to use when running SpMM. Possibly choices are default: 0, CSR: 1, COO segmented: 2, COO atomic: 3, CSR row split: 4, CSR merge: 5, COO segmented atomic: 6, BELL: 7 (default:0)")
 
+    ("sddmm_alg",
+      value<rocsparse_int>(&this->b_sddmm_alg)->default_value(rocsparse_sddmm_alg_default),
+      "Indicates what algorithm to use when running SDDMM. Possibly choices are rocsparse_sddmm_alg_default: 0, rocsparse_sddmm_alg_default: 1 (default: 0)")
+
     ("gtsv_interleaved_alg",
       value<rocsparse_int>(&this->b_gtsv_interleaved_alg)->default_value(rocsparse_gtsv_interleaved_alg_default),
       "Indicates what algorithm to use when running rocsparse_gtsv_interleaved_batch. Possibly choices are thomas: 1, lu: 2, qr: 3 (default:3)");
@@ -495,6 +499,13 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
       return -1;
   }
 
+  if(this->b_sddmm_alg != rocsparse_sddmm_alg_default
+       && this->b_sddmm_alg != rocsparse_sddmm_alg_dense)
+  {
+      std::cerr << "Invalid value for --sddmm_alg" << std::endl;
+      return -1;
+  }
+
   if(this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_default
        && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_thomas
        && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_lu
@@ -557,6 +568,7 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   this->spmv_alg = (rocsparse_spmv_alg)this->b_spmv_alg;
   this->itilu0_alg = (rocsparse_itilu0_alg)this->b_itilu0_alg;
   this->spmm_alg = (rocsparse_spmm_alg)this->b_spmm_alg;
+  this->sddmm_alg = (rocsparse_sddmm_alg)this->b_sddmm_alg;
   this->gtsv_interleaved_alg = (rocsparse_gtsv_interleaved_alg)this->b_gtsv_interleaved_alg;
 
 #ifdef ROCSPARSE_WITH_MEMSTAT
@@ -808,6 +820,13 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
       return -1;
   }
 
+  if(this->b_sddmm_alg != rocsparse_sddmm_alg_default
+       && this->b_sddmm_alg != rocsparse_sddmm_alg_dense)
+  {
+      std::cerr << "Invalid value for --sddmm_alg" << std::endl;
+      return -1;
+  }
+
   if(this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_default
        && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_thomas
        && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_lu
@@ -866,6 +885,7 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
   this->format = (rocsparse_format)b_format;
   this->spmv_alg = (rocsparse_spmv_alg)this->b_spmv_alg;
   this->spmm_alg = (rocsparse_spmm_alg)this->b_spmm_alg;
+  this->sddmm_alg = (rocsparse_sddmm_alg)this->b_sddmm_alg;
   this->gtsv_interleaved_alg = (rocsparse_gtsv_interleaved_alg)this->b_gtsv_interleaved_alg;
 
   if(this->b_matrices_dir != "")
