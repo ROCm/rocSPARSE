@@ -2,11 +2,17 @@
 
 Full documentation for rocSPARSE is available at [rocm.docs.amd.com](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
-## rocSPARSE 3.0.3 for ROCm 6.1.0
+## rocSPARSE 3.1.0 for ROCm 6.1.0
 ### Added
-- Added new LRB algorithm to SpMV
+- Added new LRB algorithm to SpMV, supporting CSR format
+- Added rocBLAS as an optional dependency to support additional SDDMM algorithm
+- Added additional verbose output for csrgemm and bsrgemm
+
 ### Changed
 ### Improved
+- Triangular solve with multiple rhs (SpSM, csrsm, ...) now call SpSV, csrsv, etc. when nrhs is equal to 1
+- Improved user manual section `Installation and Building for Linux and Windows`
+
 ### Known Issues
 
 ## rocSPARSE 3.0.2 for ROCm 6.0.0

@@ -190,7 +190,7 @@ if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
 endif( )
 
 # Setup version
-set(VERSION_STRING "3.0.2")
+set(VERSION_STRING "3.1.0")
 set(SOVERSION_STRING "1.0")
 
 rocm_setup_version(VERSION ${VERSION_STRING})
