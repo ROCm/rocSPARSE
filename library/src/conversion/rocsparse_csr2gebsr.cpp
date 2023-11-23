@@ -317,6 +317,22 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle, 
         return rocsparse_status_success;
     }
 
+    hipStream_t         stream = handle->stream;
+    const rocsparse_int mb     = (m + row_block_dim - 1) / row_block_dim;
+    const rocsparse_int nb     = (n + col_block_dim - 1) / col_block_dim;
+
+    rocsparse_int start = 0;
+    rocsparse_int end   = 0;
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+        &end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+        &start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+    const rocsparse_int nnzb = (end - start);
+
+    ROCSPARSE_CHECKARG_ARRAY(9, nnzb, bsr_val);
+    ROCSPARSE_CHECKARG_ARRAY(11, nnzb, bsr_col_ind);
+
     if(row_block_dim == col_block_dim)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2bsr_template(handle,
@@ -334,22 +350,6 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle, 
                                                              bsr_col_ind));
         return rocsparse_status_success;
     }
-
-    hipStream_t         stream = handle->stream;
-    const rocsparse_int mb     = (m + row_block_dim - 1) / row_block_dim;
-    const rocsparse_int nb     = (n + col_block_dim - 1) / col_block_dim;
-
-    rocsparse_int start = 0;
-    rocsparse_int end   = 0;
-    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-        &end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-        &start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-    const rocsparse_int nnzb = (end - start);
-
-    ROCSPARSE_CHECKARG_ARRAY(9, nnzb, bsr_val);
-    ROCSPARSE_CHECKARG_ARRAY(11, nnzb, bsr_col_ind);
 
     //
     // Set bsr val to zero.
