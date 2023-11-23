@@ -326,20 +326,20 @@ void host_csrsv(rocsparse_operation  trans,
                 J*                   numeric_pivot);
 
 template <typename I, typename T>
-void host_coosv(rocsparse_operation   trans,
-                I                     M,
-                int64_t               nnz,
-                T                     alpha,
-                const std::vector<I>& coo_row_ind,
-                const std::vector<I>& coo_col_ind,
-                const std::vector<T>& coo_val,
-                const std::vector<T>& x,
-                std::vector<T>&       y,
-                rocsparse_diag_type   diag_type,
-                rocsparse_fill_mode   fill_mode,
-                rocsparse_index_base  base,
-                I*                    struct_pivot,
-                I*                    numeric_pivot);
+void host_coosv(rocsparse_operation  trans,
+                I                    M,
+                int64_t              nnz,
+                T                    alpha,
+                const I*             coo_row_ind,
+                const I*             coo_col_ind,
+                const T*             coo_val,
+                const T*             x,
+                T*                   y,
+                rocsparse_diag_type  diag_type,
+                rocsparse_fill_mode  fill_mode,
+                rocsparse_index_base base,
+                I*                   struct_pivot,
+                I*                   numeric_pivot);
 
 template <typename T, typename I, typename A, typename X, typename Y>
 void host_ellmv(rocsparse_operation  trans,
@@ -1218,8 +1218,7 @@ void host_prune_csr_to_csr_by_percentage(rocsparse_int                     M,
                                          T                                 percentage);
 
 template <typename I, typename J>
-void host_coo_to_csr(
-    J M, I nnz, const J* coo_row_ind, std::vector<I>& csr_row_ptr, rocsparse_index_base base);
+void host_coo_to_csr(J M, I nnz, const J* coo_row_ind, I* csr_row_ptr, rocsparse_index_base base);
 
 template <typename T>
 void host_ell_to_csr(rocsparse_int                     M,

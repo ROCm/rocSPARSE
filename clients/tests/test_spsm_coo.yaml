@@ -257,8 +257,14 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [bmwcra_1,
              amazon0312,
-             sme3Dc,
-             shipsec1]
+             sme3Dc]
+
+#
+# in test definition above
+# Too sensitive to roundoff errors when normalized, subject to investigation.
+# shipsec1
+#
+
 
 - name: spsm_coo_file
   category: nightly

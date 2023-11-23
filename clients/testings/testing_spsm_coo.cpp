@@ -287,22 +287,82 @@ void testing_spsm_coo(const Arguments& arg)
         // CPU coosm
         I analysis_pivot = -1;
         I solve_pivot    = -1;
-        host_coosm<I, T>(M,
-                         K,
-                         nnz_A,
-                         trans_A,
-                         trans_B,
-                         halpha,
-                         hcoo_row_ind,
-                         hcoo_col_ind,
-                         hcoo_val,
-                         hC_gold,
-                         ldc,
-                         diag,
-                         uplo,
-                         base,
-                         &analysis_pivot,
-                         &solve_pivot);
+
+        if(K > 1)
+        {
+            host_coosm<I, T>(M,
+                             K,
+                             nnz_A,
+                             trans_A,
+                             trans_B,
+                             halpha,
+                             hcoo_row_ind,
+                             hcoo_col_ind,
+                             hcoo_val,
+                             hC_gold,
+                             ldc,
+                             diag,
+                             uplo,
+                             base,
+                             &analysis_pivot,
+                             &solve_pivot);
+        }
+        else
+        {
+            if(K > 0)
+            {
+                if(trans_B == rocsparse_operation_none)
+                {
+                    host_dense_matrix<T> hx(M, 1);
+                    host_dense_matrix<T> hy(M, 1);
+                    hx.transfer_from(hC_gold);
+                    host_coosv<I, T>(trans_A,
+                                     M,
+                                     nnz_A,
+                                     halpha,
+                                     hcoo_row_ind,
+                                     hcoo_col_ind,
+                                     hcoo_val,
+                                     hx,
+                                     hy,
+                                     diag,
+                                     uplo,
+                                     base,
+                                     &analysis_pivot,
+                                     &solve_pivot);
+                    hC_gold.transfer_from(hy);
+                }
+                else
+                {
+                    host_dense_matrix<T> hx(1, M);
+                    host_dense_matrix<T> hy(1, M);
+                    hx.transfer_from(hC_gold);
+                    host_coosv<I, T>(trans_A,
+                                     M,
+                                     nnz_A,
+                                     halpha,
+                                     hcoo_row_ind,
+                                     hcoo_col_ind,
+                                     hcoo_val,
+                                     hx,
+                                     hy,
+                                     diag,
+                                     uplo,
+                                     base,
+                                     &analysis_pivot,
+                                     &solve_pivot);
+                    hC_gold.transfer_from(hy);
+                }
+            }
+            else
+            {
+                analysis_pivot = M + 1;
+                solve_pivot    = M + 1;
+                solve_pivot    = std::min(solve_pivot, analysis_pivot);
+                analysis_pivot = (analysis_pivot == M + 1) ? -1 : analysis_pivot;
+                solve_pivot    = (solve_pivot == M + 1) ? -1 : solve_pivot;
+            }
+        }
 
         if(analysis_pivot == -1 && solve_pivot == -1)
         {

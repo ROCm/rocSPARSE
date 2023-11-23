@@ -2013,6 +2013,7 @@ static void host_csr_usolve(J                    M,
                             J*                   struct_pivot,
                             J*                   numeric_pivot)
 {
+
     // Get device properties
     int             dev;
     hipDeviceProp_t prop;
@@ -2025,6 +2026,7 @@ static void host_csr_usolve(J                    M,
     // Process upper triangular part
     for(J row = M - 1; row >= 0; --row)
     {
+
         temp.assign(prop.warpSize, static_cast<T>(0));
         temp[0] = alpha * x[row];
 
@@ -2119,6 +2121,7 @@ void host_csrsv(rocsparse_operation  trans,
                 J*                   struct_pivot,
                 J*                   numeric_pivot)
 {
+
     // Initialize pivot
     *struct_pivot  = M + 1;
     *numeric_pivot = M + 1;
@@ -2219,36 +2222,36 @@ void host_csrsv(rocsparse_operation  trans,
 }
 
 template <typename I, typename T>
-void host_coosv(rocsparse_operation   trans,
-                I                     M,
-                int64_t               nnz,
-                T                     alpha,
-                const std::vector<I>& coo_row_ind,
-                const std::vector<I>& coo_col_ind,
-                const std::vector<T>& coo_val,
-                const std::vector<T>& x,
-                std::vector<T>&       y,
-                rocsparse_diag_type   diag_type,
-                rocsparse_fill_mode   fill_mode,
-                rocsparse_index_base  base,
-                I*                    struct_pivot,
-                I*                    numeric_pivot)
+void host_coosv(rocsparse_operation  trans,
+                I                    M,
+                int64_t              nnz,
+                T                    alpha,
+                const I*             coo_row_ind,
+                const I*             coo_col_ind,
+                const T*             coo_val,
+                const T*             x,
+                T*                   y,
+                rocsparse_diag_type  diag_type,
+                rocsparse_fill_mode  fill_mode,
+                rocsparse_index_base base,
+                I*                   struct_pivot,
+                I*                   numeric_pivot)
 {
     if(std::is_same<I, int32_t>() && nnz < std::numeric_limits<int32_t>::max())
     {
         std::vector<int32_t> csr_row_ptr(M + 1);
 
-        host_coo_to_csr<int32_t, I>(M, nnz, coo_row_ind.data(), csr_row_ptr, base);
+        host_coo_to_csr<int32_t, I>(M, nnz, coo_row_ind, csr_row_ptr.data(), base);
 
         host_csrsv<int32_t, I>(trans,
                                M,
                                nnz,
                                alpha,
                                csr_row_ptr.data(),
-                               coo_col_ind.data(),
-                               coo_val.data(),
-                               x.data(),
-                               y.data(),
+                               coo_col_ind,
+                               coo_val,
+                               x,
+                               y,
                                diag_type,
                                fill_mode,
                                base,
@@ -2259,17 +2262,17 @@ void host_coosv(rocsparse_operation   trans,
     {
         std::vector<int64_t> csr_row_ptr(M + 1);
 
-        host_coo_to_csr(M, nnz, coo_row_ind.data(), csr_row_ptr, base);
+        host_coo_to_csr(M, nnz, coo_row_ind, csr_row_ptr.data(), base);
 
         host_csrsv(trans,
                    M,
                    nnz,
                    alpha,
                    csr_row_ptr.data(),
-                   coo_col_ind.data(),
-                   coo_val.data(),
-                   x.data(),
-                   y.data(),
+                   coo_col_ind,
+                   coo_val,
+                   x,
+                   y,
                    diag_type,
                    fill_mode,
                    base,
@@ -3570,7 +3573,7 @@ void host_coosm(I                    M,
     {
         std::vector<int32_t> csr_row_ptr(M + 1);
 
-        host_coo_to_csr<int32_t, I>(M, nnz, coo_row_ind, csr_row_ptr, base);
+        host_coo_to_csr<int32_t, I>(M, nnz, coo_row_ind, csr_row_ptr.data(), base);
 
         host_csrsm<int32_t, I>(M,
                                nrhs,
@@ -3593,7 +3596,7 @@ void host_coosm(I                    M,
     {
         std::vector<int64_t> csr_row_ptr(M + 1);
 
-        host_coo_to_csr(M, nnz, coo_row_ind, csr_row_ptr, base);
+        host_coo_to_csr(M, nnz, coo_row_ind, csr_row_ptr.data(), base);
 
         host_csrsm(M,
                    nrhs,
@@ -8632,20 +8635,20 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                                   std::vector<TTYPE>&       coo_val,     \
                                                   std::vector<ITYPE>&       coo_row_ind, \
                                                   std::vector<ITYPE>&       coo_col_ind);      \
-    template void host_coosv<ITYPE, TTYPE>(rocsparse_operation       trans,              \
-                                           ITYPE                     M,                  \
-                                           int64_t                   nnz,                \
-                                           TTYPE                     alpha,              \
-                                           const std::vector<ITYPE>& coo_row_ind,        \
-                                           const std::vector<ITYPE>& coo_col_ind,        \
-                                           const std::vector<TTYPE>& coo_val,            \
-                                           const std::vector<TTYPE>& x,                  \
-                                           std::vector<TTYPE>&       y,                  \
-                                           rocsparse_diag_type       diag_type,          \
-                                           rocsparse_fill_mode       fill_mode,          \
-                                           rocsparse_index_base      base,               \
-                                           ITYPE*                    struct_pivot,       \
-                                           ITYPE*                    numeric_pivot);                        \
+    template void host_coosv<ITYPE, TTYPE>(rocsparse_operation  trans,                   \
+                                           ITYPE                M,                       \
+                                           int64_t              nnz,                     \
+                                           TTYPE                alpha,                   \
+                                           const ITYPE*         coo_row_ind,             \
+                                           const ITYPE*         coo_col_ind,             \
+                                           const TTYPE*         coo_val,                 \
+                                           const TTYPE*         x,                       \
+                                           TTYPE*               y,                       \
+                                           rocsparse_diag_type  diag_type,               \
+                                           rocsparse_fill_mode  fill_mode,               \
+                                           rocsparse_index_base base,                    \
+                                           ITYPE*               struct_pivot,            \
+                                           ITYPE*               numeric_pivot);                        \
     template void host_coomm<TTYPE, ITYPE>(ITYPE                M,                       \
                                            ITYPE                N,                       \
                                            ITYPE                K,                       \

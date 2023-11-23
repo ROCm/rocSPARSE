@@ -27,11 +27,14 @@
 #include "rocsparse_matrix.hpp"
 
 template <typename I, typename J>
-void host_coo_to_csr(
-    J M, I nnz, const J* coo_row_ind, std::vector<I>& csr_row_ptr, rocsparse_index_base base)
+void host_coo_to_csr(J M, I nnz, const J* coo_row_ind, I* csr_row_ptr, rocsparse_index_base base)
 {
     // Resize and initialize csr_row_ptr with zeros
-    csr_row_ptr.resize(M + 1, 0);
+    for(size_t i = 0; i < M + 1; ++i)
+    {
+        csr_row_ptr[i] = 0;
+    }
+
     for(size_t i = 0; i < nnz; ++i)
     {
         ++csr_row_ptr[coo_row_ind[i] + 1 - base];
@@ -817,7 +820,7 @@ void rocsparse_init_csr_mtx(const char*          filename,
     csr_row_ptr.resize(M + 1);
     csr_col_ind.resize(nnz);
 
-    host_coo_to_csr(coo_M, nnz, coo_row_ind.data(), csr_row_ptr, base);
+    host_coo_to_csr(coo_M, nnz, coo_row_ind.data(), csr_row_ptr.data(), base);
 
     for(I i = 0; i < nnz; ++i)
     {
@@ -1269,7 +1272,8 @@ void rocsparse_init_csr_random(std::vector<I>&            csr_row_ptr,
             row_ind, csr_col_ind, csr_val, M, N, nnz, base, full_rank, to_int);
 
         // Convert to CSR
-        host_coo_to_csr(M, nnz, row_ind.data(), csr_row_ptr, base);
+        csr_row_ptr.resize(M + 1);
+        host_coo_to_csr(M, nnz, row_ind.data(), csr_row_ptr.data(), base);
         break;
     }
 
@@ -1298,7 +1302,8 @@ void rocsparse_init_csr_random(std::vector<I>&            csr_row_ptr,
             row_ind, csr_col_ind, csr_val, M, N, nnz, base, full_rank, to_int);
 
         // Convert to CSR
-        host_coo_to_csr(M, nnz, row_ind.data(), csr_row_ptr, base);
+        csr_row_ptr.resize(M + 1);
+        host_coo_to_csr(M, nnz, row_ind.data(), csr_row_ptr.data(), base);
         break;
     }
     }
@@ -1505,7 +1510,8 @@ void rocsparse_init_csr_tridiagonal(std::vector<I>&      row_ptr,
     nnz = (I)coo_nnz;
 
     // Convert to CSR
-    host_coo_to_csr(M, nnz, row_ind.data(), row_ptr, base);
+    row_ptr.resize(M + 1);
+    host_coo_to_csr(M, nnz, row_ind.data(), row_ptr.data(), base);
 }
 
 /* ==================================================================================== */
@@ -1655,7 +1661,8 @@ void rocsparse_init_csr_pentadiagonal(std::vector<I>&      row_ptr,
     nnz = (I)coo_nnz;
 
     // Convert to CSR
-    host_coo_to_csr(M, nnz, row_ind.data(), row_ptr, base);
+    row_ptr.resize(M + 1);
+    host_coo_to_csr(M, nnz, row_ind.data(), row_ptr.data(), base);
 }
 
 /* ==================================================================================== */
@@ -1740,7 +1747,7 @@ void rocsparse_init_gebsr_pentadiagonal(std::vector<I>&      row_ptr,
     template void host_coo_to_csr<ITYPE, JTYPE>(JTYPE                M,                    \
                                                 ITYPE                NNZ,                  \
                                                 const JTYPE*         coo_row_ind,          \
-                                                std::vector<ITYPE>&  csr_row_ptr,          \
+                                                ITYPE*               csr_row_ptr,          \
                                                 rocsparse_index_base base);                \
     template void host_csr_to_coo_aos<ITYPE, JTYPE>(JTYPE                     M,           \
                                                     ITYPE                     nnz,         \
