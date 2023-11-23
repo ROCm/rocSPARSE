@@ -26,6 +26,19 @@
 
 #include "common.h"
 
+template <unsigned int BLOCKSIZE, typename I, typename J>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void csrgemm_set_base(I size, J* __restrict__ out, rocsparse_index_base idx_base_out)
+{
+    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    if(idx >= size)
+    {
+        return;
+    }
+
+    out[idx] = idx_base_out;
+}
+
 // Decrement
 template <unsigned int BLOCKSIZE, typename I>
 ROCSPARSE_KERNEL(BLOCKSIZE)
