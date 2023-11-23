@@ -2,7 +2,7 @@
 
 Full documentation for rocSPARSE is available at [rocm.docs.amd.com](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
-## rocSPARSE 3.1.0 for ROCm 6.1.0
+## rocSPARSE 3.1.1 for ROCm 6.1.0
 ### Added
 - Added new LRB algorithm to SpMV, supporting CSR format
 - Added rocBLAS as an optional dependency to support additional SDDMM algorithm
