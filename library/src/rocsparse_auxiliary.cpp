@@ -165,6 +165,7 @@ rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle handle, rocsparse_p
 try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_ENUM(1, mode);
     handle->pointer_mode = mode;
     log_trace(handle, "rocsparse_set_pointer_mode", mode);
 
@@ -183,6 +184,7 @@ rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle, rocsparse_p
 try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(1, mode);
     *mode = handle->pointer_mode;
     log_trace(handle, "rocsparse_get_pointer_mode", *mode);
 

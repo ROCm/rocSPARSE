@@ -24,6 +24,11 @@
 # The ROCm platform requires Ubuntu 16.04 or Fedora 24, which has cmake 3.5
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
+if (rocblas_FOUND)
+  message("Build rocSPARSE client with rocBLAS")
+  add_compile_options(-DROCSPARSE_WITH_ROCBLAS)
+endif()
+
 # Consider removing this in the future
 # This should appear before the project command, because it does not use FORCE
 if(WIN32)

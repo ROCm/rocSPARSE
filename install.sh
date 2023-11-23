@@ -27,6 +27,7 @@ function display_help()
   echo "    [--matrices-dir] existing client matrices directory"
   echo "    [--matrices-dir-install] install client matrices directory"
   echo "    [--rm-legacy-include-dir] Remove legacy include dir Packaging added for file/folder reorg backward compatibility."
+  echo "    [--without-rocblas] Disable building rocSPARSE with rocBLAS
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
@@ -271,6 +272,7 @@ rocm_path=/opt/rocm
 build_relocatable=false
 build_address_sanitizer=false
 build_memstat=false
+build_without_rocblas=false
 matrices_dir=
 matrices_dir_install=
 gpu_architecture=all
@@ -283,7 +285,7 @@ build_freorg_bkwdcomp=false
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,memstat,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir --options hicdgrka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,memstat,without-rocblas,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir --options hicdgrka: -- "$@")
 
 else
   echo "Need a new version of getopt"
@@ -329,6 +331,9 @@ while true; do
             shift ;;
         --memstat)
             build_memstat=true
+            shift ;;
+        --without-rocblas)
+            build_without_rocblas=true
             shift ;;
         -k|--relwithdebinfo)
             build_release=false
@@ -485,6 +490,11 @@ pushd .
   # memstat
   if [[ "${build_memstat}" == true ]]; then
     cmake_common_options="${cmake_common_options} -DBUILD_MEMSTAT=ON"
+  fi
+
+  # without-rocblas
+  if [[ "${build_without_rocblas}" == true ]]; then
+    cmake_common_options="${cmake_common_options} -DBUILD_WITHOUT_ROCBLAS=ON"
   fi
 
   # freorg backward compatible support enable

@@ -363,6 +363,35 @@ struct rocsparse_enum_utils
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_blas_impl value)
+{
+    switch(value)
+    {
+    case rocsparse_blas_impl_none:
+    case rocsparse_blas_impl_default:
+    case rocsparse_blas_impl_rocblas:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_pointer_mode value)
+{
+    switch(value)
+    {
+    case rocsparse_pointer_mode_device:
+    case rocsparse_pointer_mode_host:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmat_attribute value)
 {
     switch(value)

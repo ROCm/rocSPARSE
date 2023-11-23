@@ -28,26 +28,38 @@
 #pragma once
 
 #include "rocsparse-types.h"
-#include <rocblas/rocblas.h>
 
-/*!
-*   \brief Handle to the BLAS library context queue.
-*/
-typedef void* rocsparse_blas_handle;
+typedef enum rocsparse_blas_impl_
+{
+    rocsparse_blas_impl_none,
+    rocsparse_blas_impl_default,
+    rocsparse_blas_impl_rocblas
+} rocsparse_blas_impl;
+
+typedef struct _rocsparse_blas_rocblas_handle* rocsparse_blas_rocblas_handle;
+
+struct _rocsparse_blas_handle
+{
+    rocsparse_blas_impl           blas_impl{rocsparse_blas_impl_none};
+    rocsparse_blas_rocblas_handle blas_rocblas_handle{};
+};
+
+typedef struct _rocsparse_blas_handle* rocsparse_blas_handle;
 
 /*!
 *   \brief List of BLAS gemm algorithms
 */
 typedef enum rocsparse_blas_gemm_alg_
 {
-    rocsparse_blas_gemm_alg_standard       = rocblas_gemm_algo_standard,
-    rocsparse_blas_gemm_alg_solution_index = rocblas_gemm_algo_solution_index
+    rocsparse_blas_gemm_alg_standard,
+    rocsparse_blas_gemm_alg_solution_index
 } rocsparse_blas_gemm_alg;
 
 /*!
 *   \brief Create handle.
 */
-rocsparse_status rocsparse_blas_create_handle(rocsparse_blas_handle* handle);
+rocsparse_status rocsparse_blas_create_handle(rocsparse_blas_handle* handle,
+                                              rocsparse_blas_impl    blas_impl);
 
 /*!
 *   \brief Destroy handle.
