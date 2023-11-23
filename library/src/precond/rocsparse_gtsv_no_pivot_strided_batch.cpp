@@ -275,7 +275,6 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_small_template(rocsparse_
     }
     else
     {
-        std::cout << "batch_count " << batch_count << std::endl;
         if(m <= 4)
         {
             LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_SHARED(T, 4);
