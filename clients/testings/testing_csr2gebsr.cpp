@@ -52,7 +52,7 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
     const rocsparse_int*      csr_col_ind     = (const rocsparse_int*)0x4;
     const rocsparse_mat_descr bsr_descr       = local_bsr_descr;
     T*                        bsr_val         = (T*)0x4;
-    rocsparse_int*            bsr_row_ptr     = (const rocsparse_int*)dbsr_row_ptr;
+    rocsparse_int*            bsr_row_ptr     = (rocsparse_int*)dbsr_row_ptr;
     rocsparse_int*            bsr_col_ind     = (rocsparse_int*)0x4;
     rocsparse_int             row_block_dim   = safe_size;
     rocsparse_int             col_block_dim   = safe_size;
