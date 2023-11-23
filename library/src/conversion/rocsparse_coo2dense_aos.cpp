@@ -100,17 +100,17 @@ rocsparse_status rocsparse_coo2dense_aos_template(rocsparse_handle          hand
     // RETURN_IF_HIP_ERROR(hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, stream));
 
     // Set memory to zero.
-    hipLaunchKernelGGL((memset2d_kernel<512>),
-                       dim3((m * n - 1) / 512 + 1),
-                       dim3(512),
-                       0,
-                       stream,
-                       static_cast<int64_t>(m),
-                       static_cast<int64_t>(n),
-                       static_cast<T>(0),
-                       A,
-                       lda,
-                       order);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((memset2d_kernel<512>),
+                                       dim3((m * n - 1) / 512 + 1),
+                                       dim3(512),
+                                       0,
+                                       stream,
+                                       static_cast<int64_t>(m),
+                                       static_cast<int64_t>(n),
+                                       static_cast<T>(0),
+                                       A,
+                                       lda,
+                                       order);
 
 #define COO2DENSE_DIM 512
     const int64_t num_blocks_x = std::min(((nnz - 1) / COO2DENSE_DIM + 1),
@@ -118,20 +118,20 @@ rocsparse_status rocsparse_coo2dense_aos_template(rocsparse_handle          hand
     dim3          blocks(num_blocks_x);
     dim3          threads(COO2DENSE_DIM);
 
-    hipLaunchKernelGGL((coo2dense_aos_kernel<COO2DENSE_DIM>),
-                       blocks,
-                       threads,
-                       0,
-                       stream,
-                       m,
-                       n,
-                       nnz,
-                       lda,
-                       descr->base,
-                       coo_val,
-                       coo_ind,
-                       A,
-                       order);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coo2dense_aos_kernel<COO2DENSE_DIM>),
+                                       blocks,
+                                       threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       n,
+                                       nnz,
+                                       lda,
+                                       descr->base,
+                                       coo_val,
+                                       coo_ind,
+                                       A,
+                                       order);
 #undef COO2DENSE_DIM
 
     return rocsparse_status_success;

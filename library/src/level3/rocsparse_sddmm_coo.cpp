@@ -365,20 +365,20 @@ struct rocsparse_sddmm_st<rocsparse_format_coo, rocsparse_sddmm_alg_dense, I, J,
         const dim3 blocks(num_blocks_x);
         const dim3 threads(NB);
 
-        hipLaunchKernelGGL((sddmm_coox_sample_kernel<NB, false, I, J, T>),
-                           blocks,
-                           threads,
-                           0,
-                           handle->stream,
-                           m,
-                           n,
-                           nnz,
-                           dense,
-                           m,
-                           C_val_data,
-                           C_row_data,
-                           C_col_data,
-                           C_base);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((sddmm_coox_sample_kernel<NB, false, I, J, T>),
+                                           blocks,
+                                           threads,
+                                           0,
+                                           handle->stream,
+                                           m,
+                                           n,
+                                           nnz,
+                                           dense,
+                                           m,
+                                           C_val_data,
+                                           C_row_data,
+                                           C_col_data,
+                                           C_base);
 
         return rocsparse_status_success;
     }

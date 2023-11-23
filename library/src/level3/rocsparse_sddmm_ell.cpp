@@ -498,7 +498,7 @@ struct rocsparse_sddmm_st<rocsparse_format_ell, rocsparse_sddmm_alg_dense, I, J,
             rocsparse_int blocks = (ell_width - 1) / NELL_COLUMNS_PER_BLOCK + 1;
             dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NELL_COLUMNS_PER_BLOCK);
 
-            hipLaunchKernelGGL(
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                 (sddmm_ell_sample_kernel<NELL_COLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, T>),
                 k_blocks,
                 k_threads,
@@ -521,7 +521,7 @@ struct rocsparse_sddmm_st<rocsparse_format_ell, rocsparse_sddmm_alg_dense, I, J,
             rocsparse_int blocks = (ell_width - 1) / NELL_COLUMNS_PER_BLOCK + 1;
             dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NELL_COLUMNS_PER_BLOCK);
 
-            hipLaunchKernelGGL(
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                 (sddmm_ell_sample_kernel<NELL_COLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, T>),
                 k_blocks,
                 k_threads,
