@@ -27,7 +27,7 @@ function display_help()
   echo "    [--matrices-dir] existing client matrices directory"
   echo "    [--matrices-dir-install] install client matrices directory"
   echo "    [--rm-legacy-include-dir] Remove legacy include dir Packaging added for file/folder reorg backward compatibility."
-  echo "    [--without-rocblas] Disable building rocSPARSE with rocBLAS
+  echo "    [--without-rocblas] Disable building rocSPARSE with rocBLAS."
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
