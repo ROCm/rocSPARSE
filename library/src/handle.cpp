@@ -103,7 +103,21 @@ _rocsparse_handle::_rocsparse_handle()
     THROW_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
     // create blas handle
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_blas_create_handle(&this->blas_handle));
+    rocsparse_blas_impl blas_impl;
+
+#ifdef ROCSPARSE_WITH_ROCBLAS
+
+    blas_impl = rocsparse_blas_impl_rocblas;
+
+#else
+
+    //
+    // Other implementation available? Otherwise, set it to none.
+    //
+    blas_impl = rocsparse_blas_impl_none;
+#endif
+
+    THROW_IF_ROCSPARSE_ERROR(rocsparse_blas_create_handle(&this->blas_handle, blas_impl));
     THROW_IF_ROCSPARSE_ERROR(rocsparse_blas_set_stream(this->blas_handle, this->stream));
     THROW_IF_ROCSPARSE_ERROR(
         rocsparse_blas_set_pointer_mode(this->blas_handle, this->pointer_mode));

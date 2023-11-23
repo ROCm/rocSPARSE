@@ -35,6 +35,7 @@ set(rocsparse_source
   src/status.cpp
   src/rocsparse_auxiliary.cpp
   src/rocsparse_blas.cpp
+  src/rocsparse_blas_rocblas.cpp
   src/rocsparse_envariables.cpp
   src/rocsparse_memstat.cpp
   ##

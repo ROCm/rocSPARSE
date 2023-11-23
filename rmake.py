@@ -81,6 +81,8 @@ def parse_args():
                         help='Build only clients with a pre-built library')
     parser.add_argument(     '--rocprim_dir', dest='rocprim_dir', type=str, required=False, default = "",
                              help='Specify path to an existing rocPRIM install directory (optional, default: /opt/rocm/rocprim)')
+    parser.add_argument(     '--rocblas_dir', dest='rocblas_dir', type=str, required=False, default = "",
+                             help='Specify path to an existing rocBLAS install directory (optional, default: /opt/rocm/rocblas)')
     return parser.parse_args()
 
 def os_detect():
