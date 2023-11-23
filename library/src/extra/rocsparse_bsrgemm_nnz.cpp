@@ -23,12 +23,304 @@
  * ************************************************************************ */
 
 #include "../conversion/rocsparse_identity.hpp"
+#include "csrgemm_device.h"
 #include "definitions.h"
 #include "internal/extra/rocsparse_bsrgemm.h"
-#include "rocsparse_csrgemm.hpp"
 #include "utility.h"
 
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_csrgemm.hpp"
+#include "rocsparse_csrgemm_mult.hpp"
+#include "rocsparse_csrgemm_multadd.hpp"
+#include "rocsparse_csrgemm_scal.hpp"
+
+template <typename I, typename J>
+rocsparse_status rocsparse_bsrgemm_nnzb_checkarg(rocsparse_handle          handle, //0
+                                                 rocsparse_direction       dir, //1
+                                                 rocsparse_operation       trans_A, //2
+                                                 rocsparse_operation       trans_B, //3
+                                                 J                         mb, //4
+                                                 J                         nb, //5
+                                                 J                         kb, //6
+                                                 J                         block_dim, //7
+                                                 const rocsparse_mat_descr descr_A, //8
+                                                 I                         nnzb_A, //9
+                                                 const I*                  bsr_row_ptr_A, //10
+                                                 const J*                  bsr_col_ind_A, //11
+                                                 const rocsparse_mat_descr descr_B, //12
+                                                 I                         nnzb_B, //13
+                                                 const I*                  bsr_row_ptr_B, //14
+                                                 const J*                  bsr_col_ind_B, //15
+                                                 const rocsparse_mat_descr descr_D, //16
+                                                 I                         nnzb_D, //17
+                                                 const I*                  bsr_row_ptr_D, //18
+                                                 const J*                  bsr_col_ind_D, //19
+                                                 const rocsparse_mat_descr descr_C, //20
+                                                 I*                        bsr_row_ptr_C, //21
+                                                 I*                        nnzb_C, //22
+                                                 const rocsparse_mat_info  info_C, //23
+                                                 void*                     temp_buffer) //24
+{
+
+    ROCSPARSE_CHECKARG_POINTER(23, info_C);
+    ROCSPARSE_CHECKARG(
+        23, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_invalid_pointer);
+
+    const bool mul = info_C->csrgemm_info->mul;
+    const bool add = info_C->csrgemm_info->add;
+
+    if(mul == true && add == true)
+    {
+        ROCSPARSE_CHECKARG_HANDLE(0, handle);
+        ROCSPARSE_CHECKARG_ENUM(1, dir);
+
+        ROCSPARSE_CHECKARG_ENUM(2, trans_A);
+        ROCSPARSE_CHECKARG_ENUM(3, trans_B);
+        ROCSPARSE_CHECKARG_SIZE(4, mb);
+        ROCSPARSE_CHECKARG_SIZE(5, nb);
+        ROCSPARSE_CHECKARG_SIZE(6, kb);
+        ROCSPARSE_CHECKARG_SIZE(7, block_dim);
+        ROCSPARSE_CHECKARG(7, block_dim, (block_dim == 0), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG_SIZE(9, nnzb_A);
+        ROCSPARSE_CHECKARG_SIZE(13, nnzb_B);
+        ROCSPARSE_CHECKARG_SIZE(17, nnzb_D);
+
+        ROCSPARSE_CHECKARG_POINTER(8, descr_A);
+        ROCSPARSE_CHECKARG_POINTER(12, descr_B);
+        ROCSPARSE_CHECKARG_POINTER(16, descr_D);
+        ROCSPARSE_CHECKARG_POINTER(20, descr_C);
+        ROCSPARSE_CHECKARG_POINTER(22, nnzb_C);
+
+        ROCSPARSE_CHECKARG_ARRAY(10, mb, bsr_row_ptr_A);
+        ROCSPARSE_CHECKARG_ARRAY(14, kb, bsr_row_ptr_B);
+        ROCSPARSE_CHECKARG_ARRAY(18, mb, bsr_row_ptr_D);
+        ROCSPARSE_CHECKARG_ARRAY(21, mb, bsr_row_ptr_C);
+
+        ROCSPARSE_CHECKARG_ARRAY(11, nnzb_A, bsr_col_ind_A);
+        ROCSPARSE_CHECKARG_ARRAY(15, nnzb_B, bsr_col_ind_B);
+        ROCSPARSE_CHECKARG_ARRAY(19, nnzb_D, bsr_col_ind_D);
+
+        ROCSPARSE_CHECKARG(8,
+                           descr_A,
+                           (descr_A->type != rocsparse_matrix_type_general),
+                           rocsparse_status_not_implemented);
+        ROCSPARSE_CHECKARG(12,
+                           descr_B,
+                           (descr_B->type != rocsparse_matrix_type_general),
+                           rocsparse_status_not_implemented);
+        ROCSPARSE_CHECKARG(16,
+                           descr_D,
+                           (descr_D->type != rocsparse_matrix_type_general),
+                           rocsparse_status_not_implemented);
+        ROCSPARSE_CHECKARG(20,
+                           descr_C,
+                           (descr_C->type != rocsparse_matrix_type_general),
+                           rocsparse_status_not_implemented);
+
+        const rocsparse_status status = rocsparse_csrgemm_multadd_nnz_quickreturn(handle,
+                                                                                  trans_A,
+                                                                                  trans_B,
+                                                                                  mb,
+                                                                                  nb,
+                                                                                  kb,
+                                                                                  descr_A,
+                                                                                  nnzb_A,
+                                                                                  bsr_row_ptr_A,
+                                                                                  bsr_col_ind_A,
+                                                                                  descr_B,
+                                                                                  nnzb_B,
+                                                                                  bsr_row_ptr_B,
+                                                                                  bsr_col_ind_B,
+                                                                                  descr_D,
+                                                                                  nnzb_D,
+                                                                                  bsr_row_ptr_D,
+                                                                                  bsr_col_ind_D,
+                                                                                  descr_C,
+                                                                                  bsr_row_ptr_C,
+                                                                                  nnzb_C,
+                                                                                  info_C,
+                                                                                  temp_buffer);
+        if(status != rocsparse_status_continue)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(status);
+            return rocsparse_status_success;
+        }
+
+        ROCSPARSE_CHECKARG(
+            2, trans_A, (trans_A != rocsparse_operation_none), rocsparse_status_not_implemented);
+        ROCSPARSE_CHECKARG(
+            3, trans_B, (trans_B != rocsparse_operation_none), rocsparse_status_not_implemented);
+        if(info_C->csrgemm_info->is_initialized)
+        {
+            ROCSPARSE_CHECKARG_ARRAY(23, info_C->csrgemm_info->buffer_size, temp_buffer);
+        }
+        else
+        {
+            ROCSPARSE_CHECKARG_POINTER(24, temp_buffer);
+        }
+        return rocsparse_status_continue;
+    }
+    else if(mul == true && add == false)
+    {
+
+        ROCSPARSE_CHECKARG_HANDLE(0, handle);
+        ROCSPARSE_CHECKARG_ENUM(1, dir);
+        ROCSPARSE_CHECKARG_ENUM(2, trans_A);
+        ROCSPARSE_CHECKARG_ENUM(3, trans_B);
+        ROCSPARSE_CHECKARG_SIZE(4, mb);
+        ROCSPARSE_CHECKARG_SIZE(5, nb);
+        ROCSPARSE_CHECKARG_SIZE(6, kb);
+        ROCSPARSE_CHECKARG_SIZE(7, block_dim);
+        ROCSPARSE_CHECKARG(7, block_dim, (block_dim == 0), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG_SIZE(9, nnzb_A);
+        ROCSPARSE_CHECKARG_SIZE(13, nnzb_B);
+        ROCSPARSE_CHECKARG_ARRAY(10, mb, bsr_row_ptr_A);
+        ROCSPARSE_CHECKARG_ARRAY(14, kb, bsr_row_ptr_B);
+        ROCSPARSE_CHECKARG_ARRAY(21, mb, bsr_row_ptr_C);
+
+        ROCSPARSE_CHECKARG_POINTER(8, descr_A);
+        ROCSPARSE_CHECKARG_POINTER(12, descr_B);
+        ROCSPARSE_CHECKARG_POINTER(20, descr_C);
+        ROCSPARSE_CHECKARG_POINTER(22, nnzb_C);
+
+        ROCSPARSE_CHECKARG_ARRAY(11, nnzb_A, bsr_col_ind_A);
+        ROCSPARSE_CHECKARG_ARRAY(15, nnzb_B, bsr_col_ind_B);
+        ROCSPARSE_CHECKARG(8,
+                           descr_A,
+                           (descr_A->type != rocsparse_matrix_type_general),
+                           rocsparse_status_not_implemented);
+        ROCSPARSE_CHECKARG(12,
+                           descr_B,
+                           (descr_B->type != rocsparse_matrix_type_general),
+                           rocsparse_status_not_implemented);
+        ROCSPARSE_CHECKARG(20,
+                           descr_C,
+                           (descr_C->type != rocsparse_matrix_type_general),
+                           rocsparse_status_not_implemented);
+
+        const rocsparse_status status = rocsparse_csrgemm_mult_nnz_quickreturn(handle,
+                                                                               trans_A,
+                                                                               trans_B,
+                                                                               mb,
+                                                                               nb,
+                                                                               kb,
+                                                                               descr_A,
+                                                                               nnzb_A,
+                                                                               bsr_row_ptr_A,
+                                                                               bsr_col_ind_A,
+                                                                               descr_B,
+                                                                               nnzb_B,
+                                                                               bsr_row_ptr_B,
+                                                                               bsr_col_ind_B,
+                                                                               descr_C,
+                                                                               bsr_row_ptr_C,
+                                                                               nnzb_C,
+                                                                               info_C,
+                                                                               temp_buffer);
+        if(status != rocsparse_status_continue)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(status);
+            return rocsparse_status_success;
+        }
+
+        ROCSPARSE_CHECKARG(
+            2, trans_A, (trans_A != rocsparse_operation_none), rocsparse_status_not_implemented);
+        ROCSPARSE_CHECKARG(
+            3, trans_B, (trans_B != rocsparse_operation_none), rocsparse_status_not_implemented);
+
+        ROCSPARSE_CHECKARG_ARRAY(24, info_C->csrgemm_info->buffer_size, temp_buffer);
+        return rocsparse_status_continue;
+    }
+    else if(mul == false && add == true)
+    {
+        ROCSPARSE_CHECKARG_HANDLE(0, handle);
+        ROCSPARSE_CHECKARG_ENUM(1, dir);
+        ROCSPARSE_CHECKARG_ENUM(2, trans_A);
+        ROCSPARSE_CHECKARG_ENUM(3, trans_B);
+        ROCSPARSE_CHECKARG_SIZE(4, mb);
+        ROCSPARSE_CHECKARG_SIZE(5, nb);
+        ROCSPARSE_CHECKARG_SIZE(6, kb);
+        ROCSPARSE_CHECKARG_SIZE(7, block_dim);
+        ROCSPARSE_CHECKARG(7, block_dim, (block_dim == 0), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG_SIZE(17, nnzb_D);
+        ROCSPARSE_CHECKARG_POINTER(16, descr_D);
+        ROCSPARSE_CHECKARG_POINTER(20, descr_C);
+        ROCSPARSE_CHECKARG_POINTER(22, nnzb_C);
+        ROCSPARSE_CHECKARG_ARRAY(18, mb, bsr_row_ptr_D);
+        ROCSPARSE_CHECKARG_ARRAY(21, mb, bsr_row_ptr_C);
+        ROCSPARSE_CHECKARG_ARRAY(19, nnzb_D, bsr_col_ind_D);
+        ROCSPARSE_CHECKARG(20,
+                           descr_C,
+                           (descr_C->type != rocsparse_matrix_type_general),
+                           rocsparse_status_not_implemented);
+        ROCSPARSE_CHECKARG(16,
+                           descr_D,
+                           (descr_D->type != rocsparse_matrix_type_general),
+                           rocsparse_status_not_implemented);
+
+        const rocsparse_status status = rocsparse_csrgemm_scal_nnz_quickreturn(handle,
+                                                                               mb,
+                                                                               nb,
+                                                                               descr_D,
+                                                                               nnzb_D,
+                                                                               bsr_row_ptr_D,
+                                                                               bsr_col_ind_D,
+                                                                               descr_C,
+                                                                               bsr_row_ptr_C,
+                                                                               nnzb_C,
+                                                                               info_C,
+                                                                               temp_buffer);
+        if(status != rocsparse_status_continue)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(status);
+            return rocsparse_status_success;
+        }
+
+        ROCSPARSE_CHECKARG_ARRAY(23, info_C->csrgemm_info->buffer_size, temp_buffer);
+        return rocsparse_status_continue;
+    }
+    else
+    {
+        assert(mul == false && add == false);
+        ROCSPARSE_CHECKARG_HANDLE(0, handle);
+        ROCSPARSE_CHECKARG_ENUM(1, dir);
+        ROCSPARSE_CHECKARG_ENUM(2, trans_A);
+        ROCSPARSE_CHECKARG_ENUM(3, trans_B);
+        ROCSPARSE_CHECKARG_SIZE(4, mb);
+        ROCSPARSE_CHECKARG_SIZE(5, nb);
+        ROCSPARSE_CHECKARG_SIZE(6, kb);
+        ROCSPARSE_CHECKARG_SIZE(7, block_dim);
+        ROCSPARSE_CHECKARG(7, block_dim, (block_dim == 0), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG_POINTER(23, info_C);
+        ROCSPARSE_CHECKARG(
+            23, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_invalid_pointer);
+        ROCSPARSE_CHECKARG_ARRAY(21, mb, bsr_row_ptr_C);
+        ROCSPARSE_CHECKARG_POINTER(22, nnzb_C);
+
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(nnzb_C, 0, sizeof(I), handle->stream));
+        }
+        else
+        {
+            *nnzb_C = 0;
+        }
+
+        if(mb > 0)
+        {
+#define BSRGEMM_DIM 1024
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_set_base<BSRGEMM_DIM>),
+                                               dim3((mb + 1) / BSRGEMM_DIM + 1),
+                                               dim3(BSRGEMM_DIM),
+                                               0,
+                                               handle->stream,
+                                               mb + 1,
+                                               bsr_row_ptr_C,
+                                               descr_C->base);
+#undef BSRGEMM_DIM
+        }
+        return rocsparse_status_success;
+    }
+}
 
 template <typename I, typename J>
 rocsparse_status rocsparse_bsrgemm_nnzb_template(rocsparse_handle          handle,
@@ -57,104 +349,98 @@ rocsparse_status rocsparse_bsrgemm_nnzb_template(rocsparse_handle          handl
                                                  const rocsparse_mat_info  info_C,
                                                  void*                     temp_buffer)
 {
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_nnz_template(handle,
+                                                             trans_A,
+                                                             trans_B,
+                                                             mb,
+                                                             nb,
+                                                             kb,
+                                                             descr_A,
+                                                             nnzb_A,
+                                                             bsr_row_ptr_A,
+                                                             bsr_col_ind_A,
+                                                             descr_B,
+                                                             nnzb_B,
+                                                             bsr_row_ptr_B,
+                                                             bsr_col_ind_B,
+                                                             descr_D,
+                                                             nnzb_D,
+                                                             bsr_row_ptr_D,
+                                                             bsr_col_ind_D,
+                                                             descr_C,
+                                                             bsr_row_ptr_C,
+                                                             nnzb_C,
+                                                             info_C,
+                                                             temp_buffer));
+    return rocsparse_status_success;
+}
 
-    // Check for valid handle and info structure
-    if(handle == nullptr)
+template <typename I, typename J>
+static rocsparse_status rocsparse_bsrgemm_nnzb_core(rocsparse_handle          handle,
+                                                    rocsparse_direction       dir,
+                                                    rocsparse_operation       trans_A,
+                                                    rocsparse_operation       trans_B,
+                                                    J                         mb,
+                                                    J                         nb,
+                                                    J                         kb,
+                                                    J                         block_dim,
+                                                    const rocsparse_mat_descr descr_A,
+                                                    I                         nnzb_A,
+                                                    const I*                  bsr_row_ptr_A,
+                                                    const J*                  bsr_col_ind_A,
+                                                    const rocsparse_mat_descr descr_B,
+                                                    I                         nnzb_B,
+                                                    const I*                  bsr_row_ptr_B,
+                                                    const J*                  bsr_col_ind_B,
+                                                    const rocsparse_mat_descr descr_D,
+                                                    I                         nnzb_D,
+                                                    const I*                  bsr_row_ptr_D,
+                                                    const J*                  bsr_col_ind_D,
+                                                    const rocsparse_mat_descr descr_C,
+                                                    I*                        bsr_row_ptr_C,
+                                                    I*                        nnzb_C,
+                                                    const rocsparse_mat_info  info_C,
+                                                    void*                     temp_buffer)
+{
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_nnz_core(handle,
+                                                         trans_A,
+                                                         trans_B,
+                                                         mb,
+                                                         nb,
+                                                         kb,
+                                                         descr_A,
+                                                         nnzb_A,
+                                                         bsr_row_ptr_A,
+                                                         bsr_col_ind_A,
+                                                         descr_B,
+                                                         nnzb_B,
+                                                         bsr_row_ptr_B,
+                                                         bsr_col_ind_B,
+                                                         descr_D,
+                                                         nnzb_D,
+                                                         bsr_row_ptr_D,
+                                                         bsr_col_ind_D,
+                                                         descr_C,
+                                                         bsr_row_ptr_C,
+                                                         nnzb_C,
+                                                         info_C,
+                                                         temp_buffer));
+    return rocsparse_status_success;
+}
+
+template <typename... P>
+static inline rocsparse_status rocsparse_bsrgemm_nnzb_impl(P&&... p)
+{
+    log_trace("rocsparse_bsrgemm_nnzb", p...);
+
+    const rocsparse_status status = rocsparse_bsrgemm_nnzb_checkarg(p...);
+    if(status != rocsparse_status_continue)
     {
-        return rocsparse_status_invalid_handle;
+        RETURN_IF_ROCSPARSE_ERROR(status);
+        return rocsparse_status_success;
     }
-
-    // Check for valid rocsparse_mat_info
-    if(info_C == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Logging
-    log_trace(handle,
-              "rocsparse_bsrgemm_nnzb",
-              dir,
-              trans_A,
-              trans_B,
-              mb,
-              nb,
-              kb,
-              block_dim,
-              (const void*&)descr_A,
-              nnzb_A,
-              (const void*&)bsr_row_ptr_A,
-              (const void*&)bsr_col_ind_A,
-              (const void*&)descr_B,
-              nnzb_B,
-              (const void*&)bsr_row_ptr_B,
-              (const void*&)bsr_col_ind_B,
-              (const void*&)descr_D,
-              nnzb_D,
-              (const void*&)bsr_row_ptr_D,
-              (const void*&)bsr_col_ind_D,
-              (const void*&)descr_C,
-              (const void*&)bsr_row_ptr_C,
-              (const void*&)nnzb_C,
-              (const void*&)info_C,
-              (const void*&)temp_buffer);
-
-    // Check direction
-    if(rocsparse_enum_utils::is_invalid(dir))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check operation
-    if(rocsparse_enum_utils::is_invalid(trans_A))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(trans_B))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check valid sizes
-    if(mb < 0 || nb < 0 || kb < 0 || block_dim <= 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check for valid rocsparse_csrgemm_info
-    if(info_C->csrgemm_info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnzb_A > 0 && temp_buffer == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    return rocsparse_csrgemm_nnz_template(handle,
-                                          trans_A,
-                                          trans_B,
-                                          mb,
-                                          nb,
-                                          kb,
-                                          descr_A,
-                                          nnzb_A,
-                                          bsr_row_ptr_A,
-                                          bsr_col_ind_A,
-                                          descr_B,
-                                          nnzb_B,
-                                          bsr_row_ptr_B,
-                                          bsr_col_ind_B,
-                                          descr_D,
-                                          nnzb_D,
-                                          bsr_row_ptr_D,
-                                          bsr_col_ind_D,
-                                          descr_C,
-                                          bsr_row_ptr_C,
-                                          nnzb_C,
-                                          info_C,
-                                          temp_buffer);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrgemm_nnzb_core(p...));
+    return rocsparse_status_success;
 }
 
 #define INSTANTIATE(ITYPE, JTYPE)                                            \
@@ -226,33 +512,34 @@ extern "C" rocsparse_status rocsparse_bsrgemm_nnzb(rocsparse_handle          han
                                                    void*                     temp_buffer)
 try
 {
-    return rocsparse_bsrgemm_nnzb_template(handle,
-                                           dir,
-                                           trans_A,
-                                           trans_B,
-                                           mb,
-                                           nb,
-                                           kb,
-                                           block_dim,
-                                           descr_A,
-                                           nnzb_A,
-                                           bsr_row_ptr_A,
-                                           bsr_col_ind_A,
-                                           descr_B,
-                                           nnzb_B,
-                                           bsr_row_ptr_B,
-                                           bsr_col_ind_B,
-                                           descr_D,
-                                           nnzb_D,
-                                           bsr_row_ptr_D,
-                                           bsr_col_ind_D,
-                                           descr_C,
-                                           bsr_row_ptr_C,
-                                           nnzb_C,
-                                           info_C,
-                                           temp_buffer);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrgemm_nnzb_impl(handle,
+                                                          dir,
+                                                          trans_A,
+                                                          trans_B,
+                                                          mb,
+                                                          nb,
+                                                          kb,
+                                                          block_dim,
+                                                          descr_A,
+                                                          nnzb_A,
+                                                          bsr_row_ptr_A,
+                                                          bsr_col_ind_A,
+                                                          descr_B,
+                                                          nnzb_B,
+                                                          bsr_row_ptr_B,
+                                                          bsr_col_ind_B,
+                                                          descr_D,
+                                                          nnzb_D,
+                                                          bsr_row_ptr_D,
+                                                          bsr_col_ind_D,
+                                                          descr_C,
+                                                          bsr_row_ptr_C,
+                                                          nnzb_C,
+                                                          info_C,
+                                                          temp_buffer));
+    return rocsparse_status_success;
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    RETURN_ROCSPARSE_EXCEPTION();
 }

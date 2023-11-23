@@ -95,15 +95,19 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
 
     {
         // In this scenario matrices A == B == D == nullptr
-        int nargs_to_exclude_buffer_size = 14;
-        int nargs_to_exclude_nnz         = 12;
-        int nargs_to_exclude             = 17;
+        static constexpr int nargs_to_exclude_buffer_size = 14;
+        static constexpr int nargs_to_exclude_nnz         = 16;
+        static constexpr int nargs_to_exclude_symbolic    = 17;
+        static constexpr int nargs_to_exclude_numeric     = 18;
 
-        const int args_to_exclude_buffer_size[14]
+        const int args_to_exclude_buffer_size[nargs_to_exclude_buffer_size]
             = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
-        const int args_to_exclude_nnz[12] = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-        const int args_to_exclude[17]
-            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22};
+        const int args_to_exclude_nnz[nargs_to_exclude_nnz]
+            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22};
+        const int args_to_exclude_symbolic[nargs_to_exclude_symbolic]
+            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23};
+        const int args_to_exclude_numeric[nargs_to_exclude_numeric]
+            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 29};
 
         const T* alpha = (const T*)nullptr;
         const T* beta  = (const T*)nullptr;
@@ -128,7 +132,6 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
         const T*                  csr_val_D     = (const T*)nullptr;
         const rocsparse_int*      csr_row_ptr_D = (const rocsparse_int*)nullptr;
         const rocsparse_int*      csr_col_ind_D = (const rocsparse_int*)nullptr;
-
         auto_testing_bad_arg(rocsparse_csrgemm_buffer_size<T>,
                              nargs_to_exclude_buffer_size,
                              args_to_exclude_buffer_size,
@@ -137,11 +140,15 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
         auto_testing_bad_arg(
             rocsparse_csrgemm_nnz, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
 
-        auto_testing_bad_arg(
-            rocsparse_csrgemm_symbolic, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_SYMBOLIC);
+        auto_testing_bad_arg(rocsparse_csrgemm_symbolic,
+                             nargs_to_exclude_symbolic,
+                             args_to_exclude_symbolic,
+                             PARAMS_SYMBOLIC);
 
-        auto_testing_bad_arg(
-            rocsparse_csrgemm_numeric<T>, nargs_to_exclude, args_to_exclude, PARAMS_NUMERIC);
+        auto_testing_bad_arg(rocsparse_csrgemm_numeric<T>,
+                             nargs_to_exclude_numeric,
+                             args_to_exclude_numeric,
+                             PARAMS_NUMERIC);
     }
 
     // ###############################################
@@ -149,13 +156,16 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
     // ###############################################
     {
         // In this scenario matrices A != B != nullptr and D == nullptr
-        int nargs_to_exclude_buffer_size = 5;
-        int nargs_to_exclude_nnz         = 4;
-        int nargs_to_exclude             = 6;
+        static constexpr int nargs_to_exclude_buffer_size = 6;
+        static constexpr int nargs_to_exclude_nnz         = 4;
+        static constexpr int nargs_to_exclude_symbolic    = 4;
+        static constexpr int nargs_to_exclude_numeric     = 6;
 
-        const int args_to_exclude_buffer_size[5] = {15, 16, 17, 18, 19};
-        const int args_to_exclude_nnz[4]         = {14, 15, 16, 17};
-        const int args_to_exclude[6]             = {17, 18, 19, 20, 21, 22};
+        const int args_to_exclude_buffer_size[nargs_to_exclude_buffer_size]
+            = {6, 15, 16, 17, 18, 19};
+        const int args_to_exclude_nnz[nargs_to_exclude_nnz]           = {14, 15, 16, 17};
+        const int args_to_exclude_symbolic[nargs_to_exclude_symbolic] = {14, 15, 16, 17};
+        const int args_to_exclude_numeric[nargs_to_exclude_numeric]   = {17, 18, 19, 20, 21, 22};
 
         const T* alpha = &h_alpha;
         const T* beta  = (const T*)nullptr;
@@ -188,10 +198,14 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
 
         auto_testing_bad_arg(
             rocsparse_csrgemm_nnz, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
-        auto_testing_bad_arg(
-            rocsparse_csrgemm_symbolic, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_SYMBOLIC);
-        auto_testing_bad_arg(
-            rocsparse_csrgemm_numeric<T>, nargs_to_exclude, args_to_exclude, PARAMS_NUMERIC);
+        auto_testing_bad_arg(rocsparse_csrgemm_symbolic,
+                             nargs_to_exclude_symbolic,
+                             args_to_exclude_symbolic,
+                             PARAMS_SYMBOLIC);
+        auto_testing_bad_arg(rocsparse_csrgemm_numeric<T>,
+                             nargs_to_exclude_numeric,
+                             args_to_exclude_numeric,
+                             PARAMS_NUMERIC);
     }
 
     // ###############################################
@@ -199,15 +213,18 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
     // ###############################################
     {
         // In this scenario matrices A == B == nullptr and D != nullptr
-        int nargs_to_exclude_buffer_size = 9;
-        int nargs_to_exclude_nnz         = 9;
-        int nargs_to_exclude_symbolic    = 9;
-        int nargs_to_exclude             = 12;
+        static constexpr int nargs_to_exclude_buffer_size = 11;
+        static constexpr int nargs_to_exclude_nnz         = 9;
+        static constexpr int nargs_to_exclude_symbolic    = 9;
+        static constexpr int nargs_to_exclude_numeric     = 12;
 
-        const int args_to_exclude_buffer_size[9] = {6, 7, 8, 9, 10, 11, 12, 13, 14};
-        const int args_to_exclude_nnz[9]         = {6, 7, 8, 9, 10, 11, 12, 13, 22};
-        const int args_to_exclude_symbolic[9]    = {6, 7, 8, 9, 10, 11, 12, 13, 23};
-        const int args_to_exclude[12]            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 29};
+        const int args_to_exclude_buffer_size[nargs_to_exclude_buffer_size]
+            = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        const int args_to_exclude_nnz[nargs_to_exclude_nnz] = {6, 7, 8, 9, 10, 11, 12, 13, 22};
+        const int args_to_exclude_symbolic[nargs_to_exclude_symbolic]
+            = {6, 7, 8, 9, 10, 11, 12, 13, 23};
+        const int args_to_exclude_numeric[nargs_to_exclude_numeric]
+            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 29};
 
         const T* alpha = (const T*)nullptr;
         const T* beta  = &h_beta;
@@ -248,8 +265,10 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
                              args_to_exclude_symbolic,
                              PARAMS_SYMBOLIC);
 
-        auto_testing_bad_arg(
-            rocsparse_csrgemm_numeric<T>, nargs_to_exclude, args_to_exclude, PARAMS_NUMERIC);
+        auto_testing_bad_arg(rocsparse_csrgemm_numeric<T>,
+                             nargs_to_exclude_numeric,
+                             args_to_exclude_numeric,
+                             PARAMS_NUMERIC);
 
         temp_buffer = (void*)0x4;
     }
@@ -259,11 +278,11 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
     // ###############################################
     {
         // In this scenario matrices A != B != D != nullptr
-        int nargs_to_exclude_buffer_size = 2;
-        int nargs_to_exclude             = 2;
+        static constexpr int nargs_to_exclude_buffer_size = 2;
+        static constexpr int nargs_to_exclude_numeric     = 2;
 
-        const int args_to_exclude_buffer_size[2] = {6, 15};
-        const int args_to_exclude[2]             = {6, 17};
+        const int args_to_exclude_buffer_size[nargs_to_exclude_buffer_size] = {6, 15};
+        const int args_to_exclude_numeric[nargs_to_exclude_numeric]         = {6, 17};
 
         const T* alpha = &h_alpha;
         const T* beta  = &h_beta;
@@ -296,8 +315,10 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
 
         auto_testing_bad_arg(rocsparse_csrgemm_nnz, PARAMS_NNZ);
         auto_testing_bad_arg(rocsparse_csrgemm_symbolic, PARAMS_SYMBOLIC);
-        auto_testing_bad_arg(
-            rocsparse_csrgemm_numeric<T>, nargs_to_exclude, args_to_exclude, PARAMS_NUMERIC);
+        auto_testing_bad_arg(rocsparse_csrgemm_numeric<T>,
+                             nargs_to_exclude_numeric,
+                             args_to_exclude_numeric,
+                             PARAMS_NUMERIC);
     }
 
     //

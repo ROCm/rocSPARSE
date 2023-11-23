@@ -363,10 +363,12 @@ rocsparse_status rocsparse_destroy_csritsv_info(rocsparse_csritsv_info info);
  *******************************************************************************/
 struct _rocsparse_csrgemm_info
 {
+    size_t buffer_size{};
+    bool   is_initialized{};
     // Perform alpha * A * B
-    bool mul = true;
+    bool mul{true};
     // Perform beta * D
-    bool add = true;
+    bool add{true};
 };
 
 /********************************************************************************

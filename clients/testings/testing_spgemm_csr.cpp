@@ -30,6 +30,9 @@ rocsparse_status rocsparse_csr_set_pointers(rocsparse_spmat_descr       descr,
     return rocsparse_csr_set_pointers(descr, csr_matrix.ptr, csr_matrix.ind, csr_matrix.val);
 }
 
+//
+//
+//
 template <typename I, typename J, typename T>
 void testing_spgemm_csr_bad_arg(const Arguments& arg)
 {
@@ -67,60 +70,60 @@ void testing_spgemm_csr_bad_arg(const Arguments& arg)
     rocsparse_spgemm_stage stage   = rocsparse_spgemm_stage_compute;
 
     // Index and data type
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_indextype jtype = get_indextype<J>();
-    rocsparse_datatype  ttype = get_datatype<T>();
+    rocsparse_indextype itype        = get_indextype<I>();
+    rocsparse_indextype jtype        = get_indextype<J>();
+    rocsparse_datatype  compute_type = get_datatype<T>();
 
     // SpGEMM structures
-    rocsparse_local_spmat local_mat_A(m,
-                                      k,
-                                      nnz_A,
-                                      csr_row_ptr_A,
-                                      csr_col_ind_A,
-                                      csr_val_A,
-                                      itype,
-                                      jtype,
-                                      base,
-                                      ttype,
-                                      rocsparse_format_csr);
-    rocsparse_local_spmat local_mat_B(k,
-                                      n,
-                                      nnz_B,
-                                      csr_row_ptr_B,
-                                      csr_col_ind_B,
-                                      csr_val_B,
-                                      itype,
-                                      jtype,
-                                      base,
-                                      ttype,
-                                      rocsparse_format_csr);
-    rocsparse_local_spmat local_mat_C(m,
-                                      n,
-                                      nnz_C,
-                                      csr_row_ptr_C,
-                                      csr_col_ind_C,
-                                      csr_val_C,
-                                      itype,
-                                      jtype,
-                                      base,
-                                      ttype,
-                                      rocsparse_format_csr);
-    rocsparse_local_spmat local_mat_D(m,
-                                      n,
-                                      nnz_D,
-                                      csr_row_ptr_D,
-                                      csr_col_ind_D,
-                                      csr_val_D,
-                                      itype,
-                                      jtype,
-                                      base,
-                                      ttype,
-                                      rocsparse_format_csr);
+    rocsparse_local_spmat local_A(m,
+                                  k,
+                                  nnz_A,
+                                  csr_row_ptr_A,
+                                  csr_col_ind_A,
+                                  csr_val_A,
+                                  itype,
+                                  jtype,
+                                  base,
+                                  compute_type,
+                                  rocsparse_format_csr);
+    rocsparse_local_spmat local_B(k,
+                                  n,
+                                  nnz_B,
+                                  csr_row_ptr_B,
+                                  csr_col_ind_B,
+                                  csr_val_B,
+                                  itype,
+                                  jtype,
+                                  base,
+                                  compute_type,
+                                  rocsparse_format_csr);
+    rocsparse_local_spmat local_C(m,
+                                  n,
+                                  nnz_C,
+                                  csr_row_ptr_C,
+                                  csr_col_ind_C,
+                                  csr_val_C,
+                                  itype,
+                                  jtype,
+                                  base,
+                                  compute_type,
+                                  rocsparse_format_csr);
+    rocsparse_local_spmat local_D(m,
+                                  n,
+                                  nnz_D,
+                                  csr_row_ptr_D,
+                                  csr_col_ind_D,
+                                  csr_val_D,
+                                  itype,
+                                  jtype,
+                                  base,
+                                  compute_type,
+                                  rocsparse_format_csr);
 
-    rocsparse_spmat_descr mat_A = local_mat_A;
-    rocsparse_spmat_descr mat_B = local_mat_B;
-    rocsparse_spmat_descr mat_C = local_mat_C;
-    rocsparse_spmat_descr mat_D = local_mat_D;
+    rocsparse_spmat_descr A = local_A;
+    rocsparse_spmat_descr B = local_B;
+    rocsparse_spmat_descr C = local_C;
+    rocsparse_spmat_descr D = local_D;
 
     int       nargs_to_exclude   = 4;
     const int args_to_exclude[4] = {3, 6, 12, 13};
@@ -132,31 +135,30 @@ void testing_spgemm_csr_bad_arg(const Arguments& arg)
     // Scenario 3: alpha == nullptr && beta != nullptr
     // Scenario 4: alpha != nullptr && beta != nullptr
 
-#define PARAMS                                                                            \
-    handle, trans_A, trans_B, alpha, mat_A, mat_B, beta, mat_D, mat_C, ttype, alg, stage, \
-        buffer_size, temp_buffer
+#define PARAMS                                                                                \
+    handle, trans_A, trans_B, alpha, A, B, beta, D, C, compute_type, alg, stage, buffer_size, \
+        temp_buffer
     // ###############################################
     // Scenario 1: alpha == nullptr && beta == nullptr
     // ###############################################
     {
-        const T* alpha = (const T*)nullptr;
-        const T* beta  = (const T*)nullptr;
-
-        size_t* buffer_size = (size_t*)0x4;
-        void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        const T* alpha       = (const T*)nullptr;
+        const T* beta        = (const T*)nullptr;
+        size_t*  buffer_size = (size_t*)0x4;
+        void*    temp_buffer = (void*)0x4;
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = (size_t*)0x4;
         temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = nullptr;
         temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = nullptr;
         temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     // ###############################################
@@ -168,19 +170,19 @@ void testing_spgemm_csr_bad_arg(const Arguments& arg)
 
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = (size_t*)0x4;
         temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = nullptr;
         temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = nullptr;
         temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     // ###############################################
@@ -192,19 +194,19 @@ void testing_spgemm_csr_bad_arg(const Arguments& arg)
 
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = (size_t*)0x4;
         temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = nullptr;
         temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = nullptr;
         temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     // ###############################################
@@ -216,19 +218,19 @@ void testing_spgemm_csr_bad_arg(const Arguments& arg)
 
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = (size_t*)0x4;
         temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = nullptr;
         temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
         buffer_size = nullptr;
         temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 #undef PARAMS
 
@@ -238,14 +240,14 @@ void testing_spgemm_csr_bad_arg(const Arguments& arg)
                                              trans_A,
                                              trans_B,
                                              alpha,
-                                             mat_A,
-                                             mat_B,
+                                             A,
+                                             B,
                                              beta,
-                                             mat_D,
-                                             mat_C,
-                                             ttype,
+                                             D,
+                                             C,
+                                             compute_type,
                                              alg,
-                                             stage,
+                                             rocsparse_spgemm_stage_buffer_size,
                                              nullptr,
                                              nullptr),
                             rocsparse_status_invalid_pointer);

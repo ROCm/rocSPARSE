@@ -24,12 +24,19 @@
 
 #include "testing.hpp"
 
+//
+//
+//
 template <typename T>
 void testing_csrgemm_bad_arg(const Arguments& arg)
 {
-    static const size_t safe_size = 100;
-    T                   h_alpha   = 0.6;
-    T                   h_beta    = 0.2;
+    static const size_t              safe_size = 1;
+    T                                h_alpha   = 0.6;
+    T                                h_beta    = 0.2;
+    host_dense_vector<rocsparse_int> hcsr_row_ptr_C(safe_size + 1);
+    hcsr_row_ptr_C[0] = 0;
+    hcsr_row_ptr_C[1] = 1;
+    device_dense_vector<rocsparse_int> dcsr_row_ptr_C(hcsr_row_ptr_C);
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
@@ -55,9 +62,9 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
     // C matrix
     const rocsparse_mat_descr descr_C       = local_descr_C;
     T*                        csr_val_C     = (T*)0x4;
-    rocsparse_int*            csr_row_ptr_C = (rocsparse_int*)0x4;
+    rocsparse_int*            csr_row_ptr_C = (rocsparse_int*)dcsr_row_ptr_C;
     rocsparse_int*            csr_col_ind_C = (rocsparse_int*)0x4;
-    rocsparse_int*            pnnz_C        = (rocsparse_int*)0x4;
+    rocsparse_int*            nnz_C         = (rocsparse_int*)0x4;
 
 #define PARAMS_BUFFER_SIZE                                                                  \
     handle, trans_A, trans_B, m, n, k, alpha, descr_A, nnz_A, csr_row_ptr_A, csr_col_ind_A, \
@@ -67,7 +74,7 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
 #define PARAMS_NNZ                                                                            \
     handle, trans_A, trans_B, m, n, k, descr_A, nnz_A, csr_row_ptr_A, csr_col_ind_A, descr_B, \
         nnz_B, csr_row_ptr_B, csr_col_ind_B, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D,    \
-        descr_C, csr_row_ptr_C, pnnz_C, info_C, temp_buffer
+        descr_C, csr_row_ptr_C, nnz_C, info_C, temp_buffer
 
 #define PARAMS                                                                                 \
     handle, trans_A, trans_B, m, n, k, alpha, descr_A, nnz_A, csr_val_A, csr_row_ptr_A,        \
@@ -85,18 +92,18 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
     // ###############################################
     // Scenario 1: alpha == nullptr && beta == nullptr
     // ###############################################
-
     {
         // In this scenario matrices A == B == D == nullptr
-        int nargs_to_exclude_buffer_size = 14;
-        int nargs_to_exclude_nnz         = 12;
-        int nargs_to_exclude             = 17;
+        static constexpr int nargs_to_exclude_buffer_size = 14;
+        static constexpr int nargs_to_exclude_nnz         = 16;
+        static constexpr int nargs_to_exclude             = 22;
 
-        const int args_to_exclude_buffer_size[14]
+        const int args_to_exclude_buffer_size[nargs_to_exclude_buffer_size]
             = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
-        const int args_to_exclude_nnz[12] = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-        const int args_to_exclude[17]
-            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22};
+        const int args_to_exclude_nnz[nargs_to_exclude_nnz]
+            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22};
+        const int args_to_exclude[nargs_to_exclude]
+            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28};
 
         const T* alpha = (const T*)nullptr;
         const T* beta  = (const T*)nullptr;
@@ -121,16 +128,14 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
         const T*                  csr_val_D     = (const T*)nullptr;
         const rocsparse_int*      csr_row_ptr_D = (const rocsparse_int*)nullptr;
         const rocsparse_int*      csr_col_ind_D = (const rocsparse_int*)nullptr;
+        select_bad_arg_analysis(rocsparse_csrgemm_buffer_size<T>,
+                                nargs_to_exclude_buffer_size,
+                                args_to_exclude_buffer_size,
+                                PARAMS_BUFFER_SIZE);
 
-        auto_testing_bad_arg(rocsparse_csrgemm_buffer_size<T>,
-                             nargs_to_exclude_buffer_size,
-                             args_to_exclude_buffer_size,
-                             PARAMS_BUFFER_SIZE);
-
-        auto_testing_bad_arg(
+        select_bad_arg_analysis(
             rocsparse_csrgemm_nnz, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
-
-        auto_testing_bad_arg(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     // ###############################################
@@ -138,13 +143,14 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
     // ###############################################
     {
         // In this scenario matrices A != B != nullptr and D == nullptr
-        int nargs_to_exclude_buffer_size = 5;
-        int nargs_to_exclude_nnz         = 4;
-        int nargs_to_exclude             = 6;
+        static constexpr int nargs_to_exclude_buffer_size = 6;
+        static constexpr int nargs_to_exclude_nnz         = 4;
+        static constexpr int nargs_to_exclude             = 6;
 
-        const int args_to_exclude_buffer_size[5] = {15, 16, 17, 18, 19};
-        const int args_to_exclude_nnz[4]         = {14, 15, 16, 17};
-        const int args_to_exclude[6]             = {17, 18, 19, 20, 21, 22};
+        const int args_to_exclude_buffer_size[nargs_to_exclude_buffer_size]
+            = {6, 15, 16, 17, 18, 19};
+        const int args_to_exclude_nnz[nargs_to_exclude_nnz] = {14, 15, 16, 17};
+        const int args_to_exclude[nargs_to_exclude]         = {17, 18, 19, 20, 21, 22};
 
         const T* alpha = &h_alpha;
         const T* beta  = (const T*)nullptr;
@@ -170,29 +176,29 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
         const rocsparse_int*      csr_row_ptr_D = (const rocsparse_int*)nullptr;
         const rocsparse_int*      csr_col_ind_D = (const rocsparse_int*)nullptr;
 
-        auto_testing_bad_arg(rocsparse_csrgemm_buffer_size<T>,
-                             nargs_to_exclude_buffer_size,
-                             args_to_exclude_buffer_size,
-                             PARAMS_BUFFER_SIZE);
-        auto_testing_bad_arg(
+        select_bad_arg_analysis(rocsparse_csrgemm_buffer_size<T>,
+                                nargs_to_exclude_buffer_size,
+                                args_to_exclude_buffer_size,
+                                PARAMS_BUFFER_SIZE);
+
+        select_bad_arg_analysis(
             rocsparse_csrgemm_nnz, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
 
-        auto_testing_bad_arg(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
     }
-
     // ###############################################
     // Scenario 3: alpha == nullptr && beta != nullptr
     // ###############################################
-
     {
         // In this scenario matrices A == B == nullptr and D != nullptr
-        int nargs_to_exclude_buffer_size = 9;
-        int nargs_to_exclude_nnz         = 9;
-        int nargs_to_exclude             = 12;
+        static constexpr int nargs_to_exclude_buffer_size = 11;
+        static constexpr int nargs_to_exclude_nnz         = 9;
+        static constexpr int nargs_to_exclude             = 12;
 
-        const int args_to_exclude_buffer_size[9] = {6, 7, 8, 9, 10, 11, 12, 13, 14};
-        const int args_to_exclude_nnz[9]         = {6, 7, 8, 9, 10, 11, 12, 13, 22};
-        const int args_to_exclude[12]            = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 28};
+        const int args_to_exclude_buffer_size[nargs_to_exclude_buffer_size]
+            = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        const int args_to_exclude_nnz[nargs_to_exclude_nnz] = {6, 7, 8, 9, 10, 11, 12, 13, 22};
+        const int args_to_exclude[nargs_to_exclude] = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 28};
 
         const T* alpha = (const T*)nullptr;
         const T* beta  = &h_beta;
@@ -219,15 +225,15 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
         const T*                  csr_val_D     = (const T*)0x4;
         const rocsparse_int*      csr_row_ptr_D = (const rocsparse_int*)0x4;
         const rocsparse_int*      csr_col_ind_D = (const rocsparse_int*)0x4;
+        select_bad_arg_analysis(rocsparse_csrgemm_buffer_size<T>,
+                                nargs_to_exclude_buffer_size,
+                                args_to_exclude_buffer_size,
+                                PARAMS_BUFFER_SIZE);
 
-        auto_testing_bad_arg(rocsparse_csrgemm_buffer_size<T>,
-                             nargs_to_exclude_buffer_size,
-                             args_to_exclude_buffer_size,
-                             PARAMS_BUFFER_SIZE);
-        auto_testing_bad_arg(
+        select_bad_arg_analysis(
             rocsparse_csrgemm_nnz, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
 
-        auto_testing_bad_arg(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
 
         temp_buffer = (void*)0x4;
     }
@@ -268,12 +274,12 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
         const rocsparse_int*      csr_row_ptr_D = (const rocsparse_int*)0x4;
         const rocsparse_int*      csr_col_ind_D = (const rocsparse_int*)0x4;
 
-        auto_testing_bad_arg(rocsparse_csrgemm_buffer_size<T>,
-                             nargs_to_exclude_buffer_size,
-                             args_to_exclude_buffer_size,
-                             PARAMS_BUFFER_SIZE);
-        auto_testing_bad_arg(rocsparse_csrgemm_nnz, PARAMS_NNZ);
-        auto_testing_bad_arg(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(rocsparse_csrgemm_buffer_size<T>,
+                                nargs_to_exclude_buffer_size,
+                                args_to_exclude_buffer_size,
+                                PARAMS_BUFFER_SIZE);
+        bad_arg_analysis(rocsparse_csrgemm_nnz, PARAMS_NNZ);
+        select_bad_arg_analysis(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     //
@@ -327,8 +333,10 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
         {
             rocsparse_operation op = trans_A;
             trans_A                = rocsparse_operation_transpose;
+
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(PARAMS_NNZ),
                                     rocsparse_status_not_implemented);
+
             trans_A = rocsparse_operation_conjugate_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(PARAMS_NNZ),
                                     rocsparse_status_not_implemented);
