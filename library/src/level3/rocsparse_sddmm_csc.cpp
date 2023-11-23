@@ -361,24 +361,25 @@ struct rocsparse_sddmm_st<rocsparse_format_csc, rocsparse_sddmm_alg_dense, I, J,
         // Sample dense C
         static constexpr int NB = 512;
 
-#define SMPL_LAUNCH(NT_)                                                                        \
-    const int64_t num_blocks_x = (n - 1) / (NB / NT_) + 1;                                      \
-    const dim3    blocks(num_blocks_x);                                                         \
-    const dim3    threads(NB);                                                                  \
-    hipLaunchKernelGGL((sddmm_csx_sample_kernel<NB, NT_, rocsparse_direction_column, I, J, T>), \
-                       blocks,                                                                  \
-                       threads,                                                                 \
-                       0,                                                                       \
-                       handle->stream,                                                          \
-                       m,                                                                       \
-                       n,                                                                       \
-                       nnz,                                                                     \
-                       dense,                                                                   \
-                       m,                                                                       \
-                       C_val_data,                                                              \
-                       C_ptr_data,                                                              \
-                       C_ind_data,                                                              \
-                       C_base)
+#define SMPL_LAUNCH(NT_)                                                         \
+    const int64_t num_blocks_x = (n - 1) / (NB / NT_) + 1;                       \
+    const dim3    blocks(num_blocks_x);                                          \
+    const dim3    threads(NB);                                                   \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                          \
+        (sddmm_csx_sample_kernel<NB, NT_, rocsparse_direction_column, I, J, T>), \
+        blocks,                                                                  \
+        threads,                                                                 \
+        0,                                                                       \
+        handle->stream,                                                          \
+        m,                                                                       \
+        n,                                                                       \
+        nnz,                                                                     \
+        dense,                                                                   \
+        m,                                                                       \
+        C_val_data,                                                              \
+        C_ptr_data,                                                              \
+        C_ind_data,                                                              \
+        C_base)
 
         const I avg_nnz = std::max(static_cast<I>(1), nnz / n);
 

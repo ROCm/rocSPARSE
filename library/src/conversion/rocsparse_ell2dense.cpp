@@ -107,17 +107,17 @@ rocsparse_status rocsparse_ell2dense_template(rocsparse_handle          handle,
     // RETURN_IF_HIP_ERROR(hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, stream));
 
     // Set memory to zero.
-    hipLaunchKernelGGL((memset2d_kernel<512>),
-                       dim3((m * n - 1) / 512 + 1),
-                       dim3(512),
-                       0,
-                       stream,
-                       static_cast<int64_t>(m),
-                       static_cast<int64_t>(n),
-                       static_cast<T>(0),
-                       A,
-                       lda,
-                       order);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((memset2d_kernel<512>),
+                                       dim3((m * n - 1) / 512 + 1),
+                                       dim3(512),
+                                       0,
+                                       stream,
+                                       static_cast<int64_t>(m),
+                                       static_cast<int64_t>(n),
+                                       static_cast<T>(0),
+                                       A,
+                                       lda,
+                                       order);
 
     if(handle->wavefront_size == 32)
     {
@@ -127,20 +127,21 @@ rocsparse_status rocsparse_ell2dense_template(rocsparse_handle          handle,
         rocsparse_int blocks = (ell_width - 1) / NELL_COLUMNS_PER_BLOCK + 1;
         dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NELL_COLUMNS_PER_BLOCK);
 
-        hipLaunchKernelGGL((ell2dense_kernel<NELL_COLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, T>),
-                           k_blocks,
-                           k_threads,
-                           0,
-                           stream,
-                           ell_descr->base,
-                           m,
-                           n,
-                           ell_width,
-                           ell_val,
-                           ell_col_ind,
-                           A,
-                           lda,
-                           order);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (ell2dense_kernel<NELL_COLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, T>),
+            k_blocks,
+            k_threads,
+            0,
+            stream,
+            ell_descr->base,
+            m,
+            n,
+            ell_width,
+            ell_val,
+            ell_col_ind,
+            A,
+            lda,
+            order);
     }
     else
     {
@@ -150,20 +151,21 @@ rocsparse_status rocsparse_ell2dense_template(rocsparse_handle          handle,
         rocsparse_int blocks = (ell_width - 1) / NELL_COLUMNS_PER_BLOCK + 1;
         dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NELL_COLUMNS_PER_BLOCK);
 
-        hipLaunchKernelGGL((ell2dense_kernel<NELL_COLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, T>),
-                           k_blocks,
-                           k_threads,
-                           0,
-                           stream,
-                           ell_descr->base,
-                           m,
-                           n,
-                           ell_width,
-                           ell_val,
-                           ell_col_ind,
-                           A,
-                           lda,
-                           order);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (ell2dense_kernel<NELL_COLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, T>),
+            k_blocks,
+            k_threads,
+            0,
+            stream,
+            ell_descr->base,
+            m,
+            n,
+            ell_width,
+            ell_val,
+            ell_col_ind,
+            A,
+            lda,
+            order);
     }
 
     return rocsparse_status_success;
