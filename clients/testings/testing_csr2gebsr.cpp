@@ -33,6 +33,7 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
     hptr[0] = 0;
     hptr[1] = 1;
     device_dense_vector<rocsparse_int> dcsr_row_ptr(hptr);
+    device_dense_vector<rocsparse_int> dbsr_row_ptr(hptr);
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
@@ -51,7 +52,7 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
     const rocsparse_int*      csr_col_ind     = (const rocsparse_int*)0x4;
     const rocsparse_mat_descr bsr_descr       = local_bsr_descr;
     T*                        bsr_val         = (T*)0x4;
-    rocsparse_int*            bsr_row_ptr     = (rocsparse_int*)0x4;
+    rocsparse_int*            bsr_row_ptr     = (const rocsparse_int*)dbsr_row_ptr;
     rocsparse_int*            bsr_col_ind     = (rocsparse_int*)0x4;
     rocsparse_int             row_block_dim   = safe_size;
     rocsparse_int             col_block_dim   = safe_size;
@@ -62,8 +63,8 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
     static constexpr int nargs_to_exclude_nnz                      = 2;
     const int            args_to_exclude_nnz[nargs_to_exclude_nnz] = {6, 12};
 
-    static constexpr int nargs_to_exclude_solve                        = 3;
-    const int            args_to_exclude_solve[nargs_to_exclude_solve] = {9, 11, 14};
+    static constexpr int nargs_to_exclude_solve                        = 1;
+    const int            args_to_exclude_solve[nargs_to_exclude_solve] = {14};
 
 #define PARAMS_BUFFER_SIZE                                                                         \
     handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, csr_col_ind, row_block_dim, col_block_dim, \
