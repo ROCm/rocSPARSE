@@ -386,22 +386,73 @@ void testing_csrsm(const Arguments& arg)
             // CALL HOST CALCULATION
             //
             host_dense_matrix<T> hB_copy(hB);
-            host_csrsm<rocsparse_int, rocsparse_int, T>(M,
-                                                        nrhs,
-                                                        nnz,
-                                                        transA,
-                                                        transB,
-                                                        *h_alpha,
-                                                        hcsr.ptr,
-                                                        hcsr.ind,
-                                                        hcsr.val,
-                                                        hB,
-                                                        hB.ld,
-                                                        diag,
-                                                        uplo,
-                                                        base,
-                                                        (rocsparse_int*)h_analysis_pivot,
-                                                        (rocsparse_int*)h_solve_pivot);
+            if(nrhs > 1)
+            {
+                host_csrsm<rocsparse_int, rocsparse_int, T>(M,
+                                                            nrhs,
+                                                            nnz,
+                                                            transA,
+                                                            transB,
+                                                            *h_alpha,
+                                                            hcsr.ptr,
+                                                            hcsr.ind,
+                                                            hcsr.val,
+                                                            hB,
+                                                            hB.ld,
+                                                            diag,
+                                                            uplo,
+                                                            base,
+                                                            h_analysis_pivot,
+                                                            h_solve_pivot);
+            }
+            else
+            {
+
+                if(transB == rocsparse_operation_none)
+                {
+                    host_dense_matrix<T> hx(M, 1);
+                    host_dense_matrix<T> hy(M, 1);
+                    hx.transfer_from(hB);
+                    host_csrsv<rocsparse_int, rocsparse_int, T>(transA,
+                                                                M,
+                                                                nnz,
+                                                                *h_alpha,
+                                                                hcsr.ptr,
+                                                                hcsr.ind,
+                                                                hcsr.val,
+                                                                hx,
+                                                                hy,
+                                                                diag,
+                                                                uplo,
+                                                                base,
+                                                                h_analysis_pivot,
+                                                                h_solve_pivot);
+
+                    hB.transfer_from(hy);
+                }
+                else
+                {
+                    host_dense_matrix<T> hx(1, M);
+                    host_dense_matrix<T> hy(1, M);
+                    hx.transfer_from(hB);
+                    host_csrsv<rocsparse_int, rocsparse_int, T>(transA,
+                                                                M,
+                                                                nnz,
+                                                                *h_alpha,
+                                                                hcsr.ptr,
+                                                                hcsr.ind,
+                                                                hcsr.val,
+                                                                hx,
+                                                                hy,
+                                                                diag,
+                                                                uplo,
+                                                                base,
+                                                                h_analysis_pivot,
+                                                                h_solve_pivot);
+
+                    hB.transfer_from(hy);
+                }
+            }
 
             //
             // CHECK PIVOTS

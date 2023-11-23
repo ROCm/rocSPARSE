@@ -200,7 +200,6 @@ void testing_csrsv(const Arguments& arg)
         static constexpr bool       full_rank = true;
         rocsparse_matrix_factory<T> matrix_factory(arg, to_int, full_rank);
         matrix_factory.init_csr(hA, M, N);
-        hA.scale();
     }
 
     // Non-squared matrices are not supported
