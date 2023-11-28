@@ -27,6 +27,8 @@
 
 #include "rocsparse_bsrgemm.hpp"
 #include "rocsparse_csrgemm.hpp"
+#include "rocsparse_csrgemm_numeric.hpp"
+#include "rocsparse_csrgemm_symbolic.hpp"
 
 template <typename I, typename J, typename T>
 static rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,

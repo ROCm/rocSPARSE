@@ -57,21 +57,21 @@ void testing_csrcolor_bad_arg(const Arguments& arg)
         static constexpr int nargs_to_exclude                  = 1;
         static constexpr int args_to_exclude[nargs_to_exclude] = {10};
 
-        auto_testing_bad_arg(rocsparse_csrcolor<T>,
-                             nargs_to_exclude,
-                             args_to_exclude,
-                             handle,
-                             m,
-                             nnz,
-                             descr,
-                             csr_val,
-                             csr_row_ptr,
-                             csr_col_ind,
-                             fraction_to_color,
-                             ncolors,
-                             coloring,
-                             reordering,
-                             info);
+        select_bad_arg_analysis(rocsparse_csrcolor<T>,
+                                nargs_to_exclude,
+                                args_to_exclude,
+                                handle,
+                                m,
+                                nnz,
+                                descr,
+                                csr_val,
+                                csr_row_ptr,
+                                csr_col_ind,
+                                fraction_to_color,
+                                ncolors,
+                                coloring,
+                                reordering,
+                                info);
     }
 
     //

@@ -63,15 +63,14 @@ static rocsparse_status
                                            size_t*                   buffer_size) //23
 {
 
-    const bool mul = (alpha != nullptr);
-    const bool add = (beta != nullptr) ? (nnzb_D != 0) : false;
-
+    ROCSPARSE_CHECKARG_POINTER(22, info_C);
+    ROCSPARSE_CHECKARG(
+        22, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_internal_error);
+    const bool mul = info_C->csrgemm_info->mul;
+    const bool add = info_C->csrgemm_info->add;
     if(mul == true && add == true)
     {
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
-        ROCSPARSE_CHECKARG_POINTER(22, info_C);
-        ROCSPARSE_CHECKARG(
-            22, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_internal_error);
         ROCSPARSE_CHECKARG_ENUM(1, dir);
         ROCSPARSE_CHECKARG_ENUM(2, trans_A);
         ROCSPARSE_CHECKARG_ENUM(3, trans_B);
@@ -153,9 +152,6 @@ static rocsparse_status
     {
 
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
-        ROCSPARSE_CHECKARG_POINTER(22, info_C);
-        ROCSPARSE_CHECKARG(
-            22, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_internal_error);
         ROCSPARSE_CHECKARG_ENUM(1, dir);
         ROCSPARSE_CHECKARG_ENUM(2, trans_A);
         ROCSPARSE_CHECKARG_ENUM(3, trans_B);
@@ -223,9 +219,6 @@ static rocsparse_status
     {
 
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
-        ROCSPARSE_CHECKARG_POINTER(22, info_C);
-        ROCSPARSE_CHECKARG(
-            22, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_internal_error);
         ROCSPARSE_CHECKARG_ENUM(1, dir);
         ROCSPARSE_CHECKARG_ENUM(2, trans_A);
         ROCSPARSE_CHECKARG_ENUM(3, trans_B);
@@ -270,9 +263,6 @@ static rocsparse_status
     else
     {
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
-        ROCSPARSE_CHECKARG_POINTER(22, info_C);
-        ROCSPARSE_CHECKARG(
-            22, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_internal_error);
         ROCSPARSE_CHECKARG_ENUM(1, dir);
         ROCSPARSE_CHECKARG_ENUM(2, trans_A);
         ROCSPARSE_CHECKARG_ENUM(3, trans_B);
@@ -312,8 +302,8 @@ static rocsparse_status rocsparse_bsrgemm_buffer_size_quickreturn(rocsparse_hand
                                                                   rocsparse_mat_info info_C,
                                                                   size_t*            buffer_size)
 {
-    const bool mul = (alpha != nullptr);
-    const bool add = (beta != nullptr) ? (nnzb_D != 0) : false;
+    const bool mul = info_C->csrgemm_info->mul;
+    const bool add = info_C->csrgemm_info->add;
 
     if(mul == true && add == true)
     {
@@ -429,8 +419,8 @@ static rocsparse_status rocsparse_bsrgemm_buffer_size_core(rocsparse_handle     
                                                            rocsparse_mat_info        info_C,
                                                            size_t*                   buffer_size)
 {
-    const bool mul = (alpha != nullptr);
-    const bool add = (beta != nullptr) ? (nnzb_D != 0) : false;
+    const bool mul = info_C->csrgemm_info->mul;
+    const bool add = info_C->csrgemm_info->add;
     if(mul == true && add == true)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_multadd_buffer_size_core(handle,
@@ -494,7 +484,8 @@ static rocsparse_status rocsparse_bsrgemm_buffer_size_core(rocsparse_handle     
     }
     else
     {
-        if((beta != nullptr) && (nnzb_D == 0))
+        if(((beta != nullptr) && (nnzb_D == 0))
+           || (alpha != nullptr && (kb == 0 || nnzb_A == 0 || nnzb_B == 0)))
         {
             *buffer_size = 0;
         }
@@ -506,6 +497,30 @@ static rocsparse_status rocsparse_bsrgemm_buffer_size_core(rocsparse_handle     
 
     info_C->csrgemm_info->buffer_size    = buffer_size[0];
     info_C->csrgemm_info->is_initialized = true;
+    return rocsparse_status_success;
+}
+
+static rocsparse_status reinit_bsrgemm_info(rocsparse_mat_info info,
+                                            const void*        alpha,
+                                            const void*        beta,
+                                            const int64_t      kb,
+                                            const int64_t      nnzb_A,
+                                            const int64_t      nnzb_B,
+                                            const int64_t      nnzb_D)
+{
+    info->csrgemm_info->mul = (alpha != nullptr);
+    info->csrgemm_info->add = (beta != nullptr);
+
+    if(info->csrgemm_info->add && (nnzb_D == 0))
+    {
+        info->csrgemm_info->add = false;
+    }
+
+    if(info->csrgemm_info->mul && (kb == 0 || nnzb_A == 0 || nnzb_B == 0))
+    {
+        info->csrgemm_info->mul = false;
+    }
+
     return rocsparse_status_success;
 }
 
@@ -538,12 +553,7 @@ rocsparse_status rocsparse_bsrgemm_buffer_size_template(rocsparse_handle        
     ROCSPARSE_CHECKARG_POINTER(20, info_C);
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrgemm_info(info_C->csrgemm_info));
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrgemm_info(&info_C->csrgemm_info));
-    info_C->csrgemm_info->mul = (alpha != nullptr);
-    info_C->csrgemm_info->add = (beta != nullptr);
-    if(info_C->csrgemm_info->add && (nnzb_D == 0))
-    {
-        info_C->csrgemm_info->add = false;
-    }
+    RETURN_IF_ROCSPARSE_ERROR(reinit_bsrgemm_info(info_C, alpha, beta, kb, nnzb_A, nnzb_B, nnzb_D));
 
     const rocsparse_status status = rocsparse_bsrgemm_buffer_size_quickreturn(handle,
                                                                               dir,
@@ -657,14 +667,10 @@ static rocsparse_status rocsparse_bsrgemm_buffer_size_impl(rocsparse_handle     
               (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_POINTER(22, info_C);
+
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrgemm_info(info_C->csrgemm_info));
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrgemm_info(&info_C->csrgemm_info));
-    info_C->csrgemm_info->mul = (alpha != nullptr);
-    info_C->csrgemm_info->add = (beta != nullptr);
-    if(info_C->csrgemm_info->add && (nnzb_D == 0))
-    {
-        info_C->csrgemm_info->add = false;
-    }
+    RETURN_IF_ROCSPARSE_ERROR(reinit_bsrgemm_info(info_C, alpha, beta, kb, nnzb_A, nnzb_B, nnzb_D));
 
     const rocsparse_status status = rocsparse_bsrgemm_buffer_size_checkarg(handle,
                                                                            dir,

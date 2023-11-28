@@ -26,19 +26,20 @@
 template <typename I, typename J, typename T>
 void testing_spsv_csr_bad_arg(const Arguments& arg)
 {
-    J m     = 100;
-    J n     = 100;
-    I nnz   = 100;
-    T alpha = 0.6;
+    J        m           = 100;
+    J        n           = 100;
+    I        nnz         = 100;
+    const T  local_alpha = T(0.6);
+    const T* alpha       = &local_alpha;
 
-    rocsparse_operation  trans_A = rocsparse_operation_none;
-    rocsparse_index_base base    = rocsparse_index_base_zero;
-    rocsparse_spsv_alg   alg     = rocsparse_spsv_alg_default;
+    rocsparse_operation  trans = rocsparse_operation_none;
+    rocsparse_index_base base  = rocsparse_index_base_zero;
+    rocsparse_spsv_alg   alg   = rocsparse_spsv_alg_default;
 
     // Index and data type
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_indextype jtype = get_indextype<J>();
-    rocsparse_datatype  ttype = get_datatype<T>();
+    rocsparse_indextype itype        = get_indextype<I>();
+    rocsparse_indextype jtype        = get_indextype<J>();
+    rocsparse_datatype  compute_type = get_datatype<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
@@ -53,37 +54,42 @@ void testing_spsv_csr_bad_arg(const Arguments& arg)
                                   itype,
                                   jtype,
                                   base,
-                                  ttype,
+                                  compute_type,
                                   rocsparse_format_csr);
-    rocsparse_local_dnvec local_x(m, (void*)0x4, ttype);
-    rocsparse_local_dnvec local_y(m, (void*)0x4, ttype);
+    rocsparse_local_dnvec local_x(m, (void*)0x4, compute_type);
+    rocsparse_local_dnvec local_y(m, (void*)0x4, compute_type);
 
     int       nargs_to_exclude   = 2;
     const int args_to_exclude[2] = {9, 10};
 
     rocsparse_handle      handle = local_handle;
-    rocsparse_spmat_descr A      = local_A;
+    rocsparse_spmat_descr mat    = local_A;
     rocsparse_dnvec_descr x      = local_x;
     rocsparse_dnvec_descr y      = local_y;
 
-    size_t buffer_size;
-    void*  temp_buffer = (void*)0x4;
+    size_t  local_buffer_size = 100;
+    size_t* buffer_size       = &local_buffer_size;
+    void*   temp_buffer       = (void*)0x4;
 
-#define PARAMS_BUFFER_SIZE                                                                        \
-    handle, trans_A, &alpha, A, x, y, ttype, alg, rocsparse_spsv_stage_buffer_size, &buffer_size, \
-        temp_buffer
+    rocsparse_spsv_stage stage;
 
-#define PARAMS_ANALYSIS                                                                          \
-    handle, trans_A, &alpha, A, x, y, ttype, alg, rocsparse_spsv_stage_preprocess, &buffer_size, \
-        temp_buffer
+#define PARAMS_BUFFER_SIZE \
+    handle, trans, alpha, mat, x, y, compute_type, alg, stage, buffer_size, temp_buffer
 
-#define PARAMS_SOLVE                                                                          \
-    handle, trans_A, &alpha, A, x, y, ttype, alg, rocsparse_spsv_stage_compute, &buffer_size, \
-        temp_buffer
+#define PARAMS_ANALYSIS \
+    handle, trans, alpha, mat, x, y, compute_type, alg, stage, buffer_size, temp_buffer
 
-    auto_testing_bad_arg(rocsparse_spsv, nargs_to_exclude, args_to_exclude, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_spsv, nargs_to_exclude, args_to_exclude, PARAMS_ANALYSIS);
-    auto_testing_bad_arg(rocsparse_spsv, nargs_to_exclude, args_to_exclude, PARAMS_SOLVE);
+#define PARAMS_SOLVE \
+    handle, trans, alpha, mat, x, y, compute_type, alg, stage, buffer_size, temp_buffer
+
+    stage = rocsparse_spsv_stage_buffer_size;
+    select_bad_arg_analysis(rocsparse_spsv, nargs_to_exclude, args_to_exclude, PARAMS_BUFFER_SIZE);
+
+    stage = rocsparse_spsv_stage_preprocess;
+    select_bad_arg_analysis(rocsparse_spsv, nargs_to_exclude, args_to_exclude, PARAMS_ANALYSIS);
+
+    stage = rocsparse_spsv_stage_compute;
+    select_bad_arg_analysis(rocsparse_spsv, nargs_to_exclude, args_to_exclude, PARAMS_SOLVE);
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_ANALYSIS

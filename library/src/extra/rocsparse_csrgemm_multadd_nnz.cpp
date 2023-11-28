@@ -79,54 +79,6 @@ rocsparse_status rocsparse_csrgemm_multadd_nnz_quickreturn(rocsparse_handle     
         return rocsparse_status_success;
     }
 
-#if 0
-    // k == 0 || nnz_A == 0 || nnz_B == 0 - scale D with beta
-    if(k == 0 || nnz_A == 0 || nnz_B == 0)
-    {
-        return rocsparse_csrgemm_nnz_scal(handle,
-                                          m,
-                                          n,
-                                          descr_D,
-                                          nnz_D,
-                                          csr_row_ptr_D,
-                                          csr_col_ind_D,
-                                          descr_C,
-                                          csr_row_ptr_C,
-                                          nnz_C,
-                                          info_C,
-                                          temp_buffer);
-    }
-
-    if((trans_A != rocsparse_operation_none) || (trans_B != rocsparse_operation_none))
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    // nnz_D == 0 - compute alpha * A * B
-    if(nnz_D == 0)
-    {
-        return rocsparse_csrgemm_nnz_mult(handle,
-                                          trans_A,
-                                          trans_B,
-                                          m,
-                                          n,
-                                          k,
-                                          descr_A,
-                                          nnz_A,
-                                          csr_row_ptr_A,
-                                          csr_col_ind_A,
-                                          descr_B,
-                                          nnz_B,
-                                          csr_row_ptr_B,
-                                          csr_col_ind_B,
-                                          descr_C,
-                                          csr_row_ptr_C,
-                                          nnz_C,
-                                          info_C,
-                                          temp_buffer);
-    }
-#endif
-
     return rocsparse_status_continue;
 }
 
@@ -185,73 +137,40 @@ rocsparse_status rocsparse_csrgemm_multadd_nnz_core(rocsparse_handle          ha
                                                     const rocsparse_mat_info  info_C,
                                                     void*                     temp_buffer)
 {
-#if 0
-    // k == 0 || nnz_A == 0 || nnz_B == 0 - scale D with beta
-    if(k == 0 || nnz_A == 0 || nnz_B == 0)
+    const bool mul = info_C->csrgemm_info->mul;
+    const bool add = info_C->csrgemm_info->add;
+    if(mul == true && add == true)
     {
-        return rocsparse_csrgemm_nnz_scal(handle,
-                                          m,
-                                          n,
-                                          descr_D,
-                                          nnz_D,
-                                          csr_row_ptr_D,
-                                          csr_col_ind_D,
-                                          descr_C,
-                                          csr_row_ptr_C,
-                                          nnz_C,
-                                          info_C,
-                                          temp_buffer);
+        // Perform nnz calculation
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_nnz_calc(handle,
+                                                             trans_A,
+                                                             trans_B,
+                                                             m,
+                                                             n,
+                                                             k,
+                                                             descr_A,
+                                                             nnz_A,
+                                                             csr_row_ptr_A,
+                                                             csr_col_ind_A,
+                                                             descr_B,
+                                                             nnz_B,
+                                                             csr_row_ptr_B,
+                                                             csr_col_ind_B,
+                                                             descr_D,
+                                                             nnz_D,
+                                                             csr_row_ptr_D,
+                                                             csr_col_ind_D,
+                                                             descr_C,
+                                                             csr_row_ptr_C,
+                                                             nnz_C,
+                                                             info_C,
+                                                             temp_buffer));
     }
-
-    // nnz_D == 0 - compute alpha * A * B
-    if(nnz_D == 0)
+    else
     {
-        return rocsparse_csrgemm_nnz_mult(handle,
-                                          trans_A,
-                                          trans_B,
-                                          m,
-                                          n,
-                                          k,
-                                          descr_A,
-                                          nnz_A,
-                                          csr_row_ptr_A,
-                                          csr_col_ind_A,
-                                          descr_B,
-                                          nnz_B,
-                                          csr_row_ptr_B,
-                                          csr_col_ind_B,
-                                          descr_C,
-                                          csr_row_ptr_C,
-                                          nnz_C,
-                                          info_C,
-                                          temp_buffer);
+        RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error,
+                                               "failed condition (mul == true && add == true)");
     }
-#endif
-
-    // Perform nnz calculation
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_nnz_calc(handle,
-                                                         trans_A,
-                                                         trans_B,
-                                                         m,
-                                                         n,
-                                                         k,
-                                                         descr_A,
-                                                         nnz_A,
-                                                         csr_row_ptr_A,
-                                                         csr_col_ind_A,
-                                                         descr_B,
-                                                         nnz_B,
-                                                         csr_row_ptr_B,
-                                                         csr_col_ind_B,
-                                                         descr_D,
-                                                         nnz_D,
-                                                         csr_row_ptr_D,
-                                                         csr_col_ind_D,
-                                                         descr_C,
-                                                         csr_row_ptr_C,
-                                                         nnz_C,
-                                                         info_C,
-                                                         temp_buffer));
     return rocsparse_status_success;
 }
 

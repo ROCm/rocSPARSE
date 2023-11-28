@@ -39,19 +39,3 @@
                     __LINE__);                                    \
         }                                                         \
     }
-
-#define RETURN_IF_INVALID_HANDLE(HANDLE)            \
-    {                                               \
-        if(HANDLE == nullptr)                       \
-        {                                           \
-            return rocsparse_status_invalid_handle; \
-        }                                           \
-    }
-
-#define RETURN_IF_NULLPTR(PTR)                       \
-    {                                                \
-        if(PTR == nullptr)                           \
-        {                                            \
-            return rocsparse_status_invalid_pointer; \
-        }                                            \
-    }

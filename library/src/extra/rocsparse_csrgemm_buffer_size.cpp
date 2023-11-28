@@ -33,6 +33,30 @@
 #include "rocsparse_csrgemm_multadd.hpp"
 #include "rocsparse_csrgemm_scal.hpp"
 
+static rocsparse_status reinit_csrgemm_info(rocsparse_mat_info info,
+                                            const void*        alpha,
+                                            const void*        beta,
+                                            const int64_t      k,
+                                            const int64_t      nnz_A,
+                                            const int64_t      nnz_B,
+                                            const int64_t      nnz_D)
+{
+    info->csrgemm_info->mul = (alpha != nullptr);
+    info->csrgemm_info->add = (beta != nullptr);
+
+    if(info->csrgemm_info->add && (nnz_D == 0))
+    {
+        info->csrgemm_info->add = false;
+    }
+
+    if(info->csrgemm_info->mul && (k == 0 || nnz_A == 0 || nnz_B == 0))
+    {
+        info->csrgemm_info->mul = false;
+    }
+
+    return rocsparse_status_success;
+}
+
 static rocsparse_status
     rocsparse_csrgemm_buffer_size_checkarg(rocsparse_handle          handle, //0
                                            rocsparse_operation       trans_A, //1
@@ -58,14 +82,16 @@ static rocsparse_status
                                            size_t*                   buffer_size) //21
 {
 
-    const bool mul = (alpha != nullptr);
-    const bool add = (beta != nullptr) ? (nnz_D != 0) : false;
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
+    ROCSPARSE_CHECKARG_POINTER(20, info_C);
+    ROCSPARSE_CHECKARG(
+        20, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_internal_error);
+
+    const bool mul = info_C->csrgemm_info->mul;
+    const bool add = info_C->csrgemm_info->add;
+
     if(mul == true && add == true)
     {
-        ROCSPARSE_CHECKARG_HANDLE(0, handle);
-        ROCSPARSE_CHECKARG_POINTER(20, info_C);
-        ROCSPARSE_CHECKARG(
-            20, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_internal_error);
         ROCSPARSE_CHECKARG_ENUM(1, trans_A);
         ROCSPARSE_CHECKARG_ENUM(2, trans_B);
         ROCSPARSE_CHECKARG_SIZE(3, m);
@@ -141,10 +167,6 @@ static rocsparse_status
     }
     else if(mul == true && add == false)
     {
-        ROCSPARSE_CHECKARG_HANDLE(0, handle);
-        ROCSPARSE_CHECKARG_POINTER(20, info_C);
-        ROCSPARSE_CHECKARG(
-            20, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_internal_error);
         ROCSPARSE_CHECKARG_ENUM(1, trans_A);
         ROCSPARSE_CHECKARG_ENUM(2, trans_B);
         ROCSPARSE_CHECKARG_SIZE(3, m);
@@ -206,7 +228,6 @@ static rocsparse_status
     }
     else if(mul == false && add == true)
     {
-        ROCSPARSE_CHECKARG_HANDLE(0, handle);
         ROCSPARSE_CHECKARG_ENUM(1, trans_A);
         ROCSPARSE_CHECKARG_ENUM(2, trans_B);
         ROCSPARSE_CHECKARG_SIZE(3, m);
@@ -219,9 +240,6 @@ static rocsparse_status
                            rocsparse_status_not_implemented);
         ROCSPARSE_CHECKARG_SIZE(17, nnz_D);
         ROCSPARSE_CHECKARG_ARRAY(18, m, csr_row_ptr_D);
-        ROCSPARSE_CHECKARG_POINTER(20, info_C);
-        ROCSPARSE_CHECKARG(
-            20, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_internal_error);
         ROCSPARSE_CHECKARG_POINTER(21, buffer_size);
         ROCSPARSE_CHECKARG_ARRAY(19, nnz_D, csr_col_ind_D);
 
@@ -239,15 +257,11 @@ static rocsparse_status
     else
     {
 
-        ROCSPARSE_CHECKARG_HANDLE(0, handle);
         ROCSPARSE_CHECKARG_ENUM(1, trans_A);
         ROCSPARSE_CHECKARG_ENUM(2, trans_B);
         ROCSPARSE_CHECKARG_SIZE(3, m);
         ROCSPARSE_CHECKARG_SIZE(4, n);
         ROCSPARSE_CHECKARG_SIZE(5, k);
-        ROCSPARSE_CHECKARG_POINTER(20, info_C);
-        ROCSPARSE_CHECKARG(
-            20, info_C, (info_C->csrgemm_info == nullptr), rocsparse_status_internal_error);
         ROCSPARSE_CHECKARG_POINTER(21, buffer_size);
         return rocsparse_status_continue;
     }
@@ -280,15 +294,11 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
 
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrgemm_info(info_C->csrgemm_info));
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrgemm_info(&info_C->csrgemm_info));
+    RETURN_IF_ROCSPARSE_ERROR(reinit_csrgemm_info(info_C, alpha, beta, k, nnz_A, nnz_B, nnz_D));
 
-    info_C->csrgemm_info->mul = (alpha != nullptr);
-    info_C->csrgemm_info->add = (beta != nullptr);
-    if(info_C->csrgemm_info->add && (nnz_D == 0))
-    {
-        info_C->csrgemm_info->add = false;
-    }
-
-    if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == true)
+    const bool mul = info_C->csrgemm_info->mul;
+    const bool add = info_C->csrgemm_info->add;
+    if(mul == true && add == true)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_multadd_buffer_size_template(handle,
                                                                                  trans_A,
@@ -314,7 +324,7 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
                                                                                  buffer_size));
         return rocsparse_status_success;
     }
-    else if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == false)
+    else if(mul == true && add == false)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_mult_buffer_size_template(handle,
                                                                               trans_A,
@@ -335,7 +345,7 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
                                                                               buffer_size));
         return rocsparse_status_success;
     }
-    else if(info_C->csrgemm_info->mul == false && info_C->csrgemm_info->add == true)
+    else if(mul == false && add == true)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_scal_buffer_size_template(
             handle, m, n, beta, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D, info_C, buffer_size));
@@ -343,7 +353,8 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
     }
     else
     {
-        if(beta != nullptr && nnz_D == 0)
+        if((beta != nullptr && nnz_D == 0)
+           || (alpha != nullptr && (k == 0 || nnz_A == 0 || nnz_B == 0)))
         {
             *buffer_size                         = 0;
             info_C->csrgemm_info->buffer_size    = buffer_size[0];
@@ -410,15 +421,7 @@ static rocsparse_status rocsparse_csrgemm_buffer_size_impl(rocsparse_handle     
 
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrgemm_info(info_C->csrgemm_info));
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrgemm_info(&info_C->csrgemm_info));
-    info_C->csrgemm_info->mul = (alpha != nullptr);
-    info_C->csrgemm_info->add = (beta != nullptr);
-    if(info_C->csrgemm_info->add && (nnz_D == 0))
-    {
-        info_C->csrgemm_info->add = false;
-    }
-
-    const bool mul = info_C->csrgemm_info->mul;
-    const bool add = info_C->csrgemm_info->add;
+    RETURN_IF_ROCSPARSE_ERROR(reinit_csrgemm_info(info_C, alpha, beta, k, nnz_A, nnz_B, nnz_D));
 
     const rocsparse_status status = rocsparse_csrgemm_buffer_size_checkarg(handle,
                                                                            trans_A,
@@ -448,7 +451,8 @@ static rocsparse_status rocsparse_csrgemm_buffer_size_impl(rocsparse_handle     
         return rocsparse_status_success;
     }
 
-    // Either alpha or beta can be nullptr
+    const bool mul = info_C->csrgemm_info->mul;
+    const bool add = info_C->csrgemm_info->add;
     if(mul == true && add == true)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_multadd_buffer_size_core(handle,
@@ -509,7 +513,8 @@ static rocsparse_status rocsparse_csrgemm_buffer_size_impl(rocsparse_handle     
     }
     else
     {
-        if(beta != nullptr && nnz_D == 0)
+        if((beta != nullptr && nnz_D == 0)
+           || (alpha != nullptr && (k == 0 || nnz_A == 0 || nnz_B == 0)))
         {
             *buffer_size                         = 0;
             info_C->csrgemm_info->buffer_size    = buffer_size[0];
