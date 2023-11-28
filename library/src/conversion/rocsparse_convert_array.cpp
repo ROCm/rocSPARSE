@@ -654,9 +654,10 @@ rocsparse_status rocsparse_dnvec_transfer_from(rocsparse_handle            handl
         case rocsparse_datatype_f32_c:
         case rocsparse_datatype_f64_c:
         {
-            RETURN_IF_ROCSPARSE_ERROR_WMSG(rocsparse_status_not_implemented,
-                                           "source data is defined with complex types whereas "
-                                           "target data is defined with real type");
+            RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
+                rocsparse_status_not_implemented,
+                "source data is defined with complex types whereas "
+                "target data is defined with real type");
             break;
         }
         case rocsparse_datatype_i8_r:

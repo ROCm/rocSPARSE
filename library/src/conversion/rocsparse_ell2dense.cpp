@@ -59,8 +59,6 @@ rocsparse_status rocsparse_ell2dense_template(rocsparse_handle          handle,
               (const void*&)A,
               lda);
 
-    log_bench(handle, "./rocsparse-bench -f ell2dense -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
-
     // Check matrix type
     ROCSPARSE_CHECKARG(3,
                        ell_descr,

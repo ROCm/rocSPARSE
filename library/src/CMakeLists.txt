@@ -161,23 +161,31 @@ set(rocsparse_source
   src/extra/rocsparse_csrgemm_scal_buffer_size.cpp
   src/extra/rocsparse_csrgemm_scal_nnz.cpp
   src/extra/rocsparse_csrgemm_scal.cpp
+  src/extra/rocsparse_csrgemm_symbolic_scal.cpp
+  src/extra/rocsparse_csrgemm_numeric_scal.cpp
   #
   src/extra/rocsparse_csrgemm_mult_buffer_size.cpp
   src/extra/rocsparse_csrgemm_mult_nnz.cpp
   src/extra/rocsparse_csrgemm_mult.cpp
+  src/extra/rocsparse_csrgemm_symbolic_mult.cpp
+  src/extra/rocsparse_csrgemm_numeric_mult.cpp
   #
   src/extra/rocsparse_csrgemm_multadd_buffer_size.cpp
   src/extra/rocsparse_csrgemm_multadd_nnz.cpp
   src/extra/rocsparse_csrgemm_multadd.cpp
+  src/extra/rocsparse_csrgemm_symbolic_multadd.cpp
+  src/extra/rocsparse_csrgemm_numeric_multadd.cpp
   #
   src/extra/rocsparse_csrgemm_nnz_calc.cpp
   src/extra/rocsparse_csrgemm_calc.cpp
+  src/extra/rocsparse_csrgemm_symbolic_calc.cpp
+  src/extra/rocsparse_csrgemm_numeric_calc.cpp
   #
   src/extra/rocsparse_csrgemm_buffer_size.cpp
   src/extra/rocsparse_csrgemm_nnz.cpp
-  src/extra/rocsparse_csrgemm_numeric.cpp
-  src/extra/rocsparse_csrgemm_symbolic.cpp
   src/extra/rocsparse_csrgemm.cpp
+  src/extra/rocsparse_csrgemm_symbolic.cpp
+  src/extra/rocsparse_csrgemm_numeric.cpp
   #
   src/extra/rocsparse_bsrgemm_scal_buffer_size.cpp
   src/extra/rocsparse_bsrgemm_scal.cpp

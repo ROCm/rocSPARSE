@@ -73,25 +73,29 @@ void testing_sparse_to_dense_csc_bad_arg(const Arguments& arg)
     {
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_sparse_to_dense, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(
+            rocsparse_sparse_to_dense, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_sparse_to_dense, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(
+            rocsparse_sparse_to_dense, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = nullptr;
         void*   temp_buffer = (void*)0x4;
-        auto_testing_bad_arg(rocsparse_sparse_to_dense, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(
+            rocsparse_sparse_to_dense, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
     {
         size_t* buffer_size = nullptr;
         void*   temp_buffer = nullptr;
-        auto_testing_bad_arg(rocsparse_sparse_to_dense, nargs_to_exclude, args_to_exclude, PARAMS);
+        select_bad_arg_analysis(
+            rocsparse_sparse_to_dense, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 #undef PARAMS
 

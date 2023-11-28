@@ -195,7 +195,7 @@ constexpr auto rocsparse_status2string(rocsparse_status status)
 //
 //
 //
-#define RETURN_IF_ROCSPARSE_ERROR_WMSG(INPUT_STATUS_FOR_CHECK, MSG)             \
+#define RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(INPUT_STATUS_FOR_CHECK, MSG)     \
     do                                                                          \
     {                                                                           \
         const rocsparse_status TMP_STATUS_FOR_CHECK = (INPUT_STATUS_FOR_CHECK); \

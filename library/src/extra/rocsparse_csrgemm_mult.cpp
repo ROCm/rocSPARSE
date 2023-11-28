@@ -86,72 +86,82 @@ rocsparse_status rocsparse_csrgemm_mult_core(rocsparse_handle          handle,
                                              const rocsparse_mat_info  info_C,
                                              void*                     temp_buffer)
 {
-    // Perform gemm calculation
-    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    const bool mul = info_C->csrgemm_info->mul;
+    const bool add = info_C->csrgemm_info->add;
+    if(mul == true && add == false)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_calc_template(handle,
-                                                                  trans_A,
-                                                                  trans_B,
-                                                                  m,
-                                                                  n,
-                                                                  k,
-                                                                  alpha,
-                                                                  descr_A,
-                                                                  nnz_A,
-                                                                  csr_val_A,
-                                                                  csr_row_ptr_A,
-                                                                  csr_col_ind_A,
-                                                                  descr_B,
-                                                                  nnz_B,
-                                                                  csr_val_B,
-                                                                  csr_row_ptr_B,
-                                                                  csr_col_ind_B,
-                                                                  (const T*)nullptr,
-                                                                  nullptr,
-                                                                  (I)0,
-                                                                  (const T*)nullptr,
-                                                                  (const I*)nullptr,
-                                                                  (const J*)nullptr,
-                                                                  descr_C,
-                                                                  csr_val_C,
-                                                                  csr_row_ptr_C,
-                                                                  csr_col_ind_C,
-                                                                  info_C,
-                                                                  temp_buffer));
-        return rocsparse_status_success;
+        // Perform gemm calculation
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_calc_template(handle,
+                                                                      trans_A,
+                                                                      trans_B,
+                                                                      m,
+                                                                      n,
+                                                                      k,
+                                                                      alpha,
+                                                                      descr_A,
+                                                                      nnz_A,
+                                                                      csr_val_A,
+                                                                      csr_row_ptr_A,
+                                                                      csr_col_ind_A,
+                                                                      descr_B,
+                                                                      nnz_B,
+                                                                      csr_val_B,
+                                                                      csr_row_ptr_B,
+                                                                      csr_col_ind_B,
+                                                                      (const T*)nullptr,
+                                                                      nullptr,
+                                                                      (I)0,
+                                                                      (const T*)nullptr,
+                                                                      (const I*)nullptr,
+                                                                      (const J*)nullptr,
+                                                                      descr_C,
+                                                                      csr_val_C,
+                                                                      csr_row_ptr_C,
+                                                                      csr_col_ind_C,
+                                                                      info_C,
+                                                                      temp_buffer));
+            return rocsparse_status_success;
+        }
+        else
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_calc_template(handle,
+                                                                      trans_A,
+                                                                      trans_B,
+                                                                      m,
+                                                                      n,
+                                                                      k,
+                                                                      *alpha,
+                                                                      descr_A,
+                                                                      nnz_A,
+                                                                      csr_val_A,
+                                                                      csr_row_ptr_A,
+                                                                      csr_col_ind_A,
+                                                                      descr_B,
+                                                                      nnz_B,
+                                                                      csr_val_B,
+                                                                      csr_row_ptr_B,
+                                                                      csr_col_ind_B,
+                                                                      static_cast<const T>(0),
+                                                                      nullptr,
+                                                                      (I)0,
+                                                                      (const T*)nullptr,
+                                                                      (const I*)nullptr,
+                                                                      (const J*)nullptr,
+                                                                      descr_C,
+                                                                      csr_val_C,
+                                                                      csr_row_ptr_C,
+                                                                      csr_col_ind_C,
+                                                                      info_C,
+                                                                      temp_buffer));
+            return rocsparse_status_success;
+        }
     }
     else
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgemm_calc_template(handle,
-                                                                  trans_A,
-                                                                  trans_B,
-                                                                  m,
-                                                                  n,
-                                                                  k,
-                                                                  *alpha,
-                                                                  descr_A,
-                                                                  nnz_A,
-                                                                  csr_val_A,
-                                                                  csr_row_ptr_A,
-                                                                  csr_col_ind_A,
-                                                                  descr_B,
-                                                                  nnz_B,
-                                                                  csr_val_B,
-                                                                  csr_row_ptr_B,
-                                                                  csr_col_ind_B,
-                                                                  static_cast<const T>(0),
-                                                                  nullptr,
-                                                                  (I)0,
-                                                                  (const T*)nullptr,
-                                                                  (const I*)nullptr,
-                                                                  (const J*)nullptr,
-                                                                  descr_C,
-                                                                  csr_val_C,
-                                                                  csr_row_ptr_C,
-                                                                  csr_col_ind_C,
-                                                                  info_C,
-                                                                  temp_buffer));
-        return rocsparse_status_success;
+        RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error,
+                                               "failed condition (mul == true && add == false)");
     }
 }
 

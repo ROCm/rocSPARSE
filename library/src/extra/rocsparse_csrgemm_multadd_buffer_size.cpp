@@ -121,7 +121,7 @@ rocsparse_status
                                                       rocsparse_mat_info        info_C,
                                                       size_t*                   buffer_size)
 {
-    if(m == 0 || n == 0)
+    if((m == 0 || n == 0) || ((nnz_A == 0 || nnz_B == 0) && (nnz_D == 0)))
     {
         *buffer_size                         = 0;
         info_C->csrgemm_info->buffer_size    = buffer_size[0];

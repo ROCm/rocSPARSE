@@ -564,10 +564,12 @@ rocsparse_status rocsparse_bsrgemm_checkarg(rocsparse_handle          handle, //
             RETURN_IF_ROCSPARSE_ERROR(status);
             return rocsparse_status_success;
         }
+
         ROCSPARSE_CHECKARG(
             2, trans_A, trans_A != rocsparse_operation_none, rocsparse_status_not_implemented);
         ROCSPARSE_CHECKARG(
             3, trans_B, trans_B != rocsparse_operation_none, rocsparse_status_not_implemented);
+
         if(info_C->csrgemm_info->is_initialized)
         {
             ROCSPARSE_CHECKARG_ARRAY(30, info_C->csrgemm_info->buffer_size, temp_buffer);
@@ -577,37 +579,6 @@ rocsparse_status rocsparse_bsrgemm_checkarg(rocsparse_handle          handle, //
             ROCSPARSE_CHECKARG_POINTER(30, temp_buffer);
         }
 
-#if 0
-      // nnzb_D == 0 - compute alpha * A * B
-      if(nnzb_D == 0)
-	{
-	  return rocsparse_bsrgemm_mult_template(handle,
-						 dir,
-						 trans_A,
-						 trans_B,
-						 mb,
-						 nb,
-						 kb,
-						 block_dim,
-						 alpha,
-						 descr_A,
-						 nnzb_A,
-						 bsr_val_A,
-						 bsr_row_ptr_A,
-						 bsr_col_ind_A,
-						 descr_B,
-						 nnzb_B,
-						 bsr_val_B,
-						 bsr_row_ptr_B,
-						 bsr_col_ind_B,
-						 descr_C,
-						 bsr_val_C,
-						 bsr_row_ptr_C,
-						 bsr_col_ind_C,
-						 info_C,
-						 temp_buffer);
-	}
-#endif
         return rocsparse_status_continue;
     }
     else if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == false)

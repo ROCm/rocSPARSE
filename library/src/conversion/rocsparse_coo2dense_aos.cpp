@@ -59,9 +59,6 @@ rocsparse_status rocsparse_coo2dense_aos_template(rocsparse_handle          hand
               (const void*&)A,
               lda);
 
-    log_bench(
-        handle, "./rocsparse-bench -f coo2dense_aos -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
-
     // Check matrix type
     ROCSPARSE_CHECKARG(
         4, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);

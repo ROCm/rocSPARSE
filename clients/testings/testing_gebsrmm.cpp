@@ -65,7 +65,7 @@ void testing_gebsrmm_bad_arg(const Arguments& arg)
     handle, dir, trans_A, trans_B, mb, n, kb, nnzb, alpha, descr, bsr_val, bsr_row_ptr, \
         bsr_col_ind, row_block_dim, col_block_dim, B, ldb, beta, C, ldc
 
-    auto_testing_bad_arg(rocsparse_gebsrmm<T>, PARAMS);
+    bad_arg_analysis(rocsparse_gebsrmm<T>, PARAMS);
 
     //
     // CHECK NOT IMPLEMENTED CASE

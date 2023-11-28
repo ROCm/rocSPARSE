@@ -48,33 +48,43 @@ rocsparse_status rocsparse_csrgemm_mult_nnz_quickreturn(rocsparse_handle        
                                                         const rocsparse_mat_info  info_C,
                                                         void*                     temp_buffer)
 {
-    // Quick return if possible
-    if(m == 0 || n == 0 || k == 0 || nnz_A == 0 || nnz_B == 0)
+    const bool mul = info_C->csrgemm_info->mul;
+    const bool add = info_C->csrgemm_info->add;
+    if(mul == true && add == false)
     {
-        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        // Quick return if possible
+        if(m == 0 || n == 0 || k == 0 || nnz_A == 0 || nnz_B == 0)
         {
-            RETURN_IF_HIP_ERROR(hipMemsetAsync(nnz_C, 0, sizeof(I), handle->stream));
-        }
-        else
-        {
-            *nnz_C = 0;
-        }
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
+            {
+                RETURN_IF_HIP_ERROR(hipMemsetAsync(nnz_C, 0, sizeof(I), handle->stream));
+            }
+            else
+            {
+                *nnz_C = 0;
+            }
 
-        if(m > 0)
-        {
+            if(m > 0)
+            {
 #define CSRGEMM_DIM 1024
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_set_base<CSRGEMM_DIM>),
-                                               dim3((m + 1) / CSRGEMM_DIM + 1),
-                                               dim3(CSRGEMM_DIM),
-                                               0,
-                                               handle->stream,
-                                               m + 1,
-                                               csr_row_ptr_C,
-                                               descr_C->base);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_set_base<CSRGEMM_DIM>),
+                                                   dim3((m + 1) / CSRGEMM_DIM + 1),
+                                                   dim3(CSRGEMM_DIM),
+                                                   0,
+                                                   handle->stream,
+                                                   m + 1,
+                                                   csr_row_ptr_C,
+                                                   descr_C->base);
 #undef CSRGEMM_DIM
-        }
+            }
 
-        return rocsparse_status_success;
+            return rocsparse_status_success;
+        }
+    }
+    else
+    {
+        RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error,
+                                               "failed condition (mul == true && add == false)");
     }
     return rocsparse_status_continue;
 }

@@ -157,8 +157,8 @@ rocsparse_status rocsparse_blas_gemm_ex(rocsparse_blas_handle   blas_handle,
     {
     case rocsparse_blas_impl_none:
     {
-        RETURN_IF_ROCSPARSE_ERROR_WMSG(rocsparse_status_not_implemented,
-                                       "no blas implementation is selected.");
+        RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented,
+                                               "no blas implementation is selected.");
     }
     case rocsparse_blas_impl_default:
     case rocsparse_blas_impl_rocblas:

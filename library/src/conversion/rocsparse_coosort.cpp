@@ -197,8 +197,6 @@ rocsparse_status rocsparse_coosort_by_row_template(rocsparse_handle handle,
               (const void*&)perm,
               (const void*&)temp_buffer);
 
-    log_bench(handle, "./rocsparse-bench -f coosort", "--mtx <matrix.mtx>");
-
     // Check sizes
     if(m < 0 || n < 0 || nnz < 0)
     {

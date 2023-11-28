@@ -136,9 +136,10 @@ rocsparse_status rocsparse_blas_rocblas_create_handle(rocsparse_blas_rocblas_han
     RETURN_IF_ROCBLAS_ERROR(rocblas_create_handle((rocblas_handle*)handle));
     return rocsparse_status_success;
 #else
-    RETURN_IF_ROCSPARSE_ERROR_WMSG(rocsparse_status_not_implemented,
-                                   "rocBLAS implementation is not available, please rebuild with "
-                                   "predefined macro ROCSPARSE_WITH_ROCBLAS.");
+    RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
+        rocsparse_status_not_implemented,
+        "rocBLAS implementation is not available, please rebuild with "
+        "predefined macro ROCSPARSE_WITH_ROCBLAS.");
 #endif
 }
 
@@ -148,9 +149,10 @@ rocsparse_status rocsparse_blas_rocblas_destroy_handle(rocsparse_blas_rocblas_ha
     RETURN_IF_ROCBLAS_ERROR(rocblas_destroy_handle((rocblas_handle)handle));
     return rocsparse_status_success;
 #else
-    RETURN_IF_ROCSPARSE_ERROR_WMSG(rocsparse_status_not_implemented,
-                                   "rocBLAS implementation is not available, please rebuild with "
-                                   "predefined macro ROCSPARSE_WITH_ROCBLAS.");
+    RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
+        rocsparse_status_not_implemented,
+        "rocBLAS implementation is not available, please rebuild with "
+        "predefined macro ROCSPARSE_WITH_ROCBLAS.");
 #endif
 }
 
@@ -161,9 +163,10 @@ rocsparse_status rocsparse_blas_rocblas_set_stream(rocsparse_blas_rocblas_handle
     RETURN_IF_ROCBLAS_ERROR(rocblas_set_stream((rocblas_handle)handle, stream));
     return rocsparse_status_success;
 #else
-    RETURN_IF_ROCSPARSE_ERROR_WMSG(rocsparse_status_not_implemented,
-                                   "rocBLAS implementation is not available, please rebuild with "
-                                   "predefined macro ROCSPARSE_WITH_ROCBLAS.");
+    RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
+        rocsparse_status_not_implemented,
+        "rocBLAS implementation is not available, please rebuild with "
+        "predefined macro ROCSPARSE_WITH_ROCBLAS.");
 #endif
 }
 
@@ -175,9 +178,10 @@ rocsparse_status rocsparse_blas_rocblas_set_pointer_mode(rocsparse_blas_rocblas_
                                                      rocsparse2rocblas_pointer_mode(pointer_mode)));
     return rocsparse_status_success;
 #else
-    RETURN_IF_ROCSPARSE_ERROR_WMSG(rocsparse_status_not_implemented,
-                                   "rocBLAS implementation is not available, please rebuild with "
-                                   "predefined macro ROCSPARSE_WITH_ROCBLAS.");
+    RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
+        rocsparse_status_not_implemented,
+        "rocBLAS implementation is not available, please rebuild with "
+        "predefined macro ROCSPARSE_WITH_ROCBLAS.");
 #endif
 }
 
@@ -233,8 +237,9 @@ rocsparse_status rocsparse_blas_rocblas_gemm_ex(rocsparse_blas_rocblas_handle ha
                                             flags));
     return rocsparse_status_success;
 #else
-    RETURN_IF_ROCSPARSE_ERROR_WMSG(rocsparse_status_not_implemented,
-                                   "rocBLAS implementation is not available, please rebuild with "
-                                   "predefined macro ROCSPARSE_WITH_ROCBLAS.");
+    RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
+        rocsparse_status_not_implemented,
+        "rocBLAS implementation is not available, please rebuild with "
+        "predefined macro ROCSPARSE_WITH_ROCBLAS.");
 #endif
 }

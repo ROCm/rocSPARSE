@@ -566,25 +566,24 @@ private:
 public:
     static void testing_spmv_bad_arg(const Arguments& arg)
     {
-        T alpha = static_cast<T>(6);
-        T beta  = static_cast<T>(2);
+        const T local_alpha = static_cast<T>(6);
+        const T local_beta  = static_cast<T>(2);
 
         rocsparse_local_handle local_handle;
 
-        rocsparse_handle     handle  = local_handle;
-        rocsparse_operation  trans   = rocsparse_operation_none;
-        const void*          p_alpha = (const void*)&alpha;
-        const void*          p_beta  = (const void*)&beta;
-        rocsparse_spmv_alg   alg     = rocsparse_spmv_alg_default;
-        rocsparse_spmv_stage stage   = rocsparse_spmv_stage_compute;
-        size_t               buffer_size;
-        size_t*              p_buffer_size = &buffer_size;
-        void*                temp_buffer   = (void*)0x4;
-        rocsparse_datatype   ttype         = get_datatype<T>();
+        rocsparse_handle     handle = local_handle;
+        rocsparse_operation  trans  = rocsparse_operation_none;
+        const void*          alpha  = (const void*)&local_alpha;
+        const void*          beta   = (const void*)&local_beta;
+        rocsparse_spmv_alg   alg    = rocsparse_spmv_alg_default;
+        rocsparse_spmv_stage stage  = rocsparse_spmv_stage_compute;
+        size_t               local_buffer_size;
+        size_t*              buffer_size  = &local_buffer_size;
+        void*                temp_buffer  = (void*)0x4;
+        rocsparse_datatype   compute_type = get_datatype<T>();
 
-#define PARAMS                                                                                   \
-    handle, trans, p_alpha, (const rocsparse_spmat_descr&)matA, (const rocsparse_dnvec_descr&)x, \
-        p_beta, (rocsparse_dnvec_descr&)y, ttype, alg, stage, p_buffer_size, temp_buffer
+#define PARAMS \
+    handle, trans, alpha, mat, x, beta, y, compute_type, alg, stage, buffer_size, temp_buffer
 
         //
         // AUTOMATIC BAD ARGS.
@@ -593,19 +592,23 @@ public:
             device_dense_matrix<X>  dx;
             device_dense_matrix<Y>  dy;
             device_sparse_matrix<A> dA;
-            rocsparse_local_spmat   matA(dA);
-            rocsparse_local_dnvec   x(dx);
-            rocsparse_local_dnvec   y(dy);
+            rocsparse_local_spmat   local_mat(dA);
+            rocsparse_local_dnvec   local_x(dx);
+            rocsparse_local_dnvec   local_y(dy);
+
+            rocsparse_spmat_descr mat = local_mat;
+            rocsparse_dnvec_descr x   = local_x;
+            rocsparse_dnvec_descr y   = local_y;
 
             //
             // WITH 2 ARGUMENTS BEING SKIPPED DURING THE CHECK.
             //
             static const int nex   = 2;
             static const int ex[2] = {10, 11};
-            auto_testing_bad_arg(rocsparse_spmv, nex, ex, PARAMS);
+            select_bad_arg_analysis(rocsparse_spmv, nex, ex, PARAMS);
 
-            p_buffer_size = nullptr;
-            temp_buffer   = nullptr;
+            buffer_size = nullptr;
+            temp_buffer = nullptr;
             EXPECT_ROCSPARSE_STATUS(rocsparse_spmv(PARAMS), rocsparse_status_invalid_pointer);
         }
 

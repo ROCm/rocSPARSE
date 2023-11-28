@@ -106,37 +106,46 @@ rocsparse_status rocsparse_csrgemm_scal_nnz_core(rocsparse_handle          handl
                                                  const rocsparse_mat_info  info_C,
                                                  void*                     temp_buffer)
 {
-    // Stream
-    hipStream_t stream = handle->stream;
-
-    // When scaling a matrix, nnz of C will always be equal to nnz of D
-    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    const bool mul = info_C->csrgemm_info->mul;
+    const bool add = info_C->csrgemm_info->add;
+    if(mul == false && add == true)
     {
-        RETURN_IF_HIP_ERROR(
-            hipMemcpyAsync(nnz_C, &nnz_D, sizeof(I), hipMemcpyHostToDevice, stream));
+        // Stream
+        hipStream_t stream = handle->stream;
 
-        // Wait for host transfer to finish
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+        // When scaling a matrix, nnz of C will always be equal to nnz of D
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_HIP_ERROR(
+                hipMemcpyAsync(nnz_C, &nnz_D, sizeof(I), hipMemcpyHostToDevice, stream));
+
+            // Wait for host transfer to finish
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+        }
+        else
+        {
+            *nnz_C = nnz_D;
+        }
+
+        // Copy row pointers
+#define CSRGEMM_DIM 1024
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_copy<CSRGEMM_DIM>),
+                                           dim3(m / CSRGEMM_DIM + 1),
+                                           dim3(CSRGEMM_DIM),
+                                           0,
+                                           stream,
+                                           m + 1,
+                                           csr_row_ptr_D,
+                                           csr_row_ptr_C,
+                                           descr_D->base,
+                                           descr_C->base);
+#undef CSRGEMM_DIM
     }
     else
     {
-        *nnz_C = nnz_D;
+        RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error,
+                                               "failed condition (mul == true && add == false)");
     }
-
-    // Copy row pointers
-#define CSRGEMM_DIM 1024
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_copy<CSRGEMM_DIM>),
-                                       dim3(m / CSRGEMM_DIM + 1),
-                                       dim3(CSRGEMM_DIM),
-                                       0,
-                                       stream,
-                                       m + 1,
-                                       csr_row_ptr_D,
-                                       csr_row_ptr_C,
-                                       descr_D->base,
-                                       descr_C->base);
-#undef CSRGEMM_DIM
-
     return rocsparse_status_success;
 }
 
