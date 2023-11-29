@@ -371,7 +371,7 @@ done
 # If matrices_dir_install has been set up then install matrices dir and exit.
 #
 if ! [[ "${matrices_dir_install}" == "" ]];then
-    cmake -DCMAKE_CXX_COMPILER="${rocm_path}/bin/hipcc" -DCMAKE_C_COMPILER="${rocm_path}/bin/hipcc"  -DPROJECT_BINARY_DIR=${matrices_dir_install} -DCMAKE_MATRICES_DIR=${matrices_dir_install} -P ./cmake/ClientMatrices.cmake
+    cmake -DCMAKE_CXX_COMPILER="${rocm_path}/bin/hipcc" -DCMAKE_C_COMPILER="${rocm_path}/bin/hipcc"  -DPROJECT_BINARY_DIR=${matrices_dir_install} -DCMAKE_MATRICES_DIR=${matrices_dir_install} -DROCM_PATH=${rocm_path} -DCMAKE_INSTALL_LIBDIR=lib -P ./cmake/ClientMatrices.cmake
     exit 0
 fi
 
@@ -388,7 +388,7 @@ if ! [[ "${matrices_dir}" == "" ]];then
     # Let's 'reinstall' to the specified location to check if all good
     # Will be fast if everything already exists as expected.
     # This is to prevent any empty directory.
-    cmake -DCMAKE_CXX_COMPILER="${rocm_path}/bin/hipcc" -DCMAKE_C_COMPILER="${rocm_path}/bin/hipcc" -DPROJECT_BINARY_DIR=${matrices_dir} -DCMAKE_MATRICES_DIR=${matrices_dir} -P ./cmake/ClientMatrices.cmake
+    cmake -DCMAKE_CXX_COMPILER="${rocm_path}/bin/hipcc" -DCMAKE_C_COMPILER="${rocm_path}/bin/hipcc" -DPROJECT_BINARY_DIR=${matrices_dir} -DCMAKE_MATRICES_DIR=${matrices_dir} -DROCM_PATH=${rocm_path} -DCMAKE_INSTALL_LIBDIR=lib -P ./cmake/ClientMatrices.cmake
 fi
 
 build_dir=./build
