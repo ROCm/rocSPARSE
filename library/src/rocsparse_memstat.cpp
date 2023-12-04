@@ -840,6 +840,8 @@ memstat::memstat()
 
 void memstat::add(void* address, size_t nbytes, memstat_mode::value_t mode, const char* tag)
 {
+    if(address == nullptr)
+        return;
     if(!contains(address))
     {
         double t = get_time_us();
@@ -865,7 +867,8 @@ void memstat::add(void* address, size_t nbytes, memstat_mode::value_t mode, cons
     }
     else
     {
-        std::cerr << " already exist" << std::endl;
+        std::cerr << "the address " << address << " already exist in the memory database"
+                  << std::endl;
         exit(1);
     }
 }
@@ -948,6 +951,8 @@ void memstat::flush_report(bool finalize)
 
 void memstat::remove(void* address, const char* tag)
 {
+    if(address == nullptr)
+        return;
     auto it = m_map.find(address);
     if(it != m_map.end())
     {
@@ -967,14 +972,14 @@ void memstat::remove(void* address, const char* tag)
     }
     else
     {
-        std::cerr << "ROCSPARSE MEMSTAT, address not found." << std::endl;
+        std::cerr << "ROCSPARSE MEMSTAT, remove: address " << address << " not found." << std::endl;
         exit(1);
     }
 }
 
 bool memstat::contains(void* address) const
 {
-    return (m_map.find(address) != m_map.end());
+    return ((address != nullptr) && (m_map.find(address) != m_map.end()));
 }
 
 //

@@ -262,17 +262,6 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle, 
                        csr_descr,
                        csr_descr->storage_mode != rocsparse_storage_mode_sorted,
                        rocsparse_status_requires_sorted_storage);
-#if 0
-    rocsparse_int nnz = 0;
-    { rocsparse_int start = 0;
-      rocsparse_int end   = 0;
-      RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-					 &end, &csr_row_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-      RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-					 &start, &csr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost, handle->stream));
-      RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-      nnz = (end - start); }
-#endif
 
     ROCSPARSE_CHECKARG_ARRAY(6, m, csr_row_ptr);
     if(csr_val == nullptr || csr_col_ind == nullptr)

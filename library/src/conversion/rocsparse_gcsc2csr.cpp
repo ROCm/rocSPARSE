@@ -46,8 +46,8 @@ rocsparse_status rocsparse_gcsc2csr_buffer_size(rocsparse_handle    handle,
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<PTRTYPE>(nnz, local_nnz));      \
     RETURN_IF_ROCSPARSE_ERROR(                                                                  \
         (rocsparse_csr2csc_buffer_size_template<PTRTYPE, INDTYPE>)(handle,                      \
-                                                                   local_m,                     \
                                                                    local_n,                     \
+                                                                   local_m,                     \
                                                                    local_nnz,                   \
                                                                    (const PTRTYPE*)csc_col_ptr, \
                                                                    (const INDTYPE*)csc_row_ind, \
@@ -124,8 +124,8 @@ rocsparse_status rocsparse_gcsc2csr(rocsparse_handle     handle,
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<PTRTYPE>(nnz, local_nnz));    \
     RETURN_IF_ROCSPARSE_ERROR(                                                                \
         (rocsparse_csr2csc_template<PTRTYPE, INDTYPE, DATATYPE>)(handle,                      \
-                                                                 local_m,                     \
                                                                  local_n,                     \
+                                                                 local_m,                     \
                                                                  local_nnz,                   \
                                                                  (const DATATYPE*)csc_val,    \
                                                                  (const PTRTYPE*)csc_col_ptr, \
@@ -223,7 +223,7 @@ rocsparse_status rocsparse_gcsc2csr(rocsparse_handle     handle,
 }
 
 rocsparse_status rocsparse_spmat_csc2csr_buffer_size(rocsparse_handle            handle,
-                                                     const rocsparse_spmat_descr source_,
+                                                     rocsparse_const_spmat_descr source_,
                                                      rocsparse_spmat_descr       target_,
                                                      size_t*                     buffer_size_)
 {
@@ -233,42 +233,46 @@ rocsparse_status rocsparse_spmat_csc2csr_buffer_size(rocsparse_handle           
         source_->cols,
         source_->nnz,
         //
-        source_->row_type,
         source_->col_type,
-        source_->row_data,
-        source_->col_data,
+        source_->row_type,
+        source_->const_col_data,
+        source_->const_row_data,
         //
-        (target_->val_data != nullptr) ? rocsparse_action_numeric : rocsparse_action_symbolic,
+        (target_->val_data != nullptr && source_->const_val_data != nullptr)
+            ? rocsparse_action_numeric
+            : rocsparse_action_symbolic,
         buffer_size_));
     return rocsparse_status_success;
 }
 
 rocsparse_status rocsparse_spmat_csc2csr(rocsparse_handle            handle,
-                                         const rocsparse_spmat_descr source_,
+                                         rocsparse_const_spmat_descr source_,
                                          rocsparse_spmat_descr       target_,
                                          size_t                      buffer_size_,
                                          void*                       buffer_)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_gcsc2csr(
-        handle,
-        source_->rows,
-        source_->cols,
-        source_->nnz,
-        //
-        source_->data_type,
-        source_->row_type,
-        source_->col_type,
-        //
-        source_->val_data,
-        source_->row_data,
-        source_->col_data,
-        //
-        target_->val_data,
-        target_->row_data,
-        target_->col_data,
-        //
-        (target_->val_data != nullptr) ? rocsparse_action_numeric : rocsparse_action_symbolic,
-        source_->idx_base,
-        buffer_));
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_gcsc2csr(handle,
+                           source_->rows,
+                           source_->cols,
+                           source_->nnz,
+                           //
+                           source_->data_type,
+                           source_->col_type,
+                           source_->row_type,
+                           //
+                           source_->const_val_data,
+                           source_->const_col_data,
+                           source_->const_row_data,
+                           //
+                           target_->val_data,
+                           target_->col_data,
+                           target_->row_data,
+                           //
+                           (target_->val_data != nullptr && source_->const_val_data != nullptr)
+                               ? rocsparse_action_numeric
+                               : rocsparse_action_symbolic,
+                           source_->idx_base,
+                           buffer_));
     return rocsparse_status_success;
 }

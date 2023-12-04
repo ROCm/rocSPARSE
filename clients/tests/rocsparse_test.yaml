@@ -130,6 +130,7 @@ include: test_sparse_to_dense_csc.yaml
 include: test_dense_to_sparse_coo.yaml
 include: test_dense_to_sparse_csr.yaml
 include: test_dense_to_sparse_csc.yaml
+include: test_sparse_to_sparse.yaml
 include: test_spgemm_bsr.yaml
 include: test_spgemm_csr.yaml
 include: test_gemvi.yaml

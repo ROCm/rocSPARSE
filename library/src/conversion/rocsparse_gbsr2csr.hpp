@@ -45,12 +45,12 @@ rocsparse_status rocsparse_gbsr2csr(rocsparse_handle          handle,
                                     void*                     csr_col_ind);
 
 rocsparse_status rocsparse_spmat_bsr2csr(rocsparse_handle            handle,
-                                         const rocsparse_spmat_descr source,
+                                         rocsparse_const_spmat_descr source,
                                          rocsparse_spmat_descr       target,
                                          size_t                      buffer_size,
                                          void*                       buffer);
 
 rocsparse_status rocsparse_spmat_bsr2csr_buffer_size(rocsparse_handle            handle,
-                                                     const rocsparse_spmat_descr source,
-                                                     const rocsparse_spmat_descr target,
+                                                     rocsparse_const_spmat_descr source,
+                                                     rocsparse_const_spmat_descr target,
                                                      size_t*                     buffer_size);

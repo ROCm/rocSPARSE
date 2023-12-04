@@ -23,23 +23,12 @@
 #pragma once
 
 #include "rocsparse-types.h"
+#include "rocsparse_sparse_to_sparse.hpp"
 
-rocsparse_status rocsparse_gcsr2coo(rocsparse_handle     handle_,
-                                    rocsparse_indextype  source_row_type_,
-                                    const void*          source_row_,
-                                    int64_t              nnz_,
-                                    int64_t              m_,
-                                    rocsparse_indextype  target_row_type_,
-                                    void*                target_row_,
-                                    rocsparse_index_base idx_base_);
-
-rocsparse_status rocsparse_spmat_csr2coo_buffer_size(rocsparse_handle            handle,
-                                                     rocsparse_const_spmat_descr source_,
-                                                     rocsparse_spmat_descr       target_,
-                                                     size_t*                     buffer_size_);
-
-rocsparse_status rocsparse_spmat_csr2coo(rocsparse_handle            handle,
-                                         rocsparse_const_spmat_descr source_,
-                                         rocsparse_spmat_descr       target_,
-                                         size_t                      buffer_size_,
-                                         void*                       buffer_);
+rocsparse_status rocsparse_sparse_to_csr_to_sparse(rocsparse_handle                         handle,
+                                                   rocsparse_sparse_to_sparse_descr         descr,
+                                                   rocsparse_const_spmat_descr              source,
+                                                   rocsparse_spmat_descr                    target,
+                                                   _rocsparse_sparse_to_sparse_descr::stage stage,
+                                                   size_t* buffer_size,
+                                                   void*   buffer);

@@ -74,7 +74,7 @@ void testing_check_spmat_bad_arg(const Arguments& arg)
 template <typename I, typename J, typename T>
 void testing_check_spmat(const Arguments& arg)
 {
-    switch(arg.format)
+    switch(arg.formatA)
     {
     case rocsparse_format_coo:
     {

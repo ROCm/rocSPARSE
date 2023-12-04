@@ -38,7 +38,6 @@ rocsparse_status rocsparse_gell2csr_nnz(rocsparse_handle          handle,
                                         void*                     csr_row_ptr,
                                         int64_t*                  csr_nnz)
 {
-
     switch(ell_col_ind_indextype)
     {
     case rocsparse_indextype_i32:
@@ -63,6 +62,7 @@ rocsparse_status rocsparse_gell2csr_nnz(rocsparse_handle          handle,
         {
         case rocsparse_indextype_i32:
         {
+            int32_t csr_nnz_32;
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_ell2csr_nnz_template(handle,
                                                                      m32,
                                                                      n32,
@@ -71,7 +71,8 @@ rocsparse_status rocsparse_gell2csr_nnz(rocsparse_handle          handle,
                                                                      (const int32_t*)ell_col_ind,
                                                                      csr_descr,
                                                                      (int32_t*)csr_row_ptr,
-                                                                     (int32_t*)csr_nnz));
+                                                                     &csr_nnz_32));
+            csr_nnz[0] = csr_nnz_32;
             return rocsparse_status_success;
         }
         case rocsparse_indextype_i64:
@@ -102,6 +103,7 @@ rocsparse_status rocsparse_gell2csr_nnz(rocsparse_handle          handle,
         {
         case rocsparse_indextype_i32:
         {
+            int32_t csr_nnz_32;
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_ell2csr_nnz_template(handle,
                                                                      m,
                                                                      n,
@@ -110,7 +112,8 @@ rocsparse_status rocsparse_gell2csr_nnz(rocsparse_handle          handle,
                                                                      (const int64_t*)ell_col_ind,
                                                                      csr_descr,
                                                                      (int32_t*)csr_row_ptr,
-                                                                     (int32_t*)csr_nnz));
+                                                                     &csr_nnz_32));
+            csr_nnz[0] = csr_nnz_32;
             return rocsparse_status_success;
         }
         case rocsparse_indextype_i64:
@@ -184,6 +187,13 @@ rocsparse_status rocsparse_gell2csr(rocsparse_handle          handle,
 
     switch(ell_val_datatype)
     {
+    case rocsparse_datatype_i32_r:
+    case rocsparse_datatype_u32_r:
+    case rocsparse_datatype_i8_r:
+    case rocsparse_datatype_u8_r:
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+    }
     case rocsparse_datatype_f32_r:
     {
         switch(csr_row_ptr_indextype)
@@ -388,8 +398,8 @@ rocsparse_status rocsparse_gell2csr(rocsparse_handle          handle,
 }
 
 rocsparse_status rocsparse_spmat_ell2csr_nnz(rocsparse_handle            handle,
-                                             const rocsparse_spmat_descr source,
-                                             const rocsparse_spmat_descr target,
+                                             rocsparse_const_spmat_descr source,
+                                             rocsparse_const_spmat_descr target,
                                              int64_t*                    out_csr_nnz)
 {
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_gell2csr_nnz(handle,
@@ -398,7 +408,7 @@ rocsparse_status rocsparse_spmat_ell2csr_nnz(rocsparse_handle            handle,
                                                      source->descr,
                                                      source->ell_width,
                                                      source->col_type,
-                                                     source->col_data,
+                                                     source->const_col_data,
                                                      target->descr,
                                                      target->row_type,
                                                      target->row_data,
@@ -408,8 +418,8 @@ rocsparse_status rocsparse_spmat_ell2csr_nnz(rocsparse_handle            handle,
 }
 
 rocsparse_status rocsparse_spmat_ell2csr_buffer_size(rocsparse_handle            handle,
-                                                     const rocsparse_spmat_descr source,
-                                                     const rocsparse_spmat_descr target,
+                                                     rocsparse_const_spmat_descr source,
+                                                     rocsparse_const_spmat_descr target,
                                                      size_t*                     buffer_size)
 {
     buffer_size[0] = 0;
@@ -417,7 +427,7 @@ rocsparse_status rocsparse_spmat_ell2csr_buffer_size(rocsparse_handle           
 }
 
 rocsparse_status rocsparse_spmat_ell2csr(rocsparse_handle            handle,
-                                         const rocsparse_spmat_descr source,
+                                         rocsparse_const_spmat_descr source,
                                          rocsparse_spmat_descr       target,
                                          size_t                      buffer_size,
                                          void*                       buffer)
@@ -428,9 +438,9 @@ rocsparse_status rocsparse_spmat_ell2csr(rocsparse_handle            handle,
                                                  source->descr,
                                                  source->ell_width,
                                                  source->data_type,
-                                                 source->val_data,
+                                                 source->const_val_data,
                                                  source->col_type,
-                                                 source->col_data,
+                                                 source->const_col_data,
                                                  target->descr,
                                                  target->data_type,
                                                  target->val_data,

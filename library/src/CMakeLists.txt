@@ -292,6 +292,12 @@ set(rocsparse_source
   src/conversion/rocsparse_gell2csr.cpp
   src/conversion/rocsparse_ggthr.cpp
   src/conversion/rocsparse_convert_array.cpp
+  src/conversion/rocsparse_sparse_to_sparse_buffer_size.cpp
+  src/conversion/rocsparse_sparse_to_sparse.cpp
+  src/conversion/rocsparse_sparse_to_sparse_compute.cpp
+  src/conversion/rocsparse_sparse_to_csr_to_sparse.cpp
+  src/conversion/rocsparse_spmat_transfer_from.cpp
+  src/conversion/rocsparse_internal_spmat_print.cpp
 
 
 

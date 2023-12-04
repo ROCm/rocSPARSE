@@ -208,6 +208,16 @@ rocsparse_sparse_to_dense_alg
 
 .. doxygenenum:: rocsparse_sparse_to_dense_alg
 
+rocsparse_sparse_to_sparse_alg
+------------------------------
+
+.. doxygenenum:: rocsparse_sparse_to_sparse_alg
+
+rocsparse_sparse_to_sparse_stage
+--------------------------------
+
+.. doxygenenum:: rocsparse_sparse_to_sparse_stage
+
 rocsparse_dense_to_sparse_alg
 -----------------------------
 

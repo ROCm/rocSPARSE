@@ -240,6 +240,18 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_hyb_partition&
 }
 
 template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_sparse_to_sparse_stage& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_sparse_to_sparse_alg& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_check_spmat_stage& p)
 {
     return rocsparse_status_invalid_value;

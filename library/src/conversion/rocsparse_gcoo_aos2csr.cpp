@@ -92,7 +92,7 @@ rocsparse_status rocsparse_gcoo_aos2csr_buffer_size(rocsparse_handle     handle,
 }
 
 rocsparse_status rocsparse_spmat_coo_aos2csr_buffer_size(rocsparse_handle            handle,
-                                                         const rocsparse_spmat_descr source_,
+                                                         rocsparse_const_spmat_descr source_,
                                                          rocsparse_spmat_descr       target_,
                                                          size_t*                     buffer_size_)
 {
@@ -100,7 +100,7 @@ rocsparse_status rocsparse_spmat_coo_aos2csr_buffer_size(rocsparse_handle       
                                                                  source_->rows,
                                                                  source_->nnz,
                                                                  source_->row_type,
-                                                                 source_->ind_data,
+                                                                 source_->const_ind_data,
                                                                  source_->idx_base,
                                                                  target_->row_type,
                                                                  target_->col_type,
@@ -110,7 +110,7 @@ rocsparse_status rocsparse_spmat_coo_aos2csr_buffer_size(rocsparse_handle       
 }
 
 rocsparse_status rocsparse_spmat_coo_aos2csr(rocsparse_handle            handle,
-                                             const rocsparse_spmat_descr source_,
+                                             rocsparse_const_spmat_descr source_,
                                              rocsparse_spmat_descr       target_,
                                              size_t                      buffer_size_,
                                              void*                       buffer_)
@@ -119,9 +119,9 @@ rocsparse_status rocsparse_spmat_coo_aos2csr(rocsparse_handle            handle,
                                                      source_->rows,
                                                      source_->nnz,
                                                      source_->row_type,
-                                                     source_->ind_data,
+                                                     source_->const_ind_data,
                                                      source_->data_type,
-                                                     source_->val_data,
+                                                     source_->const_val_data,
                                                      source_->idx_base,
                                                      target_->row_type,
                                                      target_->row_data,

@@ -29,7 +29,7 @@ template <typename I, typename J, typename T>
 void testing_sddmm_bad_arg(const Arguments& arg)
 {
 
-    switch(arg.format)
+    switch(arg.formatA)
     {
     case rocsparse_format_coo:
     {
@@ -78,7 +78,7 @@ template <typename I, typename J, typename T>
 void testing_sddmm(const Arguments& arg)
 {
 
-    switch(arg.format)
+    switch(arg.formatA)
     {
 
     case rocsparse_format_coo:

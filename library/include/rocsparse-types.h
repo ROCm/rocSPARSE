@@ -518,6 +518,32 @@ typedef enum rocsparse_spmat_attribute_
 } rocsparse_spmat_attribute;
 
 /*! \ingroup types_module
+   *  \brief List of sparse to sparse algorithms.
+   *
+   *  \details
+   *  This is a list of supported \ref rocsparse_sparse_to_sparse_alg types that are used to perform
+   *  sparse to sparse conversion.
+   */
+typedef enum rocsparse_sparse_to_sparse_alg_
+{
+    rocsparse_sparse_to_sparse_alg_default
+    = 0, /**< Default sparse to sparse algorithm for the given format. */
+} rocsparse_sparse_to_sparse_alg;
+
+/*! \ingroup types_module
+   *  \brief List of sparse_to_sparse stages.
+   *
+   *  \details
+   *  This is a list of possible stages during sparse_to_sparse conversion. Typical order is
+   *  rocsparse_sparse_to_sparse_buffer_size, rocsparse_sparse_to_sparse_preprocess, rocsparse_sparse_to_sparse_compute.
+   */
+typedef enum rocsparse_sparse_to_sparse_stage_
+{
+    rocsparse_sparse_to_sparse_stage_analysis = 0, /**< Data analysis. */
+    rocsparse_sparse_to_sparse_stage_compute  = 1 /**< Performs the actual conversion. */
+} rocsparse_sparse_to_sparse_stage;
+
+/*! \ingroup types_module
  *  \brief List of Iterative ILU0 algorithms.
  *
  *  \details

@@ -212,7 +212,7 @@ rocsparse_status rocsparse_gcsr2bsr(rocsparse_handle          handle,
 }
 
 rocsparse_status rocsparse_spmat_csr2bsr_nnz(rocsparse_handle            handle,
-                                             const rocsparse_spmat_descr source,
+                                             rocsparse_const_spmat_descr source,
                                              rocsparse_spmat_descr       target,
                                              int64_t*                    bsr_nnz)
 {
@@ -222,9 +222,9 @@ rocsparse_status rocsparse_spmat_csr2bsr_nnz(rocsparse_handle            handle,
                                                      source->cols,
                                                      source->descr,
                                                      source->row_type,
-                                                     source->row_data,
+                                                     source->const_row_data,
                                                      source->col_type,
-                                                     source->col_data,
+                                                     source->const_col_data,
                                                      target->block_dim,
                                                      target->descr,
                                                      target->row_type,
@@ -234,8 +234,8 @@ rocsparse_status rocsparse_spmat_csr2bsr_nnz(rocsparse_handle            handle,
 }
 
 rocsparse_status rocsparse_spmat_csr2bsr_buffer_size(rocsparse_handle            handle,
-                                                     const rocsparse_spmat_descr source_,
-                                                     const rocsparse_spmat_descr target_,
+                                                     rocsparse_const_spmat_descr source_,
+                                                     rocsparse_const_spmat_descr target_,
                                                      size_t*                     buffer_size_)
 {
     buffer_size_[0] = 0;
@@ -243,22 +243,32 @@ rocsparse_status rocsparse_spmat_csr2bsr_buffer_size(rocsparse_handle           
 }
 
 rocsparse_status rocsparse_spmat_csr2bsr(rocsparse_handle            handle,
-                                         const rocsparse_spmat_descr source,
+                                         rocsparse_const_spmat_descr source,
                                          rocsparse_spmat_descr       target,
                                          size_t                      buffer_size,
                                          void*                       buffer)
 {
+    RETURN_ROCSPARSE_ERROR_IF(rocsparse_status_not_implemented,
+                              source->row_type != target->row_type);
+    RETURN_ROCSPARSE_ERROR_IF(rocsparse_status_not_implemented,
+                              source->col_type != target->col_type);
+    if(target->val_data != nullptr && source->val_data != nullptr)
+    {
+        RETURN_ROCSPARSE_ERROR_IF(rocsparse_status_not_implemented,
+                                  source->data_type != target->data_type);
+    }
+
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_gcsr2bsr(handle,
                                                  target->block_dir,
                                                  source->rows,
                                                  source->cols,
                                                  source->descr,
                                                  source->data_type,
-                                                 source->val_data,
+                                                 source->const_val_data,
                                                  source->row_type,
-                                                 source->row_data,
+                                                 source->const_row_data,
                                                  source->col_type,
-                                                 source->col_data,
+                                                 source->const_col_data,
                                                  target->block_dim,
                                                  target->descr,
                                                  target->data_type,

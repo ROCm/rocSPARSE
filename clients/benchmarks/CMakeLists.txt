@@ -165,6 +165,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_dense_to_sparse_coo.cpp
 ../testings/testing_dense_to_sparse_csr.cpp
 ../testings/testing_dense_to_sparse_csc.cpp
+../testings/testing_sparse_to_sparse.cpp
 ../testings/testing_spgemm_bsr.cpp
 ../testings/testing_spgemm_csr.cpp
 ../testings/testing_gemvi.cpp

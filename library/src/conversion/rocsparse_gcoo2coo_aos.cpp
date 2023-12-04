@@ -53,7 +53,7 @@ rocsparse_status rocsparse_gcoo2coo_aos(rocsparse_handle     handle,
         source_col,
         1));
 
-    if(source_val != nullptr)
+    if(source_val != nullptr && target_val != nullptr)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(
             handle, nnz, target_val_type, target_val, source_val_type, source_val));
@@ -62,7 +62,7 @@ rocsparse_status rocsparse_gcoo2coo_aos(rocsparse_handle     handle,
 }
 
 rocsparse_status rocsparse_spmat_coo2coo_aos_buffer_size(rocsparse_handle            handle,
-                                                         const rocsparse_spmat_descr source_,
+                                                         rocsparse_const_spmat_descr source_,
                                                          rocsparse_spmat_descr       target_,
                                                          size_t*                     buffer_size_)
 {
@@ -71,7 +71,7 @@ rocsparse_status rocsparse_spmat_coo2coo_aos_buffer_size(rocsparse_handle       
 }
 
 rocsparse_status rocsparse_spmat_coo2coo_aos(rocsparse_handle            handle,
-                                             const rocsparse_spmat_descr source_,
+                                             rocsparse_const_spmat_descr source_,
                                              rocsparse_spmat_descr       target_,
                                              size_t                      buffer_size_,
                                              void*                       buffer_)
@@ -80,11 +80,11 @@ rocsparse_status rocsparse_spmat_coo2coo_aos(rocsparse_handle            handle,
                                                      source_->rows,
                                                      source_->nnz,
                                                      source_->row_type,
-                                                     source_->row_data,
+                                                     source_->const_row_data,
                                                      source_->col_type,
-                                                     source_->col_data,
+                                                     source_->const_col_data,
                                                      source_->data_type,
-                                                     source_->val_data,
+                                                     source_->const_val_data,
                                                      source_->idx_base,
                                                      target_->row_type,
                                                      target_->ind_data,

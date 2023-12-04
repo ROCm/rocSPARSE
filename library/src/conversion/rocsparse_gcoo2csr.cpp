@@ -24,6 +24,7 @@
 #include "rocsparse_convert_array.hpp"
 #include "rocsparse_coo2csr.hpp"
 #include "utility.h"
+
 rocsparse_status rocsparse_gcoo2csr(rocsparse_handle     handle_,
                                     rocsparse_indextype  source_row_type_,
                                     const void*          source_row_,
@@ -85,7 +86,7 @@ rocsparse_status rocsparse_gcoo2csr(rocsparse_handle     handle_,
 }
 
 rocsparse_status rocsparse_spmat_coo2csr_buffer_size(rocsparse_handle            handle,
-                                                     const rocsparse_spmat_descr source_,
+                                                     rocsparse_const_spmat_descr source_,
                                                      rocsparse_spmat_descr       target_,
                                                      size_t*                     buffer_size_)
 {
@@ -94,14 +95,14 @@ rocsparse_status rocsparse_spmat_coo2csr_buffer_size(rocsparse_handle           
 }
 
 rocsparse_status rocsparse_spmat_coo2csr(rocsparse_handle            handle,
-                                         const rocsparse_spmat_descr source_,
+                                         rocsparse_const_spmat_descr source_,
                                          rocsparse_spmat_descr       target_,
                                          size_t                      buffer_size_,
                                          void*                       buffer_)
 {
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_gcoo2csr(handle,
                                                  source_->row_type,
-                                                 source_->row_data,
+                                                 source_->const_row_data,
                                                  source_->nnz,
                                                  source_->rows,
                                                  target_->row_type,
@@ -113,16 +114,16 @@ rocsparse_status rocsparse_spmat_coo2csr(rocsparse_handle            handle,
                                                       target_->col_type,
                                                       target_->col_data,
                                                       source_->col_type,
-                                                      source_->col_data));
+                                                      source_->const_col_data));
 
-    if(source_->val_data != nullptr)
+    if(source_->const_val_data != nullptr && target_->val_data != nullptr)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(handle,
                                                           source_->nnz,
                                                           target_->data_type,
                                                           target_->val_data,
                                                           source_->data_type,
-                                                          source_->val_data));
+                                                          source_->const_val_data));
     }
 
     return rocsparse_status_success;

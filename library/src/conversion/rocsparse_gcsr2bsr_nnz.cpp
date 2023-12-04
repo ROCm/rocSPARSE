@@ -87,10 +87,8 @@ rocsparse_status rocsparse_gcsr2bsr_nnz(rocsparse_handle          handle,
                                         int64_t*                  bsr_nnz)
 {
 
-    if(bsr_row_ptr_indextype != csr_row_ptr_indextype)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
-    }
+    RETURN_ROCSPARSE_ERROR_IF(rocsparse_status_not_implemented,
+                              bsr_row_ptr_indextype != csr_row_ptr_indextype);
 
     switch(csr_row_ptr_indextype)
     {

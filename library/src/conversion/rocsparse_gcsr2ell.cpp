@@ -174,6 +174,7 @@ rocsparse_status rocsparse_gcsr2ell(rocsparse_handle          handle,
                                     rocsparse_indextype       ell_col_ind_indextype,
                                     void*                     ell_col_ind)
 {
+
     if(ell_val_datatype != csr_val_datatype)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
@@ -223,15 +224,15 @@ rocsparse_status rocsparse_gcsr2ell(rocsparse_handle          handle,
 }
 
 rocsparse_status rocsparse_spmat_csr2ell_width(rocsparse_handle            handle,
-                                               const rocsparse_spmat_descr source,
-                                               const rocsparse_spmat_descr target,
+                                               rocsparse_const_spmat_descr source,
+                                               rocsparse_const_spmat_descr target,
                                                int64_t*                    out_ell_width)
 {
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_gcsr2ell_width(handle,
                                                        source->rows,
                                                        source->descr,
                                                        source->row_type,
-                                                       source->row_data,
+                                                       source->const_row_data,
                                                        target->descr,
                                                        out_ell_width));
 
@@ -239,8 +240,8 @@ rocsparse_status rocsparse_spmat_csr2ell_width(rocsparse_handle            handl
 }
 
 rocsparse_status rocsparse_spmat_csr2ell_buffer_size(rocsparse_handle            handle,
-                                                     const rocsparse_spmat_descr source,
-                                                     const rocsparse_spmat_descr target,
+                                                     rocsparse_const_spmat_descr source,
+                                                     rocsparse_const_spmat_descr target,
                                                      size_t*                     buffer_size)
 {
     buffer_size[0] = 0;
@@ -248,25 +249,34 @@ rocsparse_status rocsparse_spmat_csr2ell_buffer_size(rocsparse_handle           
 }
 
 rocsparse_status rocsparse_spmat_csr2ell(rocsparse_handle            handle,
-                                         const rocsparse_spmat_descr source,
+                                         rocsparse_const_spmat_descr source,
                                          rocsparse_spmat_descr       target,
                                          size_t                      buffer_size,
                                          void*                       buffer)
 {
+    RETURN_ROCSPARSE_ERROR_IF(rocsparse_status_not_implemented,
+                              source->col_type != target->row_type);
+    RETURN_ROCSPARSE_ERROR_IF(rocsparse_status_not_implemented,
+                              source->col_type != target->col_type);
+    if(target->val_data != nullptr && source->val_data != nullptr)
+    {
+        RETURN_ROCSPARSE_ERROR_IF(rocsparse_status_not_implemented,
+                                  source->data_type != target->data_type);
+    }
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_gcsr2ell(handle,
                                                  source->rows,
                                                  source->descr,
                                                  source->data_type,
-                                                 source->val_data,
+                                                 source->const_val_data,
                                                  source->row_type,
-                                                 source->row_data,
+                                                 source->const_row_data,
                                                  source->col_type,
-                                                 source->col_data,
+                                                 source->const_col_data,
                                                  target->descr,
                                                  target->ell_width,
                                                  target->data_type,
                                                  target->val_data,
-                                                 source->col_type,
+                                                 target->col_type,
                                                  target->col_data));
     return rocsparse_status_success;
 }
