@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,23 +88,24 @@ rocsparse_status rocsparse_gcsr2coo(rocsparse_handle     handle_,
 }
 
 rocsparse_status rocsparse_spmat_csr2coo_buffer_size(rocsparse_handle            handle,
-                                                     const rocsparse_spmat_descr source_,
+                                                     rocsparse_const_spmat_descr source_,
                                                      rocsparse_spmat_descr       target_,
                                                      size_t*                     buffer_size_)
 {
     buffer_size_[0] = 0;
+
     return rocsparse_status_success;
 }
 
 rocsparse_status rocsparse_spmat_csr2coo(rocsparse_handle            handle,
-                                         const rocsparse_spmat_descr source_,
+                                         rocsparse_const_spmat_descr source_,
                                          rocsparse_spmat_descr       target_,
                                          size_t                      buffer_size_,
                                          void*                       buffer_)
 {
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_gcsr2coo(handle,
                                                  source_->row_type,
-                                                 source_->row_data,
+                                                 source_->const_row_data,
                                                  source_->nnz,
                                                  source_->rows,
                                                  target_->row_type,
@@ -116,30 +117,16 @@ rocsparse_status rocsparse_spmat_csr2coo(rocsparse_handle            handle,
                                                       target_->col_type,
                                                       target_->col_data,
                                                       source_->col_type,
-                                                      source_->col_data));
-    if(source_->val_data != nullptr)
+                                                      source_->const_col_data));
+
+    if(source_->const_val_data != nullptr && target_->val_data != nullptr)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(handle,
                                                           source_->nnz,
                                                           target_->data_type,
                                                           target_->val_data,
                                                           source_->data_type,
-                                                          source_->val_data));
+                                                          source_->const_val_data));
     }
-#if 0
-	if (source_->descr->storage_mode != rocsparse_storage_mode_sorted &&
-	    target_->descr->storage_mode == rocsparse_storage_mode_sorted)
-	  {
-	    std::cout << "Sort with internal memory allocation..." << std::endl;
-	    RETURN_IF_ROCSPARSE_ERROR(rocsparse_spmat_sort_buffer_size(handle,
-								       rocsparse_direction_row,
-								       target_,
-								       buffer_size_));
-	    RETURN_IF_ROCSPARSE_ERROR(rocsparse_spmat_sort(handle,
-								       rocsparse_direction_row,
-								       target_,
-								       buffer_));
-	  }
-#endif
     return rocsparse_status_success;
 }

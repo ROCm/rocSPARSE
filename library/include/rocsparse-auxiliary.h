@@ -1276,6 +1276,7 @@ rocsparse_status rocsparse_const_coo_get(rocsparse_const_spmat_descr descr,
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p nnz is invalid.
  *  \retval rocsparse_status_invalid_value if \p idx_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coo_aos_get(const rocsparse_spmat_descr descr,
                                        int64_t*                    rows,
@@ -1287,6 +1288,18 @@ rocsparse_status rocsparse_coo_aos_get(const rocsparse_spmat_descr descr,
                                        rocsparse_index_base*       idx_base,
                                        rocsparse_datatype*         data_type);
 
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_const_coo_aos_get(rocsparse_const_spmat_descr descr,
+                                             int64_t*                    rows,
+                                             int64_t*                    cols,
+                                             int64_t*                    nnz,
+                                             const void**                coo_ind,
+                                             const void**                coo_val,
+                                             rocsparse_indextype*        idx_type,
+                                             rocsparse_index_base*       idx_base,
+                                             rocsparse_datatype*         data_type);
+
+/**@}*/
 /*! \ingroup aux_module
  *  \brief Get the fields of the sparse CSR matrix descriptor
  *  \details
@@ -1381,8 +1394,22 @@ rocsparse_status rocsparse_const_csr_get(rocsparse_const_spmat_descr descr,
  *  \retval rocsparse_status_success the operation completed successfully.
  *  \retval rocsparse_status_invalid_pointer if \p descr or \p csc_col_ptr or \p csc_row_ind or \p csr_val is invalid.
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p nnz is invalid.
- *  \retval rocsparse_status_invalid_value if \p row_ptr_type or \p col_ind_type or \p idx_base or \p data_type is invalid.
+ *  \retval rocsparse_status_invalid_value if \p col_ptr_type or \p row_ind_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csc_get(const rocsparse_spmat_descr descr,
+                                   int64_t*                    rows,
+                                   int64_t*                    cols,
+                                   int64_t*                    nnz,
+                                   void**                      csc_col_ptr,
+                                   void**                      csc_row_ind,
+                                   void**                      csc_val,
+                                   rocsparse_indextype*        col_ptr_type,
+                                   rocsparse_indextype*        row_ind_type,
+                                   rocsparse_index_base*       idx_base,
+                                   rocsparse_datatype*         data_type);
+
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_const_csc_get(rocsparse_const_spmat_descr descr,
                                          int64_t*                    rows,
@@ -1395,6 +1422,7 @@ rocsparse_status rocsparse_const_csc_get(rocsparse_const_spmat_descr descr,
                                          rocsparse_indextype*        row_ind_type,
                                          rocsparse_index_base*       idx_base,
                                          rocsparse_datatype*         data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Get the fields of the sparse ELL matrix descriptor
@@ -1426,6 +1454,7 @@ rocsparse_status rocsparse_const_csc_get(rocsparse_const_spmat_descr descr,
  *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p ell_width is invalid.
  *  \retval rocsparse_status_invalid_value if \p idx_type or \p idx_base or \p data_type is invalid.
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ell_get(const rocsparse_spmat_descr descr,
                                    int64_t*                    rows,
@@ -1436,6 +1465,17 @@ rocsparse_status rocsparse_ell_get(const rocsparse_spmat_descr descr,
                                    rocsparse_indextype*        idx_type,
                                    rocsparse_index_base*       idx_base,
                                    rocsparse_datatype*         data_type);
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_const_ell_get(rocsparse_const_spmat_descr descr,
+                                         int64_t*                    rows,
+                                         int64_t*                    cols,
+                                         const void**                ell_col_ind,
+                                         const void**                ell_val,
+                                         int64_t*                    ell_width,
+                                         rocsparse_indextype*        idx_type,
+                                         rocsparse_index_base*       idx_base,
+                                         rocsparse_datatype*         data_type);
+/**@}*/
 
 /*! \ingroup aux_module
  *  \brief Get the fields of the sparse blocked ELL matrix descriptor
@@ -1497,6 +1537,76 @@ rocsparse_status rocsparse_const_bell_get(rocsparse_const_spmat_descr descr,
                                           rocsparse_indextype*        idx_type,
                                           rocsparse_index_base*       idx_base,
                                           rocsparse_datatype*         data_type);
+/**@}*/
+
+/*! \ingroup aux_module
+ *  \brief Get the fields of the sparse BSR matrix descriptor
+ *  \details
+ *  \p rocsparse_bsr_get gets the fields of the sparse BSR matrix descriptor
+ *
+ *  @param[in]
+ *  descr        the pointer to the sparse BSR matrix descriptor.
+ *  @param[out]
+ *  brows         number of rows in the BSR matrix.
+ *  @param[out]
+ *  bcols         number of columns in the BSR matrix
+ *  @param[out]
+ *  bnnz          number of non-zeros in the BSR matrix.
+ *  @param[out]
+ *  bdir          storage layout of the dense block matrices.
+ *  @param[out]
+ *  bdim          block dimension.
+ *  @param[out]
+ *  bsr_row_ptr  row offsets of the BSR matrix (must be array of length \p brows+1 ).
+ *  @param[out]
+ *  bsr_col_ind  column indices of the BSR matrix (must be array of length \p bnnz ).
+ *  @param[out]
+ *  bsr_val      values of the BSR matrix (must be array of length \p bnnz * \p bdim * \p bdim ).
+ *  @param[out]
+ *  row_ptr_type \ref rocsparse_indextype_i32 or \ref rocsparse_indextype_i64.
+ *  @param[out]
+ *  col_ind_type \ref rocsparse_indextype_i32 or \ref rocsparse_indextype_i64.
+ *  @param[out]
+ *  idx_base     \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
+ *  @param[out]
+ *  data_type    \ref rocsparse_datatype_f32_r, \ref rocsparse_datatype_f64_r,
+ *               \ref rocsparse_datatype_f32_c or \ref rocsparse_datatype_f64_c.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer if \p descr or \p csr_row_ptr or \p csr_col_ind or \p csr_val is invalid.
+ *  \retval rocsparse_status_invalid_size if \p rows or \p cols or \p nnz is invalid.
+ *  \retval rocsparse_status_invalid_value if \p row_ptr_type or \p col_ind_type or \p idx_base or \p data_type is invalid.
+ */
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_bsr_get(const rocsparse_spmat_descr descr,
+                                   int64_t*                    brows,
+                                   int64_t*                    bcols,
+                                   int64_t*                    bnnz,
+                                   rocsparse_direction*        bdir,
+                                   int64_t*                    bdim,
+                                   void**                      bsr_row_ptr,
+                                   void**                      bsr_col_ind,
+                                   void**                      bsr_val,
+                                   rocsparse_indextype*        row_ptr_type,
+                                   rocsparse_indextype*        col_ind_type,
+                                   rocsparse_index_base*       idx_base,
+                                   rocsparse_datatype*         data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_const_bsr_get(rocsparse_const_spmat_descr descr,
+                                         int64_t*                    brows,
+                                         int64_t*                    bcols,
+                                         int64_t*                    bnnz,
+                                         rocsparse_direction*        bdir,
+                                         int64_t*                    bdim,
+                                         const void**                bsr_row_ptr,
+                                         const void**                bsr_col_ind,
+                                         const void**                bsr_val,
+                                         rocsparse_indextype*        row_ptr_type,
+                                         rocsparse_indextype*        col_ind_type,
+                                         rocsparse_index_base*       idx_base,
+                                         rocsparse_datatype*         data_type);
 /**@}*/
 
 /*! \ingroup aux_module

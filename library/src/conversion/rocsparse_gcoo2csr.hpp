@@ -34,12 +34,12 @@ rocsparse_status rocsparse_gcoo2csr(rocsparse_handle     handle_,
                                     rocsparse_index_base idx_base_);
 
 rocsparse_status rocsparse_spmat_coo2csr_buffer_size(rocsparse_handle            handle,
-                                                     const rocsparse_spmat_descr source_,
+                                                     rocsparse_const_spmat_descr source_,
                                                      rocsparse_spmat_descr       target_,
                                                      size_t*                     buffer_size_);
 
 rocsparse_status rocsparse_spmat_coo2csr(rocsparse_handle            handle,
-                                         const rocsparse_spmat_descr source_,
+                                         rocsparse_const_spmat_descr source_,
                                          rocsparse_spmat_descr       target_,
                                          size_t                      buffer_size_,
                                          void*                       buffer_);

@@ -63,7 +63,8 @@ private:
     rocsparse_int b_order{};
     rocsparse_int b_orderB{};
     rocsparse_int b_orderC{};
-    rocsparse_int b_format{};
+    rocsparse_int b_formatA{};
+    rocsparse_int b_formatB{};
     rocsparse_int b_itilu0_alg{};
     rocsparse_int b_spmv_alg{};
     rocsparse_int b_spmm_alg{};

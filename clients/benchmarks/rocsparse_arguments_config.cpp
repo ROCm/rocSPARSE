@@ -32,55 +32,62 @@ rocsparse_arguments_config::rocsparse_arguments_config()
     // Arguments must be a C-compatible struct so cppcheck complains about non-initialized member variables.
     // Then we need to initialize.
     {
-        this->M              = static_cast<rocsparse_int>(0);
-        this->N              = static_cast<rocsparse_int>(0);
-        this->K              = static_cast<rocsparse_int>(0);
-        this->nnz            = static_cast<rocsparse_int>(0);
-        this->block_dim      = static_cast<rocsparse_int>(0);
-        this->row_block_dimA = static_cast<rocsparse_int>(0);
-        this->col_block_dimA = static_cast<rocsparse_int>(0);
-        this->row_block_dimB = static_cast<rocsparse_int>(0);
-        this->col_block_dimB = static_cast<rocsparse_int>(0);
-        this->dimx           = static_cast<rocsparse_int>(0);
-        this->dimy           = static_cast<rocsparse_int>(0);
-        this->dimz           = static_cast<rocsparse_int>(0);
-        this->ll             = static_cast<rocsparse_int>(0);
-        this->l              = static_cast<rocsparse_int>(0);
-        this->u              = static_cast<rocsparse_int>(0);
-        this->uu             = static_cast<rocsparse_int>(0);
-        this->index_type_I   = static_cast<rocsparse_indextype>(0);
-        this->index_type_J   = static_cast<rocsparse_indextype>(0);
-        this->a_type         = static_cast<rocsparse_datatype>(0);
-        this->b_type         = static_cast<rocsparse_datatype>(0);
-        this->c_type         = static_cast<rocsparse_datatype>(0);
-        this->x_type         = static_cast<rocsparse_datatype>(0);
-        this->y_type         = static_cast<rocsparse_datatype>(0);
-        this->compute_type   = static_cast<rocsparse_datatype>(0);
-        this->alpha          = static_cast<double>(0);
-        this->alphai         = static_cast<double>(0);
-        this->beta           = static_cast<double>(0);
-        this->betai          = static_cast<double>(0);
-        this->threshold      = static_cast<double>(0);
-        this->percentage     = static_cast<double>(0);
-        this->transA         = static_cast<rocsparse_operation>(0);
-        this->transB         = static_cast<rocsparse_operation>(0);
-        this->baseA          = static_cast<rocsparse_index_base>(0);
-        this->baseB          = static_cast<rocsparse_index_base>(0);
-        this->baseC          = static_cast<rocsparse_index_base>(0);
-        this->baseD          = static_cast<rocsparse_index_base>(0);
-        this->action         = static_cast<rocsparse_action>(0);
-        this->part           = static_cast<rocsparse_hyb_partition>(0);
-        this->matrix_type    = static_cast<rocsparse_matrix_type>(0);
-        this->diag           = static_cast<rocsparse_diag_type>(0);
-        this->uplo           = static_cast<rocsparse_fill_mode>(0);
-        this->storage        = static_cast<rocsparse_storage_mode>(0);
-        this->apol           = static_cast<rocsparse_analysis_policy>(0);
-        this->spol           = static_cast<rocsparse_solve_policy>(0);
-        this->direction      = static_cast<rocsparse_direction>(0);
-        this->order          = static_cast<rocsparse_order>(0);
-        this->orderB         = static_cast<rocsparse_order>(0);
-        this->orderC         = static_cast<rocsparse_order>(0);
-        this->format         = static_cast<rocsparse_format>(0);
+        this->M               = static_cast<rocsparse_int>(0);
+        this->N               = static_cast<rocsparse_int>(0);
+        this->K               = static_cast<rocsparse_int>(0);
+        this->nnz             = static_cast<rocsparse_int>(0);
+        this->block_dim       = static_cast<rocsparse_int>(0);
+        this->row_block_dimA  = static_cast<rocsparse_int>(0);
+        this->col_block_dimA  = static_cast<rocsparse_int>(0);
+        this->row_block_dimB  = static_cast<rocsparse_int>(0);
+        this->col_block_dimB  = static_cast<rocsparse_int>(0);
+        this->dimx            = static_cast<rocsparse_int>(0);
+        this->dimy            = static_cast<rocsparse_int>(0);
+        this->dimz            = static_cast<rocsparse_int>(0);
+        this->ll              = static_cast<rocsparse_int>(0);
+        this->l               = static_cast<rocsparse_int>(0);
+        this->u               = static_cast<rocsparse_int>(0);
+        this->uu              = static_cast<rocsparse_int>(0);
+        this->index_type_I    = static_cast<rocsparse_indextype>(0);
+        this->index_type_J    = static_cast<rocsparse_indextype>(0);
+        this->a_type          = static_cast<rocsparse_datatype>(0);
+        this->b_type          = static_cast<rocsparse_datatype>(0);
+        this->c_type          = static_cast<rocsparse_datatype>(0);
+        this->x_type          = static_cast<rocsparse_datatype>(0);
+        this->y_type          = static_cast<rocsparse_datatype>(0);
+        this->compute_type    = static_cast<rocsparse_datatype>(0);
+        this->A_row_indextype = static_cast<rocsparse_indextype>(0);
+        this->A_col_indextype = static_cast<rocsparse_indextype>(0);
+        this->B_row_indextype = static_cast<rocsparse_indextype>(0);
+        this->B_col_indextype = static_cast<rocsparse_indextype>(0);
+        this->C_row_indextype = static_cast<rocsparse_indextype>(0);
+        this->C_col_indextype = static_cast<rocsparse_indextype>(0);
+        this->alpha           = static_cast<double>(0);
+        this->alphai          = static_cast<double>(0);
+        this->beta            = static_cast<double>(0);
+        this->betai           = static_cast<double>(0);
+        this->threshold       = static_cast<double>(0);
+        this->percentage      = static_cast<double>(0);
+        this->transA          = static_cast<rocsparse_operation>(0);
+        this->transB          = static_cast<rocsparse_operation>(0);
+        this->baseA           = static_cast<rocsparse_index_base>(0);
+        this->baseB           = static_cast<rocsparse_index_base>(0);
+        this->baseC           = static_cast<rocsparse_index_base>(0);
+        this->baseD           = static_cast<rocsparse_index_base>(0);
+        this->action          = static_cast<rocsparse_action>(0);
+        this->part            = static_cast<rocsparse_hyb_partition>(0);
+        this->matrix_type     = static_cast<rocsparse_matrix_type>(0);
+        this->diag            = static_cast<rocsparse_diag_type>(0);
+        this->uplo            = static_cast<rocsparse_fill_mode>(0);
+        this->storage         = static_cast<rocsparse_storage_mode>(0);
+        this->apol            = static_cast<rocsparse_analysis_policy>(0);
+        this->spol            = static_cast<rocsparse_solve_policy>(0);
+        this->direction       = static_cast<rocsparse_direction>(0);
+        this->order           = static_cast<rocsparse_order>(0);
+        this->orderB          = static_cast<rocsparse_order>(0);
+        this->orderC          = static_cast<rocsparse_order>(0);
+        this->formatA         = static_cast<rocsparse_format>(0);
+        this->formatB         = static_cast<rocsparse_format>(0);
 
         this->itilu0_alg           = rocsparse_itilu0_alg_default;
         this->sddmm_alg            = rocsparse_sddmm_alg_default;
@@ -310,7 +317,7 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      "  Conversion: csr2coo, csr2csc, gebsr2gebsc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
      "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2coo, prune_dense2csr, prune_dense2csr_by_percentage, dense2csc\n"
      "              csr2dense, csc2dense, coo2dense, bsr2csr, gebsr2csr, gebsr2gebsr, csr2csr_compress, prune_csr2csr, prune_csr2csr_by_percentage\n"
-     "              sparse_to_dense_coo, sparse_to_dense_csr, sparse_to_dense_csc, dense_to_sparse_coo, dense_to_sparse_csr, dense_to_sparse_csc\n"
+     "              sparse_to_dense_coo, sparse_to_dense_csr, sparse_to_dense_csc, dense_to_sparse_coo, dense_to_sparse_csr, dense_to_sparse_csc, sparse_to_sparse\n"
      "  Sorting: cscsort, csrsort, coosort\n"
      "  Misc: identity, inverse_permutation, nnz\n"
      "  Util: check_matrix_csr, check_matrix_csc, check_matrix_coo, check_matrix_gebsr, check_matrix_gebsc, check_matrix_ell, check_matrix_hyb")
@@ -351,8 +358,16 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      "Indicates whether a dense matrix is laid out in column-major storage: 1, or row-major storage 0 (default: 1)")
 
     ("format",
-     value<rocsparse_int>(&this->b_format)->default_value(rocsparse_format_coo),
-     "Indicates whether a sparse matrix is laid out in coo format: 0, coo_aos format: 1, csr format: 2, csc format: 3 or ell format: 4 (default:0)")
+     value<rocsparse_int>(&this->b_formatA)->default_value(rocsparse_format_coo),
+     "Indicates whether a sparse matrix is laid out in coo format: 0, coo_aos format: 1, csr format: 2, csc format: 3, ell format: 4, bell format: 5, bsr format: 6 (default:0)")
+
+    ("formatA",
+     value<rocsparse_int>(&this->b_formatA)->default_value(rocsparse_format_coo),
+     "Indicates whether a sparse matrix is laid out in coo format: 0, coo_aos format: 1, csr format: 2, csc format: 3, ell format: 4, bell format: 5, bsr format: 6 (default:0)")
+
+    ("formatB",
+     value<rocsparse_int>(&this->b_formatB)->default_value(rocsparse_format_coo),
+     "Indicates whether a sparse matrix is laid out in coo format: 0, coo_aos format: 1, csr format: 2, csc format: 3, ell format: 4, bell format: 5, bsr format: 6 (default:0)")
 
     ("denseld",
      value<int64_t>(&this->denseld)->default_value(128),
@@ -442,7 +457,7 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   }
 
   { bool is_format_invalid = true;
-    switch(this->b_format)
+    switch(this->b_formatA)
       {
       case rocsparse_format_csr:
       case rocsparse_format_coo:
@@ -460,6 +475,27 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
     if(is_format_invalid)
       {
 	std::cerr << "Invalid value for --format" << std::endl;
+	return -1;
+      } }
+  { bool is_format_invalid = true;
+    switch(this->b_formatB)
+      {
+      case rocsparse_format_csr:
+      case rocsparse_format_coo:
+      case rocsparse_format_ell:
+      case rocsparse_format_csc:
+      case rocsparse_format_coo_aos:
+      case rocsparse_format_bell:
+      case rocsparse_format_bsr:
+	{
+	  is_format_invalid = false;
+	  break;
+	}
+      }
+
+    if(is_format_invalid)
+      {
+	std::cerr << "Invalid value for --formatB" << std::endl;
 	return -1;
       } }
 
@@ -564,7 +600,8 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   this->order  = (this->b_order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
   this->orderB  = (this->b_orderB == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
   this->orderC  = (this->b_orderC == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
-  this->format = (rocsparse_format)this->b_format;
+  this->formatA = (rocsparse_format)this->b_formatA;
+  this->formatB = (rocsparse_format)this->b_formatB;
   this->spmv_alg = (rocsparse_spmv_alg)this->b_spmv_alg;
   this->itilu0_alg = (rocsparse_itilu0_alg)this->b_itilu0_alg;
   this->spmm_alg = (rocsparse_spmm_alg)this->b_spmm_alg;
@@ -734,6 +771,9 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
       }
     }
 
+  this->A_row_indextype = this->index_type_I;
+  this->A_col_indextype = this->index_type_J;
+
   return 0;
 }
 
@@ -774,7 +814,7 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
   }
 
   { bool is_format_invalid = true;
-    switch(this->b_format)
+    switch(this->b_formatA)
       {
       case rocsparse_format_csr:
       case rocsparse_format_coo:
@@ -792,6 +832,28 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
     if(is_format_invalid)
       {
 	std::cerr << "Invalid value for --format" << std::endl;
+	return -1;
+      } }
+
+  { bool is_format_invalid = true;
+    switch(this->b_formatB)
+      {
+      case rocsparse_format_csr:
+      case rocsparse_format_coo:
+      case rocsparse_format_ell:
+      case rocsparse_format_csc:
+      case rocsparse_format_coo_aos:
+      case rocsparse_format_bell:
+      case rocsparse_format_bsr:
+	{
+	  is_format_invalid = false;
+	  break;
+	}
+      }
+
+    if(is_format_invalid)
+      {
+	std::cerr << "Invalid value for --formatB" << std::endl;
 	return -1;
       } }
 
@@ -882,7 +944,8 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
   this->order  = (b_order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
   this->orderB  = (b_orderB == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
   this->orderC  = (b_orderC == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
-  this->format = (rocsparse_format)b_format;
+  this->formatA = (rocsparse_format)b_formatA;
+  this->formatB = (rocsparse_format)b_formatB;
   this->spmv_alg = (rocsparse_spmv_alg)this->b_spmv_alg;
   this->spmm_alg = (rocsparse_spmm_alg)this->b_spmm_alg;
   this->sddmm_alg = (rocsparse_sddmm_alg)this->b_sddmm_alg;
@@ -1056,6 +1119,8 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
       }
     }
 
+  this->A_row_indextype = this->index_type_I;
+  this->A_col_indextype = this->index_type_J;
 
   return 0;
 }

@@ -84,3 +84,14 @@ rocsparse_sparse_to_dense()
 ---------------------------
 
 .. doxygenfunction:: rocsparse_sparse_to_dense
+
+rocsparse_sparse_to_sparse()
+----------------------------
+
+.. doxygenfunction:: rocsparse_sparse_to_sparse
+
+rocsparse_sparse_to_sparse_buffer_size()
+----------------------------------------
+
+.. doxygenfunction:: rocsparse_sparse_to_sparse_buffer_size
+

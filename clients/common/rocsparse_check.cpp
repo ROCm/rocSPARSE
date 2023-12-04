@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 #include "rocsparse_check.hpp"
+#include "utility.hpp"
 
 #ifdef GOOGLE_TEST
 #include <gtest/gtest.h>
@@ -135,6 +136,20 @@ void unit_check_general(
 template <>
 void unit_check_general(
     int64_t M, int64_t N, const int32_t* A, int64_t LDA, const int32_t* B, int64_t LDB)
+{
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_EQ);
+}
+
+template <>
+void unit_check_general(
+    int64_t M, int64_t N, const uint8_t* A, int64_t LDA, const uint8_t* B, int64_t LDB)
+{
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_EQ);
+}
+
+template <>
+void unit_check_general(
+    int64_t M, int64_t N, const uint32_t* A, int64_t LDA, const uint32_t* B, int64_t LDB)
 {
     ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_EQ);
 }
@@ -457,3 +472,99 @@ INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
 
 #undef INSTANTIATE
+
+void unit_check_garray(rocsparse_indextype ind_type,
+                       int64_t             size,
+                       const void*         source,
+                       const void*         target)
+{
+    void* s;
+    CHECK_HIP_ERROR(rocsparse_hipHostMalloc(&s, rocsparse_indextype_sizeof(ind_type) * size));
+    CHECK_HIP_ERROR(
+        hipMemcpy(s, source, rocsparse_indextype_sizeof(ind_type) * size, hipMemcpyDeviceToHost));
+    void* t;
+    CHECK_HIP_ERROR(rocsparse_hipHostMalloc(&t, rocsparse_indextype_sizeof(ind_type) * size));
+    CHECK_HIP_ERROR(
+        hipMemcpy(t, target, rocsparse_indextype_sizeof(ind_type) * size, hipMemcpyDeviceToHost));
+    switch(ind_type)
+    {
+    case rocsparse_indextype_i32:
+    {
+        unit_check_segments<int32_t>(size, (const int32_t*)s, (const int32_t*)t);
+        break;
+    }
+    case rocsparse_indextype_i64:
+    {
+        unit_check_segments<int64_t>(size, (const int64_t*)s, (const int64_t*)t);
+        break;
+    }
+    case rocsparse_indextype_u16:
+    {
+        break;
+    }
+    }
+    CHECK_HIP_ERROR(rocsparse_hipFree(s));
+    CHECK_HIP_ERROR(rocsparse_hipFree(t));
+}
+
+void unit_check_garray(rocsparse_datatype val_type,
+                       int64_t            size,
+                       const void*        source,
+                       const void*        target)
+{
+    void* s;
+    CHECK_HIP_ERROR(rocsparse_hipHostMalloc(&s, rocsparse_datatype_sizeof(val_type) * size));
+    CHECK_HIP_ERROR(
+        hipMemcpy(s, source, rocsparse_datatype_sizeof(val_type) * size, hipMemcpyDeviceToHost));
+    void* t;
+    CHECK_HIP_ERROR(rocsparse_hipHostMalloc(&t, rocsparse_datatype_sizeof(val_type) * size));
+    CHECK_HIP_ERROR(
+        hipMemcpy(t, target, rocsparse_datatype_sizeof(val_type) * size, hipMemcpyDeviceToHost));
+    switch(val_type)
+    {
+    case rocsparse_datatype_f32_r:
+    {
+        unit_check_segments<float>(size, (const float*)s, (const float*)t);
+        break;
+    }
+    case rocsparse_datatype_f32_c:
+    {
+        unit_check_segments<rocsparse_float_complex>(
+            size, (const rocsparse_float_complex*)s, (const rocsparse_float_complex*)t);
+        break;
+    }
+    case rocsparse_datatype_f64_r:
+    {
+        unit_check_segments<double>(size, (const double*)s, (const double*)t);
+        break;
+    }
+    case rocsparse_datatype_f64_c:
+    {
+        unit_check_segments<rocsparse_double_complex>(
+            size, (const rocsparse_double_complex*)s, (const rocsparse_double_complex*)t);
+        break;
+    }
+    case rocsparse_datatype_i32_r:
+    {
+        unit_check_segments<int32_t>(size, (const int32_t*)s, (const int32_t*)t);
+        break;
+    }
+    case rocsparse_datatype_u32_r:
+    {
+        //      unit_check_segments<uint32_t>(size,(const uint32_t*) source, (const uint32_t*) t);
+        break;
+    }
+    case rocsparse_datatype_i8_r:
+    {
+        unit_check_segments<int8_t>(size, (const int8_t*)s, (const int8_t*)t);
+        break;
+    }
+    case rocsparse_datatype_u8_r:
+    {
+        unit_check_segments<uint8_t>(size, (const uint8_t*)source, (const uint8_t*)target);
+        break;
+    }
+    }
+    CHECK_HIP_ERROR(rocsparse_hipFree(s));
+    CHECK_HIP_ERROR(rocsparse_hipFree(t));
+}

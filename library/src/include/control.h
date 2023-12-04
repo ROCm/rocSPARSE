@@ -261,3 +261,13 @@ inline void dprint(I size_, const T* v, const char* name_ = nullptr, I short_siz
             RETURN_IF_HIP_ERROR(hipGetLastError());                                             \
         }                                                                                       \
     } while(false)
+
+#define RETURN_ROCSPARSE_ERROR_IF(STATUS, INPUT_STATUS_FOR_CHECK)     \
+    do                                                                \
+    {                                                                 \
+        if(INPUT_STATUS_FOR_CHECK)                                    \
+        {                                                             \
+            ROCSPARSE_ERROR_MESSAGE(STATUS, #INPUT_STATUS_FOR_CHECK); \
+            return STATUS;                                            \
+        }                                                             \
+    } while(false)

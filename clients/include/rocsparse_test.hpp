@@ -182,17 +182,25 @@ inline void rocsparse_expect_data_status(rocsparse_data_status status, rocsparse
     EXPECT_ROCSPARSE_DATA_STATUS(STATUS, rocsparse_data_status_success)
 #define CHECK_ROCSPARSE_DATA_ERROR(STATUS) CHECK_ROCSPARSE_DATA_ERROR2(STATUS)
 
-#define CHECK_ROCSPARSE_THROW_ERROR(STATUS) \
-    if(STATUS != rocsparse_status_success)  \
-    {                                       \
-        throw STATUS;                       \
-    }
+#define CHECK_ROCSPARSE_THROW_ERROR(STATUS)                                \
+    do                                                                     \
+    {                                                                      \
+        auto CHECK_ROCSPARSE_THROW_ERROR_status = (STATUS);                \
+        if(CHECK_ROCSPARSE_THROW_ERROR_status != rocsparse_status_success) \
+        {                                                                  \
+            throw CHECK_ROCSPARSE_THROW_ERROR_status;                      \
+        }                                                                  \
+    } while(false)
 
-#define CHECK_HIP_THROW_ERROR(ERROR) \
-    if(ERROR != hipSuccess)          \
-    {                                \
-        throw ERROR;                 \
-    }
+#define CHECK_HIP_THROW_ERROR(ERROR)                   \
+    do                                                 \
+    {                                                  \
+        auto CHECK_HIP_THROW_ERROR_status = (ERROR);   \
+        if(CHECK_HIP_THROW_ERROR_status != hipSuccess) \
+        {                                              \
+            throw CHECK_HIP_THROW_ERROR_status;        \
+        }                                              \
+    } while(false)
 
 #ifdef GOOGLE_TEST
 

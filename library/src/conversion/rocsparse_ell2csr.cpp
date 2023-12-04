@@ -292,13 +292,8 @@ rocsparse_status rocsparse_ell2csr_nnz_core(rocsparse_handle          handle,
     size_t temp_storage_bytes = 0;
 
     // Obtain rocprim buffer size
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
-                                                temp_storage_bytes,
-                                                csr_row_ptr,
-                                                csr_row_ptr,
-                                                m + 1,
-                                                rocprim::plus<rocsparse_int>(),
-                                                stream));
+    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
+        nullptr, temp_storage_bytes, csr_row_ptr, csr_row_ptr, m + 1, rocprim::plus<I>(), stream));
     // Get rocprim buffer
     bool  d_temp_alloc;
     void* d_temp_storage;
@@ -320,7 +315,7 @@ rocsparse_status rocsparse_ell2csr_nnz_core(rocsparse_handle          handle,
                                                 csr_row_ptr,
                                                 csr_row_ptr,
                                                 m + 1,
-                                                rocprim::plus<rocsparse_int>(),
+                                                rocprim::plus<I>(),
                                                 stream));
     // Extract and adjust nnz
     if(csr_descr->base == rocsparse_index_base_one)
@@ -328,7 +323,7 @@ rocsparse_status rocsparse_ell2csr_nnz_core(rocsparse_handle          handle,
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-                csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
+                csr_nnz, csr_row_ptr + m, sizeof(I), hipMemcpyDeviceToDevice, stream));
 
             // Adjust nnz according to index base
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
@@ -336,8 +331,8 @@ rocsparse_status rocsparse_ell2csr_nnz_core(rocsparse_handle          handle,
         }
         else
         {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-                csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+            RETURN_IF_HIP_ERROR(
+                hipMemcpyAsync(csr_nnz, csr_row_ptr + m, sizeof(I), hipMemcpyDeviceToHost, stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
             // Adjust nnz according to index base
@@ -349,12 +344,12 @@ rocsparse_status rocsparse_ell2csr_nnz_core(rocsparse_handle          handle,
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-                csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
+                csr_nnz, csr_row_ptr + m, sizeof(I), hipMemcpyDeviceToDevice, stream));
         }
         else
         {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-                csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+            RETURN_IF_HIP_ERROR(
+                hipMemcpyAsync(csr_nnz, csr_row_ptr + m, sizeof(I), hipMemcpyDeviceToHost, stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
         }
     }

@@ -70,6 +70,15 @@ struct Arguments
     rocsparse_datatype y_type;
     rocsparse_datatype compute_type;
 
+    rocsparse_indextype A_row_indextype;
+    rocsparse_indextype A_col_indextype;
+
+    rocsparse_indextype B_row_indextype;
+    rocsparse_indextype B_col_indextype;
+
+    rocsparse_indextype C_row_indextype;
+    rocsparse_indextype C_col_indextype;
+
     double alpha;
     double alphai;
     double beta;
@@ -95,7 +104,8 @@ struct Arguments
     rocsparse_order                order;
     rocsparse_order                orderB;
     rocsparse_order                orderC;
-    rocsparse_format               format;
+    rocsparse_format               formatA;
+    rocsparse_format               formatB;
     rocsparse_itilu0_alg           itilu0_alg;
     rocsparse_sddmm_alg            sddmm_alg;
     rocsparse_spmv_alg             spmv_alg;
@@ -204,6 +214,12 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(x_type);
         ROCSPARSE_FORMAT_CHECK(y_type);
         ROCSPARSE_FORMAT_CHECK(compute_type);
+        ROCSPARSE_FORMAT_CHECK(A_row_indextype);
+        ROCSPARSE_FORMAT_CHECK(A_col_indextype);
+        ROCSPARSE_FORMAT_CHECK(B_row_indextype);
+        ROCSPARSE_FORMAT_CHECK(B_col_indextype);
+        ROCSPARSE_FORMAT_CHECK(C_row_indextype);
+        ROCSPARSE_FORMAT_CHECK(C_col_indextype);
         ROCSPARSE_FORMAT_CHECK(alpha);
         ROCSPARSE_FORMAT_CHECK(alphai);
         ROCSPARSE_FORMAT_CHECK(beta);
@@ -228,7 +244,8 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(order);
         ROCSPARSE_FORMAT_CHECK(orderB);
         ROCSPARSE_FORMAT_CHECK(orderC);
-        ROCSPARSE_FORMAT_CHECK(format);
+        ROCSPARSE_FORMAT_CHECK(formatA);
+        ROCSPARSE_FORMAT_CHECK(formatB);
         ROCSPARSE_FORMAT_CHECK(itilu0_alg);
         ROCSPARSE_FORMAT_CHECK(sddmm_alg);
         ROCSPARSE_FORMAT_CHECK(spmv_alg);
@@ -399,6 +416,12 @@ private:
         print("x_type", rocsparse_datatype2string(arg.x_type));
         print("y_type", rocsparse_datatype2string(arg.y_type));
         print("compute_type", rocsparse_datatype2string(arg.compute_type));
+        print("A_row_indextype", rocsparse_indextype2string(arg.A_row_indextype));
+        print("A_col_indextype", rocsparse_indextype2string(arg.A_col_indextype));
+        print("B_row_indextype", rocsparse_indextype2string(arg.B_row_indextype));
+        print("B_col_indextype", rocsparse_indextype2string(arg.B_col_indextype));
+        print("C_row_indextype", rocsparse_indextype2string(arg.C_row_indextype));
+        print("C_col_indextype", rocsparse_indextype2string(arg.C_col_indextype));
         print("transA", rocsparse_operation2string(arg.transA));
         print("transB", rocsparse_operation2string(arg.transB));
         print("baseA", rocsparse_indexbase2string(arg.baseA));
@@ -439,7 +462,8 @@ private:
         print("order", rocsparse_order2string(arg.order));
         print("orderB", rocsparse_order2string(arg.orderB));
         print("orderC", rocsparse_order2string(arg.orderC));
-        print("format", rocsparse_format2string(arg.format));
+        print("formatA", rocsparse_format2string(arg.formatA));
+        print("formatB", rocsparse_format2string(arg.formatB));
         print("itilu0_alg", rocsparse_itilu0alg2string(arg.itilu0_alg));
         print("sddmm_alg", rocsparse_sddmmalg2string(arg.sddmm_alg));
         print("spmv_alg", rocsparse_spmvalg2string(arg.spmv_alg));

@@ -112,6 +112,66 @@ inline rocsparse_datatype get_datatype<rocsparse_double_complex>(void)
     return rocsparse_datatype_f64_c;
 }
 
+inline constexpr size_t rocsparse_indextype_sizeof(rocsparse_indextype indextype_)
+{
+    switch(indextype_)
+    {
+    case rocsparse_indextype_u16:
+    {
+        return sizeof(uint16_t);
+    }
+    case rocsparse_indextype_i32:
+    {
+        return sizeof(int32_t);
+    }
+    case rocsparse_indextype_i64:
+    {
+        return sizeof(int64_t);
+    }
+    }
+    return static_cast<size_t>(0);
+}
+
+inline constexpr size_t rocsparse_datatype_sizeof(rocsparse_datatype datatype_)
+{
+    switch(datatype_)
+    {
+    case rocsparse_datatype_f32_r:
+    {
+        return sizeof(float);
+    }
+    case rocsparse_datatype_i8_r:
+    {
+        return sizeof(char);
+    }
+    case rocsparse_datatype_u8_r:
+    {
+        return sizeof(unsigned char);
+    }
+    case rocsparse_datatype_i32_r:
+    {
+        return sizeof(int32_t);
+    }
+    case rocsparse_datatype_u32_r:
+    {
+        return sizeof(uint32_t);
+    }
+    case rocsparse_datatype_f64_r:
+    {
+        return sizeof(double);
+    }
+    case rocsparse_datatype_f32_c:
+    {
+        return sizeof(rocsparse_float_complex);
+    }
+    case rocsparse_datatype_f64_c:
+    {
+        return sizeof(rocsparse_double_complex);
+    }
+    }
+    return static_cast<size_t>(0);
+}
+
 /*! \brief  local handle which is automatically created and destroyed  */
 class rocsparse_local_handle
 {

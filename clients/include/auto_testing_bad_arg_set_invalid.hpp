@@ -233,6 +233,18 @@ inline void auto_testing_bad_arg_set_invalid(rocsparse_solve_policy& p)
 }
 
 template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_sparse_to_sparse_alg& p)
+{
+    p = (rocsparse_sparse_to_sparse_alg)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_sparse_to_sparse_stage& p)
+{
+    p = (rocsparse_sparse_to_sparse_stage)-1;
+}
+
+template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_check_spmat_stage& p)
 {
     p = (rocsparse_check_spmat_stage)-1;

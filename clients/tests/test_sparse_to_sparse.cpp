@@ -1,4 +1,3 @@
-/*! \file */
 /* ************************************************************************
  * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
@@ -24,17 +23,17 @@
 
 #include "test.hpp"
 
-#include "testing_check_spmat.hpp"
+#include "testing_sparse_to_sparse.hpp"
 
-TEST_ROUTINE_WITH_CONFIG(check_spmat,
-                         util,
+TEST_ROUTINE_WITH_CONFIG(sparse_to_sparse,
+                         conversion,
                          rocsparse_test_config_ijt,
+                         arg.B_row_indextype,
+                         arg.B_col_indextype,
                          arg.M,
                          arg.N,
-                         arg.block_dim,
-                         arg.baseA,
-                         arg.matrix_type,
-                         arg.uplo,
-                         arg.storage,
                          arg.formatA,
+                         arg.baseA,
+                         arg.formatB,
+                         arg.baseB,
                          arg.matrix);
