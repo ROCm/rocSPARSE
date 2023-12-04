@@ -157,13 +157,13 @@ static rocsparse_status rocsparse_spmv_alg2csrmv_alg(rocsparse_spmv_alg   spmv_a
 {
     switch(spmv_alg)
     {
-    case rocsparse_spmv_alg_default:
     case rocsparse_spmv_alg_csr_stream:
     {
         csrmv_alg = rocsparse_csrmv_alg_stream;
         return rocsparse_status_success;
     }
 
+    case rocsparse_spmv_alg_default:
     case rocsparse_spmv_alg_csr_adaptive:
     {
         csrmv_alg = rocsparse_csrmv_alg_adaptive;
