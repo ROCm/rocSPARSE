@@ -167,6 +167,8 @@ void csrsv_analysis_lower_kernel(J m,
     // Determine maximum local depth within the wavefront
     rocsparse_wfreduce_max<WF_SIZE>(&local_max);
 
+    __threadfence();
+
     if(lid == WF_SIZE - 1)
     {
         // Write the local "row is done" flag
@@ -326,6 +328,8 @@ void csrsv_analysis_upper_kernel(J m,
 
     // Determine maximum local depth within the wavefront
     rocsparse_wfreduce_max<WF_SIZE>(&local_max);
+
+    __threadfence();
 
     if(lid == WF_SIZE - 1)
     {
