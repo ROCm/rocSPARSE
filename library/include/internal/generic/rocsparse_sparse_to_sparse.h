@@ -25,7 +25,7 @@
 #ifndef ROCSPARSE_SPARSE_TO_SPARSE_H
 #define ROCSPARSE_SPARSE_TO_SPARSE_H
 
-#include "rocsparse-export.h"
+#include "rocsparse/rocsparse-export.h"
 #include "rocsparse-types.h"
 
 #ifdef __cplusplus
