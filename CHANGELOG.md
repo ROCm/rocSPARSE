@@ -1,254 +1,340 @@
-# Change Log for rocSPARSE
+# Changelog for rocSPARSE
 
-Full documentation for rocSPARSE is available at [rocm.docs.amd.com](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
+Documentation for rocSPARSE is available at
+[https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
 ## rocSPARSE 3.1.1 for ROCm 6.1.0
-### Added
-- Added new LRB algorithm to SpMV, supporting CSR format
-- Added rocBLAS as an optional dependency to support additional SDDMM algorithm
-- Added additional verbose output for csrgemm and bsrgemm
 
-### Changed
-### Improved
-- Triangular solve with multiple rhs (SpSM, csrsm, ...) now call SpSV, csrsv, etc. when nrhs is equal to 1
-- Improved user manual section `Installation and Building for Linux and Windows`
+### Additions
 
-### Known Issues
+* New LRB algorithm to SpMV, supporting CSR format
+* rocBLAS as now an optional dependency for SDDMM algorithms
+* Additional verbose output for `csrgemm` and `bsrgemm`
+
+### Optimizations
+
+* Triangular solve with multiple rhs (SpSM, csrsm, ...) now calls SpSV, csrsv, etcetera when nrhs equals 1
+* Improved user manual section *Installation and Building for Linux and Windows*
 
 ## rocSPARSE 3.0.2 for ROCm 6.0.0
-### Added
-- Added rocsparse_inverse_permutation
-- Added mixed precisions for SpVV
-- Added uniform int8 precision for Gather and Scatter
-### Changed
-- Removed auto stages from spmv, spmm, spgemm, spsv, spsm, and spitsv.
-- Removed old deprecated rocsparse_spmv, deprecated current rocsparse_spmv_ex, and added new rocsparse_spmv routine
-- Removed old deprecated rocsparse_xbsrmv routines, deprecated current rocsparse_xbsrmv_ex routines, and added new rocsparse_xbsrmv routines
-- Removed old deprecated rocsparse_spmm_ex routine
-- doti, dotci, spvv, and csr2ell now require calling hipStreamSynchronize after when using host pointer mode
-### Improved
-- Optimization to doti routine
-- Fixed a bug in rocsparse-bench, where SpMV algorithm was not taken into account in CSR format
-- Fixed the BSR/GEBSR routines bsrmv, bsrsv, bsrmm, bsrgeam, gebsrmv, gebsrmm so that block_dim==0 is considered an invalid size
-- Fixed bug where passing nnz = 0 to doti or dotci did not always return a dot product of 0
-- Fixed gpsv minimum size to m >= 3
-- Improved spin-looping algorithms
-- Improved documentation
-- Improved verbose output during argument checking on API function calls
-### Known Issues
+
+### Additions
+
+- `rocsparse_inverse_permutation`
+- Mixed-precisions for SpVV
+- Uniform int8 precision for gather and scatter
+
+### Changes
+
+* Added new `rocsparse_spmv` routine
+* Added new `rocsparse_xbsrmv` routines
+* When using host pointer mode, you must now call `hipStreamSynchronize` following `doti`, `dotci`,
+  `spvv`, and `csr2ell`
+
+### Optimizations
+
+* `doti` routine
+* Improved spin-looping algorithms
+* Improved documentation
+* Improved verbose output during argument checking on API function calls
+
+### Deprecations
+
+* `rocsparse_spmv_ex`
+* `rocsparse_xbsrmv_ex`
+
+### Removals
+
+* Auto stages from `spmv`, `spmm`, `spgemm`, `spsv`, `spsm`, and `spitsv`
+* Formerly deprecated `rocsparse_spmv` routines
+* Formerly deprecated `rocsparse_xbsrmv` routines
+* Formerly deprecated `rocsparse_spmm_ex` routine
+
+### Fixes
+
+* Bug in `rocsparse-bench` where the SpMV algorithm was not taken into account in CSR format
+* BSR and GEBSR routines (`bsrmv`, `bsrsv`, `bsrmm`, `bsrgeam`, `gebsrmv`, `gebsrmm`) didn't always
+  show `block_dim==0` as an invalid size
+* Passing `nnz = 0` to `doti` or `dotci` wasn't always returning a dot product of 0
+* `gpsv` minimum size is now `m >= 3`
 
 ## rocSPARSE 2.5.4 for ROCm 5.7.0
-### Added
-- Added more mixed precisions for SpMV, (matrix: float, vectors: double, calculation: double) and (matrix: rocsparse_float_complex, vectors: rocsparse_double_complex, calculation: rocsparse_double_complex)
-- Added support for gfx940, gfx941 and gfx942
-### Improved
-- Fixed a bug in csrsm and bsrsm
-### Known Issues
-- In csritlu0, the algorithm rocsparse_itilu0_alg_sync_split_fusion has some accuracy issues to investigate with XNACK enabled. The fallback is rocsparse_itilu0_alg_sync_split.
+
+### Additions
+
+* More mixed-precisions for SpMV, (`matrix: float`, `vectors: double`, `calculation: double`) and
+  (`matrix: rocsparse_float_complex`, `vectors: rocsparse_double_complex`,
+  `calculation: rocsparse_double_complex`)
+* Support for gfx940, gfx941, and gfx942
+
+### Fixes
+
+* Bug in `csrsm` and `bsrsm`
+
+### Known issues
+
+* In `csritlu0`, the algorithm `rocsparse_itilu0_alg_sync_split_fusion` has some accuracy issues when
+  XNACK is enabled (you can use `rocsparse_itilu0_alg_sync_split` as an alternative)
 
 ## rocSPARSE 2.5.2 for ROCm 5.6.0
-### Improved
-- Fixed a memory leak in csritsv
-- Fixed a bug in csrsm and bsrsm
+
+### Fixes
+
+* Memory leak in `csritsv`
+* Bug in `csrsm` and `bsrsm`
 
 ## rocSPARSE 2.5.1 for ROCm 5.5.0
-### Added
-- Added bsrgemm and spgemm for BSR format
-- Added bsrgeam
-- Added build support for Navi32
-- Added experimental hipGraph support for some rocSPARSE routines
-- Added csritsv, spitsv csr iterative triangular solve
-- Added mixed precisions for SpMV
-- Added batched SpMM for transpose A in COO format with atomic atomic algorithm
-### Improved
-- Optimization to csr2bsr
-- Optimization to csr2csr_compress
-- Optimization to csr2coo
-- Optimization to gebsr2csr
-- Optimization to csr2gebsr
-- Fixes to documentation
-- Fixes a bug in COO SpMV gridsize
-- Fixes a bug in SpMM gridsize when using very large matrices
-### Known Issues
-- In csritlu0, the algorithm rocsparse_itilu0_alg_sync_split_fusion has some accuracy issues to investigate with XNACK enabled. The fallback is rocsparse_itilu0_alg_sync_split.
+
+### Additions
+
+* `bsrgemm` and `spgemm` for BSR format
+* `bsrgeam`
+* Build support for Navi32
+* Experimental hipGraph support for some rocSPARSE routines
+* `csritsv`, `spitsv` csr iterative triangular solve
+* Mixed-precisions for SpMV
+* Batched SpMM for transpose A in COO format with atomic algorithm
+
+### Optimizations
+
+* `csr2bsr`
+* `csr2csr_compress`
+* `csr2coo`
+* `gebsr2csr`
+* `csr2gebsr`
+
+### Fixes
+
+- Documentation
+- Bug in COO SpMV grid size
+- Bug in SpMM grid size when using very large matrices
+
+### Known issues
+
+* In `csritlu0`, the algorithm `rocsparse_itilu0_alg_sync_split_fusion` has some accuracy issues when
+  XNACK is enabled (you can use `rocsparse_itilu0_alg_sync_split` as an alternative)
 
 ## rocSPARSE 2.4.0 for ROCm 5.4.0
-### Added
-- Added rocsparse_spmv_ex routine
-- Added rocsparse_bsrmv_ex_analysis and rocsparse_bsrmv_ex routines
-- Added csritilu0 routine
-- Added build support for Navi31 and Navi 33
-### Improved
-- Optimization to segmented algorithm for COO SpMV by performing analysis
-- Improve performance when generating random matrices.
-- Fixed bug in ellmv
-- Optimized bsr2csr routine
-- Fixed integer overflow bugs
+
+### Additions
+
+* `rocsparse_spmv_ex` routine
+* `rocsparse_bsrmv_ex_analysis` and `rocsparse_bsrmv_ex` routines
+* `csritilu0` routine
+* Build support for Navi31 and Navi 33
+
+### Optimizations
+
+* Segmented algorithm for COO SpMV by performing analysis
+* Improved performance when generating random matrices
+* `bsr2csr` routine
+
+### Fixes
+
+* Integer overflow bugs
+* Bug in `ellmv`
 
 ## rocSPARSE 2.3.2 for ROCm 5.3.0
-### Added
-- Transpose A for SpMM COO format
-- Added matrix checker routines for verifying matrix data
-- Added atomic algorithm for COO SpMV
-- Added bsrpad routine
-### Improved
-- Fixed a bug in csrilu0 which could cause a deadlock
-- Fixed a bug where asynchronous memcpy would use wrong stream
-- Fixed potential size overflows
+
+### Additions
+
+* Transpose A for SpMM COO format
+* Matrix checker routines for verifying matrix data
+* Atomic algorithm for COO SpMV
+* `bsrpad` routine
+
+### Fixes
+
+* Bug in `csrilu0` that could cause a deadlock
+* Bug where asynchronous `memcpy` would use wrong stream
+* Potential size overflows
 
 ## rocSPARSE 2.2.0 for ROCm 5.2.0
-### Added
-- Batched SpMM for CSR, CSC, and COO formats.
-- Packages for test and benchmark executables on all supported OSes using CPack.
-- Clients file importers and exporters.
-### Improved
-- Clients code size reduction.
-- Clients error handling.
-- Clients benchmarking for performance tracking.
-### Changed
-- Test adjustments due to roundoff errors.
-- Fixing API calls compatibility with rocPRIM.
-### Known Issues
-- none
+
+### Additions
+
+* Batched SpMM for CSR, CSC, and COO formats
+* Packages for test and benchmark executables on all supported operating systems using CPack
+* Clients file importers and exporters
+
+### Optimizations
+
+* Clients code size reduction
+* Clients error handling
+* Clients benchmarking for performance tracking
+
+### Changes
+
+* Test adjustments due to round-off errors
+* Fixing API call compatibility with rocPRIM
 
 ## rocSPARSE 2.1.0 for ROCm 5.1.0
-### Added
-- gtsv_interleaved_batch
-- gpsv_interleaved_batch
-- SpGEMM_reuse
-- Allow copying of mat info struct
-### Improved
-- Optimization for SDDMM
-- Allow unsorted matrices in csrgemm multipass algorithm
-### Known Issues
-- none
+
+### Additions
+
+* `gtsv_interleaved_batch`
+* `gpsv_interleaved_batch`
+* `SpGEMM_reuse`
+* Allow copying of mat info struct
+
+### Optimizations
+
+* Optimization for SDDMM
+* Allow unsorted matrices in `csrgemm` multipass algorithm
 
 ## rocSPARSE 2.0.0 for ROCm 5.0.0
-### Added
-- csrmv, coomv, ellmv, hybmv for (conjugate) transposed matrices
-- csrmv for symmetric matrices
-- Packages for test and benchmark executables on all supported OSes using CPack.
-### Changed
-- spmm\_ex is now deprecated and will be removed in the next major release
-### Improved
-- Optimization for gtsv
+
+### Additions
+
+* `csrmv`, `coomv`, `ellmv`, and `hybmv` for (conjugate) transposed matrices
+* `csrmv` for symmetric matrices
+* Packages for test and benchmark executables on all supported operating systems using CPack
+
+### Changes
+
+* `spmm_ex` has been deprecated and will be removed in the next major release
+
+### Optimizations
+
+* Optimization for `gtsv`
 
 ## rocSPARSE 1.22.2 for ROCm 4.5.0
-### Added
-- Triangular solve for multiple right-hand sides using BSR format
-- SpMV for BSRX format
-- SpMM in CSR format enhanced to work with transposed A
-- Matrix coloring for CSR matrices
-- Added batched tridiagonal solve (gtsv\_strided\_batch)
-- SpMM for BLOCKED ELL format
-- Generic routines for SpSV and SpSM
-- Enabling beta support for Windows 10
-- Additional atomic based algorithms for SpMM in COO format
-- Extended version of SpMM
-- Additional algorithm for SpMM in CSR format
-- Added (conjugate) transpose support for csrmv and SpMV (CSR) routines
-### Changed
-- Packaging split into a runtime package called rocsparse and a development package called rocsparse-devel. The development package depends on runtime. The runtime package suggests the development package for all supported OSes except CentOS 7 to aid in the transition. The suggests feature in packaging is introduced as a deprecated feature and will be removed in a future rocm release.
-### Improved
-- Fixed a bug with gemvi on Navi21
-- Fixed a bug with adaptive csrmv
-- Optimization for pivot based gtsv
-### Known Issues
-- none
+
+### Additions
+
+* Triangular solve for multiple right-hand sides using BSR format
+* SpMV for BSRX format
+* SpMM in CSR format enhanced to work with transposed A
+* Matrix coloring for CSR matrices
+* Added batched tridiagonal solve (`gtsv_strided_batch`)
+* SpMM for BLOCKED ELL format
+* Generic routines for SpSV and SpSM
+* Beta support for Windows 10
+* Additional atomic-based algorithms for SpMM in COO format
+* Extended version of SpMM
+* Additional algorithm for SpMM in CSR format
+* Added (conjugate) transpose support for CsrMV and SpMV (CSR) routines
+
+### Changes
+
+* Packaging has been split into a runtime package (`rocsparse`) and a development package
+  (`rocsparse-devel`):
+  The development package depends on the runtime package. When installing the runtime package,
+  the package manager will suggest the installation of the development package to aid users
+  transitioning from the previous version's combined package. This suggestion by package manager is
+  for all supported operating systems (except CentOS 7) to aid in the transition. The `suggestion`
+  feature in the runtime package is introduced as a deprecated feature and will be removed in a future
+  ROCm release.
+
+### Fixes
+
+* Bug with `gemvi` on Navi21
+* Bug with adaptive CsrMV
+
+### Optimizations
+
+* Optimization for pivot-based `gtsv`
 
 ## rocSPARSE 1.20.2 for ROCm 4.3.0
-### Added
-- (batched) tridiagonal solver with and without pivoting
-- dense matrix sparse vector multiplication (gemvi)
-- support for gfx90a
-- sampled dense-dense matrix multiplication (sddmm)
-### Improved
-- client matrix download mechanism
-- boost dependency in clients removed
-### Known Issues
-- none
+
+### Additions
+
+* (batched) Tridiagonal solver with and without pivoting
+* Dense matrix sparse vector multiplication (gemvi)
+* Support for gfx90a
+* Sampled dense-dense matrix multiplication (SDDMM)
+
+### Optimizations
+
+* client matrix download mechanism
+* removed boost dependency in clients
 
 ## rocSPARSE 1.19.5 for ROCm 4.2.0
-### Added
-- SpMM (CSR, COO)
-- Code coverage analysis
-### Improved
-- Install script
-- Level 2/3 unit tests
-- rocsparse-bench does not depend on boost anymore
-### Known Issues
-- none
+
+### Additions
+
+* SpMM (CSR, COO)
+* Code coverage analysis
+
+### Optimizations
+
+* Install script
+* Level 2/3 unit tests
+* `rocsparse-bench` no longer depends on boost
 
 ## rocSPARSE 1.19.4 for ROCm 4.1.0
-### Added
-- gebsrmm
-- gebsrmv
-- gebsrsv
-- coo2dense and dense2coo
-- generic API including axpby, gather, scatter, rot, spvv, spmv, spgemm, sparsetodense, densetosparse
-- support for mixed indexing types in matrix formats
+
+### Additions
+
+* `gebsrmm`
+* `gebsrmv`
+* `gebsrsv`
+* `coo2dense` and `dense2coo`
+* Generic APIs, including `axpby`, `gather`, `scatter`, `rot`, `spvv`, `spmv`, `spgemm`, `sparsetodense`, `densetosparse`
+* Support for mixed indexing types in matrix formats
 
 ## rocSPARSE 1.18.4 for ROCm 4.0.0
-### Added
-- Add changelog
-- csr2gebsr
-- gebsr2gebsc
-- gebsr2gebsr
-- treating filename as regular expression for yaml-based testing generation.
-### Optimized
-- bsric0
-### Improved
-- gfx1030 adjustment to the latest compiler.
-- Replace old xnack off compiler flag with new version.
-- Updates to debian package name.
-### Documentation
-- gebsr2csr
+
+### Additions
+
+* Changelog
+* `csr2gebsr`
+* `gebsr2gebsc`
+* `gebsr2gebsr`
+* Treating filename as regular expression for YAML-based testing generation
+* Documentation for `gebsr2csr`
+
+### Optimizations
+
+* `bsric0`
+
+### Changes
+
+* gfx1030 has been adjusted to the latest compiler
+* Replace old XNACK 'off' compiler flag with new version
+* Updated Debian package name
 
 ## rocSPARSE 1.17.6 for ROCm 3.9
-### Added
-- prune_csr2csr, prune_dense2csr_percentage and prune_csr2csr_percentage added
-- bsrilu0 added
-- csrilu0_numeric_boost functionality added
-### Known Issues
-- none
+
+### Additions
+
+* `prune_csr2csr`, `prune_dense2csr_percentage` and `prune_csr2csr_percentage` added
+* `bsrilu0 added`
+* `csrilu0_numeric_boost` functionality added
 
 ## rocSPARSE 1.16.1 for ROCm 3.8
-### Added
-- bsric0 added.
-### Known Issues
-- none
+
+### Additions
+
+* `bsric0`
 
 ## rocSPARSE 1.14.3 for ROCm 3.7
-### Added
-- Fortran bindings
-- CentOS 6 support.
-- Triangular solve for BSR format (bsrsv)
-- Default compiler switched to hipclang
-### Optimized
-- bsrmv
-### Known Issues
-- none
+
+* No changes for this ROCm release
 
 ## rocSPARSE 1.14.3 for ROCm 3.6
-### Added
-- Fortran bindings
-- CentOS 6 support.
-- Triangular solve for BSR format (bsrsv)
-- Default compiler switched to hipclang
-### Optimized
-- bsrmv routine
-### Known Issues
-- none
+
+### Additions
+
+* Fortran bindings
+* CentOS 6 support
+
+### Optimizations
+
+* `bsrmv`
 
 ## rocSPARSE 1.12.10 for ROCm 3.5
-### Added
-- Switched to hipclang as default compiler
-- csr2dense, csc2dense, csr2csr_compress, nnz_compress, bsr2csr, csr2bsr, bsrmv, csrgeam
-- Triangular solve for BSR format (bsrsv)
-- Options for static build
-- Examples
-### Optimized
-- dense2csr, dense2csc
-- installation process.
-### Known Issues
-- none
+
+### Additions
+
+* Default compiler switched to HIP-Clang
+* `csr2dense`, `csc2dense`, `csr2csr_compress`, `nnz_compress`, `bsr2csr`, `csr2bsr`, `bsrmv`, and
+  `csrgeam`
+* Triangular solve for BSR format (`bsrsv`)
+* Options for static build
+* Examples
+
+### Optimizations
+
+* `dense2csr` and `dense2csc`
+* Installation process

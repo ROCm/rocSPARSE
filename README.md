@@ -1,14 +1,19 @@
 # rocSPARSE
 
-rocSPARSE exposes a common interface that provides Basic Linear Algebra Subroutines for sparse computation implemented on top of AMD's Radeon Open eCosystem Platform [ROCm][] runtime and toolchains. rocSPARSE is created using the [HIP][] programming language and optimized for AMD's latest discrete GPUs.
+rocSPARSE exposes a common interface that provides Basic Linear Algebra Subroutines (BLAS) for
+sparse computation. It's implemented on top of AMD
+[ROCm](https://github.com/RadeonOpenCompute/ROCm) runtime and toolchains. rocSPARSE is
+created using the [HIP](https://github.com/GPUOpen-ProfessionalCompute-Tools/HIP/) programming
+language and optimized for AMD's latest discrete GPUs.
 
 ## Documentation
 
-The latest rocSPARSE documentation and API description can be found [here][].
+Documentation for rocSPARSE is available at
+[https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
-Run the commands below to build documentation locally:
+To build our documentation locally, run the following code:
 
-```
+```bash
 cd docs
 pip3 install -r sphinx/requirements.txt
 python3 -m sphinx -T -E -b html -d _build/doctrees -D language=en . _build/html
@@ -21,63 +26,61 @@ python3 -m sphinx -T -E -b html -d _build/doctrees -D language=en . _build/html
 * AMD [ROCm] 3.5 platform or later
 
 Optional:
-* [GTest][]
-  * Required for tests.
-  * Use GTEST_ROOT to specify GTest location.
-  * If [GTest][] is not found, it will be downloaded and built automatically.
+* [GoogleTest](https://github.com/google/googletest) (required only for tests)
+  * Use `GTEST_ROOT` to specify a location
+  * If you don't have GoogleTest installed, CMake automatically downloads and builds it
 
-## Quickstart rocSPARSE build and install
+## Build and install
 
-#### Install script
+1. Build rocSPARSE using the `install.sh` script.
 
-You can build rocSPARSE using the *install.sh* script
-```
-# Clone rocSPARSE using git
-git clone https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
+    ```bash
+    # Clone rocSPARSE using git
+    git clone https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
 
-# Go to rocSPARSE directory
-cd rocSPARSE
+    # Go to rocSPARSE directory
+    cd rocSPARSE
 
-# Run install.sh script
-# Command line options:
-#   -h|--help         - prints help message
-#   -i|--install      - install after build
-#   -d|--dependencies - install build dependencies
-#   -c|--clients      - build library clients too (combines with -i & -d)
-#   -g|--debug        - build with debug flag
-./install.sh -dci
-```
+    # Run install.sh script
+    # Command line options:
+    #   -h|--help         - prints help message
+    #   -i|--install      - install after build
+    #   -d|--dependencies - install build dependencies
+    #   -c|--clients      - build library clients too (combines with -i & -d)
+    #   -g|--debug        - build with debug flag
+    ./install.sh -dci
+    ```
 
-#### CMake
+2. Compile rocSPARSE (all compiler specifications are automatically determined).
 
-All compiler specifications are determined automatically. The compilation process can be performed by
-```
-# Clone rocSPARSE using git
-git clone https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
+    ```bash
+    # Clone rocSPARSE using git
+    git clone https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
 
-# Go to rocSPARSE directory, create and go to the build directory
-cd rocSPARSE; mkdir -p build/release; cd build/release
+    # Go to rocSPARSE directory, create and go to the build directory
+    cd rocSPARSE; mkdir -p build/release; cd build/release
 
-# Configure rocSPARSE
-# Build options:
-#   BUILD_CLIENTS_TESTS      - build tests (OFF)
-#   BUILD_CLIENTS_BENCHMARKS - build benchmarks (OFF)
-#   BUILD_CLIENTS_SAMPLES    - build examples (ON)
-#   BUILD_VERBOSE            - verbose output (OFF)
-#   BUILD_SHARED_LIBS        - build rocSPARSE as a shared library (ON)
-CXX=/opt/rocm/bin/hipcc cmake -DBUILD_CLIENTS_TESTS=ON ../..
+    # Configure rocSPARSE
+    # Build options:
+    #   BUILD_CLIENTS_TESTS      - build tests (OFF)
+    #   BUILD_CLIENTS_BENCHMARKS - build benchmarks (OFF)
+    #   BUILD_CLIENTS_SAMPLES    - build examples (ON)
+    #   BUILD_VERBOSE            - verbose output (OFF)
+    #   BUILD_SHARED_LIBS        - build rocSPARSE as a shared library (ON)
+    CXX=/opt/rocm/bin/hipcc cmake -DBUILD_CLIENTS_TESTS=ON ../..
 
-# Build
-make
+    # Build
+    make
 
-# Install
-[sudo] make install
-```
+    # Install
+    [sudo] make install
+    ```
 
-## Unit tests
+## Unit tests and benchmarks
 
-To run unit tests, rocSPARSE has to be built with option -DBUILD_CLIENTS_TESTS=ON.
-```
+To run unit tests, you must build rocSPARSE with `-DBUILD_CLIENTS_TESTS=ON`.
+
+```bash
 # Go to rocSPARSE build directory
 cd rocSPARSE; cd build/release
 
@@ -85,10 +88,9 @@ cd rocSPARSE; cd build/release
 ./clients/staging/rocsparse-test
 ```
 
-## Benchmarks
+To run benchmarks, you must build rocSPARSE with `-DBUILD_CLIENTS_BENCHMARKS=ON`.
 
-To run benchmarks, rocSPARSE has to be built with option -DBUILD_CLIENTS_BENCHMARKS=ON.
-```
+```bash
 # Go to rocSPARSE build directory
 cd rocSPARSE/build/release
 
@@ -96,17 +98,12 @@ cd rocSPARSE/build/release
 ./clients/staging/rocsparse-bench -f hybmv --laplacian-dim 2000 -i 200
 ```
 
-## Support
+## Issues
 
-Please use [the issue tracker][] for bugs and feature requests.
+To submit an issue, a bug, or a feature request, use the GitHub
+[issue tracker](https://github.com/ROCmSoftwarePlatform/rocSPARSE/issues).
 
 ## License
 
-The [license file][] can be found in the main repository.
-
-[ROCm]: https://github.com/RadeonOpenCompute/ROCm
-[HIP]: https://github.com/GPUOpen-ProfessionalCompute-Tools/HIP/
-[GTest]: https://github.com/google/googletest
-[the issue tracker]: https://github.com/ROCmSoftwarePlatform/rocSPARSE/issues
-[license file]: https://github.com/ROCmSoftwarePlatform/rocSPARSE
-[here]: https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/
+Our [license file](https://github.com/ROCmSoftwarePlatform/rocSPARSE) is located in the main
+repository.
