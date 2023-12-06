@@ -8,7 +8,7 @@ function display_help()
     echo "    [-h|--help] prints this help message"
     echo "    [-d|--device] select device"
     echo "    [-p|--path] path to rocsparse-bench"
-    echo "    [-d|--matrices-dir] directory of matrix files, this option discards the environment variable MATRICES_DIR. "
+    echo "    [-m|--matrices-dir] directory of matrix files, this option discards the environment variable MATRICES_DIR. "
     echo "    [-n|--sizen] number of dense columns"
 }
 
@@ -26,7 +26,7 @@ sizen=7
 # Parse command line parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-    GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,device:,path:,sizen: --options hd:p:n: -- "$@")
+    GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,device:,path:,matrices-dir:,sizen: --options hd:p:m:n: -- "$@")
 else
     echo "Need a new version of getopt"
     exit 1
@@ -48,7 +48,7 @@ eval set -- "${GETOPT_PARSE}"
 
 while true; do
     case "${1}" in
-        -d|--matrices-dir)
+        -m|--matrices-dir)
             matrices_dir=${2}
             shift 2 ;;
         -h|--help)
