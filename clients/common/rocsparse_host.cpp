@@ -4153,7 +4153,7 @@ void host_bsrgemm(rocsparse_direction  dir,
         T* val_entry = val.data() + block_dim * block_dim * row_begin;
 
         std::sort(perm.begin(), perm.end(), [&](const J& a, const J& b) {
-            return col_entry[a] <= col_entry[b];
+            return col_entry[a] < col_entry[b];
         });
 
         for(J j = 0; j < row_nnzb; ++j)
@@ -4384,7 +4384,7 @@ void host_bsrgeam(rocsparse_direction  dir,
         T*             val_entry = val.data() + block_dim * block_dim * row_begin;
 
         std::sort(perm.begin(), perm.end(), [&](const rocsparse_int& a, const rocsparse_int& b) {
-            return col_entry[a] <= col_entry[b];
+            return col_entry[a] < col_entry[b];
         });
 
         for(rocsparse_int j = 0; j < row_nnzb; ++j)
@@ -4609,7 +4609,7 @@ void host_csrgeam(rocsparse_int        M,
         T*             val_entry = val.data() + row_begin;
 
         std::sort(perm.begin(), perm.end(), [&](const rocsparse_int& a, const rocsparse_int& b) {
-            return col_entry[a] <= col_entry[b];
+            return col_entry[a] < col_entry[b];
         });
 
         for(rocsparse_int j = 0; j < row_nnz; ++j)
@@ -4922,7 +4922,7 @@ void host_csrgemm(J                    M,
         T* val_entry = val.data() + row_begin;
 
         std::sort(perm.begin(), perm.end(), [&](const J& a, const J& b) {
-            return col_entry[a] <= col_entry[b];
+            return col_entry[a] < col_entry[b];
         });
 
         for(J j = 0; j < row_nnz; ++j)
