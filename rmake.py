@@ -75,14 +75,11 @@ def parse_args():
     parser.add_argument('-v', '--verbose', required=False, default = False, action='store_true',
                         help='Verbose build (optional, default: False)')
 
-
     # rocsparse
     parser.add_argument(     '--clients-only', dest='clients_only', required=False, default = False, action='store_true',
                         help='Build only clients with a pre-built library')
-    parser.add_argument(     '--rocprim_dir', dest='rocprim_dir', type=str, required=False, default = "",
-                             help='Specify path to an existing rocPRIM install directory (optional, default: /opt/rocm/rocprim)')
-    parser.add_argument(     '--rocblas_dir', dest='rocblas_dir', type=str, required=False, default = "",
-                             help='Specify path to an existing rocBLAS install directory (optional, default: /opt/rocm/rocblas)')
+    parser.add_argument('-n', '--without-rocblas', dest='build_with_rocblas', required=False, default=True, action='store_false',
+                        help='Build rocSPARSE without rocBLAS.')
     return parser.parse_args()
 
 def os_detect():
@@ -184,6 +181,11 @@ def config_cmd():
 
     create_dir( os.path.join(build_path, "clients") )
     os.chdir( build_path )
+
+    if args.build_with_rocblas:
+        cmake_options.append(f"-DBUILD_WITH_ROCBLAS=ON")
+    else:
+        cmake_options.append(f"-DBUILD_WITH_ROCBLAS=OFF")
 
     if args.static_lib:
         cmake_options.append( f"-DBUILD_SHARED_LIBS=OFF" )
