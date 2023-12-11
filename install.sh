@@ -272,7 +272,7 @@ rocm_path=/opt/rocm
 build_relocatable=false
 build_address_sanitizer=false
 build_memstat=false
-build_without_rocblas=false
+build_with_rocblas=true
 matrices_dir=
 matrices_dir_install=
 gpu_architecture=all
@@ -333,7 +333,7 @@ while true; do
             build_memstat=true
             shift ;;
         --without-rocblas)
-            build_without_rocblas=true
+            build_with_rocblas=false
             shift ;;
         -k|--relwithdebinfo)
             build_release=false
@@ -493,8 +493,10 @@ pushd .
   fi
 
   # without-rocblas
-  if [[ "${build_without_rocblas}" == true ]]; then
-    cmake_common_options="${cmake_common_options} -DBUILD_WITHOUT_ROCBLAS=ON"
+  if [[ "${build_with_rocblas}" == true ]]; then
+    cmake_common_options="${cmake_common_options} -DBUILD_WITH_ROCBLAS=ON"
+  else
+    cmake_common_options="${cmake_common_options} -DBUILD_WITH_ROCBLAS=OFF"
   fi
 
   # freorg backward compatible support enable
