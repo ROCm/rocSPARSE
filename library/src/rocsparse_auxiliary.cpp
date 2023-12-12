@@ -2679,19 +2679,19 @@ catch(...)
  * \brief rocsparse_bsr_get returns the sparse BSR matrix data, sizes and
  * properties.
  *******************************************************************************/
-extern "C" rocsparse_status rocsparse_const_bsr_get(rocsparse_const_spmat_descr descr,
-                                                    int64_t*                    brows,
-                                                    int64_t*                    bcols,
-                                                    int64_t*                    bnnz,
-                                                    rocsparse_direction*        bdir,
-                                                    int64_t*                    bdim,
-                                                    const void**                bsr_row_ptr,
-                                                    const void**                bsr_col_ind,
-                                                    const void**                bsr_val,
-                                                    rocsparse_indextype*        row_ptr_type,
-                                                    rocsparse_indextype*        col_ind_type,
-                                                    rocsparse_index_base*       idx_base,
-                                                    rocsparse_datatype*         data_type)
+rocsparse_status rocsparse_const_bsr_get(rocsparse_const_spmat_descr descr,
+                                         int64_t*                    brows,
+                                         int64_t*                    bcols,
+                                         int64_t*                    bnnz,
+                                         rocsparse_direction*        bdir,
+                                         int64_t*                    bdim,
+                                         const void**                bsr_row_ptr,
+                                         const void**                bsr_col_ind,
+                                         const void**                bsr_val,
+                                         rocsparse_indextype*        row_ptr_type,
+                                         rocsparse_indextype*        col_ind_type,
+                                         rocsparse_index_base*       idx_base,
+                                         rocsparse_datatype*         data_type)
 try
 {
     // Check for valid pointers
@@ -2746,19 +2746,19 @@ catch(...)
     RETURN_ROCSPARSE_EXCEPTION();
 }
 
-extern "C" rocsparse_status rocsparse_bsr_get(const rocsparse_spmat_descr descr,
-                                              int64_t*                    brows,
-                                              int64_t*                    bcols,
-                                              int64_t*                    bnnz,
-                                              rocsparse_direction*        bdir,
-                                              int64_t*                    bdim,
-                                              void**                      bsr_row_ptr,
-                                              void**                      bsr_col_ind,
-                                              void**                      bsr_val,
-                                              rocsparse_indextype*        row_ptr_type,
-                                              rocsparse_indextype*        col_ind_type,
-                                              rocsparse_index_base*       idx_base,
-                                              rocsparse_datatype*         data_type)
+rocsparse_status rocsparse_bsr_get(const rocsparse_spmat_descr descr,
+                                   int64_t*                    brows,
+                                   int64_t*                    bcols,
+                                   int64_t*                    bnnz,
+                                   rocsparse_direction*        bdir,
+                                   int64_t*                    bdim,
+                                   void**                      bsr_row_ptr,
+                                   void**                      bsr_col_ind,
+                                   void**                      bsr_val,
+                                   rocsparse_indextype*        row_ptr_type,
+                                   rocsparse_indextype*        col_ind_type,
+                                   rocsparse_index_base*       idx_base,
+                                   rocsparse_datatype*         data_type)
 try
 {
     // Check for valid pointers
@@ -2817,49 +2817,31 @@ catch(...)
  * \brief rocsparse_csc_get returns the sparse CSC matrix data, sizes and
  * properties.
  *******************************************************************************/
-extern "C" rocsparse_status rocsparse_csc_get(const rocsparse_spmat_descr descr,
-                                              int64_t*                    rows,
-                                              int64_t*                    cols,
-                                              int64_t*                    nnz,
-                                              void**                      csc_col_ptr,
-                                              void**                      csc_row_ind,
-                                              void**                      csc_val,
-                                              rocsparse_indextype*        col_ptr_type,
-                                              rocsparse_indextype*        row_ind_type,
-                                              rocsparse_index_base*       idx_base,
-                                              rocsparse_datatype*         data_type)
+rocsparse_status rocsparse_csc_get(const rocsparse_spmat_descr descr,
+                                   int64_t*                    rows,
+                                   int64_t*                    cols,
+                                   int64_t*                    nnz,
+                                   void**                      csc_col_ptr,
+                                   void**                      csc_row_ind,
+                                   void**                      csc_val,
+                                   rocsparse_indextype*        col_ptr_type,
+                                   rocsparse_indextype*        row_ind_type,
+                                   rocsparse_index_base*       idx_base,
+                                   rocsparse_datatype*         data_type)
 try
 {
-    // Check for valid pointers
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check for invalid size pointers
-    if(rows == nullptr || cols == nullptr || nnz == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check for invalid data pointers
-    if(csc_col_ptr == nullptr || csc_row_ind == nullptr || csc_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check for invalid property pointers
-    if(col_ptr_type == nullptr || row_ind_type == nullptr || idx_base == nullptr
-       || data_type == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check if descriptor has been initialized
-    if(descr->init == false)
-    {
-        return rocsparse_status_not_initialized;
-    }
+    ROCSPARSE_CHECKARG_POINTER(0, descr);
+    ROCSPARSE_CHECKARG(0, descr, (descr->init == false), rocsparse_status_not_initialized);
+    ROCSPARSE_CHECKARG_POINTER(1, rows);
+    ROCSPARSE_CHECKARG_POINTER(2, cols);
+    ROCSPARSE_CHECKARG_POINTER(3, nnz);
+    ROCSPARSE_CHECKARG_POINTER(4, csc_col_ptr);
+    ROCSPARSE_CHECKARG_POINTER(5, csc_row_ind);
+    ROCSPARSE_CHECKARG_POINTER(6, csc_val);
+    ROCSPARSE_CHECKARG_POINTER(7, col_ptr_type);
+    ROCSPARSE_CHECKARG_POINTER(8, row_ind_type);
+    ROCSPARSE_CHECKARG_POINTER(9, idx_base);
+    ROCSPARSE_CHECKARG_POINTER(10, data_type);
 
     *rows = descr->rows;
     *cols = descr->cols;
@@ -2869,8 +2851,8 @@ try
     *csc_row_ind = descr->row_data;
     *csc_val     = descr->val_data;
 
-    *row_ind_type = descr->row_type;
     *col_ptr_type = descr->col_type;
+    *row_ind_type = descr->row_type;
     *idx_base     = descr->idx_base;
     *data_type    = descr->data_type;
 
@@ -2881,10 +2863,6 @@ catch(...)
     RETURN_ROCSPARSE_EXCEPTION();
 }
 
-/********************************************************************************
- * \brief rocsparse_csc_get returns the sparse CSC matrix data, sizes and
- * properties.
- *******************************************************************************/
 rocsparse_status rocsparse_const_csc_get(rocsparse_const_spmat_descr descr,
                                          int64_t*                    rows,
                                          int64_t*                    cols,
