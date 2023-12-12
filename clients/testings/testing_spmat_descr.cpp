@@ -457,18 +457,16 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
                                     rocsparse_status_success);
             rocsparse_spmat_descr descr = local_descr;
 
-#if 0
-        rocsparse_indextype* col_ptr_type = &local_itype;
-        rocsparse_indextype* row_ind_type = &local_jtype;
-        void** csc_row_ind = (void**)0x4;
-        void** csc_col_ptr = (void**)0x4;
-        void** csc_val     = (void**)0x4;
+            rocsparse_indextype* col_ptr_type = &local_itype;
+            rocsparse_indextype* row_ind_type = &local_jtype;
+            void**               csc_row_ind  = (void**)0x4;
+            void**               csc_col_ptr  = (void**)0x4;
+            void**               csc_val      = (void**)0x4;
 #define PARAMS_GET_CSC                                                                     \
     descr, rows, cols, nnz, csc_col_ptr, csc_row_ind, csc_val, col_ptr_type, row_ind_type, \
         idx_base, data_type
-        bad_arg_analysis(rocsparse_csr_get, PARAMS_GET_CSC);
+            bad_arg_analysis(rocsparse_csc_get, PARAMS_GET_CSC);
 #undef PARAMS_GET_CSC
-#endif
 
 #define PARAMS_GET_SIZE descr, rows, cols, nnz
             bad_arg_analysis(rocsparse_spmat_get_size, PARAMS_GET_SIZE);
