@@ -35,6 +35,8 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
                                               int* __restrict__ done,
                                               const rocsparse_int* __restrict__ map,
                                               rocsparse_int* __restrict__ zero_pivot,
+                                              rocsparse_int* __restrict__ singular_pivot,
+                                              double               tol,
                                               rocsparse_index_base idx_base,
                                               int                  boost,
                                               U                    boost_tol,
@@ -142,34 +144,12 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
 
-        // Numeric boost
-        if(boost)
+        if(diag_val == static_cast<T>(0))
         {
-            diag_val = (boost_tol >= rocsparse_abs(diag_val)) ? boost_val : diag_val;
 
-            __threadfence();
-
-            if(lid == 0)
-            {
-                csr_val[local_diag] = diag_val;
-            }
+            // Skip this row if it has a zero pivot
+            break;
         }
-        else
-        {
-            // Row has numerical zero diagonal
-            if(diag_val == static_cast<T>(0))
-            {
-                if(lid == 0)
-                {
-                    // We are looking for the first zero pivot
-                    rocsparse_atomic_min(zero_pivot, local_col + idx_base);
-                }
-
-                // Skip this row if it has a zero pivot
-                break;
-            }
-        }
-
         csr_val[j] = local_val = local_val / diag_val;
 
         // Loop over the row the current column index depends on
@@ -207,6 +187,53 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
         }
     }
 
+    // Make sure updated csr_val is written to global memory
+    __threadfence_block();
+
+    const bool is_diag = (row_diag >= 0);
+    if(is_diag)
+    {
+        const auto diag_val     = csr_val[row_diag];
+        const auto abs_diag_val = rocsparse_abs(diag_val);
+        if(boost)
+        {
+            const bool is_too_small = (abs_diag_val <= boost_tol);
+
+            if(is_too_small)
+            {
+                if(lid == 0)
+                {
+                    csr_val[row_diag] = boost_val;
+                    __threadfence(); // make sure this is written out before ready flag is set
+                };
+            };
+        }
+        else
+        {
+
+            const bool is_singular_pivot = (abs_diag_val <= tol);
+            if(is_singular_pivot)
+            {
+                if(lid == 0)
+                {
+                    rocsparse_atomic_min(singular_pivot, (row + idx_base));
+                }
+            }
+
+            const bool is_zero_pivot = (diag_val == static_cast<T>(0));
+            if(is_zero_pivot)
+            {
+                if(lid == 0)
+                {
+                    rocsparse_atomic_min(zero_pivot, (row + idx_base));
+                }
+            }
+        }
+    }
+
+    // Make sure updated csr_val is written to global memory
+    __threadfence();
+
     if(lid == 0)
     {
         // First lane writes "we are done" flag
@@ -223,6 +250,8 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
                                                    int* __restrict__ done,
                                                    const rocsparse_int* __restrict__ map,
                                                    rocsparse_int* __restrict__ zero_pivot,
+                                                   rocsparse_int* __restrict__ singular_pivot,
+                                                   double               tol,
                                                    rocsparse_index_base idx_base,
                                                    int                  boost,
                                                    U                    boost_tol,
@@ -299,33 +328,11 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
 
-        // Numeric boost
-        if(boost)
+        if(diag_val == static_cast<T>(0))
         {
-            diag_val = (boost_tol >= rocsparse_abs(diag_val)) ? boost_val : diag_val;
-
-            __threadfence();
-
-            if(lid == 0)
-            {
-                csr_val[local_diag] = diag_val;
-            }
-        }
-        else
-        {
-            // Row has numerical zero diagonal
-            if(diag_val == static_cast<T>(0))
-            {
-                if(lid == 0)
-                {
-                    // We are looking for the first zero pivot
-                    rocsparse_atomic_min(zero_pivot, local_col + idx_base);
-                }
-
-                // Skip this row if it has a zero pivot
-                break;
-            }
-        }
+            // Skip this row if it has a zero pivot
+            break;
+        };
 
         csr_val[j] = local_val = local_val / diag_val;
 
@@ -365,6 +372,51 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
             }
         }
     }
+
+    __threadfence_block();
+
+    const bool is_diag = (row_diag >= 0);
+    if(is_diag)
+    {
+        const auto diag_val     = csr_val[row_diag];
+        const auto abs_diag_val = rocsparse_abs(diag_val);
+        if(boost)
+        {
+            const bool is_too_small = (abs_diag_val <= boost_tol);
+
+            if(is_too_small)
+            {
+                if(lid == 0)
+                {
+                    csr_val[row_diag] = boost_val;
+                };
+            };
+        }
+        else
+        {
+
+            const bool is_singular_pivot = (abs_diag_val <= tol);
+            if(is_singular_pivot)
+            {
+                if(lid == 0)
+                {
+                    rocsparse_atomic_min(singular_pivot, (row + idx_base));
+                }
+            }
+
+            const bool is_zero_pivot = (diag_val == static_cast<T>(0));
+            if(is_zero_pivot)
+            {
+                if(lid == 0)
+                {
+                    rocsparse_atomic_min(zero_pivot, (row + idx_base));
+                }
+            }
+        }
+    }
+
+    // Make sure updated csr_val is written to global memory
+    __threadfence();
 
     if(lid == 0)
     {

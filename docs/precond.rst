@@ -109,6 +109,21 @@ rocsparse_csric0_zero_pivot()
 
 .. doxygenfunction:: rocsparse_csric0_zero_pivot
 
+rocsparse_csric0_singular_pivot()
+---------------------------------
+
+.. doxygenfunction:: rocsparse_csric0_singular_pivot
+
+rocsparse_csric0_set_tolerance()
+--------------------------------
+
+.. doxygenfunction:: rocsparse_csric0_set_tolerance
+
+rocsparse_csric0_get_tolerance()
+--------------------------------
+
+.. doxygenfunction:: rocsparse_csric0_get_tolerance
+
 rocsparse_csric0_buffer_size()
 ------------------------------
 
@@ -185,6 +200,21 @@ rocsparse_csrilu0_zero_pivot()
 ------------------------------
 
 .. doxygenfunction:: rocsparse_csrilu0_zero_pivot
+
+rocsparse_csrilu0_singular_pivot()
+----------------------------------
+
+.. doxygenfunction:: rocsparse_csrilu0_singular_pivot
+
+rocsparse_csrilu0_set_tolerance()
+---------------------------------
+
+.. doxygenfunction:: rocsparse_csrilu0_set_tolerance
+
+rocsparse_csrilu0_get_tolerance()
+---------------------------------
+
+.. doxygenfunction:: rocsparse_csrilu0_get_tolerance
 
 rocsparse_csrilu0_numeric_boost()
 ---------------------------------
