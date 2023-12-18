@@ -77,14 +77,14 @@ struct _rocsparse_handle
     // logging mode
     rocsparse_layer_mode layer_mode;
     // device buffer
-    size_t buffer_size;
-    void*  buffer;
+    size_t buffer_size{};
+    void*  buffer{};
     // device one
-    float*  sone;
-    double* done;
+    float*  sone{};
+    double* done{};
     // device complex one
-    rocsparse_float_complex*  cone;
-    rocsparse_double_complex* zone;
+    rocsparse_float_complex*  cone{};
+    rocsparse_double_complex* zone{};
     // blas handle
     rocsparse_blas_handle blas_handle;
 
@@ -189,6 +189,12 @@ struct _rocsparse_mat_info
 
     // zero pivot for csrsv, csrsm, csrilu0, csric0
     void* zero_pivot{};
+
+    // singular pivot for csric0
+    void* singular_pivot{};
+
+    // tolerance used for determining near singularity
+    double singular_tol{};
 
     // numeric boost for ilu0
     int         boost_enable{};

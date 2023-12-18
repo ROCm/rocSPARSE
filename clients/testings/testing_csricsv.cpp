@@ -71,6 +71,9 @@ void testing_csricsv(const Arguments& arg)
     host_vector<rocsparse_int> h_numeric_pivot_LT_1(1);
     host_vector<rocsparse_int> h_numeric_pivot_LT_2(1);
 
+    host_vector<rocsparse_int> h_singular_pivot_gold(1);
+    host_vector<rocsparse_int> h_singular_pivot_1(1);
+
     // Sample matrix
     rocsparse_int nnz;
     matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val_gold, M, N, nnz, base);
@@ -98,15 +101,6 @@ void testing_csricsv(const Arguments& arg)
         hipMemcpy(dcsr_col_ind, hcsr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val_gold, sizeof(T) * nnz, hipMemcpyHostToDevice));
 
-    // Compute reference incomplete LU factorization on host
-    host_csric0<T>(M,
-                   hcsr_row_ptr,
-                   hcsr_col_ind,
-                   hcsr_val_gold,
-                   base,
-                   h_struct_pivot_gold,
-                   h_numeric_pivot_gold);
-
     // Obtain csric0 buffer size
     size_t buffer_size;
     CHECK_ROCSPARSE_ERROR(rocsparse_csric0_buffer_size<T>(
@@ -125,6 +119,22 @@ void testing_csricsv(const Arguments& arg)
     // csric0 analysis
     CHECK_ROCSPARSE_ERROR(rocsparse_csric0_analysis<T>(
         handle, M, nnz, descrM, dcsr_val, dcsr_row_ptr, dcsr_col_ind, info, apol, spol, dbuffer));
+
+    // Compute reference incomplete LU factorization on host
+    {
+
+        double tol = 0;
+        CHECK_ROCSPARSE_ERROR(rocsparse_csric0_get_tolerance(handle, info, &tol));
+        host_csric0<T>(M,
+                       hcsr_row_ptr,
+                       hcsr_col_ind,
+                       hcsr_val_gold,
+                       base,
+                       h_struct_pivot_gold,
+                       h_numeric_pivot_gold,
+                       h_singular_pivot_gold,
+                       tol);
+    }
 
     // Check for structural zero pivot using host pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
@@ -165,6 +175,14 @@ void testing_csricsv(const Arguments& arg)
                             (h_numeric_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
                                                             : rocsparse_status_success);
 
+    // Check for numerical singular pivot using host pointer mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
+    {
+        auto st = rocsparse_csric0_singular_pivot(handle, info, h_singular_pivot_1);
+        EXPECT_ROCSPARSE_STATUS(st, rocsparse_status_success);
+    }
+
     // Check for structural zero pivot using device pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
     EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, d_numeric_pivot_2),
@@ -180,6 +198,8 @@ void testing_csricsv(const Arguments& arg)
     // Check pivot results
     h_numeric_pivot_gold.unit_check(h_numeric_pivot_1);
     h_numeric_pivot_gold.unit_check(h_numeric_pivot_2);
+
+    h_singular_pivot_gold.unit_check(h_singular_pivot_1);
 
     // If numerical pivot has been found, we are done
     if(h_numeric_pivot_gold[0] != -1)

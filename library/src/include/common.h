@@ -133,6 +133,11 @@ __device__ __forceinline__ double rocsparse_real(const double& x) { return x; }
 __device__ __forceinline__ float rocsparse_real(const rocsparse_float_complex& x) { return std::real(x); }
 __device__ __forceinline__ double rocsparse_real(const rocsparse_double_complex& x) { return std::real(x); }
 
+__device__ __forceinline__ float rocsparse_imag(const float& x) { return static_cast<float>(0); }
+__device__ __forceinline__ double rocsparse_imag(const double& x) { return static_cast<double>(0); }
+__device__ __forceinline__ float rocsparse_imag(const rocsparse_float_complex& x) { return std::imag(x); }
+__device__ __forceinline__ double rocsparse_imag(const rocsparse_double_complex& x) { return std::imag(x); }
+
 __device__ __forceinline__ bool rocsparse_gt(const float& x, const float& y) { return x > y; }
 __device__ __forceinline__ bool rocsparse_gt(const double& x, const double& y) { return x > y; }
 __device__ __forceinline__ bool rocsparse_gt(const rocsparse_float_complex& x, const rocsparse_float_complex& y)

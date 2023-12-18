@@ -75,6 +75,112 @@ rocsparse_status rocsparse_csric0_zero_pivot(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
+*  \p rocsparse_csric0_singular_pivot() returns the position of a
+*  numerical singular pivot (where \f$|L_{j,j}| \leq \text{tolerance}\f$) 
+*  that has been found during rocsparse_scsric0() or
+*  rocsparse_dcsric0() computation. The first singular pivot \f$j\f$ at \f$L_{j,j}\f$
+*  is stored in \p position, using same index base as the CSR matrix.
+*
+*  \p position can be in host or device memory. If no singular pivot has been found,
+*  \p position is set to -1. 
+*
+*  \note \p rocsparse_csric0_singular_pivot() is a blocking function. It might influence
+*  performance negatively.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  info        structure that holds the information collected during the analysis step.
+*  @param[inout]
+*  position    pointer to singular pivot \f$k\f$, can be in host or device memory.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_pointer \p info or \p position pointer is
+*              invalid.
+*  \retval     rocsparse_status_internal_error an internal error occurred.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csric0_singular_pivot(rocsparse_handle   handle,
+                                                 rocsparse_mat_info info,
+                                                 rocsparse_int*     position);
+
+/*! \ingroup precond_module
+*  \brief Incomplete Cholesky factorization with 0 fill-ins and no pivoting using CSR
+*  storage format
+*
+*  \details
+*  \p rocsparse_csric0_set_tolerance()  sets the numerical tolerance for detecting a
+*  numerical singular pivot (where \f$|L_{j,j}|  \leq \text{tolerance}\f$) 
+*  that might be found during rocsparse_scsric0() or
+*  rocsparse_dcsric0()  computation.  
+*
+*
+*  \note \p rocsparse_csric0_set_tolerance() is a blocking function. It might influence
+*  performance negatively.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  info        structure that holds the information collected during the analysis step.
+*  @param[in]
+*  tolerance    tolerance for detecting singular pivot (\f$|L_{j,j}|  \leq \text{tolerance}\f$) 
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_pointer if \p info tolerance pointer is 
+*              invalid
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csric0_set_tolerance(rocsparse_handle   handle,
+                                                rocsparse_mat_info info,
+                                                double             tolerance);
+
+/*! \ingroup precond_module
+*  \brief Incomplete Cholesky factorization with 0 fill-ins and no pivoting using CSR
+*  storage format
+*
+*  \details
+*  \p rocsparse_csric0_get_tolerance() returns the numerical tolerance for detecting a
+*  numerical singular pivot (where \f$|L_{j,j}|  \leq \text{tolerance}\f$) 
+*  that might be found during rocsparse_scsric0() or
+*  rocsparse_dcsric0() computation. 
+*
+*
+*  \note \p rocsparse_csric0_get_tolerance() is a blocking function. It might influence
+*  performance negatively.
+*
+*  \note
+*  This routine does not support execution in a hipGraph context.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  info        structure that holds the information collected during the analysis step.
+*  @param[out]
+*  tolerance    obtain tolerance for detecting singular pivot (\f$|L_{j,j}|  \leq \text{tolerance}\f$)
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_pointer if \p info or \p tolerance pointer is 
+*              invalid
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csric0_get_tolerance(rocsparse_handle   handle,
+                                                rocsparse_mat_info info,
+                                                double*            tolerance);
+
+/*! \ingroup precond_module
+*  \brief Incomplete Cholesky factorization with 0 fill-ins and no pivoting using CSR
+*  storage format
+*
+*  \details
 *  \p rocsparse_csric0_buffer_size returns the size of the temporary storage buffer
 *  that is required by rocsparse_scsric0_analysis(), rocsparse_dcsric0_analysis(),
 *  rocsparse_scsric0() and rocsparse_dcsric0(). The temporary storage buffer must
