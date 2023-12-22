@@ -441,11 +441,10 @@ ROCSPARSE_DEVICE_ILF void csrmvn_adaptive_device(bool                 conj,
         // For every other workgroup, wg_flags[first_wg_in_row] holds the value they wait on.
         // If your flag == first_wg's flag, you spin loop.
         // The first workgroup will eventually flip this flag, and you can move forward.
-        __syncthreads();
+        __threadfence();
         while(gid != first_wg_in_row && lid == 0
               && ((rocsparse_atomic_max(&wg_flags[first_wg_in_row], 0U)) == compare_value))
             ;
-        __syncthreads();
 
         // After you've passed the barrier, update your local flag to make sure that
         // the next time through, you know what to wait on.
