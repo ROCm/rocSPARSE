@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ if(POLICY CMP0066)
 endif()
 
 # rocSPARSE project
-project(rocsparse LANGUAGES CXX Fortran C)
+project(rocsparse LANGUAGES CXX C)
 
 # Determine if CXX Compiler is hip-clang
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -77,6 +77,11 @@ option(BUILD_MEMSTAT "Build rocSPARSE with memory statistics enabled" OFF)
 option(BUILD_COMPRESSED_DBG "Enable compressed debug symbols" ON)
 option(BUILD_WITH_ROCBLAS "Enable building rocSPARSE with rocBLAS" ON)
 
+# Clients utilize rocsparse fortran API and a fortran compiler
+if( NOT BUILD_FORTRAN_CLIENTS )
+  option( BUILD_FORTRAN_CLIENTS "Build rocSPARSE clients requiring Fortran capabilities" ON )
+endif( )
+
 #
 if(BUILD_CODE_COVERAGE)
   add_compile_options(-fprofile-arcs -ftest-coverage)
@@ -97,22 +102,8 @@ if(BUILD_ADDRESS_SANITIZER)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -shared-libasan")
   set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_C_LINK_EXECUTABLE} -fuse-ld=lld")
 
-  # Fortran excluded (see NOTES below)
-  # set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fsanitize=address")
-  # set(CMAKE_Fortran_LINK_EXECUTABLE "${CMAKE_Fortran_LINK_EXECUTABLE} -fuse-ld=bfd")
-
-  #
-  # NOTES ON FORTRAN:
-  # Fortran samples can compile with the options above:
-  # > -shared-libasan and -fuse-ld=lld is not always recognized from gfortran
-  # > -fuse-ld=bfd is here to mimic the required -fuse-ld=lld, but it compiles without too.
-  # However, error from asan is popping up from running a Fortran sample:
-  # ==14708==AddressSanitizer CHECK failed: /src/external/llvm-project/compiler-rt/lib/asan/../sanitizer_common/sanitizer_common_interceptors.inc:10057 "((__interception::real_memcpy)) != (0)" (0x0, 0x0)
-  #
-  # !!!!
-  # For this reason, and to be consistent with other libraries, Fortran is excluded from the address sanitizer build.
-  # !!!!
-  #
+  # Fortran not supported, add_link_options below invalid for fortran linking
+  set(BUILD_FORTRAN_CLIENTS OFF)
 endif()
 
 # Dependencies
@@ -128,8 +119,6 @@ if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY AND NOT WIN32)
     WRAPPER_LOCATIONS ${CMAKE_INSTALL_INCLUDEDIR}
   )
 endif()
-
-
 
 # Detect compiler support for target ID
 if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")

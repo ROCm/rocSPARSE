@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -43,8 +43,31 @@ if(NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel.")
 endif()
 
+if ( NOT DEFINED CMAKE_Fortran_COMPILER AND NOT DEFINED ENV{FC} )
+  set( CMAKE_Fortran_COMPILER "gfortran" )
+endif()
+
 # This project may compile dependencies for clients
-project(rocsparse-clients LANGUAGES CXX)
+if ( BUILD_FORTRAN_CLIENTS )
+  set( fortran_language "Fortran" )
+endif()
+
+# This project may compile dependencies for clients
+project(rocsparse-clients LANGUAGES CXX ${fortran_language})
+
+if ( BUILD_FORTRAN_CLIENTS )
+  set(rocsparse_fortran_source
+      ../library/src/rocsparse_enums.f90
+      ../library/src/rocsparse.f90
+  )
+
+  # Set Fortran module output directory
+  set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include/rocsparse)
+
+  # Create rocBLAS Fortran module
+  add_library(rocsparse_fortran OBJECT ${rocsparse_fortran_source})
+
+endif()
 
 # Determine if CXX Compiler is hip-clang
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")

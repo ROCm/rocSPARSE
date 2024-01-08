@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,6 @@
 # THE SOFTWARE.
 #
 # ########################################################################
-
-# rocSPARSE Fortran source
-if (NOT WIN32)
-set(rocsparse_fortran_source
-  src/rocsparse_enums.f90
-  src/rocsparse.f90
-)
-endif()
 
 # rocSPARSE source
 set(rocsparse_source
@@ -298,8 +290,6 @@ set(rocsparse_source
   src/conversion/rocsparse_sparse_to_csr_to_sparse.cpp
   src/conversion/rocsparse_spmat_transfer_from.cpp
   src/conversion/rocsparse_internal_spmat_print.cpp
-
-
 
 # Reordering
   src/reordering/rocsparse_csrcolor.cpp

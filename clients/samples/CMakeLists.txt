@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -100,10 +100,10 @@ if(TARGET rocsparse)
   # Compile Fortran examples only if built directly with package
   # else the Fortran module file is not generated
 
-  # BUILD_ADDRESS_SANITIZER EXCLUDED, SEE NOTES IN THE ROOT CMakeLists.txt.
-  if (NOT WIN32 AND NOT BUILD_ADDRESS_SANITIZER)
+  if (NOT WIN32 AND BUILD_FORTRAN_CLIENTS)
 
     function(add_rocsparse_fortran_example EXAMPLE_SOURCE)
+      set( fortran_language "Fortran" )
       get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SOURCE} NAME_WE)
       add_executable(${EXAMPLE_TARGET} ${EXAMPLE_SOURCE})
 
@@ -116,8 +116,10 @@ if(TARGET rocsparse)
       # Linker dependencies
       target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host)
       if (BUILD_CODE_COVERAGE)
-	target_link_libraries(${EXAMPLE_TARGET} PRIVATE -lgcov)
+	      target_link_libraries(${EXAMPLE_TARGET} PRIVATE -lgcov)
       endif()
+
+      target_link_libraries( ${EXAMPLE_TARGET} PRIVATE rocsparse_fortran )
 
       # Target properties
       set_target_properties(${EXAMPLE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
