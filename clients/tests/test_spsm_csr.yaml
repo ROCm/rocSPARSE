@@ -353,3 +353,7 @@ Tests:
              sme3Dc,
              shipsec1,
              bmwcra_1]
+
+- name: spsm_csr
+  category: known_bug
+  function: spsm_csr_extra
