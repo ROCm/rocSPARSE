@@ -480,6 +480,29 @@ void csrmvn_symm_adaptive_kernel(bool conj,
     }
 }
 
+template <typename I, typename J, typename A, typename X, typename Y, typename U>
+ROCSPARSE_KERNEL(WG_SIZE)
+void csrmvn_symm_large_adaptive_kernel(bool conj,
+                                       I    nnz,
+                                       const I* __restrict__ row_blocks,
+                                       U alpha_device_host,
+                                       const I* __restrict__ csr_row_ptr,
+                                       const J* __restrict__ csr_col_ind,
+                                       const A* __restrict__ csr_val,
+                                       const X* __restrict__ x,
+                                       U beta_device_host,
+                                       Y* __restrict__ y,
+                                       rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    auto beta  = load_scalar_device_host(beta_device_host);
+    if(alpha != 0 || beta != 1)
+    {
+        csrmvn_symm_large_adaptive_device<BLOCK_SIZE, WG_SIZE>(
+            conj, nnz, row_blocks, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y, idx_base);
+    }
+}
+
 template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    handle,
                                                             rocsparse_operation trans,
@@ -686,7 +709,22 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
         }
         else
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_symm_large_adaptive_kernel),
+                                               csrmvn_blocks,
+                                               csrmvn_threads,
+                                               0,
+                                               stream,
+                                               conj,
+                                               nnz,
+                                               static_cast<I*>(info->adaptive.row_blocks),
+                                               alpha_device_host,
+                                               csr_row_ptr,
+                                               csr_col_ind,
+                                               csr_val,
+                                               x,
+                                               beta_device_host,
+                                               y,
+                                               descr->base);
         }
     }
     else

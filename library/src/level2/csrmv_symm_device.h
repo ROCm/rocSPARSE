@@ -132,36 +132,28 @@ template <typename I>
 ROCSPARSE_DEVICE_ILF I
     binSearch(const I* csr_row_ptr, I row, I stop_row, I n, rocsparse_index_base base)
 {
-    I l = row, r = stop_row - 1, box = 0, mid;
+    I l = row, r = stop_row - 1;
 
-    while(l <= r)
+    while(l < r)
     {
-        mid = (l + r) / 2;
-        if(mid > r)
+        if(l == r - 1)
+        {
             break;
+        }
 
-        if(mid == row && n < (csr_row_ptr[mid + 1] - base))
+        I mid = (l + r) / 2;
+
+        if(n >= csr_row_ptr[mid] - base)
         {
-            box = mid + 1;
-            break;
+            l = mid;
         }
-        else if(n >= (csr_row_ptr[mid - 1] - base) && n < (csr_row_ptr[mid] - base))
-        {
-            box = mid;
-            break;
-        }
-        else if(mid == (stop_row - 1) && n >= (csr_row_ptr[mid] - base))
-        {
-            box = mid + 1;
-            break;
-        }
-        else if((csr_row_ptr[mid] - base) > n)
-            r = mid - 1;
         else
-            l = mid + 1;
+        {
+            r = mid;
+        }
     }
 
-    return (box == 0) ? 0 : box - 1;
+    return (n >= csr_row_ptr[r] - base) ? r : l;
 }
 
 ROCSPARSE_DEVICE_ILF int lowerPowerOf2(int num)
@@ -457,8 +449,7 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
     else
     {
         // Thread ID in block
-        int t     = hipThreadIdx_x;
-        I   myRow = row;
+        I myRow = row;
 
         // Lower triangular
         while(myRow < stop_row)
@@ -466,64 +457,64 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
             I vecStart = csr_row_ptr[myRow] - idx_base;
             I vecEnd   = csr_row_ptr[myRow + 1] - idx_base;
             T mySum    = static_cast<T>(0);
-            for(I j = vecStart + t; j < vecEnd; j += WG_SIZE)
+            for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
                 J col = csr_col_ind[j] - idx_base;
                 mySum = rocsparse_fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
             }
 
-            partial_sums[t] = mySum;
+            partial_sums[lid] = mySum;
             __syncthreads();
 
             // Assumes BLOCKSIZE = 4 * WG_SIZE and both BLOCKSIZE, WG_SIZE are powers of 2
             if(BLOCKSIZE > 256)
             {
-                if(t < 256)
+                if(lid < 256)
                 {
-                    partial_sums[t]
-                        += partial_sums[t + 256] + partial_sums[t + 512] + partial_sums[t + 768];
+                    partial_sums[lid] += partial_sums[lid + 256] + partial_sums[lid + 512]
+                                         + partial_sums[lid + 768];
                 }
                 __syncthreads();
             }
             if(BLOCKSIZE > 64)
             {
-                if(t < 64)
+                if(lid < 64)
                 {
-                    partial_sums[t]
-                        += partial_sums[t + 64] + partial_sums[t + 128] + partial_sums[t + 192];
+                    partial_sums[lid] += partial_sums[lid + 64] + partial_sums[lid + 128]
+                                         + partial_sums[lid + 192];
                 }
                 __syncthreads();
             }
             if(BLOCKSIZE > 16)
             {
-                if(t < 16)
+                if(lid < 16)
                 {
-                    partial_sums[t]
-                        += partial_sums[t + 16] + partial_sums[t + 32] + partial_sums[t + 48];
+                    partial_sums[lid]
+                        += partial_sums[lid + 16] + partial_sums[lid + 32] + partial_sums[lid + 48];
                 }
                 __syncthreads();
             }
             if(BLOCKSIZE > 4)
             {
-                if(t < 4)
+                if(lid < 4)
                 {
-                    partial_sums[t]
-                        += partial_sums[t + 4] + partial_sums[t + 8] + partial_sums[t + 12];
+                    partial_sums[lid]
+                        += partial_sums[lid + 4] + partial_sums[lid + 8] + partial_sums[lid + 12];
                 }
                 __syncthreads();
             }
             if(BLOCKSIZE > 1)
             {
-                if(t < 1)
+                if(lid < 1)
                 {
-                    partial_sums[t]
-                        += partial_sums[t + 1] + partial_sums[t + 2] + partial_sums[t + 3];
+                    partial_sums[lid]
+                        += partial_sums[lid + 1] + partial_sums[lid + 2] + partial_sums[lid + 3];
                 }
                 __syncthreads();
             }
 
             // Write result
-            if(t == 0)
+            if(lid == 0)
             {
                 rocsparse_atomic_add(&y[myRow], alpha * partial_sums[0]);
             }
@@ -533,7 +524,7 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
         // Upper Triangular
         I vecStart = csr_row_ptr[row] - idx_base;
         I VecEnd   = csr_row_ptr[stop_row] - idx_base;
-        for(I j = vecStart + t; j < VecEnd; j += WG_SIZE)
+        for(I j = vecStart + lid; j < VecEnd; j += WG_SIZE)
         {
             I myRow2 = binSearch(csr_row_ptr, row, stop_row, j, idx_base);
             J myCol  = csr_col_ind[j] - idx_base;
@@ -541,6 +532,128 @@ ROCSPARSE_DEVICE_ILF void csrmvn_symm_adaptive_device(bool                 conj,
             {
                 rocsparse_atomic_add(&y[myCol], (alpha * conj_val(csr_val[j], conj) * x[myRow2]));
             }
+        }
+    }
+}
+
+template <rocsparse_int BLOCKSIZE,
+          rocsparse_int WG_SIZE,
+          typename I,
+          typename J,
+          typename A,
+          typename X,
+          typename Y,
+          typename T>
+ROCSPARSE_DEVICE_ILF void csrmvn_symm_large_adaptive_device(bool                 conj,
+                                                            I                    nnz,
+                                                            const I*             row_blocks,
+                                                            T                    alpha,
+                                                            const I*             csr_row_ptr,
+                                                            const J*             csr_col_ind,
+                                                            const A*             csr_val,
+                                                            const X*             x,
+                                                            T                    beta,
+                                                            Y*                   y,
+                                                            rocsparse_index_base idx_base)
+{
+    __shared__ T partial_sums[BLOCKSIZE];
+
+    int gid = hipBlockIdx_x;
+    int lid = hipThreadIdx_x;
+
+    for(J i = 0; i < BLOCKSIZE; i += WG_SIZE)
+    {
+        partial_sums[lid + i] = static_cast<T>(0);
+    }
+
+    __syncthreads();
+
+    I row      = row_blocks[gid];
+    I stop_row = row_blocks[gid + 1];
+
+    // Thread ID in block
+    I myRow = row;
+
+    // Lower triangular
+    while(myRow < stop_row)
+    {
+        I vecStart = csr_row_ptr[myRow] - idx_base;
+        I vecEnd   = csr_row_ptr[myRow + 1] - idx_base;
+        T mySum    = static_cast<T>(0);
+        for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
+        {
+            J col = csr_col_ind[j] - idx_base;
+            mySum = rocsparse_fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
+        }
+
+        partial_sums[lid] = mySum;
+        __syncthreads();
+
+        // Assumes BLOCKSIZE = 4 * WG_SIZE and both BLOCKSIZE, WG_SIZE are powers of 2
+        if(BLOCKSIZE > 256)
+        {
+            if(lid < 256)
+            {
+                partial_sums[lid]
+                    += partial_sums[lid + 256] + partial_sums[lid + 512] + partial_sums[lid + 768];
+            }
+            __syncthreads();
+        }
+        if(BLOCKSIZE > 64)
+        {
+            if(lid < 64)
+            {
+                partial_sums[lid]
+                    += partial_sums[lid + 64] + partial_sums[lid + 128] + partial_sums[lid + 192];
+            }
+            __syncthreads();
+        }
+        if(BLOCKSIZE > 16)
+        {
+            if(lid < 16)
+            {
+                partial_sums[lid]
+                    += partial_sums[lid + 16] + partial_sums[lid + 32] + partial_sums[lid + 48];
+            }
+            __syncthreads();
+        }
+        if(BLOCKSIZE > 4)
+        {
+            if(lid < 4)
+            {
+                partial_sums[lid]
+                    += partial_sums[lid + 4] + partial_sums[lid + 8] + partial_sums[lid + 12];
+            }
+            __syncthreads();
+        }
+        if(BLOCKSIZE > 1)
+        {
+            if(lid < 1)
+            {
+                partial_sums[lid]
+                    += partial_sums[lid + 1] + partial_sums[lid + 2] + partial_sums[lid + 3];
+            }
+            __syncthreads();
+        }
+
+        // Write result
+        if(lid == 0)
+        {
+            rocsparse_atomic_add(&y[myRow], alpha * partial_sums[0]);
+        }
+        myRow++;
+    }
+
+    // Upper Triangular
+    I vecStart = csr_row_ptr[row] - idx_base;
+    I VecEnd   = csr_row_ptr[stop_row] - idx_base;
+    for(I j = vecStart + lid; j < VecEnd; j += WG_SIZE)
+    {
+        I myRow2 = binSearch(csr_row_ptr, row, stop_row, j, idx_base);
+        J myCol  = csr_col_ind[j] - idx_base;
+        if(myCol != myRow2)
+        {
+            rocsparse_atomic_add(&y[myCol], (alpha * conj_val(csr_val[j], conj) * x[myRow2]));
         }
     }
 }
