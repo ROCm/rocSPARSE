@@ -520,4 +520,225 @@ INSTANTIATE(int64_t, int64_t, float);
 INSTANTIATE(int64_t, int64_t, double);
 INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
-void testing_spsm_csr_extra(const Arguments& arg) {}
+
+static void testing_spsm_csr_extra0(const Arguments& arg)
+{
+    static const bool         verbose = false;
+    const rocsparse_operation trans_A = rocsparse_operation_none;
+    rocsparse_operation       trans_B = rocsparse_operation_transpose;
+
+    //     1 0 0
+    // A = 0 2 0
+    //     0 0 3
+    const rocsparse_int    m   = 3;
+    const rocsparse_int    n   = 2;
+    const rocsparse_int    nnz = 3;
+    host_csr_matrix<float> hA(m, m, nnz, rocsparse_index_base_zero);
+    hA.ptr[0] = 0;
+    hA.ptr[1] = 1;
+    hA.ptr[2] = 2;
+    hA.ptr[3] = 3;
+    hA.ind[0] = 0;
+    hA.ind[1] = 1;
+    hA.ind[2] = 2;
+    hA.val[0] = 1;
+    hA.val[1] = 2;
+    hA.val[2] = 4;
+
+    device_csr_matrix<float> dA(hA);
+    host_dense_matrix<float> hB(m, n);
+    host_dense_matrix<float> hB_T(n, m);
+    host_dense_matrix<float> hC(m, n);
+
+    for(int i = 0; i < m; i++)
+    {
+        for(int j = 0; j < n; j++)
+        {
+            hC[hC.ld * j + i] = 777;
+        }
+    }
+
+    for(int i = 0; i < m; i++)
+    {
+        for(int j = 0; j < n; j++)
+        {
+            hB[hB.ld * j + i] = static_cast<float>(j + 1);
+        }
+    }
+
+    //     1 2
+    // B = 1 2
+    //     1 2
+    if(verbose)
+    {
+        std::cout << "hB" << std::endl;
+        for(size_t i = 0; i < m; ++i)
+        {
+            for(size_t j = 0; j < n; ++j)
+                fprintf(stdout, " %8.5e", hB[j * m + i]);
+            fprintf(stdout, "\n");
+        }
+    }
+    for(int i = 0; i < n; i++)
+    {
+        for(int j = 0; j < m; j++)
+        {
+            hB_T[n * j + i] = static_cast<float>(i + 1);
+        }
+    }
+
+    if(verbose)
+    {
+        std::cout << "hB_T" << std::endl;
+        for(size_t i = 0; i < n; ++i)
+        {
+            for(size_t j = 0; j < m; ++j)
+                fprintf(stdout, " %8.5e", hB_T[j * n + i]);
+            fprintf(stdout, "\n");
+        }
+    }
+    // Scalar alpha
+    float alpha = 1.0f;
+    // Offload data to device
+    device_dense_matrix<float> dB(hB), dB_T(hB_T), dC(hC);
+    rocsparse_handle           handle;
+    rocsparse_local_spmat      matA(dA);
+    rocsparse_local_dnmat      matB(dB);
+    rocsparse_local_dnmat      matB_T(dB_T);
+    rocsparse_local_dnmat      matC(dC);
+    CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+    rocsparse_datatype compute_type = rocsparse_datatype_f32_r;
+    {
+        // Call spsv to get buffer size
+        size_t buffer_size;
+        trans_B = rocsparse_operation_transpose;
+        CHECK_ROCSPARSE_ERROR(rocsparse_spsm(handle,
+                                             trans_A,
+                                             trans_B,
+                                             &alpha,
+                                             matA,
+                                             matB_T,
+                                             matC,
+                                             compute_type,
+                                             rocsparse_spsm_alg_default,
+                                             rocsparse_spsm_stage_buffer_size,
+                                             &buffer_size,
+                                             nullptr));
+        void* temp_buffer;
+        CHECK_HIP_ERROR(hipMalloc((void**)&temp_buffer, buffer_size));
+        // Call spsv to perform analysis
+        CHECK_ROCSPARSE_ERROR(rocsparse_spsm(handle,
+                                             trans_A,
+                                             trans_B,
+                                             &alpha,
+                                             matA,
+                                             matB_T,
+                                             matC,
+                                             compute_type,
+                                             rocsparse_spsm_alg_default,
+                                             rocsparse_spsm_stage_preprocess,
+                                             &buffer_size,
+                                             temp_buffer));
+        // Call spsv to perform computation
+        CHECK_ROCSPARSE_ERROR(rocsparse_spsm(handle,
+                                             trans_A,
+                                             trans_B,
+                                             &alpha,
+                                             matA,
+                                             matB_T,
+                                             matC,
+                                             compute_type,
+                                             rocsparse_spsm_alg_default,
+                                             rocsparse_spsm_stage_compute,
+                                             &buffer_size,
+                                             temp_buffer));
+        CHECK_HIP_ERROR(hipFree(temp_buffer));
+        // Copy result back to host
+        hC.transfer_from(dC);
+
+        if(verbose)
+        {
+
+            std::cout << "hC with B transpose" << std::endl;
+            for(size_t i = 0; i < m; ++i)
+            {
+                for(size_t j = 0; j < n; ++j)
+                {
+                    fprintf(stdout, " %8.5e", hC[j * m + i]);
+                }
+                fprintf(stdout, "\n");
+            }
+        }
+    }
+
+    host_dense_matrix<float> hC2(hC);
+    {
+        // Call spsv to get buffer size
+        size_t buffer_size;
+        trans_B = rocsparse_operation_none;
+        CHECK_ROCSPARSE_ERROR(rocsparse_spsm(handle,
+                                             trans_A,
+                                             trans_B,
+                                             &alpha,
+                                             matA,
+                                             matB,
+                                             matC,
+                                             compute_type,
+                                             rocsparse_spsm_alg_default,
+                                             rocsparse_spsm_stage_buffer_size,
+                                             &buffer_size,
+                                             nullptr));
+        void* temp_buffer;
+        CHECK_HIP_ERROR(hipMalloc((void**)&temp_buffer, buffer_size));
+        // Call spsv to perform analysis
+        CHECK_ROCSPARSE_ERROR(rocsparse_spsm(handle,
+                                             trans_A,
+                                             trans_B,
+                                             &alpha,
+                                             matA,
+                                             matB,
+                                             matC,
+                                             compute_type,
+                                             rocsparse_spsm_alg_default,
+                                             rocsparse_spsm_stage_preprocess,
+                                             &buffer_size,
+                                             temp_buffer));
+        // Call spsv to perform computation
+        CHECK_ROCSPARSE_ERROR(rocsparse_spsm(handle,
+                                             trans_A,
+                                             trans_B,
+                                             &alpha,
+                                             matA,
+                                             matB,
+                                             matC,
+                                             compute_type,
+                                             rocsparse_spsm_alg_default,
+                                             rocsparse_spsm_stage_compute,
+                                             &buffer_size,
+                                             temp_buffer));
+        CHECK_HIP_ERROR(hipFree(temp_buffer));
+        // Copy result back to host
+        hC.transfer_from(dC);
+    }
+    if(verbose)
+    {
+
+        std::cout << "hC with B none" << std::endl;
+        for(size_t i = 0; i < m; ++i)
+        {
+            for(size_t j = 0; j < n; ++j)
+            {
+                fprintf(stdout, " %8.5e", hC[j * m + i]);
+            }
+            fprintf(stdout, "\n");
+        }
+    }
+    hC.unit_check(hC2);
+    // Clear rocSPARSE
+    CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+}
+
+void testing_spsm_csr_extra(const Arguments& arg)
+{
+    testing_spsm_csr_extra0(arg);
+}

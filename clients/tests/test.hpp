@@ -60,7 +60,22 @@
         }                                                                                         \
         static void testing_extra(const Arguments& arg)                                           \
         {                                                                                         \
-            testing_##ROUTINE##_extra(arg);                                                       \
+            try                                                                                   \
+            {                                                                                     \
+                testing_##ROUTINE##_extra(arg);                                                   \
+            }                                                                                     \
+            catch(rocsparse_status & status)                                                      \
+            {                                                                                     \
+                CHECK_ROCSPARSE_ERROR(status);                                                    \
+            }                                                                                     \
+            catch(hipError_t & error)                                                             \
+            {                                                                                     \
+                CHECK_HIP_ERROR(error);                                                           \
+            }                                                                                     \
+            catch(std::exception & error)                                                         \
+            {                                                                                     \
+                CHECK_ROCSPARSE_ERROR(rocsparse_status_thrown_exception);                         \
+            }                                                                                     \
         }                                                                                         \
                                                                                                   \
         template <typename... P>                                                                  \
