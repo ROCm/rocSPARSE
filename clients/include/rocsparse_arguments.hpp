@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -153,6 +153,8 @@ struct Arguments
     char hardware[32];
     char skip_hardware[32];
 
+    uint32_t req_memory;
+
     // Validate input format.
     // rocsparse_gentest.py is expected to conform to this format.
     // rocsparse_gentest.py uses rocsparse_common.yaml to generate this format.
@@ -284,6 +286,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(category);
         ROCSPARSE_FORMAT_CHECK(hardware);
         ROCSPARSE_FORMAT_CHECK(skip_hardware);
+        ROCSPARSE_FORMAT_CHECK(req_memory);
     }
 
     template <typename T>
@@ -491,6 +494,7 @@ private:
         print("category", arg.category);
         print("hardware", arg.hardware);
         print("skip_hardware", arg.skip_hardware);
+        print("req_memory", arg.req_memory);
         print("unit_check", arg.unit_check);
         print("timing", arg.timing);
         print("iters", arg.iters);

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -157,6 +157,38 @@ namespace
                                 ;
                         }
                     }
+                }
+
+                return true;
+            }
+
+            static bool memory_filter(const Arguments& arg)
+            {
+                static double available_memory_in_GB = 0.0;
+                static bool   query_device_memory    = true;
+                if(query_device_memory)
+                {
+                    size_t available_memory;
+                    size_t total_memory;
+                    if(hipMemGetInfo(&available_memory, &total_memory) != hipSuccess)
+                    {
+                        return false;
+                    }
+
+                    available_memory_in_GB = (double)available_memory / (1024 * 1024 * 1024);
+
+                    query_device_memory = false;
+                }
+
+                if(available_memory_in_GB < arg.req_memory)
+                {
+                    std::cout << "Skipping test "
+                              << (std::string(arg.category) + "/" + std::string(arg.function) + "/"
+                                  + name_suffix(arg))
+                              << " because insufficient memory avaiable. Required: "
+                              << arg.req_memory << "GB. Available: " << available_memory_in_GB
+                              << "GB." << std::endl;
+                    return false;
                 }
 
                 return true;
