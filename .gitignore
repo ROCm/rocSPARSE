@@ -38,18 +38,6 @@ tags
 # build-in-source directory
 build
 
-# doc directory
-docBin
-_build
-
 # matrices
 *.csr
 *.mtx
-
-# documentation artifacts
-_build/
-_images/
-_static/
-_templates/
-_toc.yml
-_doxygen/

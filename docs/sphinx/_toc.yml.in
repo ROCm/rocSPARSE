@@ -9,3 +9,6 @@ subtrees:
     - file: api
     - file: usermanual
     - file: design
+  - caption: About
+    entries:
+    - file: license
