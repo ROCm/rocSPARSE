@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,13 @@ protected:
 
 public:
     rocsparse_importer_mlcsr(const std::string& filename_);
+    ~rocsparse_importer_mlcsr();
 
 private:
-    FILE*  m_f;
-    size_t m_m;
-    size_t m_k;
-    size_t m_nnz;
+    FILE*  m_f{};
+    size_t m_m{};
+    size_t m_k{};
+    size_t m_nnz{};
 
 public:
     template <typename I = rocsparse_int, typename J = rocsparse_int>
