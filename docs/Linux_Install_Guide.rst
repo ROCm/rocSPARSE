@@ -36,18 +36,18 @@ Requirements
 
 - `git <https://git-scm.com/>`_
 - `CMake <https://cmake.org/>`_ 3.5 or later
-- `AMD ROCm <https://github.com/RadeonOpenCompute/ROCm>`_
-- `rocPRIM <https://github.com/ROCmSoftwarePlatform/rocPRIM>`_
+- `AMD ROCm <https://github.com/ROCm/ROCm>`_
+- `rocPRIM <https://github.com/ROCm/rocPRIM>`_
 - `googletest <https://github.com/google/googletest>`_ (optional, for clients)
 
 Download rocSPARSE
 ^^^^^^^^^^^^^^^^^^
-The rocSPARSE source code is available at the `rocSPARSE GitHub page <https://github.com/ROCmSoftwarePlatform/rocSPARSE>`_.
+The rocSPARSE source code is available at the `rocSPARSE GitHub page <https://github.com/ROCm/rocSPARSE>`_.
 Download the master branch using:
 
 ::
 
-  $ git clone -b master https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
+  $ git clone -b master https://github.com/ROCm/rocSPARSE.git
   $ cd rocSPARSE
 
 Below are steps to build different packages of the library, including dependencies and clients.
@@ -139,7 +139,7 @@ Common build problems
 ^^^^^^^^^^^^^^^^^^^^^
 #. **Issue:** Could not find a package configuration file provided by "ROCM" with any of the following names: ROCMConfig.cmake, rocm-config.cmake
 
-   **Solution:** Install `ROCm cmake modules <https://github.com/RadeonOpenCompute/rocm-cmake>`_
+   **Solution:** Install `ROCm cmake modules <https://github.com/ROCm/rocm-cmake>`_
 
 Simple Test
 ^^^^^^^^^^^
@@ -163,7 +163,7 @@ Currently, rocSPARSE is supported under the following operating systems
 - `CentOS 7 <https://www.centos.org/>`_
 - `SLES 15 <https://www.suse.com/solutions/enterprise-linux/>`_
 
-To compile and run rocSPARSE, `AMD ROCm Platform <https://github.com/RadeonOpenCompute/ROCm>`_ is required.
+To compile and run rocSPARSE, `AMD ROCm Platform <https://github.com/ROCm/ROCm>`_ is required.
 
 The following HIP capable devices are currently supported
 

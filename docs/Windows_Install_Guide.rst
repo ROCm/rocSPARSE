@@ -55,8 +55,8 @@ Requirements
 
 - `git <https://git-scm.com/>`_
 - `CMake <https://cmake.org/>`_ 3.5 or later
-- `AMD ROCm <https://github.com/RadeonOpenCompute/ROCm>`_
-- `rocPRIM <https://github.com/ROCmSoftwarePlatform/rocPRIM>`_
+- `AMD ROCm <https://github.com/ROCm/ROCm>`_
+- `rocPRIM <https://github.com/ROCm/rocPRIM>`_
 - `vcpkg <https://github.com/Microsoft/vcpkg.git>`_
 - `googletest <https://github.com/google/googletest>`_ (optional, for clients)
 
@@ -64,7 +64,7 @@ Requirements
 Download rocSPARSE
 ^^^^^^^^^^^^^^^^^^
 
-The rocSPARSE source code, which is the same as for the ROCm linux distributions, is available at the `rocSPARSE github page <https://github.com/ROCmSoftwarePlatform/rocSPARSE>`_.
+The rocSPARSE source code, which is the same as for the ROCm linux distributions, is available at the `rocSPARSE github page <https://github.com/ROCm/rocSPARSE>`_.
 The version of the ROCm HIP SDK may be shown in the path of default installation, but
 you can run the HIP SDK compiler to report the verison from the bin/ folder with:
 
@@ -79,7 +79,7 @@ For example for you can use the following to download rocSPARSE:
 
 ::
 
-   git clone -b release/rocm-rel-x.y https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
+   git clone -b release/rocm-rel-x.y https://github.com/ROCm/rocSPARSE.git
    cd rocSPARSE
 
 Replace x.y in the above command with the version of HIP SDK installed on your machine. For example, if you have HIP 5.5 installed, then use -b release/rocm-rel-5.5
