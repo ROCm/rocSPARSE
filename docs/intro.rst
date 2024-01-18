@@ -13,4 +13,4 @@ rocSPARSE is a library that contains basic linear algebra subroutines for sparse
 * :ref:`rocsparse_reordering_functions_` describe operations on a matrix in sparse format to obtain a reordering.
 * :ref:`rocsparse_utility_functions_` describe routines useful for checking sparse matrices for valid data
 
-The code is open and hosted here: https://github.com/ROCmSoftwarePlatform/rocSPARSE
+The code is open and hosted here: https://github.com/ROCm/rocSPARSE

@@ -405,4 +405,4 @@ hipSPARSE exports an interface that does not require the client to change, regar
 Currently, hipSPARSE supports rocSPARSE and cuSPARSE as backends.
 hipSPARSE focuses on convenience and portability.
 If performance outweighs these factors, then using rocSPARSE itself is highly recommended.
-hipSPARSE can be found on `GitHub <https://github.com/ROCmSoftwarePlatform/hipSPARSE/>`_.
+hipSPARSE can be found on `GitHub <https://github.com/ROCm/hipSPARSE/>`_.
