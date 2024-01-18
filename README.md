@@ -2,8 +2,8 @@
 
 rocSPARSE exposes a common interface that provides Basic Linear Algebra Subroutines (BLAS) for
 sparse computation. It's implemented on top of AMD
-[ROCm](https://github.com/RadeonOpenCompute/ROCm) runtime and toolchains. rocSPARSE is
-created using the [HIP](https://github.com/GPUOpen-ProfessionalCompute-Tools/HIP/) programming
+[ROCm](https://github.com/ROCm/ROCm) runtime and toolchains. rocSPARSE is
+created using the [HIP](https://github.com/ROCm/HIP/) programming
 language and optimized for AMD's latest discrete GPUs.
 
 ## Documentation
@@ -36,7 +36,7 @@ Optional:
 
     ```bash
     # Clone rocSPARSE using git
-    git clone https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
+    git clone https://github.com/ROCm/rocSPARSE.git
 
     # Go to rocSPARSE directory
     cd rocSPARSE
@@ -55,7 +55,7 @@ Optional:
 
     ```bash
     # Clone rocSPARSE using git
-    git clone https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
+    git clone https://github.com/ROCm/rocSPARSE.git
 
     # Go to rocSPARSE directory, create and go to the build directory
     cd rocSPARSE; mkdir -p build/release; cd build/release
@@ -101,9 +101,9 @@ cd rocSPARSE/build/release
 ## Issues
 
 To submit an issue, a bug, or a feature request, use the GitHub
-[issue tracker](https://github.com/ROCmSoftwarePlatform/rocSPARSE/issues).
+[issue tracker](https://github.com/ROCm/rocSPARSE/issues).
 
 ## License
 
-Our [license file](https://github.com/ROCmSoftwarePlatform/rocSPARSE) is located in the main
+Our [license file](https://github.com/ROCm/rocSPARSE) is located in the main
 repository.

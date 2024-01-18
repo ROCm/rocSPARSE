@@ -443,7 +443,7 @@ col-blockdimA        Specify the col-blockdimA parameter, e.g. the column block 
 row-blockdimB        Specify the row-blockdimB parameter, e.g. the row block dimension in GEBSR matrices
 col-blockdimB        Specify the col-blockdimB parameter, e.g. the column block dimension in GEBSR matrices
 mtx                  Read from `MatrixMarket (.mtx) format <https://math.nist.gov/MatrixMarket/formats.html>`_. This will override parameters `m`, `n` and `z`
-rocalution           Read from `rocALUTION format <https://github.com/ROCmSoftwarePlatform/rocALUTION>`_. This will override parameters `m`, `n`, `z`, `mtx` and `laplacian-dim`
+rocalution           Read from `rocALUTION format <https://github.com/ROCm/rocALUTION>`_. This will override parameters `m`, `n`, `z`, `mtx` and `laplacian-dim`
 laplacian-dim        Assemble a 2D/3D Laplacian matrix with dimensions `dimx`, `dimy` and `dimz`. `dimz` is optional. This will override parameters `m`, `n`, `z` and `mtx`
 alpha                Specify the scalar :math:`\alpha`
 beta                 Specify the scalar :math:`\beta`
