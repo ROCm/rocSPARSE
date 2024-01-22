@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,55 +24,39 @@
 
 #include "internal/level1/rocsparse_roti.h"
 #include "rocsparse_roti.hpp"
+#include "roti_device.h"
 
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_DEVICE_ILF void
-    roti_device(I nnz, T* x_val, const I* x_ind, T* y, T c, T s, rocsparse_index_base idx_base)
+namespace rocsparse
 {
-    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    if(idx >= nnz)
+    template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void roti_kernel(I                    nnz,
+                     T*                   x_val,
+                     const I*             x_ind,
+                     T*                   y,
+                     U                    c_device_host,
+                     U                    s_device_host,
+                     rocsparse_index_base idx_base)
     {
-        return;
+        auto c = load_scalar_device_host(c_device_host);
+        auto s = load_scalar_device_host(s_device_host);
+        if(c == static_cast<T>(1) && s == static_cast<T>(0))
+        {
+            return;
+        }
+        rocsparse::roti_device<BLOCKSIZE>(nnz, x_val, x_ind, y, c, s, idx_base);
     }
-
-    I i = x_ind[idx] - idx_base;
-
-    T xr = x_val[idx];
-    T yr = y[i];
-
-    x_val[idx] = c * xr + s * yr;
-    y[i]       = c * yr - s * xr;
-}
-
-template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void roti_kernel(I                    nnz,
-                 T*                   x_val,
-                 const I*             x_ind,
-                 T*                   y,
-                 U                    c_device_host,
-                 U                    s_device_host,
-                 rocsparse_index_base idx_base)
-{
-    auto c = load_scalar_device_host(c_device_host);
-    auto s = load_scalar_device_host(s_device_host);
-    if(c == static_cast<T>(1) && s == static_cast<T>(0))
-    {
-        return;
-    }
-    roti_device<BLOCKSIZE>(nnz, x_val, x_ind, y, c, s, idx_base);
 }
 
 template <typename I, typename T>
-rocsparse_status rocsparse_roti_template(rocsparse_handle     handle, //0
-                                         I                    nnz, //1
-                                         T*                   x_val, //2
-                                         const I*             x_ind, //3
-                                         T*                   y, //4
-                                         const T*             c, //5
-                                         const T*             s, //6
-                                         rocsparse_index_base idx_base) //7
+rocsparse_status rocsparse::roti_template(rocsparse_handle     handle, //0
+                                          I                    nnz, //1
+                                          T*                   x_val, //2
+                                          const I*             x_ind, //3
+                                          T*                   y, //4
+                                          const T*             c, //5
+                                          const T*             s, //6
+                                          rocsparse_index_base idx_base) //7
 {
     // Check for valid handle
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -112,7 +96,7 @@ rocsparse_status rocsparse_roti_template(rocsparse_handle     handle, //0
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((roti_kernel<ROTI_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::roti_kernel<ROTI_DIM>),
                                            roti_blocks,
                                            roti_threads,
                                            0,
@@ -132,7 +116,7 @@ rocsparse_status rocsparse_roti_template(rocsparse_handle     handle, //0
             return rocsparse_status_success;
         }
 
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((roti_kernel<ROTI_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::roti_kernel<ROTI_DIM>),
                                            roti_blocks,
                                            roti_threads,
                                            0,
@@ -148,6 +132,26 @@ rocsparse_status rocsparse_roti_template(rocsparse_handle     handle, //0
 #undef ROTI_DIM
     return rocsparse_status_success;
 }
+
+#define INSTANTIATE(I, T)                                                           \
+    template rocsparse_status rocsparse::roti_template(rocsparse_handle     handle, \
+                                                       I                    nnz,    \
+                                                       T*                   x_val,  \
+                                                       const I*             x_ind,  \
+                                                       T*                   y,      \
+                                                       const T*             c,      \
+                                                       const T*             s,      \
+                                                       rocsparse_index_base idx_base)
+
+INSTANTIATE(int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, rocsparse_double_complex);
+
+INSTANTIATE(int64_t, float);
+INSTANTIATE(int64_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, double);
+INSTANTIATE(int64_t, rocsparse_double_complex);
+
+#undef INSTANTIATE
 
 /*
  * ===========================================================================
@@ -166,7 +170,7 @@ extern "C" rocsparse_status rocsparse_sroti(rocsparse_handle     handle,
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_roti_template(handle, nnz, x_val, x_ind, y, c, s, idx_base));
+        rocsparse::roti_template(handle, nnz, x_val, x_ind, y, c, s, idx_base));
     return rocsparse_status_success;
 }
 catch(...)
@@ -185,30 +189,10 @@ extern "C" rocsparse_status rocsparse_droti(rocsparse_handle     handle,
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_roti_template(handle, nnz, x_val, x_ind, y, c, s, idx_base));
+        rocsparse::roti_template(handle, nnz, x_val, x_ind, y, c, s, idx_base));
     return rocsparse_status_success;
 }
 catch(...)
 {
     RETURN_ROCSPARSE_EXCEPTION();
 }
-
-#define INSTANTIATE(I, T)                                                          \
-    template rocsparse_status rocsparse_roti_template(rocsparse_handle     handle, \
-                                                      I                    nnz,    \
-                                                      T*                   x_val,  \
-                                                      const I*             x_ind,  \
-                                                      T*                   y,      \
-                                                      const T*             c,      \
-                                                      const T*             s,      \
-                                                      rocsparse_index_base idx_base)
-
-INSTANTIATE(int32_t, rocsparse_float_complex);
-INSTANTIATE(int32_t, rocsparse_double_complex);
-
-INSTANTIATE(int64_t, float);
-INSTANTIATE(int64_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, double);
-INSTANTIATE(int64_t, rocsparse_double_complex);
-
-#undef INSTANTIATE

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,12 @@
 #include "sctr_device.h"
 
 template <typename I, typename T>
-rocsparse_status rocsparse_sctr_template(rocsparse_handle     handle,
-                                         I                    nnz,
-                                         const T*             x_val,
-                                         const I*             x_ind,
-                                         T*                   y,
-                                         rocsparse_index_base idx_base)
+rocsparse_status rocsparse::sctr_template(rocsparse_handle     handle,
+                                          I                    nnz,
+                                          const T*             x_val,
+                                          const I*             x_ind,
+                                          T*                   y,
+                                          rocsparse_index_base idx_base)
 {
     // Check for valid handle
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -72,7 +72,7 @@ rocsparse_status rocsparse_sctr_template(rocsparse_handle     handle,
     dim3 sctr_blocks((nnz - 1) / SCTR_DIM + 1);
     dim3 sctr_threads(SCTR_DIM);
 
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((sctr_kernel<SCTR_DIM>),
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::sctr_kernel<SCTR_DIM>),
                                        sctr_blocks,
                                        sctr_threads,
                                        0,
@@ -94,7 +94,7 @@ extern "C" rocsparse_status rocsparse_ssctr(rocsparse_handle     handle,
                                             rocsparse_index_base idx_base)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
     return rocsparse_status_success;
 }
 catch(...)
@@ -110,7 +110,7 @@ extern "C" rocsparse_status rocsparse_dsctr(rocsparse_handle     handle,
                                             rocsparse_index_base idx_base)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
     return rocsparse_status_success;
 }
 catch(...)
@@ -126,7 +126,7 @@ extern "C" rocsparse_status rocsparse_csctr(rocsparse_handle               handl
                                             rocsparse_index_base           idx_base)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
     return rocsparse_status_success;
 }
 catch(...)
@@ -142,7 +142,7 @@ extern "C" rocsparse_status rocsparse_zsctr(rocsparse_handle                hand
                                             rocsparse_index_base            idx_base)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
     return rocsparse_status_success;
 }
 catch(...)
@@ -158,7 +158,7 @@ extern "C" rocsparse_status rocsparse_isctr(rocsparse_handle     handle,
                                             rocsparse_index_base idx_base)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sctr_template(handle, nnz, x_val, x_ind, y, idx_base));
     return rocsparse_status_success;
 }
 catch(...)
@@ -166,13 +166,13 @@ catch(...)
     RETURN_ROCSPARSE_EXCEPTION();
 }
 
-#define INSTANTIATE(I, T)                                                          \
-    template rocsparse_status rocsparse_sctr_template(rocsparse_handle     handle, \
-                                                      I                    nnz,    \
-                                                      const T*             x_val,  \
-                                                      const I*             x_ind,  \
-                                                      T*                   y,      \
-                                                      rocsparse_index_base idx_base)
+#define INSTANTIATE(I, T)                                                           \
+    template rocsparse_status rocsparse::sctr_template(rocsparse_handle     handle, \
+                                                       I                    nnz,    \
+                                                       const T*             x_val,  \
+                                                       const I*             x_ind,  \
+                                                       T*                   y,      \
+                                                       rocsparse_index_base idx_base)
 
 INSTANTIATE(int32_t, int8_t);
 INSTANTIATE(int32_t, float);

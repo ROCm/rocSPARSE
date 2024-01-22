@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,12 +25,15 @@
 #pragma once
 #include "utility.h"
 
-template <typename I, typename T>
-rocsparse_status rocsparse_roti_template(rocsparse_handle     handle,
-                                         I                    nnz,
-                                         T*                   x_val,
-                                         const I*             x_ind,
-                                         T*                   y,
-                                         const T*             c,
-                                         const T*             s,
-                                         rocsparse_index_base idx_base);
+namespace rocsparse
+{
+    template <typename I, typename T>
+    rocsparse_status roti_template(rocsparse_handle     handle,
+                                   I                    nnz,
+                                   T*                   x_val,
+                                   const I*             x_ind,
+                                   T*                   y,
+                                   const T*             c,
+                                   const T*             s,
+                                   rocsparse_index_base idx_base);
+}

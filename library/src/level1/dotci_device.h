@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,56 +26,63 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, typename I, typename X, typename Y, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void dotci_kernel_part1(
-    I nnz, const X* x_val, const I* x_ind, const Y* y, T* workspace, rocsparse_index_base idx_base)
+namespace rocsparse
 {
-    int tid = hipThreadIdx_x;
-    I   gid = BLOCKSIZE * hipBlockIdx_x + tid;
-
-    T dotc = static_cast<T>(0);
-
-    for(I idx = gid; idx < nnz; idx += hipGridDim_x * BLOCKSIZE)
+    template <unsigned int BLOCKSIZE, typename I, typename X, typename Y, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void dotci_kernel_part1(I                    nnz,
+                            const X*             x_val,
+                            const I*             x_ind,
+                            const Y*             y,
+                            T*                   workspace,
+                            rocsparse_index_base idx_base)
     {
-        dotc = rocsparse_fma<T>(y[x_ind[idx] - idx_base], rocsparse_conj(x_val[idx]), dotc);
-    }
+        int tid = hipThreadIdx_x;
+        I   gid = BLOCKSIZE * hipBlockIdx_x + tid;
 
-    __shared__ T sdata[BLOCKSIZE];
-    sdata[tid] = dotc;
+        T dotc = static_cast<T>(0);
 
-    __syncthreads();
-
-    rocsparse_blockreduce_sum<BLOCKSIZE>(tid, sdata);
-
-    if(tid == 0)
-    {
-        workspace[hipBlockIdx_x] = sdata[0];
-    }
-}
-
-template <unsigned int BLOCKSIZE, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void dotci_kernel_part2(T* workspace, T* result)
-{
-    int tid = hipThreadIdx_x;
-
-    __shared__ T sdata[BLOCKSIZE];
-
-    sdata[tid] = workspace[tid];
-    __syncthreads();
-
-    rocsparse_blockreduce_sum<BLOCKSIZE>(tid, sdata);
-
-    if(tid == 0)
-    {
-        if(result)
+        for(I idx = gid; idx < nnz; idx += hipGridDim_x * BLOCKSIZE)
         {
-            *result = sdata[0];
+            dotc = rocsparse_fma<T>(y[x_ind[idx] - idx_base], rocsparse_conj(x_val[idx]), dotc);
         }
-        else
+
+        __shared__ T sdata[BLOCKSIZE];
+        sdata[tid] = dotc;
+
+        __syncthreads();
+
+        rocsparse_blockreduce_sum<BLOCKSIZE>(tid, sdata);
+
+        if(tid == 0)
         {
-            workspace[0] = sdata[0];
+            workspace[hipBlockIdx_x] = sdata[0];
+        }
+    }
+
+    template <unsigned int BLOCKSIZE, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void dotci_kernel_part2(T* workspace, T* result)
+    {
+        int tid = hipThreadIdx_x;
+
+        __shared__ T sdata[BLOCKSIZE];
+
+        sdata[tid] = workspace[tid];
+        __syncthreads();
+
+        rocsparse_blockreduce_sum<BLOCKSIZE>(tid, sdata);
+
+        if(tid == 0)
+        {
+            if(result)
+            {
+                *result = sdata[0];
+            }
+            else
+            {
+                workspace[0] = sdata[0];
+            }
         }
     }
 }
