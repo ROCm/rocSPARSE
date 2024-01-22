@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,26 +27,33 @@
 #include "rocsparse_axpyi.hpp"
 #include "utility.h"
 
-template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void axpyi_kernel(
-    I nnz, U alpha_device_host, const T* x_val, const I* x_ind, T* y, rocsparse_index_base idx_base)
+namespace rocsparse
 {
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    if(alpha != static_cast<T>(0))
+    template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void axpyi_kernel(I                    nnz,
+                      U                    alpha_device_host,
+                      const T*             x_val,
+                      const I*             x_ind,
+                      T*                   y,
+                      rocsparse_index_base idx_base)
     {
-        axpyi_device<BLOCKSIZE>(nnz, alpha, x_val, x_ind, y, idx_base);
+        auto alpha = load_scalar_device_host(alpha_device_host);
+        if(alpha != static_cast<T>(0))
+        {
+            rocsparse::axpyi_device<BLOCKSIZE>(nnz, alpha, x_val, x_ind, y, idx_base);
+        }
     }
 }
 
 template <typename I, typename T>
-rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
-                                          I                    nnz,
-                                          const T*             alpha,
-                                          const T*             x_val,
-                                          const I*             x_ind,
-                                          T*                   y,
-                                          rocsparse_index_base idx_base)
+rocsparse_status rocsparse::axpyi_template(rocsparse_handle     handle,
+                                           I                    nnz,
+                                           const T*             alpha,
+                                           const T*             x_val,
+                                           const I*             x_ind,
+                                           T*                   y,
+                                           rocsparse_index_base idx_base)
 {
     // Check for valid handle
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -93,7 +100,7 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((axpyi_kernel<AXPYI_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::axpyi_kernel<AXPYI_DIM>),
                                            axpyi_blocks,
                                            axpyi_threads,
                                            0,
@@ -112,7 +119,7 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
             return rocsparse_status_success;
         }
 
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((axpyi_kernel<AXPYI_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::axpyi_kernel<AXPYI_DIM>),
                                            axpyi_blocks,
                                            axpyi_threads,
                                            0,
@@ -128,14 +135,14 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, TTYPE)                                     \
-    template rocsparse_status rocsparse_axpyi_template<ITYPE, TTYPE>( \
-        rocsparse_handle     handle,                                  \
-        ITYPE                nnz,                                     \
-        const TTYPE*         alpha,                                   \
-        const TTYPE*         x_val,                                   \
-        const ITYPE*         x_ind,                                   \
-        TTYPE*               y,                                       \
+#define INSTANTIATE(ITYPE, TTYPE)                                      \
+    template rocsparse_status rocsparse::axpyi_template<ITYPE, TTYPE>( \
+        rocsparse_handle     handle,                                   \
+        ITYPE                nnz,                                      \
+        const TTYPE*         alpha,                                    \
+        const TTYPE*         x_val,                                    \
+        const ITYPE*         x_ind,                                    \
+        TTYPE*               y,                                        \
         rocsparse_index_base idx_base);
 
 INSTANTIATE(int32_t, float);
@@ -164,7 +171,7 @@ extern "C" rocsparse_status rocsparse_saxpyi(rocsparse_handle     handle,
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base));
+        rocsparse::axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base));
     return rocsparse_status_success;
 }
 catch(...)
@@ -182,7 +189,7 @@ extern "C" rocsparse_status rocsparse_daxpyi(rocsparse_handle     handle,
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base));
+        rocsparse::axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base));
     return rocsparse_status_success;
 }
 catch(...)
@@ -200,7 +207,7 @@ extern "C" rocsparse_status rocsparse_caxpyi(rocsparse_handle               hand
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base));
+        rocsparse::axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base));
     return rocsparse_status_success;
 }
 catch(...)
@@ -218,7 +225,7 @@ extern "C" rocsparse_status rocsparse_zaxpyi(rocsparse_handle                han
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base));
+        rocsparse::axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base));
     return rocsparse_status_success;
 }
 catch(...)

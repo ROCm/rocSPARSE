@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -137,7 +137,7 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
         T* csrt_val = reinterpret_cast<T*>(ptr);
 
         // Gather values
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gthr_template(
             handle, nnz, csr_val, csrt_val, (const I*)csrsv->trmt_perm, rocsparse_index_base_zero));
 
         if(trans == rocsparse_operation_conjugate_transpose)

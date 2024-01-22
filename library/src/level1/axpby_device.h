@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,19 @@
 
 #include "common.h"
 
-// x = alpha * x
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_DEVICE_ILF void axpby_scale_device(I size, T alpha, T* __restrict__ x)
+namespace rocsparse
 {
-    I i = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    if(i >= size)
+    // x = alpha * x
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_DEVICE_ILF void axpby_scale_device(I size, T alpha, T* __restrict__ x)
     {
-        return;
-    }
+        I i = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
-    x[i] *= alpha;
+        if(i >= size)
+        {
+            return;
+        }
+
+        x[i] *= alpha;
+    }
 }

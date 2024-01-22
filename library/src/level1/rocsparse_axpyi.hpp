@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,14 @@
 
 #include "handle.h"
 
-template <typename I, typename T>
-rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
-                                          I                    nnz,
-                                          const T*             alpha,
-                                          const T*             x_val,
-                                          const I*             x_ind,
-                                          T*                   y,
-                                          rocsparse_index_base idx_base);
+namespace rocsparse
+{
+    template <typename I, typename T>
+    rocsparse_status axpyi_template(rocsparse_handle     handle,
+                                    I                    nnz,
+                                    const T*             alpha,
+                                    const T*             x_val,
+                                    const I*             x_ind,
+                                    T*                   y,
+                                    rocsparse_index_base idx_base);
+}

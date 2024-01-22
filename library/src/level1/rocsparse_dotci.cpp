@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,13 +29,13 @@
 #include "utility.h"
 
 template <typename T, typename I, typename X, typename Y>
-rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
-                                          I                    nnz,
-                                          const X*             x_val,
-                                          const I*             x_ind,
-                                          const Y*             y,
-                                          T*                   result,
-                                          rocsparse_index_base idx_base)
+rocsparse_status rocsparse::dotci_template(rocsparse_handle     handle,
+                                           I                    nnz,
+                                           const X*             x_val,
+                                           const I*             x_ind,
+                                           const Y*             y,
+                                           T*                   result,
+                                           rocsparse_index_base idx_base)
 {
     // Check for valid handle
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -87,7 +87,7 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
     // Get workspace from handle device buffer
     T* workspace = reinterpret_cast<T*>(handle->buffer);
 
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((dotci_kernel_part1<DOTCI_DIM>),
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::dotci_kernel_part1<DOTCI_DIM>),
                                        dim3(DOTCI_DIM),
                                        dim3(DOTCI_DIM),
                                        0,
@@ -101,7 +101,7 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((dotci_kernel_part2<DOTCI_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::dotci_kernel_part2<DOTCI_DIM>),
                                            dim3(1),
                                            dim3(DOTCI_DIM),
                                            0,
@@ -111,7 +111,7 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
     }
     else
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((dotci_kernel_part2<DOTCI_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::dotci_kernel_part2<DOTCI_DIM>),
                                            dim3(1),
                                            dim3(DOTCI_DIM),
                                            0,
@@ -127,14 +127,14 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(TTYPE, ITYPE)                                                   \
-    template rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle, \
-                                                       ITYPE                nnz,    \
-                                                       const TTYPE*         x_val,  \
-                                                       const ITYPE*         x_ind,  \
-                                                       const TTYPE*         y,      \
-                                                       TTYPE*               result, \
-                                                       rocsparse_index_base idx_base)
+#define INSTANTIATE(TTYPE, ITYPE)                                                    \
+    template rocsparse_status rocsparse::dotci_template(rocsparse_handle     handle, \
+                                                        ITYPE                nnz,    \
+                                                        const TTYPE*         x_val,  \
+                                                        const ITYPE*         x_ind,  \
+                                                        const TTYPE*         y,      \
+                                                        TTYPE*               result, \
+                                                        rocsparse_index_base idx_base)
 
 INSTANTIATE(rocsparse_float_complex, int32_t);
 INSTANTIATE(rocsparse_float_complex, int64_t);
@@ -158,7 +158,7 @@ extern "C" rocsparse_status rocsparse_cdotci(rocsparse_handle               hand
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_dotci_template(handle, nnz, x_val, x_ind, y, result, idx_base));
+        rocsparse::dotci_template(handle, nnz, x_val, x_ind, y, result, idx_base));
     return rocsparse_status_success;
 }
 catch(...)
@@ -176,7 +176,7 @@ extern "C" rocsparse_status rocsparse_zdotci(rocsparse_handle                han
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_dotci_template(handle, nnz, x_val, x_ind, y, result, idx_base));
+        rocsparse::dotci_template(handle, nnz, x_val, x_ind, y, result, idx_base));
     return rocsparse_status_success;
 }
 catch(...)

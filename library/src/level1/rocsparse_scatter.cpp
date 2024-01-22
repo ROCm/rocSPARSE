@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,18 +29,21 @@
 
 #include "rocsparse_sctr.hpp"
 
-template <typename I, typename T>
-rocsparse_status rocsparse_scatter_template(rocsparse_handle            handle,
-                                            rocsparse_const_spvec_descr x,
-                                            rocsparse_dnvec_descr       y)
+namespace rocsparse
 {
-    RETURN_IF_ROCSPARSE_ERROR((rocsparse_sctr_template<I, T>)(handle,
-                                                              (I)x->nnz,
-                                                              (const T*)x->const_val_data,
-                                                              (const I*)x->const_idx_data,
-                                                              (T*)y->values,
-                                                              x->idx_base));
-    return rocsparse_status_success;
+    template <typename I, typename T>
+    rocsparse_status scatter_template(rocsparse_handle            handle,
+                                      rocsparse_const_spvec_descr x,
+                                      rocsparse_dnvec_descr       y)
+    {
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::sctr_template<I, T>)(handle,
+                                                                   (I)x->nnz,
+                                                                   (const T*)x->const_val_data,
+                                                                   (const I*)x->const_idx_data,
+                                                                   (T*)y->values,
+                                                                   x->idx_base));
+        return rocsparse_status_success;
+    }
 }
 
 /*
@@ -74,65 +77,65 @@ try
     // int8 ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_i8_r)
     {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_scatter_template<int32_t, int8_t>)(handle, x, y));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::scatter_template<int32_t, int8_t>)(handle, x, y));
         return rocsparse_status_success;
     }
     // single real ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f32_r)
     {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_scatter_template<int32_t, float>)(handle, x, y));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::scatter_template<int32_t, float>)(handle, x, y));
         return rocsparse_status_success;
     }
     // double real ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f64_r)
     {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_scatter_template<int32_t, double>)(handle, x, y));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::scatter_template<int32_t, double>)(handle, x, y));
         return rocsparse_status_success;
     }
     // single complex ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f32_c)
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_scatter_template<int32_t, rocsparse_float_complex>)(handle, x, y));
+            (rocsparse::scatter_template<int32_t, rocsparse_float_complex>)(handle, x, y));
         return rocsparse_status_success;
     }
     // double complex ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f64_c)
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_scatter_template<int32_t, rocsparse_double_complex>)(handle, x, y));
+            (rocsparse::scatter_template<int32_t, rocsparse_double_complex>)(handle, x, y));
         return rocsparse_status_success;
     }
     // int8 ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_i8_r)
     {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_scatter_template<int64_t, int8_t>)(handle, x, y));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::scatter_template<int64_t, int8_t>)(handle, x, y));
         return rocsparse_status_success;
     }
     // single real ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f32_r)
     {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_scatter_template<int64_t, float>)(handle, x, y));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::scatter_template<int64_t, float>)(handle, x, y));
         return rocsparse_status_success;
     }
     // double real ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f64_r)
     {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_scatter_template<int64_t, double>)(handle, x, y));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::scatter_template<int64_t, double>)(handle, x, y));
         return rocsparse_status_success;
     }
     // single complex ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f32_c)
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_scatter_template<int64_t, rocsparse_float_complex>)(handle, x, y));
+            (rocsparse::scatter_template<int64_t, rocsparse_float_complex>)(handle, x, y));
         return rocsparse_status_success;
     }
     // double complex ; i64
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f64_c)
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_scatter_template<int64_t, rocsparse_double_complex>)(handle, x, y));
+            (rocsparse::scatter_template<int64_t, rocsparse_double_complex>)(handle, x, y));
         return rocsparse_status_success;
     }
 

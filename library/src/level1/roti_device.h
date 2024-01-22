@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,25 @@
 
 #include <hip/hip_runtime.h>
 
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_DEVICE_ILF void
-    roti_device(I nnz, T* x_val, const I* x_ind, T* y, T c, T s, rocsparse_index_base idx_base)
+namespace rocsparse
 {
-    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    if(idx >= nnz)
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_DEVICE_ILF void
+        roti_device(I nnz, T* x_val, const I* x_ind, T* y, T c, T s, rocsparse_index_base idx_base)
     {
-        return;
+        I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+        if(idx >= nnz)
+        {
+            return;
+        }
+
+        I i = x_ind[idx] - idx_base;
+
+        T xr = x_val[idx];
+        T yr = y[i];
+
+        x_val[idx] = c * xr + s * yr;
+        y[i]       = c * yr - s * xr;
     }
-
-    I i = x_ind[idx] - idx_base;
-
-    T xr = x_val[idx];
-    T yr = y[i];
-
-    x_val[idx] = c * xr + s * yr;
-    y[i]       = c * yr - s * xr;
 }

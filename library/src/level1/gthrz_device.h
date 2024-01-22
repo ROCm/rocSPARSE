@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +26,26 @@
 
 #include <hip/hip_runtime.h>
 
-template <unsigned int BLOCKSIZE, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void gthrz_kernel(
-    rocsparse_int nnz, T* y, T* x_val, const rocsparse_int* x_ind, rocsparse_index_base idx_base)
+namespace rocsparse
 {
-    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    if(idx >= nnz)
+    template <unsigned int BLOCKSIZE, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void gthrz_kernel(rocsparse_int        nnz,
+                      T*                   y,
+                      T*                   x_val,
+                      const rocsparse_int* x_ind,
+                      rocsparse_index_base idx_base)
     {
-        return;
+        rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+        if(idx >= nnz)
+        {
+            return;
+        }
+
+        rocsparse_int i = x_ind[idx] - idx_base;
+
+        x_val[idx] = y[i];
+        y[i]       = static_cast<T>(0);
     }
-
-    rocsparse_int i = x_ind[idx] - idx_base;
-
-    x_val[idx] = y[i];
-    y[i]       = static_cast<T>(0);
 }

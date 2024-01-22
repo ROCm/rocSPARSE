@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,14 +35,14 @@ rocsparse_status rocsparse_ggthr(rocsparse_handle     handle_,
                                  rocsparse_index_base base)
 {
 
-#define CALL_TEMPLATE(PERM_TYPE, DATA_TYPE)                                   \
-    RETURN_IF_ROCSPARSE_ERROR(                                                \
-        (rocsparse_gthr_template<PERM_TYPE, DATA_TYPE>)(handle_,              \
-                                                        nnz,                  \
-                                                        (const DATA_TYPE*)in, \
-                                                        (DATA_TYPE*)out,      \
-                                                        (PERM_TYPE*)perm,     \
-                                                        base));
+#define CALL_TEMPLATE(PERM_TYPE, DATA_TYPE)                                    \
+    RETURN_IF_ROCSPARSE_ERROR(                                                 \
+        (rocsparse::gthr_template<PERM_TYPE, DATA_TYPE>)(handle_,              \
+                                                         nnz,                  \
+                                                         (const DATA_TYPE*)in, \
+                                                         (DATA_TYPE*)out,      \
+                                                         (PERM_TYPE*)perm,     \
+                                                         base));
 
 #define DISPATCH_DATA_TYPE(PERM_TYPE)                       \
     switch(data_type)                                       \

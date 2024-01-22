@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -126,12 +126,12 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                 rocsparse_csr2coo_template(handle, csr_row_ptr, nnz, m, tmp_work1, descr->base));
 
             // Permute column indices
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(handle,
-                                                              nnz,
-                                                              tmp_work1,
-                                                              (J*)info->trmt_col_ind,
-                                                              (const I*)info->trmt_perm,
-                                                              rocsparse_index_base_zero));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::gthr_template(handle,
+                                                               nnz,
+                                                               tmp_work1,
+                                                               (J*)info->trmt_col_ind,
+                                                               (const I*)info->trmt_perm,
+                                                               rocsparse_index_base_zero));
         }
         else
         {
