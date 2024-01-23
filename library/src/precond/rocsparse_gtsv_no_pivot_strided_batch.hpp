@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,25 +27,27 @@
 #include "definitions.h"
 #include "utility.h"
 
-template <typename T>
-rocsparse_status
-    rocsparse_gtsv_no_pivot_strided_batch_buffer_size_template(rocsparse_handle handle,
-                                                               rocsparse_int    m,
-                                                               const T*         dl,
-                                                               const T*         d,
-                                                               const T*         du,
-                                                               const T*         x,
-                                                               rocsparse_int    batch_count,
-                                                               rocsparse_int    batch_stride,
-                                                               size_t*          buffer_size);
+namespace rocsparse
+{
+    template <typename T>
+    rocsparse_status gtsv_no_pivot_strided_batch_buffer_size_template(rocsparse_handle handle,
+                                                                      rocsparse_int    m,
+                                                                      const T*         dl,
+                                                                      const T*         d,
+                                                                      const T*         du,
+                                                                      const T*         x,
+                                                                      rocsparse_int    batch_count,
+                                                                      rocsparse_int    batch_stride,
+                                                                      size_t*          buffer_size);
 
-template <typename T>
-rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_template(rocsparse_handle handle,
-                                                                rocsparse_int    m,
-                                                                const T*         dl,
-                                                                const T*         d,
-                                                                const T*         du,
-                                                                T*               x,
-                                                                rocsparse_int    batch_count,
-                                                                rocsparse_int    batch_stride,
-                                                                void*            temp_buffer);
+    template <typename T>
+    rocsparse_status gtsv_no_pivot_strided_batch_template(rocsparse_handle handle,
+                                                          rocsparse_int    m,
+                                                          const T*         dl,
+                                                          const T*         d,
+                                                          const T*         du,
+                                                          T*               x,
+                                                          rocsparse_int    batch_count,
+                                                          rocsparse_int    batch_stride,
+                                                          void*            temp_buffer);
+}

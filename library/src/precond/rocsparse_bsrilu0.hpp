@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +26,34 @@
 
 #include "utility.h"
 
-template <typename T>
-rocsparse_status rocsparse_bsrilu0_analysis_template(rocsparse_handle          handle,
-                                                     rocsparse_direction       dir,
-                                                     rocsparse_int             mb,
-                                                     rocsparse_int             nnzb,
-                                                     const rocsparse_mat_descr descr,
-                                                     const T*                  bsr_val,
-                                                     const rocsparse_int*      bsr_row_ptr,
-                                                     const rocsparse_int*      bsr_col_ind,
-                                                     rocsparse_int             block_dim,
-                                                     rocsparse_mat_info        info,
-                                                     rocsparse_analysis_policy analysis,
-                                                     rocsparse_solve_policy    solve,
-                                                     void*                     temp_buffer);
+namespace rocsparse
+{
+    template <typename T>
+    rocsparse_status bsrilu0_analysis_template(rocsparse_handle          handle,
+                                               rocsparse_direction       dir,
+                                               rocsparse_int             mb,
+                                               rocsparse_int             nnzb,
+                                               const rocsparse_mat_descr descr,
+                                               const T*                  bsr_val,
+                                               const rocsparse_int*      bsr_row_ptr,
+                                               const rocsparse_int*      bsr_col_ind,
+                                               rocsparse_int             block_dim,
+                                               rocsparse_mat_info        info,
+                                               rocsparse_analysis_policy analysis,
+                                               rocsparse_solve_policy    solve,
+                                               void*                     temp_buffer);
 
-template <typename T, typename U>
-rocsparse_status rocsparse_bsrilu0_template(rocsparse_handle          handle,
-                                            rocsparse_direction       dir,
-                                            rocsparse_int             mb,
-                                            rocsparse_int             nnzb,
-                                            const rocsparse_mat_descr descr,
-                                            T*                        bsr_val,
-                                            const rocsparse_int*      bsr_row_ptr,
-                                            const rocsparse_int*      bsr_col_ind,
-                                            rocsparse_int             block_dim,
-                                            rocsparse_mat_info        info,
-                                            rocsparse_solve_policy    policy,
-                                            void*                     temp_buffer);
+    template <typename T, typename U>
+    rocsparse_status bsrilu0_template(rocsparse_handle          handle,
+                                      rocsparse_direction       dir,
+                                      rocsparse_int             mb,
+                                      rocsparse_int             nnzb,
+                                      const rocsparse_mat_descr descr,
+                                      T*                        bsr_val,
+                                      const rocsparse_int*      bsr_row_ptr,
+                                      const rocsparse_int*      bsr_col_ind,
+                                      rocsparse_int             block_dim,
+                                      rocsparse_mat_info        info,
+                                      rocsparse_solve_policy    policy,
+                                      void*                     temp_buffer);
+}

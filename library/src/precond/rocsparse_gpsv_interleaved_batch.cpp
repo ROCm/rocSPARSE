@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,18 +43,18 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_gpsv_interleaved_alg valu
 
 template <typename T>
 rocsparse_status
-    rocsparse_gpsv_interleaved_batch_buffer_size_template(rocsparse_handle               handle,
-                                                          rocsparse_gpsv_interleaved_alg alg,
-                                                          rocsparse_int                  m,
-                                                          const T*                       ds,
-                                                          const T*                       dl,
-                                                          const T*                       d,
-                                                          const T*                       du,
-                                                          const T*                       dw,
-                                                          const T*                       x,
-                                                          rocsparse_int batch_count,
-                                                          rocsparse_int batch_stride,
-                                                          size_t*       buffer_size)
+    rocsparse::gpsv_interleaved_batch_buffer_size_template(rocsparse_handle               handle,
+                                                           rocsparse_gpsv_interleaved_alg alg,
+                                                           rocsparse_int                  m,
+                                                           const T*                       ds,
+                                                           const T*                       dl,
+                                                           const T*                       d,
+                                                           const T*                       du,
+                                                           const T*                       dw,
+                                                           const T*                       x,
+                                                           rocsparse_int batch_count,
+                                                           rocsparse_int batch_stride,
+                                                           size_t*       buffer_size)
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
@@ -113,18 +113,18 @@ rocsparse_status
 }
 
 template <typename T>
-rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle               handle,
-                                                           rocsparse_gpsv_interleaved_alg alg,
-                                                           rocsparse_int                  m,
-                                                           T*                             ds,
-                                                           T*                             dl,
-                                                           T*                             d,
-                                                           T*                             du,
-                                                           T*                             dw,
-                                                           T*                             x,
-                                                           rocsparse_int batch_count,
-                                                           rocsparse_int batch_stride,
-                                                           void*         temp_buffer)
+rocsparse_status rocsparse::gpsv_interleaved_batch_template(rocsparse_handle               handle,
+                                                            rocsparse_gpsv_interleaved_alg alg,
+                                                            rocsparse_int                  m,
+                                                            T*                             ds,
+                                                            T*                             dl,
+                                                            T*                             d,
+                                                            T*                             du,
+                                                            T*                             dw,
+                                                            T*                             x,
+                                                            rocsparse_int batch_count,
+                                                            rocsparse_int batch_stride,
+                                                            void*         temp_buffer)
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
@@ -189,7 +189,7 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
         dim3 gpsv_threads(GPSV_DIM);
 
         // Copy strided B into buffer
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gpsv_strided_gather<GPSV_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::gpsv_strided_gather<GPSV_DIM>),
                                            gpsv_blocks,
                                            gpsv_threads,
                                            0,
@@ -201,23 +201,24 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
                                            B);
 
         // Launch kernel
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gpsv_interleaved_batch_householder_qr_kernel<GPSV_DIM>),
-                                           gpsv_blocks,
-                                           gpsv_threads,
-                                           0,
-                                           stream,
-                                           m,
-                                           batch_count,
-                                           batch_stride,
-                                           ds,
-                                           dl,
-                                           d,
-                                           du,
-                                           dw,
-                                           x,
-                                           dt1,
-                                           dt2,
-                                           B);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (rocsparse::gpsv_interleaved_batch_householder_qr_kernel<GPSV_DIM>),
+            gpsv_blocks,
+            gpsv_threads,
+            0,
+            stream,
+            m,
+            batch_count,
+            batch_stride,
+            ds,
+            dl,
+            d,
+            du,
+            dw,
+            x,
+            dt1,
+            dt2,
+            B);
 #undef GPSV_DIM
     }
     else
@@ -232,22 +233,23 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
         RETURN_IF_HIP_ERROR(hipMemsetAsync(
             r4, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
 
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gpsv_interleaved_batch_givens_qr_kernel<128>),
-                                           dim3(((batch_count - 1) / 128 + 1), 1, 1),
-                                           dim3(128, 1, 1),
-                                           0,
-                                           handle->stream,
-                                           m,
-                                           batch_count,
-                                           batch_stride,
-                                           ds,
-                                           dl,
-                                           d,
-                                           du,
-                                           dw,
-                                           r3,
-                                           r4,
-                                           x);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (rocsparse::gpsv_interleaved_batch_givens_qr_kernel<128>),
+            dim3(((batch_count - 1) / 128 + 1), 1, 1),
+            dim3(128, 1, 1),
+            0,
+            handle->stream,
+            m,
+            batch_count,
+            batch_stride,
+            ds,
+            dl,
+            d,
+            du,
+            dw,
+            r3,
+            r4,
+            x);
     }
 
     return rocsparse_status_success;
@@ -273,7 +275,7 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
                                      size_t*                        buffer_size)            \
     try                                                                                     \
     {                                                                                       \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gpsv_interleaved_batch_buffer_size_template(    \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gpsv_interleaved_batch_buffer_size_template(   \
             handle, alg, m, ds, dl, d, du, dw, x, batch_count, batch_stride, buffer_size)); \
         return rocsparse_status_success;                                                    \
     }                                                                                       \
@@ -303,7 +305,7 @@ C_IMPL(rocsparse_zgpsv_interleaved_batch_buffer_size, rocsparse_double_complex);
                                      void*                          temp_buffer)            \
     try                                                                                     \
     {                                                                                       \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gpsv_interleaved_batch_template(                \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gpsv_interleaved_batch_template(               \
             handle, alg, m, ds, dl, d, du, dw, x, batch_count, batch_stride, temp_buffer)); \
         return rocsparse_status_success;                                                    \
     }                                                                                       \

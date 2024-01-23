@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,139 +26,71 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH, typename T, typename U>
-ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
-                                              const rocsparse_int* __restrict__ csr_row_ptr,
-                                              const rocsparse_int* __restrict__ csr_col_ind,
-                                              T* __restrict__ csr_val,
-                                              const rocsparse_int* __restrict__ csr_diag_ind,
-                                              int* __restrict__ done,
-                                              const rocsparse_int* __restrict__ map,
-                                              rocsparse_int* __restrict__ zero_pivot,
-                                              rocsparse_int* __restrict__ singular_pivot,
-                                              double               tol,
-                                              rocsparse_index_base idx_base,
-                                              int                  boost,
-                                              U                    boost_tol,
-                                              T                    boost_val)
+namespace rocsparse
 {
-    int lid = hipThreadIdx_x & (WFSIZE - 1);
-    int wid = hipThreadIdx_x / WFSIZE;
-
-    __shared__ rocsparse_int stable[BLOCKSIZE * HASH];
-    __shared__ rocsparse_int sdata[BLOCKSIZE * HASH];
-
-    // Pointer to each wavefronts shared data
-    rocsparse_int* table = &stable[wid * WFSIZE * HASH];
-    rocsparse_int* data  = &sdata[wid * WFSIZE * HASH];
-
-    // Initialize hash table with -1
-    for(unsigned int j = lid; j < WFSIZE * HASH; j += WFSIZE)
+    template <unsigned int BLOCKSIZE,
+              unsigned int WFSIZE,
+              unsigned int HASH,
+              typename T,
+              typename U>
+    ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
+                                                  const rocsparse_int* __restrict__ csr_row_ptr,
+                                                  const rocsparse_int* __restrict__ csr_col_ind,
+                                                  T* __restrict__ csr_val,
+                                                  const rocsparse_int* __restrict__ csr_diag_ind,
+                                                  int* __restrict__ done,
+                                                  const rocsparse_int* __restrict__ map,
+                                                  rocsparse_int* __restrict__ zero_pivot,
+                                                  rocsparse_int* __restrict__ singular_pivot,
+                                                  double               tol,
+                                                  rocsparse_index_base idx_base,
+                                                  int                  boost,
+                                                  U                    boost_tol,
+                                                  T                    boost_val)
     {
-        table[j] = -1;
-    }
+        int lid = hipThreadIdx_x & (WFSIZE - 1);
+        int wid = hipThreadIdx_x / WFSIZE;
 
-    __threadfence_block();
+        __shared__ rocsparse_int stable[BLOCKSIZE * HASH];
+        __shared__ rocsparse_int sdata[BLOCKSIZE * HASH];
 
-    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
+        // Pointer to each wavefronts shared data
+        rocsparse_int* table = &stable[wid * WFSIZE * HASH];
+        rocsparse_int* data  = &sdata[wid * WFSIZE * HASH];
 
-    // Do not run out of bounds
-    if(idx >= m)
-    {
-        return;
-    }
-
-    // Current row this wavefront is working on
-    rocsparse_int row = map[idx];
-
-    // Diagonal entry point of the current row
-    rocsparse_int row_diag = csr_diag_ind[row];
-
-    // Row entry point
-    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
-
-    // Fill hash table
-    // Loop over columns of current row and fill hash table with row dependencies
-    // Each lane processes one entry
-    for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
-    {
-        // Insert key into hash table
-        rocsparse_int key = csr_col_ind[j];
-        // Compute hash
-        rocsparse_int hash = (key * 103) & (WFSIZE * HASH - 1);
-
-        // Hash operation
-#pragma unroll 4
-        for(unsigned int h = 0; h < WFSIZE * HASH; ++h)
+        // Initialize hash table with -1
+        for(unsigned int j = lid; j < WFSIZE * HASH; j += WFSIZE)
         {
-            if(table[hash] == key)
-            {
-                // key is already inserted, done
-                break;
-            }
-            else if(rocsparse_atomic_cas(&table[hash], -1, key) == -1)
-            {
-                // inserted key into the table, done
-                data[hash] = j;
-                break;
-            }
-            else
-            {
-                // collision, compute new hash
-                hash = (hash + 1) & (WFSIZE * HASH - 1);
-            }
-        }
-    }
-
-    __threadfence_block();
-
-    // Loop over column of current row
-    for(rocsparse_int j = row_begin; j < row_diag; ++j)
-    {
-        // Column index currently being processes
-        rocsparse_int local_col = csr_col_ind[j] - idx_base;
-
-        // Corresponding value
-        T local_val = csr_val[j];
-
-        // End of the row that corresponds to local_col
-        rocsparse_int local_end = csr_row_ptr[local_col + 1] - idx_base;
-
-        // Diagonal entry point of row local_col
-        rocsparse_int local_diag = csr_diag_ind[local_col];
-
-        // Structural zero pivot, do not process this row
-        if(local_diag == -1)
-        {
-            local_diag = local_end - 1;
+            table[j] = -1;
         }
 
-        // Spin loop until dependency has been resolved
-        while(!__hip_atomic_load(&done[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT))
-            ;
+        __threadfence_block();
 
-        // Make sure updated csr_val is visible
-        __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
+        rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
 
-        // Load diagonal entry
-        T diag_val = csr_val[local_diag];
-
-        if(diag_val == static_cast<T>(0))
+        // Do not run out of bounds
+        if(idx >= m)
         {
-
-            // Skip this row if it has a zero pivot
-            break;
+            return;
         }
-        csr_val[j] = local_val = local_val / diag_val;
 
-        // Loop over the row the current column index depends on
+        // Current row this wavefront is working on
+        rocsparse_int row = map[idx];
+
+        // Diagonal entry point of the current row
+        rocsparse_int row_diag = csr_diag_ind[row];
+
+        // Row entry point
+        rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
+        rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+
+        // Fill hash table
+        // Loop over columns of current row and fill hash table with row dependencies
         // Each lane processes one entry
-        for(rocsparse_int k = local_diag + 1 + lid; k < local_end; k += WFSIZE)
+        for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
         {
-            // Get value from hash table
-            rocsparse_int key = csr_col_ind[k];
-
+            // Insert key into hash table
+            rocsparse_int key = csr_col_ind[j];
             // Compute hash
             rocsparse_int hash = (key * 103) & (WFSIZE * HASH - 1);
 
@@ -166,261 +98,338 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
 #pragma unroll 4
             for(unsigned int h = 0; h < WFSIZE * HASH; ++h)
             {
-                if(table[hash] == -1)
+                if(table[hash] == key)
                 {
-                    // No entry for the key, done
+                    // key is already inserted, done
                     break;
                 }
-                else if(table[hash] == key)
+                else if(rocsparse_atomic_cas(&table[hash], -1, key) == -1)
                 {
-                    // Entry found, do ILU computation
-                    rocsparse_int idx_data = data[hash];
-                    csr_val[idx_data] = rocsparse_fma(-local_val, csr_val[k], csr_val[idx_data]);
+                    // inserted key into the table, done
+                    data[hash] = j;
                     break;
                 }
                 else
                 {
-                    // Collision, compute new hash
+                    // collision, compute new hash
                     hash = (hash + 1) & (WFSIZE * HASH - 1);
                 }
             }
         }
-    }
 
-    // Make sure updated csr_val is written to global memory
-    __threadfence_block();
+        __threadfence_block();
 
-    const bool is_diag = (row_diag >= 0);
-    if(is_diag)
-    {
-        const auto diag_val     = csr_val[row_diag];
-        const auto abs_diag_val = rocsparse_abs(diag_val);
-        if(boost)
+        // Loop over column of current row
+        for(rocsparse_int j = row_begin; j < row_diag; ++j)
         {
-            const bool is_too_small = (abs_diag_val <= boost_tol);
+            // Column index currently being processes
+            rocsparse_int local_col = csr_col_ind[j] - idx_base;
 
-            if(is_too_small)
+            // Corresponding value
+            T local_val = csr_val[j];
+
+            // End of the row that corresponds to local_col
+            rocsparse_int local_end = csr_row_ptr[local_col + 1] - idx_base;
+
+            // Diagonal entry point of row local_col
+            rocsparse_int local_diag = csr_diag_ind[local_col];
+
+            // Structural zero pivot, do not process this row
+            if(local_diag == -1)
             {
-                if(lid == 0)
+                local_diag = local_end - 1;
+            }
+
+            // Spin loop until dependency has been resolved
+            while(!__hip_atomic_load(&done[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT))
+                ;
+
+            // Make sure updated csr_val is visible
+            __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
+
+            // Load diagonal entry
+            T diag_val = csr_val[local_diag];
+
+            if(diag_val == static_cast<T>(0))
+            {
+
+                // Skip this row if it has a zero pivot
+                break;
+            }
+            csr_val[j] = local_val = local_val / diag_val;
+
+            // Loop over the row the current column index depends on
+            // Each lane processes one entry
+            for(rocsparse_int k = local_diag + 1 + lid; k < local_end; k += WFSIZE)
+            {
+                // Get value from hash table
+                rocsparse_int key = csr_col_ind[k];
+
+                // Compute hash
+                rocsparse_int hash = (key * 103) & (WFSIZE * HASH - 1);
+
+                // Hash operation
+#pragma unroll 4
+                for(unsigned int h = 0; h < WFSIZE * HASH; ++h)
                 {
-                    csr_val[row_diag] = boost_val;
-                    __threadfence(); // make sure this is written out before ready flag is set
+                    if(table[hash] == -1)
+                    {
+                        // No entry for the key, done
+                        break;
+                    }
+                    else if(table[hash] == key)
+                    {
+                        // Entry found, do ILU computation
+                        rocsparse_int idx_data = data[hash];
+                        csr_val[idx_data]
+                            = rocsparse_fma(-local_val, csr_val[k], csr_val[idx_data]);
+                        break;
+                    }
+                    else
+                    {
+                        // Collision, compute new hash
+                        hash = (hash + 1) & (WFSIZE * HASH - 1);
+                    }
+                }
+            }
+        }
+
+        // Make sure updated csr_val is written to global memory
+        __threadfence_block();
+
+        const bool is_diag = (row_diag >= 0);
+        if(is_diag)
+        {
+            const auto diag_val     = csr_val[row_diag];
+            const auto abs_diag_val = rocsparse_abs(diag_val);
+            if(boost)
+            {
+                const bool is_too_small = (abs_diag_val <= boost_tol);
+
+                if(is_too_small)
+                {
+                    if(lid == 0)
+                    {
+                        csr_val[row_diag] = boost_val;
+                        __threadfence(); // make sure this is written out before ready flag is set
+                    };
                 };
-            };
+            }
+            else
+            {
+
+                const bool is_singular_pivot = (abs_diag_val <= tol);
+                if(is_singular_pivot)
+                {
+                    if(lid == 0)
+                    {
+                        rocsparse_atomic_min(singular_pivot, (row + idx_base));
+                    }
+                }
+
+                const bool is_zero_pivot = (diag_val == static_cast<T>(0));
+                if(is_zero_pivot)
+                {
+                    if(lid == 0)
+                    {
+                        rocsparse_atomic_min(zero_pivot, (row + idx_base));
+                    }
+                }
+            }
         }
-        else
+
+        // Make sure updated csr_val is written to global memory
+        __threadfence();
+
+        if(lid == 0)
         {
-
-            const bool is_singular_pivot = (abs_diag_val <= tol);
-            if(is_singular_pivot)
-            {
-                if(lid == 0)
-                {
-                    rocsparse_atomic_min(singular_pivot, (row + idx_base));
-                }
-            }
-
-            const bool is_zero_pivot = (diag_val == static_cast<T>(0));
-            if(is_zero_pivot)
-            {
-                if(lid == 0)
-                {
-                    rocsparse_atomic_min(zero_pivot, (row + idx_base));
-                }
-            }
+            // First lane writes "we are done" flag
+            __hip_atomic_store(&done[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
         }
     }
 
-    // Make sure updated csr_val is written to global memory
-    __threadfence();
-
-    if(lid == 0)
+    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
+    ROCSPARSE_DEVICE_ILF void
+        csrilu0_binsearch_kernel(rocsparse_int m_,
+                                 const rocsparse_int* __restrict__ csr_row_ptr,
+                                 const rocsparse_int* __restrict__ csr_col_ind,
+                                 T* __restrict__ csr_val,
+                                 const rocsparse_int* __restrict__ csr_diag_ind,
+                                 int* __restrict__ done,
+                                 const rocsparse_int* __restrict__ map,
+                                 rocsparse_int* __restrict__ zero_pivot,
+                                 rocsparse_int* __restrict__ singular_pivot,
+                                 double               tol,
+                                 rocsparse_index_base idx_base,
+                                 int                  boost,
+                                 U                    boost_tol,
+                                 T                    boost_val)
     {
-        // First lane writes "we are done" flag
-        __hip_atomic_store(&done[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
-    }
-}
+        int lid = hipThreadIdx_x & (WFSIZE - 1);
+        int wid = hipThreadIdx_x / WFSIZE;
 
-template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
-                                                   const rocsparse_int* __restrict__ csr_row_ptr,
-                                                   const rocsparse_int* __restrict__ csr_col_ind,
-                                                   T* __restrict__ csr_val,
-                                                   const rocsparse_int* __restrict__ csr_diag_ind,
-                                                   int* __restrict__ done,
-                                                   const rocsparse_int* __restrict__ map,
-                                                   rocsparse_int* __restrict__ zero_pivot,
-                                                   rocsparse_int* __restrict__ singular_pivot,
-                                                   double               tol,
-                                                   rocsparse_index_base idx_base,
-                                                   int                  boost,
-                                                   U                    boost_tol,
-                                                   T                    boost_val)
-{
-    int lid = hipThreadIdx_x & (WFSIZE - 1);
-    int wid = hipThreadIdx_x / WFSIZE;
+        rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
 
-    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
-
-    // Do not run out of bounds
-    if(idx >= m_)
-    {
-        return;
-    }
-
-    // Current row this wavefront is working on
-    rocsparse_int row = map[idx];
-
-    // Diagonal entry point of the current row
-    rocsparse_int row_diag = csr_diag_ind[row];
-
-    // Row entry point
-    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
-
-    // Loop over column of current row
-    for(rocsparse_int j = row_begin; j < row_diag; ++j)
-    {
-        // Column index currently being processes
-        rocsparse_int local_col = csr_col_ind[j] - idx_base;
-
-        // Corresponding value
-        T local_val = csr_val[j];
-
-        // End of the row that corresponds to local_col
-        rocsparse_int local_end = csr_row_ptr[local_col + 1] - idx_base;
-
-        // Diagonal entry point of row local_col
-        rocsparse_int local_diag = csr_diag_ind[local_col];
-
-        // Structural zero pivot, do not process this row
-        if(local_diag == -1)
+        // Do not run out of bounds
+        if(idx >= m_)
         {
-            local_diag = local_end - 1;
+            return;
         }
 
-        // Spin loop until dependency has been resolved
-        int local_done
-            = __hip_atomic_load(&done[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-        unsigned int times_through = 0;
-        while(!local_done)
-        {
-            if(SLEEP)
-            {
-                for(unsigned int i = 0; i < times_through; ++i)
-                {
-                    __builtin_amdgcn_s_sleep(1);
-                }
+        // Current row this wavefront is working on
+        rocsparse_int row = map[idx];
 
-                if(times_through < 3907)
-                {
-                    ++times_through;
-                }
+        // Diagonal entry point of the current row
+        rocsparse_int row_diag = csr_diag_ind[row];
+
+        // Row entry point
+        rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
+        rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+
+        // Loop over column of current row
+        for(rocsparse_int j = row_begin; j < row_diag; ++j)
+        {
+            // Column index currently being processes
+            rocsparse_int local_col = csr_col_ind[j] - idx_base;
+
+            // Corresponding value
+            T local_val = csr_val[j];
+
+            // End of the row that corresponds to local_col
+            rocsparse_int local_end = csr_row_ptr[local_col + 1] - idx_base;
+
+            // Diagonal entry point of row local_col
+            rocsparse_int local_diag = csr_diag_ind[local_col];
+
+            // Structural zero pivot, do not process this row
+            if(local_diag == -1)
+            {
+                local_diag = local_end - 1;
             }
 
-            local_done
+            // Spin loop until dependency has been resolved
+            int local_done
                 = __hip_atomic_load(&done[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-        }
-
-        // Make sure updated csr_val is visible
-        __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
-
-        // Load diagonal entry
-        T diag_val = csr_val[local_diag];
-
-        if(diag_val == static_cast<T>(0))
-        {
-            // Skip this row if it has a zero pivot
-            break;
-        };
-
-        csr_val[j] = local_val = local_val / diag_val;
-
-        // Loop over the row the current column index depends on
-        // Each lane processes one entry
-        rocsparse_int l = j + 1;
-        for(rocsparse_int k = local_diag + 1 + lid; k < local_end; k += WFSIZE)
-        {
-            // Perform a binary search to find matching columns
-            rocsparse_int r     = row_end - 1;
-            rocsparse_int m     = (r + l) >> 1;
-            rocsparse_int col_j = csr_col_ind[m];
-
-            rocsparse_int col_k = csr_col_ind[k];
-
-            // Binary search
-            while(l < r)
+            unsigned int times_through = 0;
+            while(!local_done)
             {
-                if(col_j < col_k)
+                if(SLEEP)
                 {
-                    l = m + 1;
-                }
-                else
-                {
-                    r = m;
+                    for(unsigned int i = 0; i < times_through; ++i)
+                    {
+                        __builtin_amdgcn_s_sleep(1);
+                    }
+
+                    if(times_through < 3907)
+                    {
+                        ++times_through;
+                    }
                 }
 
-                m     = (r + l) >> 1;
-                col_j = csr_col_ind[m];
+                local_done = __hip_atomic_load(
+                    &done[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
             }
 
-            // Check if a match has been found
-            if(col_j == col_k)
+            // Make sure updated csr_val is visible
+            __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
+
+            // Load diagonal entry
+            T diag_val = csr_val[local_diag];
+
+            if(diag_val == static_cast<T>(0))
             {
-                // If a match has been found, do ILU computation
-                csr_val[l] = rocsparse_fma(-local_val, csr_val[k], csr_val[l]);
-            }
-        }
-    }
-
-    __threadfence_block();
-
-    const bool is_diag = (row_diag >= 0);
-    if(is_diag)
-    {
-        const auto diag_val     = csr_val[row_diag];
-        const auto abs_diag_val = rocsparse_abs(diag_val);
-        if(boost)
-        {
-            const bool is_too_small = (abs_diag_val <= boost_tol);
-
-            if(is_too_small)
-            {
-                if(lid == 0)
-                {
-                    csr_val[row_diag] = boost_val;
-                };
+                // Skip this row if it has a zero pivot
+                break;
             };
+
+            csr_val[j] = local_val = local_val / diag_val;
+
+            // Loop over the row the current column index depends on
+            // Each lane processes one entry
+            rocsparse_int l = j + 1;
+            for(rocsparse_int k = local_diag + 1 + lid; k < local_end; k += WFSIZE)
+            {
+                // Perform a binary search to find matching columns
+                rocsparse_int r     = row_end - 1;
+                rocsparse_int m     = (r + l) >> 1;
+                rocsparse_int col_j = csr_col_ind[m];
+
+                rocsparse_int col_k = csr_col_ind[k];
+
+                // Binary search
+                while(l < r)
+                {
+                    if(col_j < col_k)
+                    {
+                        l = m + 1;
+                    }
+                    else
+                    {
+                        r = m;
+                    }
+
+                    m     = (r + l) >> 1;
+                    col_j = csr_col_ind[m];
+                }
+
+                // Check if a match has been found
+                if(col_j == col_k)
+                {
+                    // If a match has been found, do ILU computation
+                    csr_val[l] = rocsparse_fma(-local_val, csr_val[k], csr_val[l]);
+                }
+            }
         }
-        else
+
+        __threadfence_block();
+
+        const bool is_diag = (row_diag >= 0);
+        if(is_diag)
         {
-
-            const bool is_singular_pivot = (abs_diag_val <= tol);
-            if(is_singular_pivot)
+            const auto diag_val     = csr_val[row_diag];
+            const auto abs_diag_val = rocsparse_abs(diag_val);
+            if(boost)
             {
-                if(lid == 0)
+                const bool is_too_small = (abs_diag_val <= boost_tol);
+
+                if(is_too_small)
                 {
-                    rocsparse_atomic_min(singular_pivot, (row + idx_base));
-                }
+                    if(lid == 0)
+                    {
+                        csr_val[row_diag] = boost_val;
+                    };
+                };
             }
-
-            const bool is_zero_pivot = (diag_val == static_cast<T>(0));
-            if(is_zero_pivot)
+            else
             {
-                if(lid == 0)
+
+                const bool is_singular_pivot = (abs_diag_val <= tol);
+                if(is_singular_pivot)
                 {
-                    rocsparse_atomic_min(zero_pivot, (row + idx_base));
+                    if(lid == 0)
+                    {
+                        rocsparse_atomic_min(singular_pivot, (row + idx_base));
+                    }
+                }
+
+                const bool is_zero_pivot = (diag_val == static_cast<T>(0));
+                if(is_zero_pivot)
+                {
+                    if(lid == 0)
+                    {
+                        rocsparse_atomic_min(zero_pivot, (row + idx_base));
+                    }
                 }
             }
         }
-    }
 
-    // Make sure updated csr_val is written to global memory
-    __threadfence();
+        // Make sure updated csr_val is written to global memory
+        __threadfence();
 
-    if(lid == 0)
-    {
-        // First lane writes "we are done" flag
-        __hip_atomic_store(&done[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
+        if(lid == 0)
+        {
+            // First lane writes "we are done" flag
+            __hip_atomic_store(&done[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);
+        }
     }
 }
