@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_bsrgemm_calc.hpp"
 #include "../conversion/rocsparse_identity.hpp"
 #include "bsrgemm_device.h"
 #include "csrgemm_device.h"
@@ -37,18 +38,148 @@
 #define BSRGEMM_NNZ_HASH 79
 #define BSRGEMM_FLL_HASH 137
 
-template <unsigned int BLOCKSIZE,
-          unsigned int WF_SIZE,
-          unsigned int HASHSIZE,
-          unsigned int HASHVAL,
-          typename I,
-          typename J,
-          typename T,
-          typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void bsrgemm_fill_wf_per_row_2x2(rocsparse_direction dir,
+namespace rocsparse
+{
+    template <unsigned int BLOCKSIZE,
+              unsigned int WF_SIZE,
+              unsigned int HASHSIZE,
+              unsigned int HASHVAL,
+              typename I,
+              typename J,
+              typename T,
+              typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void bsrgemm_fill_wf_per_row_2x2(rocsparse_direction dir,
+                                     J                   mb,
+                                     J                   nkb,
+                                     const J* __restrict__ offset,
+                                     const J* __restrict__ perm,
+                                     U alpha_device_host,
+                                     const I* __restrict__ bsr_row_ptr_A,
+                                     const J* __restrict__ bsr_col_ind_A,
+                                     const T* __restrict__ bsr_val_A,
+                                     const I* __restrict__ bsr_row_ptr_B,
+                                     const J* __restrict__ bsr_col_ind_B,
+                                     const T* __restrict__ bsr_val_B,
+                                     U beta_device_host,
+                                     const I* __restrict__ bsr_row_ptr_D,
+                                     const J* __restrict__ bsr_col_ind_D,
+                                     const T* __restrict__ bsr_val_D,
+                                     const I* __restrict__ bsr_row_ptr_C,
+                                     J* __restrict__ bsr_col_ind_C,
+                                     T* __restrict__ bsr_val_C,
+                                     rocsparse_index_base idx_base_A,
+                                     rocsparse_index_base idx_base_B,
+                                     rocsparse_index_base idx_base_C,
+                                     rocsparse_index_base idx_base_D,
+                                     bool                 mul,
+                                     bool                 add)
+    {
+        rocsparse::bsrgemm_fill_wf_per_row_2x2_device<BLOCKSIZE, WF_SIZE, HASHSIZE, HASHVAL>(
+            dir,
+            mb,
+            nkb,
+            offset,
+            perm,
+            (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
+            bsr_row_ptr_A,
+            bsr_col_ind_A,
+            bsr_val_A,
+            bsr_row_ptr_B,
+            bsr_col_ind_B,
+            bsr_val_B,
+            (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
+            bsr_row_ptr_D,
+            bsr_col_ind_D,
+            bsr_val_D,
+            bsr_row_ptr_C,
+            bsr_col_ind_C,
+            bsr_val_C,
+            idx_base_A,
+            idx_base_B,
+            idx_base_C,
+            idx_base_D,
+            mul,
+            add);
+    }
+
+    template <unsigned int BLOCKSIZE,
+              unsigned int WFSIZE,
+              unsigned int HASHSIZE,
+              unsigned int HASHVAL,
+              typename I,
+              typename J,
+              typename T,
+              typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void bsrgemm_fill_block_per_row_2x2(rocsparse_direction dir,
+                                        J                   mb,
+                                        J                   nkb,
+                                        const J* __restrict__ offset,
+                                        const J* __restrict__ perm,
+                                        U alpha_device_host,
+                                        const I* __restrict__ bsr_row_ptr_A,
+                                        const J* __restrict__ bsr_col_ind_A,
+                                        const T* __restrict__ bsr_val_A,
+                                        const I* __restrict__ bsr_row_ptr_B,
+                                        const J* __restrict__ bsr_col_ind_B,
+                                        const T* __restrict__ bsr_val_B,
+                                        U beta_device_host,
+                                        const I* __restrict__ bsr_row_ptr_D,
+                                        const J* __restrict__ bsr_col_ind_D,
+                                        const T* __restrict__ bsr_val_D,
+                                        const I* __restrict__ bsr_row_ptr_C,
+                                        J* __restrict__ bsr_col_ind_C,
+                                        T* __restrict__ bsr_val_C,
+                                        rocsparse_index_base idx_base_A,
+                                        rocsparse_index_base idx_base_B,
+                                        rocsparse_index_base idx_base_C,
+                                        rocsparse_index_base idx_base_D,
+                                        bool                 mul,
+                                        bool                 add)
+    {
+        rocsparse::bsrgemm_fill_block_per_row_2x2_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
+            dir,
+            mb,
+            nkb,
+            offset,
+            perm,
+            (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
+            bsr_row_ptr_A,
+            bsr_col_ind_A,
+            bsr_val_A,
+            bsr_row_ptr_B,
+            bsr_col_ind_B,
+            bsr_val_B,
+            (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
+            bsr_row_ptr_D,
+            bsr_col_ind_D,
+            bsr_val_D,
+            bsr_row_ptr_C,
+            bsr_col_ind_C,
+            bsr_val_C,
+            idx_base_A,
+            idx_base_B,
+            idx_base_C,
+            idx_base_D,
+            mul,
+            add);
+    }
+
+    template <unsigned int BLOCKSIZE,
+              unsigned int WF_SIZE,
+              unsigned int HASHSIZE,
+              unsigned int HASHVAL,
+              unsigned int BLOCKDIM,
+              typename I,
+              typename J,
+              typename T,
+              typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void bsrgemm_fill_wf_per_row(rocsparse_direction dir,
                                  J                   mb,
                                  J                   nkb,
+                                 J                   block_dim,
                                  const J* __restrict__ offset,
                                  const J* __restrict__ perm,
                                  U alpha_device_host,
@@ -71,47 +202,49 @@ void bsrgemm_fill_wf_per_row_2x2(rocsparse_direction dir,
                                  rocsparse_index_base idx_base_D,
                                  bool                 mul,
                                  bool                 add)
-{
-    bsrgemm_fill_wf_per_row_2x2_device<BLOCKSIZE, WF_SIZE, HASHSIZE, HASHVAL>(
-        dir,
-        mb,
-        nkb,
-        offset,
-        perm,
-        (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
-        bsr_row_ptr_A,
-        bsr_col_ind_A,
-        bsr_val_A,
-        bsr_row_ptr_B,
-        bsr_col_ind_B,
-        bsr_val_B,
-        (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
-        bsr_row_ptr_D,
-        bsr_col_ind_D,
-        bsr_val_D,
-        bsr_row_ptr_C,
-        bsr_col_ind_C,
-        bsr_val_C,
-        idx_base_A,
-        idx_base_B,
-        idx_base_C,
-        idx_base_D,
-        mul,
-        add);
-}
+    {
+        rocsparse::bsrgemm_fill_wf_per_row_device<BLOCKSIZE, WF_SIZE, HASHSIZE, HASHVAL, BLOCKDIM>(
+            dir,
+            mb,
+            nkb,
+            block_dim,
+            offset,
+            perm,
+            (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
+            bsr_row_ptr_A,
+            bsr_col_ind_A,
+            bsr_val_A,
+            bsr_row_ptr_B,
+            bsr_col_ind_B,
+            bsr_val_B,
+            (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
+            bsr_row_ptr_D,
+            bsr_col_ind_D,
+            bsr_val_D,
+            bsr_row_ptr_C,
+            bsr_col_ind_C,
+            bsr_val_C,
+            idx_base_A,
+            idx_base_B,
+            idx_base_C,
+            idx_base_D,
+            mul,
+            add);
+    }
 
-template <unsigned int BLOCKSIZE,
-          unsigned int WFSIZE,
-          unsigned int HASHSIZE,
-          unsigned int HASHVAL,
-          typename I,
-          typename J,
-          typename T,
-          typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void bsrgemm_fill_block_per_row_2x2(rocsparse_direction dir,
+    template <unsigned int BLOCKSIZE,
+              unsigned int HASHSIZE,
+              unsigned int HASHVAL,
+              unsigned int BLOCKDIM,
+              typename I,
+              typename J,
+              typename T,
+              typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void bsrgemm_fill_block_per_row(rocsparse_direction dir,
                                     J                   mb,
                                     J                   nkb,
+                                    J                   block_dim,
                                     const J* __restrict__ offset,
                                     const J* __restrict__ perm,
                                     U alpha_device_host,
@@ -134,1289 +267,1531 @@ void bsrgemm_fill_block_per_row_2x2(rocsparse_direction dir,
                                     rocsparse_index_base idx_base_D,
                                     bool                 mul,
                                     bool                 add)
-{
-    bsrgemm_fill_block_per_row_2x2_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
-        dir,
-        mb,
-        nkb,
-        offset,
-        perm,
-        (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
-        bsr_row_ptr_A,
-        bsr_col_ind_A,
-        bsr_val_A,
-        bsr_row_ptr_B,
-        bsr_col_ind_B,
-        bsr_val_B,
-        (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
-        bsr_row_ptr_D,
-        bsr_col_ind_D,
-        bsr_val_D,
-        bsr_row_ptr_C,
-        bsr_col_ind_C,
-        bsr_val_C,
-        idx_base_A,
-        idx_base_B,
-        idx_base_C,
-        idx_base_D,
-        mul,
-        add);
-}
+    {
+        rocsparse::bsrgemm_fill_block_per_row_device<BLOCKSIZE, HASHSIZE, HASHVAL, BLOCKDIM>(
+            dir,
+            mb,
+            nkb,
+            block_dim,
+            offset,
+            perm,
+            (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
+            bsr_row_ptr_A,
+            bsr_col_ind_A,
+            bsr_val_A,
+            bsr_row_ptr_B,
+            bsr_col_ind_B,
+            bsr_val_B,
+            (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
+            bsr_row_ptr_D,
+            bsr_col_ind_D,
+            bsr_val_D,
+            bsr_row_ptr_C,
+            bsr_col_ind_C,
+            bsr_val_C,
+            idx_base_A,
+            idx_base_B,
+            idx_base_C,
+            idx_base_D,
+            mul,
+            add);
+    }
 
-template <unsigned int BLOCKSIZE,
-          unsigned int WF_SIZE,
-          unsigned int HASHSIZE,
-          unsigned int HASHVAL,
-          unsigned int BLOCKDIM,
-          typename I,
-          typename J,
-          typename T,
-          typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void bsrgemm_fill_wf_per_row(rocsparse_direction dir,
-                             J                   mb,
-                             J                   nkb,
-                             J                   block_dim,
-                             const J* __restrict__ offset,
-                             const J* __restrict__ perm,
-                             U alpha_device_host,
-                             const I* __restrict__ bsr_row_ptr_A,
-                             const J* __restrict__ bsr_col_ind_A,
-                             const T* __restrict__ bsr_val_A,
-                             const I* __restrict__ bsr_row_ptr_B,
-                             const J* __restrict__ bsr_col_ind_B,
-                             const T* __restrict__ bsr_val_B,
-                             U beta_device_host,
-                             const I* __restrict__ bsr_row_ptr_D,
-                             const J* __restrict__ bsr_col_ind_D,
-                             const T* __restrict__ bsr_val_D,
-                             const I* __restrict__ bsr_row_ptr_C,
-                             J* __restrict__ bsr_col_ind_C,
-                             T* __restrict__ bsr_val_C,
-                             rocsparse_index_base idx_base_A,
-                             rocsparse_index_base idx_base_B,
-                             rocsparse_index_base idx_base_C,
-                             rocsparse_index_base idx_base_D,
-                             bool                 mul,
-                             bool                 add)
-{
-    bsrgemm_fill_wf_per_row_device<BLOCKSIZE, WF_SIZE, HASHSIZE, HASHVAL, BLOCKDIM>(
-        dir,
-        mb,
-        nkb,
-        block_dim,
-        offset,
-        perm,
-        (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
-        bsr_row_ptr_A,
-        bsr_col_ind_A,
-        bsr_val_A,
-        bsr_row_ptr_B,
-        bsr_col_ind_B,
-        bsr_val_B,
-        (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
-        bsr_row_ptr_D,
-        bsr_col_ind_D,
-        bsr_val_D,
-        bsr_row_ptr_C,
-        bsr_col_ind_C,
-        bsr_val_C,
-        idx_base_A,
-        idx_base_B,
-        idx_base_C,
-        idx_base_D,
-        mul,
-        add);
-}
+    template <unsigned int BLOCKSIZE,
+              unsigned int CHUNKSIZE,
+              unsigned int BLOCKDIM,
+              typename I,
+              typename J,
+              typename T,
+              typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void bsrgemm_block_per_row_atomic_multipass(rocsparse_direction dir,
+                                                J                   nb,
+                                                J                   block_dim,
+                                                const J* __restrict__ offset,
+                                                const J* __restrict__ perm,
+                                                U alpha_device_host,
+                                                const I* __restrict__ bsr_row_ptr_A,
+                                                const J* __restrict__ bsr_col_ind_A,
+                                                const T* __restrict__ bsr_val_A,
+                                                const I* __restrict__ bsr_row_ptr_B,
+                                                const J* __restrict__ bsr_col_ind_B,
+                                                const T* __restrict__ bsr_val_B,
+                                                U beta_device_host,
+                                                const I* __restrict__ bsr_row_ptr_D,
+                                                const J* __restrict__ bsr_col_ind_D,
+                                                const T* __restrict__ bsr_val_D,
+                                                const I* __restrict__ bsr_row_ptr_C,
+                                                J* __restrict__ bsr_col_ind_C,
+                                                T* __restrict__ bsr_val_C,
+                                                I* __restrict__ workspace_B,
+                                                rocsparse_index_base idx_base_A,
+                                                rocsparse_index_base idx_base_B,
+                                                rocsparse_index_base idx_base_C,
+                                                rocsparse_index_base idx_base_D,
+                                                bool                 mul,
+                                                bool                 add)
+    {
+        rocsparse::bsrgemm_block_per_row_atomic_multipass_device<BLOCKSIZE, CHUNKSIZE, BLOCKDIM>(
+            dir,
+            nb,
+            block_dim,
+            offset,
+            perm,
+            (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
+            bsr_row_ptr_A,
+            bsr_col_ind_A,
+            bsr_val_A,
+            bsr_row_ptr_B,
+            bsr_col_ind_B,
+            bsr_val_B,
+            (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
+            bsr_row_ptr_D,
+            bsr_col_ind_D,
+            bsr_val_D,
+            bsr_row_ptr_C,
+            bsr_col_ind_C,
+            bsr_val_C,
+            workspace_B,
+            idx_base_A,
+            idx_base_B,
+            idx_base_C,
+            idx_base_D,
+            mul,
+            add);
+    }
 
-template <unsigned int BLOCKSIZE,
-          unsigned int HASHSIZE,
-          unsigned int HASHVAL,
-          unsigned int BLOCKDIM,
-          typename I,
-          typename J,
-          typename T,
-          typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void bsrgemm_fill_block_per_row(rocsparse_direction dir,
-                                J                   mb,
-                                J                   nkb,
-                                J                   block_dim,
-                                const J* __restrict__ offset,
-                                const J* __restrict__ perm,
-                                U alpha_device_host,
-                                const I* __restrict__ bsr_row_ptr_A,
-                                const J* __restrict__ bsr_col_ind_A,
-                                const T* __restrict__ bsr_val_A,
-                                const I* __restrict__ bsr_row_ptr_B,
-                                const J* __restrict__ bsr_col_ind_B,
-                                const T* __restrict__ bsr_val_B,
-                                U beta_device_host,
-                                const I* __restrict__ bsr_row_ptr_D,
-                                const J* __restrict__ bsr_col_ind_D,
-                                const T* __restrict__ bsr_val_D,
-                                const I* __restrict__ bsr_row_ptr_C,
-                                J* __restrict__ bsr_col_ind_C,
-                                T* __restrict__ bsr_val_C,
-                                rocsparse_index_base idx_base_A,
-                                rocsparse_index_base idx_base_B,
-                                rocsparse_index_base idx_base_C,
-                                rocsparse_index_base idx_base_D,
-                                bool                 mul,
-                                bool                 add)
-{
-    bsrgemm_fill_block_per_row_device<BLOCKSIZE, HASHSIZE, HASHVAL, BLOCKDIM>(
-        dir,
-        mb,
-        nkb,
-        block_dim,
-        offset,
-        perm,
-        (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
-        bsr_row_ptr_A,
-        bsr_col_ind_A,
-        bsr_val_A,
-        bsr_row_ptr_B,
-        bsr_col_ind_B,
-        bsr_val_B,
-        (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
-        bsr_row_ptr_D,
-        bsr_col_ind_D,
-        bsr_val_D,
-        bsr_row_ptr_C,
-        bsr_col_ind_C,
-        bsr_val_C,
-        idx_base_A,
-        idx_base_B,
-        idx_base_C,
-        idx_base_D,
-        mul,
-        add);
-}
+    template <unsigned int BLOCKSIZE,
+              unsigned int CHUNKSIZE,
+              unsigned int BLOCKDIM,
+              typename I,
+              typename J,
+              typename T,
+              typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void bsrgemm_block_per_row_multipass(rocsparse_direction dir,
+                                         J                   nb,
+                                         J                   block_dim,
+                                         const J* __restrict__ offset,
+                                         const J* __restrict__ perm,
+                                         U alpha_device_host,
+                                         const I* __restrict__ bsr_row_ptr_A,
+                                         const J* __restrict__ bsr_col_ind_A,
+                                         const T* __restrict__ bsr_val_A,
+                                         const I* __restrict__ bsr_row_ptr_B,
+                                         const J* __restrict__ bsr_col_ind_B,
+                                         const T* __restrict__ bsr_val_B,
+                                         U beta_device_host,
+                                         const I* __restrict__ bsr_row_ptr_D,
+                                         const J* __restrict__ bsr_col_ind_D,
+                                         const T* __restrict__ bsr_val_D,
+                                         const I* __restrict__ bsr_row_ptr_C,
+                                         J* __restrict__ bsr_col_ind_C,
+                                         T* __restrict__ bsr_val_C,
+                                         I* __restrict__ workspace_B,
+                                         rocsparse_index_base idx_base_A,
+                                         rocsparse_index_base idx_base_B,
+                                         rocsparse_index_base idx_base_C,
+                                         rocsparse_index_base idx_base_D,
+                                         bool                 mul,
+                                         bool                 add)
+    {
+        rocsparse::bsrgemm_block_per_row_multipass_device<BLOCKSIZE, CHUNKSIZE, BLOCKDIM>(
+            dir,
+            nb,
+            block_dim,
+            offset,
+            perm,
+            (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
+            bsr_row_ptr_A,
+            bsr_col_ind_A,
+            bsr_val_A,
+            bsr_row_ptr_B,
+            bsr_col_ind_B,
+            bsr_val_B,
+            (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
+            bsr_row_ptr_D,
+            bsr_col_ind_D,
+            bsr_val_D,
+            bsr_row_ptr_C,
+            bsr_col_ind_C,
+            bsr_val_C,
+            workspace_B,
+            idx_base_A,
+            idx_base_B,
+            idx_base_C,
+            idx_base_D,
+            mul,
+            add);
+    }
 
-template <unsigned int BLOCKSIZE,
-          unsigned int CHUNKSIZE,
-          unsigned int BLOCKDIM,
-          typename I,
-          typename J,
-          typename T,
-          typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void bsrgemm_block_per_row_atomic_multipass(rocsparse_direction dir,
-                                            J                   nb,
-                                            J                   block_dim,
-                                            const J* __restrict__ offset,
-                                            const J* __restrict__ perm,
-                                            U alpha_device_host,
-                                            const I* __restrict__ bsr_row_ptr_A,
-                                            const J* __restrict__ bsr_col_ind_A,
-                                            const T* __restrict__ bsr_val_A,
-                                            const I* __restrict__ bsr_row_ptr_B,
-                                            const J* __restrict__ bsr_col_ind_B,
-                                            const T* __restrict__ bsr_val_B,
-                                            U beta_device_host,
-                                            const I* __restrict__ bsr_row_ptr_D,
-                                            const J* __restrict__ bsr_col_ind_D,
-                                            const T* __restrict__ bsr_val_D,
-                                            const I* __restrict__ bsr_row_ptr_C,
-                                            J* __restrict__ bsr_col_ind_C,
-                                            T* __restrict__ bsr_val_C,
-                                            I* __restrict__ workspace_B,
-                                            rocsparse_index_base idx_base_A,
-                                            rocsparse_index_base idx_base_B,
-                                            rocsparse_index_base idx_base_C,
-                                            rocsparse_index_base idx_base_D,
-                                            bool                 mul,
-                                            bool                 add)
-{
-    bsrgemm_block_per_row_atomic_multipass_device<BLOCKSIZE, CHUNKSIZE, BLOCKDIM>(
-        dir,
-        nb,
-        block_dim,
-        offset,
-        perm,
-        (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
-        bsr_row_ptr_A,
-        bsr_col_ind_A,
-        bsr_val_A,
-        bsr_row_ptr_B,
-        bsr_col_ind_B,
-        bsr_val_B,
-        (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
-        bsr_row_ptr_D,
-        bsr_col_ind_D,
-        bsr_val_D,
-        bsr_row_ptr_C,
-        bsr_col_ind_C,
-        bsr_val_C,
-        workspace_B,
-        idx_base_A,
-        idx_base_B,
-        idx_base_C,
-        idx_base_D,
-        mul,
-        add);
-}
+    template <typename I,
+              typename J,
+              typename T,
+              typename U,
+              typename std::enable_if<std::is_same<T, rocsparse_double_complex>::value, int>::type
+              = 0>
+    static inline rocsparse_status bsrgemm_2x2_group_6_launcher(rocsparse_handle    handle,
+                                                                rocsparse_direction dir,
+                                                                J                   group_size,
+                                                                const J*            group_offset,
+                                                                const J*            perm,
+                                                                J                   mb,
+                                                                J                   nb,
+                                                                J                   kb,
+                                                                U        alpha_device_host,
+                                                                const I* bsr_row_ptr_A,
+                                                                const J* bsr_col_ind_A,
+                                                                const T* bsr_val_A,
+                                                                const I* bsr_row_ptr_B,
+                                                                const J* bsr_col_ind_B,
+                                                                const T* bsr_val_B,
+                                                                U        beta_device_host,
+                                                                const I* bsr_row_ptr_D,
+                                                                const J* bsr_col_ind_D,
+                                                                const T* bsr_val_D,
+                                                                const I* bsr_row_ptr_C,
+                                                                J*       bsr_col_ind_C,
+                                                                T*       bsr_val_C,
+                                                                rocsparse_index_base base_A,
+                                                                rocsparse_index_base base_B,
+                                                                rocsparse_index_base base_C,
+                                                                rocsparse_index_base base_D,
+                                                                bool                 mul,
+                                                                bool                 add)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+    }
 
-template <unsigned int BLOCKSIZE,
-          unsigned int CHUNKSIZE,
-          unsigned int BLOCKDIM,
-          typename I,
-          typename J,
-          typename T,
-          typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void bsrgemm_block_per_row_multipass(rocsparse_direction dir,
-                                     J                   nb,
-                                     J                   block_dim,
-                                     const J* __restrict__ offset,
-                                     const J* __restrict__ perm,
-                                     U alpha_device_host,
-                                     const I* __restrict__ bsr_row_ptr_A,
-                                     const J* __restrict__ bsr_col_ind_A,
-                                     const T* __restrict__ bsr_val_A,
-                                     const I* __restrict__ bsr_row_ptr_B,
-                                     const J* __restrict__ bsr_col_ind_B,
-                                     const T* __restrict__ bsr_val_B,
-                                     U beta_device_host,
-                                     const I* __restrict__ bsr_row_ptr_D,
-                                     const J* __restrict__ bsr_col_ind_D,
-                                     const T* __restrict__ bsr_val_D,
-                                     const I* __restrict__ bsr_row_ptr_C,
-                                     J* __restrict__ bsr_col_ind_C,
-                                     T* __restrict__ bsr_val_C,
-                                     I* __restrict__ workspace_B,
-                                     rocsparse_index_base idx_base_A,
-                                     rocsparse_index_base idx_base_B,
-                                     rocsparse_index_base idx_base_C,
-                                     rocsparse_index_base idx_base_D,
-                                     bool                 mul,
-                                     bool                 add)
-{
-    bsrgemm_block_per_row_multipass_device<BLOCKSIZE, CHUNKSIZE, BLOCKDIM>(
-        dir,
-        nb,
-        block_dim,
-        offset,
-        perm,
-        (mul == true) ? load_scalar_device_host(alpha_device_host) : static_cast<T>(0),
-        bsr_row_ptr_A,
-        bsr_col_ind_A,
-        bsr_val_A,
-        bsr_row_ptr_B,
-        bsr_col_ind_B,
-        bsr_val_B,
-        (add == true) ? load_scalar_device_host(beta_device_host) : static_cast<T>(0),
-        bsr_row_ptr_D,
-        bsr_col_ind_D,
-        bsr_val_D,
-        bsr_row_ptr_C,
-        bsr_col_ind_C,
-        bsr_val_C,
-        workspace_B,
-        idx_base_A,
-        idx_base_B,
-        idx_base_C,
-        idx_base_D,
-        mul,
-        add);
-}
-
-template <typename I,
-          typename J,
-          typename T,
-          typename U,
-          typename std::enable_if<std::is_same<T, rocsparse_double_complex>::value, int>::type = 0>
-static inline rocsparse_status bsrgemm_2x2_group_6_launcher(rocsparse_handle     handle,
-                                                            rocsparse_direction  dir,
-                                                            J                    group_size,
-                                                            const J*             group_offset,
-                                                            const J*             perm,
-                                                            J                    mb,
-                                                            J                    nb,
-                                                            J                    kb,
-                                                            U                    alpha_device_host,
-                                                            const I*             bsr_row_ptr_A,
-                                                            const J*             bsr_col_ind_A,
-                                                            const T*             bsr_val_A,
-                                                            const I*             bsr_row_ptr_B,
-                                                            const J*             bsr_col_ind_B,
-                                                            const T*             bsr_val_B,
-                                                            U                    beta_device_host,
-                                                            const I*             bsr_row_ptr_D,
-                                                            const J*             bsr_col_ind_D,
-                                                            const T*             bsr_val_D,
-                                                            const I*             bsr_row_ptr_C,
-                                                            J*                   bsr_col_ind_C,
-                                                            T*                   bsr_val_C,
-                                                            rocsparse_index_base base_A,
-                                                            rocsparse_index_base base_B,
-                                                            rocsparse_index_base base_C,
-                                                            rocsparse_index_base base_D,
-                                                            bool                 mul,
-                                                            bool                 add)
-{
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-}
-
-template <typename I,
-          typename J,
-          typename T,
-          typename U,
-          typename std::enable_if<std::is_same<T, float>::value || std::is_same<T, double>::value
-                                      || std::is_same<T, rocsparse_float_complex>::value,
-                                  int>::type
-          = 0>
-static inline rocsparse_status bsrgemm_2x2_group_6_launcher(rocsparse_handle     handle,
-                                                            rocsparse_direction  dir,
-                                                            J                    group_size,
-                                                            const J*             group_offset,
-                                                            const J*             perm,
-                                                            J                    mb,
-                                                            J                    nb,
-                                                            J                    kb,
-                                                            U                    alpha_device_host,
-                                                            const I*             bsr_row_ptr_A,
-                                                            const J*             bsr_col_ind_A,
-                                                            const T*             bsr_val_A,
-                                                            const I*             bsr_row_ptr_B,
-                                                            const J*             bsr_col_ind_B,
-                                                            const T*             bsr_val_B,
-                                                            U                    beta_device_host,
-                                                            const I*             bsr_row_ptr_D,
-                                                            const J*             bsr_col_ind_D,
-                                                            const T*             bsr_val_D,
-                                                            const I*             bsr_row_ptr_C,
-                                                            J*                   bsr_col_ind_C,
-                                                            T*                   bsr_val_C,
-                                                            rocsparse_index_base base_A,
-                                                            rocsparse_index_base base_B,
-                                                            rocsparse_index_base base_C,
-                                                            rocsparse_index_base base_D,
-                                                            bool                 mul,
-                                                            bool                 add)
-{
+    template <
+        typename I,
+        typename J,
+        typename T,
+        typename U,
+        typename std::enable_if<std::is_same<T, float>::value || std::is_same<T, double>::value
+                                    || std::is_same<T, rocsparse_float_complex>::value,
+                                int>::type
+        = 0>
+    static inline rocsparse_status bsrgemm_2x2_group_6_launcher(rocsparse_handle    handle,
+                                                                rocsparse_direction dir,
+                                                                J                   group_size,
+                                                                const J*            group_offset,
+                                                                const J*            perm,
+                                                                J                   mb,
+                                                                J                   nb,
+                                                                J                   kb,
+                                                                U        alpha_device_host,
+                                                                const I* bsr_row_ptr_A,
+                                                                const J* bsr_col_ind_A,
+                                                                const T* bsr_val_A,
+                                                                const I* bsr_row_ptr_B,
+                                                                const J* bsr_col_ind_B,
+                                                                const T* bsr_val_B,
+                                                                U        beta_device_host,
+                                                                const I* bsr_row_ptr_D,
+                                                                const J* bsr_col_ind_D,
+                                                                const T* bsr_val_D,
+                                                                const I* bsr_row_ptr_C,
+                                                                J*       bsr_col_ind_C,
+                                                                T*       bsr_val_C,
+                                                                rocsparse_index_base base_A,
+                                                                rocsparse_index_base base_B,
+                                                                rocsparse_index_base base_C,
+                                                                rocsparse_index_base base_D,
+                                                                bool                 mul,
+                                                                bool                 add)
+    {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_HASHSIZE 512
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-        (bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE, 16, BSRGEMM_HASHSIZE, BSRGEMM_FLL_HASH>),
-        dim3(group_size),
-        dim3(BSRGEMM_BLOCKSIZE),
-        0,
-        handle->stream,
-        dir,
-        group_size,
-        std::max(kb, nb),
-        group_offset,
-        perm,
-        alpha_device_host,
-        bsr_row_ptr_A,
-        bsr_col_ind_A,
-        bsr_val_A,
-        bsr_row_ptr_B,
-        bsr_col_ind_B,
-        bsr_val_B,
-        beta_device_host,
-        bsr_row_ptr_D,
-        bsr_col_ind_D,
-        bsr_val_D,
-        bsr_row_ptr_C,
-        bsr_col_ind_C,
-        bsr_val_C,
-        base_A,
-        base_B,
-        base_C,
-        base_D,
-        mul,
-        add);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (rocsparse::bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                                       16,
+                                                       BSRGEMM_HASHSIZE,
+                                                       BSRGEMM_FLL_HASH>),
+            dim3(group_size),
+            dim3(BSRGEMM_BLOCKSIZE),
+            0,
+            handle->stream,
+            dir,
+            group_size,
+            std::max(kb, nb),
+            group_offset,
+            perm,
+            alpha_device_host,
+            bsr_row_ptr_A,
+            bsr_col_ind_A,
+            bsr_val_A,
+            bsr_row_ptr_B,
+            bsr_col_ind_B,
+            bsr_val_B,
+            beta_device_host,
+            bsr_row_ptr_D,
+            bsr_col_ind_D,
+            bsr_val_D,
+            bsr_row_ptr_C,
+            bsr_col_ind_C,
+            bsr_val_C,
+            base_A,
+            base_B,
+            base_C,
+            base_D,
+            mul,
+            add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_HASHSIZE
 
-    return rocsparse_status_success;
-}
+        return rocsparse_status_success;
+    }
 
-template <typename I, typename J, typename T, typename U>
-static inline rocsparse_status
-    rocsparse_bsrgemm_calc_2x2_template(rocsparse_handle          handle,
-                                        rocsparse_direction       dir,
-                                        rocsparse_operation       trans_A,
-                                        rocsparse_operation       trans_B,
-                                        J                         mb,
-                                        J                         nb,
-                                        J                         kb,
-                                        J                         block_dim,
-                                        U                         alpha_device_host,
-                                        const rocsparse_mat_descr descr_A,
-                                        I                         nnzb_A,
-                                        const T*                  bsr_val_A,
-                                        const I*                  bsr_row_ptr_A,
-                                        const J*                  bsr_col_ind_A,
-                                        const rocsparse_mat_descr descr_B,
-                                        I                         nnzb_B,
-                                        const T*                  bsr_val_B,
-                                        const I*                  bsr_row_ptr_B,
-                                        const J*                  bsr_col_ind_B,
-                                        U                         beta_device_host,
-                                        const rocsparse_mat_descr descr_D,
-                                        I                         nnzb_D,
-                                        const T*                  bsr_val_D,
-                                        const I*                  bsr_row_ptr_D,
-                                        const J*                  bsr_col_ind_D,
-                                        const rocsparse_mat_descr descr_C,
-                                        T*                        bsr_val_C,
-                                        const I*                  bsr_row_ptr_C,
-                                        J*                        bsr_col_ind_C,
-                                        const rocsparse_mat_info  info_C,
-                                        J*                        group_size,
-                                        J*                        group_offset,
-                                        J*                        perm,
-                                        I*                        workspace)
-{
-    // Stream
-    hipStream_t stream = handle->stream;
-
-    // Index base
-    rocsparse_index_base base_A
-        = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
-    rocsparse_index_base base_B
-        = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
-    rocsparse_index_base base_D
-        = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
-
-    // Compute columns and accumulate values for each group
-    // Group 0: 0 - 8 non-zeros per row
-    if(group_size[0] > 0)
+    template <typename I, typename J, typename T, typename U>
+    static inline rocsparse_status bsrgemm_calc_2x2_template(rocsparse_handle    handle,
+                                                             rocsparse_direction dir,
+                                                             rocsparse_operation trans_A,
+                                                             rocsparse_operation trans_B,
+                                                             J                   mb,
+                                                             J                   nb,
+                                                             J                   kb,
+                                                             J                   block_dim,
+                                                             U                   alpha_device_host,
+                                                             const rocsparse_mat_descr descr_A,
+                                                             I                         nnzb_A,
+                                                             const T*                  bsr_val_A,
+                                                             const I* bsr_row_ptr_A,
+                                                             const J* bsr_col_ind_A,
+                                                             const rocsparse_mat_descr descr_B,
+                                                             I                         nnzb_B,
+                                                             const T*                  bsr_val_B,
+                                                             const I* bsr_row_ptr_B,
+                                                             const J* bsr_col_ind_B,
+                                                             U        beta_device_host,
+                                                             const rocsparse_mat_descr descr_D,
+                                                             I                         nnzb_D,
+                                                             const T*                  bsr_val_D,
+                                                             const I* bsr_row_ptr_D,
+                                                             const J* bsr_col_ind_D,
+                                                             const rocsparse_mat_descr descr_C,
+                                                             T*                        bsr_val_C,
+                                                             const I*                 bsr_row_ptr_C,
+                                                             J*                       bsr_col_ind_C,
+                                                             const rocsparse_mat_info info_C,
+                                                             J*                       group_size,
+                                                             J*                       group_offset,
+                                                             J*                       perm,
+                                                             I*                       workspace)
     {
+        // Stream
+        hipStream_t stream = handle->stream;
+
+        // Index base
+        rocsparse_index_base base_A
+            = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
+        rocsparse_index_base base_B
+            = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
+        rocsparse_index_base base_D
+            = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
+
+        // Compute columns and accumulate values for each group
+        // Group 0: 0 - 8 non-zeros per row
+        if(group_size[0] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 16
 #define BSRGEMM_HASHSIZE 8
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                         BSRGEMM_WFSIZE,
-                                         BSRGEMM_HASHSIZE,
-                                         BSRGEMM_FLL_HASH>),
-            dim3((BSRGEMM_WFSIZE * (int64_t)group_size[0] - 1) / 256 + 1),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            group_size[0],
-            std::max(kb, nb),
-            &group_offset[0],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                                        BSRGEMM_WFSIZE,
+                                                        BSRGEMM_HASHSIZE,
+                                                        BSRGEMM_FLL_HASH>),
+                dim3((BSRGEMM_WFSIZE * (int64_t)group_size[0] - 1) / 256 + 1),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                group_size[0],
+                std::max(kb, nb),
+                &group_offset[0],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_WFSIZE
 #undef BSRGEMM_HASHSIZE
-    }
+        }
 
-    // Group 1: 9 - 16 non-zeros per row
-    if(group_size[1] > 0)
-    {
+        // Group 1: 9 - 16 non-zeros per row
+        if(group_size[1] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 16
 #define BSRGEMM_HASHSIZE 16
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                         BSRGEMM_WFSIZE,
-                                         BSRGEMM_HASHSIZE,
-                                         BSRGEMM_FLL_HASH>),
-            dim3((BSRGEMM_WFSIZE * (int64_t)group_size[1] - 1) / 256 + 1),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            group_size[1],
-            std::max(kb, nb),
-            &group_offset[1],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                                        BSRGEMM_WFSIZE,
+                                                        BSRGEMM_HASHSIZE,
+                                                        BSRGEMM_FLL_HASH>),
+                dim3((BSRGEMM_WFSIZE * (int64_t)group_size[1] - 1) / 256 + 1),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                group_size[1],
+                std::max(kb, nb),
+                &group_offset[1],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_WFSIZE
 #undef BSRGEMM_HASHSIZE
-    }
+        }
 
-    // Group 2: 17 - 32 non-zeros per row
-    if(group_size[2] > 0)
-    {
+        // Group 2: 17 - 32 non-zeros per row
+        if(group_size[2] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 16
 #define BSRGEMM_HASHSIZE 32
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                         BSRGEMM_WFSIZE,
-                                         BSRGEMM_HASHSIZE,
-                                         BSRGEMM_FLL_HASH>),
-            dim3((BSRGEMM_WFSIZE * (int64_t)group_size[2] - 1) / 256 + 1),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            group_size[2],
-            std::max(kb, nb),
-            &group_offset[2],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_fill_wf_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                                        BSRGEMM_WFSIZE,
+                                                        BSRGEMM_HASHSIZE,
+                                                        BSRGEMM_FLL_HASH>),
+                dim3((BSRGEMM_WFSIZE * (int64_t)group_size[2] - 1) / 256 + 1),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                group_size[2],
+                std::max(kb, nb),
+                &group_offset[2],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_WFSIZE
 #undef BSRGEMM_HASHSIZE
-    }
+        }
 
-    // Group 3: 33 - 64 non-zeros per row
-    if(group_size[3] > 0)
-    {
+        // Group 3: 33 - 64 non-zeros per row
+        if(group_size[3] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_HASHSIZE 64
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                                                           16,
-                                                                           BSRGEMM_HASHSIZE,
-                                                                           BSRGEMM_FLL_HASH>),
-                                           dim3(group_size[3]),
-                                           dim3(BSRGEMM_BLOCKSIZE),
-                                           0,
-                                           stream,
-                                           dir,
-                                           group_size[3],
-                                           std::max(kb, nb),
-                                           &group_offset[3],
-                                           perm,
-                                           alpha_device_host,
-                                           bsr_row_ptr_A,
-                                           bsr_col_ind_A,
-                                           bsr_val_A,
-                                           bsr_row_ptr_B,
-                                           bsr_col_ind_B,
-                                           bsr_val_B,
-                                           beta_device_host,
-                                           bsr_row_ptr_D,
-                                           bsr_col_ind_D,
-                                           bsr_val_D,
-                                           bsr_row_ptr_C,
-                                           bsr_col_ind_C,
-                                           bsr_val_C,
-                                           base_A,
-                                           base_B,
-                                           descr_C->base,
-                                           base_D,
-                                           info_C->csrgemm_info->mul,
-                                           info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                                           16,
+                                                           BSRGEMM_HASHSIZE,
+                                                           BSRGEMM_FLL_HASH>),
+                dim3(group_size[3]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                group_size[3],
+                std::max(kb, nb),
+                &group_offset[3],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_HASHSIZE
-    }
+        }
 
-    // Group 4: 65 - 128 non-zeros per row
-    if(group_size[4] > 0)
-    {
+        // Group 4: 65 - 128 non-zeros per row
+        if(group_size[4] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_HASHSIZE 128
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                                                           16,
-                                                                           BSRGEMM_HASHSIZE,
-                                                                           BSRGEMM_FLL_HASH>),
-                                           dim3(group_size[4]),
-                                           dim3(BSRGEMM_BLOCKSIZE),
-                                           0,
-                                           stream,
-                                           dir,
-                                           group_size[4],
-                                           std::max(kb, nb),
-                                           &group_offset[4],
-                                           perm,
-                                           alpha_device_host,
-                                           bsr_row_ptr_A,
-                                           bsr_col_ind_A,
-                                           bsr_val_A,
-                                           bsr_row_ptr_B,
-                                           bsr_col_ind_B,
-                                           bsr_val_B,
-                                           beta_device_host,
-                                           bsr_row_ptr_D,
-                                           bsr_col_ind_D,
-                                           bsr_val_D,
-                                           bsr_row_ptr_C,
-                                           bsr_col_ind_C,
-                                           bsr_val_C,
-                                           base_A,
-                                           base_B,
-                                           descr_C->base,
-                                           base_D,
-                                           info_C->csrgemm_info->mul,
-                                           info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                                           16,
+                                                           BSRGEMM_HASHSIZE,
+                                                           BSRGEMM_FLL_HASH>),
+                dim3(group_size[4]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                group_size[4],
+                std::max(kb, nb),
+                &group_offset[4],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_HASHSIZE
-    }
+        }
 
-    // Group 5: 129 - 256 non-zeros per row
-    if(group_size[5] > 0)
-    {
+        // Group 5: 129 - 256 non-zeros per row
+        if(group_size[5] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_HASHSIZE 256
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
-                                                                           16,
-                                                                           BSRGEMM_HASHSIZE,
-                                                                           BSRGEMM_FLL_HASH>),
-                                           dim3(group_size[5]),
-                                           dim3(BSRGEMM_BLOCKSIZE),
-                                           0,
-                                           stream,
-                                           dir,
-                                           group_size[5],
-                                           std::max(kb, nb),
-                                           &group_offset[5],
-                                           perm,
-                                           alpha_device_host,
-                                           bsr_row_ptr_A,
-                                           bsr_col_ind_A,
-                                           bsr_val_A,
-                                           bsr_row_ptr_B,
-                                           bsr_col_ind_B,
-                                           bsr_val_B,
-                                           beta_device_host,
-                                           bsr_row_ptr_D,
-                                           bsr_col_ind_D,
-                                           bsr_val_D,
-                                           bsr_row_ptr_C,
-                                           bsr_col_ind_C,
-                                           bsr_val_C,
-                                           base_A,
-                                           base_B,
-                                           descr_C->base,
-                                           base_D,
-                                           info_C->csrgemm_info->mul,
-                                           info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_fill_block_per_row_2x2<BSRGEMM_BLOCKSIZE,
+                                                           16,
+                                                           BSRGEMM_HASHSIZE,
+                                                           BSRGEMM_FLL_HASH>),
+                dim3(group_size[5]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                group_size[5],
+                std::max(kb, nb),
+                &group_offset[5],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_HASHSIZE
-    }
+        }
 
-    // Group 6: 257 - 512 non-zeros per row
-    if(group_size[6] > 0 && !std::is_same<T, rocsparse_double_complex>())
-    {
-        RETURN_IF_ROCSPARSE_ERROR(bsrgemm_2x2_group_6_launcher(handle,
-                                                               dir,
-                                                               group_size[6],
-                                                               &group_offset[6],
-                                                               perm,
-                                                               mb,
-                                                               nb,
-                                                               kb,
-                                                               alpha_device_host,
-                                                               bsr_row_ptr_A,
-                                                               bsr_col_ind_A,
-                                                               bsr_val_A,
-                                                               bsr_row_ptr_B,
-                                                               bsr_col_ind_B,
-                                                               bsr_val_B,
-                                                               beta_device_host,
-                                                               bsr_row_ptr_D,
-                                                               bsr_col_ind_D,
-                                                               bsr_val_D,
-                                                               bsr_row_ptr_C,
-                                                               bsr_col_ind_C,
-                                                               bsr_val_C,
-                                                               base_A,
-                                                               base_B,
-                                                               descr_C->base,
-                                                               base_D,
-                                                               info_C->csrgemm_info->mul,
-                                                               info_C->csrgemm_info->add));
-    }
+        // Group 6: 257 - 512 non-zeros per row
+        if(group_size[6] > 0 && !std::is_same<T, rocsparse_double_complex>())
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::bsrgemm_2x2_group_6_launcher(handle,
+                                                        dir,
+                                                        group_size[6],
+                                                        &group_offset[6],
+                                                        perm,
+                                                        mb,
+                                                        nb,
+                                                        kb,
+                                                        alpha_device_host,
+                                                        bsr_row_ptr_A,
+                                                        bsr_col_ind_A,
+                                                        bsr_val_A,
+                                                        bsr_row_ptr_B,
+                                                        bsr_col_ind_B,
+                                                        bsr_val_B,
+                                                        beta_device_host,
+                                                        bsr_row_ptr_D,
+                                                        bsr_col_ind_D,
+                                                        bsr_val_D,
+                                                        bsr_row_ptr_C,
+                                                        bsr_col_ind_C,
+                                                        bsr_val_C,
+                                                        base_A,
+                                                        base_B,
+                                                        descr_C->base,
+                                                        base_D,
+                                                        info_C->csrgemm_info->mul,
+                                                        info_C->csrgemm_info->add));
+        }
 
-    // Group 7: more than 512 non-zero blocks per row (or consumes too much shared memory to use pervious methods)
-    if(group_size[7] > 0)
-    {
+        // Group 7: more than 512 non-zero blocks per row (or consumes too much shared memory to use pervious methods)
+        if(group_size[7] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 256
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 2>),
-            dim3(group_size[7]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[7],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   2>),
+                dim3(group_size[7]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[7],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_CHUNKSIZE
+        }
+
+        return rocsparse_status_success;
     }
 
-    return rocsparse_status_success;
-}
-
-template <typename I, typename J, typename T, typename U>
-static inline rocsparse_status
-    rocsparse_bsrgemm_calc_3_4_template(rocsparse_handle          handle,
-                                        rocsparse_direction       dir,
-                                        rocsparse_operation       trans_A,
-                                        rocsparse_operation       trans_B,
-                                        J                         mb,
-                                        J                         nb,
-                                        J                         kb,
-                                        J                         block_dim,
-                                        U                         alpha_device_host,
-                                        const rocsparse_mat_descr descr_A,
-                                        I                         nnzb_A,
-                                        const T*                  bsr_val_A,
-                                        const I*                  bsr_row_ptr_A,
-                                        const J*                  bsr_col_ind_A,
-                                        const rocsparse_mat_descr descr_B,
-                                        I                         nnzb_B,
-                                        const T*                  bsr_val_B,
-                                        const I*                  bsr_row_ptr_B,
-                                        const J*                  bsr_col_ind_B,
-                                        U                         beta_device_host,
-                                        const rocsparse_mat_descr descr_D,
-                                        I                         nnzb_D,
-                                        const T*                  bsr_val_D,
-                                        const I*                  bsr_row_ptr_D,
-                                        const J*                  bsr_col_ind_D,
-                                        const rocsparse_mat_descr descr_C,
-                                        T*                        bsr_val_C,
-                                        const I*                  bsr_row_ptr_C,
-                                        J*                        bsr_col_ind_C,
-                                        const rocsparse_mat_info  info_C,
-                                        J*                        group_size,
-                                        J*                        group_offset,
-                                        J*                        perm,
-                                        I*                        workspace)
-{
-    // Stream
-    hipStream_t stream = handle->stream;
-
-    // Index base
-    rocsparse_index_base base_A
-        = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
-    rocsparse_index_base base_B
-        = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
-    rocsparse_index_base base_D
-        = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
-
-    // Group 0: 0 - 8 non-zeros per row
-    if(group_size[0] > 0)
+    template <typename I, typename J, typename T, typename U>
+    static inline rocsparse_status bsrgemm_calc_3_4_template(rocsparse_handle    handle,
+                                                             rocsparse_direction dir,
+                                                             rocsparse_operation trans_A,
+                                                             rocsparse_operation trans_B,
+                                                             J                   mb,
+                                                             J                   nb,
+                                                             J                   kb,
+                                                             J                   block_dim,
+                                                             U                   alpha_device_host,
+                                                             const rocsparse_mat_descr descr_A,
+                                                             I                         nnzb_A,
+                                                             const T*                  bsr_val_A,
+                                                             const I* bsr_row_ptr_A,
+                                                             const J* bsr_col_ind_A,
+                                                             const rocsparse_mat_descr descr_B,
+                                                             I                         nnzb_B,
+                                                             const T*                  bsr_val_B,
+                                                             const I* bsr_row_ptr_B,
+                                                             const J* bsr_col_ind_B,
+                                                             U        beta_device_host,
+                                                             const rocsparse_mat_descr descr_D,
+                                                             I                         nnzb_D,
+                                                             const T*                  bsr_val_D,
+                                                             const I* bsr_row_ptr_D,
+                                                             const J* bsr_col_ind_D,
+                                                             const rocsparse_mat_descr descr_C,
+                                                             T*                        bsr_val_C,
+                                                             const I*                 bsr_row_ptr_C,
+                                                             J*                       bsr_col_ind_C,
+                                                             const rocsparse_mat_info info_C,
+                                                             J*                       group_size,
+                                                             J*                       group_offset,
+                                                             J*                       perm,
+                                                             I*                       workspace)
     {
+        // Stream
+        hipStream_t stream = handle->stream;
+
+        // Index base
+        rocsparse_index_base base_A
+            = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
+        rocsparse_index_base base_B
+            = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
+        rocsparse_index_base base_D
+            = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
+
+        // Group 0: 0 - 8 non-zeros per row
+        if(group_size[0] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 64
 #define BSRGEMM_HASHSIZE 8
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_fill_wf_per_row<BSRGEMM_BLOCKSIZE,
-                                     BSRGEMM_WFSIZE,
-                                     BSRGEMM_HASHSIZE,
-                                     BSRGEMM_FLL_HASH,
-                                     4>),
-            dim3((BSRGEMM_WFSIZE * (int64_t)group_size[0] - 1) / BSRGEMM_BLOCKSIZE + 1),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            group_size[0],
-            std::max(kb, nb),
-            block_dim,
-            &group_offset[0],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_fill_wf_per_row<BSRGEMM_BLOCKSIZE,
+                                                    BSRGEMM_WFSIZE,
+                                                    BSRGEMM_HASHSIZE,
+                                                    BSRGEMM_FLL_HASH,
+                                                    4>),
+                dim3((BSRGEMM_WFSIZE * (int64_t)group_size[0] - 1) / BSRGEMM_BLOCKSIZE + 1),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                group_size[0],
+                std::max(kb, nb),
+                block_dim,
+                &group_offset[0],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_WFSIZE
 #undef BSRGEMM_HASHSIZE
-    }
+        }
 
-    // Group 1: 9 - 16 non-zeros per row
-    if(group_size[1] > 0)
-    {
+        // Group 1: 9 - 16 non-zeros per row
+        if(group_size[1] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 64
 #define BSRGEMM_HASHSIZE 16
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_fill_wf_per_row<BSRGEMM_BLOCKSIZE,
-                                     BSRGEMM_WFSIZE,
-                                     BSRGEMM_HASHSIZE,
-                                     BSRGEMM_FLL_HASH,
-                                     4>),
-            dim3((BSRGEMM_WFSIZE * (int64_t)group_size[1] - 1) / BSRGEMM_BLOCKSIZE + 1),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            group_size[1],
-            std::max(kb, nb),
-            block_dim,
-            &group_offset[1],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_fill_wf_per_row<BSRGEMM_BLOCKSIZE,
+                                                    BSRGEMM_WFSIZE,
+                                                    BSRGEMM_HASHSIZE,
+                                                    BSRGEMM_FLL_HASH,
+                                                    4>),
+                dim3((BSRGEMM_WFSIZE * (int64_t)group_size[1] - 1) / BSRGEMM_BLOCKSIZE + 1),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                group_size[1],
+                std::max(kb, nb),
+                block_dim,
+                &group_offset[1],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_WFSIZE
 #undef BSRGEMM_HASHSIZE
-    }
+        }
 
-    // Group 2: 17 - 32 non-zeros per row
-    if(group_size[2] > 0)
-    {
+        // Group 2: 17 - 32 non-zeros per row
+        if(group_size[2] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 32
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
-            dim3(group_size[2]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[2],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   4>),
+                dim3(group_size[2]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[2],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_CHUNKSIZE
-    }
+        }
 
-    // Group 3: 33 - 64 non-zeros per row
-    if(group_size[3] > 0)
-    {
+        // Group 3: 33 - 64 non-zeros per row
+        if(group_size[3] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 64
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
-            dim3(group_size[3]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[3],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   4>),
+                dim3(group_size[3]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[3],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_CHUNKSIZE
-    }
+        }
 
-    // Group 4: 65 - 128 non-zeros per row
-    if(group_size[4] > 0)
-    {
+        // Group 4: 65 - 128 non-zeros per row
+        if(group_size[4] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 128
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
-            dim3(group_size[4]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[4],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   4>),
+                dim3(group_size[4]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[4],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_CHUNKSIZE
-    }
+        }
 
-    // Group 5: 129 - 256 non-zeros per row
-    if(group_size[5] > 0)
-    {
+        // Group 5: 129 - 256 non-zeros per row
+        if(group_size[5] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 128
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
-            dim3(group_size[5]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[5],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   4>),
+                dim3(group_size[5]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[5],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_CHUNKSIZE
-    }
+        }
 
-    // Group 6: 257 - 512 non-zeros per row
-    if(group_size[6] > 0)
-    {
+        // Group 6: 257 - 512 non-zeros per row
+        if(group_size[6] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 128
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
-            dim3(group_size[6]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[6],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   4>),
+                dim3(group_size[6]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[6],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_CHUNKSIZE
-    }
+        }
 
-    // Group 7: more than 512 non-zero blocks per row (or consumes too much shared memory to use pervious methods)
-    if(group_size[7] > 0)
-    {
+        // Group 7: more than 512 non-zero blocks per row (or consumes too much shared memory to use pervious methods)
+        if(group_size[7] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 128
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 4>),
-            dim3(group_size[7]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[7],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   4>),
+                dim3(group_size[7]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[7],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_CHUNKSIZE
+        }
+
+        return rocsparse_status_success;
     }
 
-    return rocsparse_status_success;
-}
-
-template <typename I, typename J, typename T, typename U>
-static inline rocsparse_status
-    rocsparse_bsrgemm_calc_5_8_template(rocsparse_handle          handle,
-                                        rocsparse_direction       dir,
-                                        rocsparse_operation       trans_A,
-                                        rocsparse_operation       trans_B,
-                                        J                         mb,
-                                        J                         nb,
-                                        J                         kb,
-                                        J                         block_dim,
-                                        U                         alpha_device_host,
-                                        const rocsparse_mat_descr descr_A,
-                                        I                         nnzb_A,
-                                        const T*                  bsr_val_A,
-                                        const I*                  bsr_row_ptr_A,
-                                        const J*                  bsr_col_ind_A,
-                                        const rocsparse_mat_descr descr_B,
-                                        I                         nnzb_B,
-                                        const T*                  bsr_val_B,
-                                        const I*                  bsr_row_ptr_B,
-                                        const J*                  bsr_col_ind_B,
-                                        U                         beta_device_host,
-                                        const rocsparse_mat_descr descr_D,
-                                        I                         nnzb_D,
-                                        const T*                  bsr_val_D,
-                                        const I*                  bsr_row_ptr_D,
-                                        const J*                  bsr_col_ind_D,
-                                        const rocsparse_mat_descr descr_C,
-                                        T*                        bsr_val_C,
-                                        const I*                  bsr_row_ptr_C,
-                                        J*                        bsr_col_ind_C,
-                                        const rocsparse_mat_info  info_C,
-                                        J*                        group_size,
-                                        J*                        group_offset,
-                                        J*                        perm,
-                                        I*                        workspace)
-{
-    // Stream
-    hipStream_t stream = handle->stream;
-
-    // Index base
-    rocsparse_index_base base_A
-        = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
-    rocsparse_index_base base_B
-        = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
-    rocsparse_index_base base_D
-        = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
-
-    // Group 0: 0 - 8 non-zeros per row
-    if(group_size[0] > 0)
+    template <typename I, typename J, typename T, typename U>
+    static inline rocsparse_status bsrgemm_calc_5_8_template(rocsparse_handle    handle,
+                                                             rocsparse_direction dir,
+                                                             rocsparse_operation trans_A,
+                                                             rocsparse_operation trans_B,
+                                                             J                   mb,
+                                                             J                   nb,
+                                                             J                   kb,
+                                                             J                   block_dim,
+                                                             U                   alpha_device_host,
+                                                             const rocsparse_mat_descr descr_A,
+                                                             I                         nnzb_A,
+                                                             const T*                  bsr_val_A,
+                                                             const I* bsr_row_ptr_A,
+                                                             const J* bsr_col_ind_A,
+                                                             const rocsparse_mat_descr descr_B,
+                                                             I                         nnzb_B,
+                                                             const T*                  bsr_val_B,
+                                                             const I* bsr_row_ptr_B,
+                                                             const J* bsr_col_ind_B,
+                                                             U        beta_device_host,
+                                                             const rocsparse_mat_descr descr_D,
+                                                             I                         nnzb_D,
+                                                             const T*                  bsr_val_D,
+                                                             const I* bsr_row_ptr_D,
+                                                             const J* bsr_col_ind_D,
+                                                             const rocsparse_mat_descr descr_C,
+                                                             T*                        bsr_val_C,
+                                                             const I*                 bsr_row_ptr_C,
+                                                             J*                       bsr_col_ind_C,
+                                                             const rocsparse_mat_info info_C,
+                                                             J*                       group_size,
+                                                             J*                       group_offset,
+                                                             J*                       perm,
+                                                             I*                       workspace)
     {
-        // #define BSRGEMM_BLOCKSIZE 256
-        // #define BSRGEMM_HASHSIZE 8
-        //         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-        //             (bsrgemm_fill_block_per_row<BSRGEMM_BLOCKSIZE, BSRGEMM_HASHSIZE, BSRGEMM_FLL_HASH, 8>),
-        //             dim3(group_size[0]),
-        //             dim3(BSRGEMM_BLOCKSIZE),
-        //             0,
-        //             stream,
-        //             dir,
-        //             group_size[0],
-        //             std::max(kb, nb),
-        //             block_dim,
-        //             &group_offset[0],
-        //             perm,
-        //             alpha_device_host,
-        //             bsr_row_ptr_A,
-        //             bsr_col_ind_A,
-        //             bsr_val_A,
-        //             bsr_row_ptr_B,
-        //             bsr_col_ind_B,
-        //             bsr_val_B,
-        //             beta_device_host,
-        //             bsr_row_ptr_D,
-        //             bsr_col_ind_D,
-        //             bsr_val_D,
-        //             bsr_row_ptr_C,
-        //             bsr_col_ind_C,
-        //             bsr_val_C,
-        //             base_A,
-        //             base_B,
-        //             descr_C->base,
-        //             base_D,
-        //             info_C->csrgemm_info->mul,
-        //             info_C->csrgemm_info->add);
-        // #undef BSRGEMM_BLOCKSIZE
-        // #undef BSRGEMM_HASHSIZE
+        // Stream
+        hipStream_t stream = handle->stream;
 
+        // Index base
+        rocsparse_index_base base_A
+            = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
+        rocsparse_index_base base_B
+            = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
+        rocsparse_index_base base_D
+            = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
+
+        // Group 0: 0 - 8 non-zeros per row
+        if(group_size[0] > 0)
+        {
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_WFSIZE 64
 #define BSRGEMM_HASHSIZE 8
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_fill_wf_per_row<BSRGEMM_BLOCKSIZE,
+                                                    BSRGEMM_WFSIZE,
+                                                    BSRGEMM_HASHSIZE,
+                                                    BSRGEMM_FLL_HASH,
+                                                    8>),
+                dim3((BSRGEMM_WFSIZE * (int64_t)group_size[0] - 1) / BSRGEMM_BLOCKSIZE + 1),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                group_size[0],
+                std::max(kb, nb),
+                block_dim,
+                &group_offset[0],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
+#undef BSRGEMM_BLOCKSIZE
+#undef BSRGEMM_WFSIZE
+#undef BSRGEMM_HASHSIZE
+        }
+
+        // Group 1: 9 - 16 non-zeros per row
+        if(group_size[1] > 0)
+        {
+#define BSRGEMM_BLOCKSIZE 256
+#define BSRGEMM_CHUNKSIZE 16
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   8>),
+                dim3(group_size[1]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[1],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
+#undef BSRGEMM_BLOCKSIZE
+#undef BSRGEMM_CHUNKSIZE
+        }
+
+        // Group 2: 17 - 32 non-zeros per row
+        if(group_size[2] > 0)
+        {
+#define BSRGEMM_BLOCKSIZE 256
+#define BSRGEMM_CHUNKSIZE 32
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   8>),
+                dim3(group_size[2]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[2],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
+#undef BSRGEMM_BLOCKSIZE
+#undef BSRGEMM_CHUNKSIZE
+        }
+
+        // Group 3: 33 - 64 non-zeros per row
+        if(group_size[3] > 0)
+        {
+#define BSRGEMM_BLOCKSIZE 256
+#define BSRGEMM_CHUNKSIZE 32
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   8>),
+                dim3(group_size[3]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[3],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
+#undef BSRGEMM_BLOCKSIZE
+#undef BSRGEMM_CHUNKSIZE
+        }
+
+        // Group 4: 65 - 128 non-zeros per row
+        if(group_size[4] > 0)
+        {
+#define BSRGEMM_BLOCKSIZE 256
+#define BSRGEMM_CHUNKSIZE 32
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   8>),
+                dim3(group_size[4]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[4],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
+#undef BSRGEMM_BLOCKSIZE
+#undef BSRGEMM_CHUNKSIZE
+        }
+
+        // Group 5: 129 - 256 non-zeros per row
+        if(group_size[5] > 0)
+        {
+#define BSRGEMM_BLOCKSIZE 256
+#define BSRGEMM_CHUNKSIZE 32
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   8>),
+                dim3(group_size[5]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[5],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
+#undef BSRGEMM_BLOCKSIZE
+#undef BSRGEMM_CHUNKSIZE
+        }
+
+        // Group 6: 257 - 512 non-zeros per row
+        if(group_size[6] > 0)
+        {
+#define BSRGEMM_BLOCKSIZE 256
+#define BSRGEMM_CHUNKSIZE 32
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   8>),
+                dim3(group_size[6]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[6],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
+#undef BSRGEMM_BLOCKSIZE
+#undef BSRGEMM_CHUNKSIZE
+        }
+
+        // Group 7: more than 512 non-zero blocks per row (or consumes too much shared memory to use pervious methods)
+        if(group_size[7] > 0)
+        {
+#define BSRGEMM_BLOCKSIZE 256
+#define BSRGEMM_CHUNKSIZE 32
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE,
+                                                                   BSRGEMM_CHUNKSIZE,
+                                                                   8>),
+                dim3(group_size[7]),
+                dim3(BSRGEMM_BLOCKSIZE),
+                0,
+                stream,
+                dir,
+                nb,
+                block_dim,
+                &group_offset[7],
+                perm,
+                alpha_device_host,
+                bsr_row_ptr_A,
+                bsr_col_ind_A,
+                bsr_val_A,
+                bsr_row_ptr_B,
+                bsr_col_ind_B,
+                bsr_val_B,
+                beta_device_host,
+                bsr_row_ptr_D,
+                bsr_col_ind_D,
+                bsr_val_D,
+                bsr_row_ptr_C,
+                bsr_col_ind_C,
+                bsr_val_C,
+                workspace,
+                base_A,
+                base_B,
+                descr_C->base,
+                base_D,
+                info_C->csrgemm_info->mul,
+                info_C->csrgemm_info->add);
+#undef BSRGEMM_BLOCKSIZE
+#undef BSRGEMM_CHUNKSIZE
+        }
+
+        return rocsparse_status_success;
+    }
+
+    template <typename I, typename J, typename T, typename U>
+    static inline rocsparse_status bsrgemm_calc_9_16_template(rocsparse_handle    handle,
+                                                              rocsparse_direction dir,
+                                                              rocsparse_operation trans_A,
+                                                              rocsparse_operation trans_B,
+                                                              J                   mb,
+                                                              J                   nb,
+                                                              J                   kb,
+                                                              J                   block_dim,
+                                                              U                   alpha_device_host,
+                                                              const rocsparse_mat_descr descr_A,
+                                                              I                         nnzb_A,
+                                                              const T*                  bsr_val_A,
+                                                              const I* bsr_row_ptr_A,
+                                                              const J* bsr_col_ind_A,
+                                                              const rocsparse_mat_descr descr_B,
+                                                              I                         nnzb_B,
+                                                              const T*                  bsr_val_B,
+                                                              const I* bsr_row_ptr_B,
+                                                              const J* bsr_col_ind_B,
+                                                              U        beta_device_host,
+                                                              const rocsparse_mat_descr descr_D,
+                                                              I                         nnzb_D,
+                                                              const T*                  bsr_val_D,
+                                                              const I* bsr_row_ptr_D,
+                                                              const J* bsr_col_ind_D,
+                                                              const rocsparse_mat_descr descr_C,
+                                                              T*                        bsr_val_C,
+                                                              const I* bsr_row_ptr_C,
+                                                              J*       bsr_col_ind_C,
+                                                              const rocsparse_mat_info info_C,
+                                                              J*                       group_size,
+                                                              J*                       group_offset,
+                                                              J*                       perm,
+                                                              I*                       workspace)
+    {
+        // Stream
+        hipStream_t stream = handle->stream;
+
+        // Index base
+        rocsparse_index_base base_A
+            = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
+        rocsparse_index_base base_B
+            = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
+        rocsparse_index_base base_D
+            = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
+
+#define BSRGEMM_BLOCKSIZE 256
+#define BSRGEMM_CHUNKSIZE 8
         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_fill_wf_per_row<BSRGEMM_BLOCKSIZE,
-                                     BSRGEMM_WFSIZE,
-                                     BSRGEMM_HASHSIZE,
-                                     BSRGEMM_FLL_HASH,
-                                     8>),
-            dim3((BSRGEMM_WFSIZE * (int64_t)group_size[0] - 1) / BSRGEMM_BLOCKSIZE + 1),
+            (rocsparse::bsrgemm_block_per_row_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 16>),
+            dim3(group_size[0]),
             dim3(BSRGEMM_BLOCKSIZE),
             0,
             stream,
             dir,
-            group_size[0],
-            std::max(kb, nb),
+            nb,
             block_dim,
             &group_offset[0],
             perm,
@@ -1434,47 +1809,6 @@ static inline rocsparse_status
             bsr_row_ptr_C,
             bsr_col_ind_C,
             bsr_val_C,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
-#undef BSRGEMM_BLOCKSIZE
-#undef BSRGEMM_WFSIZE
-#undef BSRGEMM_HASHSIZE
-    }
-
-    // Group 1: 9 - 16 non-zeros per row
-    if(group_size[1] > 0)
-    {
-#define BSRGEMM_BLOCKSIZE 256
-#define BSRGEMM_CHUNKSIZE 16
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
-            dim3(group_size[1]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[1],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
             workspace,
             base_A,
             base_B,
@@ -1484,465 +1818,130 @@ static inline rocsparse_status
             info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_CHUNKSIZE
+
+        return rocsparse_status_success;
     }
 
-    // Group 2: 17 - 32 non-zeros per row
-    if(group_size[2] > 0)
+    template <typename I, typename J, typename T, typename U>
+    static inline rocsparse_status bsrgemm_calc_17_32_template(rocsparse_handle    handle,
+                                                               rocsparse_direction dir,
+                                                               rocsparse_operation trans_A,
+                                                               rocsparse_operation trans_B,
+                                                               J                   mb,
+                                                               J                   nb,
+                                                               J                   kb,
+                                                               J                   block_dim,
+                                                               U alpha_device_host,
+                                                               const rocsparse_mat_descr descr_A,
+                                                               I                         nnzb_A,
+                                                               const T*                  bsr_val_A,
+                                                               const I* bsr_row_ptr_A,
+                                                               const J* bsr_col_ind_A,
+                                                               const rocsparse_mat_descr descr_B,
+                                                               I                         nnzb_B,
+                                                               const T*                  bsr_val_B,
+                                                               const I* bsr_row_ptr_B,
+                                                               const J* bsr_col_ind_B,
+                                                               U        beta_device_host,
+                                                               const rocsparse_mat_descr descr_D,
+                                                               I                         nnzb_D,
+                                                               const T*                  bsr_val_D,
+                                                               const I* bsr_row_ptr_D,
+                                                               const J* bsr_col_ind_D,
+                                                               const rocsparse_mat_descr descr_C,
+                                                               T*                        bsr_val_C,
+                                                               const I* bsr_row_ptr_C,
+                                                               J*       bsr_col_ind_C,
+                                                               const rocsparse_mat_info info_C,
+                                                               J*                       group_size,
+                                                               J* group_offset,
+                                                               J* perm,
+                                                               I* workspace)
     {
-#define BSRGEMM_BLOCKSIZE 256
-#define BSRGEMM_CHUNKSIZE 32
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
-            dim3(group_size[2]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[2],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
-#undef BSRGEMM_BLOCKSIZE
-#undef BSRGEMM_CHUNKSIZE
-    }
+        // Stream
+        hipStream_t stream = handle->stream;
 
-    // Group 3: 33 - 64 non-zeros per row
-    if(group_size[3] > 0)
-    {
-#define BSRGEMM_BLOCKSIZE 256
-#define BSRGEMM_CHUNKSIZE 32
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
-            dim3(group_size[3]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[3],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
-#undef BSRGEMM_BLOCKSIZE
-#undef BSRGEMM_CHUNKSIZE
-    }
-
-    // Group 4: 65 - 128 non-zeros per row
-    if(group_size[4] > 0)
-    {
-#define BSRGEMM_BLOCKSIZE 256
-#define BSRGEMM_CHUNKSIZE 32
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
-            dim3(group_size[4]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[4],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
-#undef BSRGEMM_BLOCKSIZE
-#undef BSRGEMM_CHUNKSIZE
-    }
-
-    // Group 5: 129 - 256 non-zeros per row
-    if(group_size[5] > 0)
-    {
-#define BSRGEMM_BLOCKSIZE 256
-#define BSRGEMM_CHUNKSIZE 32
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
-            dim3(group_size[5]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[5],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
-#undef BSRGEMM_BLOCKSIZE
-#undef BSRGEMM_CHUNKSIZE
-    }
-
-    // Group 6: 257 - 512 non-zeros per row
-    if(group_size[6] > 0)
-    {
-#define BSRGEMM_BLOCKSIZE 256
-#define BSRGEMM_CHUNKSIZE 32
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
-            dim3(group_size[6]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[6],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
-#undef BSRGEMM_BLOCKSIZE
-#undef BSRGEMM_CHUNKSIZE
-    }
-
-    // Group 7: more than 512 non-zero blocks per row (or consumes too much shared memory to use pervious methods)
-    if(group_size[7] > 0)
-    {
-#define BSRGEMM_BLOCKSIZE 256
-#define BSRGEMM_CHUNKSIZE 32
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_block_per_row_atomic_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 8>),
-            dim3(group_size[7]),
-            dim3(BSRGEMM_BLOCKSIZE),
-            0,
-            stream,
-            dir,
-            nb,
-            block_dim,
-            &group_offset[7],
-            perm,
-            alpha_device_host,
-            bsr_row_ptr_A,
-            bsr_col_ind_A,
-            bsr_val_A,
-            bsr_row_ptr_B,
-            bsr_col_ind_B,
-            bsr_val_B,
-            beta_device_host,
-            bsr_row_ptr_D,
-            bsr_col_ind_D,
-            bsr_val_D,
-            bsr_row_ptr_C,
-            bsr_col_ind_C,
-            bsr_val_C,
-            workspace,
-            base_A,
-            base_B,
-            descr_C->base,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
-#undef BSRGEMM_BLOCKSIZE
-#undef BSRGEMM_CHUNKSIZE
-    }
-
-    return rocsparse_status_success;
-}
-
-template <typename I, typename J, typename T, typename U>
-static inline rocsparse_status
-    rocsparse_bsrgemm_calc_9_16_template(rocsparse_handle          handle,
-                                         rocsparse_direction       dir,
-                                         rocsparse_operation       trans_A,
-                                         rocsparse_operation       trans_B,
-                                         J                         mb,
-                                         J                         nb,
-                                         J                         kb,
-                                         J                         block_dim,
-                                         U                         alpha_device_host,
-                                         const rocsparse_mat_descr descr_A,
-                                         I                         nnzb_A,
-                                         const T*                  bsr_val_A,
-                                         const I*                  bsr_row_ptr_A,
-                                         const J*                  bsr_col_ind_A,
-                                         const rocsparse_mat_descr descr_B,
-                                         I                         nnzb_B,
-                                         const T*                  bsr_val_B,
-                                         const I*                  bsr_row_ptr_B,
-                                         const J*                  bsr_col_ind_B,
-                                         U                         beta_device_host,
-                                         const rocsparse_mat_descr descr_D,
-                                         I                         nnzb_D,
-                                         const T*                  bsr_val_D,
-                                         const I*                  bsr_row_ptr_D,
-                                         const J*                  bsr_col_ind_D,
-                                         const rocsparse_mat_descr descr_C,
-                                         T*                        bsr_val_C,
-                                         const I*                  bsr_row_ptr_C,
-                                         J*                        bsr_col_ind_C,
-                                         const rocsparse_mat_info  info_C,
-                                         J*                        group_size,
-                                         J*                        group_offset,
-                                         J*                        perm,
-                                         I*                        workspace)
-{
-    // Stream
-    hipStream_t stream = handle->stream;
-
-    // Index base
-    rocsparse_index_base base_A
-        = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
-    rocsparse_index_base base_B
-        = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
-    rocsparse_index_base base_D
-        = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
-
-#define BSRGEMM_BLOCKSIZE 256
-#define BSRGEMM_CHUNKSIZE 8
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-        (bsrgemm_block_per_row_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 16>),
-        dim3(group_size[0]),
-        dim3(BSRGEMM_BLOCKSIZE),
-        0,
-        stream,
-        dir,
-        nb,
-        block_dim,
-        &group_offset[0],
-        perm,
-        alpha_device_host,
-        bsr_row_ptr_A,
-        bsr_col_ind_A,
-        bsr_val_A,
-        bsr_row_ptr_B,
-        bsr_col_ind_B,
-        bsr_val_B,
-        beta_device_host,
-        bsr_row_ptr_D,
-        bsr_col_ind_D,
-        bsr_val_D,
-        bsr_row_ptr_C,
-        bsr_col_ind_C,
-        bsr_val_C,
-        workspace,
-        base_A,
-        base_B,
-        descr_C->base,
-        base_D,
-        info_C->csrgemm_info->mul,
-        info_C->csrgemm_info->add);
-#undef BSRGEMM_BLOCKSIZE
-#undef BSRGEMM_CHUNKSIZE
-
-    return rocsparse_status_success;
-}
-
-template <typename I, typename J, typename T, typename U>
-static inline rocsparse_status
-    rocsparse_bsrgemm_calc_17_32_template(rocsparse_handle          handle,
-                                          rocsparse_direction       dir,
-                                          rocsparse_operation       trans_A,
-                                          rocsparse_operation       trans_B,
-                                          J                         mb,
-                                          J                         nb,
-                                          J                         kb,
-                                          J                         block_dim,
-                                          U                         alpha_device_host,
-                                          const rocsparse_mat_descr descr_A,
-                                          I                         nnzb_A,
-                                          const T*                  bsr_val_A,
-                                          const I*                  bsr_row_ptr_A,
-                                          const J*                  bsr_col_ind_A,
-                                          const rocsparse_mat_descr descr_B,
-                                          I                         nnzb_B,
-                                          const T*                  bsr_val_B,
-                                          const I*                  bsr_row_ptr_B,
-                                          const J*                  bsr_col_ind_B,
-                                          U                         beta_device_host,
-                                          const rocsparse_mat_descr descr_D,
-                                          I                         nnzb_D,
-                                          const T*                  bsr_val_D,
-                                          const I*                  bsr_row_ptr_D,
-                                          const J*                  bsr_col_ind_D,
-                                          const rocsparse_mat_descr descr_C,
-                                          T*                        bsr_val_C,
-                                          const I*                  bsr_row_ptr_C,
-                                          J*                        bsr_col_ind_C,
-                                          const rocsparse_mat_info  info_C,
-                                          J*                        group_size,
-                                          J*                        group_offset,
-                                          J*                        perm,
-                                          I*                        workspace)
-{
-    // Stream
-    hipStream_t stream = handle->stream;
-
-    // Index base
-    rocsparse_index_base base_A
-        = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
-    rocsparse_index_base base_B
-        = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
-    rocsparse_index_base base_D
-        = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
+        // Index base
+        rocsparse_index_base base_A
+            = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
+        rocsparse_index_base base_B
+            = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
+        rocsparse_index_base base_D
+            = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
 
 #define BSRGEMM_BLOCKSIZE 256
 #define BSRGEMM_CHUNKSIZE 2
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-        (bsrgemm_block_per_row_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 32>),
-        dim3(group_size[0]),
-        dim3(BSRGEMM_BLOCKSIZE),
-        0,
-        stream,
-        dir,
-        nb,
-        block_dim,
-        &group_offset[0],
-        perm,
-        alpha_device_host,
-        bsr_row_ptr_A,
-        bsr_col_ind_A,
-        bsr_val_A,
-        bsr_row_ptr_B,
-        bsr_col_ind_B,
-        bsr_val_B,
-        beta_device_host,
-        bsr_row_ptr_D,
-        bsr_col_ind_D,
-        bsr_val_D,
-        bsr_row_ptr_C,
-        bsr_col_ind_C,
-        bsr_val_C,
-        workspace,
-        base_A,
-        base_B,
-        descr_C->base,
-        base_D,
-        info_C->csrgemm_info->mul,
-        info_C->csrgemm_info->add);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (rocsparse::bsrgemm_block_per_row_multipass<BSRGEMM_BLOCKSIZE, BSRGEMM_CHUNKSIZE, 32>),
+            dim3(group_size[0]),
+            dim3(BSRGEMM_BLOCKSIZE),
+            0,
+            stream,
+            dir,
+            nb,
+            block_dim,
+            &group_offset[0],
+            perm,
+            alpha_device_host,
+            bsr_row_ptr_A,
+            bsr_col_ind_A,
+            bsr_val_A,
+            bsr_row_ptr_B,
+            bsr_col_ind_B,
+            bsr_val_B,
+            beta_device_host,
+            bsr_row_ptr_D,
+            bsr_col_ind_D,
+            bsr_val_D,
+            bsr_row_ptr_C,
+            bsr_col_ind_C,
+            bsr_val_C,
+            workspace,
+            base_A,
+            base_B,
+            descr_C->base,
+            base_D,
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef BSRGEMM_BLOCKSIZE
 #undef BSRGEMM_CHUNKSIZE
 
-    return rocsparse_status_success;
+        return rocsparse_status_success;
+    }
 }
 
 template <typename I, typename J, typename T, typename U>
-rocsparse_status rocsparse_bsrgemm_calc_template_dispatch(rocsparse_handle    handle,
-                                                          rocsparse_direction dir,
-                                                          rocsparse_operation trans_A,
-                                                          rocsparse_operation trans_B,
-                                                          J                   mb,
-                                                          J                   nb,
-                                                          J                   kb,
-                                                          J                   block_dim,
-                                                          U                   alpha_device_host,
-                                                          const rocsparse_mat_descr descr_A,
-                                                          I                         nnzb_A,
-                                                          const T*                  bsr_val_A,
-                                                          const I*                  bsr_row_ptr_A,
-                                                          const J*                  bsr_col_ind_A,
-                                                          const rocsparse_mat_descr descr_B,
-                                                          I                         nnzb_B,
-                                                          const T*                  bsr_val_B,
-                                                          const I*                  bsr_row_ptr_B,
-                                                          const J*                  bsr_col_ind_B,
-                                                          U beta_device_host,
-                                                          const rocsparse_mat_descr descr_D,
-                                                          I                         nnzb_D,
-                                                          const T*                  bsr_val_D,
-                                                          const I*                  bsr_row_ptr_D,
-                                                          const J*                  bsr_col_ind_D,
-                                                          const rocsparse_mat_descr descr_C,
-                                                          T*                        bsr_val_C,
-                                                          const I*                  bsr_row_ptr_C,
-                                                          J*                        bsr_col_ind_C,
-                                                          const rocsparse_mat_info  info_C,
-                                                          void*                     temp_buffer)
+rocsparse_status rocsparse::bsrgemm_calc_template_dispatch(rocsparse_handle    handle,
+                                                           rocsparse_direction dir,
+                                                           rocsparse_operation trans_A,
+                                                           rocsparse_operation trans_B,
+                                                           J                   mb,
+                                                           J                   nb,
+                                                           J                   kb,
+                                                           J                   block_dim,
+                                                           U                   alpha_device_host,
+                                                           const rocsparse_mat_descr descr_A,
+                                                           I                         nnzb_A,
+                                                           const T*                  bsr_val_A,
+                                                           const I*                  bsr_row_ptr_A,
+                                                           const J*                  bsr_col_ind_A,
+                                                           const rocsparse_mat_descr descr_B,
+                                                           I                         nnzb_B,
+                                                           const T*                  bsr_val_B,
+                                                           const I*                  bsr_row_ptr_B,
+                                                           const J*                  bsr_col_ind_B,
+                                                           U beta_device_host,
+                                                           const rocsparse_mat_descr descr_D,
+                                                           I                         nnzb_D,
+                                                           const T*                  bsr_val_D,
+                                                           const I*                  bsr_row_ptr_D,
+                                                           const J*                  bsr_col_ind_D,
+                                                           const rocsparse_mat_descr descr_C,
+                                                           T*                        bsr_val_C,
+                                                           const I*                  bsr_row_ptr_C,
+                                                           J*                        bsr_col_ind_C,
+                                                           const rocsparse_mat_info  info_C,
+                                                           void*                     temp_buffer)
 {
     // Stream
     hipStream_t stream = handle->stream;
@@ -1958,7 +1957,7 @@ rocsparse_status rocsparse_bsrgemm_calc_template_dispatch(rocsparse_handle    ha
     J* workspace1 = reinterpret_cast<J*>(buffer);
 
 #define BSRGEMM_DIM 256
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_max_row_nnz_part1<BSRGEMM_DIM>),
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgemm_max_row_nnz_part1<BSRGEMM_DIM>),
                                        dim3(BSRGEMM_DIM),
                                        dim3(BSRGEMM_DIM),
                                        0,
@@ -1967,7 +1966,7 @@ rocsparse_status rocsparse_bsrgemm_calc_template_dispatch(rocsparse_handle    ha
                                        bsr_row_ptr_C,
                                        workspace1);
 
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_max_row_nnz_part2<BSRGEMM_DIM>),
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgemm_max_row_nnz_part2<BSRGEMM_DIM>),
                                        dim3(1),
                                        dim3(BSRGEMM_DIM),
                                        0,
@@ -2021,7 +2020,7 @@ rocsparse_status rocsparse_bsrgemm_calc_template_dispatch(rocsparse_handle    ha
         if(block_dim == 2)
         {
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (bsrgemm_group_reduce_part2<BSRGEMM_DIM, BSRGEMM_MAXGROUPS, 2, T>),
+                (rocsparse::bsrgemm_group_reduce_part2<BSRGEMM_DIM, BSRGEMM_MAXGROUPS, 2, T>),
                 dim3(BSRGEMM_DIM),
                 dim3(BSRGEMM_DIM),
                 0,
@@ -2034,7 +2033,7 @@ rocsparse_status rocsparse_bsrgemm_calc_template_dispatch(rocsparse_handle    ha
         else
         {
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (bsrgemm_group_reduce_part2<BSRGEMM_DIM, BSRGEMM_MAXGROUPS, 8, T>),
+                (rocsparse::bsrgemm_group_reduce_part2<BSRGEMM_DIM, BSRGEMM_MAXGROUPS, 8, T>),
                 dim3(BSRGEMM_DIM),
                 dim3(BSRGEMM_DIM),
                 0,
@@ -2046,7 +2045,7 @@ rocsparse_status rocsparse_bsrgemm_calc_template_dispatch(rocsparse_handle    ha
         }
 
         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (bsrgemm_group_reduce_part3<BSRGEMM_DIM, BSRGEMM_MAXGROUPS>),
+            (rocsparse::bsrgemm_group_reduce_part3<BSRGEMM_DIM, BSRGEMM_MAXGROUPS>),
             dim3(1),
             dim3(BSRGEMM_DIM),
             0,
@@ -2116,121 +2115,7 @@ rocsparse_status rocsparse_bsrgemm_calc_template_dispatch(rocsparse_handle    ha
 
     if(block_dim == 2)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrgemm_calc_2x2_template(handle,
-                                                                      dir,
-                                                                      trans_A,
-                                                                      trans_B,
-                                                                      mb,
-                                                                      nb,
-                                                                      kb,
-                                                                      block_dim,
-                                                                      alpha_device_host,
-                                                                      descr_A,
-                                                                      nnzb_A,
-                                                                      bsr_val_A,
-                                                                      bsr_row_ptr_A,
-                                                                      bsr_col_ind_A,
-                                                                      descr_B,
-                                                                      nnzb_B,
-                                                                      bsr_val_B,
-                                                                      bsr_row_ptr_B,
-                                                                      bsr_col_ind_B,
-                                                                      beta_device_host,
-                                                                      descr_D,
-                                                                      nnzb_D,
-                                                                      bsr_val_D,
-                                                                      bsr_row_ptr_D,
-                                                                      bsr_col_ind_D,
-                                                                      descr_C,
-                                                                      bsr_val_C,
-                                                                      bsr_row_ptr_C,
-                                                                      bsr_col_ind_C,
-                                                                      info_C,
-                                                                      &h_group_size[0],
-                                                                      d_group_offset,
-                                                                      d_perm,
-                                                                      workspace2));
-        return rocsparse_status_success;
-    }
-    else if(block_dim <= 4)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrgemm_calc_3_4_template(handle,
-                                                                      dir,
-                                                                      trans_A,
-                                                                      trans_B,
-                                                                      mb,
-                                                                      nb,
-                                                                      kb,
-                                                                      block_dim,
-                                                                      alpha_device_host,
-                                                                      descr_A,
-                                                                      nnzb_A,
-                                                                      bsr_val_A,
-                                                                      bsr_row_ptr_A,
-                                                                      bsr_col_ind_A,
-                                                                      descr_B,
-                                                                      nnzb_B,
-                                                                      bsr_val_B,
-                                                                      bsr_row_ptr_B,
-                                                                      bsr_col_ind_B,
-                                                                      beta_device_host,
-                                                                      descr_D,
-                                                                      nnzb_D,
-                                                                      bsr_val_D,
-                                                                      bsr_row_ptr_D,
-                                                                      bsr_col_ind_D,
-                                                                      descr_C,
-                                                                      bsr_val_C,
-                                                                      bsr_row_ptr_C,
-                                                                      bsr_col_ind_C,
-                                                                      info_C,
-                                                                      &h_group_size[0],
-                                                                      d_group_offset,
-                                                                      d_perm,
-                                                                      workspace2));
-        return rocsparse_status_success;
-    }
-    else if(block_dim <= 8)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrgemm_calc_5_8_template(handle,
-                                                                      dir,
-                                                                      trans_A,
-                                                                      trans_B,
-                                                                      mb,
-                                                                      nb,
-                                                                      kb,
-                                                                      block_dim,
-                                                                      alpha_device_host,
-                                                                      descr_A,
-                                                                      nnzb_A,
-                                                                      bsr_val_A,
-                                                                      bsr_row_ptr_A,
-                                                                      bsr_col_ind_A,
-                                                                      descr_B,
-                                                                      nnzb_B,
-                                                                      bsr_val_B,
-                                                                      bsr_row_ptr_B,
-                                                                      bsr_col_ind_B,
-                                                                      beta_device_host,
-                                                                      descr_D,
-                                                                      nnzb_D,
-                                                                      bsr_val_D,
-                                                                      bsr_row_ptr_D,
-                                                                      bsr_col_ind_D,
-                                                                      descr_C,
-                                                                      bsr_val_C,
-                                                                      bsr_row_ptr_C,
-                                                                      bsr_col_ind_C,
-                                                                      info_C,
-                                                                      &h_group_size[0],
-                                                                      d_group_offset,
-                                                                      d_perm,
-                                                                      workspace2));
-        return rocsparse_status_success;
-    }
-    else if(block_dim <= 16)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrgemm_calc_9_16_template(handle,
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::bsrgemm_calc_2x2_template(handle,
                                                                        dir,
                                                                        trans_A,
                                                                        trans_B,
@@ -2266,9 +2151,85 @@ rocsparse_status rocsparse_bsrgemm_calc_template_dispatch(rocsparse_handle    ha
                                                                        workspace2));
         return rocsparse_status_success;
     }
-    else if(block_dim <= 32)
+    else if(block_dim <= 4)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrgemm_calc_17_32_template(handle,
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::bsrgemm_calc_3_4_template(handle,
+                                                                       dir,
+                                                                       trans_A,
+                                                                       trans_B,
+                                                                       mb,
+                                                                       nb,
+                                                                       kb,
+                                                                       block_dim,
+                                                                       alpha_device_host,
+                                                                       descr_A,
+                                                                       nnzb_A,
+                                                                       bsr_val_A,
+                                                                       bsr_row_ptr_A,
+                                                                       bsr_col_ind_A,
+                                                                       descr_B,
+                                                                       nnzb_B,
+                                                                       bsr_val_B,
+                                                                       bsr_row_ptr_B,
+                                                                       bsr_col_ind_B,
+                                                                       beta_device_host,
+                                                                       descr_D,
+                                                                       nnzb_D,
+                                                                       bsr_val_D,
+                                                                       bsr_row_ptr_D,
+                                                                       bsr_col_ind_D,
+                                                                       descr_C,
+                                                                       bsr_val_C,
+                                                                       bsr_row_ptr_C,
+                                                                       bsr_col_ind_C,
+                                                                       info_C,
+                                                                       &h_group_size[0],
+                                                                       d_group_offset,
+                                                                       d_perm,
+                                                                       workspace2));
+        return rocsparse_status_success;
+    }
+    else if(block_dim <= 8)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::bsrgemm_calc_5_8_template(handle,
+                                                                       dir,
+                                                                       trans_A,
+                                                                       trans_B,
+                                                                       mb,
+                                                                       nb,
+                                                                       kb,
+                                                                       block_dim,
+                                                                       alpha_device_host,
+                                                                       descr_A,
+                                                                       nnzb_A,
+                                                                       bsr_val_A,
+                                                                       bsr_row_ptr_A,
+                                                                       bsr_col_ind_A,
+                                                                       descr_B,
+                                                                       nnzb_B,
+                                                                       bsr_val_B,
+                                                                       bsr_row_ptr_B,
+                                                                       bsr_col_ind_B,
+                                                                       beta_device_host,
+                                                                       descr_D,
+                                                                       nnzb_D,
+                                                                       bsr_val_D,
+                                                                       bsr_row_ptr_D,
+                                                                       bsr_col_ind_D,
+                                                                       descr_C,
+                                                                       bsr_val_C,
+                                                                       bsr_row_ptr_C,
+                                                                       bsr_col_ind_C,
+                                                                       info_C,
+                                                                       &h_group_size[0],
+                                                                       d_group_offset,
+                                                                       d_perm,
+                                                                       workspace2));
+        return rocsparse_status_success;
+    }
+    else if(block_dim <= 16)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::bsrgemm_calc_9_16_template(handle,
                                                                         dir,
                                                                         trans_A,
                                                                         trans_B,
@@ -2304,44 +2265,82 @@ rocsparse_status rocsparse_bsrgemm_calc_template_dispatch(rocsparse_handle    ha
                                                                         workspace2));
         return rocsparse_status_success;
     }
+    else if(block_dim <= 32)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::bsrgemm_calc_17_32_template(handle,
+                                                                         dir,
+                                                                         trans_A,
+                                                                         trans_B,
+                                                                         mb,
+                                                                         nb,
+                                                                         kb,
+                                                                         block_dim,
+                                                                         alpha_device_host,
+                                                                         descr_A,
+                                                                         nnzb_A,
+                                                                         bsr_val_A,
+                                                                         bsr_row_ptr_A,
+                                                                         bsr_col_ind_A,
+                                                                         descr_B,
+                                                                         nnzb_B,
+                                                                         bsr_val_B,
+                                                                         bsr_row_ptr_B,
+                                                                         bsr_col_ind_B,
+                                                                         beta_device_host,
+                                                                         descr_D,
+                                                                         nnzb_D,
+                                                                         bsr_val_D,
+                                                                         bsr_row_ptr_D,
+                                                                         bsr_col_ind_D,
+                                                                         descr_C,
+                                                                         bsr_val_C,
+                                                                         bsr_row_ptr_C,
+                                                                         bsr_col_ind_C,
+                                                                         info_C,
+                                                                         &h_group_size[0],
+                                                                         d_group_offset,
+                                                                         d_perm,
+                                                                         workspace2));
+        return rocsparse_status_success;
+    }
     else
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 }
 
-#define INSTANTIATE(I, J, T, U)                                         \
-    template rocsparse_status rocsparse_bsrgemm_calc_template_dispatch( \
-        rocsparse_handle          handle,                               \
-        rocsparse_direction       dir,                                  \
-        rocsparse_operation       trans_A,                              \
-        rocsparse_operation       trans_B,                              \
-        J                         mb,                                   \
-        J                         nb,                                   \
-        J                         kb,                                   \
-        J                         block_dim,                            \
-        U                         alpha_device_host,                    \
-        const rocsparse_mat_descr descr_A,                              \
-        I                         nnzb_A,                               \
-        const T*                  bsr_val_A,                            \
-        const I*                  bsr_row_ptr_A,                        \
-        const J*                  bsr_col_ind_A,                        \
-        const rocsparse_mat_descr descr_B,                              \
-        I                         nnzb_B,                               \
-        const T*                  bsr_val_B,                            \
-        const I*                  bsr_row_ptr_B,                        \
-        const J*                  bsr_col_ind_B,                        \
-        U                         beta_device_host,                     \
-        const rocsparse_mat_descr descr_D,                              \
-        I                         nnzb_D,                               \
-        const T*                  bsr_val_D,                            \
-        const I*                  bsr_row_ptr_D,                        \
-        const J*                  bsr_col_ind_D,                        \
-        const rocsparse_mat_descr descr_C,                              \
-        T*                        bsr_val_C,                            \
-        const I*                  bsr_row_ptr_C,                        \
-        J*                        bsr_col_ind_C,                        \
-        const rocsparse_mat_info  info_C,                               \
+#define INSTANTIATE(I, J, T, U)                                          \
+    template rocsparse_status rocsparse::bsrgemm_calc_template_dispatch( \
+        rocsparse_handle          handle,                                \
+        rocsparse_direction       dir,                                   \
+        rocsparse_operation       trans_A,                               \
+        rocsparse_operation       trans_B,                               \
+        J                         mb,                                    \
+        J                         nb,                                    \
+        J                         kb,                                    \
+        J                         block_dim,                             \
+        U                         alpha_device_host,                     \
+        const rocsparse_mat_descr descr_A,                               \
+        I                         nnzb_A,                                \
+        const T*                  bsr_val_A,                             \
+        const I*                  bsr_row_ptr_A,                         \
+        const J*                  bsr_col_ind_A,                         \
+        const rocsparse_mat_descr descr_B,                               \
+        I                         nnzb_B,                                \
+        const T*                  bsr_val_B,                             \
+        const I*                  bsr_row_ptr_B,                         \
+        const J*                  bsr_col_ind_B,                         \
+        U                         beta_device_host,                      \
+        const rocsparse_mat_descr descr_D,                               \
+        I                         nnzb_D,                                \
+        const T*                  bsr_val_D,                             \
+        const I*                  bsr_row_ptr_D,                         \
+        const J*                  bsr_col_ind_D,                         \
+        const rocsparse_mat_descr descr_C,                               \
+        T*                        bsr_val_C,                             \
+        const I*                  bsr_row_ptr_C,                         \
+        J*                        bsr_col_ind_C,                         \
+        const rocsparse_mat_info  info_C,                                \
         void*                     temp_buffer)
 
 INSTANTIATE(int32_t, int32_t, float, float);

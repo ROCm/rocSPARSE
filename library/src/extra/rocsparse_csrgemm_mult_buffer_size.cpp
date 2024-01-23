@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,24 +32,24 @@
 #include "rocsparse_csrgemm_mult.hpp"
 #include <rocprim/rocprim.hpp>
 
-#define INSTANTIATE(I, J, T)                                           \
-    template rocsparse_status rocsparse_csrgemm_mult_buffer_size_core( \
-        rocsparse_handle          handle,                              \
-        rocsparse_operation       trans_A,                             \
-        rocsparse_operation       trans_B,                             \
-        J                         m,                                   \
-        J                         n,                                   \
-        J                         k,                                   \
-        const T*                  alpha,                               \
-        const rocsparse_mat_descr descr_A,                             \
-        I                         nnz_A,                               \
-        const I*                  csr_row_ptr_A,                       \
-        const J*                  csr_col_ind_A,                       \
-        const rocsparse_mat_descr descr_B,                             \
-        I                         nnz_B,                               \
-        const I*                  csr_row_ptr_B,                       \
-        const J*                  csr_col_ind_B,                       \
-        rocsparse_mat_info        info_C,                              \
+#define INSTANTIATE(I, J, T)                                            \
+    template rocsparse_status rocsparse::csrgemm_mult_buffer_size_core( \
+        rocsparse_handle          handle,                               \
+        rocsparse_operation       trans_A,                              \
+        rocsparse_operation       trans_B,                              \
+        J                         m,                                    \
+        J                         n,                                    \
+        J                         k,                                    \
+        const T*                  alpha,                                \
+        const rocsparse_mat_descr descr_A,                              \
+        I                         nnz_A,                                \
+        const I*                  csr_row_ptr_A,                        \
+        const J*                  csr_col_ind_A,                        \
+        const rocsparse_mat_descr descr_B,                              \
+        I                         nnz_B,                                \
+        const I*                  csr_row_ptr_B,                        \
+        const J*                  csr_col_ind_B,                        \
+        rocsparse_mat_info        info_C,                               \
         size_t*                   buffer_size)
 
 INSTANTIATE(int32_t, int32_t, float);
@@ -75,23 +75,23 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
 #undef INSTANTIATE
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csrgemm_mult_buffer_size_core(rocsparse_handle          handle,
-                                                         rocsparse_operation       trans_A,
-                                                         rocsparse_operation       trans_B,
-                                                         J                         m,
-                                                         J                         n,
-                                                         J                         k,
-                                                         const T*                  alpha,
-                                                         const rocsparse_mat_descr descr_A,
-                                                         I                         nnz_A,
-                                                         const I*                  csr_row_ptr_A,
-                                                         const J*                  csr_col_ind_A,
-                                                         const rocsparse_mat_descr descr_B,
-                                                         I                         nnz_B,
-                                                         const I*                  csr_row_ptr_B,
-                                                         const J*                  csr_col_ind_B,
-                                                         rocsparse_mat_info        info_C,
-                                                         size_t*                   buffer_size)
+rocsparse_status rocsparse::csrgemm_mult_buffer_size_core(rocsparse_handle          handle,
+                                                          rocsparse_operation       trans_A,
+                                                          rocsparse_operation       trans_B,
+                                                          J                         m,
+                                                          J                         n,
+                                                          J                         k,
+                                                          const T*                  alpha,
+                                                          const rocsparse_mat_descr descr_A,
+                                                          I                         nnz_A,
+                                                          const I*                  csr_row_ptr_A,
+                                                          const J*                  csr_col_ind_A,
+                                                          const rocsparse_mat_descr descr_B,
+                                                          I                         nnz_B,
+                                                          const I*                  csr_row_ptr_B,
+                                                          const J*                  csr_col_ind_B,
+                                                          rocsparse_mat_info        info_C,
+                                                          size_t*                   buffer_size)
 {
     // Stream
     hipStream_t stream = handle->stream;
@@ -134,23 +134,23 @@ rocsparse_status rocsparse_csrgemm_mult_buffer_size_core(rocsparse_handle       
     return rocsparse_status_success;
 }
 
-rocsparse_status rocsparse_csrgemm_mult_buffer_size_quickreturn(rocsparse_handle          handle,
-                                                                rocsparse_operation       trans_A,
-                                                                rocsparse_operation       trans_B,
-                                                                int64_t                   m,
-                                                                int64_t                   n,
-                                                                int64_t                   k,
-                                                                const void*               alpha,
-                                                                const rocsparse_mat_descr descr_A,
-                                                                int64_t                   nnz_A,
-                                                                const void* csr_row_ptr_A,
-                                                                const void* csr_col_ind_A,
-                                                                const rocsparse_mat_descr descr_B,
-                                                                int64_t                   nnz_B,
-                                                                const void*        csr_row_ptr_B,
-                                                                const void*        csr_col_ind_B,
-                                                                rocsparse_mat_info info_C,
-                                                                size_t*            buffer_size)
+rocsparse_status rocsparse::csrgemm_mult_buffer_size_quickreturn(rocsparse_handle          handle,
+                                                                 rocsparse_operation       trans_A,
+                                                                 rocsparse_operation       trans_B,
+                                                                 int64_t                   m,
+                                                                 int64_t                   n,
+                                                                 int64_t                   k,
+                                                                 const void*               alpha,
+                                                                 const rocsparse_mat_descr descr_A,
+                                                                 int64_t                   nnz_A,
+                                                                 const void* csr_row_ptr_A,
+                                                                 const void* csr_col_ind_A,
+                                                                 const rocsparse_mat_descr descr_B,
+                                                                 int64_t                   nnz_B,
+                                                                 const void*        csr_row_ptr_B,
+                                                                 const void*        csr_col_ind_B,
+                                                                 rocsparse_mat_info info_C,
+                                                                 size_t*            buffer_size)
 {
     if(m == 0 || n == 0 || k == 0 || nnz_A == 0 || nnz_B == 0)
     {

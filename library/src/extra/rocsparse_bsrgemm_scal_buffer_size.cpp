@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,18 +25,18 @@
 #include "rocsparse_bsrgemm_scal.hpp"
 #include "rocsparse_csrgemm_scal.hpp"
 
-rocsparse_status rocsparse_bsrgemm_scal_buffer_size_quickreturn(rocsparse_handle          handle,
-                                                                int64_t                   mb,
-                                                                int64_t                   nb,
-                                                                const void*               beta,
-                                                                const rocsparse_mat_descr descr_D,
-                                                                int64_t                   nnzb_D,
-                                                                const void*        bsr_row_ptr_D,
-                                                                const void*        bsr_col_ind_D,
-                                                                rocsparse_mat_info info_C,
-                                                                size_t*            buffer_size)
+rocsparse_status rocsparse::bsrgemm_scal_buffer_size_quickreturn(rocsparse_handle          handle,
+                                                                 int64_t                   mb,
+                                                                 int64_t                   nb,
+                                                                 const void*               beta,
+                                                                 const rocsparse_mat_descr descr_D,
+                                                                 int64_t                   nnzb_D,
+                                                                 const void*        bsr_row_ptr_D,
+                                                                 const void*        bsr_col_ind_D,
+                                                                 rocsparse_mat_info info_C,
+                                                                 size_t*            buffer_size)
 {
-    const rocsparse_status status = rocsparse_csrgemm_scal_buffer_size_quickreturn(
+    const rocsparse_status status = rocsparse::csrgemm_scal_buffer_size_quickreturn(
         handle, mb, nb, beta, descr_D, nnzb_D, bsr_row_ptr_D, bsr_col_ind_D, info_C, buffer_size);
     if(status != rocsparse_status_continue)
     {

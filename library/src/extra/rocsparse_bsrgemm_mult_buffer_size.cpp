@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,42 +25,42 @@
 #include "rocsparse_bsrgemm_mult.hpp"
 #include "rocsparse_csrgemm_mult.hpp"
 
-rocsparse_status rocsparse_bsrgemm_mult_buffer_size_quickreturn(rocsparse_handle          handle,
-                                                                rocsparse_operation       trans_A,
-                                                                rocsparse_operation       trans_B,
-                                                                int64_t                   mb,
-                                                                int64_t                   nb,
-                                                                int64_t                   kb,
-                                                                const void*               alpha,
-                                                                const rocsparse_mat_descr descr_A,
-                                                                int64_t                   nnzb_A,
-                                                                const void* bsr_row_ptr_A,
-                                                                const void* bsr_col_ind_A,
-                                                                const rocsparse_mat_descr descr_B,
-                                                                int64_t                   nnzb_B,
-                                                                const void*        bsr_row_ptr_B,
-                                                                const void*        bsr_col_ind_B,
-                                                                rocsparse_mat_info info_C,
-                                                                size_t*            buffer_size)
+rocsparse_status rocsparse::bsrgemm_mult_buffer_size_quickreturn(rocsparse_handle          handle,
+                                                                 rocsparse_operation       trans_A,
+                                                                 rocsparse_operation       trans_B,
+                                                                 int64_t                   mb,
+                                                                 int64_t                   nb,
+                                                                 int64_t                   kb,
+                                                                 const void*               alpha,
+                                                                 const rocsparse_mat_descr descr_A,
+                                                                 int64_t                   nnzb_A,
+                                                                 const void* bsr_row_ptr_A,
+                                                                 const void* bsr_col_ind_A,
+                                                                 const rocsparse_mat_descr descr_B,
+                                                                 int64_t                   nnzb_B,
+                                                                 const void*        bsr_row_ptr_B,
+                                                                 const void*        bsr_col_ind_B,
+                                                                 rocsparse_mat_info info_C,
+                                                                 size_t*            buffer_size)
 {
 
-    const rocsparse_status status = rocsparse_csrgemm_mult_buffer_size_quickreturn(handle,
-                                                                                   trans_A,
-                                                                                   trans_B,
-                                                                                   mb,
-                                                                                   nb,
-                                                                                   kb,
-                                                                                   alpha,
-                                                                                   descr_A,
-                                                                                   nnzb_A,
-                                                                                   bsr_row_ptr_A,
-                                                                                   bsr_col_ind_A,
-                                                                                   descr_B,
-                                                                                   nnzb_B,
-                                                                                   bsr_row_ptr_B,
-                                                                                   bsr_col_ind_B,
-                                                                                   info_C,
-                                                                                   buffer_size);
+    const rocsparse_status status = rocsparse::csrgemm_mult_buffer_size_quickreturn(handle,
+                                                                                    trans_A,
+                                                                                    trans_B,
+                                                                                    mb,
+                                                                                    nb,
+                                                                                    kb,
+                                                                                    alpha,
+                                                                                    descr_A,
+                                                                                    nnzb_A,
+                                                                                    bsr_row_ptr_A,
+                                                                                    bsr_col_ind_A,
+                                                                                    descr_B,
+                                                                                    nnzb_B,
+                                                                                    bsr_row_ptr_B,
+                                                                                    bsr_col_ind_B,
+                                                                                    info_C,
+                                                                                    buffer_size);
 
     if(status != rocsparse_status_continue)
     {

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,21 +25,22 @@
 #include "csrgemm_device.h"
 #include "definitions.h"
 #include "rocsparse_csrgemm_nnz_calc.hpp"
+#include "rocsparse_csrgemm_scal.hpp"
 #include "utility.h"
 
 template <typename I>
-rocsparse_status rocsparse_csrgemm_scal_nnz_quickreturn(rocsparse_handle          handle,
-                                                        int64_t                   m,
-                                                        int64_t                   n,
-                                                        const rocsparse_mat_descr descr_D,
-                                                        int64_t                   nnz_D,
-                                                        const void*               csr_row_ptr_D,
-                                                        const void*               csr_col_ind_D,
-                                                        const rocsparse_mat_descr descr_C,
-                                                        I*                        csr_row_ptr_C,
-                                                        I*                        nnz_C,
-                                                        const rocsparse_mat_info  info_C,
-                                                        void*                     temp_buffer)
+rocsparse_status rocsparse::csrgemm_scal_nnz_quickreturn(rocsparse_handle          handle,
+                                                         int64_t                   m,
+                                                         int64_t                   n,
+                                                         const rocsparse_mat_descr descr_D,
+                                                         int64_t                   nnz_D,
+                                                         const void*               csr_row_ptr_D,
+                                                         const void*               csr_col_ind_D,
+                                                         const rocsparse_mat_descr descr_C,
+                                                         I*                        csr_row_ptr_C,
+                                                         I*                        nnz_C,
+                                                         const rocsparse_mat_info  info_C,
+                                                         void*                     temp_buffer)
 {
 
     // Quick return if possible
@@ -57,7 +58,7 @@ rocsparse_status rocsparse_csrgemm_scal_nnz_quickreturn(rocsparse_handle        
         if(m > 0)
         {
 #define CSRGEMM_DIM 1024
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_set_base<CSRGEMM_DIM>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgemm_set_base<CSRGEMM_DIM>),
                                                dim3((m + 1) / CSRGEMM_DIM + 1),
                                                dim3(CSRGEMM_DIM),
                                                0,
@@ -73,19 +74,19 @@ rocsparse_status rocsparse_csrgemm_scal_nnz_quickreturn(rocsparse_handle        
     return rocsparse_status_continue;
 }
 
-#define INSTANTIATE(I)                                                \
-    template rocsparse_status rocsparse_csrgemm_scal_nnz_quickreturn( \
-        rocsparse_handle          handle,                             \
-        int64_t                   m,                                  \
-        int64_t                   n,                                  \
-        const rocsparse_mat_descr descr_D,                            \
-        int64_t                   nnz_D,                              \
-        const void*               csr_row_ptr_D,                      \
-        const void*               csr_col_ind_D,                      \
-        const rocsparse_mat_descr descr_C,                            \
-        I*                        csr_row_ptr_C,                      \
-        I*                        nnz_C,                              \
-        const rocsparse_mat_info  info_C,                             \
+#define INSTANTIATE(I)                                                 \
+    template rocsparse_status rocsparse::csrgemm_scal_nnz_quickreturn( \
+        rocsparse_handle          handle,                              \
+        int64_t                   m,                                   \
+        int64_t                   n,                                   \
+        const rocsparse_mat_descr descr_D,                             \
+        int64_t                   nnz_D,                               \
+        const void*               csr_row_ptr_D,                       \
+        const void*               csr_col_ind_D,                       \
+        const rocsparse_mat_descr descr_C,                             \
+        I*                        csr_row_ptr_C,                       \
+        I*                        nnz_C,                               \
+        const rocsparse_mat_info  info_C,                              \
         void*                     temp_buffer)
 
 INSTANTIATE(int32_t);
@@ -93,18 +94,18 @@ INSTANTIATE(int64_t);
 #undef INSTANTIATE
 
 template <typename I, typename J>
-rocsparse_status rocsparse_csrgemm_scal_nnz_core(rocsparse_handle          handle,
-                                                 J                         m,
-                                                 J                         n,
-                                                 const rocsparse_mat_descr descr_D,
-                                                 I                         nnz_D,
-                                                 const I*                  csr_row_ptr_D,
-                                                 const J*                  csr_col_ind_D,
-                                                 const rocsparse_mat_descr descr_C,
-                                                 I*                        csr_row_ptr_C,
-                                                 I*                        nnz_C,
-                                                 const rocsparse_mat_info  info_C,
-                                                 void*                     temp_buffer)
+rocsparse_status rocsparse::csrgemm_scal_nnz_core(rocsparse_handle          handle,
+                                                  J                         m,
+                                                  J                         n,
+                                                  const rocsparse_mat_descr descr_D,
+                                                  I                         nnz_D,
+                                                  const I*                  csr_row_ptr_D,
+                                                  const J*                  csr_col_ind_D,
+                                                  const rocsparse_mat_descr descr_C,
+                                                  I*                        csr_row_ptr_C,
+                                                  I*                        nnz_C,
+                                                  const rocsparse_mat_info  info_C,
+                                                  void*                     temp_buffer)
 {
     const bool mul = info_C->csrgemm_info->mul;
     const bool add = info_C->csrgemm_info->add;
@@ -129,7 +130,7 @@ rocsparse_status rocsparse_csrgemm_scal_nnz_core(rocsparse_handle          handl
 
         // Copy row pointers
 #define CSRGEMM_DIM 1024
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_copy<CSRGEMM_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgemm_copy<CSRGEMM_DIM>),
                                            dim3(m / CSRGEMM_DIM + 1),
                                            dim3(CSRGEMM_DIM),
                                            0,
@@ -149,19 +150,19 @@ rocsparse_status rocsparse_csrgemm_scal_nnz_core(rocsparse_handle          handl
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(I, J)                                                                        \
-    template rocsparse_status rocsparse_csrgemm_scal_nnz_core(rocsparse_handle          handle,  \
-                                                              J                         m,       \
-                                                              J                         n,       \
-                                                              const rocsparse_mat_descr descr_D, \
-                                                              I                         nnz_D,   \
-                                                              const I* csr_row_ptr_D,            \
-                                                              const J* csr_col_ind_D,            \
-                                                              const rocsparse_mat_descr descr_C, \
-                                                              I* csr_row_ptr_C,                  \
-                                                              I* nnz_C,                          \
-                                                              const rocsparse_mat_info info_C,   \
-                                                              void*                    temp_buffer)
+#define INSTANTIATE(I, J)                                                                         \
+    template rocsparse_status rocsparse::csrgemm_scal_nnz_core(rocsparse_handle          handle,  \
+                                                               J                         m,       \
+                                                               J                         n,       \
+                                                               const rocsparse_mat_descr descr_D, \
+                                                               I                         nnz_D,   \
+                                                               const I* csr_row_ptr_D,            \
+                                                               const J* csr_col_ind_D,            \
+                                                               const rocsparse_mat_descr descr_C, \
+                                                               I* csr_row_ptr_C,                  \
+                                                               I* nnz_C,                          \
+                                                               const rocsparse_mat_info info_C,   \
+                                                               void*                    temp_buffer)
 
 INSTANTIATE(int32_t, int32_t);
 INSTANTIATE(int32_t, int64_t);

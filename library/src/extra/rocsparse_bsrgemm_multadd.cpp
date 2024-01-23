@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_bsrgemm_multadd.hpp"
 #include "../conversion/rocsparse_identity.hpp"
 #include "bsrgemm_device.h"
 #include "csrgemm_device.h"
@@ -34,37 +35,37 @@
 #include "rocsparse_csrgemm.hpp"
 #include "utility.h"
 
-rocsparse_status rocsparse_bsrgemm_multadd_quickreturn(rocsparse_handle          handle,
-                                                       rocsparse_direction       dir,
-                                                       rocsparse_operation       trans_A,
-                                                       rocsparse_operation       trans_B,
-                                                       int64_t                   mb,
-                                                       int64_t                   nb,
-                                                       int64_t                   kb,
-                                                       int64_t                   block_dim,
-                                                       const void*               alpha,
-                                                       const rocsparse_mat_descr descr_A,
-                                                       int64_t                   nnzb_A,
-                                                       const void*               bsr_val_A,
-                                                       const void*               bsr_row_ptr_A,
-                                                       const void*               bsr_col_ind_A,
-                                                       const rocsparse_mat_descr descr_B,
-                                                       int64_t                   nnzb_B,
-                                                       const void*               bsr_val_B,
-                                                       const void*               bsr_row_ptr_B,
-                                                       const void*               bsr_col_ind_B,
-                                                       const void*               beta,
-                                                       const rocsparse_mat_descr descr_D,
-                                                       int64_t                   nnzb_D,
-                                                       const void*               bsr_val_D,
-                                                       const void*               bsr_row_ptr_D,
-                                                       const void*               bsr_col_ind_D,
-                                                       const rocsparse_mat_descr descr_C,
-                                                       void*                     bsr_val_C,
-                                                       const void*               bsr_row_ptr_C,
-                                                       void*                     bsr_col_ind_C,
-                                                       const rocsparse_mat_info  info_C,
-                                                       void*                     temp_buffer)
+rocsparse_status rocsparse::bsrgemm_multadd_quickreturn(rocsparse_handle          handle,
+                                                        rocsparse_direction       dir,
+                                                        rocsparse_operation       trans_A,
+                                                        rocsparse_operation       trans_B,
+                                                        int64_t                   mb,
+                                                        int64_t                   nb,
+                                                        int64_t                   kb,
+                                                        int64_t                   block_dim,
+                                                        const void*               alpha,
+                                                        const rocsparse_mat_descr descr_A,
+                                                        int64_t                   nnzb_A,
+                                                        const void*               bsr_val_A,
+                                                        const void*               bsr_row_ptr_A,
+                                                        const void*               bsr_col_ind_A,
+                                                        const rocsparse_mat_descr descr_B,
+                                                        int64_t                   nnzb_B,
+                                                        const void*               bsr_val_B,
+                                                        const void*               bsr_row_ptr_B,
+                                                        const void*               bsr_col_ind_B,
+                                                        const void*               beta,
+                                                        const rocsparse_mat_descr descr_D,
+                                                        int64_t                   nnzb_D,
+                                                        const void*               bsr_val_D,
+                                                        const void*               bsr_row_ptr_D,
+                                                        const void*               bsr_col_ind_D,
+                                                        const rocsparse_mat_descr descr_C,
+                                                        void*                     bsr_val_C,
+                                                        const void*               bsr_row_ptr_C,
+                                                        void*                     bsr_col_ind_C,
+                                                        const rocsparse_mat_info  info_C,
+                                                        void*                     temp_buffer)
 {
     if(mb == 0 || nb == 0)
     {
@@ -73,22 +74,22 @@ rocsparse_status rocsparse_bsrgemm_multadd_quickreturn(rocsparse_handle         
 
     if(kb == 0 || nnzb_A == 0 || nnzb_B == 0)
     {
-        const rocsparse_status status = rocsparse_bsrgemm_scal_quickreturn(handle,
-                                                                           mb,
-                                                                           nb,
-                                                                           block_dim,
-                                                                           beta,
-                                                                           descr_D,
-                                                                           nnzb_D,
-                                                                           bsr_val_D,
-                                                                           bsr_row_ptr_D,
-                                                                           bsr_col_ind_D,
-                                                                           descr_C,
-                                                                           bsr_val_C,
-                                                                           bsr_row_ptr_C,
-                                                                           bsr_col_ind_C,
-                                                                           info_C,
-                                                                           temp_buffer);
+        const rocsparse_status status = rocsparse::bsrgemm_scal_quickreturn(handle,
+                                                                            mb,
+                                                                            nb,
+                                                                            block_dim,
+                                                                            beta,
+                                                                            descr_D,
+                                                                            nnzb_D,
+                                                                            bsr_val_D,
+                                                                            bsr_row_ptr_D,
+                                                                            bsr_col_ind_D,
+                                                                            descr_C,
+                                                                            bsr_val_C,
+                                                                            bsr_row_ptr_C,
+                                                                            bsr_col_ind_C,
+                                                                            info_C,
+                                                                            temp_buffer);
 
         if(status != rocsparse_status_continue)
         {
@@ -99,31 +100,31 @@ rocsparse_status rocsparse_bsrgemm_multadd_quickreturn(rocsparse_handle         
 
     if(nnzb_D == 0)
     {
-        const rocsparse_status status = rocsparse_bsrgemm_mult_quickreturn(handle,
-                                                                           dir,
-                                                                           trans_A,
-                                                                           trans_B,
-                                                                           mb,
-                                                                           nb,
-                                                                           kb,
-                                                                           block_dim,
-                                                                           alpha,
-                                                                           descr_A,
-                                                                           nnzb_A,
-                                                                           bsr_val_A,
-                                                                           bsr_row_ptr_A,
-                                                                           bsr_col_ind_A,
-                                                                           descr_B,
-                                                                           nnzb_B,
-                                                                           bsr_val_B,
-                                                                           bsr_row_ptr_B,
-                                                                           bsr_col_ind_B,
-                                                                           descr_C,
-                                                                           bsr_val_C,
-                                                                           bsr_row_ptr_C,
-                                                                           bsr_col_ind_C,
-                                                                           info_C,
-                                                                           temp_buffer);
+        const rocsparse_status status = rocsparse::bsrgemm_mult_quickreturn(handle,
+                                                                            dir,
+                                                                            trans_A,
+                                                                            trans_B,
+                                                                            mb,
+                                                                            nb,
+                                                                            kb,
+                                                                            block_dim,
+                                                                            alpha,
+                                                                            descr_A,
+                                                                            nnzb_A,
+                                                                            bsr_val_A,
+                                                                            bsr_row_ptr_A,
+                                                                            bsr_col_ind_A,
+                                                                            descr_B,
+                                                                            nnzb_B,
+                                                                            bsr_val_B,
+                                                                            bsr_row_ptr_B,
+                                                                            bsr_col_ind_B,
+                                                                            descr_C,
+                                                                            bsr_val_C,
+                                                                            bsr_row_ptr_C,
+                                                                            bsr_col_ind_C,
+                                                                            info_C,
+                                                                            temp_buffer);
         if(status != rocsparse_status_continue)
         {
             RETURN_IF_ROCSPARSE_ERROR(status);
@@ -135,142 +136,142 @@ rocsparse_status rocsparse_bsrgemm_multadd_quickreturn(rocsparse_handle         
 }
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_bsrgemm_multadd_core(rocsparse_handle          handle,
-                                                rocsparse_direction       dir,
-                                                rocsparse_operation       trans_A,
-                                                rocsparse_operation       trans_B,
-                                                J                         mb,
-                                                J                         nb,
-                                                J                         kb,
-                                                J                         block_dim,
-                                                const T*                  alpha,
-                                                const rocsparse_mat_descr descr_A,
-                                                I                         nnzb_A,
-                                                const T*                  bsr_val_A,
-                                                const I*                  bsr_row_ptr_A,
-                                                const J*                  bsr_col_ind_A,
-                                                const rocsparse_mat_descr descr_B,
-                                                I                         nnzb_B,
-                                                const T*                  bsr_val_B,
-                                                const I*                  bsr_row_ptr_B,
-                                                const J*                  bsr_col_ind_B,
-                                                const T*                  beta,
-                                                const rocsparse_mat_descr descr_D,
-                                                I                         nnzb_D,
-                                                const T*                  bsr_val_D,
-                                                const I*                  bsr_row_ptr_D,
-                                                const J*                  bsr_col_ind_D,
-                                                const rocsparse_mat_descr descr_C,
-                                                T*                        bsr_val_C,
-                                                const I*                  bsr_row_ptr_C,
-                                                J*                        bsr_col_ind_C,
-                                                const rocsparse_mat_info  info_C,
-                                                void*                     temp_buffer)
+rocsparse_status rocsparse::bsrgemm_multadd_core(rocsparse_handle          handle,
+                                                 rocsparse_direction       dir,
+                                                 rocsparse_operation       trans_A,
+                                                 rocsparse_operation       trans_B,
+                                                 J                         mb,
+                                                 J                         nb,
+                                                 J                         kb,
+                                                 J                         block_dim,
+                                                 const T*                  alpha,
+                                                 const rocsparse_mat_descr descr_A,
+                                                 I                         nnzb_A,
+                                                 const T*                  bsr_val_A,
+                                                 const I*                  bsr_row_ptr_A,
+                                                 const J*                  bsr_col_ind_A,
+                                                 const rocsparse_mat_descr descr_B,
+                                                 I                         nnzb_B,
+                                                 const T*                  bsr_val_B,
+                                                 const I*                  bsr_row_ptr_B,
+                                                 const J*                  bsr_col_ind_B,
+                                                 const T*                  beta,
+                                                 const rocsparse_mat_descr descr_D,
+                                                 I                         nnzb_D,
+                                                 const T*                  bsr_val_D,
+                                                 const I*                  bsr_row_ptr_D,
+                                                 const J*                  bsr_col_ind_D,
+                                                 const rocsparse_mat_descr descr_C,
+                                                 T*                        bsr_val_C,
+                                                 const I*                  bsr_row_ptr_C,
+                                                 J*                        bsr_col_ind_C,
+                                                 const rocsparse_mat_info  info_C,
+                                                 void*                     temp_buffer)
 {
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrgemm_calc_template_dispatch(handle,
-                                                                           dir,
-                                                                           trans_A,
-                                                                           trans_B,
-                                                                           mb,
-                                                                           nb,
-                                                                           kb,
-                                                                           block_dim,
-                                                                           alpha,
-                                                                           descr_A,
-                                                                           nnzb_A,
-                                                                           bsr_val_A,
-                                                                           bsr_row_ptr_A,
-                                                                           bsr_col_ind_A,
-                                                                           descr_B,
-                                                                           nnzb_B,
-                                                                           bsr_val_B,
-                                                                           bsr_row_ptr_B,
-                                                                           bsr_col_ind_B,
-                                                                           beta,
-                                                                           descr_D,
-                                                                           nnzb_D,
-                                                                           bsr_val_D,
-                                                                           bsr_row_ptr_D,
-                                                                           bsr_col_ind_D,
-                                                                           descr_C,
-                                                                           bsr_val_C,
-                                                                           bsr_row_ptr_C,
-                                                                           bsr_col_ind_C,
-                                                                           info_C,
-                                                                           temp_buffer));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::bsrgemm_calc_template_dispatch(handle,
+                                                                            dir,
+                                                                            trans_A,
+                                                                            trans_B,
+                                                                            mb,
+                                                                            nb,
+                                                                            kb,
+                                                                            block_dim,
+                                                                            alpha,
+                                                                            descr_A,
+                                                                            nnzb_A,
+                                                                            bsr_val_A,
+                                                                            bsr_row_ptr_A,
+                                                                            bsr_col_ind_A,
+                                                                            descr_B,
+                                                                            nnzb_B,
+                                                                            bsr_val_B,
+                                                                            bsr_row_ptr_B,
+                                                                            bsr_col_ind_B,
+                                                                            beta,
+                                                                            descr_D,
+                                                                            nnzb_D,
+                                                                            bsr_val_D,
+                                                                            bsr_row_ptr_D,
+                                                                            bsr_col_ind_D,
+                                                                            descr_C,
+                                                                            bsr_val_C,
+                                                                            bsr_row_ptr_C,
+                                                                            bsr_col_ind_C,
+                                                                            info_C,
+                                                                            temp_buffer));
         return rocsparse_status_success;
     }
     else
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrgemm_calc_template_dispatch(handle,
-                                                                           dir,
-                                                                           trans_A,
-                                                                           trans_B,
-                                                                           mb,
-                                                                           nb,
-                                                                           kb,
-                                                                           block_dim,
-                                                                           *alpha,
-                                                                           descr_A,
-                                                                           nnzb_A,
-                                                                           bsr_val_A,
-                                                                           bsr_row_ptr_A,
-                                                                           bsr_col_ind_A,
-                                                                           descr_B,
-                                                                           nnzb_B,
-                                                                           bsr_val_B,
-                                                                           bsr_row_ptr_B,
-                                                                           bsr_col_ind_B,
-                                                                           *beta,
-                                                                           descr_D,
-                                                                           nnzb_D,
-                                                                           bsr_val_D,
-                                                                           bsr_row_ptr_D,
-                                                                           bsr_col_ind_D,
-                                                                           descr_C,
-                                                                           bsr_val_C,
-                                                                           bsr_row_ptr_C,
-                                                                           bsr_col_ind_C,
-                                                                           info_C,
-                                                                           temp_buffer));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::bsrgemm_calc_template_dispatch(handle,
+                                                                            dir,
+                                                                            trans_A,
+                                                                            trans_B,
+                                                                            mb,
+                                                                            nb,
+                                                                            kb,
+                                                                            block_dim,
+                                                                            *alpha,
+                                                                            descr_A,
+                                                                            nnzb_A,
+                                                                            bsr_val_A,
+                                                                            bsr_row_ptr_A,
+                                                                            bsr_col_ind_A,
+                                                                            descr_B,
+                                                                            nnzb_B,
+                                                                            bsr_val_B,
+                                                                            bsr_row_ptr_B,
+                                                                            bsr_col_ind_B,
+                                                                            *beta,
+                                                                            descr_D,
+                                                                            nnzb_D,
+                                                                            bsr_val_D,
+                                                                            bsr_row_ptr_D,
+                                                                            bsr_col_ind_D,
+                                                                            descr_C,
+                                                                            bsr_val_C,
+                                                                            bsr_row_ptr_C,
+                                                                            bsr_col_ind_C,
+                                                                            info_C,
+                                                                            temp_buffer));
         return rocsparse_status_success;
     }
 }
 
-#define INSTANTIATE(I, J, T)                                                                         \
-    template rocsparse_status rocsparse_bsrgemm_multadd_core(rocsparse_handle          handle,       \
-                                                             rocsparse_direction       dir,          \
-                                                             rocsparse_operation       trans_A,      \
-                                                             rocsparse_operation       trans_B,      \
-                                                             J                         mb,           \
-                                                             J                         nb,           \
-                                                             J                         kb,           \
-                                                             J                         block_dim,    \
-                                                             const T*                  alpha,        \
-                                                             const rocsparse_mat_descr descr_A,      \
-                                                             I                         nnzb_A,       \
-                                                             const T*                  bsr_val_A,    \
-                                                             const I* bsr_row_ptr_A,                 \
-                                                             const J* bsr_col_ind_A,                 \
-                                                             const rocsparse_mat_descr descr_B,      \
-                                                             I                         nnzb_B,       \
-                                                             const T*                  bsr_val_B,    \
-                                                             const I* bsr_row_ptr_B,                 \
-                                                             const J* bsr_col_ind_B,                 \
-                                                             const T* beta,                          \
-                                                             const rocsparse_mat_descr descr_D,      \
-                                                             I                         nnzb_D,       \
-                                                             const T*                  bsr_val_D,    \
-                                                             const I* bsr_row_ptr_D,                 \
-                                                             const J* bsr_col_ind_D,                 \
-                                                             const rocsparse_mat_descr descr_C,      \
-                                                             T*                        bsr_val_C,    \
-                                                             const I*                 bsr_row_ptr_C, \
-                                                             J*                       bsr_col_ind_C, \
-                                                             const rocsparse_mat_info info_C,        \
-                                                             void*                    temp_buffer)
+#define INSTANTIATE(I, J, T)                                                                       \
+    template rocsparse_status rocsparse::bsrgemm_multadd_core(rocsparse_handle          handle,    \
+                                                              rocsparse_direction       dir,       \
+                                                              rocsparse_operation       trans_A,   \
+                                                              rocsparse_operation       trans_B,   \
+                                                              J                         mb,        \
+                                                              J                         nb,        \
+                                                              J                         kb,        \
+                                                              J                         block_dim, \
+                                                              const T*                  alpha,     \
+                                                              const rocsparse_mat_descr descr_A,   \
+                                                              I                         nnzb_A,    \
+                                                              const T*                  bsr_val_A, \
+                                                              const I* bsr_row_ptr_A,              \
+                                                              const J* bsr_col_ind_A,              \
+                                                              const rocsparse_mat_descr descr_B,   \
+                                                              I                         nnzb_B,    \
+                                                              const T*                  bsr_val_B, \
+                                                              const I* bsr_row_ptr_B,              \
+                                                              const J* bsr_col_ind_B,              \
+                                                              const T* beta,                       \
+                                                              const rocsparse_mat_descr descr_D,   \
+                                                              I                         nnzb_D,    \
+                                                              const T*                  bsr_val_D, \
+                                                              const I* bsr_row_ptr_D,              \
+                                                              const J* bsr_col_ind_D,              \
+                                                              const rocsparse_mat_descr descr_C,   \
+                                                              T*                        bsr_val_C, \
+                                                              const I* bsr_row_ptr_C,              \
+                                                              J*       bsr_col_ind_C,              \
+                                                              const rocsparse_mat_info info_C,     \
+                                                              void*                    temp_buffer)
 
 INSTANTIATE(int32_t, int32_t, float);
 INSTANTIATE(int32_t, int32_t, double);

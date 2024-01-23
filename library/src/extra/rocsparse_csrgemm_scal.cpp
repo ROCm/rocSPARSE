@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_csrgemm_scal.hpp"
 #include "../conversion/rocsparse_identity.hpp"
 #include "csrgemm_device.h"
 #include "definitions.h"
@@ -29,21 +30,21 @@
 #include "rocsparse_csrgemm.hpp"
 #include "utility.h"
 
-rocsparse_status rocsparse_csrgemm_scal_quickreturn(rocsparse_handle          handle,
-                                                    int64_t                   m,
-                                                    int64_t                   n,
-                                                    const void*               beta,
-                                                    const rocsparse_mat_descr descr_D,
-                                                    int64_t                   nnz_D,
-                                                    const void*               csr_val_D,
-                                                    const void*               csr_row_ptr_D,
-                                                    const void*               csr_col_ind_D,
-                                                    const rocsparse_mat_descr descr_C,
-                                                    void*                     csr_val_C,
-                                                    const void*               csr_row_ptr_C,
-                                                    void*                     csr_col_ind_C,
-                                                    const rocsparse_mat_info  info_C,
-                                                    void*                     temp_buffer)
+rocsparse_status rocsparse::csrgemm_scal_quickreturn(rocsparse_handle          handle,
+                                                     int64_t                   m,
+                                                     int64_t                   n,
+                                                     const void*               beta,
+                                                     const rocsparse_mat_descr descr_D,
+                                                     int64_t                   nnz_D,
+                                                     const void*               csr_val_D,
+                                                     const void*               csr_row_ptr_D,
+                                                     const void*               csr_col_ind_D,
+                                                     const rocsparse_mat_descr descr_C,
+                                                     void*                     csr_val_C,
+                                                     const void*               csr_row_ptr_C,
+                                                     void*                     csr_col_ind_C,
+                                                     const rocsparse_mat_info  info_C,
+                                                     void*                     temp_buffer)
 {
     if(m == 0 || n == 0 || nnz_D == 0)
     {
@@ -53,30 +54,36 @@ rocsparse_status rocsparse_csrgemm_scal_quickreturn(rocsparse_handle          ha
     return rocsparse_status_continue;
 }
 
-template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void csrgemm_copy_scale(I size, U alpha_device_host, const T* __restrict__ in, T* __restrict__ out)
+namespace rocsparse
 {
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    csrgemm_copy_scale_device<BLOCKSIZE>(size, alpha, in, out);
+    template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void csrgemm_copy_scale(I size,
+                            U alpha_device_host,
+                            const T* __restrict__ in,
+                            T* __restrict__ out)
+    {
+        auto alpha = load_scalar_device_host(alpha_device_host);
+        rocsparse::csrgemm_copy_scale_device<BLOCKSIZE>(size, alpha, in, out);
+    }
 }
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csrgemm_scal_core(rocsparse_handle          handle,
-                                             J                         m,
-                                             J                         n,
-                                             const T*                  beta,
-                                             const rocsparse_mat_descr descr_D,
-                                             I                         nnz_D,
-                                             const T*                  csr_val_D,
-                                             const I*                  csr_row_ptr_D,
-                                             const J*                  csr_col_ind_D,
-                                             const rocsparse_mat_descr descr_C,
-                                             T*                        csr_val_C,
-                                             const I*                  csr_row_ptr_C,
-                                             J*                        csr_col_ind_C,
-                                             const rocsparse_mat_info  info_C,
-                                             void*                     temp_buffer)
+rocsparse_status rocsparse::csrgemm_scal_core(rocsparse_handle          handle,
+                                              J                         m,
+                                              J                         n,
+                                              const T*                  beta,
+                                              const rocsparse_mat_descr descr_D,
+                                              I                         nnz_D,
+                                              const T*                  csr_val_D,
+                                              const I*                  csr_row_ptr_D,
+                                              const J*                  csr_col_ind_D,
+                                              const rocsparse_mat_descr descr_C,
+                                              T*                        csr_val_C,
+                                              const I*                  csr_row_ptr_C,
+                                              J*                        csr_col_ind_C,
+                                              const rocsparse_mat_info  info_C,
+                                              void*                     temp_buffer)
 {
 
     // Stream
@@ -89,7 +96,7 @@ rocsparse_status rocsparse_csrgemm_scal_core(rocsparse_handle          handle,
     // Copy column entries, if D != C
     if(csr_col_ind_C != csr_col_ind_D)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_copy<CSRGEMM_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgemm_copy<CSRGEMM_DIM>),
                                            csrgemm_blocks,
                                            csrgemm_threads,
                                            0,
@@ -104,7 +111,7 @@ rocsparse_status rocsparse_csrgemm_scal_core(rocsparse_handle          handle,
     // Scale the matrix
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_copy_scale<CSRGEMM_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgemm_copy_scale<CSRGEMM_DIM>),
                                            csrgemm_blocks,
                                            csrgemm_threads,
                                            0,
@@ -116,7 +123,7 @@ rocsparse_status rocsparse_csrgemm_scal_core(rocsparse_handle          handle,
     }
     else
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_copy_scale<CSRGEMM_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgemm_copy_scale<CSRGEMM_DIM>),
                                            csrgemm_blocks,
                                            csrgemm_threads,
                                            0,
@@ -131,22 +138,22 @@ rocsparse_status rocsparse_csrgemm_scal_core(rocsparse_handle          handle,
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(I, J, T)                                                                       \
-    template rocsparse_status rocsparse_csrgemm_scal_core(rocsparse_handle          handle,        \
-                                                          J                         m,             \
-                                                          J                         n,             \
-                                                          const T*                  beta,          \
-                                                          const rocsparse_mat_descr descr_D,       \
-                                                          I                         nnz_D,         \
-                                                          const T*                  csr_val_D,     \
-                                                          const I*                  csr_row_ptr_D, \
-                                                          const J*                  csr_col_ind_D, \
-                                                          const rocsparse_mat_descr descr_C,       \
-                                                          T*                        csr_val_C,     \
-                                                          const I*                  csr_row_ptr_C, \
-                                                          J*                        csr_col_ind_C, \
-                                                          const rocsparse_mat_info  info_C,        \
-                                                          void*                     temp_buffer)
+#define INSTANTIATE(I, J, T)                                                                        \
+    template rocsparse_status rocsparse::csrgemm_scal_core(rocsparse_handle          handle,        \
+                                                           J                         m,             \
+                                                           J                         n,             \
+                                                           const T*                  beta,          \
+                                                           const rocsparse_mat_descr descr_D,       \
+                                                           I                         nnz_D,         \
+                                                           const T*                  csr_val_D,     \
+                                                           const I*                  csr_row_ptr_D, \
+                                                           const J*                  csr_col_ind_D, \
+                                                           const rocsparse_mat_descr descr_C,       \
+                                                           T*                        csr_val_C,     \
+                                                           const I*                  csr_row_ptr_C, \
+                                                           J*                        csr_col_ind_C, \
+                                                           const rocsparse_mat_info  info_C,        \
+                                                           void*                     temp_buffer)
 
 INSTANTIATE(int32_t, int32_t, float);
 INSTANTIATE(int32_t, int32_t, double);
