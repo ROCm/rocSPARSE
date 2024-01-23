@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,79 +32,83 @@
 #include "utility.h"
 #include <rocprim/rocprim.hpp>
 
-// Copy an array
-template <unsigned int BLOCKSIZE, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void csrgemm_numeric_copy(I size,
-                          const J* __restrict__ in,
-                          J* __restrict__ out,
-                          rocsparse_index_base idx_base_in,
-                          rocsparse_index_base idx_base_out)
+namespace rocsparse
 {
-    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    if(idx >= size)
+    // Copy an array
+    template <unsigned int BLOCKSIZE, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void csrgemm_numeric_copy(I size,
+                              const J* __restrict__ in,
+                              J* __restrict__ out,
+                              rocsparse_index_base idx_base_in,
+                              rocsparse_index_base idx_base_out)
     {
-        return;
+        I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+        if(idx >= size)
+        {
+            return;
+        }
+
+        out[idx] = in[idx] - idx_base_in + idx_base_out;
     }
 
-    out[idx] = in[idx] - idx_base_in + idx_base_out;
-}
-
-// Copy and scale an array
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_DEVICE_ILF void csrgemm_numeric_copy_scale_device(I size, T alpha, const T* in, T* out)
-{
-    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    if(idx >= size)
+    // Copy and scale an array
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_DEVICE_ILF void
+        csrgemm_numeric_copy_scale_device(I size, T alpha, const T* in, T* out)
     {
-        return;
+        I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+        if(idx >= size)
+        {
+            return;
+        }
+
+        out[idx] = alpha * in[idx];
     }
 
-    out[idx] = alpha * in[idx];
+    template <typename T>
+    __forceinline__ __device__ __host__ T load_scalar_device_host_permissive(T x)
+    {
+        return x;
+    }
+
+    // For device scalars
+    template <typename T>
+    __forceinline__ __device__ __host__ T load_scalar_device_host_permissive(const T* xp)
+    {
+        return (xp) ? *xp : static_cast<T>(0);
+    }
+
+    template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void csrgemm_numeric_copy_scale_kernel(I size,
+                                           U alpha_device_host,
+                                           const T* __restrict__ in,
+                                           T* __restrict__ out)
+    {
+        auto alpha = load_scalar_device_host_permissive(alpha_device_host);
+        rocsparse::csrgemm_numeric_copy_scale_device<BLOCKSIZE>(size, alpha, in, out);
+    }
 }
 
-template <typename T>
-__forceinline__ __device__ __host__ T load_scalar_device_host_permissive(T x)
-{
-    return x;
-}
-
-// For device scalars
-template <typename T>
-__forceinline__ __device__ __host__ T load_scalar_device_host_permissive(const T* xp)
-{
-    return (xp) ? *xp : static_cast<T>(0);
-}
-
-template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void csrgemm_numeric_copy_scale_kernel(I size,
-                                       U alpha_device_host,
-                                       const T* __restrict__ in,
-                                       T* __restrict__ out)
-{
-    auto alpha = load_scalar_device_host_permissive(alpha_device_host);
-    csrgemm_numeric_copy_scale_device<BLOCKSIZE>(size, alpha, in, out);
-}
-
-rocsparse_status rocsparse_csrgemm_numeric_scal_quickreturn(rocsparse_handle handle,
-                                                            int64_t          m,
-                                                            int64_t          n,
-                                                            const void*      beta_device_host,
-                                                            const rocsparse_mat_descr descr_D,
-                                                            int64_t                   nnz_D,
-                                                            const void*               csr_val_D,
-                                                            const void*               csr_row_ptr_D,
-                                                            const void*               csr_col_ind_D,
-                                                            const rocsparse_mat_descr descr_C,
-                                                            int64_t                   nnz_C,
-                                                            void*                     csr_val_C,
-                                                            const void*               csr_row_ptr_C,
-                                                            const void*               csr_col_ind_C,
-                                                            const rocsparse_mat_info  info_C,
-                                                            void*                     temp_buffer)
+rocsparse_status rocsparse::csrgemm_numeric_scal_quickreturn(rocsparse_handle handle,
+                                                             int64_t          m,
+                                                             int64_t          n,
+                                                             const void*      beta_device_host,
+                                                             const rocsparse_mat_descr descr_D,
+                                                             int64_t                   nnz_D,
+                                                             const void*               csr_val_D,
+                                                             const void* csr_row_ptr_D,
+                                                             const void* csr_col_ind_D,
+                                                             const rocsparse_mat_descr descr_C,
+                                                             int64_t                   nnz_C,
+                                                             void*                     csr_val_C,
+                                                             const void*              csr_row_ptr_C,
+                                                             const void*              csr_col_ind_C,
+                                                             const rocsparse_mat_info info_C,
+                                                             void*                    temp_buffer)
 {
     if(m == 0 || n == 0 || nnz_D == 0 || nnz_C == 0)
     {
@@ -114,22 +118,22 @@ rocsparse_status rocsparse_csrgemm_numeric_scal_quickreturn(rocsparse_handle han
 }
 
 template <typename I, typename J, typename T>
-inline rocsparse_status rocsparse_csrgemm_numeric_scal_core(rocsparse_handle handle,
-                                                            J                m,
-                                                            J                n,
-                                                            const T*         beta_device_host,
-                                                            const rocsparse_mat_descr descr_D,
-                                                            I                         nnz_D,
-                                                            const T*                  csr_val_D,
-                                                            const I*                  csr_row_ptr_D,
-                                                            const J*                  csr_col_ind_D,
-                                                            const rocsparse_mat_descr descr_C,
-                                                            I                         nnz_C,
-                                                            T*                        csr_val_C,
-                                                            const I*                  csr_row_ptr_C,
-                                                            const J*                  csr_col_ind_C,
-                                                            const rocsparse_mat_info  info_C,
-                                                            void*                     temp_buffer)
+inline rocsparse_status rocsparse::csrgemm_numeric_scal_core(rocsparse_handle handle,
+                                                             J                m,
+                                                             J                n,
+                                                             const T*         beta_device_host,
+                                                             const rocsparse_mat_descr descr_D,
+                                                             I                         nnz_D,
+                                                             const T*                  csr_val_D,
+                                                             const I* csr_row_ptr_D,
+                                                             const J* csr_col_ind_D,
+                                                             const rocsparse_mat_descr descr_C,
+                                                             I                         nnz_C,
+                                                             T*                        csr_val_C,
+                                                             const I*                 csr_row_ptr_C,
+                                                             const J*                 csr_col_ind_C,
+                                                             const rocsparse_mat_info info_C,
+                                                             void*                    temp_buffer)
 {
     const bool mul = info_C->csrgemm_info->mul;
     const bool add = info_C->csrgemm_info->add;
@@ -159,30 +163,32 @@ inline rocsparse_status rocsparse_csrgemm_numeric_scal_core(rocsparse_handle han
         case rocsparse_pointer_mode_device:
         {
             // Scale the matrix
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_numeric_copy_scale_kernel<CSRGEMM_DIM>),
-                                               csrgemm_numeric_blocks,
-                                               csrgemm_numeric_threads,
-                                               0,
-                                               handle->stream,
-                                               nnz_D,
-                                               beta_device_host,
-                                               csr_val_D,
-                                               csr_val_C);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::csrgemm_numeric_copy_scale_kernel<CSRGEMM_DIM>),
+                csrgemm_numeric_blocks,
+                csrgemm_numeric_threads,
+                0,
+                handle->stream,
+                nnz_D,
+                beta_device_host,
+                csr_val_D,
+                csr_val_C);
             break;
         }
 
         case rocsparse_pointer_mode_host:
         {
             // Scale the matrix
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrgemm_numeric_copy_scale_kernel<CSRGEMM_DIM>),
-                                               csrgemm_numeric_blocks,
-                                               csrgemm_numeric_threads,
-                                               0,
-                                               handle->stream,
-                                               nnz_D,
-                                               *beta_device_host,
-                                               csr_val_D,
-                                               csr_val_C);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::csrgemm_numeric_copy_scale_kernel<CSRGEMM_DIM>),
+                csrgemm_numeric_blocks,
+                csrgemm_numeric_threads,
+                0,
+                handle->stream,
+                nnz_D,
+                *beta_device_host,
+                csr_val_D,
+                csr_val_C);
             break;
         }
         }
@@ -196,23 +202,23 @@ inline rocsparse_status rocsparse_csrgemm_numeric_scal_core(rocsparse_handle han
     }
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                \
-    template rocsparse_status rocsparse_csrgemm_numeric_scal_core<ITYPE, JTYPE, TTYPE>( \
-        rocsparse_handle          handle,                                               \
-        JTYPE                     m,                                                    \
-        JTYPE                     n,                                                    \
-        const TTYPE*              beta,                                                 \
-        const rocsparse_mat_descr descr_D,                                              \
-        ITYPE                     nnz_D,                                                \
-        const TTYPE*              csr_val_D,                                            \
-        const ITYPE*              csr_row_ptr_D,                                        \
-        const JTYPE*              csr_col_ind_D,                                        \
-        const rocsparse_mat_descr descr_C,                                              \
-        ITYPE                     nnz_C,                                                \
-        TTYPE*                    csr_val_C,                                            \
-        const ITYPE*              csr_row_ptr_C,                                        \
-        const JTYPE*              csr_col_ind_C,                                        \
-        const rocsparse_mat_info  info_C,                                               \
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                 \
+    template rocsparse_status rocsparse::csrgemm_numeric_scal_core<ITYPE, JTYPE, TTYPE>( \
+        rocsparse_handle          handle,                                                \
+        JTYPE                     m,                                                     \
+        JTYPE                     n,                                                     \
+        const TTYPE*              beta,                                                  \
+        const rocsparse_mat_descr descr_D,                                               \
+        ITYPE                     nnz_D,                                                 \
+        const TTYPE*              csr_val_D,                                             \
+        const ITYPE*              csr_row_ptr_D,                                         \
+        const JTYPE*              csr_col_ind_D,                                         \
+        const rocsparse_mat_descr descr_C,                                               \
+        ITYPE                     nnz_C,                                                 \
+        TTYPE*                    csr_val_C,                                             \
+        const ITYPE*              csr_row_ptr_C,                                         \
+        const JTYPE*              csr_col_ind_C,                                         \
+        const rocsparse_mat_info  info_C,                                                \
         void*                     temp_buffer)
 
 INSTANTIATE(int32_t, int32_t, float);
