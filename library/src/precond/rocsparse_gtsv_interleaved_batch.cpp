@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,16 @@
 
 template <typename T>
 rocsparse_status
-    rocsparse_gtsv_interleaved_batch_buffer_size_template(rocsparse_handle               handle,
-                                                          rocsparse_gtsv_interleaved_alg alg,
-                                                          rocsparse_int                  m,
-                                                          const T*                       dl,
-                                                          const T*                       d,
-                                                          const T*                       du,
-                                                          const T*                       x,
-                                                          rocsparse_int batch_count,
-                                                          rocsparse_int batch_stride,
-                                                          size_t*       buffer_size)
+    rocsparse::gtsv_interleaved_batch_buffer_size_template(rocsparse_handle               handle,
+                                                           rocsparse_gtsv_interleaved_alg alg,
+                                                           rocsparse_int                  m,
+                                                           const T*                       dl,
+                                                           const T*                       d,
+                                                           const T*                       du,
+                                                           const T*                       x,
+                                                           rocsparse_int batch_count,
+                                                           rocsparse_int batch_stride,
+                                                           size_t*       buffer_size)
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
@@ -103,125 +103,128 @@ rocsparse_status
     return rocsparse_status_success;
 }
 
-template <typename T>
-rocsparse_status rocsparse_gtsv_interleaved_batch_thomas_template(rocsparse_handle handle,
-                                                                  rocsparse_int    m,
-                                                                  T*               dl,
-                                                                  T*               d,
-                                                                  T*               du,
-                                                                  T*               x,
-                                                                  rocsparse_int    batch_count,
-                                                                  rocsparse_int    batch_stride,
-                                                                  void*            temp_buffer)
+namespace rocsparse
 {
-    char* ptr = reinterpret_cast<char*>(temp_buffer);
-    T*    dc1 = reinterpret_cast<T*>(temp_buffer);
-    ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
-    T* dx1 = reinterpret_cast<T*>(reinterpret_cast<void*>(ptr));
-    //  ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
+    template <typename T>
+    static rocsparse_status gtsv_interleaved_batch_thomas_template(rocsparse_handle handle,
+                                                                   rocsparse_int    m,
+                                                                   T*               dl,
+                                                                   T*               d,
+                                                                   T*               du,
+                                                                   T*               x,
+                                                                   rocsparse_int    batch_count,
+                                                                   rocsparse_int    batch_stride,
+                                                                   void*            temp_buffer)
+    {
+        char* ptr = reinterpret_cast<char*>(temp_buffer);
+        T*    dc1 = reinterpret_cast<T*>(temp_buffer);
+        ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
+        T* dx1 = reinterpret_cast<T*>(reinterpret_cast<void*>(ptr));
+        //  ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
 
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gtsv_interleaved_batch_thomas_kernel<128>),
-                                       dim3(((batch_count - 1) / 128 + 1), 1, 1),
-                                       dim3(128, 1, 1),
-                                       0,
-                                       handle->stream,
-                                       m,
-                                       batch_count,
-                                       batch_stride,
-                                       dl,
-                                       d,
-                                       du,
-                                       dc1,
-                                       dx1,
-                                       x);
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::gtsv_interleaved_batch_thomas_kernel<128>),
+                                           dim3(((batch_count - 1) / 128 + 1), 1, 1),
+                                           dim3(128, 1, 1),
+                                           0,
+                                           handle->stream,
+                                           m,
+                                           batch_count,
+                                           batch_stride,
+                                           dl,
+                                           d,
+                                           du,
+                                           dc1,
+                                           dx1,
+                                           x);
 
-    return rocsparse_status_success;
+        return rocsparse_status_success;
+    }
+
+    template <typename T>
+    static rocsparse_status gtsv_interleaved_batch_lu_template(rocsparse_handle handle,
+                                                               rocsparse_int    m,
+                                                               T*               dl,
+                                                               T*               d,
+                                                               T*               du,
+                                                               T*               x,
+                                                               rocsparse_int    batch_count,
+                                                               rocsparse_int    batch_stride,
+                                                               void*            temp_buffer)
+    {
+        char* ptr = reinterpret_cast<char*>(temp_buffer);
+        T*    u2  = reinterpret_cast<T*>(temp_buffer);
+        ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
+        rocsparse_int* p = reinterpret_cast<rocsparse_int*>(reinterpret_cast<void*>(ptr));
+        // ptr += ((sizeof(rocsparse_int) * m * batch_count - 1) / 256 + 1) * 256;
+
+        RETURN_IF_HIP_ERROR(hipMemsetAsync(
+            u2, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::gtsv_interleaved_batch_lu_kernel<128>),
+                                           dim3(((batch_count - 1) / 128 + 1), 1, 1),
+                                           dim3(128, 1, 1),
+                                           0,
+                                           handle->stream,
+                                           m,
+                                           batch_count,
+                                           batch_stride,
+                                           dl,
+                                           d,
+                                           du,
+                                           u2,
+                                           p,
+                                           x);
+
+        return rocsparse_status_success;
+    }
+
+    template <typename T>
+    static rocsparse_status gtsv_interleaved_batch_qr_template(rocsparse_handle handle,
+                                                               rocsparse_int    m,
+                                                               T*               dl,
+                                                               T*               d,
+                                                               T*               du,
+                                                               T*               x,
+                                                               rocsparse_int    batch_count,
+                                                               rocsparse_int    batch_stride,
+                                                               void*            temp_buffer)
+    {
+        char* ptr = reinterpret_cast<char*>(temp_buffer);
+        T*    r2  = reinterpret_cast<T*>(ptr);
+        //   ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
+
+        RETURN_IF_HIP_ERROR(hipMemsetAsync(
+            r2, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::gtsv_interleaved_batch_qr_kernel<128>),
+                                           dim3(((batch_count - 1) / 128 + 1), 1, 1),
+                                           dim3(128, 1, 1),
+                                           0,
+                                           handle->stream,
+                                           m,
+                                           batch_count,
+                                           batch_stride,
+                                           dl,
+                                           d,
+                                           du,
+                                           r2,
+                                           x);
+
+        return rocsparse_status_success;
+    }
 }
 
 template <typename T>
-rocsparse_status rocsparse_gtsv_interleaved_batch_lu_template(rocsparse_handle handle,
-                                                              rocsparse_int    m,
-                                                              T*               dl,
-                                                              T*               d,
-                                                              T*               du,
-                                                              T*               x,
-                                                              rocsparse_int    batch_count,
-                                                              rocsparse_int    batch_stride,
-                                                              void*            temp_buffer)
-{
-    char* ptr = reinterpret_cast<char*>(temp_buffer);
-    T*    u2  = reinterpret_cast<T*>(temp_buffer);
-    ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
-    rocsparse_int* p = reinterpret_cast<rocsparse_int*>(reinterpret_cast<void*>(ptr));
-    // ptr += ((sizeof(rocsparse_int) * m * batch_count - 1) / 256 + 1) * 256;
-
-    RETURN_IF_HIP_ERROR(
-        hipMemsetAsync(u2, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
-
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gtsv_interleaved_batch_lu_kernel<128>),
-                                       dim3(((batch_count - 1) / 128 + 1), 1, 1),
-                                       dim3(128, 1, 1),
-                                       0,
-                                       handle->stream,
-                                       m,
-                                       batch_count,
-                                       batch_stride,
-                                       dl,
-                                       d,
-                                       du,
-                                       u2,
-                                       p,
-                                       x);
-
-    return rocsparse_status_success;
-}
-
-template <typename T>
-rocsparse_status rocsparse_gtsv_interleaved_batch_qr_template(rocsparse_handle handle,
-                                                              rocsparse_int    m,
-                                                              T*               dl,
-                                                              T*               d,
-                                                              T*               du,
-                                                              T*               x,
-                                                              rocsparse_int    batch_count,
-                                                              rocsparse_int    batch_stride,
-                                                              void*            temp_buffer)
-{
-    char* ptr = reinterpret_cast<char*>(temp_buffer);
-    T*    r2  = reinterpret_cast<T*>(ptr);
-    //   ptr += ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256;
-
-    RETURN_IF_HIP_ERROR(
-        hipMemsetAsync(r2, 0, ((sizeof(T) * m * batch_count - 1) / 256 + 1) * 256, handle->stream));
-
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gtsv_interleaved_batch_qr_kernel<128>),
-                                       dim3(((batch_count - 1) / 128 + 1), 1, 1),
-                                       dim3(128, 1, 1),
-                                       0,
-                                       handle->stream,
-                                       m,
-                                       batch_count,
-                                       batch_stride,
-                                       dl,
-                                       d,
-                                       du,
-                                       r2,
-                                       x);
-
-    return rocsparse_status_success;
-}
-
-template <typename T>
-rocsparse_status rocsparse_gtsv_interleaved_batch_template(rocsparse_handle               handle,
-                                                           rocsparse_gtsv_interleaved_alg alg,
-                                                           rocsparse_int                  m,
-                                                           T*                             dl,
-                                                           T*                             d,
-                                                           T*                             du,
-                                                           T*                             x,
-                                                           rocsparse_int batch_count,
-                                                           rocsparse_int batch_stride,
-                                                           void*         temp_buffer)
+rocsparse_status rocsparse::gtsv_interleaved_batch_template(rocsparse_handle               handle,
+                                                            rocsparse_gtsv_interleaved_alg alg,
+                                                            rocsparse_int                  m,
+                                                            T*                             dl,
+                                                            T*                             d,
+                                                            T*                             du,
+                                                            T*                             x,
+                                                            rocsparse_int batch_count,
+                                                            rocsparse_int batch_stride,
+                                                            void*         temp_buffer)
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
@@ -261,20 +264,20 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_template(rocsparse_handle     
     {
     case rocsparse_gtsv_interleaved_alg_thomas:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gtsv_interleaved_batch_thomas_template(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gtsv_interleaved_batch_thomas_template(
             handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer));
         return rocsparse_status_success;
     }
     case rocsparse_gtsv_interleaved_alg_lu:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gtsv_interleaved_batch_lu_template(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gtsv_interleaved_batch_lu_template(
             handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer));
         return rocsparse_status_success;
     }
     case rocsparse_gtsv_interleaved_alg_default:
     case rocsparse_gtsv_interleaved_alg_qr:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gtsv_interleaved_batch_qr_template(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gtsv_interleaved_batch_qr_template(
             handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer));
         return rocsparse_status_success;
     }
@@ -288,26 +291,26 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_template(rocsparse_handle     
  *    C wrapper
  * ===========================================================================
  */
-#define C_IMPL(NAME, TYPE)                                                               \
-    extern "C" rocsparse_status NAME(rocsparse_handle               handle,              \
-                                     rocsparse_gtsv_interleaved_alg alg,                 \
-                                     rocsparse_int                  m,                   \
-                                     const TYPE*                    dl,                  \
-                                     const TYPE*                    d,                   \
-                                     const TYPE*                    du,                  \
-                                     const TYPE*                    x,                   \
-                                     rocsparse_int                  batch_count,         \
-                                     rocsparse_int                  batch_stride,        \
-                                     size_t*                        buffer_size)         \
-    try                                                                                  \
-    {                                                                                    \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gtsv_interleaved_batch_buffer_size_template( \
-            handle, alg, m, dl, d, du, x, batch_count, batch_stride, buffer_size));      \
-        return rocsparse_status_success;                                                 \
-    }                                                                                    \
-    catch(...)                                                                           \
-    {                                                                                    \
-        RETURN_ROCSPARSE_EXCEPTION();                                                    \
+#define C_IMPL(NAME, TYPE)                                                                \
+    extern "C" rocsparse_status NAME(rocsparse_handle               handle,               \
+                                     rocsparse_gtsv_interleaved_alg alg,                  \
+                                     rocsparse_int                  m,                    \
+                                     const TYPE*                    dl,                   \
+                                     const TYPE*                    d,                    \
+                                     const TYPE*                    du,                   \
+                                     const TYPE*                    x,                    \
+                                     rocsparse_int                  batch_count,          \
+                                     rocsparse_int                  batch_stride,         \
+                                     size_t*                        buffer_size)          \
+    try                                                                                   \
+    {                                                                                     \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gtsv_interleaved_batch_buffer_size_template( \
+            handle, alg, m, dl, d, du, x, batch_count, batch_stride, buffer_size));       \
+        return rocsparse_status_success;                                                  \
+    }                                                                                     \
+    catch(...)                                                                            \
+    {                                                                                     \
+        RETURN_ROCSPARSE_EXCEPTION();                                                     \
     }
 
 C_IMPL(rocsparse_sgtsv_interleaved_batch_buffer_size, float);
@@ -330,7 +333,7 @@ C_IMPL(rocsparse_zgtsv_interleaved_batch_buffer_size, rocsparse_double_complex);
                                      void*                          temp_buffer)    \
     try                                                                             \
     {                                                                               \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gtsv_interleaved_batch_template(        \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gtsv_interleaved_batch_template(       \
             handle, alg, m, dl, d, du, x, batch_count, batch_stride, temp_buffer)); \
         return rocsparse_status_success;                                            \
     }                                                                               \

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,24 +27,27 @@
 #include "definitions.h"
 #include "utility.h"
 
-template <typename T>
-rocsparse_status rocsparse_gtsv_no_pivot_buffer_size_template(rocsparse_handle handle,
-                                                              rocsparse_int    m,
-                                                              rocsparse_int    n,
-                                                              const float*     dl,
-                                                              const float*     d,
-                                                              const float*     du,
-                                                              const float*     B,
-                                                              rocsparse_int    ldb,
-                                                              size_t*          buffer_size);
+namespace rocsparse
+{
+    template <typename T>
+    rocsparse_status gtsv_no_pivot_buffer_size_template(rocsparse_handle handle,
+                                                        rocsparse_int    m,
+                                                        rocsparse_int    n,
+                                                        const T*         dl,
+                                                        const T*         d,
+                                                        const T*         du,
+                                                        const T*         B,
+                                                        rocsparse_int    ldb,
+                                                        size_t*          buffer_size);
 
-template <typename T>
-rocsparse_status rocsparse_gtsv_no_pivot_template(rocsparse_handle handle,
-                                                  rocsparse_int    m,
-                                                  rocsparse_int    n,
-                                                  const float*     dl,
-                                                  const float*     d,
-                                                  const float*     du,
-                                                  float*           B,
-                                                  rocsparse_int    ldb,
-                                                  void*            temp_buffer);
+    template <typename T>
+    rocsparse_status gtsv_no_pivot_template(rocsparse_handle handle,
+                                            rocsparse_int    m,
+                                            rocsparse_int    n,
+                                            const T*         dl,
+                                            const T*         d,
+                                            const T*         du,
+                                            T*               B,
+                                            rocsparse_int    ldb,
+                                            void*            temp_buffer);
+}
