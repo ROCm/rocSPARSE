@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,32 +30,35 @@
 #include "nnz_compress_device.h"
 #include <rocprim/rocprim.hpp>
 
-template <rocsparse_int BLOCK_SIZE,
-          rocsparse_int SEGMENTS_PER_BLOCK,
-          rocsparse_int SEGMENT_SIZE,
-          rocsparse_int WF_SIZE,
-          typename T>
-ROCSPARSE_KERNEL(BLOCK_SIZE)
-void nnz_compress_kernel(rocsparse_int        m,
-                         rocsparse_index_base idx_base_A,
-                         const T* __restrict__ csr_val_A,
-                         const rocsparse_int* __restrict__ csr_row_ptr_A,
-                         rocsparse_int* __restrict__ nnz_per_row,
-                         T threshold)
+namespace rocsparse
 {
-    nnz_compress_device<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>(
-        m, idx_base_A, csr_val_A, csr_row_ptr_A, nnz_per_row, threshold);
+    template <rocsparse_int BLOCK_SIZE,
+              rocsparse_int SEGMENTS_PER_BLOCK,
+              rocsparse_int SEGMENT_SIZE,
+              rocsparse_int WF_SIZE,
+              typename T>
+    ROCSPARSE_KERNEL(BLOCK_SIZE)
+    void nnz_compress_kernel(rocsparse_int        m,
+                             rocsparse_index_base idx_base_A,
+                             const T* __restrict__ csr_val_A,
+                             const rocsparse_int* __restrict__ csr_row_ptr_A,
+                             rocsparse_int* __restrict__ nnz_per_row,
+                             T threshold)
+    {
+        rocsparse::nnz_compress_device<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>(
+            m, idx_base_A, csr_val_A, csr_row_ptr_A, nnz_per_row, threshold);
+    }
 }
 
 template <typename T>
-rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handle, //0
-                                                 rocsparse_int             m, //1
-                                                 const rocsparse_mat_descr descr_A, //2
-                                                 const T*                  csr_val_A, //3
-                                                 const rocsparse_int*      csr_row_ptr_A, //4
-                                                 rocsparse_int*            nnz_per_row, //5
-                                                 rocsparse_int*            nnz_C, //6
-                                                 T                         tol) //7
+rocsparse_status rocsparse::nnz_compress_template(rocsparse_handle          handle, //0
+                                                  rocsparse_int             m, //1
+                                                  const rocsparse_mat_descr descr_A, //2
+                                                  const T*                  csr_val_A, //3
+                                                  const rocsparse_int*      csr_row_ptr_A, //4
+                                                  rocsparse_int*            nnz_per_row, //5
+                                                  rocsparse_int*            nnz_C, //6
+                                                  T                         tol) //7
 {
 
     // Logging
@@ -139,7 +142,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (nnz_compress_kernel<block_size, segments_per_block, 2, 32>),
+                (rocsparse::nnz_compress_kernel<block_size, segments_per_block, 2, 32>),
                 dim3(grid_size),
                 dim3(block_size),
                 0,
@@ -157,7 +160,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (nnz_compress_kernel<block_size, segments_per_block, 4, 32>),
+                (rocsparse::nnz_compress_kernel<block_size, segments_per_block, 4, 32>),
                 dim3(grid_size),
                 dim3(block_size),
                 0,
@@ -175,7 +178,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (nnz_compress_kernel<block_size, segments_per_block, 8, 32>),
+                (rocsparse::nnz_compress_kernel<block_size, segments_per_block, 8, 32>),
                 dim3(grid_size),
                 dim3(block_size),
                 0,
@@ -193,7 +196,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (nnz_compress_kernel<block_size, segments_per_block, 16, 32>),
+                (rocsparse::nnz_compress_kernel<block_size, segments_per_block, 16, 32>),
                 dim3(grid_size),
                 dim3(block_size),
                 0,
@@ -211,7 +214,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (nnz_compress_kernel<block_size, segments_per_block, 32, 32>),
+                (rocsparse::nnz_compress_kernel<block_size, segments_per_block, 32, 32>),
                 dim3(grid_size),
                 dim3(block_size),
                 0,
@@ -232,7 +235,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (nnz_compress_kernel<block_size, segments_per_block, 2, 64>),
+                (rocsparse::nnz_compress_kernel<block_size, segments_per_block, 2, 64>),
                 dim3(grid_size),
                 dim3(block_size),
                 0,
@@ -250,7 +253,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (nnz_compress_kernel<block_size, segments_per_block, 4, 64>),
+                (rocsparse::nnz_compress_kernel<block_size, segments_per_block, 4, 64>),
                 dim3(grid_size),
                 dim3(block_size),
                 0,
@@ -268,7 +271,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (nnz_compress_kernel<block_size, segments_per_block, 8, 64>),
+                (rocsparse::nnz_compress_kernel<block_size, segments_per_block, 8, 64>),
                 dim3(grid_size),
                 dim3(block_size),
                 0,
@@ -286,7 +289,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (nnz_compress_kernel<block_size, segments_per_block, 16, 64>),
+                (rocsparse::nnz_compress_kernel<block_size, segments_per_block, 16, 64>),
                 dim3(grid_size),
                 dim3(block_size),
                 0,
@@ -304,7 +307,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (nnz_compress_kernel<block_size, segments_per_block, 32, 64>),
+                (rocsparse::nnz_compress_kernel<block_size, segments_per_block, 32, 64>),
                 dim3(grid_size),
                 dim3(block_size),
                 0,
@@ -322,7 +325,7 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (nnz_compress_kernel<block_size, segments_per_block, 64, 64>),
+                (rocsparse::nnz_compress_kernel<block_size, segments_per_block, 64, 64>),
                 dim3(grid_size),
                 dim3(block_size),
                 0,
@@ -406,7 +409,7 @@ extern "C" rocsparse_status rocsparse_snnz_compress(rocsparse_handle          ha
                                                     float                     tol)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_nnz_compress_template(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::nnz_compress_template(
         handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol));
     return rocsparse_status_success;
 }
@@ -425,7 +428,7 @@ extern "C" rocsparse_status rocsparse_dnnz_compress(rocsparse_handle          ha
                                                     double                    tol)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_nnz_compress_template(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::nnz_compress_template(
         handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol));
     return rocsparse_status_success;
 }
@@ -444,7 +447,7 @@ extern "C" rocsparse_status rocsparse_cnnz_compress(rocsparse_handle            
                                                     rocsparse_float_complex        tol)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_nnz_compress_template(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::nnz_compress_template(
         handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol));
     return rocsparse_status_success;
 }
@@ -463,7 +466,7 @@ extern "C" rocsparse_status rocsparse_znnz_compress(rocsparse_handle            
                                                     rocsparse_double_complex        tol)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_nnz_compress_template(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::nnz_compress_template(
         handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol));
     return rocsparse_status_success;
 }

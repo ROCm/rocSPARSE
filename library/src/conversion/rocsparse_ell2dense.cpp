@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,16 @@
 #include "ell2dense_device.h"
 
 template <typename I, typename T>
-rocsparse_status rocsparse_ell2dense_template(rocsparse_handle          handle,
-                                              I                         m,
-                                              I                         n,
-                                              const rocsparse_mat_descr ell_descr,
-                                              I                         ell_width,
-                                              const T*                  ell_val,
-                                              const I*                  ell_col_ind,
-                                              T*                        A,
-                                              int64_t                   lda,
-                                              rocsparse_order           order)
+rocsparse_status rocsparse::ell2dense_template(rocsparse_handle          handle,
+                                               I                         m,
+                                               I                         n,
+                                               const rocsparse_mat_descr ell_descr,
+                                               I                         ell_width,
+                                               const T*                  ell_val,
+                                               const I*                  ell_col_ind,
+                                               T*                        A,
+                                               int64_t                   lda,
+                                               rocsparse_order           order)
 {
     // Check for valid handle and matrix descriptor
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -126,7 +126,7 @@ rocsparse_status rocsparse_ell2dense_template(rocsparse_handle          handle,
         dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NELL_COLUMNS_PER_BLOCK);
 
         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (ell2dense_kernel<NELL_COLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, T>),
+            (rocsparse::ell2dense_kernel<NELL_COLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, T>),
             k_blocks,
             k_threads,
             0,
@@ -150,7 +150,7 @@ rocsparse_status rocsparse_ell2dense_template(rocsparse_handle          handle,
         dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NELL_COLUMNS_PER_BLOCK);
 
         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (ell2dense_kernel<NELL_COLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, T>),
+            (rocsparse::ell2dense_kernel<NELL_COLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, T>),
             k_blocks,
             k_threads,
             0,
@@ -169,17 +169,17 @@ rocsparse_status rocsparse_ell2dense_template(rocsparse_handle          handle,
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, TTYPE)                                         \
-    template rocsparse_status rocsparse_ell2dense_template<ITYPE, TTYPE>( \
-        rocsparse_handle          handle,                                 \
-        ITYPE                     m,                                      \
-        ITYPE                     n,                                      \
-        const rocsparse_mat_descr ell_descr,                              \
-        ITYPE                     ell_width,                              \
-        const TTYPE*              ell_val,                                \
-        const ITYPE*              ell_col_ind,                            \
-        TTYPE*                    A,                                      \
-        int64_t                   lda,                                    \
+#define INSTANTIATE(ITYPE, TTYPE)                                          \
+    template rocsparse_status rocsparse::ell2dense_template<ITYPE, TTYPE>( \
+        rocsparse_handle          handle,                                  \
+        ITYPE                     m,                                       \
+        ITYPE                     n,                                       \
+        const rocsparse_mat_descr ell_descr,                               \
+        ITYPE                     ell_width,                               \
+        const TTYPE*              ell_val,                                 \
+        const ITYPE*              ell_col_ind,                             \
+        TTYPE*                    A,                                       \
+        int64_t                   lda,                                     \
         rocsparse_order           order)
 
 INSTANTIATE(int32_t, float);

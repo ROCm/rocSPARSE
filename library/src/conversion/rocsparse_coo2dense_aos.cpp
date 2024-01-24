@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,16 @@
 #include "coo2dense_device.h"
 
 template <typename I, typename T>
-rocsparse_status rocsparse_coo2dense_aos_template(rocsparse_handle          handle,
-                                                  I                         m,
-                                                  I                         n,
-                                                  int64_t                   nnz,
-                                                  const rocsparse_mat_descr descr,
-                                                  const T*                  coo_val,
-                                                  const I*                  coo_ind,
-                                                  T*                        A,
-                                                  int64_t                   lda,
-                                                  rocsparse_order           order)
+rocsparse_status rocsparse::coo2dense_aos_template(rocsparse_handle          handle,
+                                                   I                         m,
+                                                   I                         n,
+                                                   int64_t                   nnz,
+                                                   const rocsparse_mat_descr descr,
+                                                   const T*                  coo_val,
+                                                   const I*                  coo_ind,
+                                                   T*                        A,
+                                                   int64_t                   lda,
+                                                   rocsparse_order           order)
 {
     // Check for valid handle and matrix descriptor
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -115,7 +115,7 @@ rocsparse_status rocsparse_coo2dense_aos_template(rocsparse_handle          hand
     dim3          blocks(num_blocks_x);
     dim3          threads(COO2DENSE_DIM);
 
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((coo2dense_aos_kernel<COO2DENSE_DIM>),
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::coo2dense_aos_kernel<COO2DENSE_DIM>),
                                        blocks,
                                        threads,
                                        0,
@@ -134,17 +134,17 @@ rocsparse_status rocsparse_coo2dense_aos_template(rocsparse_handle          hand
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, TTYPE)                                             \
-    template rocsparse_status rocsparse_coo2dense_aos_template<ITYPE, TTYPE>( \
-        rocsparse_handle          handle,                                     \
-        ITYPE                     m,                                          \
-        ITYPE                     n,                                          \
-        int64_t                   nnz,                                        \
-        const rocsparse_mat_descr descr,                                      \
-        const TTYPE*              coo_val,                                    \
-        const ITYPE*              coo_ind,                                    \
-        TTYPE*                    A,                                          \
-        int64_t                   lda,                                        \
+#define INSTANTIATE(ITYPE, TTYPE)                                              \
+    template rocsparse_status rocsparse::coo2dense_aos_template<ITYPE, TTYPE>( \
+        rocsparse_handle          handle,                                      \
+        ITYPE                     m,                                           \
+        ITYPE                     n,                                           \
+        int64_t                   nnz,                                         \
+        const rocsparse_mat_descr descr,                                       \
+        const TTYPE*              coo_val,                                     \
+        const ITYPE*              coo_ind,                                     \
+        TTYPE*                    A,                                           \
+        int64_t                   lda,                                         \
         rocsparse_order           order)
 
 INSTANTIATE(int32_t, float);

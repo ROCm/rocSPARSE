@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,14 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_spmat_transfer_from.hpp"
 #include "rocsparse_convert_array.hpp"
+
 #include "utility.h"
 
-rocsparse_status rocsparse_internal_spmat_transfer_from(rocsparse_handle            handle,
-                                                        rocsparse_spmat_descr       target,
-                                                        rocsparse_const_spmat_descr source)
+rocsparse_status rocsparse::internal_spmat_transfer_from(rocsparse_handle            handle,
+                                                         rocsparse_spmat_descr       target,
+                                                         rocsparse_const_spmat_descr source)
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(1, target);
@@ -101,12 +103,12 @@ rocsparse_status rocsparse_internal_spmat_transfer_from(rocsparse_handle        
                            target,
                            ((source->const_row_data != nullptr) && (target->row_data == nullptr)),
                            rocsparse_status_invalid_pointer);
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(handle,
-                                                          size_row_data,
-                                                          target->row_type,
-                                                          target->row_data,
-                                                          source->row_type,
-                                                          source->const_row_data));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(handle,
+                                                           size_row_data,
+                                                           target->row_type,
+                                                           target->row_data,
+                                                           source->row_type,
+                                                           source->const_row_data));
     }
 
     //
@@ -118,12 +120,12 @@ rocsparse_status rocsparse_internal_spmat_transfer_from(rocsparse_handle        
                            target,
                            ((source->const_col_data != nullptr) && (target->col_data == nullptr)),
                            rocsparse_status_invalid_pointer);
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(handle,
-                                                          size_col_data,
-                                                          target->col_type,
-                                                          target->col_data,
-                                                          source->col_type,
-                                                          source->const_col_data));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(handle,
+                                                           size_col_data,
+                                                           target->col_type,
+                                                           target->col_data,
+                                                           source->col_type,
+                                                           source->const_col_data));
     }
 
     //
@@ -135,12 +137,12 @@ rocsparse_status rocsparse_internal_spmat_transfer_from(rocsparse_handle        
                            target,
                            ((source->const_ind_data != nullptr) && (target->ind_data == nullptr)),
                            rocsparse_status_invalid_pointer);
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(handle,
-                                                          size_ind_data,
-                                                          target->row_type,
-                                                          target->ind_data,
-                                                          source->row_type,
-                                                          source->const_ind_data));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(handle,
+                                                           size_ind_data,
+                                                           target->row_type,
+                                                           target->ind_data,
+                                                           source->row_type,
+                                                           source->const_ind_data));
     }
 
     //
@@ -152,12 +154,12 @@ rocsparse_status rocsparse_internal_spmat_transfer_from(rocsparse_handle        
                            target,
                            ((source->const_val_data != nullptr) && (target->val_data == nullptr)),
                            rocsparse_status_invalid_pointer);
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(handle,
-                                                          size_val_data,
-                                                          target->data_type,
-                                                          target->val_data,
-                                                          source->data_type,
-                                                          source->const_val_data));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(handle,
+                                                           size_val_data,
+                                                           target->data_type,
+                                                           target->val_data,
+                                                           source->data_type,
+                                                           source->const_val_data));
     }
 
     return rocsparse_status_success;

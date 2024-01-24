@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -217,7 +217,7 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
                 (void**)&csr_row_ptr, sizeof(I) * (m + 1), handle->stream));
             RETURN_IF_HIP_ERROR(hipMemsetAsync(max_nnz, 0, sizeof(I), handle->stream));
 
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2csr_template(
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::coo2csr_template(
                 handle, coo_row_ind, (I)nnz, m, csr_row_ptr, descr->base));
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr_max_nnz_per_row<256, I, I>),
@@ -251,7 +251,7 @@ rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          han
             RETURN_IF_HIP_ERROR(hipMemsetAsync(max_nnz, 0, sizeof(I), handle->stream));
 
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
+                rocsparse::coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr_max_nnz_per_row<256, int64_t, int64_t>),
                                                dim3((m - 1) / 256 + 1),

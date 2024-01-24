@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -26,19 +26,22 @@
 #include "common.h"
 #include "handle.h"
 
-template <rocsparse_int BLOCK_SIZE, typename T>
-ROCSPARSE_KERNEL(BLOCK_SIZE)
-void abs_kernel(rocsparse_int m, rocsparse_int n, const T* A, int64_t lda, T* output)
+namespace rocsparse
 {
-    rocsparse_int thread_id = hipThreadIdx_x + hipBlockIdx_x * BLOCK_SIZE;
-
-    if(thread_id >= m * n)
+    template <rocsparse_int BLOCK_SIZE, typename T>
+    ROCSPARSE_KERNEL(BLOCK_SIZE)
+    void abs_kernel(rocsparse_int m, rocsparse_int n, const T* A, int64_t lda, T* output)
     {
-        return;
+        rocsparse_int thread_id = hipThreadIdx_x + hipBlockIdx_x * BLOCK_SIZE;
+
+        if(thread_id >= m * n)
+        {
+            return;
+        }
+
+        rocsparse_int row = thread_id % m;
+        rocsparse_int col = thread_id / m;
+
+        output[m * col + row] = rocsparse_abs(A[lda * col + row]);
     }
-
-    rocsparse_int row = thread_id % m;
-    rocsparse_int col = thread_id / m;
-
-    output[m * col + row] = rocsparse_abs(A[lda * col + row]);
 }

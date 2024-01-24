@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,38 +26,41 @@
 
 #include "handle.h"
 
-template <typename T>
-rocsparse_status rocsparse_gebsr2gebsr_buffer_size_template(rocsparse_handle          handle,
-                                                            rocsparse_direction       dir,
-                                                            rocsparse_int             mb,
-                                                            rocsparse_int             nb,
-                                                            rocsparse_int             nnzb,
-                                                            const rocsparse_mat_descr descr_A,
-                                                            const T*                  bsr_val_A,
-                                                            const rocsparse_int*      bsr_row_ptr_A,
-                                                            const rocsparse_int*      bsr_col_ind_A,
-                                                            rocsparse_int row_block_dim_A,
-                                                            rocsparse_int col_block_dim_A,
-                                                            rocsparse_int row_block_dim_C,
-                                                            rocsparse_int col_block_dim_C,
-                                                            size_t*       buffer_size);
+namespace rocsparse
+{
+    template <typename T>
+    rocsparse_status gebsr2gebsr_buffer_size_template(rocsparse_handle          handle,
+                                                      rocsparse_direction       dir,
+                                                      rocsparse_int             mb,
+                                                      rocsparse_int             nb,
+                                                      rocsparse_int             nnzb,
+                                                      const rocsparse_mat_descr descr_A,
+                                                      const T*                  bsr_val_A,
+                                                      const rocsparse_int*      bsr_row_ptr_A,
+                                                      const rocsparse_int*      bsr_col_ind_A,
+                                                      rocsparse_int             row_block_dim_A,
+                                                      rocsparse_int             col_block_dim_A,
+                                                      rocsparse_int             row_block_dim_C,
+                                                      rocsparse_int             col_block_dim_C,
+                                                      size_t*                   buffer_size);
 
-template <typename T>
-rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle,
-                                                rocsparse_direction       dir,
-                                                rocsparse_int             mb,
-                                                rocsparse_int             nb,
-                                                rocsparse_int             nnzb,
-                                                const rocsparse_mat_descr descr_A,
-                                                const T*                  bsr_val_A,
-                                                const rocsparse_int*      bsr_row_ptr_A,
-                                                const rocsparse_int*      bsr_col_ind_A,
-                                                rocsparse_int             row_block_dim_A,
-                                                rocsparse_int             col_block_dim_A,
-                                                const rocsparse_mat_descr descr_C,
-                                                T*                        bsr_val_C,
-                                                rocsparse_int*            bsr_row_ptr_C,
-                                                rocsparse_int*            bsr_col_ind_C,
-                                                rocsparse_int             row_block_dim_C,
-                                                rocsparse_int             col_block_dim_C,
-                                                void*                     temp_buffer);
+    template <typename T>
+    rocsparse_status gebsr2gebsr_template(rocsparse_handle          handle,
+                                          rocsparse_direction       dir,
+                                          rocsparse_int             mb,
+                                          rocsparse_int             nb,
+                                          rocsparse_int             nnzb,
+                                          const rocsparse_mat_descr descr_A,
+                                          const T*                  bsr_val_A,
+                                          const rocsparse_int*      bsr_row_ptr_A,
+                                          const rocsparse_int*      bsr_col_ind_A,
+                                          rocsparse_int             row_block_dim_A,
+                                          rocsparse_int             col_block_dim_A,
+                                          const rocsparse_mat_descr descr_C,
+                                          T*                        bsr_val_C,
+                                          rocsparse_int*            bsr_row_ptr_C,
+                                          rocsparse_int*            bsr_col_ind_C,
+                                          rocsparse_int             row_block_dim_C,
+                                          rocsparse_int             col_block_dim_C,
+                                          void*                     temp_buffer);
+}

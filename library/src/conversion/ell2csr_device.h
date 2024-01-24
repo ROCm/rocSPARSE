@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,87 +28,90 @@
 
 #include <hip/hip_runtime.h>
 
-template <unsigned int BLOCKSIZE, typename I>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void ell2csr_index_base(I* __restrict__ nnz)
+namespace rocsparse
 {
-    --(*nnz);
-}
-
-template <unsigned int BLOCKSIZE, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void ell2csr_nnz_per_row(J m,
-                         J n,
-                         J ell_width,
-                         const J* __restrict__ ell_col_ind,
-                         rocsparse_index_base ell_base,
-                         I* __restrict__ csr_row_ptr,
-                         rocsparse_index_base csr_base)
-{
-    const J ai = ((J)BLOCKSIZE) * hipBlockIdx_x + hipThreadIdx_x;
-
-    if(ai >= m)
+    template <unsigned int BLOCKSIZE, typename I>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void ell2csr_index_base(I* __restrict__ nnz)
     {
-        return;
+        --(*nnz);
     }
 
-    if(ai == 0)
+    template <unsigned int BLOCKSIZE, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void ell2csr_nnz_per_row(J m,
+                             J n,
+                             J ell_width,
+                             const J* __restrict__ ell_col_ind,
+                             rocsparse_index_base ell_base,
+                             I* __restrict__ csr_row_ptr,
+                             rocsparse_index_base csr_base)
     {
-        csr_row_ptr[0] = csr_base;
-    }
+        const J ai = ((J)BLOCKSIZE) * hipBlockIdx_x + hipThreadIdx_x;
 
-    I nnz = 0;
-
-    for(rocsparse_int p = 0; p < ell_width; ++p)
-    {
-        const I idx = ELL_IND(ai, p, m, ell_width);
-        const J col = ell_col_ind[idx] - ell_base;
-        if(col >= 0 && col < n)
+        if(ai >= m)
         {
-            ++nnz;
+            return;
         }
-        else
+
+        if(ai == 0)
         {
-            break;
+            csr_row_ptr[0] = csr_base;
         }
-    }
-    csr_row_ptr[ai + 1] = nnz;
-}
 
-template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void ell2csr_fill(J m,
-                  J n,
-                  J ell_width,
-                  const J* __restrict__ ell_col_ind,
-                  const T* __restrict__ ell_val,
-                  rocsparse_index_base ell_base,
-                  const I* __restrict__ csr_row_ptr,
-                  J* __restrict__ csr_col_ind,
-                  T* __restrict__ csr_val,
-                  rocsparse_index_base csr_base)
-{
-    const J ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+        I nnz = 0;
 
-    if(ai >= m)
-    {
-        return;
+        for(rocsparse_int p = 0; p < ell_width; ++p)
+        {
+            const I idx = ELL_IND(ai, p, m, ell_width);
+            const J col = ell_col_ind[idx] - ell_base;
+            if(col >= 0 && col < n)
+            {
+                ++nnz;
+            }
+            else
+            {
+                break;
+            }
+        }
+        csr_row_ptr[ai + 1] = nnz;
     }
 
-    I csr_idx = csr_row_ptr[ai] - csr_base;
-    for(J p = 0; p < ell_width; ++p)
+    template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void ell2csr_fill(J m,
+                      J n,
+                      J ell_width,
+                      const J* __restrict__ ell_col_ind,
+                      const T* __restrict__ ell_val,
+                      rocsparse_index_base ell_base,
+                      const I* __restrict__ csr_row_ptr,
+                      J* __restrict__ csr_col_ind,
+                      T* __restrict__ csr_val,
+                      rocsparse_index_base csr_base)
     {
-        const I ell_idx = ELL_IND(ai, p, m, ell_width);
-        const J ell_col = ell_col_ind[ell_idx] - ell_base;
-        if(ell_col >= 0 && ell_col < n)
+        const J ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+
+        if(ai >= m)
         {
-            csr_col_ind[csr_idx] = ell_col + csr_base;
-            csr_val[csr_idx]     = ell_val[ell_idx];
-            ++csr_idx;
+            return;
         }
-        else
+
+        I csr_idx = csr_row_ptr[ai] - csr_base;
+        for(J p = 0; p < ell_width; ++p)
         {
-            break;
+            const I ell_idx = ELL_IND(ai, p, m, ell_width);
+            const J ell_col = ell_col_ind[ell_idx] - ell_base;
+            if(ell_col >= 0 && ell_col < n)
+            {
+                csr_col_ind[csr_idx] = ell_col + csr_base;
+                csr_val[csr_idx]     = ell_val[ell_idx];
+                ++csr_idx;
+            }
+            else
+            {
+                break;
+            }
         }
     }
 }

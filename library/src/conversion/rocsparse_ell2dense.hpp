@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,17 @@
 
 #include "handle.h"
 
-template <typename I, typename T>
-rocsparse_status rocsparse_ell2dense_template(rocsparse_handle          handle,
-                                              I                         m,
-                                              I                         n,
-                                              const rocsparse_mat_descr ell_descr,
-                                              I                         ell_width,
-                                              const T*                  ell_val,
-                                              const I*                  ell_col_ind,
-                                              T*                        A,
-                                              int64_t                   lda,
-                                              rocsparse_order           order);
+namespace rocsparse
+{
+    template <typename I, typename T>
+    rocsparse_status ell2dense_template(rocsparse_handle          handle,
+                                        I                         m,
+                                        I                         n,
+                                        const rocsparse_mat_descr ell_descr,
+                                        I                         ell_width,
+                                        const T*                  ell_val,
+                                        const I*                  ell_col_ind,
+                                        T*                        A,
+                                        int64_t                   lda,
+                                        rocsparse_order           order);
+}

@@ -25,14 +25,14 @@
 #include "../level1/rocsparse_gthr.hpp"
 #include "definitions.h"
 
-rocsparse_status rocsparse_ggthr(rocsparse_handle     handle_,
-                                 int64_t              nnz,
-                                 rocsparse_datatype   data_type,
-                                 const void*          in,
-                                 void*                out,
-                                 rocsparse_indextype  perm_type,
-                                 void*                perm,
-                                 rocsparse_index_base base)
+rocsparse_status rocsparse::ggthr(rocsparse_handle     handle_,
+                                  int64_t              nnz,
+                                  rocsparse_datatype   data_type,
+                                  const void*          in,
+                                  void*                out,
+                                  rocsparse_indextype  perm_type,
+                                  void*                perm,
+                                  rocsparse_index_base base)
 {
 
 #define CALL_TEMPLATE(PERM_TYPE, DATA_TYPE)                                    \

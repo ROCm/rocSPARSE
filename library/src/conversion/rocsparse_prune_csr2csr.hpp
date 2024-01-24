@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,33 +26,36 @@
 
 #include "handle.h"
 
-template <typename T>
-rocsparse_status rocsparse_prune_csr2csr_buffer_size_template(rocsparse_handle          handle,
-                                                              rocsparse_int             m,
-                                                              rocsparse_int             n,
-                                                              rocsparse_int             nnz_A,
-                                                              const rocsparse_mat_descr csr_descr_A,
-                                                              const T*                  csr_val_A,
-                                                              const rocsparse_int* csr_row_ptr_A,
-                                                              const rocsparse_int* csr_col_ind_A,
-                                                              const T*             threshold,
-                                                              const rocsparse_mat_descr csr_descr_C,
-                                                              const T*                  csr_val_C,
-                                                              const rocsparse_int* csr_row_ptr_C,
-                                                              const rocsparse_int* csr_col_ind_C,
-                                                              size_t*              buffer_size);
+namespace rocsparse
+{
+    template <typename T>
+    rocsparse_status prune_csr2csr_buffer_size_template(rocsparse_handle          handle,
+                                                        rocsparse_int             m,
+                                                        rocsparse_int             n,
+                                                        rocsparse_int             nnz_A,
+                                                        const rocsparse_mat_descr csr_descr_A,
+                                                        const T*                  csr_val_A,
+                                                        const rocsparse_int*      csr_row_ptr_A,
+                                                        const rocsparse_int*      csr_col_ind_A,
+                                                        const T*                  threshold,
+                                                        const rocsparse_mat_descr csr_descr_C,
+                                                        const T*                  csr_val_C,
+                                                        const rocsparse_int*      csr_row_ptr_C,
+                                                        const rocsparse_int*      csr_col_ind_C,
+                                                        size_t*                   buffer_size);
 
-template <typename T>
-rocsparse_status rocsparse_prune_csr2csr_nnz_template(rocsparse_handle          handle,
-                                                      rocsparse_int             m,
-                                                      rocsparse_int             n,
-                                                      rocsparse_int             nnz_A,
-                                                      const rocsparse_mat_descr csr_descr_A,
-                                                      const T*                  csr_val_A,
-                                                      const rocsparse_int*      csr_row_ptr_A,
-                                                      const rocsparse_int*      csr_col_ind_A,
-                                                      const T*                  threshold,
-                                                      const rocsparse_mat_descr csr_descr_C,
-                                                      rocsparse_int*            csr_row_ptr_C,
-                                                      rocsparse_int* nnz_total_dev_host_ptr,
-                                                      void*          temp_buffer);
+    template <typename T>
+    rocsparse_status prune_csr2csr_nnz_template(rocsparse_handle          handle,
+                                                rocsparse_int             m,
+                                                rocsparse_int             n,
+                                                rocsparse_int             nnz_A,
+                                                const rocsparse_mat_descr csr_descr_A,
+                                                const T*                  csr_val_A,
+                                                const rocsparse_int*      csr_row_ptr_A,
+                                                const rocsparse_int*      csr_col_ind_A,
+                                                const T*                  threshold,
+                                                const rocsparse_mat_descr csr_descr_C,
+                                                rocsparse_int*            csr_row_ptr_C,
+                                                rocsparse_int*            nnz_total_dev_host_ptr,
+                                                void*                     temp_buffer);
+}

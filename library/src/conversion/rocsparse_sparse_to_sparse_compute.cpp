@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,14 +92,14 @@ FUNCTION_CONVERT(coo, coo_aos)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_coo2coo_aos_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_coo2coo_aos_buffer_size(handle, source_, target_, buffer_size_));
         return rocsparse_status_success;
     }
 
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_coo2coo_aos(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_coo2coo_aos(handle, source_, target_, buffer_size_[0], buffer_));
         return rocsparse_status_success;
     }
     }
@@ -125,14 +125,14 @@ FUNCTION_CONVERT(coo, csr)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_coo2csr_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_coo2csr_buffer_size(handle, source_, target_, buffer_size_));
         return rocsparse_status_success;
     }
 
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_coo2csr(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_coo2csr(handle, source_, target_, buffer_size_[0], buffer_));
         return rocsparse_status_success;
     }
     }
@@ -144,7 +144,7 @@ FUNCTION_CONVERT(coo, csr)
 //
 FUNCTION_CONVERT(coo, csc)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
@@ -154,7 +154,7 @@ FUNCTION_CONVERT(coo, csc)
 //
 FUNCTION_CONVERT(coo, ell)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
@@ -164,7 +164,7 @@ FUNCTION_CONVERT(coo, ell)
 //
 FUNCTION_CONVERT(coo, bsr)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
@@ -179,14 +179,14 @@ FUNCTION_CONVERT(coo_aos, coo)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_coo_aos2coo_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_coo_aos2coo_buffer_size(handle, source_, target_, buffer_size_));
         return rocsparse_status_success;
     }
 
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_coo_aos2coo(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_coo_aos2coo(handle, source_, target_, buffer_size_[0], buffer_));
         return rocsparse_status_success;
     }
 
@@ -214,14 +214,14 @@ FUNCTION_CONVERT(coo_aos, csr)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_coo_aos2csr_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_coo_aos2csr_buffer_size(handle, source_, target_, buffer_size_));
         return rocsparse_status_success;
     }
 
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_coo_aos2csr(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_coo_aos2csr(handle, source_, target_, buffer_size_[0], buffer_));
         return rocsparse_status_success;
     }
 
@@ -248,14 +248,14 @@ FUNCTION_CONVERT(csr, coo_aos)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csr2coo_aos_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_csr2coo_aos_buffer_size(handle, source_, target_, buffer_size_));
         return rocsparse_status_success;
     }
 
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csr2coo_aos(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_csr2coo_aos(handle, source_, target_, buffer_size_[0], buffer_));
         return rocsparse_status_success;
     }
 
@@ -283,14 +283,14 @@ FUNCTION_CONVERT(csr, coo)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csr2coo_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_csr2coo_buffer_size(handle, source_, target_, buffer_size_));
         return rocsparse_status_success;
     }
 
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csr2coo(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_csr2coo(handle, source_, target_, buffer_size_[0], buffer_));
         return rocsparse_status_success;
     }
 
@@ -328,14 +328,14 @@ FUNCTION_CONVERT(csr, csc)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csr2csc_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_csr2csc_buffer_size(handle, source_, target_, buffer_size_));
         return rocsparse_status_success;
     }
 
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csr2csc(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_csr2csc(handle, source_, target_, buffer_size_[0], buffer_));
         return rocsparse_status_success;
     }
     }
@@ -358,7 +358,7 @@ FUNCTION_CONVERT(csr, ell)
     {
         int64_t ell_width;
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csr2ell_width(handle, source_, target_, &ell_width));
+            rocsparse::spmat_csr2ell_width(handle, source_, target_, &ell_width));
 
         //
         // Update target.
@@ -371,14 +371,14 @@ FUNCTION_CONVERT(csr, ell)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csr2ell_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_csr2ell_buffer_size(handle, source_, target_, buffer_size_));
 
         return rocsparse_status_success;
     }
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csr2ell(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_csr2ell(handle, source_, target_, buffer_size_[0], buffer_));
 
         return rocsparse_status_success;
     }
@@ -400,7 +400,7 @@ FUNCTION_CONVERT(csr, bsr)
     case _rocsparse_sparse_to_sparse_descr::stage_analysis:
     {
         int64_t nnzb;
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_spmat_csr2bsr_nnz(handle, source_, target_, &nnzb));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::spmat_csr2bsr_nnz(handle, source_, target_, &nnzb));
         target_->nnz = nnzb;
         return rocsparse_status_success;
     }
@@ -408,13 +408,13 @@ FUNCTION_CONVERT(csr, bsr)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csr2bsr_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_csr2bsr_buffer_size(handle, source_, target_, buffer_size_));
         return rocsparse_status_success;
     }
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csr2bsr(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_csr2bsr(handle, source_, target_, buffer_size_[0], buffer_));
 
         return rocsparse_status_success;
     }
@@ -442,14 +442,14 @@ FUNCTION_CONVERT(csc, csr)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csc2csr_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_csc2csr_buffer_size(handle, source_, target_, buffer_size_));
         return rocsparse_status_success;
     }
 
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_csc2csr(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_csc2csr(handle, source_, target_, buffer_size_[0], buffer_));
         return rocsparse_status_success;
     }
     }
@@ -471,7 +471,7 @@ FUNCTION_CONVERT(ell, csr)
     case _rocsparse_sparse_to_sparse_descr::stage_analysis:
     {
         int64_t csr_nnz;
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_spmat_ell2csr_nnz(handle, source_, target_, &csr_nnz));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::spmat_ell2csr_nnz(handle, source_, target_, &csr_nnz));
         target_->nnz = csr_nnz;
         return rocsparse_status_success;
     }
@@ -479,13 +479,13 @@ FUNCTION_CONVERT(ell, csr)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_ell2csr_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_ell2csr_buffer_size(handle, source_, target_, buffer_size_));
         return rocsparse_status_success;
     }
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_ell2csr(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_ell2csr(handle, source_, target_, buffer_size_[0], buffer_));
         return rocsparse_status_success;
     }
     }
@@ -512,13 +512,13 @@ FUNCTION_CONVERT(bsr, csr)
     case _rocsparse_sparse_to_sparse_descr::stage_buffer_size_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_bsr2csr_buffer_size(handle, source_, target_, buffer_size_));
+            rocsparse::spmat_bsr2csr_buffer_size(handle, source_, target_, buffer_size_));
         return rocsparse_status_success;
     }
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_spmat_bsr2csr(handle, source_, target_, buffer_size_[0], buffer_));
+            rocsparse::spmat_bsr2csr(handle, source_, target_, buffer_size_[0], buffer_));
         return rocsparse_status_success;
     }
     }
@@ -531,7 +531,7 @@ FUNCTION_CONVERT(bsr, csr)
 //
 FUNCTION_CONVERT(csc, coo_aos)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
@@ -541,87 +541,87 @@ FUNCTION_CONVERT(csc, coo_aos)
 //
 FUNCTION_CONVERT(coo_aos, ell)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 
 FUNCTION_CONVERT(coo_aos, bsr)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 
 FUNCTION_CONVERT(coo_aos, csc)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 FUNCTION_CONVERT(csc, coo)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 FUNCTION_CONVERT(csc, ell)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 FUNCTION_CONVERT(csc, bsr)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 FUNCTION_CONVERT(ell, coo)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 FUNCTION_CONVERT(ell, coo_aos)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 FUNCTION_CONVERT(ell, csc)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 FUNCTION_CONVERT(ell, bsr)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 FUNCTION_CONVERT(bsr, coo)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 FUNCTION_CONVERT(bsr, coo_aos)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 FUNCTION_CONVERT(bsr, csc)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
 FUNCTION_CONVERT(bsr, ell)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_csr_to_sparse(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_csr_to_sparse(
         handle, descr_, source_, target_, stage_, buffer_size_, buffer_));
     return rocsparse_status_success;
 }
@@ -648,7 +648,8 @@ FUNCTION_CONVERT(coo, coo)
     }
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_spmat_transfer_from(handle, target_, source_));
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::internal_spmat_transfer_from(handle, target_, source_));
         return rocsparse_status_success;
     }
     }
@@ -674,7 +675,8 @@ FUNCTION_CONVERT(coo_aos, coo_aos)
     }
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_spmat_transfer_from(handle, target_, source_));
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::internal_spmat_transfer_from(handle, target_, source_));
         return rocsparse_status_success;
     }
     }
@@ -701,7 +703,8 @@ FUNCTION_CONVERT(csr, csr)
     }
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_spmat_transfer_from(handle, target_, source_));
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::internal_spmat_transfer_from(handle, target_, source_));
         return rocsparse_status_success;
     }
     }
@@ -727,7 +730,8 @@ FUNCTION_CONVERT(csc, csc)
     }
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_spmat_transfer_from(handle, target_, source_));
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::internal_spmat_transfer_from(handle, target_, source_));
         return rocsparse_status_success;
     }
     }
@@ -757,7 +761,8 @@ FUNCTION_CONVERT(ell, ell)
     }
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_spmat_transfer_from(handle, target_, source_));
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::internal_spmat_transfer_from(handle, target_, source_));
         return rocsparse_status_success;
     }
     }
@@ -783,7 +788,8 @@ FUNCTION_CONVERT(bsr, bsr)
     }
     case _rocsparse_sparse_to_sparse_descr::stage_compute:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_spmat_transfer_from(handle, target_, source_));
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::internal_spmat_transfer_from(handle, target_, source_));
         return rocsparse_status_success;
     }
     }
@@ -929,14 +935,14 @@ rocsparse_status rocsparse_mat_descr_are_same(const rocsparse_mat_descr source,
     return rocsparse_status_success;
 }
 
-rocsparse_status rocsparse_internal_sparse_to_sparse(rocsparse_handle                 handle,
-                                                     rocsparse_sparse_to_sparse_descr descr,
-                                                     rocsparse_const_spmat_descr      source,
-                                                     rocsparse_spmat_descr            target,
-                                                     rocsparse_sparse_to_sparse_stage stage,
-                                                     size_t*                          buffer_size,
-                                                     void*                            buffer,
-                                                     bool compute_buffer_size)
+rocsparse_status rocsparse::internal_sparse_to_sparse(rocsparse_handle                 handle,
+                                                      rocsparse_sparse_to_sparse_descr descr,
+                                                      rocsparse_const_spmat_descr      source,
+                                                      rocsparse_spmat_descr            target,
+                                                      rocsparse_sparse_to_sparse_stage stage,
+                                                      size_t*                          buffer_size,
+                                                      void*                            buffer,
+                                                      bool compute_buffer_size)
 {
     //
     // Batched not yet supported.

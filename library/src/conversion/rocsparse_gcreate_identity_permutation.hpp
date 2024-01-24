@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,10 @@
 
 #include "rocsparse-types.h"
 
-rocsparse_status rocsparse_gcreate_identity_permutation(rocsparse_handle    handle_,
-                                                        int64_t             nnz,
-                                                        rocsparse_indextype idx_type,
-                                                        void*               perm);
+namespace rocsparse
+{
+    rocsparse_status gcreate_identity_permutation(rocsparse_handle    handle_,
+                                                  int64_t             nnz,
+                                                  rocsparse_indextype idx_type,
+                                                  void*               perm);
+}

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,41 +24,44 @@
 
 #include "rocsparse-types.h"
 
-rocsparse_status rocsparse_gcoo_aos2csr_buffer_size(rocsparse_handle     handle,
-                                                    int64_t              m,
-                                                    int64_t              nnz,
-                                                    rocsparse_indextype  source_ind_type,
-                                                    const void*          source_ind_data,
-                                                    rocsparse_index_base source_idx_base,
-                                                    rocsparse_indextype  target_row_type,
-                                                    rocsparse_indextype  target_col_type,
-                                                    size_t*              buffer_size);
+namespace rocsparse
+{
+    rocsparse_status gcoo_aos2csr_buffer_size(rocsparse_handle     handle,
+                                              int64_t              m,
+                                              int64_t              nnz,
+                                              rocsparse_indextype  source_ind_type,
+                                              const void*          source_ind_data,
+                                              rocsparse_index_base source_idx_base,
+                                              rocsparse_indextype  target_row_type,
+                                              rocsparse_indextype  target_col_type,
+                                              size_t*              buffer_size);
 
-rocsparse_status rocsparse_gcoo_aos2csr(rocsparse_handle     handle,
-                                        int64_t              m,
-                                        int64_t              nnz,
-                                        rocsparse_indextype  source_ind_type,
-                                        const void*          source_ind_data,
-                                        rocsparse_datatype   source_data_type,
-                                        const void*          source_val_data,
-                                        rocsparse_index_base source_idx_base,
-                                        rocsparse_indextype  target_row_type,
-                                        void*                target_row_data,
-                                        rocsparse_indextype  target_col_type,
-                                        void*                target_col_data,
-                                        rocsparse_datatype   target_data_type,
-                                        void*                target_val_data,
-                                        rocsparse_index_base target_idx_base,
-                                        size_t               buffer_size,
-                                        void*                buffer_);
+    rocsparse_status gcoo_aos2csr(rocsparse_handle     handle,
+                                  int64_t              m,
+                                  int64_t              nnz,
+                                  rocsparse_indextype  source_ind_type,
+                                  const void*          source_ind_data,
+                                  rocsparse_datatype   source_data_type,
+                                  const void*          source_val_data,
+                                  rocsparse_index_base source_idx_base,
+                                  rocsparse_indextype  target_row_type,
+                                  void*                target_row_data,
+                                  rocsparse_indextype  target_col_type,
+                                  void*                target_col_data,
+                                  rocsparse_datatype   target_data_type,
+                                  void*                target_val_data,
+                                  rocsparse_index_base target_idx_base,
+                                  size_t               buffer_size,
+                                  void*                buffer_);
 
-rocsparse_status rocsparse_spmat_coo_aos2csr_buffer_size(rocsparse_handle            handle,
-                                                         rocsparse_const_spmat_descr source_,
-                                                         rocsparse_spmat_descr       target_,
-                                                         size_t*                     buffer_size_);
+    rocsparse_status spmat_coo_aos2csr_buffer_size(rocsparse_handle            handle,
+                                                   rocsparse_const_spmat_descr source_,
+                                                   rocsparse_spmat_descr       target_,
+                                                   size_t*                     buffer_size_);
 
-rocsparse_status rocsparse_spmat_coo_aos2csr(rocsparse_handle            handle,
-                                             rocsparse_const_spmat_descr source_,
-                                             rocsparse_spmat_descr       target_,
-                                             size_t                      buffer_size_,
-                                             void*                       buffer_);
+    rocsparse_status spmat_coo_aos2csr(rocsparse_handle            handle,
+                                       rocsparse_const_spmat_descr source_,
+                                       rocsparse_spmat_descr       target_,
+                                       size_t                      buffer_size_,
+                                       void*                       buffer_);
+}

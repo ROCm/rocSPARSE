@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,66 +26,69 @@
 
 #include "definitions.h"
 
-template <typename T, typename I, typename J>
-rocsparse_status rocsparse_csr2ell_core(rocsparse_handle          handle,
+namespace rocsparse
+{
+    template <typename T, typename I, typename J>
+    rocsparse_status csr2ell_core(rocsparse_handle          handle,
+                                  J                         m,
+                                  const rocsparse_mat_descr csr_descr,
+                                  const T*                  csr_val,
+                                  const I*                  csr_row_ptr,
+                                  const J*                  csr_col_ind,
+                                  const rocsparse_mat_descr ell_descr,
+                                  J                         ell_width,
+                                  T*                        ell_val,
+                                  J*                        ell_col_ind);
+
+    rocsparse_status csr2ell_quickreturn(rocsparse_handle          handle,
+                                         int64_t                   m,
+                                         const rocsparse_mat_descr csr_descr,
+                                         const void*               csr_val,
+                                         const void*               csr_row_ptr,
+                                         const void*               csr_col_ind,
+                                         const rocsparse_mat_descr ell_descr,
+                                         int64_t                   ell_width,
+                                         void*                     ell_val,
+                                         void*                     ell_col_ind);
+
+    template <typename... P>
+    rocsparse_status csr2ell_template(P&&... p)
+    {
+        const rocsparse_status status = rocsparse::csr2ell_quickreturn(p...);
+        if(status != rocsparse_status_continue)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(status);
+            return rocsparse_status_success;
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csr2ell_core(p...));
+        return rocsparse_status_success;
+    }
+
+    template <typename I, typename J>
+    rocsparse_status csr2ell_width_core(rocsparse_handle          handle,
                                         J                         m,
                                         const rocsparse_mat_descr csr_descr,
-                                        const T*                  csr_val,
                                         const I*                  csr_row_ptr,
-                                        const J*                  csr_col_ind,
                                         const rocsparse_mat_descr ell_descr,
-                                        J                         ell_width,
-                                        T*                        ell_val,
-                                        J*                        ell_col_ind);
-
-rocsparse_status rocsparse_csr2ell_quickreturn(rocsparse_handle          handle,
+                                        J*                        ell_width);
+    template <typename J>
+    rocsparse_status csr2ell_width_quickreturn(rocsparse_handle          handle,
                                                int64_t                   m,
                                                const rocsparse_mat_descr csr_descr,
-                                               const void*               csr_val,
                                                const void*               csr_row_ptr,
-                                               const void*               csr_col_ind,
                                                const rocsparse_mat_descr ell_descr,
-                                               int64_t                   ell_width,
-                                               void*                     ell_val,
-                                               void*                     ell_col_ind);
+                                               J*                        ell_width);
 
-template <typename... P>
-rocsparse_status rocsparse_csr2ell_template(P&&... p)
-{
-    const rocsparse_status status = rocsparse_csr2ell_quickreturn(p...);
-    if(status != rocsparse_status_continue)
+    template <typename... P>
+    rocsparse_status csr2ell_width_template(P&&... p)
     {
-        RETURN_IF_ROCSPARSE_ERROR(status);
+        const rocsparse_status status = rocsparse::csr2ell_width_quickreturn(p...);
+        if(status != rocsparse_status_continue)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(status);
+            return rocsparse_status_success;
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csr2ell_width_core(p...));
         return rocsparse_status_success;
     }
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2ell_core(p...));
-    return rocsparse_status_success;
-}
-
-template <typename I, typename J>
-rocsparse_status rocsparse_csr2ell_width_core(rocsparse_handle          handle,
-                                              J                         m,
-                                              const rocsparse_mat_descr csr_descr,
-                                              const I*                  csr_row_ptr,
-                                              const rocsparse_mat_descr ell_descr,
-                                              J*                        ell_width);
-template <typename J>
-rocsparse_status rocsparse_csr2ell_width_quickreturn(rocsparse_handle          handle,
-                                                     int64_t                   m,
-                                                     const rocsparse_mat_descr csr_descr,
-                                                     const void*               csr_row_ptr,
-                                                     const rocsparse_mat_descr ell_descr,
-                                                     J*                        ell_width);
-
-template <typename... P>
-rocsparse_status rocsparse_csr2ell_width_template(P&&... p)
-{
-    const rocsparse_status status = rocsparse_csr2ell_width_quickreturn(p...);
-    if(status != rocsparse_status_continue)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(status);
-        return rocsparse_status_success;
-    }
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2ell_width_core(p...));
-    return rocsparse_status_success;
 }

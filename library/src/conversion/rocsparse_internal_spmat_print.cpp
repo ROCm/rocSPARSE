@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,227 +21,230 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_internal_spmat_print.hpp"
 #include "rocsparse_convert_array.hpp"
 #include "utility.h"
 
-template <typename T>
-static rocsparse_status
-    rocsparse_internal_dnvec_print(std::ostream& out, int64_t nmemb, const void* h)
+namespace rocsparse
 {
-    const T* p = (const T*)h;
-    for(int64_t i = 0; i < nmemb; ++i)
-        out << "[" << i << "] = " << p[i] << std::endl;
-    return rocsparse_status_success;
-}
-
-template <typename T>
-static rocsparse_status rocsparse_internal_dnmat_print(
-    std::ostream& out, int64_t m, int64_t n, const void* h, int64_t ld)
-{
-    const T* p = (const T*)h;
-    for(int64_t i = 0; i < m; ++i)
+    template <typename T>
+    static rocsparse_status internal_dnvec_print(std::ostream& out, int64_t nmemb, const void* h)
     {
-        for(int64_t j = 0; j < n; ++j)
-            out << " " << p[j * ld + i];
-        out << std::endl;
-    }
-    return rocsparse_status_success;
-}
-
-static rocsparse_status rocsparse_internal_dnvec_print(std::ostream&       out,
-                                                       rocsparse_indextype indextype,
-                                                       int64_t             nmemb,
-                                                       const void*         dind)
-
-{
-    if(dind == nullptr || nmemb == 0)
-    {
+        const T* p = (const T*)h;
+        for(int64_t i = 0; i < nmemb; ++i)
+            out << "[" << i << "] = " << p[i] << std::endl;
         return rocsparse_status_success;
     }
 
-    const size_t indextype_sizeof = rocsparse_indextype_sizeof(indextype);
-    void*        hind;
-    RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, indextype_sizeof * nmemb));
-    RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, indextype_sizeof * nmemb, hipMemcpyDeviceToHost));
-    switch(indextype)
+    template <typename T>
+    static rocsparse_status
+        internal_dnmat_print(std::ostream& out, int64_t m, int64_t n, const void* h, int64_t ld)
     {
-    case rocsparse_indextype_i32:
-    {
-        rocsparse_internal_dnvec_print<int32_t>(out, nmemb, hind);
-        break;
-    }
-    case rocsparse_indextype_i64:
-    {
-        rocsparse_internal_dnvec_print<int64_t>(out, nmemb, hind);
-        break;
-    }
-    case rocsparse_indextype_u16:
-    {
-        break;
-    }
-    }
-    RETURN_IF_HIP_ERROR(rocsparse_hipFree(hind));
-    return rocsparse_status_success;
-}
-
-static rocsparse_status rocsparse_internal_dnmat_print(
-    std::ostream& out, rocsparse_indextype indextype, int64_t m, int64_t n, const void* dind)
-
-{
-    if(dind == nullptr || m == 0 || n == 0)
-    {
+        const T* p = (const T*)h;
+        for(int64_t i = 0; i < m; ++i)
+        {
+            for(int64_t j = 0; j < n; ++j)
+                out << " " << p[j * ld + i];
+            out << std::endl;
+        }
         return rocsparse_status_success;
     }
 
-    const size_t indextype_sizeof = rocsparse_indextype_sizeof(indextype);
-    void*        hind;
-    RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, indextype_sizeof * m * n));
-    RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, indextype_sizeof * m * n, hipMemcpyDeviceToHost));
-    switch(indextype)
-    {
-    case rocsparse_indextype_i32:
-    {
-        rocsparse_internal_dnmat_print<int32_t>(out, m, n, hind, m);
-        break;
-    }
-    case rocsparse_indextype_i64:
-    {
-        rocsparse_internal_dnmat_print<int64_t>(out, m, n, hind, m);
-        break;
-    }
-    case rocsparse_indextype_u16:
-    {
-        break;
-    }
-    }
-    RETURN_IF_HIP_ERROR(rocsparse_hipFree(hind));
-    return rocsparse_status_success;
-}
+    static rocsparse_status internal_dnvec_print(std::ostream&       out,
+                                                 rocsparse_indextype indextype,
+                                                 int64_t             nmemb,
+                                                 const void*         dind)
 
-static rocsparse_status rocsparse_internal_dnvec_print(std::ostream&      out,
-                                                       rocsparse_datatype datatype,
-                                                       int64_t            nmemb,
-                                                       const void*        dind)
-
-{
-    if(dind == nullptr || nmemb == 0)
     {
+        if(dind == nullptr || nmemb == 0)
+        {
+            return rocsparse_status_success;
+        }
+
+        const size_t indextype_sizeof = rocsparse_indextype_sizeof(indextype);
+        void*        hind;
+        RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, indextype_sizeof * nmemb));
+        RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, indextype_sizeof * nmemb, hipMemcpyDeviceToHost));
+        switch(indextype)
+        {
+        case rocsparse_indextype_i32:
+        {
+            rocsparse::internal_dnvec_print<int32_t>(out, nmemb, hind);
+            break;
+        }
+        case rocsparse_indextype_i64:
+        {
+            rocsparse::internal_dnvec_print<int64_t>(out, nmemb, hind);
+            break;
+        }
+        case rocsparse_indextype_u16:
+        {
+            break;
+        }
+        }
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(hind));
         return rocsparse_status_success;
     }
-    const size_t datatype_sizeof = rocsparse_datatype_sizeof(datatype);
-    void*        hind;
-    RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, datatype_sizeof * nmemb));
-    RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, datatype_sizeof * nmemb, hipMemcpyDeviceToHost));
-    switch(datatype)
-    {
-    case rocsparse_datatype_f32_r:
-    {
-        rocsparse_internal_dnvec_print<float>(out, nmemb, hind);
-        break;
-    }
-    case rocsparse_datatype_f32_c:
-    {
-        rocsparse_internal_dnvec_print<rocsparse_float_complex>(out, nmemb, hind);
-        break;
-    }
-    case rocsparse_datatype_f64_r:
-    {
-        rocsparse_internal_dnvec_print<double>(out, nmemb, hind);
-        break;
-    }
-    case rocsparse_datatype_f64_c:
-    {
-        rocsparse_internal_dnvec_print<rocsparse_double_complex>(out, nmemb, hind);
-        break;
-    }
-    case rocsparse_datatype_i32_r:
-    {
-        rocsparse_internal_dnvec_print<int32_t>(out, nmemb, hind);
-        break;
-    }
-    case rocsparse_datatype_u32_r:
-    {
-        rocsparse_internal_dnvec_print<uint32_t>(out, nmemb, hind);
-        break;
-    }
-    case rocsparse_datatype_i8_r:
-    {
-        rocsparse_internal_dnvec_print<int8_t>(out, nmemb, hind);
-        break;
-    }
-    case rocsparse_datatype_u8_r:
-    {
-        rocsparse_internal_dnvec_print<uint8_t>(out, nmemb, hind);
-        break;
-    }
-    }
-    RETURN_IF_HIP_ERROR(rocsparse_hipFree(hind));
-    return rocsparse_status_success;
-}
 
-static rocsparse_status rocsparse_internal_dnmat_print(
-    std::ostream& out, rocsparse_datatype datatype, int64_t m, int64_t n, const void* dind)
+    static rocsparse_status internal_dnmat_print(
+        std::ostream& out, rocsparse_indextype indextype, int64_t m, int64_t n, const void* dind)
 
-{
-    if(dind == nullptr || m == 0 || n == 0)
     {
+        if(dind == nullptr || m == 0 || n == 0)
+        {
+            return rocsparse_status_success;
+        }
+
+        const size_t indextype_sizeof = rocsparse_indextype_sizeof(indextype);
+        void*        hind;
+        RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, indextype_sizeof * m * n));
+        RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, indextype_sizeof * m * n, hipMemcpyDeviceToHost));
+        switch(indextype)
+        {
+        case rocsparse_indextype_i32:
+        {
+            rocsparse::internal_dnmat_print<int32_t>(out, m, n, hind, m);
+            break;
+        }
+        case rocsparse_indextype_i64:
+        {
+            rocsparse::internal_dnmat_print<int64_t>(out, m, n, hind, m);
+            break;
+        }
+        case rocsparse_indextype_u16:
+        {
+            break;
+        }
+        }
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(hind));
         return rocsparse_status_success;
     }
-    const size_t datatype_sizeof = rocsparse_datatype_sizeof(datatype);
-    void*        hind;
-    RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, datatype_sizeof * m * n));
-    RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, datatype_sizeof * m * n, hipMemcpyDeviceToHost));
-    switch(datatype)
+
+    static rocsparse_status internal_dnvec_print(std::ostream&      out,
+                                                 rocsparse_datatype datatype,
+                                                 int64_t            nmemb,
+                                                 const void*        dind)
+
     {
-    case rocsparse_datatype_f32_r:
+        if(dind == nullptr || nmemb == 0)
+        {
+            return rocsparse_status_success;
+        }
+        const size_t datatype_sizeof = rocsparse_datatype_sizeof(datatype);
+        void*        hind;
+        RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, datatype_sizeof * nmemb));
+        RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, datatype_sizeof * nmemb, hipMemcpyDeviceToHost));
+        switch(datatype)
+        {
+        case rocsparse_datatype_f32_r:
+        {
+            rocsparse::internal_dnvec_print<float>(out, nmemb, hind);
+            break;
+        }
+        case rocsparse_datatype_f32_c:
+        {
+            rocsparse::internal_dnvec_print<rocsparse_float_complex>(out, nmemb, hind);
+            break;
+        }
+        case rocsparse_datatype_f64_r:
+        {
+            rocsparse::internal_dnvec_print<double>(out, nmemb, hind);
+            break;
+        }
+        case rocsparse_datatype_f64_c:
+        {
+            rocsparse::internal_dnvec_print<rocsparse_double_complex>(out, nmemb, hind);
+            break;
+        }
+        case rocsparse_datatype_i32_r:
+        {
+            rocsparse::internal_dnvec_print<int32_t>(out, nmemb, hind);
+            break;
+        }
+        case rocsparse_datatype_u32_r:
+        {
+            rocsparse::internal_dnvec_print<uint32_t>(out, nmemb, hind);
+            break;
+        }
+        case rocsparse_datatype_i8_r:
+        {
+            rocsparse::internal_dnvec_print<int8_t>(out, nmemb, hind);
+            break;
+        }
+        case rocsparse_datatype_u8_r:
+        {
+            rocsparse::internal_dnvec_print<uint8_t>(out, nmemb, hind);
+            break;
+        }
+        }
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(hind));
+        return rocsparse_status_success;
+    }
+
+    static rocsparse_status internal_dnmat_print(
+        std::ostream& out, rocsparse_datatype datatype, int64_t m, int64_t n, const void* dind)
+
     {
-        rocsparse_internal_dnmat_print<float>(out, m, n, hind, m);
-        break;
+        if(dind == nullptr || m == 0 || n == 0)
+        {
+            return rocsparse_status_success;
+        }
+        const size_t datatype_sizeof = rocsparse_datatype_sizeof(datatype);
+        void*        hind;
+        RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, datatype_sizeof * m * n));
+        RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, datatype_sizeof * m * n, hipMemcpyDeviceToHost));
+        switch(datatype)
+        {
+        case rocsparse_datatype_f32_r:
+        {
+            rocsparse::internal_dnmat_print<float>(out, m, n, hind, m);
+            break;
+        }
+        case rocsparse_datatype_f32_c:
+        {
+            rocsparse::internal_dnmat_print<rocsparse_float_complex>(out, m, n, hind, m);
+            break;
+        }
+        case rocsparse_datatype_f64_r:
+        {
+            rocsparse::internal_dnmat_print<double>(out, m, n, hind, m);
+            break;
+        }
+        case rocsparse_datatype_f64_c:
+        {
+            rocsparse::internal_dnmat_print<rocsparse_double_complex>(out, m, n, hind, m);
+            break;
+        }
+        case rocsparse_datatype_i32_r:
+        {
+            rocsparse::internal_dnmat_print<int32_t>(out, m, n, hind, m);
+            break;
+        }
+        case rocsparse_datatype_u32_r:
+        {
+            rocsparse::internal_dnmat_print<uint32_t>(out, m, n, hind, m);
+            break;
+        }
+        case rocsparse_datatype_i8_r:
+        {
+            rocsparse::internal_dnmat_print<int8_t>(out, m, n, hind, m);
+            break;
+        }
+        case rocsparse_datatype_u8_r:
+        {
+            rocsparse::internal_dnmat_print<uint8_t>(out, m, n, hind, m);
+            break;
+        }
+        }
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(hind));
+        return rocsparse_status_success;
     }
-    case rocsparse_datatype_f32_c:
-    {
-        rocsparse_internal_dnmat_print<rocsparse_float_complex>(out, m, n, hind, m);
-        break;
-    }
-    case rocsparse_datatype_f64_r:
-    {
-        rocsparse_internal_dnmat_print<double>(out, m, n, hind, m);
-        break;
-    }
-    case rocsparse_datatype_f64_c:
-    {
-        rocsparse_internal_dnmat_print<rocsparse_double_complex>(out, m, n, hind, m);
-        break;
-    }
-    case rocsparse_datatype_i32_r:
-    {
-        rocsparse_internal_dnmat_print<int32_t>(out, m, n, hind, m);
-        break;
-    }
-    case rocsparse_datatype_u32_r:
-    {
-        rocsparse_internal_dnmat_print<uint32_t>(out, m, n, hind, m);
-        break;
-    }
-    case rocsparse_datatype_i8_r:
-    {
-        rocsparse_internal_dnmat_print<int8_t>(out, m, n, hind, m);
-        break;
-    }
-    case rocsparse_datatype_u8_r:
-    {
-        rocsparse_internal_dnmat_print<uint8_t>(out, m, n, hind, m);
-        break;
-    }
-    }
-    RETURN_IF_HIP_ERROR(rocsparse_hipFree(hind));
-    return rocsparse_status_success;
 }
 
-rocsparse_status rocsparse_internal_spmat_print(std::ostream&               out,
-                                                rocsparse_const_spmat_descr descr,
-                                                bool                        print_symbolic,
-                                                bool                        print_numeric)
+rocsparse_status rocsparse::internal_spmat_print(std::ostream&               out,
+                                                 rocsparse_const_spmat_descr descr,
+                                                 bool                        print_symbolic,
+                                                 bool                        print_numeric)
 {
     ROCSPARSE_CHECKARG_HANDLE(0, descr);
     rocsparse_format format;
@@ -273,12 +276,12 @@ rocsparse_status rocsparse_internal_spmat_print(std::ostream&               out,
         if(print_symbolic)
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_internal_dnmat_print(out, ind_type, m, ell_widthb, ind));
+                rocsparse::internal_dnmat_print(out, ind_type, m, ell_widthb, ind));
         }
         if(print_numeric)
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_internal_dnvec_print(out, val_type, ell_widthb * m * dimb * dimb, val));
+                rocsparse::internal_dnvec_print(out, val_type, ell_widthb * m * dimb * dimb, val));
         }
         break;
     }
@@ -304,12 +307,12 @@ rocsparse_status rocsparse_internal_spmat_print(std::ostream&               out,
         if(print_symbolic)
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_internal_dnmat_print(out, ind_type, m, ell_width, ind));
+                rocsparse::internal_dnmat_print(out, ind_type, m, ell_width, ind));
         }
         if(print_numeric)
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_internal_dnmat_print(out, val_type, m, ell_width, val));
+                rocsparse::internal_dnmat_print(out, val_type, m, ell_width, val));
         }
         break;
     }
@@ -355,13 +358,13 @@ rocsparse_status rocsparse_internal_spmat_print(std::ostream&               out,
         out << "- data_type  : " << rocsparse_enum_utils::to_string(val_type) << std::endl;
         if(print_symbolic)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, ptr_type, mb + 1, ptr));
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, ind_type, nnzb, ind));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, ptr_type, mb + 1, ptr));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, ind_type, nnzb, ind));
         }
         if(print_numeric)
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_internal_dnvec_print(out, val_type, nnzb * dimb * dimb, val));
+                rocsparse::internal_dnvec_print(out, val_type, nnzb * dimb * dimb, val));
         }
         break;
     }
@@ -389,12 +392,12 @@ rocsparse_status rocsparse_internal_spmat_print(std::ostream&               out,
         out << "- base       : " << base << std::endl;
         if(print_symbolic)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, ptr_type, m + 1, ptr));
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, ind_type, nnz, ind));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, ptr_type, m + 1, ptr));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, ind_type, nnz, ind));
         }
         if(print_numeric)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, val_type, nnz, val));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, val_type, nnz, val));
         }
         break;
     }
@@ -422,12 +425,12 @@ rocsparse_status rocsparse_internal_spmat_print(std::ostream&               out,
         out << "- base       : " << base << std::endl;
         if(print_symbolic)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, ptr_type, n + 1, ptr));
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, ind_type, nnz, ind));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, ptr_type, n + 1, ptr));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, ind_type, nnz, ind));
         }
         if(print_numeric)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, val_type, nnz, val));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, val_type, nnz, val));
         }
         break;
     }
@@ -454,12 +457,12 @@ rocsparse_status rocsparse_internal_spmat_print(std::ostream&               out,
         out << "- base       : " << base << std::endl;
         if(print_symbolic)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, ind_type, nnz, row_ind));
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, ind_type, nnz, col_ind));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, ind_type, nnz, row_ind));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, ind_type, nnz, col_ind));
         }
         if(print_numeric)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, val_type, nnz, val));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, val_type, nnz, val));
         }
 
         break;
@@ -485,11 +488,11 @@ rocsparse_status rocsparse_internal_spmat_print(std::ostream&               out,
         out << "- base       : " << base << std::endl;
         if(print_symbolic)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, ind_type, nnz * 2, ind));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, ind_type, nnz * 2, ind));
         }
         if(print_numeric)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_dnvec_print(out, val_type, nnz, val));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_dnvec_print(out, val_type, nnz, val));
         }
         break;
     }

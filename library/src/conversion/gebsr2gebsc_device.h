@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,29 +26,32 @@
 
 #include <hip/hip_runtime.h>
 
-template <unsigned int BLOCKSIZE, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void gebsr2gebsc_permute_kernel(rocsparse_int        nnzb,
-                                rocsparse_int        linsize_block,
-                                const rocsparse_int* in1,
-                                const T*             in2,
-                                const rocsparse_int* map,
-                                rocsparse_int*       out1,
-                                T*                   out2)
+namespace rocsparse
 {
-    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    if(gid >= nnzb)
+    template <unsigned int BLOCKSIZE, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void gebsr2gebsc_permute_kernel(rocsparse_int        nnzb,
+                                    rocsparse_int        linsize_block,
+                                    const rocsparse_int* in1,
+                                    const T*             in2,
+                                    const rocsparse_int* map,
+                                    rocsparse_int*       out1,
+                                    T*                   out2)
     {
-        return;
-    }
+        rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
-    rocsparse_int idx = map[gid];
+        if(gid >= nnzb)
+        {
+            return;
+        }
 
-    out1[gid] = in1[idx];
+        rocsparse_int idx = map[gid];
 
-    for(rocsparse_int i = 0; i < linsize_block; ++i)
-    {
-        out2[gid * linsize_block + i] = in2[idx * linsize_block + i];
+        out1[gid] = in1[idx];
+
+        for(rocsparse_int i = 0; i < linsize_block; ++i)
+        {
+            out2[gid * linsize_block + i] = in2[idx * linsize_block + i];
+        }
     }
 }

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,13 @@
 //
 //
 //
-rocsparse_status rocsparse_sparse_to_csr_to_sparse(rocsparse_handle                         handle_,
-                                                   rocsparse_sparse_to_sparse_descr         descr_,
-                                                   rocsparse_const_spmat_descr              source_,
-                                                   rocsparse_spmat_descr                    target_,
-                                                   _rocsparse_sparse_to_sparse_descr::stage stage_,
-                                                   size_t* buffer_size_,
-                                                   void*   buffer_)
+rocsparse_status rocsparse::sparse_to_csr_to_sparse(rocsparse_handle                 handle_,
+                                                    rocsparse_sparse_to_sparse_descr descr_,
+                                                    rocsparse_const_spmat_descr      source_,
+                                                    rocsparse_spmat_descr            target_,
+                                                    _rocsparse_sparse_to_sparse_descr::stage stage_,
+                                                    size_t* buffer_size_,
+                                                    void*   buffer_)
 {
     if(descr_->m_permissive == false)
     {

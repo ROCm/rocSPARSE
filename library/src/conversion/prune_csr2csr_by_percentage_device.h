@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,19 @@
 #include "common.h"
 #include "handle.h"
 
-template <rocsparse_int BLOCK_SIZE, typename T>
-ROCSPARSE_KERNEL(BLOCK_SIZE)
-void abs_kernel(rocsparse_int nnz_A, const T* csr_val_A, T* output)
+namespace rocsparse
 {
-    rocsparse_int thread_id = hipThreadIdx_x + hipBlockIdx_x * BLOCK_SIZE;
-
-    if(thread_id >= nnz_A)
+    template <rocsparse_int BLOCK_SIZE, typename T>
+    ROCSPARSE_KERNEL(BLOCK_SIZE)
+    void abs_kernel(rocsparse_int nnz_A, const T* csr_val_A, T* output)
     {
-        return;
-    }
+        rocsparse_int thread_id = hipThreadIdx_x + hipBlockIdx_x * BLOCK_SIZE;
 
-    output[thread_id] = rocsparse_abs(csr_val_A[thread_id]);
+        if(thread_id >= nnz_A)
+        {
+            return;
+        }
+
+        output[thread_id] = rocsparse_abs(csr_val_A[thread_id]);
+    }
 }

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1421,7 +1421,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             }
 
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_coo2csr_template(handle_, csc_col_ind, unnz, m_, p_uptr, base_));
+                rocsparse::coo2csr_template(handle_, csc_col_ind, unnz, m_, p_uptr, base_));
 
             if(p_coo_row_ind == nullptr && csc_col_ind != handle_->buffer)
             {
@@ -1430,7 +1430,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
 
             if(use_coo_format)
             {
-                RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2coo_core(
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::csr2coo_core(
                     handle_, ptr_, ptr_ + 1, nnz_, m_, p_coo_row_ind, base_));
             }
 

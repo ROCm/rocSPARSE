@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,53 +24,56 @@
 
 #include "rocsparse-types.h"
 
-rocsparse_status rocsparse_gcsr2bsr_nnz(rocsparse_handle          handle,
-                                        rocsparse_direction       dir,
-                                        int64_t                   m,
-                                        int64_t                   n,
-                                        const rocsparse_mat_descr csr_descr,
-                                        rocsparse_indextype       csr_row_ptr_indextype,
-                                        const void*               csr_row_ptr,
-                                        rocsparse_indextype       csr_col_ind_indextype,
-                                        const void*               csr_col_ind,
-                                        int64_t                   block_dim,
-                                        const rocsparse_mat_descr bsr_descr,
-                                        rocsparse_indextype       bsr_row_ptr_indextype,
-                                        void*                     bsr_row_ptr,
-                                        int64_t*                  bsr_nnz);
+namespace rocsparse
+{
+    rocsparse_status gcsr2bsr_nnz(rocsparse_handle          handle,
+                                  rocsparse_direction       dir,
+                                  int64_t                   m,
+                                  int64_t                   n,
+                                  const rocsparse_mat_descr csr_descr,
+                                  rocsparse_indextype       csr_row_ptr_indextype,
+                                  const void*               csr_row_ptr,
+                                  rocsparse_indextype       csr_col_ind_indextype,
+                                  const void*               csr_col_ind,
+                                  int64_t                   block_dim,
+                                  const rocsparse_mat_descr bsr_descr,
+                                  rocsparse_indextype       bsr_row_ptr_indextype,
+                                  void*                     bsr_row_ptr,
+                                  int64_t*                  bsr_nnz);
 
-rocsparse_status rocsparse_gcsr2bsr(rocsparse_handle          handle,
-                                    rocsparse_direction       direction,
-                                    int64_t                   m,
-                                    int64_t                   n,
-                                    const rocsparse_mat_descr csr_descr,
-                                    rocsparse_datatype        csr_val_datatype,
-                                    const void*               csr_val,
-                                    rocsparse_indextype       csr_row_ptr_indextype,
-                                    const void*               csr_row_ptr,
-                                    rocsparse_indextype       csr_col_ind_indextype,
-                                    const void*               csr_col_ind,
-                                    int64_t                   block_dim,
-                                    const rocsparse_mat_descr bsr_descr,
-                                    rocsparse_datatype        bsr_val_datatype,
-                                    void*                     bsr_val,
-                                    rocsparse_indextype       bsr_row_ptr_indextype,
-                                    void*                     bsr_row_ptr,
-                                    rocsparse_indextype       bsr_col_ind_indextype,
-                                    void*                     bsr_col_ind);
+    rocsparse_status gcsr2bsr(rocsparse_handle          handle,
+                              rocsparse_direction       direction,
+                              int64_t                   m,
+                              int64_t                   n,
+                              const rocsparse_mat_descr csr_descr,
+                              rocsparse_datatype        csr_val_datatype,
+                              const void*               csr_val,
+                              rocsparse_indextype       csr_row_ptr_indextype,
+                              const void*               csr_row_ptr,
+                              rocsparse_indextype       csr_col_ind_indextype,
+                              const void*               csr_col_ind,
+                              int64_t                   block_dim,
+                              const rocsparse_mat_descr bsr_descr,
+                              rocsparse_datatype        bsr_val_datatype,
+                              void*                     bsr_val,
+                              rocsparse_indextype       bsr_row_ptr_indextype,
+                              void*                     bsr_row_ptr,
+                              rocsparse_indextype       bsr_col_ind_indextype,
+                              void*                     bsr_col_ind);
 
-rocsparse_status rocsparse_spmat_csr2bsr_nnz(rocsparse_handle            handle,
-                                             rocsparse_const_spmat_descr source,
-                                             rocsparse_spmat_descr       target,
-                                             int64_t*                    bsr_nnz);
+    rocsparse_status spmat_csr2bsr_nnz(rocsparse_handle            handle,
+                                       rocsparse_const_spmat_descr source,
+                                       rocsparse_spmat_descr       target,
+                                       int64_t*                    bsr_nnz);
 
-rocsparse_status rocsparse_spmat_csr2bsr(rocsparse_handle            handle,
-                                         rocsparse_const_spmat_descr source,
-                                         rocsparse_spmat_descr       target,
-                                         size_t                      buffer_size,
-                                         void*                       buffer);
+    rocsparse_status spmat_csr2bsr(rocsparse_handle            handle,
+                                   rocsparse_const_spmat_descr source,
+                                   rocsparse_spmat_descr       target,
+                                   size_t                      buffer_size,
+                                   void*                       buffer);
 
-rocsparse_status rocsparse_spmat_csr2bsr_buffer_size(rocsparse_handle            handle,
-                                                     rocsparse_const_spmat_descr source,
-                                                     rocsparse_const_spmat_descr target,
-                                                     size_t*                     buffer_size);
+    rocsparse_status spmat_csr2bsr_buffer_size(rocsparse_handle            handle,
+                                               rocsparse_const_spmat_descr source,
+                                               rocsparse_const_spmat_descr target,
+                                               size_t*                     buffer_size);
+}

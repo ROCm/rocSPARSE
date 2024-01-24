@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,12 @@
 #include "internal/conversion/rocsparse_inverse_permutation.h"
 #include "utility.h"
 
+#include "rocsparse_identity.hpp"
+
 #include "identity_device.h"
 
 template <typename I>
-rocsparse_status rocsparse_create_identity_permutation_core(rocsparse_handle handle, I n, I* p)
+rocsparse_status rocsparse::create_identity_permutation_core(rocsparse_handle handle, I n, I* p)
 {
     // Stream
     hipStream_t stream = handle->stream;
@@ -36,15 +38,20 @@ rocsparse_status rocsparse_create_identity_permutation_core(rocsparse_handle han
     dim3 identity_blocks((n - 1) / IDENTITY_DIM + 1);
     dim3 identity_threads(IDENTITY_DIM);
 
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-        (identity_kernel<IDENTITY_DIM>), identity_blocks, identity_threads, 0, stream, n, p);
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::identity_kernel<IDENTITY_DIM>),
+                                       identity_blocks,
+                                       identity_threads,
+                                       0,
+                                       stream,
+                                       n,
+                                       p);
 #undef IDENTITY_DIM
 
     return rocsparse_status_success;
 }
 
 template <typename I>
-rocsparse_status rocsparse_create_identity_permutation_template(rocsparse_handle handle, I n, I* p)
+rocsparse_status rocsparse::create_identity_permutation_template(rocsparse_handle handle, I n, I* p)
 {
     // Quick return if possible
     if(n == 0)
@@ -52,11 +59,11 @@ rocsparse_status rocsparse_create_identity_permutation_template(rocsparse_handle
         return rocsparse_status_success;
     }
 
-    return rocsparse_create_identity_permutation_core(handle, n, p);
+    return rocsparse::create_identity_permutation_core(handle, n, p);
 }
 
 template <typename I>
-rocsparse_status rocsparse_create_identity_permutation_impl(rocsparse_handle handle, I n, I* p)
+rocsparse_status rocsparse::create_identity_permutation_impl(rocsparse_handle handle, I n, I* p)
 {
     // Logging
     log_trace(handle, "rocsparse_create_identity_permutation", n, (const void*&)p);
@@ -64,16 +71,16 @@ rocsparse_status rocsparse_create_identity_permutation_impl(rocsparse_handle han
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, n);
     ROCSPARSE_CHECKARG_ARRAY(2, n, p);
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation_template(handle, n, p));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_identity_permutation_template(handle, n, p));
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE)                                                       \
-    template rocsparse_status rocsparse_create_identity_permutation_core(        \
-        rocsparse_handle handle, ITYPE n, ITYPE* p);                             \
-    template rocsparse_status rocsparse_create_identity_permutation_template(    \
-        rocsparse_handle handle, ITYPE n, ITYPE* p);                             \
-    template rocsparse_status rocsparse_create_identity_permutation_impl<ITYPE>( \
+#define INSTANTIATE(ITYPE)                                                        \
+    template rocsparse_status rocsparse::create_identity_permutation_core(        \
+        rocsparse_handle handle, ITYPE n, ITYPE* p);                              \
+    template rocsparse_status rocsparse::create_identity_permutation_template(    \
+        rocsparse_handle handle, ITYPE n, ITYPE* p);                              \
+    template rocsparse_status rocsparse::create_identity_permutation_impl<ITYPE>( \
         rocsparse_handle handle, ITYPE n, ITYPE * p)
 
 INSTANTIATE(int32_t);
@@ -91,7 +98,7 @@ extern "C" rocsparse_status rocsparse_create_identity_permutation(rocsparse_hand
                                                                   rocsparse_int*   p)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation_impl(handle, n, p));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_identity_permutation_impl(handle, n, p));
     return rocsparse_status_success;
 }
 catch(...)

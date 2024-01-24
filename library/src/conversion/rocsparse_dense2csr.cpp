@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,18 @@
 #include "internal/conversion/rocsparse_dense2csr.h"
 #include "rocsparse_dense2csx_impl.hpp"
 
-#define INSTANTIATE(DIRA, ITYPE, JTYPE, TTYPE)                                     \
-    template rocsparse_status rocsparse_dense2csx_impl<DIRA, ITYPE, JTYPE, TTYPE>( \
-        rocsparse_handle          handle,                                          \
-        rocsparse_order           order,                                           \
-        JTYPE                     m,                                               \
-        JTYPE                     n,                                               \
-        const rocsparse_mat_descr descr_A,                                         \
-        const TTYPE*              A,                                               \
-        int64_t                   lda,                                             \
-        const ITYPE*              nnz_per_row_column,                              \
-        TTYPE*                    csx_val_A,                                       \
-        ITYPE*                    csx_row_col_ptr_A,                               \
+#define INSTANTIATE(DIRA, ITYPE, JTYPE, TTYPE)                                      \
+    template rocsparse_status rocsparse::dense2csx_impl<DIRA, ITYPE, JTYPE, TTYPE>( \
+        rocsparse_handle          handle,                                           \
+        rocsparse_order           order,                                            \
+        JTYPE                     m,                                                \
+        JTYPE                     n,                                                \
+        const rocsparse_mat_descr descr_A,                                          \
+        const TTYPE*              A,                                                \
+        int64_t                   lda,                                              \
+        const ITYPE*              nnz_per_row_column,                               \
+        TTYPE*                    csx_val_A,                                        \
+        ITYPE*                    csx_row_col_ptr_A,                                \
         JTYPE*                    csx_col_row_ind_A);
 
 INSTANTIATE(rocsparse_direction_row, int32_t, int32_t, float);
@@ -64,38 +64,38 @@ extern "C" {
 //
 // Definition of the C-implementation.
 //
-#define CAPI_IMPL(name_, type_)                                                           \
-    rocsparse_status name_(rocsparse_handle          handle,                              \
-                           rocsparse_int             m,                                   \
-                           rocsparse_int             n,                                   \
-                           const rocsparse_mat_descr descr,                               \
-                           const type_*              A,                                   \
-                           rocsparse_int             ld,                                  \
-                           const rocsparse_int*      nnz_per_rows,                        \
-                           type_*                    csr_val,                             \
-                           rocsparse_int*            csr_row_ptr,                         \
-                           rocsparse_int*            csr_col_ind)                         \
-    {                                                                                     \
-        try                                                                               \
-        {                                                                                 \
-            RETURN_IF_ROCSPARSE_ERROR(                                                    \
-                rocsparse_dense2csx_impl<rocsparse_direction_row>(handle,                 \
-                                                                  rocsparse_order_column, \
-                                                                  m,                      \
-                                                                  n,                      \
-                                                                  descr,                  \
-                                                                  A,                      \
-                                                                  ld,                     \
-                                                                  nnz_per_rows,           \
-                                                                  csr_val,                \
-                                                                  csr_row_ptr,            \
-                                                                  csr_col_ind));          \
-            return rocsparse_status_success;                                              \
-        }                                                                                 \
-        catch(...)                                                                        \
-        {                                                                                 \
-            RETURN_ROCSPARSE_EXCEPTION();                                                 \
-        }                                                                                 \
+#define CAPI_IMPL(name_, type_)                                                            \
+    rocsparse_status name_(rocsparse_handle          handle,                               \
+                           rocsparse_int             m,                                    \
+                           rocsparse_int             n,                                    \
+                           const rocsparse_mat_descr descr,                                \
+                           const type_*              A,                                    \
+                           rocsparse_int             ld,                                   \
+                           const rocsparse_int*      nnz_per_rows,                         \
+                           type_*                    csr_val,                              \
+                           rocsparse_int*            csr_row_ptr,                          \
+                           rocsparse_int*            csr_col_ind)                          \
+    {                                                                                      \
+        try                                                                                \
+        {                                                                                  \
+            RETURN_IF_ROCSPARSE_ERROR(                                                     \
+                rocsparse::dense2csx_impl<rocsparse_direction_row>(handle,                 \
+                                                                   rocsparse_order_column, \
+                                                                   m,                      \
+                                                                   n,                      \
+                                                                   descr,                  \
+                                                                   A,                      \
+                                                                   ld,                     \
+                                                                   nnz_per_rows,           \
+                                                                   csr_val,                \
+                                                                   csr_row_ptr,            \
+                                                                   csr_col_ind));          \
+            return rocsparse_status_success;                                               \
+        }                                                                                  \
+        catch(...)                                                                         \
+        {                                                                                  \
+            RETURN_ROCSPARSE_EXCEPTION();                                                  \
+        }                                                                                  \
     }
 
 //

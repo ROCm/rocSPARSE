@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,508 +27,521 @@
 #include "rocsparse.h"
 #include "utility.h"
 
-//
-// Kernel to copy array of integers with mix precisions
-//
-template <unsigned int BLOCKSIZE, typename TARGET, typename SOURCE>
-__launch_bounds__(BLOCKSIZE) __global__
-    static void copy_iarray_mix_safe(const size_t  nitems_,
-                                     TARGET*       target_,
-                                     const size_t  target_inc_,
-                                     const SOURCE* source_,
-                                     const size_t  source_inc_,
-                                     size_t*       count_out_of_limits_)
+#include "rocsparse_convert_array.hpp"
+
+namespace rocsparse
 {
-    const size_t      tid = hipThreadIdx_x;
-    const size_t      gid = tid + BLOCKSIZE * hipBlockIdx_x;
-    __shared__ size_t shd[BLOCKSIZE];
-    if(gid < nitems_)
+    //
+    // Kernel to copy array of integers with mix precisions
+    //
+    template <unsigned int BLOCKSIZE, typename TARGET, typename SOURCE>
+    __launch_bounds__(BLOCKSIZE) __global__
+        static void copy_iarray_mix_safe(const size_t  nitems_,
+                                         TARGET*       target_,
+                                         const size_t  target_inc_,
+                                         const SOURCE* source_,
+                                         const size_t  source_inc_,
+                                         size_t*       count_out_of_limits_)
     {
-        const SOURCE s = source_[gid * source_inc_];
-        if(s > std::numeric_limits<TARGET>::max() || s < std::numeric_limits<TARGET>::min())
+        const size_t      tid = hipThreadIdx_x;
+        const size_t      gid = tid + BLOCKSIZE * hipBlockIdx_x;
+        __shared__ size_t shd[BLOCKSIZE];
+        if(gid < nitems_)
         {
-            shd[tid] = 1;
+            const SOURCE s = source_[gid * source_inc_];
+            if(s > std::numeric_limits<TARGET>::max() || s < std::numeric_limits<TARGET>::min())
+            {
+                shd[tid] = 1;
+            }
+            else
+            {
+                target_[gid * target_inc_] = static_cast<TARGET>(s);
+                shd[tid]                   = 0;
+            }
         }
         else
         {
-            target_[gid * target_inc_] = static_cast<TARGET>(s);
-            shd[tid]                   = 0;
+            shd[tid] = 0;
+        }
+
+        __syncthreads();
+        rocsparse_blockreduce_sum<BLOCKSIZE>(tid, shd);
+        if(tid == 0)
+        {
+            shd[0] = rocsparse_atomic_add(count_out_of_limits_, shd[0]);
         }
     }
-    else
-    {
-        shd[tid] = 0;
-    }
 
-    __syncthreads();
-    rocsparse_blockreduce_sum<BLOCKSIZE>(tid, shd);
-    if(tid == 0)
+    template <typename TARGET, typename SOURCE>
+    static rocsparse_status convert_indexing_array_compute_core(rocsparse_handle handle_,
+                                                                size_t           nitems_,
+                                                                void*            target__,
+                                                                int64_t          target_inc_,
+                                                                const void*      source__,
+                                                                int64_t          source_inc_,
+                                                                size_t*          host_num_invalid)
     {
-        shd[0] = rocsparse_atomic_add(count_out_of_limits_, shd[0]);
-    }
-}
 
-template <typename TARGET, typename SOURCE>
-static rocsparse_status rocsparse_convert_indexing_array_compute_core(rocsparse_handle handle_,
-                                                                      size_t           nitems_,
-                                                                      void*            target__,
-                                                                      int64_t          target_inc_,
-                                                                      const void*      source__,
-                                                                      int64_t          source_inc_,
-                                                                      size_t* host_num_invalid)
-{
+        const SOURCE* source_ = (const SOURCE*)source__;
+        const TARGET* target_ = (const TARGET*)target__;
 
-    const SOURCE* source_ = (const SOURCE*)source__;
-    const TARGET* target_ = (const TARGET*)target__;
+        static constexpr unsigned int BLOCKSIZE = 1024;
 
-    static constexpr unsigned int BLOCKSIZE = 1024;
+        size_t* dnum_out_of_range_values = (size_t*)handle_->buffer;
+        RETURN_IF_HIP_ERROR(
+            hipMemsetAsync(dnum_out_of_range_values, 0, sizeof(size_t), handle_->stream));
 
-    size_t* dnum_out_of_range_values = (size_t*)handle_->buffer;
-    RETURN_IF_HIP_ERROR(
-        hipMemsetAsync(dnum_out_of_range_values, 0, sizeof(size_t), handle_->stream));
-
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((copy_iarray_mix_safe<BLOCKSIZE, TARGET, SOURCE>),
-                                       dim3((nitems_ - 1) / BLOCKSIZE + 1),
-                                       dim3(BLOCKSIZE),
-                                       0,
-                                       handle_->stream,
-                                       nitems_,
-                                       (TARGET*)target_,
-                                       target_inc_,
-                                       (const SOURCE*)source_,
-                                       source_inc_,
-                                       dnum_out_of_range_values);
-    RETURN_IF_HIP_ERROR(hipMemcpyAsync(host_num_invalid,
-                                       dnum_out_of_range_values,
-                                       sizeof(size_t),
-                                       hipMemcpyDeviceToHost,
-                                       handle_->stream));
-    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
-    if(host_num_invalid[0] > 0)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_type_mismatch);
-    }
-    return rocsparse_status_success;
-}
-
-template <typename T, typename... P>
-static rocsparse_status
-    rocsparse_convert_indexing_array_compute_dispatch(rocsparse_indextype source_indextype_, P... p)
-{
-    switch(source_indextype_)
-    {
-    case rocsparse_indextype_u16:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
-    }
-    case rocsparse_indextype_i32:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_convert_indexing_array_compute_core<T, int32_t>(p...)));
-        return rocsparse_status_success;
-    }
-    case rocsparse_indextype_i64:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_convert_indexing_array_compute_core<T, int64_t>(p...)));
-        return rocsparse_status_success;
-    }
-    }
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-}
-
-template <typename... P>
-static rocsparse_status rocsparse_convert_indexing_array_compute(
-    rocsparse_indextype target_indextype_, rocsparse_indextype source_indextype_, P... p)
-{
-    switch(target_indextype_)
-    {
-    case rocsparse_indextype_u16:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
-    }
-    case rocsparse_indextype_i32:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_convert_indexing_array_compute_dispatch<int32_t>(source_indextype_, p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_indextype_i64:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_convert_indexing_array_compute_dispatch<int64_t>(source_indextype_, p...));
-        return rocsparse_status_success;
-    }
-    }
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-}
-
-template <typename TARGET, typename SOURCE, class FILTER = void>
-struct copy_farray_mix_safe_kernel_t
-{
-    template <unsigned int BLOCKSIZE>
-    __launch_bounds__(BLOCKSIZE) __global__
-        static void run(const size_t             nitems_,
-                        TARGET*                  target_,
-                        const SOURCE*            source_,
-                        floating_data_t<SOURCE>* conversion_error_)
-    {
-    }
-};
-
-template <typename TARGET, typename SOURCE>
-struct copy_farray_mix_safe_kernel_t<
-    TARGET,
-    SOURCE,
-    std::enable_if_t<((std::is_same<TARGET, SOURCE>{}) || //
-                      (std::is_same<TARGET, double>{} && std::is_same<SOURCE, float>{}) || //
-                      (std::is_same<TARGET, rocsparse_double_complex>{}
-                       && std::is_same<SOURCE, rocsparse_float_complex>{}))>>
-{
-    template <unsigned int BLOCKSIZE>
-    __launch_bounds__(BLOCKSIZE) __global__
-        static void run(const size_t             nitems_,
-                        TARGET*                  target_,
-                        const SOURCE*            source_,
-                        floating_data_t<SOURCE>* conversion_error_)
-    {
-        const size_t tid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-        if(tid < nitems_)
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (rocsparse::copy_iarray_mix_safe<BLOCKSIZE, TARGET, SOURCE>),
+            dim3((nitems_ - 1) / BLOCKSIZE + 1),
+            dim3(BLOCKSIZE),
+            0,
+            handle_->stream,
+            nitems_,
+            (TARGET*)target_,
+            target_inc_,
+            (const SOURCE*)source_,
+            source_inc_,
+            dnum_out_of_range_values);
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(host_num_invalid,
+                                           dnum_out_of_range_values,
+                                           sizeof(size_t),
+                                           hipMemcpyDeviceToHost,
+                                           handle_->stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
+        if(host_num_invalid[0] > 0)
         {
-            target_[tid] = source_[tid];
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_type_mismatch);
+        }
+        return rocsparse_status_success;
+    }
+
+    template <typename T, typename... P>
+    static rocsparse_status
+        convert_indexing_array_compute_dispatch(rocsparse_indextype source_indextype_, P... p)
+    {
+        switch(source_indextype_)
+        {
+        case rocsparse_indextype_u16:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+        }
+        case rocsparse_indextype_i32:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_indexing_array_compute_core<T, int32_t>(p...)));
+            return rocsparse_status_success;
+        }
+        case rocsparse_indextype_i64:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_indexing_array_compute_core<T, int64_t>(p...)));
+            return rocsparse_status_success;
+        }
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+    }
+
+    template <typename... P>
+    static rocsparse_status convert_indexing_array_compute(rocsparse_indextype target_indextype_,
+                                                           rocsparse_indextype source_indextype_,
+                                                           P... p)
+    {
+        switch(target_indextype_)
+        {
+        case rocsparse_indextype_u16:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+        }
+        case rocsparse_indextype_i32:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_indexing_array_compute_dispatch<int32_t>(
+                source_indextype_, p...));
+            return rocsparse_status_success;
+        }
+        case rocsparse_indextype_i64:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_indexing_array_compute_dispatch<int64_t>(
+                source_indextype_, p...));
+            return rocsparse_status_success;
+        }
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+    }
+
+    template <typename TARGET, typename SOURCE, class FILTER = void>
+    struct copy_farray_mix_safe_kernel_t
+    {
+        template <unsigned int BLOCKSIZE>
+        __launch_bounds__(BLOCKSIZE) __global__
+            static void run(const size_t             nitems_,
+                            TARGET*                  target_,
+                            const SOURCE*            source_,
+                            floating_data_t<SOURCE>* conversion_error_)
+        {
         }
     };
-};
 
-//
-// Specialized conversion from float to float complex.
-//
-template <>
-struct copy_farray_mix_safe_kernel_t<rocsparse_float_complex, float>
-{
-    using SOURCE = float;
-    using TARGET = rocsparse_float_complex;
-
-    template <unsigned int BLOCKSIZE>
-    __launch_bounds__(BLOCKSIZE) __global__
-        static void run(const size_t             nitems_,
-                        TARGET*                  target_,
-                        const SOURCE*            source_,
-                        floating_data_t<SOURCE>* conversion_error_)
+    template <typename TARGET, typename SOURCE>
+    struct copy_farray_mix_safe_kernel_t<
+        TARGET,
+        SOURCE,
+        std::enable_if_t<((std::is_same<TARGET, SOURCE>{}) || //
+                          (std::is_same<TARGET, double>{} && std::is_same<SOURCE, float>{}) || //
+                          (std::is_same<TARGET, rocsparse_double_complex>{}
+                           && std::is_same<SOURCE, rocsparse_float_complex>{}))>>
     {
-        const size_t tid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-        if(tid < nitems_)
+        template <unsigned int BLOCKSIZE>
+        __launch_bounds__(BLOCKSIZE) __global__
+            static void run(const size_t             nitems_,
+                            TARGET*                  target_,
+                            const SOURCE*            source_,
+                            floating_data_t<SOURCE>* conversion_error_)
         {
-            target_[tid] = {static_cast<floating_data_t<TARGET>>(source_[tid]),
-                            static_cast<floating_data_t<TARGET>>(0)};
-        }
-    }
-};
+            const size_t tid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+            if(tid < nitems_)
+            {
+                target_[tid] = source_[tid];
+            }
+        };
+    };
 
-//
-// Specialized conversion from double to float complex.
-//
-template <>
-struct copy_farray_mix_safe_kernel_t<rocsparse_float_complex, double>
-{
-    using SOURCE = double;
-    using TARGET = rocsparse_float_complex;
-
-    template <unsigned int BLOCKSIZE>
-    __launch_bounds__(BLOCKSIZE) __global__
-        static void run(const size_t             nitems_,
-                        TARGET*                  target_,
-                        const SOURCE*            source_,
-                        floating_data_t<SOURCE>* conversion_error_)
+    //
+    // Specialized conversion from float to float complex.
+    //
+    template <>
+    struct copy_farray_mix_safe_kernel_t<rocsparse_float_complex, float>
     {
-        const size_t tid = hipThreadIdx_x;
-        const size_t gid = tid + BLOCKSIZE * hipBlockIdx_x;
-        __shared__ floating_data_t<SOURCE> shd[BLOCKSIZE];
-        if(gid < nitems_)
+        using SOURCE = float;
+        using TARGET = rocsparse_float_complex;
+
+        template <unsigned int BLOCKSIZE>
+        __launch_bounds__(BLOCKSIZE) __global__
+            static void run(const size_t             nitems_,
+                            TARGET*                  target_,
+                            const SOURCE*            source_,
+                            floating_data_t<SOURCE>* conversion_error_)
         {
-            const SOURCE s  = source_[gid];
-            const SOURCE sf = floating_data_t<SOURCE>(s);
-            const TARGET t{static_cast<floating_data_t<TARGET>>(sf),
-                           static_cast<floating_data_t<TARGET>>(0)};
-            shd[tid]     = std::abs(s - sf);
-            target_[gid] = t;
+            const size_t tid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+            if(tid < nitems_)
+            {
+                target_[tid] = {static_cast<floating_data_t<TARGET>>(source_[tid]),
+                                static_cast<floating_data_t<TARGET>>(0)};
+            }
         }
-        else
+    };
+
+    //
+    // Specialized conversion from double to float complex.
+    //
+    template <>
+    struct copy_farray_mix_safe_kernel_t<rocsparse_float_complex, double>
+    {
+        using SOURCE = double;
+        using TARGET = rocsparse_float_complex;
+
+        template <unsigned int BLOCKSIZE>
+        __launch_bounds__(BLOCKSIZE) __global__
+            static void run(const size_t             nitems_,
+                            TARGET*                  target_,
+                            const SOURCE*            source_,
+                            floating_data_t<SOURCE>* conversion_error_)
         {
-            shd[tid] = floating_data_t<SOURCE>(0);
-        }
+            const size_t tid = hipThreadIdx_x;
+            const size_t gid = tid + BLOCKSIZE * hipBlockIdx_x;
+            __shared__ floating_data_t<SOURCE> shd[BLOCKSIZE];
+            if(gid < nitems_)
+            {
+                const SOURCE s  = source_[gid];
+                const SOURCE sf = floating_data_t<SOURCE>(s);
+                const TARGET t{static_cast<floating_data_t<TARGET>>(sf),
+                               static_cast<floating_data_t<TARGET>>(0)};
+                shd[tid]     = std::abs(s - sf);
+                target_[gid] = t;
+            }
+            else
+            {
+                shd[tid] = floating_data_t<SOURCE>(0);
+            }
 
-        __syncthreads();
-        rocsparse_blockreduce_max<BLOCKSIZE>(tid, shd);
-        if(tid == 0)
+            __syncthreads();
+            rocsparse_blockreduce_max<BLOCKSIZE>(tid, shd);
+            if(tid == 0)
+            {
+                shd[0] = rocsparse_atomic_max(conversion_error_, shd[0]);
+            }
+        }
+    };
+
+    //
+    // Specialized conversion from double complex to float complex.
+    //
+    template <>
+    struct copy_farray_mix_safe_kernel_t<rocsparse_float_complex, rocsparse_double_complex>
+    {
+        using SOURCE = rocsparse_double_complex;
+        using TARGET = rocsparse_float_complex;
+
+        template <unsigned int BLOCKSIZE>
+        __launch_bounds__(BLOCKSIZE) __global__
+            static void run(const size_t             nitems_,
+                            TARGET*                  target_,
+                            const SOURCE*            source_,
+                            floating_data_t<SOURCE>* conversion_error_)
         {
-            shd[0] = rocsparse_atomic_max(conversion_error_, shd[0]);
+            const size_t tid = hipThreadIdx_x;
+            const size_t gid = tid + BLOCKSIZE * hipBlockIdx_x;
+            __shared__ floating_data_t<SOURCE> shd[BLOCKSIZE];
+            if(gid < nitems_)
+            {
+                const SOURCE s = source_[gid];
+
+                TARGET t(static_cast<floating_data_t<TARGET>>(std::real(s)),
+                         static_cast<floating_data_t<TARGET>>(std::imag(s)));
+
+                const SOURCE sback{static_cast<floating_data_t<SOURCE>>(std::real(t)),
+                                   static_cast<floating_data_t<SOURCE>>(std::imag(t))};
+                shd[tid]     = std::abs(s - sback);
+                target_[gid] = t;
+            }
+            else
+            {
+                shd[tid] = floating_data_t<SOURCE>(0);
+            }
+
+            __syncthreads();
+            rocsparse_blockreduce_max<BLOCKSIZE>(tid, shd);
+            if(tid == 0)
+            {
+                shd[0] = rocsparse_atomic_max(conversion_error_, shd[0]);
+            }
         }
-    }
-};
+    };
 
-//
-// Specialized conversion from double complex to float complex.
-//
-template <>
-struct copy_farray_mix_safe_kernel_t<rocsparse_float_complex, rocsparse_double_complex>
-{
-    using SOURCE = rocsparse_double_complex;
-    using TARGET = rocsparse_float_complex;
-
-    template <unsigned int BLOCKSIZE>
-    __launch_bounds__(BLOCKSIZE) __global__
-        static void run(const size_t             nitems_,
-                        TARGET*                  target_,
-                        const SOURCE*            source_,
-                        floating_data_t<SOURCE>* conversion_error_)
+    //
+    // Specialized conversion from float complex to double complex.
+    //
+    template <>
+    struct copy_farray_mix_safe_kernel_t<rocsparse_double_complex, rocsparse_float_complex>
     {
-        const size_t tid = hipThreadIdx_x;
-        const size_t gid = tid + BLOCKSIZE * hipBlockIdx_x;
-        __shared__ floating_data_t<SOURCE> shd[BLOCKSIZE];
-        if(gid < nitems_)
+        using SOURCE = rocsparse_float_complex;
+        using TARGET = rocsparse_double_complex;
+
+        template <unsigned int BLOCKSIZE>
+        __launch_bounds__(BLOCKSIZE) __global__
+            static void run(size_t                   nitems_,
+                            TARGET*                  target_,
+                            const SOURCE*            source_,
+                            floating_data_t<SOURCE>* conversion_error_)
         {
-            const SOURCE s = source_[gid];
-
-            TARGET t(static_cast<floating_data_t<TARGET>>(std::real(s)),
-                     static_cast<floating_data_t<TARGET>>(std::imag(s)));
-
-            const SOURCE sback{static_cast<floating_data_t<SOURCE>>(std::real(t)),
-                               static_cast<floating_data_t<SOURCE>>(std::imag(t))};
-            shd[tid]     = std::abs(s - sback);
-            target_[gid] = t;
+            const size_t tid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+            if(tid < nitems_)
+            {
+                const SOURCE s = source_[tid];
+                target_[tid]
+                    = TARGET{static_cast<double>(std::real(s)), static_cast<double>(std::imag(s))};
+            }
         }
-        else
+    };
+
+    template <>
+    struct copy_farray_mix_safe_kernel_t<float, double>
+    {
+        using TARGET = float;
+        using SOURCE = double;
+        template <unsigned int BLOCKSIZE>
+        __launch_bounds__(BLOCKSIZE) __global__
+            static void run(size_t                   nitems_,
+                            TARGET*                  target_,
+                            const SOURCE*            source_,
+                            floating_data_t<SOURCE>* conversion_error_)
         {
-            shd[tid] = floating_data_t<SOURCE>(0);
-        }
+            const size_t tid = hipThreadIdx_x;
+            const size_t gid = tid + BLOCKSIZE * hipBlockIdx_x;
+            __shared__ floating_data_t<SOURCE> shd[BLOCKSIZE];
+            if(gid < nitems_)
+            {
+                const SOURCE s = source_[gid];
+                const TARGET t = static_cast<TARGET>(s);
+                shd[tid]       = std::abs(s - static_cast<SOURCE>(t));
+                target_[gid]   = t;
+            }
+            else
+            {
+                shd[tid] = floating_data_t<SOURCE>(0);
+            }
 
-        __syncthreads();
-        rocsparse_blockreduce_max<BLOCKSIZE>(tid, shd);
-        if(tid == 0)
+            __syncthreads();
+            rocsparse_blockreduce_max<BLOCKSIZE>(tid, shd);
+            if(tid == 0)
+            {
+                shd[0] = rocsparse_atomic_max(conversion_error_, shd[0]);
+            }
+        }
+    };
+
+    template <typename TARGET, typename SOURCE>
+    static rocsparse_status convert_data_array_compute_core(rocsparse_handle handle_,
+                                                            size_t           nitems_,
+                                                            void*            target__,
+                                                            const void*      source__,
+                                                            double*          host_error)
+    {
+        const SOURCE*                 source_   = (const SOURCE*)source__;
+        const TARGET*                 target_   = (const TARGET*)target__;
+        static constexpr unsigned int BLOCKSIZE = 1024;
+        floating_data_t<SOURCE>*      derr      = (floating_data_t<SOURCE>*)handle_->buffer;
+        floating_data_t<SOURCE>       herr;
+        RETURN_IF_HIP_ERROR(
+            hipMemsetAsync(derr, 0, sizeof(floating_data_t<SOURCE>), handle_->stream));
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (rocsparse::copy_farray_mix_safe_kernel_t<TARGET, SOURCE>::template run<BLOCKSIZE>),
+            dim3((nitems_ - 1) / BLOCKSIZE + 1),
+            dim3(BLOCKSIZE),
+            0,
+            handle_->stream,
+            nitems_,
+            (TARGET*)target_,
+            (const SOURCE*)source_,
+            (floating_data_t<SOURCE>*)derr);
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &herr, derr, sizeof(floating_data_t<SOURCE>), hipMemcpyDeviceToHost, handle_->stream));
+        host_error[0] = static_cast<double>(herr);
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
+        return rocsparse_status_success;
+    }
+
+    template <typename T, typename... P>
+    static rocsparse_status convert_data_array_compute_dispatch(rocsparse_datatype source_datatype_,
+                                                                P... p)
+    {
+        switch(source_datatype_)
         {
-            shd[0] = rocsparse_atomic_max(conversion_error_, shd[0]);
-        }
-    }
-};
-
-//
-// Specialized conversion from float complex to double complex.
-//
-template <>
-struct copy_farray_mix_safe_kernel_t<rocsparse_double_complex, rocsparse_float_complex>
-{
-    using SOURCE = rocsparse_float_complex;
-    using TARGET = rocsparse_double_complex;
-
-    template <unsigned int BLOCKSIZE>
-    __launch_bounds__(BLOCKSIZE) __global__
-        static void run(size_t                   nitems_,
-                        TARGET*                  target_,
-                        const SOURCE*            source_,
-                        floating_data_t<SOURCE>* conversion_error_)
-    {
-        const size_t tid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-        if(tid < nitems_)
+        case rocsparse_datatype_i8_r:
         {
-            const SOURCE s = source_[tid];
-            target_[tid]
-                = TARGET{static_cast<double>(std::real(s)), static_cast<double>(std::imag(s))};
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_data_array_compute_core<T, int8_t>)(p...));
+            return rocsparse_status_success;
         }
-    }
-};
-
-template <>
-struct copy_farray_mix_safe_kernel_t<float, double>
-{
-    using TARGET = float;
-    using SOURCE = double;
-    template <unsigned int BLOCKSIZE>
-    __launch_bounds__(BLOCKSIZE) __global__
-        static void run(size_t                   nitems_,
-                        TARGET*                  target_,
-                        const SOURCE*            source_,
-                        floating_data_t<SOURCE>* conversion_error_)
-    {
-        const size_t tid = hipThreadIdx_x;
-        const size_t gid = tid + BLOCKSIZE * hipBlockIdx_x;
-        __shared__ floating_data_t<SOURCE> shd[BLOCKSIZE];
-        if(gid < nitems_)
+        case rocsparse_datatype_u8_r:
         {
-            const SOURCE s = source_[gid];
-            const TARGET t = static_cast<TARGET>(s);
-            shd[tid]       = std::abs(s - static_cast<SOURCE>(t));
-            target_[gid]   = t;
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_data_array_compute_core<T, uint8_t>)(p...));
+            return rocsparse_status_success;
         }
-        else
+        case rocsparse_datatype_i32_r:
         {
-            shd[tid] = floating_data_t<SOURCE>(0);
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_data_array_compute_core<T, int32_t>)(p...));
+            return rocsparse_status_success;
         }
-
-        __syncthreads();
-        rocsparse_blockreduce_max<BLOCKSIZE>(tid, shd);
-        if(tid == 0)
+        case rocsparse_datatype_u32_r:
         {
-            shd[0] = rocsparse_atomic_max(conversion_error_, shd[0]);
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_data_array_compute_core<T, uint32_t>)(p...));
+            return rocsparse_status_success;
         }
-    }
-};
-
-template <typename TARGET, typename SOURCE>
-static rocsparse_status rocsparse_convert_data_array_compute_core(rocsparse_handle handle_,
-                                                                  size_t           nitems_,
-                                                                  void*            target__,
-                                                                  const void*      source__,
-                                                                  double*          host_error)
-{
-    const SOURCE*                 source_   = (const SOURCE*)source__;
-    const TARGET*                 target_   = (const TARGET*)target__;
-    static constexpr unsigned int BLOCKSIZE = 1024;
-    floating_data_t<SOURCE>*      derr      = (floating_data_t<SOURCE>*)handle_->buffer;
-    floating_data_t<SOURCE>       herr;
-    RETURN_IF_HIP_ERROR(hipMemsetAsync(derr, 0, sizeof(floating_data_t<SOURCE>), handle_->stream));
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-        (copy_farray_mix_safe_kernel_t<TARGET, SOURCE>::template run<BLOCKSIZE>),
-        dim3((nitems_ - 1) / BLOCKSIZE + 1),
-        dim3(BLOCKSIZE),
-        0,
-        handle_->stream,
-        nitems_,
-        (TARGET*)target_,
-        (const SOURCE*)source_,
-        (floating_data_t<SOURCE>*)derr);
-    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-        &herr, derr, sizeof(floating_data_t<SOURCE>), hipMemcpyDeviceToHost, handle_->stream));
-    host_error[0] = static_cast<double>(herr);
-    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
-    return rocsparse_status_success;
-}
-
-template <typename T, typename... P>
-static rocsparse_status
-    rocsparse_convert_data_array_compute_dispatch(rocsparse_datatype source_datatype_, P... p)
-{
-    switch(source_datatype_)
-    {
-    case rocsparse_datatype_i8_r:
-    {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_convert_data_array_compute_core<T, int8_t>)(p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_u8_r:
-    {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_convert_data_array_compute_core<T, uint8_t>)(p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_i32_r:
-    {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_convert_data_array_compute_core<T, int32_t>)(p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_u32_r:
-    {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_convert_data_array_compute_core<T, uint32_t>)(p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_f32_r:
-    {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_convert_data_array_compute_core<T, float>)(p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_f64_r:
-    {
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse_convert_data_array_compute_core<T, double>)(p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_f32_c:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_convert_data_array_compute_core<T, rocsparse_float_complex>)(p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_f64_c:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_convert_data_array_compute_core<T, rocsparse_double_complex>)(p...));
-        return rocsparse_status_success;
-    }
-    }
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-}
-
-template <typename... P>
-static rocsparse_status rocsparse_convert_data_array_compute(rocsparse_datatype target_datatype_,
-                                                             rocsparse_datatype source_datatype_,
-                                                             P... p)
-{
-    switch(target_datatype_)
-    {
-    case rocsparse_datatype_i8_r:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_convert_data_array_compute_dispatch<int8_t>)(source_datatype_, p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_u8_r:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_convert_data_array_compute_dispatch<uint8_t>)(source_datatype_, p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_i32_r:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_convert_data_array_compute_dispatch<int32_t>)(source_datatype_, p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_u32_r:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_convert_data_array_compute_dispatch<uint32_t>)(source_datatype_, p...));
-        return rocsparse_status_success;
+        case rocsparse_datatype_f32_r:
+        {
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse::convert_data_array_compute_core<T, float>)(p...));
+            return rocsparse_status_success;
+        }
+        case rocsparse_datatype_f64_r:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_data_array_compute_core<T, double>)(p...));
+            return rocsparse_status_success;
+        }
+        case rocsparse_datatype_f32_c:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_data_array_compute_core<T, rocsparse_float_complex>)(p...));
+            return rocsparse_status_success;
+        }
+        case rocsparse_datatype_f64_c:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_data_array_compute_core<T, rocsparse_double_complex>)(p...));
+            return rocsparse_status_success;
+        }
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
-    case rocsparse_datatype_f32_r:
+    template <typename... P>
+    static rocsparse_status convert_data_array_compute(rocsparse_datatype target_datatype_,
+                                                       rocsparse_datatype source_datatype_,
+                                                       P... p)
     {
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_convert_data_array_compute_dispatch<float>(source_datatype_, p...));
-        return rocsparse_status_success;
+        switch(target_datatype_)
+        {
+        case rocsparse_datatype_i8_r:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_data_array_compute_dispatch<int8_t>)(source_datatype_, p...));
+            return rocsparse_status_success;
+        }
+        case rocsparse_datatype_u8_r:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_data_array_compute_dispatch<uint8_t>)(source_datatype_, p...));
+            return rocsparse_status_success;
+        }
+        case rocsparse_datatype_i32_r:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_data_array_compute_dispatch<int32_t>)(source_datatype_, p...));
+            return rocsparse_status_success;
+        }
+        case rocsparse_datatype_u32_r:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::convert_data_array_compute_dispatch<uint32_t>)(source_datatype_, p...));
+            return rocsparse_status_success;
+        }
+
+        case rocsparse_datatype_f32_r:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::convert_data_array_compute_dispatch<float>(source_datatype_, p...));
+            return rocsparse_status_success;
+        }
+        case rocsparse_datatype_f64_r:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::convert_data_array_compute_dispatch<double>(source_datatype_, p...));
+            return rocsparse_status_success;
+        }
+        case rocsparse_datatype_f32_c:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::convert_data_array_compute_dispatch<rocsparse_float_complex>(
+                    source_datatype_, p...));
+            return rocsparse_status_success;
+        }
+        case rocsparse_datatype_f64_c:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::convert_data_array_compute_dispatch<rocsparse_double_complex>(
+                    source_datatype_, p...));
+            return rocsparse_status_success;
+        }
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
-    case rocsparse_datatype_f64_r:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_convert_data_array_compute_dispatch<double>(source_datatype_, p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_f32_c:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_convert_data_array_compute_dispatch<rocsparse_float_complex>(source_datatype_,
-                                                                                   p...));
-        return rocsparse_status_success;
-    }
-    case rocsparse_datatype_f64_c:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_convert_data_array_compute_dispatch<rocsparse_double_complex>(
-                source_datatype_, p...));
-        return rocsparse_status_success;
-    }
-    }
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 //
 // Converting indexing arrays.
 //
-rocsparse_status rocsparse_convert_array(rocsparse_handle    handle_,
-                                         size_t              nitems_,
-                                         rocsparse_indextype target_indextype_,
-                                         void*               target_,
-                                         int64_t             target_inc_,
-                                         rocsparse_indextype source_indextype_,
-                                         const void*         source_,
-                                         int64_t             source_inc_)
+rocsparse_status rocsparse::convert_array(rocsparse_handle    handle_,
+                                          size_t              nitems_,
+                                          rocsparse_indextype target_indextype_,
+                                          void*               target_,
+                                          int64_t             target_inc_,
+                                          rocsparse_indextype source_indextype_,
+                                          const void*         source_,
+                                          int64_t             source_inc_)
 {
     if((source_indextype_ == target_indextype_) && (target_inc_ == 1 && source_inc_ == 1))
     {
@@ -543,15 +556,15 @@ rocsparse_status rocsparse_convert_array(rocsparse_handle    handle_,
     {
         size_t                 count_out_of_bounds_conversion = 0;
         const rocsparse_status status
-            = rocsparse_convert_indexing_array_compute(target_indextype_,
-                                                       source_indextype_,
-                                                       handle_,
-                                                       nitems_,
-                                                       target_,
-                                                       target_inc_,
-                                                       source_,
-                                                       source_inc_,
-                                                       &count_out_of_bounds_conversion);
+            = rocsparse::convert_indexing_array_compute(target_indextype_,
+                                                        source_indextype_,
+                                                        handle_,
+                                                        nitems_,
+                                                        target_,
+                                                        target_inc_,
+                                                        source_,
+                                                        source_inc_,
+                                                        &count_out_of_bounds_conversion);
         if(status != rocsparse_status_success)
         {
             std::cerr << "rocsparse_convert_array_compute has detected "
@@ -565,14 +578,14 @@ rocsparse_status rocsparse_convert_array(rocsparse_handle    handle_,
 //
 // Converting indexing array.
 //
-rocsparse_status rocsparse_convert_array(rocsparse_handle    handle_,
-                                         size_t              nitems_,
-                                         rocsparse_indextype target_indextype_,
-                                         void*               target_,
-                                         rocsparse_indextype source_indextype_,
-                                         const void*         source_)
+rocsparse_status rocsparse::convert_array(rocsparse_handle    handle_,
+                                          size_t              nitems_,
+                                          rocsparse_indextype target_indextype_,
+                                          void*               target_,
+                                          rocsparse_indextype source_indextype_,
+                                          const void*         source_)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(
         handle_, nitems_, target_indextype_, target_, 1, source_indextype_, source_, 1));
     return rocsparse_status_success;
 }
@@ -587,12 +600,12 @@ rocsparse_status rocsparse_convert_array(rocsparse_handle    handle_,
 /// @param source_ The source array.
 /// @return The rocsparse status.
 ///
-rocsparse_status rocsparse_convert_array(rocsparse_handle   handle_,
-                                         size_t             nitems_,
-                                         rocsparse_datatype target_datatype_,
-                                         void*              target_,
-                                         rocsparse_datatype source_datatype_,
-                                         const void*        source_)
+rocsparse_status rocsparse::convert_array(rocsparse_handle   handle_,
+                                          size_t             nitems_,
+                                          rocsparse_datatype target_datatype_,
+                                          void*              target_,
+                                          rocsparse_datatype source_datatype_,
+                                          const void*        source_)
 {
 
     if(source_datatype_ == target_datatype_)
@@ -614,13 +627,13 @@ rocsparse_status rocsparse_convert_array(rocsparse_handle   handle_,
         // Treating arrays with different data types.
         //
         double conversion_error_max;
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_data_array_compute(target_datatype_,
-                                                                       source_datatype_,
-                                                                       handle_,
-                                                                       nitems_,
-                                                                       target_,
-                                                                       source_,
-                                                                       &conversion_error_max));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_data_array_compute(target_datatype_,
+                                                                        source_datatype_,
+                                                                        handle_,
+                                                                        nitems_,
+                                                                        target_,
+                                                                        source_,
+                                                                        &conversion_error_max));
 
         std::cout << "rocsparse_convert_array numerical conversion error " << conversion_error_max
                   << " invalid data." << std::endl;
@@ -628,9 +641,9 @@ rocsparse_status rocsparse_convert_array(rocsparse_handle   handle_,
     }
 }
 
-rocsparse_status rocsparse_dnvec_transfer_from(rocsparse_handle            handle,
-                                               rocsparse_dnvec_descr       target,
-                                               rocsparse_const_dnvec_descr source)
+rocsparse_status rocsparse::dnvec_transfer_from(rocsparse_handle            handle,
+                                                rocsparse_dnvec_descr       target,
+                                                rocsparse_const_dnvec_descr source)
 {
     ROCSPARSE_CHECKARG_POINTER(0, target);
     ROCSPARSE_CHECKARG_POINTER(1, source);
@@ -674,11 +687,11 @@ rocsparse_status rocsparse_dnvec_transfer_from(rocsparse_handle            handl
     }
     }
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(handle,
-                                                      target->size,
-                                                      target->data_type,
-                                                      target->values,
-                                                      source->data_type,
-                                                      source->values));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(handle,
+                                                       target->size,
+                                                       target->data_type,
+                                                       target->values,
+                                                       source->data_type,
+                                                       source->values));
     return rocsparse_status_success;
 }

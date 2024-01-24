@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,31 +31,34 @@
 #include "hyb2csr_device.h"
 #include <rocprim/rocprim.hpp>
 
-static rocsparse_status rocsparse_hyb2csr_quickreturn(rocsparse_handle          handle,
-                                                      const rocsparse_mat_descr descr,
-                                                      const rocsparse_hyb_mat   hyb,
-                                                      void*                     csr_val,
-                                                      rocsparse_int*            csr_row_ptr,
-                                                      rocsparse_int*            csr_col_ind,
-                                                      void*                     temp_buffer)
-
+namespace rocsparse
 {
-    // Quick return if possible
-    if(hyb->m == 0 || hyb->n == 0 || (hyb->ell_nnz == 0 && hyb->coo_nnz == 0))
+    static rocsparse_status hyb2csr_quickreturn(rocsparse_handle          handle,
+                                                const rocsparse_mat_descr descr,
+                                                const rocsparse_hyb_mat   hyb,
+                                                void*                     csr_val,
+                                                rocsparse_int*            csr_row_ptr,
+                                                rocsparse_int*            csr_col_ind,
+                                                void*                     temp_buffer)
+
     {
-        return rocsparse_status_success;
+        // Quick return if possible
+        if(hyb->m == 0 || hyb->n == 0 || (hyb->ell_nnz == 0 && hyb->coo_nnz == 0))
+        {
+            return rocsparse_status_success;
+        }
+        return rocsparse_status_continue;
     }
-    return rocsparse_status_continue;
 }
 
 template <typename T>
-rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
-                                            const rocsparse_mat_descr descr,
-                                            const rocsparse_hyb_mat   hyb,
-                                            T*                        csr_val,
-                                            rocsparse_int*            csr_row_ptr,
-                                            rocsparse_int*            csr_col_ind,
-                                            void*                     temp_buffer)
+rocsparse_status rocsparse::hyb2csr_template(rocsparse_handle          handle,
+                                             const rocsparse_mat_descr descr,
+                                             const rocsparse_hyb_mat   hyb,
+                                             T*                        csr_val,
+                                             rocsparse_int*            csr_row_ptr,
+                                             rocsparse_int*            csr_col_ind,
+                                             void*                     temp_buffer)
 {
     // Logging
     log_trace(handle,
@@ -79,7 +82,7 @@ rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
     ROCSPARSE_CHECKARG(2, hyb, (hyb->m < 0), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG(2, hyb, (hyb->n < 0), rocsparse_status_invalid_size);
 
-    const rocsparse_status status = rocsparse_hyb2csr_quickreturn(
+    const rocsparse_status status = rocsparse::hyb2csr_quickreturn(
         handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
 
     if(status != rocsparse_status_continue)
@@ -117,7 +120,7 @@ rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
     dim3 hyb2csr_blocks((hyb->m - 1) / HYB2CSR_DIM + 1);
     dim3 hyb2csr_threads(HYB2CSR_DIM);
 
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((hyb2csr_nnz_kernel<HYB2CSR_DIM>),
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::hyb2csr_nnz_kernel<HYB2CSR_DIM>),
                                        hyb2csr_blocks,
                                        hyb2csr_threads,
                                        0,
@@ -154,7 +157,7 @@ rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
                                                 stream));
 
     // Fill columns and values
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((hyb2csr_fill_kernel<HYB2CSR_DIM>),
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::hyb2csr_fill_kernel<HYB2CSR_DIM>),
                                        hyb2csr_blocks,
                                        hyb2csr_threads,
                                        0,
@@ -283,7 +286,7 @@ extern "C" rocsparse_status rocsparse_shyb2csr(rocsparse_handle          handle,
                                                void*                     temp_buffer)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_hyb2csr_template(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::hyb2csr_template(
         handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer));
     return rocsparse_status_success;
 }
@@ -301,7 +304,7 @@ extern "C" rocsparse_status rocsparse_dhyb2csr(rocsparse_handle          handle,
                                                void*                     temp_buffer)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_hyb2csr_template(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::hyb2csr_template(
         handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer));
     return rocsparse_status_success;
 }
@@ -319,7 +322,7 @@ extern "C" rocsparse_status rocsparse_chyb2csr(rocsparse_handle          handle,
                                                void*                     temp_buffer)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_hyb2csr_template(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::hyb2csr_template(
         handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer));
     return rocsparse_status_success;
 }
@@ -337,7 +340,7 @@ extern "C" rocsparse_status rocsparse_zhyb2csr(rocsparse_handle          handle,
                                                void*                     temp_buffer)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_hyb2csr_template(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::hyb2csr_template(
         handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer));
     return rocsparse_status_success;
 }

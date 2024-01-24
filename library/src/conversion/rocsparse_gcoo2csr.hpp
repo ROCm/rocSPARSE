@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,25 @@
 
 #include "rocsparse-types.h"
 
-rocsparse_status rocsparse_gcoo2csr(rocsparse_handle     handle_,
-                                    rocsparse_indextype  source_row_type_,
-                                    const void*          source_row_,
-                                    int64_t              nnz_,
-                                    int64_t              m_,
-                                    rocsparse_indextype  target_row_type_,
-                                    void*                target_row_,
-                                    rocsparse_index_base idx_base_);
+namespace rocsparse
+{
+    rocsparse_status gcoo2csr(rocsparse_handle     handle_,
+                              rocsparse_indextype  source_row_type_,
+                              const void*          source_row_,
+                              int64_t              nnz_,
+                              int64_t              m_,
+                              rocsparse_indextype  target_row_type_,
+                              void*                target_row_,
+                              rocsparse_index_base idx_base_);
 
-rocsparse_status rocsparse_spmat_coo2csr_buffer_size(rocsparse_handle            handle,
-                                                     rocsparse_const_spmat_descr source_,
-                                                     rocsparse_spmat_descr       target_,
-                                                     size_t*                     buffer_size_);
+    rocsparse_status spmat_coo2csr_buffer_size(rocsparse_handle            handle,
+                                               rocsparse_const_spmat_descr source_,
+                                               rocsparse_spmat_descr       target_,
+                                               size_t*                     buffer_size_);
 
-rocsparse_status rocsparse_spmat_coo2csr(rocsparse_handle            handle,
-                                         rocsparse_const_spmat_descr source_,
-                                         rocsparse_spmat_descr       target_,
-                                         size_t                      buffer_size_,
-                                         void*                       buffer_);
+    rocsparse_status spmat_coo2csr(rocsparse_handle            handle,
+                                   rocsparse_const_spmat_descr source_,
+                                   rocsparse_spmat_descr       target_,
+                                   size_t                      buffer_size_,
+                                   void*                       buffer_);
+}

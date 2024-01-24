@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,65 +26,69 @@
 
 #include <hip/hip_runtime.h>
 
-// CSR to COO matrix conversion kernel
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void csr2coo_kernel(J                    m,
-                    const I*             csr_row_ptr_begin,
-                    const I*             csr_row_ptr_end,
-                    J*                   coo_row_ind,
-                    rocsparse_index_base idx_base)
+namespace rocsparse
 {
-    J tid = hipThreadIdx_x;
-    J lid = tid & (WF_SIZE - 1);
-    J wid = tid / WF_SIZE;
-
-    __shared__ int all_short_rows;
-    __shared__ int short_rows[BLOCKSIZE / WF_SIZE];
-
-    all_short_rows = 1;
-
-    __syncthreads();
-
-    J row = (BLOCKSIZE / WF_SIZE) * hipBlockIdx_x + wid;
-
-    I start = (row < m) ? csr_row_ptr_begin[row] - idx_base : static_cast<I>(0);
-    I end   = (row < m) ? csr_row_ptr_end[row] - idx_base : static_cast<I>(0);
-
-    int short_row = (end - start <= 8 * WF_SIZE) ? 1 : 0;
-
-    if(short_row)
+    // CSR to COO matrix conversion kernel
+    template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void csr2coo_kernel(J                    m,
+                        const I*             csr_row_ptr_begin,
+                        const I*             csr_row_ptr_end,
+                        J*                   coo_row_ind,
+                        rocsparse_index_base idx_base)
     {
-        for(I j = start + lid; j < end; j += WF_SIZE)
+        J tid = hipThreadIdx_x;
+        J lid = tid & (WF_SIZE - 1);
+        J wid = tid / WF_SIZE;
+
+        __shared__ int all_short_rows;
+        __shared__ int short_rows[BLOCKSIZE / WF_SIZE];
+
+        all_short_rows = 1;
+
+        __syncthreads();
+
+        J row = (BLOCKSIZE / WF_SIZE) * hipBlockIdx_x + wid;
+
+        I start = (row < m) ? csr_row_ptr_begin[row] - idx_base : static_cast<I>(0);
+        I end   = (row < m) ? csr_row_ptr_end[row] - idx_base : static_cast<I>(0);
+
+        int short_row = (end - start <= 8 * WF_SIZE) ? 1 : 0;
+
+        if(short_row)
         {
-            coo_row_ind[j] = row + idx_base;
-        }
-    }
-    else
-    {
-        all_short_rows = 0;
-    }
-
-    short_rows[wid] = short_row;
-
-    __syncthreads();
-
-    // Process any long rows
-    if(all_short_rows == 0)
-    {
-        for(int i = 0; i < (BLOCKSIZE / WF_SIZE); i++)
-        {
-            if(short_rows[i] == 0)
+            for(I j = start + lid; j < end; j += WF_SIZE)
             {
-                J long_row = (BLOCKSIZE / WF_SIZE) * hipBlockIdx_x + i;
+                coo_row_ind[j] = row + idx_base;
+            }
+        }
+        else
+        {
+            all_short_rows = 0;
+        }
 
-                I start
-                    = (long_row < m) ? csr_row_ptr_begin[long_row] - idx_base : static_cast<I>(0);
-                I end = (long_row < m) ? csr_row_ptr_end[long_row] - idx_base : static_cast<I>(0);
+        short_rows[wid] = short_row;
 
-                for(I j = start + tid; j < end; j += BLOCKSIZE)
+        __syncthreads();
+
+        // Process any long rows
+        if(all_short_rows == 0)
+        {
+            for(int i = 0; i < (BLOCKSIZE / WF_SIZE); i++)
+            {
+                if(short_rows[i] == 0)
                 {
-                    coo_row_ind[j] = long_row + idx_base;
+                    J long_row = (BLOCKSIZE / WF_SIZE) * hipBlockIdx_x + i;
+
+                    I start = (long_row < m) ? csr_row_ptr_begin[long_row] - idx_base
+                                             : static_cast<I>(0);
+                    I end
+                        = (long_row < m) ? csr_row_ptr_end[long_row] - idx_base : static_cast<I>(0);
+
+                    for(I j = start + tid; j < end; j += BLOCKSIZE)
+                    {
+                        coo_row_ind[j] = long_row + idx_base;
+                    }
                 }
             }
         }

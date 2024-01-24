@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,101 +25,106 @@
 #include "rocsparse_inverse_permutation.hpp"
 #include "utility.h"
 
-template <unsigned int BLOCKSIZE, typename I>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel1(I n_, const I* p_, I* q_)
+namespace rocsparse
 {
-    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-    if(idx >= n_)
+    template <unsigned int BLOCKSIZE, typename I>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel1(I n_, const I* p_, I* q_)
     {
-        return;
+        I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        if(idx >= n_)
+        {
+            return;
+        }
+
+        q_[p_[idx] - 1] = idx + 1;
     }
 
-    q_[p_[idx] - 1] = idx + 1;
-}
-
-template <unsigned int BLOCKSIZE, typename I>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel0(I n_, const I* p_, I* q_)
-{
-    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-    if(idx >= n_)
+    template <unsigned int BLOCKSIZE, typename I>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel0(I n_, const I* p_, I* q_)
     {
-        return;
+        I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        if(idx >= n_)
+        {
+            return;
+        }
+        q_[p_[idx]] = idx;
     }
-    q_[p_[idx]] = idx;
-}
 
-template <typename I>
-rocsparse_status rocsparse_inverse_permutation_core(rocsparse_handle handle_,
-                                                    I                n_,
-                                                    const I* __restrict__ p_,
-                                                    I* __restrict__ q_,
-                                                    rocsparse_index_base base_)
-{
-    static constexpr unsigned int BLOCKSIZE = 512;
-    dim3                          blocks((n_ - 1) / BLOCKSIZE + 1);
-    dim3                          threads(BLOCKSIZE);
-    if(base_ == rocsparse_index_base_zero)
+    template <typename I>
+    rocsparse_status inverse_permutation_core(rocsparse_handle handle_,
+                                              I                n_,
+                                              const I* __restrict__ p_,
+                                              I* __restrict__ q_,
+                                              rocsparse_index_base base_)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (kernel0<BLOCKSIZE>), blocks, threads, 0, handle_->stream, n_, p_, q_);
-    }
-    else
-    {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (kernel1<BLOCKSIZE>), blocks, threads, 0, handle_->stream, n_, p_, q_);
-    }
-    return rocsparse_status_success;
-}
-
-template <typename I>
-rocsparse_status rocsparse_inverse_permutation_template(rocsparse_handle handle_,
-                                                        I                n_,
-                                                        const I* __restrict__ p_,
-                                                        I* __restrict__ q_,
-                                                        rocsparse_index_base base_)
-{
-    // Quick return if possible
-    if(n_ == 0)
-    {
+        static constexpr unsigned int BLOCKSIZE = 512;
+        dim3                          blocks((n_ - 1) / BLOCKSIZE + 1);
+        dim3                          threads(BLOCKSIZE);
+        if(base_ == rocsparse_index_base_zero)
+        {
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::kernel0<BLOCKSIZE>), blocks, threads, 0, handle_->stream, n_, p_, q_);
+        }
+        else
+        {
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::kernel1<BLOCKSIZE>), blocks, threads, 0, handle_->stream, n_, p_, q_);
+        }
         return rocsparse_status_success;
     }
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_inverse_permutation_core(handle_, n_, p_, q_, base_));
-    return rocsparse_status_success;
+
+    template <typename I>
+    rocsparse_status inverse_permutation_template(rocsparse_handle handle_,
+                                                  I                n_,
+                                                  const I* __restrict__ p_,
+                                                  I* __restrict__ q_,
+                                                  rocsparse_index_base base_)
+    {
+        // Quick return if possible
+        if(n_ == 0)
+        {
+            return rocsparse_status_success;
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::inverse_permutation_core(handle_, n_, p_, q_, base_));
+        return rocsparse_status_success;
+    }
+
+    template <typename I>
+    rocsparse_status inverse_permutation_impl(rocsparse_handle handle,
+                                              I                n,
+                                              const I* __restrict__ p,
+                                              I* __restrict__ q,
+                                              rocsparse_index_base base)
+    {
+        // Logging
+        log_trace(
+            handle, "rocsparse_inverse_permutation", n, (const void*&)p, (const void*&)q, base);
+
+        ROCSPARSE_CHECKARG_HANDLE(0, handle);
+        ROCSPARSE_CHECKARG_SIZE(1, n);
+        ROCSPARSE_CHECKARG_ARRAY(2, n, p);
+        ROCSPARSE_CHECKARG_ARRAY(3, n, q);
+        ROCSPARSE_CHECKARG_ENUM(4, base);
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::inverse_permutation_template(handle, n, p, q, base));
+        return rocsparse_status_success;
+    }
 }
 
-template <typename I>
-rocsparse_status rocsparse_inverse_permutation_impl(rocsparse_handle handle,
-                                                    I                n,
-                                                    const I* __restrict__ p,
-                                                    I* __restrict__ q,
-                                                    rocsparse_index_base base)
-{
-    // Logging
-    log_trace(handle, "rocsparse_inverse_permutation", n, (const void*&)p, (const void*&)q, base);
-
-    ROCSPARSE_CHECKARG_HANDLE(0, handle);
-    ROCSPARSE_CHECKARG_SIZE(1, n);
-    ROCSPARSE_CHECKARG_ARRAY(2, n, p);
-    ROCSPARSE_CHECKARG_ARRAY(3, n, q);
-    ROCSPARSE_CHECKARG_ENUM(4, base);
-
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_inverse_permutation_template(handle, n, p, q, base));
-    return rocsparse_status_success;
-}
-
-#define INSTANTIATE(ITYPE)                                                                         \
-    template rocsparse_status rocsparse_inverse_permutation_template(rocsparse_handle,             \
-                                                                     ITYPE,                        \
-                                                                     const ITYPE* __restrict__,    \
-                                                                     ITYPE* __restrict__,          \
-                                                                     rocsparse_index_base);        \
-    template rocsparse_status rocsparse_inverse_permutation_impl<ITYPE>(rocsparse_handle,          \
-                                                                        ITYPE,                     \
-                                                                        const ITYPE* __restrict__, \
-                                                                        ITYPE* __restrict__,       \
-                                                                        rocsparse_index_base)
+#define INSTANTIATE(ITYPE)                                                                       \
+    template rocsparse_status rocsparse::inverse_permutation_template(rocsparse_handle,          \
+                                                                      ITYPE,                     \
+                                                                      const ITYPE* __restrict__, \
+                                                                      ITYPE* __restrict__,       \
+                                                                      rocsparse_index_base);     \
+    template rocsparse_status rocsparse::inverse_permutation_impl<ITYPE>(                        \
+        rocsparse_handle,                                                                        \
+        ITYPE,                                                                                   \
+        const ITYPE* __restrict__,                                                               \
+        ITYPE* __restrict__,                                                                     \
+        rocsparse_index_base)
 
 INSTANTIATE(int32_t);
 INSTANTIATE(int64_t);
@@ -137,7 +142,7 @@ extern "C" rocsparse_status rocsparse_inverse_permutation(rocsparse_handle     h
                                                           rocsparse_index_base base_)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_inverse_permutation_impl(handle_, n_, p_, q_, base_));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::inverse_permutation_impl(handle_, n_, p_, q_, base_));
     return rocsparse_status_success;
 }
 catch(...)

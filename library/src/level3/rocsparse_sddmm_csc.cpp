@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -310,17 +310,17 @@ struct rocsparse_sddmm_st<rocsparse_format_csc, rocsparse_sddmm_alg_dense, I, J,
         T*    dense = reinterpret_cast<T*>(ptr);
 
         // Convert to Dense
-        RETURN_IF_ROCSPARSE_ERROR((
-            rocsparse_csx2dense_impl<rocsparse_direction_column, I, J, T>(handle,
-                                                                          m,
-                                                                          n,
-                                                                          C_descr,
-                                                                          C_val_data,
-                                                                          C_ptr_data,
-                                                                          C_ind_data,
-                                                                          dense,
-                                                                          m,
-                                                                          rocsparse_order_column)));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::csx2dense_impl<rocsparse_direction_column, I, J, T>(
+            handle,
+            m,
+            n,
+            C_descr,
+            C_val_data,
+            C_ptr_data,
+            C_ind_data,
+            dense,
+            m,
+            rocsparse_order_column)));
 
         const bool A_col_major = (order_A == rocsparse_order_column);
         const bool B_col_major = (order_B == rocsparse_order_column);

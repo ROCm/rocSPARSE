@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,33 +27,33 @@
 #include "rocsparse_csr2csc.hpp"
 #include "utility.h"
 
-rocsparse_status rocsparse_gcsr2csc_buffer_size(rocsparse_handle    handle,
-                                                int64_t             m,
-                                                int64_t             n,
-                                                int64_t             nnz,
-                                                rocsparse_indextype indextype_ptr,
-                                                rocsparse_indextype indextype_ind,
-                                                const void*         csr_row_ptr,
-                                                const void*         csr_col_ind,
-                                                rocsparse_action    copy_values,
-                                                size_t*             buffer_size)
+rocsparse_status rocsparse::gcsr2csc_buffer_size(rocsparse_handle    handle,
+                                                 int64_t             m,
+                                                 int64_t             n,
+                                                 int64_t             nnz,
+                                                 rocsparse_indextype indextype_ptr,
+                                                 rocsparse_indextype indextype_ind,
+                                                 const void*         csr_row_ptr,
+                                                 const void*         csr_col_ind,
+                                                 rocsparse_action    copy_values,
+                                                 size_t*             buffer_size)
 {
 
-#define CALL_TEMPLATE(PTRTYPE, INDTYPE)                                                         \
-    PTRTYPE local_nnz;                                                                          \
-    INDTYPE local_m, local_n;                                                                   \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(m, local_m));          \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(n, local_n));          \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<PTRTYPE>(nnz, local_nnz));      \
-    RETURN_IF_ROCSPARSE_ERROR(                                                                  \
-        (rocsparse_csr2csc_buffer_size_template<PTRTYPE, INDTYPE>)(handle,                      \
-                                                                   local_m,                     \
-                                                                   local_n,                     \
-                                                                   local_nnz,                   \
-                                                                   (const PTRTYPE*)csr_row_ptr, \
-                                                                   (const INDTYPE*)csr_col_ind, \
-                                                                   copy_values,                 \
-                                                                   buffer_size))
+#define CALL_TEMPLATE(PTRTYPE, INDTYPE)                                                          \
+    PTRTYPE local_nnz;                                                                           \
+    INDTYPE local_m, local_n;                                                                    \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(m, local_m));           \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(n, local_n));           \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<PTRTYPE>(nnz, local_nnz));       \
+    RETURN_IF_ROCSPARSE_ERROR(                                                                   \
+        (rocsparse::csr2csc_buffer_size_template<PTRTYPE, INDTYPE>)(handle,                      \
+                                                                    local_m,                     \
+                                                                    local_n,                     \
+                                                                    local_nnz,                   \
+                                                                    (const PTRTYPE*)csr_row_ptr, \
+                                                                    (const INDTYPE*)csr_col_ind, \
+                                                                    copy_values,                 \
+                                                                    buffer_size))
 
 #define DISPATCH_INDEX_TYPE_IND(PTRTYPE)                             \
     switch(indextype_ind)                                            \
@@ -99,44 +99,44 @@ rocsparse_status rocsparse_gcsr2csc_buffer_size(rocsparse_handle    handle,
 #undef DISPATCH_INDEX_TYPE_IND
 }
 
-rocsparse_status rocsparse_gcsr2csc(rocsparse_handle     handle,
-                                    int64_t              m,
-                                    int64_t              n,
-                                    int64_t              nnz,
-                                    rocsparse_datatype   datatype,
-                                    rocsparse_indextype  indextype_ptr,
-                                    rocsparse_indextype  indextype_ind,
-                                    const void*          csr_val,
-                                    const void*          csr_row_ptr,
-                                    const void*          csr_col_ind,
-                                    void*                csc_val,
-                                    void*                csc_row_ind,
-                                    void*                csc_col_ptr,
-                                    rocsparse_action     copy_values,
-                                    rocsparse_index_base idx_base,
-                                    void*                temp_buffer)
+rocsparse_status rocsparse::gcsr2csc(rocsparse_handle     handle,
+                                     int64_t              m,
+                                     int64_t              n,
+                                     int64_t              nnz,
+                                     rocsparse_datatype   datatype,
+                                     rocsparse_indextype  indextype_ptr,
+                                     rocsparse_indextype  indextype_ind,
+                                     const void*          csr_val,
+                                     const void*          csr_row_ptr,
+                                     const void*          csr_col_ind,
+                                     void*                csc_val,
+                                     void*                csc_row_ind,
+                                     void*                csc_col_ptr,
+                                     rocsparse_action     copy_values,
+                                     rocsparse_index_base idx_base,
+                                     void*                temp_buffer)
 {
 
-#define CALL_TEMPLATE(DATATYPE, PTRTYPE, INDTYPE)                                             \
-    PTRTYPE local_nnz;                                                                        \
-    INDTYPE local_m, local_n;                                                                 \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(m, local_m));        \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(n, local_n));        \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<PTRTYPE>(nnz, local_nnz));    \
-    RETURN_IF_ROCSPARSE_ERROR(                                                                \
-        (rocsparse_csr2csc_template<PTRTYPE, INDTYPE, DATATYPE>)(handle,                      \
-                                                                 local_m,                     \
-                                                                 local_n,                     \
-                                                                 local_nnz,                   \
-                                                                 (const DATATYPE*)csr_val,    \
-                                                                 (const PTRTYPE*)csr_row_ptr, \
-                                                                 (const INDTYPE*)csr_col_ind, \
-                                                                 (DATATYPE*)csc_val,          \
-                                                                 (INDTYPE*)csc_row_ind,       \
-                                                                 (PTRTYPE*)csc_col_ptr,       \
-                                                                 copy_values,                 \
-                                                                 idx_base,                    \
-                                                                 temp_buffer))
+#define CALL_TEMPLATE(DATATYPE, PTRTYPE, INDTYPE)                                              \
+    PTRTYPE local_nnz;                                                                         \
+    INDTYPE local_m, local_n;                                                                  \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(m, local_m));         \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(n, local_n));         \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<PTRTYPE>(nnz, local_nnz));     \
+    RETURN_IF_ROCSPARSE_ERROR(                                                                 \
+        (rocsparse::csr2csc_template<PTRTYPE, INDTYPE, DATATYPE>)(handle,                      \
+                                                                  local_m,                     \
+                                                                  local_n,                     \
+                                                                  local_nnz,                   \
+                                                                  (const DATATYPE*)csr_val,    \
+                                                                  (const PTRTYPE*)csr_row_ptr, \
+                                                                  (const INDTYPE*)csr_col_ind, \
+                                                                  (DATATYPE*)csc_val,          \
+                                                                  (INDTYPE*)csc_row_ind,       \
+                                                                  (PTRTYPE*)csc_col_ptr,       \
+                                                                  copy_values,                 \
+                                                                  idx_base,                    \
+                                                                  temp_buffer))
 
 #define DISPATCH_INDEX_TYPE_IND(DATATYPE, PTRTYPE)                   \
     switch(indextype_ind)                                            \
@@ -223,12 +223,12 @@ rocsparse_status rocsparse_gcsr2csc(rocsparse_handle     handle,
 #undef DISPATCH_INDEX_TYPE_PTR
 }
 
-rocsparse_status rocsparse_spmat_csr2csc_buffer_size(rocsparse_handle            handle,
-                                                     rocsparse_const_spmat_descr source_,
-                                                     rocsparse_spmat_descr       target_,
-                                                     size_t*                     buffer_size_)
+rocsparse_status rocsparse::spmat_csr2csc_buffer_size(rocsparse_handle            handle,
+                                                      rocsparse_const_spmat_descr source_,
+                                                      rocsparse_spmat_descr       target_,
+                                                      size_t*                     buffer_size_)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_gcsr2csc_buffer_size(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::gcsr2csc_buffer_size(
         handle,
         source_->rows,
         source_->cols,
@@ -247,11 +247,11 @@ rocsparse_status rocsparse_spmat_csr2csc_buffer_size(rocsparse_handle           
     return rocsparse_status_success;
 }
 
-rocsparse_status rocsparse_spmat_csr2csc(rocsparse_handle            handle,
-                                         rocsparse_const_spmat_descr source_,
-                                         rocsparse_spmat_descr       target_,
-                                         size_t                      buffer_size_,
-                                         void*                       buffer_)
+rocsparse_status rocsparse::spmat_csr2csc(rocsparse_handle            handle,
+                                          rocsparse_const_spmat_descr source_,
+                                          rocsparse_spmat_descr       target_,
+                                          size_t                      buffer_size_,
+                                          void*                       buffer_)
 {
     RETURN_ROCSPARSE_ERROR_IF(rocsparse_status_not_implemented,
                               source_->row_type != target_->col_type);
@@ -263,7 +263,7 @@ rocsparse_status rocsparse_spmat_csr2csc(rocsparse_handle            handle,
                                   source_->data_type != target_->data_type);
     }
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_gcsr2csc(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::gcsr2csc(
         handle,
         source_->rows,
         source_->cols,
