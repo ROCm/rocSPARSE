@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,17 @@
 
 #include "handle.h"
 
-template <typename T>
-rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handle,
-                                                 rocsparse_int             m,
-                                                 rocsparse_int             mb,
-                                                 rocsparse_int             nnzb,
-                                                 rocsparse_int             block_dim,
-                                                 T                         value,
-                                                 const rocsparse_mat_descr bsr_descr,
-                                                 T*                        bsr_val,
-                                                 const rocsparse_int*      bsr_row_ptr,
-                                                 const rocsparse_int*      bsr_col_ind);
+namespace rocsparse
+{
+    template <typename T>
+    rocsparse_status bsrpad_value_template(rocsparse_handle          handle,
+                                           rocsparse_int             m,
+                                           rocsparse_int             mb,
+                                           rocsparse_int             nnzb,
+                                           rocsparse_int             block_dim,
+                                           T                         value,
+                                           const rocsparse_mat_descr bsr_descr,
+                                           T*                        bsr_val,
+                                           const rocsparse_int*      bsr_row_ptr,
+                                           const rocsparse_int*      bsr_col_ind);
+}

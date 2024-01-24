@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,41 +26,47 @@
 #include "handle.h"
 #include <hip/hip_runtime.h>
 
-template <rocsparse_int NUM_ELL_COLUMNS_PER_BLOCK, rocsparse_int WF_SIZE, typename I, typename T>
-ROCSPARSE_KERNEL(WF_SIZE* NUM_ELL_COLUMNS_PER_BLOCK)
-void ell2dense_kernel(rocsparse_index_base ell_base,
-                      I                    m,
-                      I                    n,
-                      I                    ell_width,
-                      const T* __restrict__ ell_val,
-                      const I* __restrict__ ell_col_ind,
-                      T* __restrict__ dense_val,
-                      int64_t         ld,
-                      rocsparse_order order)
+namespace rocsparse
 {
-    const auto wavefront_index  = hipThreadIdx_x / WF_SIZE;
-    const auto lane_index       = hipThreadIdx_x % WF_SIZE;
-    const auto ell_column_index = NUM_ELL_COLUMNS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
-
-    if(ell_column_index < ell_width)
+    template <rocsparse_int NUM_ELL_COLUMNS_PER_BLOCK,
+              rocsparse_int WF_SIZE,
+              typename I,
+              typename T>
+    ROCSPARSE_KERNEL(WF_SIZE* NUM_ELL_COLUMNS_PER_BLOCK)
+    void ell2dense_kernel(rocsparse_index_base ell_base,
+                          I                    m,
+                          I                    n,
+                          I                    ell_width,
+                          const T* __restrict__ ell_val,
+                          const I* __restrict__ ell_col_ind,
+                          T* __restrict__ dense_val,
+                          int64_t         ld,
+                          rocsparse_order order)
     {
-        //
-        // One wavefront executes one ell column.
-        //
-        for(I row_index = lane_index; row_index < m; row_index += WF_SIZE)
-        {
-            const auto ell_idx      = ELL_IND(row_index, ell_column_index, m, ell_width);
-            const auto column_index = ell_col_ind[ell_idx] - ell_base;
+        const auto wavefront_index  = hipThreadIdx_x / WF_SIZE;
+        const auto lane_index       = hipThreadIdx_x % WF_SIZE;
+        const auto ell_column_index = NUM_ELL_COLUMNS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
 
-            if(column_index >= 0 && column_index < n)
+        if(ell_column_index < ell_width)
+        {
+            //
+            // One wavefront executes one ell column.
+            //
+            for(I row_index = lane_index; row_index < m; row_index += WF_SIZE)
             {
-                if(order == rocsparse_order_column)
+                const auto ell_idx      = ELL_IND(row_index, ell_column_index, m, ell_width);
+                const auto column_index = ell_col_ind[ell_idx] - ell_base;
+
+                if(column_index >= 0 && column_index < n)
                 {
-                    dense_val[column_index * ld + row_index] = ell_val[ell_idx];
-                }
-                else
-                {
-                    dense_val[row_index * ld + column_index] = ell_val[ell_idx];
+                    if(order == rocsparse_order_column)
+                    {
+                        dense_val[column_index * ld + row_index] = ell_val[ell_idx];
+                    }
+                    else
+                    {
+                        dense_val[row_index * ld + column_index] = ell_val[ell_idx];
+                    }
                 }
             }
         }

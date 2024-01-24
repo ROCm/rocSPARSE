@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -219,7 +219,7 @@ rocsparse_status rocsparse_coosv_analysis_template(rocsparse_handle          han
         const T* csr_val     = coo_val;
 
         // Create column pointers
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2csr_template(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::coo2csr_template(
             handle, coo_row_ind, (int32_t)nnz, m, csr_row_ptr, descr->base));
 
         // Call CSR analysis
@@ -247,7 +247,7 @@ rocsparse_status rocsparse_coosv_analysis_template(rocsparse_handle          han
 
         // Create column pointers
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
+            rocsparse::coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
 
         // Call CSR analysis
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_analysis_template(handle,

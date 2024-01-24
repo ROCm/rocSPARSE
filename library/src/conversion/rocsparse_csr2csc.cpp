@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,20 +35,20 @@
 #include <rocprim/rocprim.hpp>
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csr2csc_core(rocsparse_handle     handle,
-                                        J                    m,
-                                        J                    n,
-                                        I                    nnz,
-                                        const T*             csr_val,
-                                        const I*             csr_row_ptr_begin,
-                                        const I*             csr_row_ptr_end,
-                                        const J*             csr_col_ind,
-                                        T*                   csc_val,
-                                        J*                   csc_row_ind,
-                                        I*                   csc_col_ptr,
-                                        rocsparse_action     copy_values,
-                                        rocsparse_index_base idx_base,
-                                        void*                temp_buffer)
+rocsparse_status rocsparse::csr2csc_core(rocsparse_handle     handle,
+                                         J                    m,
+                                         J                    n,
+                                         I                    nnz,
+                                         const T*             csr_val,
+                                         const I*             csr_row_ptr_begin,
+                                         const I*             csr_row_ptr_end,
+                                         const J*             csr_col_ind,
+                                         T*                   csc_val,
+                                         J*                   csc_row_ind,
+                                         I*                   csc_col_ptr,
+                                         rocsparse_action     copy_values,
+                                         rocsparse_index_base idx_base,
+                                         void*                temp_buffer)
 {
     // Stream
     hipStream_t stream = handle->stream;
@@ -83,7 +83,7 @@ rocsparse_status rocsparse_csr2csc_core(rocsparse_handle     handle,
         void* tmp_rocprim = reinterpret_cast<void*>(ptr);
 
         // Create row indices
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2coo_core(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csr2coo_core(
             handle, csr_row_ptr_begin, csr_row_ptr_end, nnz, m, csc_row_ind, idx_base));
         // Stable sort COO by columns
         rocprim::double_buffer<J> keys(tmp_work1, tmp_perm);
@@ -98,7 +98,7 @@ rocsparse_status rocsparse_csr2csc_core(rocsparse_handle     handle,
 
         // Create column pointers
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_coo2csr_core(handle, keys.current(), nnz, n, csc_col_ptr, idx_base));
+            rocsparse::coo2csr_core(handle, keys.current(), nnz, n, csc_col_ptr, idx_base));
 
         // Copy csc_row_ind if not current
         if(vals.current() != csc_row_ind)
@@ -124,7 +124,7 @@ rocsparse_status rocsparse_csr2csc_core(rocsparse_handle     handle,
 
         // Create identitiy permutation
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_create_identity_permutation_core(handle, nnz, tmp_perm));
+            rocsparse::create_identity_permutation_core(handle, nnz, tmp_perm));
 
         // Stable sort COO by columns
         rocprim::double_buffer<J> keys(tmp_work1, csc_row_ind);
@@ -139,17 +139,17 @@ rocsparse_status rocsparse_csr2csc_core(rocsparse_handle     handle,
 
         // Create column pointers
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_coo2csr_core(handle, keys.current(), nnz, n, csc_col_ptr, idx_base));
+            rocsparse::coo2csr_core(handle, keys.current(), nnz, n, csc_col_ptr, idx_base));
 
         // Create row indices
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2coo_core(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csr2coo_core(
             handle, csr_row_ptr_begin, csr_row_ptr_end, nnz, m, tmp_work1, idx_base));
 
 // Permute row indices and values
 #define CSR2CSC_DIM 512
         dim3 csr2csc_blocks((nnz - 1) / CSR2CSC_DIM + 1);
         dim3 csr2csc_threads(CSR2CSC_DIM);
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr2csc_permute_kernel<CSR2CSC_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csr2csc_permute_kernel<CSR2CSC_DIM>),
                                            csr2csc_blocks,
                                            csr2csc_threads,
                                            0,
@@ -167,19 +167,19 @@ rocsparse_status rocsparse_csr2csc_core(rocsparse_handle     handle,
 }
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
-                                            J                    m,
-                                            J                    n,
-                                            I                    nnz,
-                                            const T*             csr_val,
-                                            const I*             csr_row_ptr,
-                                            const J*             csr_col_ind,
-                                            T*                   csc_val,
-                                            J*                   csc_row_ind,
-                                            I*                   csc_col_ptr,
-                                            rocsparse_action     copy_values,
-                                            rocsparse_index_base idx_base,
-                                            void*                temp_buffer)
+rocsparse_status rocsparse::csr2csc_template(rocsparse_handle     handle,
+                                             J                    m,
+                                             J                    n,
+                                             I                    nnz,
+                                             const T*             csr_val,
+                                             const I*             csr_row_ptr,
+                                             const J*             csr_col_ind,
+                                             T*                   csc_val,
+                                             J*                   csc_row_ind,
+                                             I*                   csc_col_ptr,
+                                             rocsparse_action     copy_values,
+                                             rocsparse_index_base idx_base,
+                                             void*                temp_buffer)
 {
 
     // Quick return if possible
@@ -207,37 +207,37 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2csc_core(handle,
-                                                     m,
-                                                     n,
-                                                     nnz,
-                                                     csr_val,
-                                                     csr_row_ptr,
-                                                     csr_row_ptr + 1,
-                                                     csr_col_ind,
-                                                     csc_val,
-                                                     csc_row_ind,
-                                                     csc_col_ptr,
-                                                     copy_values,
-                                                     idx_base,
-                                                     temp_buffer));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::csr2csc_core(handle,
+                                                      m,
+                                                      n,
+                                                      nnz,
+                                                      csr_val,
+                                                      csr_row_ptr,
+                                                      csr_row_ptr + 1,
+                                                      csr_col_ind,
+                                                      csc_val,
+                                                      csc_row_ind,
+                                                      csc_col_ptr,
+                                                      copy_values,
+                                                      idx_base,
+                                                      temp_buffer));
     return rocsparse_status_success;
 }
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csr2csc_impl(rocsparse_handle     handle, //0
-                                        J                    m, //1
-                                        J                    n, //2
-                                        I                    nnz, //3
-                                        const T*             csr_val, //4
-                                        const I*             csr_row_ptr, //5
-                                        const J*             csr_col_ind, //6
-                                        T*                   csc_val, //7
-                                        J*                   csc_row_ind, //8
-                                        I*                   csc_col_ptr, //9
-                                        rocsparse_action     copy_values, //10
-                                        rocsparse_index_base idx_base, //11
-                                        void*                temp_buffer) //12
+rocsparse_status rocsparse::csr2csc_impl(rocsparse_handle     handle, //0
+                                         J                    m, //1
+                                         J                    n, //2
+                                         I                    nnz, //3
+                                         const T*             csr_val, //4
+                                         const I*             csr_row_ptr, //5
+                                         const J*             csr_col_ind, //6
+                                         T*                   csc_val, //7
+                                         J*                   csc_row_ind, //8
+                                         I*                   csc_col_ptr, //9
+                                         rocsparse_action     copy_values, //10
+                                         rocsparse_index_base idx_base, //11
+                                         void*                temp_buffer) //12
 {
 
     // Logging
@@ -292,65 +292,65 @@ rocsparse_status rocsparse_csr2csc_impl(rocsparse_handle     handle, //0
 
     ROCSPARSE_CHECKARG_POINTER(12, temp_buffer);
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2csc_template(handle,
-                                                         m,
-                                                         n,
-                                                         nnz,
-                                                         csr_val,
-                                                         csr_row_ptr,
-                                                         csr_col_ind,
-                                                         csc_val,
-                                                         csc_row_ind,
-                                                         csc_col_ptr,
-                                                         copy_values,
-                                                         idx_base,
-                                                         temp_buffer));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::csr2csc_template(handle,
+                                                          m,
+                                                          n,
+                                                          nnz,
+                                                          csr_val,
+                                                          csr_row_ptr,
+                                                          csr_col_ind,
+                                                          csc_val,
+                                                          csc_row_ind,
+                                                          csc_col_ptr,
+                                                          copy_values,
+                                                          idx_base,
+                                                          temp_buffer));
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                       \
-    template rocsparse_status rocsparse_csr2csc_core<ITYPE, JTYPE, TTYPE>(     \
-        rocsparse_handle     handle,                                           \
-        JTYPE                m,                                                \
-        JTYPE                n,                                                \
-        ITYPE                nnz,                                              \
-        const TTYPE*         csr_val,                                          \
-        const ITYPE*         csr_row_ptr_begin,                                \
-        const ITYPE*         csr_row_ptr_end,                                  \
-        const JTYPE*         csr_col_ind,                                      \
-        TTYPE*               csc_val,                                          \
-        JTYPE*               csc_row_ind,                                      \
-        ITYPE*               csc_col_ptr,                                      \
-        rocsparse_action     copy_values,                                      \
-        rocsparse_index_base idx_base,                                         \
-        void*                temp_buffer);                                                    \
-    template rocsparse_status rocsparse_csr2csc_impl<ITYPE, JTYPE, TTYPE>(     \
-        rocsparse_handle     handle,                                           \
-        JTYPE                m,                                                \
-        JTYPE                n,                                                \
-        ITYPE                nnz,                                              \
-        const TTYPE*         csr_val,                                          \
-        const ITYPE*         csr_row_ptr,                                      \
-        const JTYPE*         csr_col_ind,                                      \
-        TTYPE*               csc_val,                                          \
-        JTYPE*               csc_row_ind,                                      \
-        ITYPE*               csc_col_ptr,                                      \
-        rocsparse_action     copy_values,                                      \
-        rocsparse_index_base idx_base,                                         \
-        void*                temp_buffer);                                                    \
-    template rocsparse_status rocsparse_csr2csc_template<ITYPE, JTYPE, TTYPE>( \
-        rocsparse_handle     handle,                                           \
-        JTYPE                m,                                                \
-        JTYPE                n,                                                \
-        ITYPE                nnz,                                              \
-        const TTYPE*         csr_val,                                          \
-        const ITYPE*         csr_row_ptr,                                      \
-        const JTYPE*         csr_col_ind,                                      \
-        TTYPE*               csc_val,                                          \
-        JTYPE*               csc_row_ind,                                      \
-        ITYPE*               csc_col_ptr,                                      \
-        rocsparse_action     copy_values,                                      \
-        rocsparse_index_base idx_base,                                         \
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                        \
+    template rocsparse_status rocsparse::csr2csc_core<ITYPE, JTYPE, TTYPE>(     \
+        rocsparse_handle     handle,                                            \
+        JTYPE                m,                                                 \
+        JTYPE                n,                                                 \
+        ITYPE                nnz,                                               \
+        const TTYPE*         csr_val,                                           \
+        const ITYPE*         csr_row_ptr_begin,                                 \
+        const ITYPE*         csr_row_ptr_end,                                   \
+        const JTYPE*         csr_col_ind,                                       \
+        TTYPE*               csc_val,                                           \
+        JTYPE*               csc_row_ind,                                       \
+        ITYPE*               csc_col_ptr,                                       \
+        rocsparse_action     copy_values,                                       \
+        rocsparse_index_base idx_base,                                          \
+        void*                temp_buffer);                                                     \
+    template rocsparse_status rocsparse::csr2csc_impl<ITYPE, JTYPE, TTYPE>(     \
+        rocsparse_handle     handle,                                            \
+        JTYPE                m,                                                 \
+        JTYPE                n,                                                 \
+        ITYPE                nnz,                                               \
+        const TTYPE*         csr_val,                                           \
+        const ITYPE*         csr_row_ptr,                                       \
+        const JTYPE*         csr_col_ind,                                       \
+        TTYPE*               csc_val,                                           \
+        JTYPE*               csc_row_ind,                                       \
+        ITYPE*               csc_col_ptr,                                       \
+        rocsparse_action     copy_values,                                       \
+        rocsparse_index_base idx_base,                                          \
+        void*                temp_buffer);                                                     \
+    template rocsparse_status rocsparse::csr2csc_template<ITYPE, JTYPE, TTYPE>( \
+        rocsparse_handle     handle,                                            \
+        JTYPE                m,                                                 \
+        JTYPE                n,                                                 \
+        ITYPE                nnz,                                               \
+        const TTYPE*         csr_val,                                           \
+        const ITYPE*         csr_row_ptr,                                       \
+        const JTYPE*         csr_col_ind,                                       \
+        TTYPE*               csc_val,                                           \
+        JTYPE*               csc_row_ind,                                       \
+        ITYPE*               csc_col_ptr,                                       \
+        rocsparse_action     copy_values,                                       \
+        rocsparse_index_base idx_base,                                          \
         void*                temp_buffer)
 
 INSTANTIATE(int32_t, int32_t, int8_t);
@@ -401,15 +401,15 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
 #undef INSTANTIATE
 
 template <typename I, typename J>
-rocsparse_status rocsparse_csr2csc_buffer_size_core(rocsparse_handle handle,
-                                                    J                m,
-                                                    J                n,
-                                                    I                nnz,
-                                                    const I*         csr_row_ptr_begin,
-                                                    const I*         csr_row_ptr_end,
-                                                    const J*         csr_col_ind,
-                                                    rocsparse_action copy_values,
-                                                    size_t*          buffer_size)
+rocsparse_status rocsparse::csr2csc_buffer_size_core(rocsparse_handle handle,
+                                                     J                m,
+                                                     J                n,
+                                                     I                nnz,
+                                                     const I*         csr_row_ptr_begin,
+                                                     const I*         csr_row_ptr_end,
+                                                     const J*         csr_col_ind,
+                                                     rocsparse_action copy_values,
+                                                     size_t*          buffer_size)
 {
 
     hipStream_t stream = handle->stream;
@@ -434,14 +434,14 @@ rocsparse_status rocsparse_csr2csc_buffer_size_core(rocsparse_handle handle,
 }
 
 template <typename I, typename J>
-rocsparse_status rocsparse_csr2csc_buffer_size_template(rocsparse_handle handle,
-                                                        J                m,
-                                                        J                n,
-                                                        I                nnz,
-                                                        const I*         csr_row_ptr,
-                                                        const J*         csr_col_ind,
-                                                        rocsparse_action copy_values,
-                                                        size_t*          buffer_size)
+rocsparse_status rocsparse::csr2csc_buffer_size_template(rocsparse_handle handle,
+                                                         J                m,
+                                                         J                n,
+                                                         I                nnz,
+                                                         const I*         csr_row_ptr,
+                                                         const J*         csr_col_ind,
+                                                         rocsparse_action copy_values,
+                                                         size_t*          buffer_size)
 {
     // Quick return if possible
     if(m == 0 || n == 0 || nnz == 0)
@@ -450,20 +450,20 @@ rocsparse_status rocsparse_csr2csc_buffer_size_template(rocsparse_handle handle,
         return rocsparse_status_success;
     }
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2csc_buffer_size_core(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::csr2csc_buffer_size_core(
         handle, m, n, nnz, csr_row_ptr, csr_row_ptr + 1, csr_col_ind, copy_values, buffer_size));
     return rocsparse_status_success;
 }
 
 template <typename I, typename J>
-rocsparse_status rocsparse_csr2csc_buffer_size_impl(rocsparse_handle handle,
-                                                    J                m,
-                                                    J                n,
-                                                    I                nnz,
-                                                    const I*         csr_row_ptr,
-                                                    const J*         csr_col_ind,
-                                                    rocsparse_action copy_values,
-                                                    size_t*          buffer_size)
+rocsparse_status rocsparse::csr2csc_buffer_size_impl(rocsparse_handle handle,
+                                                     J                m,
+                                                     J                n,
+                                                     I                nnz,
+                                                     const I*         csr_row_ptr,
+                                                     const J*         csr_col_ind,
+                                                     rocsparse_action copy_values,
+                                                     size_t*          buffer_size)
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
@@ -486,41 +486,41 @@ rocsparse_status rocsparse_csr2csc_buffer_size_impl(rocsparse_handle handle,
     ROCSPARSE_CHECKARG_ENUM(6, copy_values);
     ROCSPARSE_CHECKARG_POINTER(7, buffer_size);
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2csc_buffer_size_template(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::csr2csc_buffer_size_template(
         handle, m, n, nnz, csr_row_ptr, csr_col_ind, copy_values, buffer_size));
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, JTYPE)                                                   \
-    template rocsparse_status rocsparse_csr2csc_buffer_size_core<ITYPE, JTYPE>(     \
-        rocsparse_handle handle,                                                    \
-        JTYPE            m,                                                         \
-        JTYPE            n,                                                         \
-        ITYPE            nnz,                                                       \
-        const ITYPE*     csr_row_ptr_begin,                                         \
-        const ITYPE*     csr_row_ptr_end,                                           \
-        const JTYPE*     csr_col_ind,                                               \
-        rocsparse_action copy_values,                                               \
-        size_t*          buffer_size);                                                       \
-                                                                                    \
-    template rocsparse_status rocsparse_csr2csc_buffer_size_template<ITYPE, JTYPE>( \
-        rocsparse_handle handle,                                                    \
-        JTYPE            m,                                                         \
-        JTYPE            n,                                                         \
-        ITYPE            nnz,                                                       \
-        const ITYPE*     csr_row_ptr,                                               \
-        const JTYPE*     csr_col_ind,                                               \
-        rocsparse_action copy_values,                                               \
-        size_t*          buffer_size);                                                       \
-                                                                                    \
-    template rocsparse_status rocsparse_csr2csc_buffer_size_impl<ITYPE, JTYPE>(     \
-        rocsparse_handle handle,                                                    \
-        JTYPE            m,                                                         \
-        JTYPE            n,                                                         \
-        ITYPE            nnz,                                                       \
-        const ITYPE*     csr_row_ptr,                                               \
-        const JTYPE*     csr_col_ind,                                               \
-        rocsparse_action copy_values,                                               \
+#define INSTANTIATE(ITYPE, JTYPE)                                                    \
+    template rocsparse_status rocsparse::csr2csc_buffer_size_core<ITYPE, JTYPE>(     \
+        rocsparse_handle handle,                                                     \
+        JTYPE            m,                                                          \
+        JTYPE            n,                                                          \
+        ITYPE            nnz,                                                        \
+        const ITYPE*     csr_row_ptr_begin,                                          \
+        const ITYPE*     csr_row_ptr_end,                                            \
+        const JTYPE*     csr_col_ind,                                                \
+        rocsparse_action copy_values,                                                \
+        size_t*          buffer_size);                                                        \
+                                                                                     \
+    template rocsparse_status rocsparse::csr2csc_buffer_size_template<ITYPE, JTYPE>( \
+        rocsparse_handle handle,                                                     \
+        JTYPE            m,                                                          \
+        JTYPE            n,                                                          \
+        ITYPE            nnz,                                                        \
+        const ITYPE*     csr_row_ptr,                                                \
+        const JTYPE*     csr_col_ind,                                                \
+        rocsparse_action copy_values,                                                \
+        size_t*          buffer_size);                                                        \
+                                                                                     \
+    template rocsparse_status rocsparse::csr2csc_buffer_size_impl<ITYPE, JTYPE>(     \
+        rocsparse_handle handle,                                                     \
+        JTYPE            m,                                                          \
+        JTYPE            n,                                                          \
+        ITYPE            nnz,                                                        \
+        const ITYPE*     csr_row_ptr,                                                \
+        const JTYPE*     csr_col_ind,                                                \
+        rocsparse_action copy_values,                                                \
         size_t*          buffer_size)
 
 INSTANTIATE(int32_t, int32_t);
@@ -544,7 +544,7 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle     h
                                                           size_t*              buffer_size)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2csc_buffer_size_impl(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::csr2csc_buffer_size_impl(
         handle, m, n, nnz, csr_row_ptr, csr_col_ind, copy_values, buffer_size));
     return rocsparse_status_success;
 }
@@ -553,40 +553,40 @@ catch(...)
     RETURN_ROCSPARSE_EXCEPTION();
 }
 
-#define CIMPL(NAME, T)                                                  \
-    extern "C" rocsparse_status NAME(rocsparse_handle     handle,       \
-                                     rocsparse_int        m,            \
-                                     rocsparse_int        n,            \
-                                     rocsparse_int        nnz,          \
-                                     const T*             csr_val,      \
-                                     const rocsparse_int* csr_row_ptr,  \
-                                     const rocsparse_int* csr_col_ind,  \
-                                     T*                   csc_val,      \
-                                     rocsparse_int*       csc_row_ind,  \
-                                     rocsparse_int*       csc_col_ptr,  \
-                                     rocsparse_action     copy_values,  \
-                                     rocsparse_index_base idx_base,     \
-                                     void*                temp_buffer)  \
-    try                                                                 \
-    {                                                                   \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2csc_impl(handle,        \
-                                                         m,             \
-                                                         n,             \
-                                                         nnz,           \
-                                                         csr_val,       \
-                                                         csr_row_ptr,   \
-                                                         csr_col_ind,   \
-                                                         csc_val,       \
-                                                         csc_row_ind,   \
-                                                         csc_col_ptr,   \
-                                                         copy_values,   \
-                                                         idx_base,      \
-                                                         temp_buffer)); \
-        return rocsparse_status_success;                                \
-    }                                                                   \
-    catch(...)                                                          \
-    {                                                                   \
-        RETURN_ROCSPARSE_EXCEPTION();                                   \
+#define CIMPL(NAME, T)                                                   \
+    extern "C" rocsparse_status NAME(rocsparse_handle     handle,        \
+                                     rocsparse_int        m,             \
+                                     rocsparse_int        n,             \
+                                     rocsparse_int        nnz,           \
+                                     const T*             csr_val,       \
+                                     const rocsparse_int* csr_row_ptr,   \
+                                     const rocsparse_int* csr_col_ind,   \
+                                     T*                   csc_val,       \
+                                     rocsparse_int*       csc_row_ind,   \
+                                     rocsparse_int*       csc_col_ptr,   \
+                                     rocsparse_action     copy_values,   \
+                                     rocsparse_index_base idx_base,      \
+                                     void*                temp_buffer)   \
+    try                                                                  \
+    {                                                                    \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csr2csc_impl(handle,        \
+                                                          m,             \
+                                                          n,             \
+                                                          nnz,           \
+                                                          csr_val,       \
+                                                          csr_row_ptr,   \
+                                                          csr_col_ind,   \
+                                                          csc_val,       \
+                                                          csc_row_ind,   \
+                                                          csc_col_ptr,   \
+                                                          copy_values,   \
+                                                          idx_base,      \
+                                                          temp_buffer)); \
+        return rocsparse_status_success;                                 \
+    }                                                                    \
+    catch(...)                                                           \
+    {                                                                    \
+        RETURN_ROCSPARSE_EXCEPTION();                                    \
     }
 
 CIMPL(rocsparse_scsr2csc, float);

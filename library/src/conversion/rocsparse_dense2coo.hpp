@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,18 @@
 
 #include "handle.h"
 
-template <typename I, typename T>
-rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle,
-                                              rocsparse_order           order,
-                                              I                         m,
-                                              I                         n,
-                                              const rocsparse_mat_descr descr,
-                                              const T*                  A,
-                                              int64_t                   ld,
-                                              const I*                  nnz_per_rows,
-                                              T*                        coo_val,
-                                              I*                        coo_row_ind,
-                                              I*                        coo_col_ind);
+namespace rocsparse
+{
+    template <typename I, typename T>
+    rocsparse_status dense2coo_template(rocsparse_handle          handle,
+                                        rocsparse_order           order,
+                                        I                         m,
+                                        I                         n,
+                                        const rocsparse_mat_descr descr,
+                                        const T*                  A,
+                                        int64_t                   ld,
+                                        const I*                  nnz_per_rows,
+                                        T*                        coo_val,
+                                        I*                        coo_row_ind,
+                                        I*                        coo_col_ind);
+}

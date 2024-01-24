@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,14 @@
 
 #include "handle.h"
 
-template <typename T>
-rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
-                                            const rocsparse_mat_descr descr,
-                                            const rocsparse_hyb_mat   hyb,
-                                            T*                        csr_val,
-                                            rocsparse_int*            csr_row_ptr,
-                                            rocsparse_int*            csr_col_ind,
-                                            void*                     temp_buffer);
+namespace rocsparse
+{
+    template <typename T>
+    rocsparse_status hyb2csr_template(rocsparse_handle          handle,
+                                      const rocsparse_mat_descr descr,
+                                      const rocsparse_hyb_mat   hyb,
+                                      T*                        csr_val,
+                                      rocsparse_int*            csr_row_ptr,
+                                      rocsparse_int*            csr_col_ind,
+                                      void*                     temp_buffer);
+}

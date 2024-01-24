@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,32 @@
 
 #include "rocsparse-types.h"
 
-rocsparse_status rocsparse_gcoo2coo_aos(rocsparse_handle     handle_,
-                                        int64_t              m_,
-                                        int64_t              nnz_,
-                                        rocsparse_indextype  source_row_type_,
-                                        const void*          source_row_,
-                                        rocsparse_indextype  source_col_type_,
-                                        const void*          source_col_,
-                                        rocsparse_datatype   source_val_type_,
-                                        const void*          source_val_,
-                                        rocsparse_index_base source_idx_base_,
-                                        rocsparse_indextype  target_ind_type_,
-                                        void*                target_ind_,
-                                        rocsparse_datatype   target_val_type_,
-                                        void*                target_val_,
-                                        rocsparse_index_base target_idx_base_);
+namespace rocsparse
+{
+    rocsparse_status gcoo2coo_aos(rocsparse_handle     handle_,
+                                  int64_t              m_,
+                                  int64_t              nnz_,
+                                  rocsparse_indextype  source_row_type_,
+                                  const void*          source_row_,
+                                  rocsparse_indextype  source_col_type_,
+                                  const void*          source_col_,
+                                  rocsparse_datatype   source_val_type_,
+                                  const void*          source_val_,
+                                  rocsparse_index_base source_idx_base_,
+                                  rocsparse_indextype  target_ind_type_,
+                                  void*                target_ind_,
+                                  rocsparse_datatype   target_val_type_,
+                                  void*                target_val_,
+                                  rocsparse_index_base target_idx_base_);
 
-rocsparse_status rocsparse_spmat_coo2coo_aos_buffer_size(rocsparse_handle            handle,
-                                                         rocsparse_const_spmat_descr source_,
-                                                         rocsparse_spmat_descr       target_,
-                                                         size_t*                     buffer_size_);
+    rocsparse_status spmat_coo2coo_aos_buffer_size(rocsparse_handle            handle,
+                                                   rocsparse_const_spmat_descr source_,
+                                                   rocsparse_spmat_descr       target_,
+                                                   size_t*                     buffer_size_);
 
-rocsparse_status rocsparse_spmat_coo2coo_aos(rocsparse_handle            handle,
-                                             rocsparse_const_spmat_descr source_,
-                                             rocsparse_spmat_descr       target_,
-                                             size_t                      buffer_size_,
-                                             void*                       buffer_);
+    rocsparse_status spmat_coo2coo_aos(rocsparse_handle            handle,
+                                       rocsparse_const_spmat_descr source_,
+                                       rocsparse_spmat_descr       target_,
+                                       size_t                      buffer_size_,
+                                       void*                       buffer_);
+}

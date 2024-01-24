@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,24 @@
 
 #include "rocsparse-types.h"
 
-template <typename I>
-rocsparse_status rocsparse_inverse_permutation_permutation_core(rocsparse_handle handle,
-                                                                I                n,
-                                                                const I* __restrict__ p,
-                                                                I* __restrict__ q,
-                                                                rocsparse_index_base base_);
-template <typename I>
-rocsparse_status rocsparse_inverse_permutation_permutation_impl(rocsparse_handle handle,
-                                                                I                n,
-                                                                const I* __restrict__ p,
-                                                                I* __restrict__ q,
-                                                                rocsparse_index_base base_);
-template <typename I>
-rocsparse_status rocsparse_inverse_permutation_permutation_template(rocsparse_handle handle,
-                                                                    I                n,
-                                                                    const I* __restrict__ p,
-                                                                    I* __restrict__ q,
-                                                                    rocsparse_index_base base_);
+namespace rocsparse
+{
+    template <typename I>
+    rocsparse_status inverse_permutation_permutation_core(rocsparse_handle handle,
+                                                          I                n,
+                                                          const I* __restrict__ p,
+                                                          I* __restrict__ q,
+                                                          rocsparse_index_base base_);
+    template <typename I>
+    rocsparse_status inverse_permutation_permutation_impl(rocsparse_handle handle,
+                                                          I                n,
+                                                          const I* __restrict__ p,
+                                                          I* __restrict__ q,
+                                                          rocsparse_index_base base_);
+    template <typename I>
+    rocsparse_status inverse_permutation_permutation_template(rocsparse_handle handle,
+                                                              I                n,
+                                                              const I* __restrict__ p,
+                                                              I* __restrict__ q,
+                                                              rocsparse_index_base base_);
+}

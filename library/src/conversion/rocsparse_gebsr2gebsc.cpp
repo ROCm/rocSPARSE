@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,26 +34,43 @@
 #include "gebsr2gebsc_device.h"
 #include <rocprim/rocprim.hpp>
 
-static rocsparse_status rocsparse_gebsr2gebsc_quickreturn(rocsparse_handle     handle,
-                                                          rocsparse_int        mb,
-                                                          rocsparse_int        nb,
-                                                          rocsparse_int        nnzb,
-                                                          const void*          bsr_val,
-                                                          const rocsparse_int* bsr_row_ptr,
-                                                          const rocsparse_int* bsr_col_ind,
-                                                          rocsparse_int        row_block_dim,
-                                                          rocsparse_int        col_block_dim,
-                                                          void*                bsc_val,
-                                                          rocsparse_int*       bsc_row_ind,
-                                                          rocsparse_int*       bsc_col_ptr,
-                                                          rocsparse_action     copy_values,
-                                                          rocsparse_index_base idx_base,
-                                                          void*                temp_buffer)
+namespace rocsparse
 {
-    // Quick return if possible
-    if(mb == 0 || nb == 0)
+    static rocsparse_status gebsr2gebsc_quickreturn(rocsparse_handle     handle,
+                                                    rocsparse_int        mb,
+                                                    rocsparse_int        nb,
+                                                    rocsparse_int        nnzb,
+                                                    const void*          bsr_val,
+                                                    const rocsparse_int* bsr_row_ptr,
+                                                    const rocsparse_int* bsr_col_ind,
+                                                    rocsparse_int        row_block_dim,
+                                                    rocsparse_int        col_block_dim,
+                                                    void*                bsc_val,
+                                                    rocsparse_int*       bsc_row_ind,
+                                                    rocsparse_int*       bsc_col_ptr,
+                                                    rocsparse_action     copy_values,
+                                                    rocsparse_index_base idx_base,
+                                                    void*                temp_buffer)
     {
-        if(bsc_col_ptr != nullptr)
+        // Quick return if possible
+        if(mb == 0 || nb == 0)
+        {
+            if(bsc_col_ptr != nullptr)
+            {
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                                   dim3(nb / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   (nb + 1),
+                                                   bsc_col_ptr,
+                                                   static_cast<rocsparse_int>(idx_base));
+            }
+
+            return rocsparse_status_success;
+        }
+
+        if(nnzb == 0)
         {
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
                                                dim3(nb / 256 + 1),
@@ -63,43 +80,29 @@ static rocsparse_status rocsparse_gebsr2gebsc_quickreturn(rocsparse_handle     h
                                                (nb + 1),
                                                bsc_col_ptr,
                                                static_cast<rocsparse_int>(idx_base));
+
+            return rocsparse_status_success;
         }
-
-        return rocsparse_status_success;
+        return rocsparse_status_continue;
     }
-
-    if(nnzb == 0)
-    {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
-                                           dim3(nb / 256 + 1),
-                                           dim3(256),
-                                           0,
-                                           handle->stream,
-                                           (nb + 1),
-                                           bsc_col_ptr,
-                                           static_cast<rocsparse_int>(idx_base));
-
-        return rocsparse_status_success;
-    }
-    return rocsparse_status_continue;
 }
 
 template <typename T>
-rocsparse_status rocsparse_gebsr2gebsc_template(rocsparse_handle     handle, //0
-                                                rocsparse_int        mb, //1
-                                                rocsparse_int        nb, //2
-                                                rocsparse_int        nnzb, //3
-                                                const T*             bsr_val, //4
-                                                const rocsparse_int* bsr_row_ptr, //5
-                                                const rocsparse_int* bsr_col_ind, //6
-                                                rocsparse_int        row_block_dim, //7
-                                                rocsparse_int        col_block_dim, //8
-                                                T*                   bsc_val, //9
-                                                rocsparse_int*       bsc_row_ind, //10
-                                                rocsparse_int*       bsc_col_ptr, //11
-                                                rocsparse_action     copy_values, //12
-                                                rocsparse_index_base idx_base, //13
-                                                void*                temp_buffer) //14
+rocsparse_status rocsparse::gebsr2gebsc_template(rocsparse_handle     handle, //0
+                                                 rocsparse_int        mb, //1
+                                                 rocsparse_int        nb, //2
+                                                 rocsparse_int        nnzb, //3
+                                                 const T*             bsr_val, //4
+                                                 const rocsparse_int* bsr_row_ptr, //5
+                                                 const rocsparse_int* bsr_col_ind, //6
+                                                 rocsparse_int        row_block_dim, //7
+                                                 rocsparse_int        col_block_dim, //8
+                                                 T*                   bsc_val, //9
+                                                 rocsparse_int*       bsc_row_ind, //10
+                                                 rocsparse_int*       bsc_col_ptr, //11
+                                                 rocsparse_action     copy_values, //12
+                                                 rocsparse_index_base idx_base, //13
+                                                 void*                temp_buffer) //14
 {
 
     // Logging
@@ -131,21 +134,21 @@ rocsparse_status rocsparse_gebsr2gebsc_template(rocsparse_handle     handle, //0
     ROCSPARSE_CHECKARG(7, row_block_dim, (row_block_dim == 0), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG(8, col_block_dim, (col_block_dim == 0), rocsparse_status_invalid_size);
 
-    const rocsparse_status status = rocsparse_gebsr2gebsc_quickreturn(handle,
-                                                                      mb,
-                                                                      nb,
-                                                                      nnzb,
-                                                                      bsr_val,
-                                                                      bsr_row_ptr,
-                                                                      bsr_col_ind,
-                                                                      row_block_dim,
-                                                                      col_block_dim,
-                                                                      bsc_val,
-                                                                      bsc_row_ind,
-                                                                      bsc_col_ptr,
-                                                                      copy_values,
-                                                                      idx_base,
-                                                                      temp_buffer);
+    const rocsparse_status status = rocsparse::gebsr2gebsc_quickreturn(handle,
+                                                                       mb,
+                                                                       nb,
+                                                                       nnzb,
+                                                                       bsr_val,
+                                                                       bsr_row_ptr,
+                                                                       bsr_col_ind,
+                                                                       row_block_dim,
+                                                                       col_block_dim,
+                                                                       bsc_val,
+                                                                       bsc_row_ind,
+                                                                       bsc_col_ptr,
+                                                                       copy_values,
+                                                                       idx_base,
+                                                                       temp_buffer);
 
     if(status != rocsparse_status_continue)
     {
@@ -257,7 +260,7 @@ rocsparse_status rocsparse_gebsr2gebsc_template(rocsparse_handle     handle, //0
         dim3 gebsr2gebsc_blocks((nnzb - 1) / GEBSR2GEBSC_DIM + 1);
         dim3 gebsr2gebsc_threads(GEBSR2GEBSC_DIM);
 
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gebsr2gebsc_permute_kernel<GEBSR2GEBSC_DIM>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::gebsr2gebsc_permute_kernel<GEBSR2GEBSC_DIM>),
                                            gebsr2gebsc_blocks,
                                            gebsr2gebsc_threads,
                                            0,
@@ -275,136 +278,140 @@ rocsparse_status rocsparse_gebsr2gebsc_template(rocsparse_handle     handle, //0
     return rocsparse_status_success;
 }
 
-static rocsparse_status rocsparse_gebsr2gebsc_buffer_size_quickreturn(rocsparse_handle handle,
-                                                                      rocsparse_int    mb,
-                                                                      rocsparse_int    nb,
-                                                                      rocsparse_int    nnzb,
-                                                                      const void*      bsr_val,
-                                                                      const void*      bsr_row_ptr,
-                                                                      const void*      bsr_col_ind,
-                                                                      rocsparse_int row_block_dim,
-                                                                      rocsparse_int col_block_dim,
-                                                                      size_t*       p_buffer_size)
+namespace rocsparse
 {
-    // Quick return if possible
-    if(mb == 0 || nb == 0)
+    static rocsparse_status gebsr2gebsc_buffer_size_quickreturn(rocsparse_handle handle,
+                                                                rocsparse_int    mb,
+                                                                rocsparse_int    nb,
+                                                                rocsparse_int    nnzb,
+                                                                const void*      bsr_val,
+                                                                const void*      bsr_row_ptr,
+                                                                const void*      bsr_col_ind,
+                                                                rocsparse_int    row_block_dim,
+                                                                rocsparse_int    col_block_dim,
+                                                                size_t*          p_buffer_size)
     {
-        *p_buffer_size = 0;
-        return rocsparse_status_success;
-    }
-    return rocsparse_status_continue;
-}
-
-template <typename T>
-rocsparse_status rocsparse_gebsr2gebsc_buffer_size_template(rocsparse_handle     handle, //0
-                                                            rocsparse_int        mb, //1
-                                                            rocsparse_int        nb, //2
-                                                            rocsparse_int        nnzb, //3
-                                                            const T*             bsr_val, //4
-                                                            const rocsparse_int* bsr_row_ptr, //5
-                                                            const rocsparse_int* bsr_col_ind, //6
-                                                            rocsparse_int        row_block_dim, //7
-                                                            rocsparse_int        col_block_dim, //8
-                                                            size_t*              p_buffer_size) //9
-{
-    // Logging
-    log_trace(handle,
-              "rocsparse_gebsr2gebsc_buffer_size",
-              mb,
-              nb,
-              nnzb,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              row_block_dim,
-              col_block_dim,
-              (const void*&)p_buffer_size);
-
-    ROCSPARSE_CHECKARG_HANDLE(0, handle);
-    ROCSPARSE_CHECKARG_SIZE(1, mb);
-    ROCSPARSE_CHECKARG_SIZE(2, nb);
-    ROCSPARSE_CHECKARG_SIZE(3, nnzb);
-    ROCSPARSE_CHECKARG_SIZE(7, row_block_dim);
-    ROCSPARSE_CHECKARG_SIZE(8, col_block_dim);
-    ROCSPARSE_CHECKARG(7, row_block_dim, (row_block_dim == 0), rocsparse_status_invalid_size);
-    ROCSPARSE_CHECKARG(8, col_block_dim, (col_block_dim == 0), rocsparse_status_invalid_size);
-    ROCSPARSE_CHECKARG_POINTER(9, p_buffer_size);
-
-    // Quick return if possible
-    const rocsparse_status status = rocsparse_gebsr2gebsc_buffer_size_quickreturn(handle,
-                                                                                  mb,
-                                                                                  nb,
-                                                                                  nnzb,
-                                                                                  bsr_val,
-                                                                                  bsr_row_ptr,
-                                                                                  bsr_col_ind,
-                                                                                  row_block_dim,
-                                                                                  col_block_dim,
-                                                                                  p_buffer_size);
-
-    if(status != rocsparse_status_continue)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(status);
-        return rocsparse_status_success;
+        // Quick return if possible
+        if(mb == 0 || nb == 0)
+        {
+            *p_buffer_size = 0;
+            return rocsparse_status_success;
+        }
+        return rocsparse_status_continue;
     }
 
-    ROCSPARSE_CHECKARG_ARRAY(4, nnzb, bsr_val);
-    ROCSPARSE_CHECKARG_ARRAY(5, mb, bsr_row_ptr);
-    ROCSPARSE_CHECKARG_ARRAY(6, nnzb, bsr_col_ind);
+    template <typename T>
+    rocsparse_status gebsr2gebsc_buffer_size_template(rocsparse_handle     handle, //0
+                                                      rocsparse_int        mb, //1
+                                                      rocsparse_int        nb, //2
+                                                      rocsparse_int        nnzb, //3
+                                                      const T*             bsr_val, //4
+                                                      const rocsparse_int* bsr_row_ptr, //5
+                                                      const rocsparse_int* bsr_col_ind, //6
+                                                      rocsparse_int        row_block_dim, //7
+                                                      rocsparse_int        col_block_dim, //8
+                                                      size_t*              p_buffer_size) //9
+    {
+        // Logging
+        log_trace(handle,
+                  "rocsparse_gebsr2gebsc_buffer_size",
+                  mb,
+                  nb,
+                  nnzb,
+                  (const void*&)bsr_val,
+                  (const void*&)bsr_row_ptr,
+                  (const void*&)bsr_col_ind,
+                  row_block_dim,
+                  col_block_dim,
+                  (const void*&)p_buffer_size);
 
-    hipStream_t stream = handle->stream;
+        ROCSPARSE_CHECKARG_HANDLE(0, handle);
+        ROCSPARSE_CHECKARG_SIZE(1, mb);
+        ROCSPARSE_CHECKARG_SIZE(2, nb);
+        ROCSPARSE_CHECKARG_SIZE(3, nnzb);
+        ROCSPARSE_CHECKARG_SIZE(7, row_block_dim);
+        ROCSPARSE_CHECKARG_SIZE(8, col_block_dim);
+        ROCSPARSE_CHECKARG(7, row_block_dim, (row_block_dim == 0), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG(8, col_block_dim, (col_block_dim == 0), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG_POINTER(9, p_buffer_size);
 
-    // Determine rocprim buffer size
-    rocsparse_int* ptr = reinterpret_cast<rocsparse_int*>(p_buffer_size);
+        // Quick return if possible
+        const rocsparse_status status
+            = rocsparse::gebsr2gebsc_buffer_size_quickreturn(handle,
+                                                             mb,
+                                                             nb,
+                                                             nnzb,
+                                                             bsr_val,
+                                                             bsr_row_ptr,
+                                                             bsr_col_ind,
+                                                             row_block_dim,
+                                                             col_block_dim,
+                                                             p_buffer_size);
 
-    rocprim::double_buffer<rocsparse_int> dummy(ptr, ptr);
+        if(status != rocsparse_status_continue)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(status);
+            return rocsparse_status_success;
+        }
 
-    RETURN_IF_HIP_ERROR(
-        rocprim::radix_sort_pairs(nullptr, *p_buffer_size, dummy, dummy, nnzb, 0, 32, stream));
+        ROCSPARSE_CHECKARG_ARRAY(4, nnzb, bsr_val);
+        ROCSPARSE_CHECKARG_ARRAY(5, mb, bsr_row_ptr);
+        ROCSPARSE_CHECKARG_ARRAY(6, nnzb, bsr_col_ind);
 
-    *p_buffer_size = ((*p_buffer_size - 1) / 256 + 1) * 256;
+        hipStream_t stream = handle->stream;
 
-    // rocPRIM does not support in-place sorting, so we need additional buffer
-    // for all temporary arrays
-    *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
-    *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
-    *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
+        // Determine rocprim buffer size
+        rocsparse_int* ptr = reinterpret_cast<rocsparse_int*>(p_buffer_size);
 
-    return rocsparse_status_success;
+        rocprim::double_buffer<rocsparse_int> dummy(ptr, ptr);
+
+        RETURN_IF_HIP_ERROR(
+            rocprim::radix_sort_pairs(nullptr, *p_buffer_size, dummy, dummy, nnzb, 0, 32, stream));
+
+        *p_buffer_size = ((*p_buffer_size - 1) / 256 + 1) * 256;
+
+        // rocPRIM does not support in-place sorting, so we need additional buffer
+        // for all temporary arrays
+        *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
+        *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
+        *p_buffer_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;
+
+        return rocsparse_status_success;
+    }
 }
 
 //
 // EXTERN C WRAPPING OF THE TEMPLATE.
 //
 
-#define C_IMPL(NAME, TYPE)                                                                    \
-    extern "C" rocsparse_status NAME(rocsparse_handle     handle,                             \
-                                     rocsparse_int        mb,                                 \
-                                     rocsparse_int        nb,                                 \
-                                     rocsparse_int        nnzb,                               \
-                                     const TYPE*          bsr_val,                            \
-                                     const rocsparse_int* bsr_row_ptr,                        \
-                                     const rocsparse_int* bsr_col_ind,                        \
-                                     rocsparse_int        row_block_dim,                      \
-                                     rocsparse_int        col_block_dim,                      \
-                                     size_t*              p_buffer_size)                      \
-    try                                                                                       \
-    {                                                                                         \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsr2gebsc_buffer_size_template(handle,          \
-                                                                             mb,              \
-                                                                             nb,              \
-                                                                             nnzb,            \
-                                                                             bsr_val,         \
-                                                                             bsr_row_ptr,     \
-                                                                             bsr_col_ind,     \
-                                                                             row_block_dim,   \
-                                                                             col_block_dim,   \
-                                                                             p_buffer_size)); \
-        return rocsparse_status_success;                                                      \
-    }                                                                                         \
-    catch(...)                                                                                \
-    {                                                                                         \
-        RETURN_ROCSPARSE_EXCEPTION();                                                         \
+#define C_IMPL(NAME, TYPE)                                                                     \
+    extern "C" rocsparse_status NAME(rocsparse_handle     handle,                              \
+                                     rocsparse_int        mb,                                  \
+                                     rocsparse_int        nb,                                  \
+                                     rocsparse_int        nnzb,                                \
+                                     const TYPE*          bsr_val,                             \
+                                     const rocsparse_int* bsr_row_ptr,                         \
+                                     const rocsparse_int* bsr_col_ind,                         \
+                                     rocsparse_int        row_block_dim,                       \
+                                     rocsparse_int        col_block_dim,                       \
+                                     size_t*              p_buffer_size)                       \
+    try                                                                                        \
+    {                                                                                          \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsr2gebsc_buffer_size_template(handle,          \
+                                                                              mb,              \
+                                                                              nb,              \
+                                                                              nnzb,            \
+                                                                              bsr_val,         \
+                                                                              bsr_row_ptr,     \
+                                                                              bsr_col_ind,     \
+                                                                              row_block_dim,   \
+                                                                              col_block_dim,   \
+                                                                              p_buffer_size)); \
+        return rocsparse_status_success;                                                       \
+    }                                                                                          \
+    catch(...)                                                                                 \
+    {                                                                                          \
+        RETURN_ROCSPARSE_EXCEPTION();                                                          \
     }
 
 C_IMPL(rocsparse_sgebsr2gebsc_buffer_size, float);
@@ -417,44 +424,44 @@ C_IMPL(rocsparse_zgebsr2gebsc_buffer_size, rocsparse_double_complex);
 //
 // EXTERN C WRAPPING OF THE TEMPLATE.
 //
-#define C_IMPL(NAME, TYPE)                                                      \
-    extern "C" rocsparse_status NAME(rocsparse_handle     handle,               \
-                                     rocsparse_int        mb,                   \
-                                     rocsparse_int        nb,                   \
-                                     rocsparse_int        nnzb,                 \
-                                     const TYPE*          bsr_val,              \
-                                     const rocsparse_int* bsr_row_ptr,          \
-                                     const rocsparse_int* bsr_col_ind,          \
-                                     rocsparse_int        row_block_dim,        \
-                                     rocsparse_int        col_block_dim,        \
-                                     TYPE*                bsc_val,              \
-                                     rocsparse_int*       bsc_row_ind,          \
-                                     rocsparse_int*       bsc_col_ptr,          \
-                                     rocsparse_action     copy_values,          \
-                                     rocsparse_index_base idx_base,             \
-                                     void*                buffer)               \
-    try                                                                         \
-    {                                                                           \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsr2gebsc_template(handle,        \
-                                                                 mb,            \
-                                                                 nb,            \
-                                                                 nnzb,          \
-                                                                 bsr_val,       \
-                                                                 bsr_row_ptr,   \
-                                                                 bsr_col_ind,   \
-                                                                 row_block_dim, \
-                                                                 col_block_dim, \
-                                                                 bsc_val,       \
-                                                                 bsc_row_ind,   \
-                                                                 bsc_col_ptr,   \
-                                                                 copy_values,   \
-                                                                 idx_base,      \
-                                                                 buffer));      \
-        return rocsparse_status_success;                                        \
-    }                                                                           \
-    catch(...)                                                                  \
-    {                                                                           \
-        RETURN_ROCSPARSE_EXCEPTION();                                           \
+#define C_IMPL(NAME, TYPE)                                                       \
+    extern "C" rocsparse_status NAME(rocsparse_handle     handle,                \
+                                     rocsparse_int        mb,                    \
+                                     rocsparse_int        nb,                    \
+                                     rocsparse_int        nnzb,                  \
+                                     const TYPE*          bsr_val,               \
+                                     const rocsparse_int* bsr_row_ptr,           \
+                                     const rocsparse_int* bsr_col_ind,           \
+                                     rocsparse_int        row_block_dim,         \
+                                     rocsparse_int        col_block_dim,         \
+                                     TYPE*                bsc_val,               \
+                                     rocsparse_int*       bsc_row_ind,           \
+                                     rocsparse_int*       bsc_col_ptr,           \
+                                     rocsparse_action     copy_values,           \
+                                     rocsparse_index_base idx_base,              \
+                                     void*                buffer)                \
+    try                                                                          \
+    {                                                                            \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsr2gebsc_template(handle,        \
+                                                                  mb,            \
+                                                                  nb,            \
+                                                                  nnzb,          \
+                                                                  bsr_val,       \
+                                                                  bsr_row_ptr,   \
+                                                                  bsr_col_ind,   \
+                                                                  row_block_dim, \
+                                                                  col_block_dim, \
+                                                                  bsc_val,       \
+                                                                  bsc_row_ind,   \
+                                                                  bsc_col_ptr,   \
+                                                                  copy_values,   \
+                                                                  idx_base,      \
+                                                                  buffer));      \
+        return rocsparse_status_success;                                         \
+    }                                                                            \
+    catch(...)                                                                   \
+    {                                                                            \
+        RETURN_ROCSPARSE_EXCEPTION();                                            \
     }
 
 C_IMPL(rocsparse_sgebsr2gebsc, float);

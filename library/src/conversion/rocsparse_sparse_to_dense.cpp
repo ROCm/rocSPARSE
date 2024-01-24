@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,177 +29,186 @@
 #include "rocsparse_coo2dense.hpp"
 #include "rocsparse_csx2dense_impl.hpp"
 
-template <typename I, typename J, typename T>
-rocsparse_status rocsparse_sparse_to_dense_template(rocsparse_handle              handle,
-                                                    rocsparse_const_spmat_descr   mat_A,
-                                                    rocsparse_dnmat_descr         mat_B,
-                                                    rocsparse_sparse_to_dense_alg alg,
-                                                    size_t*                       buffer_size,
-                                                    void*                         temp_buffer);
-
-template <typename... P>
-rocsparse_status return_sparsetodense(rocsparse_indextype itype,
-                                      rocsparse_indextype jtype,
-                                      rocsparse_datatype  ctype,
-                                      P... p)
+namespace rocsparse
 {
-    if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32
-       && ctype == rocsparse_datatype_f32_r)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int32_t, int32_t, float>(p...)));
-        return rocsparse_status_success;
-    }
-    if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32
-       && ctype == rocsparse_datatype_f64_r)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int32_t, int32_t, double>(p...)));
-        return rocsparse_status_success;
-    }
-    if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32
-       && ctype == rocsparse_datatype_f32_c)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int32_t, int32_t, rocsparse_float_complex>(p...)));
-        return rocsparse_status_success;
-    }
-    if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32
-       && ctype == rocsparse_datatype_f64_c)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int32_t, int32_t, rocsparse_double_complex>(p...)));
-        return rocsparse_status_success;
-    }
-    if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32
-       && ctype == rocsparse_datatype_f32_r)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int64_t, int32_t, float>(p...)));
-        return rocsparse_status_success;
-    }
-    if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32
-       && ctype == rocsparse_datatype_f64_r)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int64_t, int32_t, double>(p...)));
-        return rocsparse_status_success;
-    }
-    if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32
-       && ctype == rocsparse_datatype_f32_c)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int64_t, int32_t, rocsparse_float_complex>(p...)));
-        return rocsparse_status_success;
-    }
-    if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32
-       && ctype == rocsparse_datatype_f64_c)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int64_t, int32_t, rocsparse_double_complex>(p...)));
-        return rocsparse_status_success;
-    }
-    if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64
-       && ctype == rocsparse_datatype_f32_r)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int64_t, int64_t, float>(p...)));
-        return rocsparse_status_success;
-    }
-    if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64
-       && ctype == rocsparse_datatype_f64_r)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int64_t, int64_t, double>(p...)));
-        return rocsparse_status_success;
-    }
-    if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64
-       && ctype == rocsparse_datatype_f32_c)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int64_t, int64_t, rocsparse_float_complex>(p...)));
-        return rocsparse_status_success;
-    }
-    if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64
-       && ctype == rocsparse_datatype_f64_c)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_sparse_to_dense_template<int64_t, int64_t, rocsparse_double_complex>(p...)));
-        return rocsparse_status_success;
-    }
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
-}
+    template <typename I, typename J, typename T>
+    rocsparse_status sparse_to_dense_template(rocsparse_handle              handle,
+                                              rocsparse_const_spmat_descr   mat_A,
+                                              rocsparse_dnmat_descr         mat_B,
+                                              rocsparse_sparse_to_dense_alg alg,
+                                              size_t*                       buffer_size,
+                                              void*                         temp_buffer);
 
-template <typename I, typename J, typename T>
-rocsparse_status rocsparse_sparse_to_dense_template(rocsparse_handle              handle,
-                                                    rocsparse_const_spmat_descr   mat_A,
-                                                    rocsparse_dnmat_descr         mat_B,
-                                                    rocsparse_sparse_to_dense_alg alg,
-                                                    size_t*                       buffer_size,
-                                                    void*                         temp_buffer)
-{
-
-    // If temp_buffer is nullptr, return buffer_size
-    if(temp_buffer == nullptr)
+    template <typename... P>
+    rocsparse_status return_sparsetodense(rocsparse_indextype itype,
+                                          rocsparse_indextype jtype,
+                                          rocsparse_datatype  ctype,
+                                          P... p)
     {
-        // We do not need a buffer
-        *buffer_size = 4;
-
-        return rocsparse_status_success;
-    }
-
-    // COO
-    if(mat_A->format == rocsparse_format_coo)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2dense_template(handle,
-                                                               (I)mat_A->rows,
-                                                               (I)mat_A->cols,
-                                                               mat_A->nnz,
-                                                               mat_A->descr,
-                                                               (const T*)mat_A->const_val_data,
-                                                               (const I*)mat_A->const_row_data,
-                                                               (const I*)mat_A->const_col_data,
-                                                               (T*)mat_B->values,
-                                                               mat_B->ld,
-                                                               mat_B->order));
-        return rocsparse_status_success;
+        if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32
+           && ctype == rocsparse_datatype_f32_r)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int32_t, int32_t, float>(p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32
+           && ctype == rocsparse_datatype_f64_r)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int32_t, int32_t, double>(p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32
+           && ctype == rocsparse_datatype_f32_c)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int32_t, int32_t, rocsparse_float_complex>(
+                    p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32
+           && ctype == rocsparse_datatype_f64_c)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int32_t, int32_t, rocsparse_double_complex>(
+                    p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32
+           && ctype == rocsparse_datatype_f32_r)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int64_t, int32_t, float>(p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32
+           && ctype == rocsparse_datatype_f64_r)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int64_t, int32_t, double>(p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32
+           && ctype == rocsparse_datatype_f32_c)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int64_t, int32_t, rocsparse_float_complex>(
+                    p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32
+           && ctype == rocsparse_datatype_f64_c)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int64_t, int32_t, rocsparse_double_complex>(
+                    p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64
+           && ctype == rocsparse_datatype_f32_r)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int64_t, int64_t, float>(p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64
+           && ctype == rocsparse_datatype_f64_r)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int64_t, int64_t, double>(p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64
+           && ctype == rocsparse_datatype_f32_c)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int64_t, int64_t, rocsparse_float_complex>(
+                    p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64
+           && ctype == rocsparse_datatype_f64_c)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int64_t, int64_t, rocsparse_double_complex>(
+                    p...)));
+            return rocsparse_status_success;
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 
-    // CSR
-    if(mat_A->format == rocsparse_format_csr)
+    template <typename I, typename J, typename T>
+    rocsparse_status sparse_to_dense_template(rocsparse_handle              handle,
+                                              rocsparse_const_spmat_descr   mat_A,
+                                              rocsparse_dnmat_descr         mat_B,
+                                              rocsparse_sparse_to_dense_alg alg,
+                                              size_t*                       buffer_size,
+                                              void*                         temp_buffer)
     {
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_csx2dense_impl<rocsparse_direction_row>(handle,
-                                                              (J)mat_A->rows,
-                                                              (J)mat_A->cols,
-                                                              mat_A->descr,
-                                                              (const T*)mat_A->const_val_data,
-                                                              (const I*)mat_A->const_row_data,
-                                                              (const J*)mat_A->const_col_data,
-                                                              (T*)mat_B->values,
-                                                              mat_B->ld,
-                                                              mat_B->order));
-        return rocsparse_status_success;
-    }
 
-    // CSC
-    if(mat_A->format == rocsparse_format_csc)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_csx2dense_impl<rocsparse_direction_column>(handle,
-                                                                 (J)mat_A->rows,
-                                                                 (J)mat_A->cols,
-                                                                 mat_A->descr,
-                                                                 (const T*)mat_A->const_val_data,
-                                                                 (const I*)mat_A->const_col_data,
-                                                                 (const J*)mat_A->const_row_data,
-                                                                 (T*)mat_B->values,
-                                                                 mat_B->ld,
-                                                                 mat_B->order));
-        return rocsparse_status_success;
-    }
+        // If temp_buffer is nullptr, return buffer_size
+        if(temp_buffer == nullptr)
+        {
+            // We do not need a buffer
+            *buffer_size = 4;
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+            return rocsparse_status_success;
+        }
+
+        // COO
+        if(mat_A->format == rocsparse_format_coo)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::coo2dense_template(handle,
+                                                                    (I)mat_A->rows,
+                                                                    (I)mat_A->cols,
+                                                                    mat_A->nnz,
+                                                                    mat_A->descr,
+                                                                    (const T*)mat_A->const_val_data,
+                                                                    (const I*)mat_A->const_row_data,
+                                                                    (const I*)mat_A->const_col_data,
+                                                                    (T*)mat_B->values,
+                                                                    mat_B->ld,
+                                                                    mat_B->order));
+            return rocsparse_status_success;
+        }
+
+        // CSR
+        if(mat_A->format == rocsparse_format_csr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::csx2dense_impl<rocsparse_direction_row>(handle,
+                                                                   (J)mat_A->rows,
+                                                                   (J)mat_A->cols,
+                                                                   mat_A->descr,
+                                                                   (const T*)mat_A->const_val_data,
+                                                                   (const I*)mat_A->const_row_data,
+                                                                   (const J*)mat_A->const_col_data,
+                                                                   (T*)mat_B->values,
+                                                                   mat_B->ld,
+                                                                   mat_B->order));
+            return rocsparse_status_success;
+        }
+
+        // CSC
+        if(mat_A->format == rocsparse_format_csc)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::csx2dense_impl<rocsparse_direction_column>(
+                handle,
+                (J)mat_A->rows,
+                (J)mat_A->cols,
+                mat_A->descr,
+                (const T*)mat_A->const_val_data,
+                (const I*)mat_A->const_col_data,
+                (const J*)mat_A->const_row_data,
+                (T*)mat_B->values,
+                mat_B->ld,
+                mat_B->order));
+            return rocsparse_status_success;
+        }
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+    }
 }
 
 /*
@@ -241,28 +250,28 @@ try
 
     if(mat_A->format == rocsparse_format_csc)
     {
-        RETURN_IF_ROCSPARSE_ERROR(return_sparsetodense(mat_A->col_type,
-                                                       mat_A->row_type,
-                                                       mat_A->data_type,
-                                                       handle,
-                                                       mat_A,
-                                                       mat_B,
-                                                       alg,
-                                                       buffer_size,
-                                                       temp_buffer));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::return_sparsetodense(mat_A->col_type,
+                                                                  mat_A->row_type,
+                                                                  mat_A->data_type,
+                                                                  handle,
+                                                                  mat_A,
+                                                                  mat_B,
+                                                                  alg,
+                                                                  buffer_size,
+                                                                  temp_buffer));
         return rocsparse_status_success;
     }
     else
     {
-        RETURN_IF_ROCSPARSE_ERROR(return_sparsetodense(mat_A->row_type,
-                                                       mat_A->col_type,
-                                                       mat_A->data_type,
-                                                       handle,
-                                                       mat_A,
-                                                       mat_B,
-                                                       alg,
-                                                       buffer_size,
-                                                       temp_buffer));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::return_sparsetodense(mat_A->row_type,
+                                                                  mat_A->col_type,
+                                                                  mat_A->data_type,
+                                                                  handle,
+                                                                  mat_A,
+                                                                  mat_B,
+                                                                  alg,
+                                                                  buffer_size,
+                                                                  temp_buffer));
         return rocsparse_status_success;
     }
 

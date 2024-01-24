@@ -2084,7 +2084,7 @@ rocsparse_status rocsparse::bsrgemm_calc_template_dispatch(rocsparse_handle    h
 
         // Create identity permutation for group access
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_create_identity_permutation_template(handle, mb, tmp_perm));
+            rocsparse::create_identity_permutation_template(handle, mb, tmp_perm));
 
         rocprim::double_buffer<int> d_keys(tmp_groups, tmp_keys);
         rocprim::double_buffer<J>   d_vals(tmp_perm, tmp_vals);

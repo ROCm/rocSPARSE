@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,26 @@
 #include "rocsparse_convert_array.hpp"
 #include "utility.h"
 
-rocsparse_status rocsparse_gcoo2coo_aos(rocsparse_handle     handle,
-                                        int64_t              m,
-                                        int64_t              nnz,
-                                        rocsparse_indextype  source_row_type,
-                                        const void*          source_row,
-                                        rocsparse_indextype  source_col_type,
-                                        const void*          source_col,
-                                        rocsparse_datatype   source_val_type,
-                                        const void*          source_val,
-                                        rocsparse_index_base source_idx_base,
-                                        rocsparse_indextype  target_ind_type,
-                                        void*                target_ind,
-                                        rocsparse_datatype   target_val_type,
-                                        void*                target_val,
-                                        rocsparse_index_base target_idx_base)
+rocsparse_status rocsparse::gcoo2coo_aos(rocsparse_handle     handle,
+                                         int64_t              m,
+                                         int64_t              nnz,
+                                         rocsparse_indextype  source_row_type,
+                                         const void*          source_row,
+                                         rocsparse_indextype  source_col_type,
+                                         const void*          source_col,
+                                         rocsparse_datatype   source_val_type,
+                                         const void*          source_val,
+                                         rocsparse_index_base source_idx_base,
+                                         rocsparse_indextype  target_ind_type,
+                                         void*                target_ind,
+                                         rocsparse_datatype   target_val_type,
+                                         void*                target_val,
+                                         rocsparse_index_base target_idx_base)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(
         handle, nnz, target_ind_type, target_ind, 2, source_row_type, source_row, 1));
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(
         handle,
         nnz,
         target_ind_type, // same as col_type.
@@ -55,41 +55,41 @@ rocsparse_status rocsparse_gcoo2coo_aos(rocsparse_handle     handle,
 
     if(source_val != nullptr && target_val != nullptr)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_convert_array(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(
             handle, nnz, target_val_type, target_val, source_val_type, source_val));
     }
     return rocsparse_status_success;
 }
 
-rocsparse_status rocsparse_spmat_coo2coo_aos_buffer_size(rocsparse_handle            handle,
-                                                         rocsparse_const_spmat_descr source_,
-                                                         rocsparse_spmat_descr       target_,
-                                                         size_t*                     buffer_size_)
+rocsparse_status rocsparse::spmat_coo2coo_aos_buffer_size(rocsparse_handle            handle,
+                                                          rocsparse_const_spmat_descr source_,
+                                                          rocsparse_spmat_descr       target_,
+                                                          size_t*                     buffer_size_)
 {
     buffer_size_[0] = 0;
     return rocsparse_status_success;
 }
 
-rocsparse_status rocsparse_spmat_coo2coo_aos(rocsparse_handle            handle,
-                                             rocsparse_const_spmat_descr source_,
-                                             rocsparse_spmat_descr       target_,
-                                             size_t                      buffer_size_,
-                                             void*                       buffer_)
+rocsparse_status rocsparse::spmat_coo2coo_aos(rocsparse_handle            handle,
+                                              rocsparse_const_spmat_descr source_,
+                                              rocsparse_spmat_descr       target_,
+                                              size_t                      buffer_size_,
+                                              void*                       buffer_)
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_gcoo2coo_aos(handle,
-                                                     source_->rows,
-                                                     source_->nnz,
-                                                     source_->row_type,
-                                                     source_->const_row_data,
-                                                     source_->col_type,
-                                                     source_->const_col_data,
-                                                     source_->data_type,
-                                                     source_->const_val_data,
-                                                     source_->idx_base,
-                                                     target_->row_type,
-                                                     target_->ind_data,
-                                                     target_->data_type,
-                                                     target_->val_data,
-                                                     target_->idx_base));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::gcoo2coo_aos(handle,
+                                                      source_->rows,
+                                                      source_->nnz,
+                                                      source_->row_type,
+                                                      source_->const_row_data,
+                                                      source_->col_type,
+                                                      source_->const_col_data,
+                                                      source_->data_type,
+                                                      source_->const_val_data,
+                                                      source_->idx_base,
+                                                      target_->row_type,
+                                                      target_->ind_data,
+                                                      target_->data_type,
+                                                      target_->val_data,
+                                                      target_->idx_base));
     return rocsparse_status_success;
 }

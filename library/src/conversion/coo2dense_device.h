@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,61 +26,31 @@
 
 #include <hip/hip_runtime.h>
 
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void coo2dense_kernel(I                    m,
-                      I                    n,
-                      int64_t              nnz,
-                      int64_t              lda,
-                      rocsparse_index_base base,
-                      const T*             coo_val,
-                      const I*             coo_row_ind,
-                      const I*             coo_col_ind,
-                      T*                   A,
-                      rocsparse_order      order)
+namespace rocsparse
 {
-    int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    if(gid >= nnz)
-    {
-        return;
-    }
-
-    I row = coo_row_ind[gid] - base;
-    I col = coo_col_ind[gid] - base;
-    T val = coo_val[gid];
-
-    if(order == rocsparse_order_column)
-    {
-        A[lda * col + row] = val;
-    }
-    else
-    {
-        A[lda * row + col] = val;
-    }
-}
-
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void coo2dense_aos_kernel(I                    m,
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void coo2dense_kernel(I                    m,
                           I                    n,
                           int64_t              nnz,
                           int64_t              lda,
                           rocsparse_index_base base,
                           const T*             coo_val,
-                          const I*             coo_ind,
+                          const I*             coo_row_ind,
+                          const I*             coo_col_ind,
                           T*                   A,
                           rocsparse_order      order)
-{
-    const auto NUM_THREADS = hipGridDim_x * BLOCKSIZE;
-
-    const auto gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    for(auto idx = gid; idx < nnz; idx += NUM_THREADS)
     {
-        I row = coo_ind[2 * idx] - base;
-        I col = coo_ind[2 * idx + 1] - base;
-        T val = coo_val[idx];
+        int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+        if(gid >= nnz)
+        {
+            return;
+        }
+
+        I row = coo_row_ind[gid] - base;
+        I col = coo_col_ind[gid] - base;
+        T val = coo_val[gid];
 
         if(order == rocsparse_order_column)
         {
@@ -89,6 +59,39 @@ void coo2dense_aos_kernel(I                    m,
         else
         {
             A[lda * row + col] = val;
+        }
+    }
+
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void coo2dense_aos_kernel(I                    m,
+                              I                    n,
+                              int64_t              nnz,
+                              int64_t              lda,
+                              rocsparse_index_base base,
+                              const T*             coo_val,
+                              const I*             coo_ind,
+                              T*                   A,
+                              rocsparse_order      order)
+    {
+        const auto NUM_THREADS = hipGridDim_x * BLOCKSIZE;
+
+        const auto gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+        for(auto idx = gid; idx < nnz; idx += NUM_THREADS)
+        {
+            I row = coo_ind[2 * idx] - base;
+            I col = coo_ind[2 * idx + 1] - base;
+            T val = coo_val[idx];
+
+            if(order == rocsparse_order_column)
+            {
+                A[lda * col + row] = val;
+            }
+            else
+            {
+                A[lda * row + col] = val;
+            }
         }
     }
 }

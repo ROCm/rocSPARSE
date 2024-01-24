@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,78 +24,82 @@
 #include "rocsparse_sparse_to_sparse.hpp"
 #include "utility.h"
 
-static rocsparse_status
-    rocsparse_sparse_to_sparse_buffer_size_core(rocsparse_handle                 handle,
-                                                rocsparse_sparse_to_sparse_descr descr,
-                                                rocsparse_const_spmat_descr      source,
-                                                rocsparse_spmat_descr            target,
-                                                rocsparse_sparse_to_sparse_stage stage,
-                                                size_t* buffer_size_in_bytes)
+namespace rocsparse
 {
-    buffer_size_in_bytes[0]                                  = 0;
-    static constexpr const bool compute_buffer_size_in_bytes = true;
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_sparse_to_sparse(handle,
-                                                                  descr,
-                                                                  source,
-                                                                  target,
-                                                                  stage,
-                                                                  buffer_size_in_bytes,
-                                                                  nullptr,
-                                                                  compute_buffer_size_in_bytes));
-    return rocsparse_status_success;
-}
-
-static rocsparse_status
-    rocsparse_sparse_to_sparse_buffer_size_quickreturn(rocsparse_handle                 handle,
-                                                       rocsparse_sparse_to_sparse_descr descr,
-                                                       rocsparse_const_spmat_descr      source,
-                                                       rocsparse_spmat_descr            target,
-                                                       rocsparse_sparse_to_sparse_stage stage,
-                                                       size_t* buffer_size_in_bytes)
-{
-    return rocsparse_status_continue;
-}
-
-static rocsparse_status
-    rocsparse_sparse_to_sparse_buffer_size_checkarg(rocsparse_handle                 handle,
-                                                    rocsparse_sparse_to_sparse_descr descr,
-                                                    rocsparse_const_spmat_descr      source,
-                                                    rocsparse_spmat_descr            target,
-                                                    rocsparse_sparse_to_sparse_stage stage,
-                                                    size_t* buffer_size_in_bytes)
-{
-    //
-    ROCSPARSE_CHECKARG_HANDLE(0, handle);
-    ROCSPARSE_CHECKARG_POINTER(1, descr);
-    ROCSPARSE_CHECKARG_POINTER(2, source);
-    ROCSPARSE_CHECKARG_POINTER(3, target);
-    ROCSPARSE_CHECKARG_ENUM(4, stage);
-    ROCSPARSE_CHECKARG_POINTER(5, buffer_size_in_bytes);
-    //
-    const rocsparse_status status = rocsparse_sparse_to_sparse_buffer_size_quickreturn(
-        handle, descr, source, target, stage, buffer_size_in_bytes);
-    if(status != rocsparse_status_continue)
+    static rocsparse_status
+        sparse_to_sparse_buffer_size_core(rocsparse_handle                 handle,
+                                          rocsparse_sparse_to_sparse_descr descr,
+                                          rocsparse_const_spmat_descr      source,
+                                          rocsparse_spmat_descr            target,
+                                          rocsparse_sparse_to_sparse_stage stage,
+                                          size_t*                          buffer_size_in_bytes)
     {
-        RETURN_IF_ROCSPARSE_ERROR(status);
-        return rocsparse_status_success;
-    }
-    //
-    return rocsparse_status_continue;
-    //
-}
-
-template <typename... P>
-rocsparse_status rocsparse_sparse_to_sparse_buffer_size_impl(P&&... p)
-{
-    const rocsparse_status status = rocsparse_sparse_to_sparse_buffer_size_checkarg(p...);
-    if(status != rocsparse_status_continue)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(status);
+        buffer_size_in_bytes[0]                                  = 0;
+        static constexpr const bool compute_buffer_size_in_bytes = true;
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::internal_sparse_to_sparse(handle,
+                                                 descr,
+                                                 source,
+                                                 target,
+                                                 stage,
+                                                 buffer_size_in_bytes,
+                                                 nullptr,
+                                                 compute_buffer_size_in_bytes));
         return rocsparse_status_success;
     }
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_sparse_buffer_size_core(p...));
-    return rocsparse_status_success;
+    static rocsparse_status
+        sparse_to_sparse_buffer_size_quickreturn(rocsparse_handle                 handle,
+                                                 rocsparse_sparse_to_sparse_descr descr,
+                                                 rocsparse_const_spmat_descr      source,
+                                                 rocsparse_spmat_descr            target,
+                                                 rocsparse_sparse_to_sparse_stage stage,
+                                                 size_t* buffer_size_in_bytes)
+    {
+        return rocsparse_status_continue;
+    }
+
+    static rocsparse_status
+        sparse_to_sparse_buffer_size_checkarg(rocsparse_handle                 handle,
+                                              rocsparse_sparse_to_sparse_descr descr,
+                                              rocsparse_const_spmat_descr      source,
+                                              rocsparse_spmat_descr            target,
+                                              rocsparse_sparse_to_sparse_stage stage,
+                                              size_t*                          buffer_size_in_bytes)
+    {
+        //
+        ROCSPARSE_CHECKARG_HANDLE(0, handle);
+        ROCSPARSE_CHECKARG_POINTER(1, descr);
+        ROCSPARSE_CHECKARG_POINTER(2, source);
+        ROCSPARSE_CHECKARG_POINTER(3, target);
+        ROCSPARSE_CHECKARG_ENUM(4, stage);
+        ROCSPARSE_CHECKARG_POINTER(5, buffer_size_in_bytes);
+        //
+        const rocsparse_status status = rocsparse::sparse_to_sparse_buffer_size_quickreturn(
+            handle, descr, source, target, stage, buffer_size_in_bytes);
+        if(status != rocsparse_status_continue)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(status);
+            return rocsparse_status_success;
+        }
+        //
+        return rocsparse_status_continue;
+        //
+    }
+
+    template <typename... P>
+    static rocsparse_status sparse_to_sparse_buffer_size_impl(P&&... p)
+    {
+        const rocsparse_status status = rocsparse::sparse_to_sparse_buffer_size_checkarg(p...);
+        if(status != rocsparse_status_continue)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(status);
+            return rocsparse_status_success;
+        }
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_sparse_buffer_size_core(p...));
+        return rocsparse_status_success;
+    }
 }
 
 extern "C" rocsparse_status
@@ -107,7 +111,7 @@ extern "C" rocsparse_status
                                            size_t*                          buffer_size_in_bytes)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_sparse_to_sparse_buffer_size_impl(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::sparse_to_sparse_buffer_size_impl(
         handle, descr, source, target, stage, buffer_size_in_bytes));
     return rocsparse_status_success;
 }

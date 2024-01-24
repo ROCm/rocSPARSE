@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -32,37 +32,40 @@
 #include "prune_dense2csr_device.h"
 #include <rocprim/rocprim.hpp>
 
-template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename T, typename U>
-ROCSPARSE_KERNEL(DIM_X* DIM_Y)
-void prune_dense2csr_nnz_kernel2(rocsparse_int m,
-                                 rocsparse_int n,
-                                 const T* __restrict__ A,
-                                 int64_t lda,
-                                 U       threshold_device_host,
-                                 rocsparse_int* __restrict__ nnz_per_rows)
+namespace rocsparse
 {
-    auto threshold = load_scalar_device_host(threshold_device_host);
-    prune_dense2csr_nnz_device<DIM_X, DIM_Y>(m, n, A, lda, threshold, nnz_per_rows);
-}
+    template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename T, typename U>
+    ROCSPARSE_KERNEL(DIM_X* DIM_Y)
+    void prune_dense2csr_nnz_kernel2(rocsparse_int m,
+                                     rocsparse_int n,
+                                     const T* __restrict__ A,
+                                     int64_t lda,
+                                     U       threshold_device_host,
+                                     rocsparse_int* __restrict__ nnz_per_rows)
+    {
+        auto threshold = load_scalar_device_host(threshold_device_host);
+        rocsparse::prune_dense2csr_nnz_device<DIM_X, DIM_Y>(m, n, A, lda, threshold, nnz_per_rows);
+    }
 
-template <rocsparse_int NUMROWS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
-ROCSPARSE_KERNEL(WF_SIZE* NUMROWS_PER_BLOCK)
-void prune_dense2csr_kernel2_device_pointer(rocsparse_index_base base,
-                                            rocsparse_int        m,
-                                            rocsparse_int        n,
-                                            const T* __restrict__ A,
-                                            int64_t  lda,
-                                            const T* threshold,
-                                            T* __restrict__ csr_val,
-                                            const rocsparse_int* __restrict__ csr_row_ptr,
-                                            rocsparse_int* __restrict__ csr_col_ind)
-{
-    prune_dense2csr_device<NUMROWS_PER_BLOCK, WF_SIZE>(
-        base, m, n, A, lda, *threshold, csr_val, csr_row_ptr, csr_col_ind);
+    template <rocsparse_int NUMROWS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
+    ROCSPARSE_KERNEL(WF_SIZE* NUMROWS_PER_BLOCK)
+    void prune_dense2csr_kernel2_device_pointer(rocsparse_index_base base,
+                                                rocsparse_int        m,
+                                                rocsparse_int        n,
+                                                const T* __restrict__ A,
+                                                int64_t  lda,
+                                                const T* threshold,
+                                                T* __restrict__ csr_val,
+                                                const rocsparse_int* __restrict__ csr_row_ptr,
+                                                rocsparse_int* __restrict__ csr_col_ind)
+    {
+        rocsparse::prune_dense2csr_device<NUMROWS_PER_BLOCK, WF_SIZE>(
+            base, m, n, A, lda, *threshold, csr_val, csr_row_ptr, csr_col_ind);
+    }
 }
 
 template <typename T>
-rocsparse_status rocsparse_prune_dense2csr_by_percentage_buffer_size_template(
+rocsparse_status rocsparse::prune_dense2csr_by_percentage_buffer_size_template(
     rocsparse_handle          handle, //0
     rocsparse_int             m, //1
     rocsparse_int             n, //2
@@ -122,17 +125,17 @@ rocsparse_status rocsparse_prune_dense2csr_by_percentage_buffer_size_template(
 
 template <typename T>
 rocsparse_status
-    rocsparse_prune_dense2csr_nnz_by_percentage_template(rocsparse_handle          handle, //0
-                                                         rocsparse_int             m, //1
-                                                         rocsparse_int             n, //2
-                                                         const T*                  A, //3
-                                                         int64_t                   lda, //4
-                                                         T                         percentage, //5
-                                                         const rocsparse_mat_descr descr, //6
-                                                         rocsparse_int*            csr_row_ptr, //7
-                                                         rocsparse_int* nnz_total_dev_host_ptr, //8
-                                                         rocsparse_mat_info info, //9
-                                                         void*              temp_buffer) //10
+    rocsparse::prune_dense2csr_nnz_by_percentage_template(rocsparse_handle          handle, //0
+                                                          rocsparse_int             m, //1
+                                                          rocsparse_int             n, //2
+                                                          const T*                  A, //3
+                                                          int64_t                   lda, //4
+                                                          T                         percentage, //5
+                                                          const rocsparse_mat_descr descr, //6
+                                                          rocsparse_int*            csr_row_ptr, //7
+                                                          rocsparse_int* nnz_total_dev_host_ptr, //8
+                                                          rocsparse_mat_info info, //9
+                                                          void*              temp_buffer) //10
 {
 
     // Logging
@@ -266,17 +269,18 @@ rocsparse_status
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
-                                               grid,
-                                               threads,
-                                               0,
-                                               stream,
-                                               m,
-                                               n,
-                                               A,
-                                               lda,
-                                               d_threshold,
-                                               &csr_row_ptr[1]);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
+                grid,
+                threads,
+                0,
+                stream,
+                m,
+                n,
+                A,
+                lda,
+                d_threshold,
+                &csr_row_ptr[1]);
         }
         else
         {
@@ -285,17 +289,18 @@ rocsparse_status
                 &h_threshold, d_threshold, sizeof(T), hipMemcpyDeviceToHost, handle->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
-                                               grid,
-                                               threads,
-                                               0,
-                                               stream,
-                                               m,
-                                               n,
-                                               A,
-                                               lda,
-                                               h_threshold,
-                                               &csr_row_ptr[1]);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
+                grid,
+                threads,
+                0,
+                stream,
+                m,
+                n,
+                A,
+                lda,
+                h_threshold,
+                &csr_row_ptr[1]);
         }
     }
     // Store threshold at first entry in output array
@@ -325,7 +330,7 @@ rocsparse_status
     // Extract nnz_total_dev_host_ptr
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(nnz_total_device_kernel,
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(rocsparse::nnz_total_device_kernel,
                                            dim3(1),
                                            dim3(1),
                                            0,
@@ -351,18 +356,18 @@ rocsparse_status
 
 template <typename T>
 rocsparse_status
-    rocsparse_prune_dense2csr_by_percentage_template(rocsparse_handle          handle, //0
-                                                     rocsparse_int             m, //1
-                                                     rocsparse_int             n, //2
-                                                     const T*                  A, //3
-                                                     int64_t                   lda, //4
-                                                     T                         percentage, //5
-                                                     const rocsparse_mat_descr descr, //6
-                                                     T*                        csr_val, //7
-                                                     const rocsparse_int*      csr_row_ptr, //8
-                                                     rocsparse_int*            csr_col_ind, //9
-                                                     rocsparse_mat_info        info, //10
-                                                     void*                     temp_buffer) //11
+    rocsparse::prune_dense2csr_by_percentage_template(rocsparse_handle          handle, //0
+                                                      rocsparse_int             m, //1
+                                                      rocsparse_int             n, //2
+                                                      const T*                  A, //3
+                                                      int64_t                   lda, //4
+                                                      T                         percentage, //5
+                                                      const rocsparse_mat_descr descr, //6
+                                                      T*                        csr_val, //7
+                                                      const rocsparse_int*      csr_row_ptr, //8
+                                                      rocsparse_int*            csr_col_ind, //9
+                                                      rocsparse_mat_info        info, //10
+                                                      void*                     temp_buffer) //11
 {
 
     log_trace(handle,
@@ -442,7 +447,7 @@ rocsparse_status
         dim3                           threads(WF_SIZE * NROWS_PER_BLOCK);
 
         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (prune_dense2csr_kernel2_device_pointer<NROWS_PER_BLOCK, WF_SIZE, T>),
+            (rocsparse::prune_dense2csr_kernel2_device_pointer<NROWS_PER_BLOCK, WF_SIZE, T>),
             blocks,
             threads,
             0,
@@ -465,7 +470,7 @@ rocsparse_status
         dim3                           threads(WF_SIZE * NROWS_PER_BLOCK);
 
         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (prune_dense2csr_kernel2_device_pointer<NROWS_PER_BLOCK, WF_SIZE, T>),
+            (rocsparse::prune_dense2csr_kernel2_device_pointer<NROWS_PER_BLOCK, WF_SIZE, T>),
             blocks,
             threads,
             0,
@@ -506,18 +511,18 @@ extern "C" rocsparse_status
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_prune_dense2csr_by_percentage_buffer_size_template(handle,
-                                                                     m,
-                                                                     n,
-                                                                     A,
-                                                                     lda,
-                                                                     percentage,
-                                                                     descr,
-                                                                     csr_val,
-                                                                     csr_row_ptr,
-                                                                     csr_col_ind,
-                                                                     info,
-                                                                     buffer_size));
+        rocsparse::prune_dense2csr_by_percentage_buffer_size_template(handle,
+                                                                      m,
+                                                                      n,
+                                                                      A,
+                                                                      lda,
+                                                                      percentage,
+                                                                      descr,
+                                                                      csr_val,
+                                                                      csr_row_ptr,
+                                                                      csr_col_ind,
+                                                                      info,
+                                                                      buffer_size));
     return rocsparse_status_success;
 }
 catch(...)
@@ -541,18 +546,18 @@ extern "C" rocsparse_status
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_prune_dense2csr_by_percentage_buffer_size_template(handle,
-                                                                     m,
-                                                                     n,
-                                                                     A,
-                                                                     lda,
-                                                                     percentage,
-                                                                     descr,
-                                                                     csr_val,
-                                                                     csr_row_ptr,
-                                                                     csr_col_ind,
-                                                                     info,
-                                                                     buffer_size));
+        rocsparse::prune_dense2csr_by_percentage_buffer_size_template(handle,
+                                                                      m,
+                                                                      n,
+                                                                      A,
+                                                                      lda,
+                                                                      percentage,
+                                                                      descr,
+                                                                      csr_val,
+                                                                      csr_row_ptr,
+                                                                      csr_col_ind,
+                                                                      info,
+                                                                      buffer_size));
     return rocsparse_status_success;
 }
 catch(...)
@@ -575,17 +580,17 @@ extern "C" rocsparse_status
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_prune_dense2csr_nnz_by_percentage_template(handle,
-                                                             m,
-                                                             n,
-                                                             A,
-                                                             lda,
-                                                             percentage,
-                                                             descr,
-                                                             csr_row_ptr,
-                                                             nnz_total_dev_host_ptr,
-                                                             info,
-                                                             temp_buffer));
+        rocsparse::prune_dense2csr_nnz_by_percentage_template(handle,
+                                                              m,
+                                                              n,
+                                                              A,
+                                                              lda,
+                                                              percentage,
+                                                              descr,
+                                                              csr_row_ptr,
+                                                              nnz_total_dev_host_ptr,
+                                                              info,
+                                                              temp_buffer));
     return rocsparse_status_success;
 }
 catch(...)
@@ -608,17 +613,17 @@ extern "C" rocsparse_status
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse_prune_dense2csr_nnz_by_percentage_template(handle,
-                                                             m,
-                                                             n,
-                                                             A,
-                                                             lda,
-                                                             percentage,
-                                                             descr,
-                                                             csr_row_ptr,
-                                                             nnz_total_dev_host_ptr,
-                                                             info,
-                                                             temp_buffer));
+        rocsparse::prune_dense2csr_nnz_by_percentage_template(handle,
+                                                              m,
+                                                              n,
+                                                              A,
+                                                              lda,
+                                                              percentage,
+                                                              descr,
+                                                              csr_row_ptr,
+                                                              nnz_total_dev_host_ptr,
+                                                              info,
+                                                              temp_buffer));
     return rocsparse_status_success;
 }
 catch(...)
@@ -641,18 +646,18 @@ extern "C" rocsparse_status
                                              void*                     temp_buffer)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_prune_dense2csr_by_percentage_template(handle,
-                                                                               m,
-                                                                               n,
-                                                                               A,
-                                                                               lda,
-                                                                               percentage,
-                                                                               descr,
-                                                                               csr_val,
-                                                                               csr_row_ptr,
-                                                                               csr_col_ind,
-                                                                               info,
-                                                                               temp_buffer));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::prune_dense2csr_by_percentage_template(handle,
+                                                                                m,
+                                                                                n,
+                                                                                A,
+                                                                                lda,
+                                                                                percentage,
+                                                                                descr,
+                                                                                csr_val,
+                                                                                csr_row_ptr,
+                                                                                csr_col_ind,
+                                                                                info,
+                                                                                temp_buffer));
     return rocsparse_status_success;
 }
 catch(...)
@@ -675,18 +680,18 @@ extern "C" rocsparse_status
                                              void*                     temp_buffer)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_prune_dense2csr_by_percentage_template(handle,
-                                                                               m,
-                                                                               n,
-                                                                               A,
-                                                                               lda,
-                                                                               percentage,
-                                                                               descr,
-                                                                               csr_val,
-                                                                               csr_row_ptr,
-                                                                               csr_col_ind,
-                                                                               info,
-                                                                               temp_buffer));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::prune_dense2csr_by_percentage_template(handle,
+                                                                                m,
+                                                                                n,
+                                                                                A,
+                                                                                lda,
+                                                                                percentage,
+                                                                                descr,
+                                                                                csr_val,
+                                                                                csr_row_ptr,
+                                                                                csr_col_ind,
+                                                                                info,
+                                                                                temp_buffer));
     return rocsparse_status_success;
 }
 catch(...)

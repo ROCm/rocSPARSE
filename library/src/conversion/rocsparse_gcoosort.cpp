@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,17 +25,17 @@
 #include "definitions.h"
 #include "rocsparse_coosort.hpp"
 
-rocsparse_status rocsparse_gcoosort_buffer_size(rocsparse_handle    handle_,
-                                                int64_t             m,
-                                                int64_t             n,
-                                                int64_t             nnz,
-                                                rocsparse_indextype idx_type,
-                                                const void*         row_data,
-                                                const void*         col_data,
-                                                size_t*             buffer_size)
+rocsparse_status rocsparse::gcoosort_buffer_size(rocsparse_handle    handle_,
+                                                 int64_t             m,
+                                                 int64_t             n,
+                                                 int64_t             nnz,
+                                                 rocsparse_indextype idx_type,
+                                                 const void*         row_data,
+                                                 const void*         col_data,
+                                                 size_t*             buffer_size)
 {
-#define CALL_TEMPLATE(IDX_TYPE)                                                 \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_coosort_buffer_size_template<IDX_TYPE>( \
+#define CALL_TEMPLATE(IDX_TYPE)                                                  \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::coosort_buffer_size_template<IDX_TYPE>( \
         handle_, m, n, nnz, (const IDX_TYPE*)row_data, (const IDX_TYPE*)col_data, buffer_size))
     switch(idx_type)
     {
@@ -60,18 +60,18 @@ rocsparse_status rocsparse_gcoosort_buffer_size(rocsparse_handle    handle_,
 #undef CALL_TEMPLATE
 }
 
-rocsparse_status rocsparse_gcoosort_by_row(rocsparse_handle    handle_,
-                                           int64_t             m,
-                                           int64_t             n,
-                                           int64_t             nnz,
-                                           rocsparse_indextype idx_type,
-                                           void*               row_data,
-                                           void*               col_data,
-                                           void*               perm,
-                                           void*               buffer)
+rocsparse_status rocsparse::gcoosort_by_row(rocsparse_handle    handle_,
+                                            int64_t             m,
+                                            int64_t             n,
+                                            int64_t             nnz,
+                                            rocsparse_indextype idx_type,
+                                            void*               row_data,
+                                            void*               col_data,
+                                            void*               perm,
+                                            void*               buffer)
 {
-#define CALL_TEMPLATE(IDX_TYPE)                                            \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_coosort_by_row_template<IDX_TYPE>( \
+#define CALL_TEMPLATE(IDX_TYPE)                                             \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::coosort_by_row_template<IDX_TYPE>( \
         handle_, m, n, nnz, (IDX_TYPE*)row_data, (IDX_TYPE*)col_data, (IDX_TYPE*)perm, buffer))
     switch(idx_type)
     {
@@ -96,18 +96,18 @@ rocsparse_status rocsparse_gcoosort_by_row(rocsparse_handle    handle_,
 #undef CALL_TEMPLATE
 }
 
-rocsparse_status rocsparse_gcoosort_by_column(rocsparse_handle    handle_,
-                                              int64_t             m,
-                                              int64_t             n,
-                                              int64_t             nnz,
-                                              rocsparse_indextype idx_type,
-                                              void*               row_data,
-                                              void*               col_data,
-                                              void*               perm,
-                                              void*               buffer)
+rocsparse_status rocsparse::gcoosort_by_column(rocsparse_handle    handle_,
+                                               int64_t             m,
+                                               int64_t             n,
+                                               int64_t             nnz,
+                                               rocsparse_indextype idx_type,
+                                               void*               row_data,
+                                               void*               col_data,
+                                               void*               perm,
+                                               void*               buffer)
 {
-#define CALL_TEMPLATE(IDX_TYPE)                                               \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_coosort_by_column_template<IDX_TYPE>( \
+#define CALL_TEMPLATE(IDX_TYPE)                                                \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::coosort_by_column_template<IDX_TYPE>( \
         handle_, m, n, nnz, (IDX_TYPE*)row_data, (IDX_TYPE*)col_data, (IDX_TYPE*)perm, buffer))
     switch(idx_type)
     {

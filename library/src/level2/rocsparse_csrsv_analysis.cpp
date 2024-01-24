@@ -91,7 +91,7 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
 
             // Create identity permutation
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_create_identity_permutation_template(handle, nnz, (I*)info->trmt_perm));
+                rocsparse::create_identity_permutation_template(handle, nnz, (I*)info->trmt_perm));
 
             // Stable sort COO by columns
             rocprim::double_buffer<J> keys(tmp_work1, (J*)info->trmt_col_ind);
@@ -118,12 +118,12 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
             }
 
             // Create column pointers
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2csr_template(
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::coo2csr_template(
                 handle, keys.current(), nnz, m, (I*)info->trmt_row_ptr, descr->base));
 
             // Create row indices
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_csr2coo_template(handle, csr_row_ptr, nnz, m, tmp_work1, descr->base));
+                rocsparse::csr2coo_template(handle, csr_row_ptr, nnz, m, tmp_work1, descr->base));
 
             // Permute column indices
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::gthr_template(handle,
@@ -469,7 +469,8 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     // Wait for host transfer to finish
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation_template(handle, m, workspace));
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse::create_identity_permutation_template(handle, m, workspace));
 
     size_t rocprim_size;
 

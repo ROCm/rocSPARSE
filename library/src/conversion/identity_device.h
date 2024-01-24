@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,17 +26,20 @@
 
 #include <hip/hip_runtime.h>
 
-// Create identity permutation
-template <unsigned int BLOCKSIZE, typename I>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void identity_kernel(I n, I* p)
+namespace rocsparse
 {
-    I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    if(gid >= n)
+    // Create identity permutation
+    template <unsigned int BLOCKSIZE, typename I>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void identity_kernel(I n, I* p)
     {
-        return;
-    }
+        I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
-    p[gid] = gid;
+        if(gid >= n)
+        {
+            return;
+        }
+
+        p[gid] = gid;
+    }
 }

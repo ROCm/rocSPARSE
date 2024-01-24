@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,16 @@
 #include "bsrpad_value_device.h"
 
 template <typename T>
-rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handle, //0
-                                                 rocsparse_int             m, //1
-                                                 rocsparse_int             mb, //2
-                                                 rocsparse_int             nnzb, //3
-                                                 rocsparse_int             block_dim, //4
-                                                 T                         value, //5
-                                                 const rocsparse_mat_descr bsr_descr, //6
-                                                 T*                        bsr_val, //7
-                                                 const rocsparse_int*      bsr_row_ptr, //8
-                                                 const rocsparse_int*      bsr_col_ind) //9
+rocsparse_status rocsparse::bsrpad_value_template(rocsparse_handle          handle, //0
+                                                  rocsparse_int             m, //1
+                                                  rocsparse_int             mb, //2
+                                                  rocsparse_int             nnzb, //3
+                                                  rocsparse_int             block_dim, //4
+                                                  T                         value, //5
+                                                  const rocsparse_mat_descr bsr_descr, //6
+                                                  T*                        bsr_val, //7
+                                                  const rocsparse_int*      bsr_row_ptr, //8
+                                                  const rocsparse_int*      bsr_col_ind) //9
 {
 
     // Logging
@@ -86,7 +86,7 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
     // Check matrix sorting mode
     if(bsr_descr->storage_mode == rocsparse_storage_mode_sorted)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrpad_value_kernel_sorted<block_size>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::bsrpad_value_kernel_sorted<block_size>),
                                            dim3(grid_size),
                                            dim3(block_size),
                                            0,
@@ -102,7 +102,7 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
     }
     else
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrpad_value_kernel_unsorted<block_size>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::bsrpad_value_kernel_unsorted<block_size>),
                                            dim3(grid_size),
                                            dim3(block_size),
                                            0,
@@ -137,7 +137,7 @@ rocsparse_status rocsparse_bsrpad_value_template(rocsparse_handle          handl
                                                                                                    \
     try                                                                                            \
     {                                                                                              \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrpad_value_template<TYPE>(                           \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::bsrpad_value_template<TYPE>(                          \
             handle, m, mb, nnzb, block_dim, value, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind)); \
         return rocsparse_status_success;                                                           \
     }                                                                                              \

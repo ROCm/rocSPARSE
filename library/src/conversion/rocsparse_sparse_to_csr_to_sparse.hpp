@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,13 @@
 #include "rocsparse-types.h"
 #include "rocsparse_sparse_to_sparse.hpp"
 
-rocsparse_status rocsparse_sparse_to_csr_to_sparse(rocsparse_handle                         handle,
-                                                   rocsparse_sparse_to_sparse_descr         descr,
-                                                   rocsparse_const_spmat_descr              source,
-                                                   rocsparse_spmat_descr                    target,
-                                                   _rocsparse_sparse_to_sparse_descr::stage stage,
-                                                   size_t* buffer_size,
-                                                   void*   buffer);
+namespace rocsparse
+{
+    rocsparse_status sparse_to_csr_to_sparse(rocsparse_handle                         handle,
+                                             rocsparse_sparse_to_sparse_descr         descr,
+                                             rocsparse_const_spmat_descr              source,
+                                             rocsparse_spmat_descr                    target,
+                                             _rocsparse_sparse_to_sparse_descr::stage stage,
+                                             size_t*                                  buffer_size,
+                                             void*                                    buffer);
+}

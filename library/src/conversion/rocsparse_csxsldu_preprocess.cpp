@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,179 +27,182 @@
 #include "utility.h"
 #include <rocprim/rocprim.hpp>
 
-template <typename I, typename J>
-rocsparse_status rocsparse_inclusive_scan(rocsparse_handle handle, J m_, I* ptr_)
+namespace rocsparse
 {
-
-    auto   op = rocprim::plus<I>();
-    size_t temp_storage_size_bytes;
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
-        nullptr, temp_storage_size_bytes, ptr_, ptr_, m_ + 1, op, handle->stream));
-
-    bool  temp_alloc       = false;
-    void* temp_storage_ptr = nullptr;
-    if(handle->buffer_size >= temp_storage_size_bytes)
+    template <typename I, typename J>
+    rocsparse_status inclusive_scan(rocsparse_handle handle, J m_, I* ptr_)
     {
-        temp_storage_ptr = handle->buffer;
-        temp_alloc       = false;
-    }
-    else
-    {
-        RETURN_IF_HIP_ERROR(
-            rocsparse_hipMallocAsync(&temp_storage_ptr, temp_storage_size_bytes, handle->stream));
-        temp_alloc = true;
-    }
 
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
-        temp_storage_ptr, temp_storage_size_bytes, ptr_, ptr_, m_ + 1, op, handle->stream));
+        auto   op = rocprim::plus<I>();
+        size_t temp_storage_size_bytes;
+        RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
+            nullptr, temp_storage_size_bytes, ptr_, ptr_, m_ + 1, op, handle->stream));
 
-    if(temp_alloc)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
-    }
-
-    return rocsparse_status_success;
-}
-
-template <unsigned int        BLOCKSIZE,
-          rocsparse_diag_type FDIAG,
-          rocsparse_diag_type SDIAG,
-          typename I,
-          typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void rocsparse_csxtril_count_kernel(
-    J nseq_, const I* ptr_, const J* ind_, rocsparse_index_base base_, I* fptr_, I* sptr_)
-{
-    I seq = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
-    if(seq < nseq_)
-    {
-        I fcount = 0, scount = 0;
-        for(I k = ptr_[seq] - base_; k < ptr_[seq + 1] - base_; ++k)
+        bool  temp_alloc       = false;
+        void* temp_storage_ptr = nullptr;
+        if(handle->buffer_size >= temp_storage_size_bytes)
         {
-            const J ind = ind_[k] - base_;
-            if(seq > ind)
+            temp_storage_ptr = handle->buffer;
+            temp_alloc       = false;
+        }
+        else
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+                &temp_storage_ptr, temp_storage_size_bytes, handle->stream));
+            temp_alloc = true;
+        }
+
+        RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
+            temp_storage_ptr, temp_storage_size_bytes, ptr_, ptr_, m_ + 1, op, handle->stream));
+
+        if(temp_alloc)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipFree(temp_storage_ptr));
+        }
+
+        return rocsparse_status_success;
+    }
+
+    template <unsigned int        BLOCKSIZE,
+              rocsparse_diag_type FDIAG,
+              rocsparse_diag_type SDIAG,
+              typename I,
+              typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void csxtril_count_kernel(
+        J nseq_, const I* ptr_, const J* ind_, rocsparse_index_base base_, I* fptr_, I* sptr_)
+    {
+        I seq = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
+        if(seq < nseq_)
+        {
+            I fcount = 0, scount = 0;
+            for(I k = ptr_[seq] - base_; k < ptr_[seq + 1] - base_; ++k)
             {
-                ++fcount;
-            }
-            else if(seq < ind)
-            {
-                ++scount;
-            }
-            else
-            {
-                if(FDIAG == rocsparse_diag_type_non_unit)
+                const J ind = ind_[k] - base_;
+                if(seq > ind)
                 {
                     ++fcount;
                 }
-                else if(SDIAG == rocsparse_diag_type_non_unit)
+                else if(seq < ind)
                 {
                     ++scount;
                 }
+                else
+                {
+                    if(FDIAG == rocsparse_diag_type_non_unit)
+                    {
+                        ++fcount;
+                    }
+                    else if(SDIAG == rocsparse_diag_type_non_unit)
+                    {
+                        ++scount;
+                    }
+                }
             }
+            fptr_[seq + 1] = fcount;
+            sptr_[seq + 1] = scount;
         }
-        fptr_[seq + 1] = fcount;
-        sptr_[seq + 1] = scount;
     }
-}
 
-template <int nthreads_per_block, typename I, typename J, typename... P>
-rocsparse_status rocsparse_csxtril_count_kernel_dispatch(rocsparse_handle    handle_,
-                                                         dim3&               blocks,
-                                                         dim3&               threads,
-                                                         rocsparse_diag_type ldiag_,
-                                                         rocsparse_diag_type udiag_,
-                                                         P&&... p)
-{
-    switch(ldiag_)
+    template <int nthreads_per_block, typename I, typename J, typename... P>
+    rocsparse_status csxtril_count_kernel_dispatch(rocsparse_handle    handle_,
+                                                   dim3&               blocks,
+                                                   dim3&               threads,
+                                                   rocsparse_diag_type ldiag_,
+                                                   rocsparse_diag_type udiag_,
+                                                   P&&... p)
     {
-    case rocsparse_diag_type_unit:
-    {
-        switch(udiag_)
+        switch(ldiag_)
         {
-        case rocsparse_diag_type_non_unit:
-        {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (rocsparse_csxtril_count_kernel<nthreads_per_block,
-                                                rocsparse_diag_type_unit,
-                                                rocsparse_diag_type_non_unit,
-                                                I,
-                                                J>),
-                blocks,
-                threads,
-                0,
-                handle_->stream,
-                p...);
-            break;
-        }
         case rocsparse_diag_type_unit:
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (rocsparse_csxtril_count_kernel<nthreads_per_block,
-                                                rocsparse_diag_type_unit,
-                                                rocsparse_diag_type_unit,
-                                                I,
-                                                J>),
-                blocks,
-                threads,
-                0,
-                handle_->stream,
-                p...);
+            switch(udiag_)
+            {
+            case rocsparse_diag_type_non_unit:
+            {
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (rocsparse::csxtril_count_kernel<nthreads_per_block,
+                                                     rocsparse_diag_type_unit,
+                                                     rocsparse_diag_type_non_unit,
+                                                     I,
+                                                     J>),
+                    blocks,
+                    threads,
+                    0,
+                    handle_->stream,
+                    p...);
+                break;
+            }
+            case rocsparse_diag_type_unit:
+            {
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (rocsparse::csxtril_count_kernel<nthreads_per_block,
+                                                     rocsparse_diag_type_unit,
+                                                     rocsparse_diag_type_unit,
+                                                     I,
+                                                     J>),
+                    blocks,
+                    threads,
+                    0,
+                    handle_->stream,
+                    p...);
+                break;
+            }
+            }
             break;
         }
-        }
-        break;
-    }
-    case rocsparse_diag_type_non_unit:
-    {
-        switch(udiag_)
-        {
         case rocsparse_diag_type_non_unit:
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-        }
-        case rocsparse_diag_type_unit:
-        {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (rocsparse_csxtril_count_kernel<nthreads_per_block,
-                                                rocsparse_diag_type_non_unit,
-                                                rocsparse_diag_type_unit,
-                                                I,
-                                                J>),
-                blocks,
-                threads,
-                0,
-                handle_->stream,
-                p...);
+            switch(udiag_)
+            {
+            case rocsparse_diag_type_non_unit:
+            {
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+            }
+            case rocsparse_diag_type_unit:
+            {
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (rocsparse::csxtril_count_kernel<nthreads_per_block,
+                                                     rocsparse_diag_type_non_unit,
+                                                     rocsparse_diag_type_unit,
+                                                     I,
+                                                     J>),
+                    blocks,
+                    threads,
+                    0,
+                    handle_->stream,
+                    p...);
+                break;
+            }
+            }
             break;
         }
         }
-        break;
+        return rocsparse_status_success;
     }
-    }
-    return rocsparse_status_success;
 }
 
 template <typename T, typename I, typename J>
-rocsparse_status rocsparse_csxsldu_preprocess_template(rocsparse_handle     handle_,
-                                                       rocsparse_direction  dir_,
-                                                       J                    m_,
-                                                       J                    n_,
-                                                       I                    nnz_,
-                                                       const I*             ptr_,
-                                                       const J*             ind_,
-                                                       const T*             val_,
-                                                       rocsparse_index_base base_,
-                                                       rocsparse_diag_type  ldiag_,
-                                                       rocsparse_direction  ldir_,
-                                                       I*                   host_lnnz_,
-                                                       I*                   lptr_,
-                                                       rocsparse_index_base lbase_,
-                                                       rocsparse_diag_type  udiag_,
-                                                       rocsparse_direction  udir_,
-                                                       I*                   host_unnz_,
-                                                       I*                   uptr_,
-                                                       rocsparse_index_base ubase_,
-                                                       void*                buffer_)
+rocsparse_status rocsparse::csxsldu_preprocess_template(rocsparse_handle     handle_,
+                                                        rocsparse_direction  dir_,
+                                                        J                    m_,
+                                                        J                    n_,
+                                                        I                    nnz_,
+                                                        const I*             ptr_,
+                                                        const J*             ind_,
+                                                        const T*             val_,
+                                                        rocsparse_index_base base_,
+                                                        rocsparse_diag_type  ldiag_,
+                                                        rocsparse_direction  ldir_,
+                                                        I*                   host_lnnz_,
+                                                        I*                   lptr_,
+                                                        rocsparse_index_base lbase_,
+                                                        rocsparse_diag_type  udiag_,
+                                                        rocsparse_direction  udir_,
+                                                        I*                   host_unnz_,
+                                                        I*                   uptr_,
+                                                        rocsparse_index_base ubase_,
+                                                        void*                buffer_)
 {
     const I              ubase              = static_cast<I>(ubase_);
     const I              lbase              = static_cast<I>(lbase_);
@@ -225,10 +228,10 @@ rocsparse_status rocsparse_csxsldu_preprocess_template(rocsparse_handle     hand
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
         J    nblocks = (m_ - 1) / nthreads_per_block + 1;
         dim3 blocks(nblocks);
-        rocsparse_csxtril_count_kernel_dispatch<nthreads_per_block, I, J>(
+        rocsparse::csxtril_count_kernel_dispatch<nthreads_per_block, I, J>(
             handle_, blocks, threads, ldiag_, udiag_, m_, ptr_, ind_, base_, lptr, uptr);
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_inclusive_scan(handle_, m_, lptr));
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_inclusive_scan(handle_, m_, uptr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::inclusive_scan(handle_, m_, lptr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::inclusive_scan(handle_, m_, uptr));
         break;
     }
 
@@ -236,10 +239,10 @@ rocsparse_status rocsparse_csxsldu_preprocess_template(rocsparse_handle     hand
     {
         J    nblocks = (n_ - 1) / nthreads_per_block + 1;
         dim3 blocks(nblocks);
-        rocsparse_csxtril_count_kernel_dispatch<nthreads_per_block, I, J>(
+        rocsparse::csxtril_count_kernel_dispatch<nthreads_per_block, I, J>(
             handle_, blocks, threads, udiag_, ldiag_, n_, ptr_, ind_, base_, uptr, lptr);
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_inclusive_scan(handle_, n_, lptr));
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_inclusive_scan(handle_, n_, uptr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::inclusive_scan(handle_, n_, lptr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::inclusive_scan(handle_, n_, uptr));
         break;
     }
     }
@@ -255,27 +258,27 @@ rocsparse_status rocsparse_csxsldu_preprocess_template(rocsparse_handle     hand
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(TOK, T, I, J)                                          \
-    template rocsparse_status rocsparse_csxsldu_preprocess_##TOK<T, I, J>( \
-        rocsparse_handle     handle_,                                      \
-        rocsparse_direction  dir_,                                         \
-        J                    m_,                                           \
-        J                    n_,                                           \
-        I                    nnz_,                                         \
-        const I*             ptr_,                                         \
-        const J*             ind_,                                         \
-        const T*             val_,                                         \
-        rocsparse_index_base base_,                                        \
-        rocsparse_diag_type  ldiag_,                                       \
-        rocsparse_direction  ldir_,                                        \
-        I*                   lnnz_,                                        \
-        I*                   lptr_,                                        \
-        rocsparse_index_base lbase_,                                       \
-        rocsparse_diag_type  udiag_,                                       \
-        rocsparse_direction  udir_,                                        \
-        I*                   unnz_,                                        \
-        I*                   uptr_,                                        \
-        rocsparse_index_base ubase_,                                       \
+#define INSTANTIATE(TOK, T, I, J)                                           \
+    template rocsparse_status rocsparse::csxsldu_preprocess_##TOK<T, I, J>( \
+        rocsparse_handle     handle_,                                       \
+        rocsparse_direction  dir_,                                          \
+        J                    m_,                                            \
+        J                    n_,                                            \
+        I                    nnz_,                                          \
+        const I*             ptr_,                                          \
+        const J*             ind_,                                          \
+        const T*             val_,                                          \
+        rocsparse_index_base base_,                                         \
+        rocsparse_diag_type  ldiag_,                                        \
+        rocsparse_direction  ldir_,                                         \
+        I*                   lnnz_,                                         \
+        I*                   lptr_,                                         \
+        rocsparse_index_base lbase_,                                        \
+        rocsparse_diag_type  udiag_,                                        \
+        rocsparse_direction  udir_,                                         \
+        I*                   unnz_,                                         \
+        I*                   uptr_,                                         \
+        rocsparse_index_base ubase_,                                        \
         void*                buffer_)
 
 INSTANTIATE(template, rocsparse_int, rocsparse_int, rocsparse_int);
@@ -286,54 +289,54 @@ INSTANTIATE(template, rocsparse_double_complex, rocsparse_int, rocsparse_int);
 
 #undef INSTANTIATE
 
-#define C_IMPL(NAME, TYPE)                                                           \
-    extern "C" rocsparse_status NAME(rocsparse_handle     handle_,                   \
-                                     rocsparse_direction  dir_,                      \
-                                     rocsparse_int        m_,                        \
-                                     rocsparse_int        n_,                        \
-                                     rocsparse_int        nnz_,                      \
-                                     const rocsparse_int* ptr_,                      \
-                                     const rocsparse_int* ind_,                      \
-                                     const TYPE*          val_,                      \
-                                     rocsparse_index_base base_,                     \
-                                     rocsparse_diag_type  ldiag_type_,               \
-                                     rocsparse_direction  ldir_,                     \
-                                     rocsparse_int*       lnnz_,                     \
-                                     rocsparse_int*       lptr_,                     \
-                                     rocsparse_index_base lbase_,                    \
-                                     rocsparse_diag_type  udiag_type_,               \
-                                     rocsparse_direction  udir_,                     \
-                                     rocsparse_int*       unnz_,                     \
-                                     rocsparse_int*       uptr_,                     \
-                                     rocsparse_index_base ubase_,                    \
-                                     void*                buffer_)                   \
-    try                                                                              \
-    {                                                                                \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csxsldu_preprocess_template(handle_,     \
-                                                                        dir_,        \
-                                                                        m_,          \
-                                                                        n_,          \
-                                                                        nnz_,        \
-                                                                        ptr_,        \
-                                                                        ind_,        \
-                                                                        val_,        \
-                                                                        base_,       \
-                                                                        ldiag_type_, \
-                                                                        ldir_,       \
-                                                                        lnnz_,       \
-                                                                        lptr_,       \
-                                                                        lbase_,      \
-                                                                        udiag_type_, \
-                                                                        udir_,       \
-                                                                        unnz_,       \
-                                                                        uptr_,       \
-                                                                        ubase_,      \
-                                                                        buffer_));   \
-        return rocsparse_status_success;                                             \
-    }                                                                                \
-    catch(...)                                                                       \
-    {                                                                                \
-        RETURN_ROCSPARSE_EXCEPTION();                                                \
+#define C_IMPL(NAME, TYPE)                                                            \
+    extern "C" rocsparse_status NAME(rocsparse_handle     handle_,                    \
+                                     rocsparse_direction  dir_,                       \
+                                     rocsparse_int        m_,                         \
+                                     rocsparse_int        n_,                         \
+                                     rocsparse_int        nnz_,                       \
+                                     const rocsparse_int* ptr_,                       \
+                                     const rocsparse_int* ind_,                       \
+                                     const TYPE*          val_,                       \
+                                     rocsparse_index_base base_,                      \
+                                     rocsparse_diag_type  ldiag_type_,                \
+                                     rocsparse_direction  ldir_,                      \
+                                     rocsparse_int*       lnnz_,                      \
+                                     rocsparse_int*       lptr_,                      \
+                                     rocsparse_index_base lbase_,                     \
+                                     rocsparse_diag_type  udiag_type_,                \
+                                     rocsparse_direction  udir_,                      \
+                                     rocsparse_int*       unnz_,                      \
+                                     rocsparse_int*       uptr_,                      \
+                                     rocsparse_index_base ubase_,                     \
+                                     void*                buffer_)                    \
+    try                                                                               \
+    {                                                                                 \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csxsldu_preprocess_template(handle_,     \
+                                                                         dir_,        \
+                                                                         m_,          \
+                                                                         n_,          \
+                                                                         nnz_,        \
+                                                                         ptr_,        \
+                                                                         ind_,        \
+                                                                         val_,        \
+                                                                         base_,       \
+                                                                         ldiag_type_, \
+                                                                         ldir_,       \
+                                                                         lnnz_,       \
+                                                                         lptr_,       \
+                                                                         lbase_,      \
+                                                                         udiag_type_, \
+                                                                         udir_,       \
+                                                                         unnz_,       \
+                                                                         uptr_,       \
+                                                                         ubase_,      \
+                                                                         buffer_));   \
+        return rocsparse_status_success;                                              \
+    }                                                                                 \
+    catch(...)                                                                        \
+    {                                                                                 \
+        RETURN_ROCSPARSE_EXCEPTION();                                                 \
     }
 
 C_IMPL(rocsparse_scsxsldu_preprocess, float);
