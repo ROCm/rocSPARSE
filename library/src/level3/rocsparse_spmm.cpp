@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -775,7 +775,7 @@ static inline rocsparse_status rocsparse_spmm_dynamic_dispatch(rocsparse_indexty
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
-static rocsparse_indextype determine_I_index_type(rocsparse_const_spmat_descr mat)
+rocsparse_indextype determine_I_index_type(rocsparse_const_spmat_descr mat)
 {
     switch(mat->format)
     {
@@ -795,7 +795,7 @@ static rocsparse_indextype determine_I_index_type(rocsparse_const_spmat_descr ma
     }
 }
 
-static rocsparse_indextype determine_J_index_type(rocsparse_const_spmat_descr mat)
+rocsparse_indextype determine_J_index_type(rocsparse_const_spmat_descr mat)
 {
     switch(mat->format)
     {

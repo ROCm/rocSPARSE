@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,278 +28,266 @@
 #include "rocsparse_csrmv.hpp"
 #include "utility.h"
 
-template <unsigned int BLOCKSIZE, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel_count_missing_diagonal(J m,
-                                   const I* __restrict__ ptr_diag_,
-                                   J ptr_shift_,
-                                   const J* __restrict__ ind_,
-                                   rocsparse_index_base base_,
-                                   J* __restrict__ count,
-                                   rocsparse_int* __restrict__ position)
+namespace rocsparse
 {
-    const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
-    if(tid < m)
+    template <unsigned int BLOCKSIZE, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel_count_missing_diagonal(J m,
+                                       const I* __restrict__ ptr_diag_,
+                                       J ptr_shift_,
+                                       const J* __restrict__ ind_,
+                                       rocsparse_index_base base_,
+                                       J* __restrict__ count,
+                                       rocsparse_int* __restrict__ position)
     {
-        const J c = (((ind_[ptr_diag_[tid] - base_ + ptr_shift_] - base_) != tid) ? 1 : 0);
-        if(c > 0)
+        const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+        if(tid < m)
         {
-            const rocsparse_int p = (tid + base_);
-            rocsparse_atomic_min(position, p);
-            rocsparse_atomic_add(count, c);
-        }
-    }
-}
-
-template <rocsparse_fill_mode FILL_MODE, unsigned int BLOCKSIZE, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel_count_missing_diagonal2(J m,
-                                    const I* __restrict__ ptr_,
-                                    const J* __restrict__ ind_,
-                                    rocsparse_index_base base_,
-                                    J* __restrict__ count,
-                                    rocsparse_int* __restrict__ position)
-{
-    const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
-    if(tid < m)
-    {
-        static constexpr int shift = (FILL_MODE == rocsparse_fill_mode_lower) ? 1 : 0;
-        const J c = (((ind_[ptr_[tid + shift] - shift - base_] - base_) != tid) ? 1 : 0);
-        if(c > 0)
-        {
-            const rocsparse_int p = (tid + base_);
-            rocsparse_atomic_min(position, p);
-            rocsparse_atomic_add(count, c);
-        }
-    }
-}
-
-template <rocsparse_fill_mode FILL_MODE, unsigned int BLOCKSIZE, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel_count_diagonal_triangular(J m,
-                                      const I* __restrict__ ptr_,
-                                      const J* __restrict__ ind_,
-                                      rocsparse_index_base base_,
-                                      J* __restrict__ count)
-{
-    const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
-    if(tid < m)
-    {
-        static constexpr int shift = (FILL_MODE == rocsparse_fill_mode_lower) ? 1 : 0;
-        const J c = (((ind_[ptr_[tid + shift] - shift - base_] - base_) == tid) ? 1 : 0);
-        if(c > 0)
-        {
-            rocsparse_atomic_add(count, c);
-        }
-    }
-}
-
-template <unsigned int BLOCKSIZE, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel_ptr_end_unit(J m,
-                         const I* __restrict__ ptr_,
-                         const J* __restrict__ ind_,
-                         I* __restrict__ ptr_end,
-                         rocsparse_index_base base)
-{
-    const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
-    if(tid < m)
-    {
-        ptr_end[tid] = ptr_[tid + 1];
-        for(I k = ptr_[tid] - base; k < ptr_[tid + 1] - base; ++k)
-        {
-            if(ind_[k] - base >= tid)
+            const J c = (((ind_[ptr_diag_[tid] - base_ + ptr_shift_] - base_) != tid) ? 1 : 0);
+            if(c > 0)
             {
-                ptr_end[tid] = k + base;
-                break;
+                const rocsparse_int p = (tid + base_);
+                rocsparse_atomic_min(position, p);
+                rocsparse_atomic_add(count, c);
             }
         }
     }
-}
 
-template <unsigned int BLOCKSIZE, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel_ptr_end_non_unit(J m,
+    template <rocsparse_fill_mode FILL_MODE, unsigned int BLOCKSIZE, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel_count_missing_diagonal2(J m,
+                                        const I* __restrict__ ptr_,
+                                        const J* __restrict__ ind_,
+                                        rocsparse_index_base base_,
+                                        J* __restrict__ count,
+                                        rocsparse_int* __restrict__ position)
+    {
+        const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+        if(tid < m)
+        {
+            static constexpr int shift = (FILL_MODE == rocsparse_fill_mode_lower) ? 1 : 0;
+            const J c = (((ind_[ptr_[tid + shift] - shift - base_] - base_) != tid) ? 1 : 0);
+            if(c > 0)
+            {
+                const rocsparse_int p = (tid + base_);
+                rocsparse_atomic_min(position, p);
+                rocsparse_atomic_add(count, c);
+            }
+        }
+    }
+
+    template <rocsparse_fill_mode FILL_MODE, unsigned int BLOCKSIZE, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel_count_diagonal_triangular(J m,
+                                          const I* __restrict__ ptr_,
+                                          const J* __restrict__ ind_,
+                                          rocsparse_index_base base_,
+                                          J* __restrict__ count)
+    {
+        const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+        if(tid < m)
+        {
+            static constexpr int shift = (FILL_MODE == rocsparse_fill_mode_lower) ? 1 : 0;
+            const J c = (((ind_[ptr_[tid + shift] - shift - base_] - base_) == tid) ? 1 : 0);
+            if(c > 0)
+            {
+                rocsparse_atomic_add(count, c);
+            }
+        }
+    }
+
+    template <unsigned int BLOCKSIZE, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel_ptr_end_unit(J m,
                              const I* __restrict__ ptr_,
                              const J* __restrict__ ind_,
                              I* __restrict__ ptr_end,
                              rocsparse_index_base base)
-{
-    unsigned int tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
-    if(tid < m)
     {
-        ptr_end[tid] = ptr_[tid + 1];
-        for(I k = ptr_[tid] - base; k < ptr_[tid + 1] - base; ++k)
+        const J tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+        if(tid < m)
         {
-            if(ind_[k] - base > tid)
+            ptr_end[tid] = ptr_[tid + 1];
+            for(I k = ptr_[tid] - base; k < ptr_[tid + 1] - base; ++k)
             {
-                ptr_end[tid] = k + base;
-                break;
+                if(ind_[k] - base >= tid)
+                {
+                    ptr_end[tid] = k + base;
+                    break;
+                }
             }
         }
     }
-}
 
-template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handle,
-                                                 rocsparse_operation       trans,
-                                                 J                         m,
-                                                 I                         nnz,
-                                                 const rocsparse_mat_descr descr,
-                                                 const T*                  csr_val,
-                                                 const I*                  csr_row_ptr,
-                                                 const J*                  csr_col_ind,
-                                                 rocsparse_csritsv_info    info,
-                                                 rocsparse_int**           zero_pivot,
-                                                 void*                     temp_buffer)
-{
-    // Allocate buffer to hold zero pivot
-    if(zero_pivot[0] == nullptr)
+    template <unsigned int BLOCKSIZE, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel_ptr_end_non_unit(J m,
+                                 const I* __restrict__ ptr_,
+                                 const J* __restrict__ ind_,
+                                 I* __restrict__ ptr_end,
+                                 rocsparse_index_base base)
     {
-        RETURN_IF_HIP_ERROR(
-            rocsparse_hipMallocAsync((void**)zero_pivot, sizeof(rocsparse_int), handle->stream));
+        unsigned int tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+        if(tid < m)
+        {
+            ptr_end[tid] = ptr_[tid + 1];
+            for(I k = ptr_[tid] - base; k < ptr_[tid + 1] - base; ++k)
+            {
+                if(ind_[k] - base > tid)
+                {
+                    ptr_end[tid] = k + base;
+                    break;
+                }
+            }
+        }
     }
 
-    // Initialize zero pivot
-    rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
-    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-        zero_pivot[0], &max, sizeof(rocsparse_int), hipMemcpyHostToDevice, handle->stream));
-
-    const rocsparse_fill_mode fill_mode = descr->fill_mode;
-    const rocsparse_diag_type diag_type = descr->diag_type;
-
-    if(nnz == 0)
+    template <typename I, typename J, typename T>
+    rocsparse_status csritsv_info_analysis(rocsparse_handle          handle,
+                                           rocsparse_operation       trans,
+                                           J                         m,
+                                           I                         nnz,
+                                           const rocsparse_mat_descr descr,
+                                           const T*                  csr_val,
+                                           const I*                  csr_row_ptr,
+                                           const J*                  csr_col_ind,
+                                           rocsparse_csritsv_info    info,
+                                           rocsparse_int**           zero_pivot,
+                                           void*                     temp_buffer)
     {
+        // Allocate buffer to hold zero pivot
+        if(zero_pivot[0] == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+                (void**)zero_pivot, sizeof(rocsparse_int), handle->stream));
+        }
+
+        // Initialize zero pivot
+        rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            zero_pivot[0], &max, sizeof(rocsparse_int), hipMemcpyHostToDevice, handle->stream));
+
+        const rocsparse_fill_mode fill_mode = descr->fill_mode;
+        const rocsparse_diag_type diag_type = descr->diag_type;
+
+        if(nnz == 0)
+        {
+            if(diag_type == rocsparse_diag_type_non_unit)
+            {
+                const rocsparse_int b = (rocsparse_int)descr->base;
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(zero_pivot[0],
+                                                   &b,
+                                                   sizeof(rocsparse_int),
+                                                   hipMemcpyHostToDevice,
+                                                   handle->stream));
+                return rocsparse_status_success;
+            }
+        }
+
+        static constexpr unsigned int BLOCKSIZE = 1024;
+        switch(descr->type)
+        {
+        case rocsparse_matrix_type_general:
+        {
+            //
+            // we need to compute ptr_end and store it in info.
+            //
+            info->ptr_end_indextype = rocsparse_indextype_i32;
+            if(sizeof(I) > sizeof(int32_t))
+            {
+                info->ptr_end_indextype = rocsparse_indextype_i64;
+            }
+            info->ptr_end_size = m;
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&info->ptr_end, sizeof(I) * m, handle->stream));
+            info->is_submatrix = true;
+
+            //
+            // Compute ptr_end.
+            //
+
+            if((fill_mode == rocsparse_fill_mode_lower && diag_type == rocsparse_diag_type_unit)
+               || (fill_mode == rocsparse_fill_mode_upper
+                   && diag_type == rocsparse_diag_type_non_unit))
+            {
+
+                dim3 blocks((m - 1) / BLOCKSIZE + 1);
+                dim3 threads(BLOCKSIZE);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::kernel_ptr_end_unit<1024, I, J>),
+                                                   blocks,
+                                                   threads,
+                                                   0,
+                                                   handle->stream,
+                                                   m,
+                                                   csr_row_ptr,
+                                                   csr_col_ind,
+                                                   (I*)info->ptr_end,
+                                                   descr->base);
+            }
+            else if((fill_mode == rocsparse_fill_mode_lower
+                     && diag_type == rocsparse_diag_type_non_unit)
+                    || (fill_mode == rocsparse_fill_mode_upper
+                        && diag_type == rocsparse_diag_type_unit))
+            {
+
+                dim3 blocks((m - 1) / BLOCKSIZE + 1);
+                dim3 threads(BLOCKSIZE);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::kernel_ptr_end_non_unit<1024, I, J>),
+                                                   blocks,
+                                                   threads,
+                                                   0,
+                                                   handle->stream,
+                                                   m,
+                                                   csr_row_ptr,
+                                                   csr_col_ind,
+                                                   (I*)info->ptr_end,
+                                                   descr->base);
+            }
+
+            break;
+        }
+
+        case rocsparse_matrix_type_triangular:
+        {
+            info->ptr_end_indextype = rocsparse_indextype_i32;
+            if(sizeof(I) > sizeof(int32_t))
+            {
+                info->ptr_end_indextype = rocsparse_indextype_i64;
+            }
+            info->ptr_end_size = m;
+            info->ptr_end      = (void*)(csr_row_ptr + 1);
+            info->is_submatrix = false;
+            break;
+        }
+
+        case rocsparse_matrix_type_symmetric:
+        case rocsparse_matrix_type_hermitian:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
+        }
+        }
+
+        //
+        // count missing diagonal.
+        //
         if(diag_type == rocsparse_diag_type_non_unit)
         {
-            const rocsparse_int b = (rocsparse_int)descr->base;
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-                zero_pivot[0], &b, sizeof(rocsparse_int), hipMemcpyHostToDevice, handle->stream));
-            return rocsparse_status_success;
-        }
-    }
 
-    static constexpr unsigned int BLOCKSIZE = 1024;
-    switch(descr->type)
-    {
-    case rocsparse_matrix_type_general:
-    {
-        //
-        // we need to compute ptr_end and store it in info.
-        //
-        info->ptr_end_indextype = rocsparse_indextype_i32;
-        if(sizeof(I) > sizeof(int32_t))
-        {
-            info->ptr_end_indextype = rocsparse_indextype_i64;
-        }
-        info->ptr_end_size = m;
-        RETURN_IF_HIP_ERROR(
-            rocsparse_hipMallocAsync(&info->ptr_end, sizeof(I) * m, handle->stream));
-        info->is_submatrix = true;
-
-        //
-        // Compute ptr_end.
-        //
-
-        if((fill_mode == rocsparse_fill_mode_lower && diag_type == rocsparse_diag_type_unit)
-           || (fill_mode == rocsparse_fill_mode_upper && diag_type == rocsparse_diag_type_non_unit))
-        {
-
-            dim3 blocks((m - 1) / BLOCKSIZE + 1);
-            dim3 threads(BLOCKSIZE);
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_ptr_end_unit<1024, I, J>),
-                                               blocks,
-                                               threads,
-                                               0,
-                                               handle->stream,
-                                               m,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               (I*)info->ptr_end,
-                                               descr->base);
-        }
-        else if((fill_mode == rocsparse_fill_mode_lower
-                 && diag_type == rocsparse_diag_type_non_unit)
-                || (fill_mode == rocsparse_fill_mode_upper
-                    && diag_type == rocsparse_diag_type_unit))
-        {
-
-            dim3 blocks((m - 1) / BLOCKSIZE + 1);
-            dim3 threads(BLOCKSIZE);
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_ptr_end_non_unit<1024, I, J>),
-                                               blocks,
-                                               threads,
-                                               0,
-                                               handle->stream,
-                                               m,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               (I*)info->ptr_end,
-                                               descr->base);
-        }
-
-        break;
-    }
-
-    case rocsparse_matrix_type_triangular:
-    {
-        info->ptr_end_indextype = rocsparse_indextype_i32;
-        if(sizeof(I) > sizeof(int32_t))
-        {
-            info->ptr_end_indextype = rocsparse_indextype_i64;
-        }
-        info->ptr_end_size = m;
-        info->ptr_end      = (void*)(csr_row_ptr + 1);
-        info->is_submatrix = false;
-        break;
-    }
-
-    case rocsparse_matrix_type_symmetric:
-    case rocsparse_matrix_type_hermitian:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
-    }
-    }
-
-    //
-    // count missing diagonal.
-    //
-    if(diag_type == rocsparse_diag_type_non_unit)
-    {
-
-        RETURN_IF_HIP_ERROR(hipMemsetAsync(temp_buffer, 0, sizeof(J), handle->stream));
-        if(info->is_submatrix)
-        {
-            const J ptr_shift = (fill_mode == rocsparse_fill_mode_upper) ? 0 : -1;
-            dim3    blocks((m - 1) / BLOCKSIZE + 1);
-            dim3    threads(BLOCKSIZE);
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_count_missing_diagonal<1024, I, J>),
-                                               blocks,
-                                               threads,
-                                               0,
-                                               handle->stream,
-                                               m,
-                                               (const I*)info->ptr_end,
-                                               ptr_shift,
-                                               csr_col_ind,
-                                               descr->base,
-                                               (J*)temp_buffer,
-                                               zero_pivot[0]);
-        }
-        else
-        {
-            dim3 blocks((m - 1) / BLOCKSIZE + 1);
-            dim3 threads(BLOCKSIZE);
-            if(fill_mode == rocsparse_fill_mode_lower)
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(temp_buffer, 0, sizeof(J), handle->stream));
+            if(info->is_submatrix)
             {
+                const J ptr_shift = (fill_mode == rocsparse_fill_mode_upper) ? 0 : -1;
+                dim3    blocks((m - 1) / BLOCKSIZE + 1);
+                dim3    threads(BLOCKSIZE);
                 RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (kernel_count_missing_diagonal2<rocsparse_fill_mode_lower, 1024, I, J>),
+                    (rocsparse::kernel_count_missing_diagonal<1024, I, J>),
                     blocks,
                     threads,
                     0,
                     handle->stream,
                     m,
-                    csr_row_ptr,
+                    (const I*)info->ptr_end,
+                    ptr_shift,
                     csr_col_ind,
                     descr->base,
                     (J*)temp_buffer,
@@ -307,121 +295,146 @@ rocsparse_status rocsparse_csritsv_info_analysis(rocsparse_handle          handl
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (kernel_count_missing_diagonal2<rocsparse_fill_mode_upper, 1024, I, J>),
-                    blocks,
-                    threads,
-                    0,
-                    handle->stream,
-                    m,
-                    csr_row_ptr,
-                    csr_col_ind,
-                    descr->base,
-                    (J*)temp_buffer,
-                    zero_pivot[0]);
+                dim3 blocks((m - 1) / BLOCKSIZE + 1);
+                dim3 threads(BLOCKSIZE);
+                if(fill_mode == rocsparse_fill_mode_lower)
+                {
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (rocsparse::
+                             kernel_count_missing_diagonal2<rocsparse_fill_mode_lower, 1024, I, J>),
+                        blocks,
+                        threads,
+                        0,
+                        handle->stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        descr->base,
+                        (J*)temp_buffer,
+                        zero_pivot[0]);
+                }
+                else
+                {
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (rocsparse::
+                             kernel_count_missing_diagonal2<rocsparse_fill_mode_upper, 1024, I, J>),
+                        blocks,
+                        threads,
+                        0,
+                        handle->stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        descr->base,
+                        (J*)temp_buffer,
+                        zero_pivot[0]);
+                }
             }
-        }
-        J count_missing_diagonal;
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&count_missing_diagonal,
-                                           temp_buffer,
-                                           sizeof(J),
-                                           hipMemcpyDeviceToHost,
-                                           handle->stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+            J count_missing_diagonal;
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&count_missing_diagonal,
+                                               temp_buffer,
+                                               sizeof(J),
+                                               hipMemcpyDeviceToHost,
+                                               handle->stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-        if(count_missing_diagonal > 0)
-        {
-            //
-            // zero pivot.
-            //
-            return rocsparse_status_success;
-        }
-    }
-    else
-    {
-        if(descr->type == rocsparse_matrix_type_triangular)
-        {
-            if(false == info->is_submatrix)
+            if(count_missing_diagonal > 0)
             {
-                J count_diagonal = 0;
-                if(nnz > 0)
+                //
+                // zero pivot.
+                //
+                return rocsparse_status_success;
+            }
+        }
+        else
+        {
+            if(descr->type == rocsparse_matrix_type_triangular)
+            {
+                if(false == info->is_submatrix)
                 {
-                    //
-                    // We nned to check diagonal element are not present.
-                    //
-                    RETURN_IF_HIP_ERROR(hipMemsetAsync(temp_buffer, 0, sizeof(J), handle->stream));
-
-                    dim3 blocks((m - 1) / BLOCKSIZE + 1);
-                    dim3 threads(BLOCKSIZE);
-                    if(fill_mode == rocsparse_fill_mode_lower)
+                    J count_diagonal = 0;
+                    if(nnz > 0)
                     {
-                        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                            (kernel_count_diagonal_triangular<rocsparse_fill_mode_lower,
-                                                              1024,
-                                                              I,
-                                                              J>),
-                            blocks,
-                            threads,
-                            0,
-                            handle->stream,
-                            m,
-                            csr_row_ptr,
-                            csr_col_ind,
-                            descr->base,
-                            (J*)temp_buffer);
+                        //
+                        // We nned to check diagonal element are not present.
+                        //
+                        RETURN_IF_HIP_ERROR(
+                            hipMemsetAsync(temp_buffer, 0, sizeof(J), handle->stream));
+
+                        dim3 blocks((m - 1) / BLOCKSIZE + 1);
+                        dim3 threads(BLOCKSIZE);
+                        if(fill_mode == rocsparse_fill_mode_lower)
+                        {
+                            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                                (rocsparse::kernel_count_diagonal_triangular<
+                                    rocsparse_fill_mode_lower,
+                                    1024,
+                                    I,
+                                    J>),
+                                blocks,
+                                threads,
+                                0,
+                                handle->stream,
+                                m,
+                                csr_row_ptr,
+                                csr_col_ind,
+                                descr->base,
+                                (J*)temp_buffer);
+                        }
+                        else
+                        {
+                            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                                (rocsparse::kernel_count_diagonal_triangular<
+                                    rocsparse_fill_mode_upper,
+                                    1024,
+                                    I,
+                                    J>),
+                                blocks,
+                                threads,
+                                0,
+                                handle->stream,
+                                m,
+                                csr_row_ptr,
+                                csr_col_ind,
+                                descr->base,
+                                (J*)temp_buffer);
+                        }
+
+                        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&count_diagonal,
+                                                           temp_buffer,
+                                                           sizeof(J),
+                                                           hipMemcpyDeviceToHost,
+                                                           handle->stream));
+                        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
                     }
-                    else
+
+                    if(count_diagonal > 0)
                     {
-                        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                            (kernel_count_diagonal_triangular<rocsparse_fill_mode_upper,
-                                                              1024,
-                                                              I,
-                                                              J>),
-                            blocks,
-                            threads,
-                            0,
-                            handle->stream,
-                            m,
-                            csr_row_ptr,
-                            csr_col_ind,
-                            descr->base,
-                            (J*)temp_buffer);
+                        std::cout << "The matrix is specified as unit triangular but contains "
+                                  << count_diagonal << " diagonal element(s)." << std::endl;
+                        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
                     }
-
-                    RETURN_IF_HIP_ERROR(hipMemcpyAsync(&count_diagonal,
-                                                       temp_buffer,
-                                                       sizeof(J),
-                                                       hipMemcpyDeviceToHost,
-                                                       handle->stream));
-                    RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-                }
-
-                if(count_diagonal > 0)
-                {
-                    std::cout << "The matrix is specified as unit triangular but contains "
-                              << count_diagonal << " diagonal element(s)." << std::endl;
-                    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
                 }
             }
         }
-    }
 
-    return rocsparse_status_success;
+        return rocsparse_status_success;
+    }
 }
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csritsv_analysis_template(rocsparse_handle          handle,
-                                                     rocsparse_operation       trans,
-                                                     J                         m,
-                                                     I                         nnz,
-                                                     const rocsparse_mat_descr descr,
-                                                     const T*                  csr_val,
-                                                     const I*                  csr_row_ptr,
-                                                     const J*                  csr_col_ind,
-                                                     rocsparse_mat_info        info,
-                                                     rocsparse_analysis_policy analysis,
-                                                     rocsparse_solve_policy    solve,
-                                                     void*                     temp_buffer)
+rocsparse_status rocsparse::csritsv_analysis_template(rocsparse_handle          handle,
+                                                      rocsparse_operation       trans,
+                                                      J                         m,
+                                                      I                         nnz,
+                                                      const rocsparse_mat_descr descr,
+                                                      const T*                  csr_val,
+                                                      const I*                  csr_row_ptr,
+                                                      const J*                  csr_col_ind,
+                                                      rocsparse_mat_info        info,
+                                                      rocsparse_analysis_policy analysis,
+                                                      rocsparse_solve_policy    solve,
+                                                      void*                     temp_buffer)
 {
     // Quick return if possible
     if(m == 0)
@@ -454,17 +467,17 @@ rocsparse_status rocsparse_csritsv_analysis_template(rocsparse_handle          h
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csritsv_info(&info->csritsv_info));
 
     // Analyze the structure.
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csritsv_info_analysis(handle,
-                                                              trans,
-                                                              m,
-                                                              nnz,
-                                                              descr,
-                                                              csr_val,
-                                                              csr_row_ptr,
-                                                              csr_col_ind,
-                                                              info->csritsv_info,
-                                                              (rocsparse_int**)&info->zero_pivot,
-                                                              temp_buffer));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::csritsv_info_analysis(handle,
+                                                               trans,
+                                                               m,
+                                                               nnz,
+                                                               descr,
+                                                               csr_val,
+                                                               csr_row_ptr,
+                                                               csr_col_ind,
+                                                               info->csritsv_info,
+                                                               (rocsparse_int**)&info->zero_pivot,
+                                                               temp_buffer));
 
     //
     // Now, in case data are contiguous we can call csrmnv_analysis.
@@ -472,119 +485,122 @@ rocsparse_status rocsparse_csritsv_analysis_template(rocsparse_handle          h
 
     if(false == info->csritsv_info->is_submatrix)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_template(handle,
-                                                                    trans,
-                                                                    rocsparse_csrmv_alg_adaptive,
-                                                                    m,
-                                                                    m,
-                                                                    nnz,
-                                                                    descr,
-                                                                    csr_val,
-                                                                    csr_row_ptr,
-                                                                    csr_col_ind,
-                                                                    info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_analysis_template(handle,
+                                                                     trans,
+                                                                     rocsparse_csrmv_alg_adaptive,
+                                                                     m,
+                                                                     m,
+                                                                     nnz,
+                                                                     descr,
+                                                                     csr_val,
+                                                                     csr_row_ptr,
+                                                                     csr_col_ind,
+                                                                     info));
     }
 
     return rocsparse_status_success;
 }
 
-template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csritsv_analysis_impl(rocsparse_handle          handle,
-                                                 rocsparse_operation       trans,
-                                                 J                         m,
-                                                 I                         nnz,
-                                                 const rocsparse_mat_descr descr,
-                                                 const T*                  csr_val,
-                                                 const I*                  csr_row_ptr,
-                                                 const J*                  csr_col_ind,
-                                                 rocsparse_mat_info        info,
-                                                 rocsparse_analysis_policy analysis,
-                                                 rocsparse_solve_policy    solve,
-                                                 void*                     temp_buffer)
+namespace rocsparse
 {
+    template <typename I, typename J, typename T>
+    rocsparse_status csritsv_analysis_impl(rocsparse_handle          handle,
+                                           rocsparse_operation       trans,
+                                           J                         m,
+                                           I                         nnz,
+                                           const rocsparse_mat_descr descr,
+                                           const T*                  csr_val,
+                                           const I*                  csr_row_ptr,
+                                           const J*                  csr_col_ind,
+                                           rocsparse_mat_info        info,
+                                           rocsparse_analysis_policy analysis,
+                                           rocsparse_solve_policy    solve,
+                                           void*                     temp_buffer)
+    {
 
-    // Check for valid handle and matrix descriptor
-    ROCSPARSE_CHECKARG_HANDLE(0, handle);
-    ROCSPARSE_CHECKARG_POINTER(4, descr);
-    ROCSPARSE_CHECKARG_POINTER(8, info);
+        // Check for valid handle and matrix descriptor
+        ROCSPARSE_CHECKARG_HANDLE(0, handle);
+        ROCSPARSE_CHECKARG_POINTER(4, descr);
+        ROCSPARSE_CHECKARG_POINTER(8, info);
 
-    // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsritsv_analysis"),
-              trans,
-              m,
-              nnz,
-              (const void*&)descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)info,
-              solve,
-              analysis,
-              (const void*&)temp_buffer);
+        // Logging
+        log_trace(handle,
+                  replaceX<T>("rocsparse_Xcsritsv_analysis"),
+                  trans,
+                  m,
+                  nnz,
+                  (const void*&)descr,
+                  (const void*&)csr_val,
+                  (const void*&)csr_row_ptr,
+                  (const void*&)csr_col_ind,
+                  (const void*&)info,
+                  solve,
+                  analysis,
+                  (const void*&)temp_buffer);
 
-    ROCSPARSE_CHECKARG_ENUM(1, trans);
-    ROCSPARSE_CHECKARG_ENUM(9, analysis);
-    ROCSPARSE_CHECKARG_ENUM(10, solve);
+        ROCSPARSE_CHECKARG_ENUM(1, trans);
+        ROCSPARSE_CHECKARG_ENUM(9, analysis);
+        ROCSPARSE_CHECKARG_ENUM(10, solve);
 
-    // Check matrix type
-    ROCSPARSE_CHECKARG(4,
-                       descr,
-                       (descr->type != rocsparse_matrix_type_general
-                        && descr->type != rocsparse_matrix_type_triangular),
-                       rocsparse_status_not_implemented);
+        // Check matrix type
+        ROCSPARSE_CHECKARG(4,
+                           descr,
+                           (descr->type != rocsparse_matrix_type_general
+                            && descr->type != rocsparse_matrix_type_triangular),
+                           rocsparse_status_not_implemented);
 
-    // Check matrix sorting mode
-    ROCSPARSE_CHECKARG(4,
-                       descr,
-                       (descr->storage_mode != rocsparse_storage_mode_sorted),
-                       rocsparse_status_requires_sorted_storage);
+        // Check matrix sorting mode
+        ROCSPARSE_CHECKARG(4,
+                           descr,
+                           (descr->storage_mode != rocsparse_storage_mode_sorted),
+                           rocsparse_status_requires_sorted_storage);
 
-    // Check sizes
-    ROCSPARSE_CHECKARG_SIZE(2, m);
+        // Check sizes
+        ROCSPARSE_CHECKARG_SIZE(2, m);
 
-    ROCSPARSE_CHECKARG_SIZE(3, nnz);
+        ROCSPARSE_CHECKARG_SIZE(3, nnz);
 
-    ROCSPARSE_CHECKARG_ARRAY(6, m, csr_row_ptr);
+        ROCSPARSE_CHECKARG_ARRAY(6, m, csr_row_ptr);
 
-    ROCSPARSE_CHECKARG_ARRAY(5, nnz, csr_val);
+        ROCSPARSE_CHECKARG_ARRAY(5, nnz, csr_val);
 
-    ROCSPARSE_CHECKARG_ARRAY(7, nnz, csr_col_ind);
+        ROCSPARSE_CHECKARG_ARRAY(7, nnz, csr_col_ind);
 
-    // Check pointer arguments
-    ROCSPARSE_CHECKARG(11,
-                       temp_buffer,
-                       (m > 0 && nnz > 0 && temp_buffer == nullptr),
-                       rocsparse_status_invalid_pointer);
+        // Check pointer arguments
+        ROCSPARSE_CHECKARG(11,
+                           temp_buffer,
+                           (m > 0 && nnz > 0 && temp_buffer == nullptr),
+                           rocsparse_status_invalid_pointer);
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csritsv_analysis_template(handle,
-                                                                  trans,
-                                                                  m,
-                                                                  nnz,
-                                                                  descr,
-                                                                  csr_val,
-                                                                  csr_row_ptr,
-                                                                  csr_col_ind,
-                                                                  info,
-                                                                  analysis,
-                                                                  solve,
-                                                                  temp_buffer));
-    return rocsparse_status_success;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csritsv_analysis_template(handle,
+                                                                       trans,
+                                                                       m,
+                                                                       nnz,
+                                                                       descr,
+                                                                       csr_val,
+                                                                       csr_row_ptr,
+                                                                       csr_col_ind,
+                                                                       info,
+                                                                       analysis,
+                                                                       solve,
+                                                                       temp_buffer));
+        return rocsparse_status_success;
+    }
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                           \
-    template rocsparse_status rocsparse_csritsv_analysis_template( \
-        rocsparse_handle          handle,                          \
-        rocsparse_operation       trans,                           \
-        JTYPE                     m,                               \
-        ITYPE                     nnz,                             \
-        const rocsparse_mat_descr descr,                           \
-        const TTYPE*              csr_val,                         \
-        const ITYPE*              csr_row_ptr,                     \
-        const JTYPE*              csr_col_ind,                     \
-        rocsparse_mat_info        info,                            \
-        rocsparse_analysis_policy analysis,                        \
-        rocsparse_solve_policy    solve,                           \
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                            \
+    template rocsparse_status rocsparse::csritsv_analysis_template( \
+        rocsparse_handle          handle,                           \
+        rocsparse_operation       trans,                            \
+        JTYPE                     m,                                \
+        ITYPE                     nnz,                              \
+        const rocsparse_mat_descr descr,                            \
+        const TTYPE*              csr_val,                          \
+        const ITYPE*              csr_row_ptr,                      \
+        const JTYPE*              csr_col_ind,                      \
+        rocsparse_mat_info        info,                             \
+        rocsparse_analysis_policy analysis,                         \
+        rocsparse_solve_policy    solve,                            \
         void*                     temp_buffer);
 
 INSTANTIATE(int32_t, int32_t, float);
@@ -607,38 +623,38 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
  * ===========================================================================
  */
 
-#define C_IMPL(NAME, TYPE)                                                       \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,           \
-                                     rocsparse_operation       trans,            \
-                                     rocsparse_int             m,                \
-                                     rocsparse_int             nnz,              \
-                                     const rocsparse_mat_descr descr,            \
-                                     const TYPE*               csr_val,          \
-                                     const rocsparse_int*      csr_row_ptr,      \
-                                     const rocsparse_int*      csr_col_ind,      \
-                                     rocsparse_mat_info        info,             \
-                                     rocsparse_analysis_policy analysis,         \
-                                     rocsparse_solve_policy    solve,            \
-                                     void*                     temp_buffer)      \
-    try                                                                          \
-    {                                                                            \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csritsv_analysis_impl(handle,        \
-                                                                  trans,         \
-                                                                  m,             \
-                                                                  nnz,           \
-                                                                  descr,         \
-                                                                  csr_val,       \
-                                                                  csr_row_ptr,   \
-                                                                  csr_col_ind,   \
-                                                                  info,          \
-                                                                  analysis,      \
-                                                                  solve,         \
-                                                                  temp_buffer)); \
-        return rocsparse_status_success;                                         \
-    }                                                                            \
-    catch(...)                                                                   \
-    {                                                                            \
-        RETURN_ROCSPARSE_EXCEPTION();                                            \
+#define C_IMPL(NAME, TYPE)                                                        \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,            \
+                                     rocsparse_operation       trans,             \
+                                     rocsparse_int             m,                 \
+                                     rocsparse_int             nnz,               \
+                                     const rocsparse_mat_descr descr,             \
+                                     const TYPE*               csr_val,           \
+                                     const rocsparse_int*      csr_row_ptr,       \
+                                     const rocsparse_int*      csr_col_ind,       \
+                                     rocsparse_mat_info        info,              \
+                                     rocsparse_analysis_policy analysis,          \
+                                     rocsparse_solve_policy    solve,             \
+                                     void*                     temp_buffer)       \
+    try                                                                           \
+    {                                                                             \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csritsv_analysis_impl(handle,        \
+                                                                   trans,         \
+                                                                   m,             \
+                                                                   nnz,           \
+                                                                   descr,         \
+                                                                   csr_val,       \
+                                                                   csr_row_ptr,   \
+                                                                   csr_col_ind,   \
+                                                                   info,          \
+                                                                   analysis,      \
+                                                                   solve,         \
+                                                                   temp_buffer)); \
+        return rocsparse_status_success;                                          \
+    }                                                                             \
+    catch(...)                                                                    \
+    {                                                                             \
+        RETURN_ROCSPARSE_EXCEPTION();                                             \
     }
 
 C_IMPL(rocsparse_scsritsv_analysis, float);

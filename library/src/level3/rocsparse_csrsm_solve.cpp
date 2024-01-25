@@ -557,21 +557,21 @@ rocsparse_status rocsparse_csrsm_solve_core(rocsparse_handle          handle,
         temp_buffer         = reinterpret_cast<void*>(reinterpret_cast<char*>(temp_buffer)
                                               + ((sizeof(T) * m - 1) / 256 + 1) * 256);
         const int64_t b_inc = (trans_B == rocsparse_operation_none) ? 1 : ldb;
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_solve_template(handle,
-                                                                 trans_A,
-                                                                 m,
-                                                                 nnz,
-                                                                 alpha,
-                                                                 descr,
-                                                                 csr_val,
-                                                                 csr_row_ptr,
-                                                                 csr_col_ind,
-                                                                 info,
-                                                                 B,
-                                                                 b_inc,
-                                                                 y,
-                                                                 policy,
-                                                                 temp_buffer));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_solve_template(handle,
+                                                                  trans_A,
+                                                                  m,
+                                                                  nnz,
+                                                                  alpha,
+                                                                  descr,
+                                                                  csr_val,
+                                                                  csr_row_ptr,
+                                                                  csr_col_ind,
+                                                                  info,
+                                                                  B,
+                                                                  b_inc,
+                                                                  y,
+                                                                  policy,
+                                                                  temp_buffer));
 
         switch(trans_B)
         {

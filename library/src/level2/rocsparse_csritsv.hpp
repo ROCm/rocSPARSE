@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,47 +27,50 @@
 #include "handle.h"
 #include "utility.h"
 
-template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csritsv_buffer_size_template(rocsparse_handle          handle,
-                                                        rocsparse_operation       trans,
-                                                        J                         m,
-                                                        I                         nnz,
-                                                        const rocsparse_mat_descr descr,
-                                                        const T*                  csr_val,
-                                                        const I*                  csr_row_ptr,
-                                                        const J*                  csr_col_ind,
-                                                        rocsparse_mat_info        info,
-                                                        size_t*                   buffer_size);
-
-template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csritsv_analysis_template(rocsparse_handle          handle,
-                                                     rocsparse_operation       trans,
-                                                     J                         m,
-                                                     I                         nnz,
-                                                     const rocsparse_mat_descr descr,
-                                                     const T*                  csr_val,
-                                                     const I*                  csr_row_ptr,
-                                                     const J*                  csr_col_ind,
-                                                     rocsparse_mat_info        info,
-                                                     rocsparse_analysis_policy analysis,
-                                                     rocsparse_solve_policy    solve,
-                                                     void*                     temp_buffer);
-
-template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csritsv_solve_template(rocsparse_handle          handle,
-                                                  rocsparse_int*            host_nmaxiter,
-                                                  const floating_data_t<T>* host_tol,
-                                                  floating_data_t<T>*       host_history,
+namespace rocsparse
+{
+    template <typename I, typename J, typename T>
+    rocsparse_status csritsv_buffer_size_template(rocsparse_handle          handle,
                                                   rocsparse_operation       trans,
                                                   J                         m,
                                                   I                         nnz,
-                                                  const T*                  alpha,
                                                   const rocsparse_mat_descr descr,
                                                   const T*                  csr_val,
                                                   const I*                  csr_row_ptr,
                                                   const J*                  csr_col_ind,
                                                   rocsparse_mat_info        info,
-                                                  const T*                  x,
-                                                  T*                        y,
-                                                  rocsparse_solve_policy    policy,
-                                                  void*                     temp_buffer);
+                                                  size_t*                   buffer_size);
+
+    template <typename I, typename J, typename T>
+    rocsparse_status csritsv_analysis_template(rocsparse_handle          handle,
+                                               rocsparse_operation       trans,
+                                               J                         m,
+                                               I                         nnz,
+                                               const rocsparse_mat_descr descr,
+                                               const T*                  csr_val,
+                                               const I*                  csr_row_ptr,
+                                               const J*                  csr_col_ind,
+                                               rocsparse_mat_info        info,
+                                               rocsparse_analysis_policy analysis,
+                                               rocsparse_solve_policy    solve,
+                                               void*                     temp_buffer);
+
+    template <typename I, typename J, typename T>
+    rocsparse_status csritsv_solve_template(rocsparse_handle          handle,
+                                            rocsparse_int*            host_nmaxiter,
+                                            const floating_data_t<T>* host_tol,
+                                            floating_data_t<T>*       host_history,
+                                            rocsparse_operation       trans,
+                                            J                         m,
+                                            I                         nnz,
+                                            const T*                  alpha,
+                                            const rocsparse_mat_descr descr,
+                                            const T*                  csr_val,
+                                            const I*                  csr_row_ptr,
+                                            const J*                  csr_col_ind,
+                                            rocsparse_mat_info        info,
+                                            const T*                  x,
+                                            T*                        y,
+                                            rocsparse_solve_policy    policy,
+                                            void*                     temp_buffer);
+}

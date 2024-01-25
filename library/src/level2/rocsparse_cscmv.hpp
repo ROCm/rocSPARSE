@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,32 +28,35 @@
 
 #include "rocsparse_csrmv.hpp"
 
-template <typename I, typename J, typename A>
-rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          handle,
-                                                   rocsparse_operation       trans,
-                                                   rocsparse_csrmv_alg       alg,
-                                                   J                         m,
-                                                   J                         n,
-                                                   I                         nnz,
-                                                   const rocsparse_mat_descr descr,
-                                                   const A*                  csc_val,
-                                                   const I*                  csc_col_ptr,
-                                                   const J*                  csc_row_ind,
-                                                   rocsparse_mat_info        info);
+namespace rocsparse
+{
+    template <typename I, typename J, typename A>
+    rocsparse_status cscmv_analysis_template(rocsparse_handle          handle,
+                                             rocsparse_operation       trans,
+                                             rocsparse_csrmv_alg       alg,
+                                             J                         m,
+                                             J                         n,
+                                             I                         nnz,
+                                             const rocsparse_mat_descr descr,
+                                             const A*                  csc_val,
+                                             const I*                  csc_col_ptr,
+                                             const J*                  csc_row_ind,
+                                             rocsparse_mat_info        info);
 
-template <typename T, typename I, typename J, typename A, typename X, typename Y>
-rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,
-                                          rocsparse_operation       trans,
-                                          rocsparse_csrmv_alg       alg,
-                                          J                         m,
-                                          J                         n,
-                                          I                         nnz,
-                                          const T*                  alpha,
-                                          const rocsparse_mat_descr descr,
-                                          const A*                  csc_val,
-                                          const I*                  csc_col_ptr,
-                                          const J*                  csc_row_ind,
-                                          rocsparse_mat_info        info,
-                                          const X*                  x,
-                                          const T*                  beta,
-                                          Y*                        y);
+    template <typename T, typename I, typename J, typename A, typename X, typename Y>
+    rocsparse_status cscmv_template(rocsparse_handle          handle,
+                                    rocsparse_operation       trans,
+                                    rocsparse_csrmv_alg       alg,
+                                    J                         m,
+                                    J                         n,
+                                    I                         nnz,
+                                    const T*                  alpha,
+                                    const rocsparse_mat_descr descr,
+                                    const A*                  csc_val,
+                                    const I*                  csc_col_ptr,
+                                    const J*                  csc_row_ind,
+                                    rocsparse_mat_info        info,
+                                    const X*                  x,
+                                    const T*                  beta,
+                                    Y*                        y);
+}

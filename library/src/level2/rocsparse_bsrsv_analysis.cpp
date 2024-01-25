@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,20 +31,20 @@
 #include "../level2/rocsparse_csrsv.hpp"
 
 template <typename T>
-rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          handle,
-                                                   rocsparse_direction       dir,
-                                                   rocsparse_operation       trans,
-                                                   rocsparse_int             mb,
-                                                   rocsparse_int             nnzb,
-                                                   const rocsparse_mat_descr descr,
-                                                   const T*                  bsr_val,
-                                                   const rocsparse_int*      bsr_row_ptr,
-                                                   const rocsparse_int*      bsr_col_ind,
-                                                   rocsparse_int             block_dim,
-                                                   rocsparse_mat_info        info,
-                                                   rocsparse_analysis_policy analysis,
-                                                   rocsparse_solve_policy    solve,
-                                                   void*                     temp_buffer)
+rocsparse_status rocsparse::bsrsv_analysis_template(rocsparse_handle          handle,
+                                                    rocsparse_direction       dir,
+                                                    rocsparse_operation       trans,
+                                                    rocsparse_int             mb,
+                                                    rocsparse_int             nnzb,
+                                                    const rocsparse_mat_descr descr,
+                                                    const T*                  bsr_val,
+                                                    const rocsparse_int*      bsr_row_ptr,
+                                                    const rocsparse_int*      bsr_col_ind,
+                                                    rocsparse_int             block_dim,
+                                                    rocsparse_mat_info        info,
+                                                    rocsparse_analysis_policy analysis,
+                                                    rocsparse_solve_policy    solve,
+                                                    void*                     temp_buffer)
 {
     // Check for valid handle and matrix descriptor
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -161,7 +161,7 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
                                                                 : &info->bsrsvt_upper_info));
 
         // Perform analysis
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_trm_analysis(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(
             handle,
             trans,
             mb,
@@ -228,7 +228,7 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
                                                                 : &info->bsrsvt_lower_info));
 
         // Perform analysis
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_trm_analysis(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(
             handle,
             trans,
             mb,
@@ -246,42 +246,42 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
 }
 
 // bsrsv_analysis
-#define C_IMPL(NAME, TYPE)                                                         \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,             \
-                                     rocsparse_direction       dir,                \
-                                     rocsparse_operation       trans,              \
-                                     rocsparse_int             mb,                 \
-                                     rocsparse_int             nnzb,               \
-                                     const rocsparse_mat_descr descr,              \
-                                     const TYPE*               bsr_val,            \
-                                     const rocsparse_int*      bsr_row_ptr,        \
-                                     const rocsparse_int*      bsr_col_ind,        \
-                                     rocsparse_int             block_dim,          \
-                                     rocsparse_mat_info        info,               \
-                                     rocsparse_analysis_policy analysis,           \
-                                     rocsparse_solve_policy    solve,              \
-                                     void*                     temp_buffer)        \
-    try                                                                            \
-    {                                                                              \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrsv_analysis_template(handle,        \
-                                                                    dir,           \
-                                                                    trans,         \
-                                                                    mb,            \
-                                                                    nnzb,          \
-                                                                    descr,         \
-                                                                    bsr_val,       \
-                                                                    bsr_row_ptr,   \
-                                                                    bsr_col_ind,   \
-                                                                    block_dim,     \
-                                                                    info,          \
-                                                                    analysis,      \
-                                                                    solve,         \
-                                                                    temp_buffer)); \
-        return rocsparse_status_success;                                           \
-    }                                                                              \
-    catch(...)                                                                     \
-    {                                                                              \
-        RETURN_ROCSPARSE_EXCEPTION();                                              \
+#define C_IMPL(NAME, TYPE)                                                          \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,              \
+                                     rocsparse_direction       dir,                 \
+                                     rocsparse_operation       trans,               \
+                                     rocsparse_int             mb,                  \
+                                     rocsparse_int             nnzb,                \
+                                     const rocsparse_mat_descr descr,               \
+                                     const TYPE*               bsr_val,             \
+                                     const rocsparse_int*      bsr_row_ptr,         \
+                                     const rocsparse_int*      bsr_col_ind,         \
+                                     rocsparse_int             block_dim,           \
+                                     rocsparse_mat_info        info,                \
+                                     rocsparse_analysis_policy analysis,            \
+                                     rocsparse_solve_policy    solve,               \
+                                     void*                     temp_buffer)         \
+    try                                                                             \
+    {                                                                               \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::bsrsv_analysis_template(handle,        \
+                                                                     dir,           \
+                                                                     trans,         \
+                                                                     mb,            \
+                                                                     nnzb,          \
+                                                                     descr,         \
+                                                                     bsr_val,       \
+                                                                     bsr_row_ptr,   \
+                                                                     bsr_col_ind,   \
+                                                                     block_dim,     \
+                                                                     info,          \
+                                                                     analysis,      \
+                                                                     solve,         \
+                                                                     temp_buffer)); \
+        return rocsparse_status_success;                                            \
+    }                                                                               \
+    catch(...)                                                                      \
+    {                                                                               \
+        RETURN_ROCSPARSE_EXCEPTION();                                               \
     }
 
 C_IMPL(rocsparse_sbsrsv_analysis, float);

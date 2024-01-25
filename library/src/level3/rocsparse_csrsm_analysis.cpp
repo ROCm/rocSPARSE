@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,18 +54,18 @@ rocsparse_status rocsparse_csrsm_analysis_core(rocsparse_handle          handle,
         //
         // Call csrsv.
         //
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_analysis_template(handle,
-                                                                    trans_A,
-                                                                    m,
-                                                                    nnz,
-                                                                    descr,
-                                                                    csr_val,
-                                                                    csr_row_ptr,
-                                                                    csr_col_ind,
-                                                                    info,
-                                                                    analysis,
-                                                                    solve,
-                                                                    temp_buffer));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_analysis_template(handle,
+                                                                     trans_A,
+                                                                     m,
+                                                                     nnz,
+                                                                     descr,
+                                                                     csr_val,
+                                                                     csr_row_ptr,
+                                                                     csr_col_ind,
+                                                                     info,
+                                                                     analysis,
+                                                                     solve,
+                                                                     temp_buffer));
         return rocsparse_status_success;
     }
 
@@ -133,19 +133,19 @@ rocsparse_status rocsparse_csrsm_analysis_core(rocsparse_handle          handle,
                                                                 : &info->csrsmt_upper_info));
 
         // Perform analysis
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_trm_analysis(handle,
-                                                         trans_A,
-                                                         m,
-                                                         nnz,
-                                                         descr,
-                                                         csr_val,
-                                                         csr_row_ptr,
-                                                         csr_col_ind,
-                                                         (trans_A == rocsparse_operation_none)
-                                                             ? info->csrsm_upper_info
-                                                             : info->csrsmt_upper_info,
-                                                         (J**)&info->zero_pivot,
-                                                         temp_buffer));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(handle,
+                                                          trans_A,
+                                                          m,
+                                                          nnz,
+                                                          descr,
+                                                          csr_val,
+                                                          csr_row_ptr,
+                                                          csr_col_ind,
+                                                          (trans_A == rocsparse_operation_none)
+                                                              ? info->csrsm_upper_info
+                                                              : info->csrsmt_upper_info,
+                                                          (J**)&info->zero_pivot,
+                                                          temp_buffer));
     }
     else
     {
@@ -222,19 +222,19 @@ rocsparse_status rocsparse_csrsm_analysis_core(rocsparse_handle          handle,
                                                                 : &info->csrsmt_lower_info));
 
         // Perform analysis
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_trm_analysis(handle,
-                                                         trans_A,
-                                                         m,
-                                                         nnz,
-                                                         descr,
-                                                         csr_val,
-                                                         csr_row_ptr,
-                                                         csr_col_ind,
-                                                         (trans_A == rocsparse_operation_none)
-                                                             ? info->csrsm_lower_info
-                                                             : info->csrsmt_lower_info,
-                                                         (J**)&info->zero_pivot,
-                                                         temp_buffer));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(handle,
+                                                          trans_A,
+                                                          m,
+                                                          nnz,
+                                                          descr,
+                                                          csr_val,
+                                                          csr_row_ptr,
+                                                          csr_col_ind,
+                                                          (trans_A == rocsparse_operation_none)
+                                                              ? info->csrsm_lower_info
+                                                              : info->csrsmt_lower_info,
+                                                          (J**)&info->zero_pivot,
+                                                          temp_buffer));
     }
 
     return rocsparse_status_success;

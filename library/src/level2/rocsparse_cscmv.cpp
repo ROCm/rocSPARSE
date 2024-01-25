@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,49 +29,49 @@
 #include "utility.h"
 
 template <typename I, typename J, typename A>
-rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          handle,
-                                                   rocsparse_operation       trans,
-                                                   rocsparse_csrmv_alg       alg,
-                                                   J                         m,
-                                                   J                         n,
-                                                   I                         nnz,
-                                                   const rocsparse_mat_descr descr,
-                                                   const A*                  csc_val,
-                                                   const I*                  csc_col_ptr,
-                                                   const J*                  csc_row_ind,
-                                                   rocsparse_mat_info        info)
+rocsparse_status rocsparse::cscmv_analysis_template(rocsparse_handle          handle,
+                                                    rocsparse_operation       trans,
+                                                    rocsparse_csrmv_alg       alg,
+                                                    J                         m,
+                                                    J                         n,
+                                                    I                         nnz,
+                                                    const rocsparse_mat_descr descr,
+                                                    const A*                  csc_val,
+                                                    const I*                  csc_col_ptr,
+                                                    const J*                  csc_row_ind,
+                                                    rocsparse_mat_info        info)
 {
     switch(trans)
     {
     case rocsparse_operation_none:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_template(handle,
-                                                                    rocsparse_operation_transpose,
-                                                                    alg,
-                                                                    n,
-                                                                    m,
-                                                                    nnz,
-                                                                    descr,
-                                                                    csc_val,
-                                                                    csc_col_ptr,
-                                                                    csc_row_ind,
-                                                                    info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_analysis_template(handle,
+                                                                     rocsparse_operation_transpose,
+                                                                     alg,
+                                                                     n,
+                                                                     m,
+                                                                     nnz,
+                                                                     descr,
+                                                                     csc_val,
+                                                                     csc_col_ptr,
+                                                                     csc_row_ind,
+                                                                     info));
         return rocsparse_status_success;
     }
     case rocsparse_operation_transpose:
     case rocsparse_operation_conjugate_transpose:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_template(handle,
-                                                                    rocsparse_operation_none,
-                                                                    alg,
-                                                                    n,
-                                                                    m,
-                                                                    nnz,
-                                                                    descr,
-                                                                    csc_val,
-                                                                    csc_col_ptr,
-                                                                    csc_row_ind,
-                                                                    info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_analysis_template(handle,
+                                                                     rocsparse_operation_none,
+                                                                     alg,
+                                                                     n,
+                                                                     m,
+                                                                     nnz,
+                                                                     descr,
+                                                                     csc_val,
+                                                                     csc_col_ptr,
+                                                                     csc_row_ind,
+                                                                     info));
         return rocsparse_status_success;
     }
     }
@@ -80,85 +80,85 @@ rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          han
 }
 
 template <typename T, typename I, typename J, typename A, typename X, typename Y>
-rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,
-                                          rocsparse_operation       trans,
-                                          rocsparse_csrmv_alg       alg,
-                                          J                         m,
-                                          J                         n,
-                                          I                         nnz,
-                                          const T*                  alpha,
-                                          const rocsparse_mat_descr descr,
-                                          const A*                  csc_val,
-                                          const I*                  csc_col_ptr,
-                                          const J*                  csc_row_ind,
-                                          rocsparse_mat_info        info,
-                                          const X*                  x,
-                                          const T*                  beta,
-                                          Y*                        y)
+rocsparse_status rocsparse::cscmv_template(rocsparse_handle          handle,
+                                           rocsparse_operation       trans,
+                                           rocsparse_csrmv_alg       alg,
+                                           J                         m,
+                                           J                         n,
+                                           I                         nnz,
+                                           const T*                  alpha,
+                                           const rocsparse_mat_descr descr,
+                                           const A*                  csc_val,
+                                           const I*                  csc_col_ptr,
+                                           const J*                  csc_row_ind,
+                                           rocsparse_mat_info        info,
+                                           const X*                  x,
+                                           const T*                  beta,
+                                           Y*                        y)
 {
     switch(trans)
     {
     case rocsparse_operation_none:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template(handle,
-                                                           rocsparse_operation_transpose,
-                                                           alg,
-                                                           n,
-                                                           m,
-                                                           nnz,
-                                                           alpha,
-                                                           descr,
-                                                           csc_val,
-                                                           csc_col_ptr,
-                                                           csc_col_ptr + 1,
-                                                           csc_row_ind,
-                                                           info,
-                                                           x,
-                                                           beta,
-                                                           y,
-                                                           false));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_template(handle,
+                                                            rocsparse_operation_transpose,
+                                                            alg,
+                                                            n,
+                                                            m,
+                                                            nnz,
+                                                            alpha,
+                                                            descr,
+                                                            csc_val,
+                                                            csc_col_ptr,
+                                                            csc_col_ptr + 1,
+                                                            csc_row_ind,
+                                                            info,
+                                                            x,
+                                                            beta,
+                                                            y,
+                                                            false));
         return rocsparse_status_success;
     }
     case rocsparse_operation_transpose:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template(handle,
-                                                           rocsparse_operation_none,
-                                                           alg,
-                                                           n,
-                                                           m,
-                                                           nnz,
-                                                           alpha,
-                                                           descr,
-                                                           csc_val,
-                                                           csc_col_ptr,
-                                                           csc_col_ptr + 1,
-                                                           csc_row_ind,
-                                                           info,
-                                                           x,
-                                                           beta,
-                                                           y,
-                                                           false));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_template(handle,
+                                                            rocsparse_operation_none,
+                                                            alg,
+                                                            n,
+                                                            m,
+                                                            nnz,
+                                                            alpha,
+                                                            descr,
+                                                            csc_val,
+                                                            csc_col_ptr,
+                                                            csc_col_ptr + 1,
+                                                            csc_row_ind,
+                                                            info,
+                                                            x,
+                                                            beta,
+                                                            y,
+                                                            false));
         return rocsparse_status_success;
     }
     case rocsparse_operation_conjugate_transpose:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template(handle,
-                                                           rocsparse_operation_none,
-                                                           alg,
-                                                           n,
-                                                           m,
-                                                           nnz,
-                                                           alpha,
-                                                           descr,
-                                                           csc_val,
-                                                           csc_col_ptr,
-                                                           csc_col_ptr + 1,
-                                                           csc_row_ind,
-                                                           info,
-                                                           x,
-                                                           beta,
-                                                           y,
-                                                           true));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_template(handle,
+                                                            rocsparse_operation_none,
+                                                            alg,
+                                                            n,
+                                                            m,
+                                                            nnz,
+                                                            alpha,
+                                                            descr,
+                                                            csc_val,
+                                                            csc_col_ptr,
+                                                            csc_col_ptr + 1,
+                                                            csc_row_ind,
+                                                            info,
+                                                            x,
+                                                            beta,
+                                                            y,
+                                                            true));
         return rocsparse_status_success;
     }
     }
@@ -166,33 +166,33 @@ rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
 }
 
-#define INSTANTIATE(TTYPE, ITYPE, JTYPE)                                                           \
-    template rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          handle,  \
-                                                                rocsparse_operation       trans,   \
-                                                                rocsparse_csrmv_alg       alg,     \
-                                                                JTYPE                     m,       \
-                                                                JTYPE                     n,       \
-                                                                ITYPE                     nnz,     \
-                                                                const rocsparse_mat_descr descr,   \
-                                                                const TTYPE*              csc_val, \
-                                                                const ITYPE*       csc_col_ptr,    \
-                                                                const JTYPE*       csc_row_ind,    \
-                                                                rocsparse_mat_info info);          \
-    template rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,           \
-                                                       rocsparse_operation       trans,            \
-                                                       rocsparse_csrmv_alg       alg,              \
-                                                       JTYPE                     m,                \
-                                                       JTYPE                     n,                \
-                                                       ITYPE                     nnz,              \
-                                                       const TTYPE*              alpha,            \
-                                                       const rocsparse_mat_descr descr,            \
-                                                       const TTYPE*              csc_val,          \
-                                                       const ITYPE*              csc_col_ptr,      \
-                                                       const JTYPE*              csc_row_ind,      \
-                                                       rocsparse_mat_info        info,             \
-                                                       const TTYPE*              x,                \
-                                                       const TTYPE*              beta,             \
-                                                       TTYPE*                    y);
+#define INSTANTIATE(TTYPE, ITYPE, JTYPE)                                                            \
+    template rocsparse_status rocsparse::cscmv_analysis_template(rocsparse_handle          handle,  \
+                                                                 rocsparse_operation       trans,   \
+                                                                 rocsparse_csrmv_alg       alg,     \
+                                                                 JTYPE                     m,       \
+                                                                 JTYPE                     n,       \
+                                                                 ITYPE                     nnz,     \
+                                                                 const rocsparse_mat_descr descr,   \
+                                                                 const TTYPE*              csc_val, \
+                                                                 const ITYPE*       csc_col_ptr,    \
+                                                                 const JTYPE*       csc_row_ind,    \
+                                                                 rocsparse_mat_info info);          \
+    template rocsparse_status rocsparse::cscmv_template(rocsparse_handle          handle,           \
+                                                        rocsparse_operation       trans,            \
+                                                        rocsparse_csrmv_alg       alg,              \
+                                                        JTYPE                     m,                \
+                                                        JTYPE                     n,                \
+                                                        ITYPE                     nnz,              \
+                                                        const TTYPE*              alpha,            \
+                                                        const rocsparse_mat_descr descr,            \
+                                                        const TTYPE*              csc_val,          \
+                                                        const ITYPE*              csc_col_ptr,      \
+                                                        const JTYPE*              csc_row_ind,      \
+                                                        rocsparse_mat_info        info,             \
+                                                        const TTYPE*              x,                \
+                                                        const TTYPE*              beta,             \
+                                                        TTYPE*                    y);
 
 INSTANTIATE(float, int32_t, int32_t);
 INSTANTIATE(float, int64_t, int32_t);
@@ -208,40 +208,40 @@ INSTANTIATE(rocsparse_double_complex, int64_t, int32_t);
 INSTANTIATE(rocsparse_double_complex, int64_t, int64_t);
 #undef INSTANTIATE
 
-#define INSTANTIATE_MIXED_ANALYSIS(ITYPE, JTYPE, ATYPE)                                            \
-    template rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          handle,  \
-                                                                rocsparse_operation       trans,   \
-                                                                rocsparse_csrmv_alg       alg,     \
-                                                                JTYPE                     m,       \
-                                                                JTYPE                     n,       \
-                                                                ITYPE                     nnz,     \
-                                                                const rocsparse_mat_descr descr,   \
-                                                                const ATYPE*              csc_val, \
-                                                                const ITYPE*       csc_col_ptr,    \
-                                                                const JTYPE*       csc_row_ind,    \
-                                                                rocsparse_mat_info info);
+#define INSTANTIATE_MIXED_ANALYSIS(ITYPE, JTYPE, ATYPE)                                             \
+    template rocsparse_status rocsparse::cscmv_analysis_template(rocsparse_handle          handle,  \
+                                                                 rocsparse_operation       trans,   \
+                                                                 rocsparse_csrmv_alg       alg,     \
+                                                                 JTYPE                     m,       \
+                                                                 JTYPE                     n,       \
+                                                                 ITYPE                     nnz,     \
+                                                                 const rocsparse_mat_descr descr,   \
+                                                                 const ATYPE*              csc_val, \
+                                                                 const ITYPE*       csc_col_ptr,    \
+                                                                 const JTYPE*       csc_row_ind,    \
+                                                                 rocsparse_mat_info info);
 
 INSTANTIATE_MIXED_ANALYSIS(int32_t, int32_t, int8_t);
 INSTANTIATE_MIXED_ANALYSIS(int64_t, int32_t, int8_t);
 INSTANTIATE_MIXED_ANALYSIS(int64_t, int64_t, int8_t);
 #undef INSTANTIATE_MIXED_ANALYSIS
 
-#define INSTANTIATE_MIXED(TTYPE, ITYPE, JTYPE, ATYPE, XTYPE, YTYPE)                           \
-    template rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,      \
-                                                       rocsparse_operation       trans,       \
-                                                       rocsparse_csrmv_alg       alg,         \
-                                                       JTYPE                     m,           \
-                                                       JTYPE                     n,           \
-                                                       ITYPE                     nnz,         \
-                                                       const TTYPE*              alpha,       \
-                                                       const rocsparse_mat_descr descr,       \
-                                                       const ATYPE*              csc_val,     \
-                                                       const ITYPE*              csc_col_ptr, \
-                                                       const JTYPE*              csc_row_ind, \
-                                                       rocsparse_mat_info        info,        \
-                                                       const XTYPE*              x,           \
-                                                       const TTYPE*              beta,        \
-                                                       YTYPE*                    y);
+#define INSTANTIATE_MIXED(TTYPE, ITYPE, JTYPE, ATYPE, XTYPE, YTYPE)                            \
+    template rocsparse_status rocsparse::cscmv_template(rocsparse_handle          handle,      \
+                                                        rocsparse_operation       trans,       \
+                                                        rocsparse_csrmv_alg       alg,         \
+                                                        JTYPE                     m,           \
+                                                        JTYPE                     n,           \
+                                                        ITYPE                     nnz,         \
+                                                        const TTYPE*              alpha,       \
+                                                        const rocsparse_mat_descr descr,       \
+                                                        const ATYPE*              csc_val,     \
+                                                        const ITYPE*              csc_col_ptr, \
+                                                        const JTYPE*              csc_row_ind, \
+                                                        rocsparse_mat_info        info,        \
+                                                        const XTYPE*              x,           \
+                                                        const TTYPE*              beta,        \
+                                                        YTYPE*                    y);
 
 INSTANTIATE_MIXED(int32_t, int32_t, int32_t, int8_t, int8_t, int32_t);
 INSTANTIATE_MIXED(int32_t, int64_t, int32_t, int8_t, int8_t, int32_t);

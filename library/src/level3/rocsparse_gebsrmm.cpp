@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -149,22 +149,22 @@ rocsparse_status rocsparse_gebsrmm_template_dispatch(rocsparse_handle          h
     {
         if(trans_B == rocsparse_operation_none)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_dispatch(handle,
-                                                                          dir,
-                                                                          trans_A,
-                                                                          mb,
-                                                                          kb,
-                                                                          nnzb,
-                                                                          alpha,
-                                                                          descr,
-                                                                          bsr_val,
-                                                                          bsr_row_ptr,
-                                                                          bsr_col_ind,
-                                                                          row_block_dim,
-                                                                          col_block_dim,
-                                                                          B,
-                                                                          beta,
-                                                                          C));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_dispatch(handle,
+                                                                           dir,
+                                                                           trans_A,
+                                                                           mb,
+                                                                           kb,
+                                                                           nnzb,
+                                                                           alpha,
+                                                                           descr,
+                                                                           bsr_val,
+                                                                           bsr_row_ptr,
+                                                                           bsr_col_ind,
+                                                                           row_block_dim,
+                                                                           col_block_dim,
+                                                                           B,
+                                                                           beta,
+                                                                           C));
             return rocsparse_status_success;
         }
     }

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,275 +33,280 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, typename U>
-rocsparse_status rocsparse_gebsrmv_template_row_block_dim_1(rocsparse_handle          handle,
-                                                            rocsparse_direction       dir,
-                                                            rocsparse_operation       trans,
-                                                            rocsparse_int             mb,
-                                                            rocsparse_int             nb,
-                                                            rocsparse_int             nnzb,
-                                                            U                         alpha,
-                                                            const rocsparse_mat_descr descr,
-                                                            const T*                  bsr_val,
-                                                            const rocsparse_int*      bsr_row_ptr,
-                                                            const rocsparse_int*      bsr_col_ind,
-                                                            rocsparse_int             row_block_dim,
-                                                            rocsparse_int             col_block_dim,
-                                                            const T*                  x,
-                                                            U                         beta,
-                                                            T*                        y);
+using namespace rocsparse;
 
-template <typename T, typename U>
-rocsparse_status rocsparse_gebsrmv_template_row_block_dim_2(rocsparse_handle          handle,
-                                                            rocsparse_direction       dir,
-                                                            rocsparse_operation       trans,
-                                                            rocsparse_int             mb,
-                                                            rocsparse_int             nb,
-                                                            rocsparse_int             nnzb,
-                                                            U                         alpha,
-                                                            const rocsparse_mat_descr descr,
-                                                            const T*                  bsr_val,
-                                                            const rocsparse_int*      bsr_row_ptr,
-                                                            const rocsparse_int*      bsr_col_ind,
-                                                            rocsparse_int             row_block_dim,
-                                                            rocsparse_int             col_block_dim,
-                                                            const T*                  x,
-                                                            U                         beta,
-                                                            T*                        y);
-
-template <typename T, typename U>
-rocsparse_status rocsparse_gebsrmv_template_row_block_dim_3(rocsparse_handle          handle,
-                                                            rocsparse_direction       dir,
-                                                            rocsparse_operation       trans,
-                                                            rocsparse_int             mb,
-                                                            rocsparse_int             nb,
-                                                            rocsparse_int             nnzb,
-                                                            U                         alpha,
-                                                            const rocsparse_mat_descr descr,
-                                                            const T*                  bsr_val,
-                                                            const rocsparse_int*      bsr_row_ptr,
-                                                            const rocsparse_int*      bsr_col_ind,
-                                                            rocsparse_int             row_block_dim,
-                                                            rocsparse_int             col_block_dim,
-                                                            const T*                  x,
-                                                            U                         beta,
-                                                            T*                        y);
-
-template <typename T, typename U>
-rocsparse_status rocsparse_gebsrmv_template_row_block_dim_4(rocsparse_handle          handle,
-                                                            rocsparse_direction       dir,
-                                                            rocsparse_operation       trans,
-                                                            rocsparse_int             mb,
-                                                            rocsparse_int             nb,
-                                                            rocsparse_int             nnzb,
-                                                            U                         alpha,
-                                                            const rocsparse_mat_descr descr,
-                                                            const T*                  bsr_val,
-                                                            const rocsparse_int*      bsr_row_ptr,
-                                                            const rocsparse_int*      bsr_col_ind,
-                                                            rocsparse_int             row_block_dim,
-                                                            rocsparse_int             col_block_dim,
-                                                            const T*                  x,
-                                                            U                         beta,
-                                                            T*                        y);
-
-template <typename T, typename U>
-rocsparse_status rocsparse_gebsrmv_template_row_block_dim_5_8(rocsparse_handle          handle,
-                                                              rocsparse_direction       dir,
-                                                              rocsparse_operation       trans,
-                                                              rocsparse_int             mb,
-                                                              rocsparse_int             nb,
-                                                              rocsparse_int             nnzb,
-                                                              U                         alpha,
-                                                              const rocsparse_mat_descr descr,
-                                                              const T*                  bsr_val,
-                                                              const rocsparse_int*      bsr_row_ptr,
-                                                              const rocsparse_int*      bsr_col_ind,
-                                                              rocsparse_int row_block_dim,
-                                                              rocsparse_int col_block_dim,
-                                                              const T*      x,
-                                                              U             beta,
-                                                              T*            y);
-
-template <typename T, typename U>
-rocsparse_status rocsparse_gebsrmv_template_row_block_dim_9_12(rocsparse_handle          handle,
-                                                               rocsparse_direction       dir,
-                                                               rocsparse_operation       trans,
-                                                               rocsparse_int             mb,
-                                                               rocsparse_int             nb,
-                                                               rocsparse_int             nnzb,
-                                                               U                         alpha,
-                                                               const rocsparse_mat_descr descr,
-                                                               const T*                  bsr_val,
-                                                               const rocsparse_int* bsr_row_ptr,
-                                                               const rocsparse_int* bsr_col_ind,
-                                                               rocsparse_int        row_block_dim,
-                                                               rocsparse_int        col_block_dim,
-                                                               const T*             x,
-                                                               U                    beta,
-                                                               T*                   y);
-
-template <typename T, typename U>
-rocsparse_status rocsparse_gebsrmv_template_row_block_dim_13_16(rocsparse_handle          handle,
-                                                                rocsparse_direction       dir,
-                                                                rocsparse_operation       trans,
-                                                                rocsparse_int             mb,
-                                                                rocsparse_int             nb,
-                                                                rocsparse_int             nnzb,
-                                                                U                         alpha,
-                                                                const rocsparse_mat_descr descr,
-                                                                const T*                  bsr_val,
-                                                                const rocsparse_int* bsr_row_ptr,
-                                                                const rocsparse_int* bsr_col_ind,
-                                                                rocsparse_int        row_block_dim,
-                                                                rocsparse_int        col_block_dim,
-                                                                const T*             x,
-                                                                U                    beta,
-                                                                T*                   y);
-
-template <typename T, typename U>
-rocsparse_status rocsparse_gebsrmv_template_row_block_dim_17_inf(rocsparse_handle          handle,
-                                                                 rocsparse_direction       dir,
-                                                                 rocsparse_operation       trans,
-                                                                 rocsparse_int             mb,
-                                                                 rocsparse_int             nb,
-                                                                 rocsparse_int             nnzb,
-                                                                 U                         alpha,
-                                                                 const rocsparse_mat_descr descr,
-                                                                 const T*                  bsr_val,
-                                                                 const rocsparse_int* bsr_row_ptr,
-                                                                 const rocsparse_int* bsr_col_ind,
-                                                                 rocsparse_int        row_block_dim,
-                                                                 rocsparse_int        col_block_dim,
-                                                                 const T*             x,
-                                                                 U                    beta,
-                                                                 T*                   y);
-
-template <typename... Ts>
-rocsparse_status rocsparse_gebsrmv_template_dispatch_specialization(rocsparse_int row_block_dim,
-                                                                    Ts&&... ts)
+namespace rocsparse
 {
-    if(row_block_dim == 1)
+    template <typename T, typename U>
+    rocsparse_status gebsrmv_template_row_block_dim_1(rocsparse_handle          handle,
+                                                      rocsparse_direction       dir,
+                                                      rocsparse_operation       trans,
+                                                      rocsparse_int             mb,
+                                                      rocsparse_int             nb,
+                                                      rocsparse_int             nnzb,
+                                                      U                         alpha,
+                                                      const rocsparse_mat_descr descr,
+                                                      const T*                  bsr_val,
+                                                      const rocsparse_int*      bsr_row_ptr,
+                                                      const rocsparse_int*      bsr_col_ind,
+                                                      rocsparse_int             row_block_dim,
+                                                      rocsparse_int             col_block_dim,
+                                                      const T*                  x,
+                                                      U                         beta,
+                                                      T*                        y);
+
+    template <typename T, typename U>
+    rocsparse_status gebsrmv_template_row_block_dim_2(rocsparse_handle          handle,
+                                                      rocsparse_direction       dir,
+                                                      rocsparse_operation       trans,
+                                                      rocsparse_int             mb,
+                                                      rocsparse_int             nb,
+                                                      rocsparse_int             nnzb,
+                                                      U                         alpha,
+                                                      const rocsparse_mat_descr descr,
+                                                      const T*                  bsr_val,
+                                                      const rocsparse_int*      bsr_row_ptr,
+                                                      const rocsparse_int*      bsr_col_ind,
+                                                      rocsparse_int             row_block_dim,
+                                                      rocsparse_int             col_block_dim,
+                                                      const T*                  x,
+                                                      U                         beta,
+                                                      T*                        y);
+
+    template <typename T, typename U>
+    rocsparse_status gebsrmv_template_row_block_dim_3(rocsparse_handle          handle,
+                                                      rocsparse_direction       dir,
+                                                      rocsparse_operation       trans,
+                                                      rocsparse_int             mb,
+                                                      rocsparse_int             nb,
+                                                      rocsparse_int             nnzb,
+                                                      U                         alpha,
+                                                      const rocsparse_mat_descr descr,
+                                                      const T*                  bsr_val,
+                                                      const rocsparse_int*      bsr_row_ptr,
+                                                      const rocsparse_int*      bsr_col_ind,
+                                                      rocsparse_int             row_block_dim,
+                                                      rocsparse_int             col_block_dim,
+                                                      const T*                  x,
+                                                      U                         beta,
+                                                      T*                        y);
+
+    template <typename T, typename U>
+    rocsparse_status gebsrmv_template_row_block_dim_4(rocsparse_handle          handle,
+                                                      rocsparse_direction       dir,
+                                                      rocsparse_operation       trans,
+                                                      rocsparse_int             mb,
+                                                      rocsparse_int             nb,
+                                                      rocsparse_int             nnzb,
+                                                      U                         alpha,
+                                                      const rocsparse_mat_descr descr,
+                                                      const T*                  bsr_val,
+                                                      const rocsparse_int*      bsr_row_ptr,
+                                                      const rocsparse_int*      bsr_col_ind,
+                                                      rocsparse_int             row_block_dim,
+                                                      rocsparse_int             col_block_dim,
+                                                      const T*                  x,
+                                                      U                         beta,
+                                                      T*                        y);
+
+    template <typename T, typename U>
+    rocsparse_status gebsrmv_template_row_block_dim_5_8(rocsparse_handle          handle,
+                                                        rocsparse_direction       dir,
+                                                        rocsparse_operation       trans,
+                                                        rocsparse_int             mb,
+                                                        rocsparse_int             nb,
+                                                        rocsparse_int             nnzb,
+                                                        U                         alpha,
+                                                        const rocsparse_mat_descr descr,
+                                                        const T*                  bsr_val,
+                                                        const rocsparse_int*      bsr_row_ptr,
+                                                        const rocsparse_int*      bsr_col_ind,
+                                                        rocsparse_int             row_block_dim,
+                                                        rocsparse_int             col_block_dim,
+                                                        const T*                  x,
+                                                        U                         beta,
+                                                        T*                        y);
+
+    template <typename T, typename U>
+    rocsparse_status gebsrmv_template_row_block_dim_9_12(rocsparse_handle          handle,
+                                                         rocsparse_direction       dir,
+                                                         rocsparse_operation       trans,
+                                                         rocsparse_int             mb,
+                                                         rocsparse_int             nb,
+                                                         rocsparse_int             nnzb,
+                                                         U                         alpha,
+                                                         const rocsparse_mat_descr descr,
+                                                         const T*                  bsr_val,
+                                                         const rocsparse_int*      bsr_row_ptr,
+                                                         const rocsparse_int*      bsr_col_ind,
+                                                         rocsparse_int             row_block_dim,
+                                                         rocsparse_int             col_block_dim,
+                                                         const T*                  x,
+                                                         U                         beta,
+                                                         T*                        y);
+
+    template <typename T, typename U>
+    rocsparse_status gebsrmv_template_row_block_dim_13_16(rocsparse_handle          handle,
+                                                          rocsparse_direction       dir,
+                                                          rocsparse_operation       trans,
+                                                          rocsparse_int             mb,
+                                                          rocsparse_int             nb,
+                                                          rocsparse_int             nnzb,
+                                                          U                         alpha,
+                                                          const rocsparse_mat_descr descr,
+                                                          const T*                  bsr_val,
+                                                          const rocsparse_int*      bsr_row_ptr,
+                                                          const rocsparse_int*      bsr_col_ind,
+                                                          rocsparse_int             row_block_dim,
+                                                          rocsparse_int             col_block_dim,
+                                                          const T*                  x,
+                                                          U                         beta,
+                                                          T*                        y);
+
+    template <typename T, typename U>
+    rocsparse_status gebsrmv_template_row_block_dim_17_inf(rocsparse_handle          handle,
+                                                           rocsparse_direction       dir,
+                                                           rocsparse_operation       trans,
+                                                           rocsparse_int             mb,
+                                                           rocsparse_int             nb,
+                                                           rocsparse_int             nnzb,
+                                                           U                         alpha,
+                                                           const rocsparse_mat_descr descr,
+                                                           const T*                  bsr_val,
+                                                           const rocsparse_int*      bsr_row_ptr,
+                                                           const rocsparse_int*      bsr_col_ind,
+                                                           rocsparse_int             row_block_dim,
+                                                           rocsparse_int             col_block_dim,
+                                                           const T*                  x,
+                                                           U                         beta,
+                                                           T*                        y);
+
+    template <typename... Ts>
+    rocsparse_status gebsrmv_template_dispatch_specialization(rocsparse_int row_block_dim,
+                                                              Ts&&... ts)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_row_block_dim_1(ts...));
-        return rocsparse_status_success;
-    }
-    else if(row_block_dim == 2)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_row_block_dim_2(ts...));
-        return rocsparse_status_success;
-    }
-    else if(row_block_dim == 3)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_row_block_dim_3(ts...));
-        return rocsparse_status_success;
-    }
-    else if(row_block_dim == 4)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_row_block_dim_4(ts...));
-        return rocsparse_status_success;
-    }
-    else if(row_block_dim <= 8)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_row_block_dim_5_8(ts...));
-        return rocsparse_status_success;
-    }
-    else if(row_block_dim <= 12)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_row_block_dim_9_12(ts...));
-        return rocsparse_status_success;
-    }
-    else if(row_block_dim <= 16)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_row_block_dim_13_16(ts...));
-        return rocsparse_status_success;
-    }
-    else
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_row_block_dim_17_inf(ts...));
-        return rocsparse_status_success;
+        if(row_block_dim == 1)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_row_block_dim_1(ts...));
+            return rocsparse_status_success;
+        }
+        else if(row_block_dim == 2)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_row_block_dim_2(ts...));
+            return rocsparse_status_success;
+        }
+        else if(row_block_dim == 3)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_row_block_dim_3(ts...));
+            return rocsparse_status_success;
+        }
+        else if(row_block_dim == 4)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_row_block_dim_4(ts...));
+            return rocsparse_status_success;
+        }
+        else if(row_block_dim <= 8)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_row_block_dim_5_8(ts...));
+            return rocsparse_status_success;
+        }
+        else if(row_block_dim <= 12)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_row_block_dim_9_12(ts...));
+            return rocsparse_status_success;
+        }
+        else if(row_block_dim <= 16)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_row_block_dim_13_16(ts...));
+            return rocsparse_status_success;
+        }
+        else
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_row_block_dim_17_inf(ts...));
+            return rocsparse_status_success;
+        }
     }
 }
 
 template <typename T, typename U>
-rocsparse_status rocsparse_gebsrmv_template_dispatch(rocsparse_handle          handle,
-                                                     rocsparse_direction       dir,
-                                                     rocsparse_operation       trans,
-                                                     rocsparse_int             mb,
-                                                     rocsparse_int             nb,
-                                                     rocsparse_int             nnzb,
-                                                     U                         alpha,
-                                                     const rocsparse_mat_descr descr,
-                                                     const T*                  bsr_val,
-                                                     const rocsparse_int*      bsr_row_ptr,
-                                                     const rocsparse_int*      bsr_col_ind,
-                                                     rocsparse_int             row_block_dim,
-                                                     rocsparse_int             col_block_dim,
-                                                     const T*                  x,
-                                                     U                         beta,
-                                                     T*                        y)
+rocsparse_status rocsparse::gebsrmv_template_dispatch(rocsparse_handle          handle,
+                                                      rocsparse_direction       dir,
+                                                      rocsparse_operation       trans,
+                                                      rocsparse_int             mb,
+                                                      rocsparse_int             nb,
+                                                      rocsparse_int             nnzb,
+                                                      U                         alpha,
+                                                      const rocsparse_mat_descr descr,
+                                                      const T*                  bsr_val,
+                                                      const rocsparse_int*      bsr_row_ptr,
+                                                      const rocsparse_int*      bsr_col_ind,
+                                                      rocsparse_int             row_block_dim,
+                                                      rocsparse_int             col_block_dim,
+                                                      const T*                  x,
+                                                      U                         beta,
+                                                      T*                        y)
 {
 
     // row_block_dim == col_block_dim is the BSR case
     if(row_block_dim == col_block_dim)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsrmv_template_dispatch<T>(handle,
-                                                                       dir,
-                                                                       trans,
-                                                                       mb,
-                                                                       nb,
-                                                                       nnzb,
-                                                                       alpha,
-                                                                       descr,
-                                                                       bsr_val,
-                                                                       bsr_row_ptr,
-                                                                       bsr_col_ind,
-                                                                       row_block_dim,
-                                                                       x,
-                                                                       beta,
-                                                                       y));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::bsrmv_template_dispatch<T>(handle,
+                                                                        dir,
+                                                                        trans,
+                                                                        mb,
+                                                                        nb,
+                                                                        nnzb,
+                                                                        alpha,
+                                                                        descr,
+                                                                        bsr_val,
+                                                                        bsr_row_ptr,
+                                                                        bsr_col_ind,
+                                                                        row_block_dim,
+                                                                        x,
+                                                                        beta,
+                                                                        y));
 
         return rocsparse_status_success;
     }
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_dispatch_specialization(row_block_dim,
-                                                                                 //
-                                                                                 handle,
-                                                                                 dir,
-                                                                                 trans,
-                                                                                 mb,
-                                                                                 nb,
-                                                                                 nnzb,
-                                                                                 alpha,
-                                                                                 descr,
-                                                                                 bsr_val,
-                                                                                 bsr_row_ptr,
-                                                                                 bsr_col_ind,
-                                                                                 row_block_dim,
-                                                                                 col_block_dim,
-                                                                                 x,
-                                                                                 beta,
-                                                                                 y));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_dispatch_specialization(row_block_dim,
+                                                                                  //
+                                                                                  handle,
+                                                                                  dir,
+                                                                                  trans,
+                                                                                  mb,
+                                                                                  nb,
+                                                                                  nnzb,
+                                                                                  alpha,
+                                                                                  descr,
+                                                                                  bsr_val,
+                                                                                  bsr_row_ptr,
+                                                                                  bsr_col_ind,
+                                                                                  row_block_dim,
+                                                                                  col_block_dim,
+                                                                                  x,
+                                                                                  beta,
+                                                                                  y));
     return rocsparse_status_success;
 }
 
 template <typename T>
-rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle, //0
-                                            rocsparse_direction       dir, //1
-                                            rocsparse_operation       trans, //2
-                                            rocsparse_int             mb, //3
-                                            rocsparse_int             nb, //4
-                                            rocsparse_int             nnzb, //5
-                                            const T*                  alpha, //6
-                                            const rocsparse_mat_descr descr, //7
-                                            const T*                  bsr_val, //8
-                                            const rocsparse_int*      bsr_row_ptr, //9
-                                            const rocsparse_int*      bsr_col_ind, //10
-                                            rocsparse_int             row_block_dim, //11
-                                            rocsparse_int             col_block_dim, //12
-                                            const T*                  x, //13
-                                            const T*                  beta, //14
-                                            T*                        y) //15
+rocsparse_status rocsparse::gebsrmv_template(rocsparse_handle          handle, //0
+                                             rocsparse_direction       dir, //1
+                                             rocsparse_operation       trans, //2
+                                             rocsparse_int             mb, //3
+                                             rocsparse_int             nb, //4
+                                             rocsparse_int             nnzb, //5
+                                             const T*                  alpha, //6
+                                             const rocsparse_mat_descr descr, //7
+                                             const T*                  bsr_val, //8
+                                             const rocsparse_int*      bsr_row_ptr, //9
+                                             const rocsparse_int*      bsr_col_ind, //10
+                                             rocsparse_int             row_block_dim, //11
+                                             rocsparse_int             col_block_dim, //12
+                                             const T*                  x, //13
+                                             const T*                  beta, //14
+                                             T*                        y) //15
 {
     // Check for valid handle and matrix descriptor
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -409,65 +414,65 @@ rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle, //
     // row_block_dim == 1 and col_block_dim == 1 is the CSR case
     if(row_block_dim == 1 && col_block_dim == 1)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template(handle,
-                                                           trans,
-                                                           rocsparse_csrmv_alg_stream,
-                                                           mb,
-                                                           nb,
-                                                           nnzb,
-                                                           alpha,
-                                                           descr,
-                                                           bsr_val,
-                                                           bsr_row_ptr,
-                                                           bsr_row_ptr + 1,
-                                                           bsr_col_ind,
-                                                           nullptr,
-                                                           x,
-                                                           beta,
-                                                           y,
-                                                           false));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_template(handle,
+                                                            trans,
+                                                            rocsparse_csrmv_alg_stream,
+                                                            mb,
+                                                            nb,
+                                                            nnzb,
+                                                            alpha,
+                                                            descr,
+                                                            bsr_val,
+                                                            bsr_row_ptr,
+                                                            bsr_row_ptr + 1,
+                                                            bsr_col_ind,
+                                                            nullptr,
+                                                            x,
+                                                            beta,
+                                                            y,
+                                                            false));
         return rocsparse_status_success;
     }
 
     // Run different gebsrmv kernels
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_dispatch(handle,
-                                                                      dir,
-                                                                      trans,
-                                                                      mb,
-                                                                      nb,
-                                                                      nnzb,
-                                                                      alpha,
-                                                                      descr,
-                                                                      bsr_val,
-                                                                      bsr_row_ptr,
-                                                                      bsr_col_ind,
-                                                                      row_block_dim,
-                                                                      col_block_dim,
-                                                                      x,
-                                                                      beta,
-                                                                      y));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_dispatch(handle,
+                                                                       dir,
+                                                                       trans,
+                                                                       mb,
+                                                                       nb,
+                                                                       nnzb,
+                                                                       alpha,
+                                                                       descr,
+                                                                       bsr_val,
+                                                                       bsr_row_ptr,
+                                                                       bsr_col_ind,
+                                                                       row_block_dim,
+                                                                       col_block_dim,
+                                                                       x,
+                                                                       beta,
+                                                                       y));
         return rocsparse_status_success;
     }
     else
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template_dispatch(handle,
-                                                                      dir,
-                                                                      trans,
-                                                                      mb,
-                                                                      nb,
-                                                                      nnzb,
-                                                                      *alpha,
-                                                                      descr,
-                                                                      bsr_val,
-                                                                      bsr_row_ptr,
-                                                                      bsr_col_ind,
-                                                                      row_block_dim,
-                                                                      col_block_dim,
-                                                                      x,
-                                                                      *beta,
-                                                                      y));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template_dispatch(handle,
+                                                                       dir,
+                                                                       trans,
+                                                                       mb,
+                                                                       nb,
+                                                                       nnzb,
+                                                                       *alpha,
+                                                                       descr,
+                                                                       bsr_val,
+                                                                       bsr_row_ptr,
+                                                                       bsr_col_ind,
+                                                                       row_block_dim,
+                                                                       col_block_dim,
+                                                                       x,
+                                                                       *beta,
+                                                                       y));
         return rocsparse_status_success;
     }
     return rocsparse_status_success;
@@ -497,22 +502,22 @@ rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle, //
                                      TYPE*                     y)             \
     try                                                                       \
     {                                                                         \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gebsrmv_template(handle,          \
-                                                             dir,             \
-                                                             trans,           \
-                                                             mb,              \
-                                                             nb,              \
-                                                             nnzb,            \
-                                                             alpha,           \
-                                                             descr,           \
-                                                             bsr_val,         \
-                                                             bsr_row_ptr,     \
-                                                             bsr_col_ind,     \
-                                                             row_block_dim,   \
-                                                             col_block_dim,   \
-                                                             x,               \
-                                                             beta,            \
-                                                             y));             \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::gebsrmv_template(handle,         \
+                                                              dir,            \
+                                                              trans,          \
+                                                              mb,             \
+                                                              nb,             \
+                                                              nnzb,           \
+                                                              alpha,          \
+                                                              descr,          \
+                                                              bsr_val,        \
+                                                              bsr_row_ptr,    \
+                                                              bsr_col_ind,    \
+                                                              row_block_dim,  \
+                                                              col_block_dim,  \
+                                                              x,              \
+                                                              beta,           \
+                                                              y));            \
         return rocsparse_status_success;                                      \
     }                                                                         \
     catch(...)                                                                \
