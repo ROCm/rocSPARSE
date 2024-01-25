@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,16 +38,16 @@
 #define CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS 1024
 
 template <typename I, typename J, typename A>
-rocsparse_status rocsparse_csrmv_analysis_lrb_template_dispatch(rocsparse_handle          handle,
-                                                                rocsparse_operation       trans,
-                                                                J                         m,
-                                                                J                         n,
-                                                                I                         nnz,
-                                                                const rocsparse_mat_descr descr,
-                                                                const A*                  csr_val,
-                                                                const I*           csr_row_ptr,
-                                                                const J*           csr_col_ind,
-                                                                rocsparse_mat_info info)
+rocsparse_status rocsparse::csrmv_analysis_lrb_template_dispatch(rocsparse_handle          handle,
+                                                                 rocsparse_operation       trans,
+                                                                 J                         m,
+                                                                 J                         n,
+                                                                 I                         nnz,
+                                                                 const rocsparse_mat_descr descr,
+                                                                 const A*                  csr_val,
+                                                                 const I*           csr_row_ptr,
+                                                                 const J*           csr_col_ind,
+                                                                 rocsparse_mat_info info)
 {
     // Clear csrmv info
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
@@ -73,15 +73,16 @@ rocsparse_status rocsparse_csrmv_analysis_lrb_template_dispatch(rocsparse_handle
 
     dim3 blocks(256);
     dim3 threads(WG_SIZE);
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_preprocess_device_32_bins_3phase_phase1<WG_SIZE>),
-                                       blocks,
-                                       threads,
-                                       0,
-                                       stream,
-                                       m,
-                                       csr_row_ptr,
-                                       static_cast<J*>(info->csrmv_info->lrb.rows_offsets_scratch),
-                                       static_cast<J*>(info->csrmv_info->lrb.n_rows_bins));
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+        (rocsparse::csrmvn_preprocess_device_32_bins_3phase_phase1<WG_SIZE>),
+        blocks,
+        threads,
+        0,
+        stream,
+        m,
+        csr_row_ptr,
+        static_cast<J*>(info->csrmv_info->lrb.rows_offsets_scratch),
+        static_cast<J*>(info->csrmv_info->lrb.n_rows_bins));
 
     // Copy bin sizes to CPU for later workgroup size determination.
     // If we modify the phase-2 and phase-3 preprocessing kernels so we don't directly reuse
@@ -98,23 +99,24 @@ rocsparse_status rocsparse_csrmv_analysis_lrb_template_dispatch(rocsparse_handle
         info->csrmv_info->lrb.nRowsBins[i] = temp[i];
     }
 
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_preprocess_device_32_bins_3phase_phase2),
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_preprocess_device_32_bins_3phase_phase2),
                                        1,
                                        1,
                                        0,
                                        stream,
                                        static_cast<J*>(info->csrmv_info->lrb.n_rows_bins));
 
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_preprocess_device_32_bins_3phase_phase3<WG_SIZE>),
-                                       blocks,
-                                       threads,
-                                       0,
-                                       stream,
-                                       m,
-                                       csr_row_ptr,
-                                       static_cast<J*>(info->csrmv_info->lrb.rows_offsets_scratch),
-                                       static_cast<J*>(info->csrmv_info->lrb.n_rows_bins),
-                                       static_cast<J*>(info->csrmv_info->lrb.rows_bins));
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+        (rocsparse::csrmvn_preprocess_device_32_bins_3phase_phase3<WG_SIZE>),
+        blocks,
+        threads,
+        0,
+        stream,
+        m,
+        csr_row_ptr,
+        static_cast<J*>(info->csrmv_info->lrb.rows_offsets_scratch),
+        static_cast<J*>(info->csrmv_info->lrb.n_rows_bins),
+        static_cast<J*>(info->csrmv_info->lrb.rows_bins));
 
     // Optionally, sort bins (adds preprocessing cost, but often substantially reduces SpMV consumer-kernel time)
     /*if(true)
@@ -219,219 +221,223 @@ rocsparse_status rocsparse_csrmv_analysis_lrb_template_dispatch(rocsparse_handle
     return rocsparse_status_success;
 }
 
-template <typename I, typename J, typename A, typename X, typename Y, typename U>
-ROCSPARSE_KERNEL(WG_SIZE)
-void csrmvn_lrb_short_rows_kernel(bool conj,
-                                  I    nnz,
-                                  J* __restrict__ rows_bins,
-                                  J* __restrict__ n_rows_bins,
-                                  const uint32_t bin_id,
-                                  U              alpha_device_host,
-                                  const I* __restrict__ csr_row_ptr,
-                                  const J* __restrict__ csr_col_ind,
-                                  const A* __restrict__ csr_val,
-                                  const X* __restrict__ x,
-                                  U beta_device_host,
-                                  Y* __restrict__ y,
-                                  rocsparse_index_base idx_base)
+namespace rocsparse
 {
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    auto beta  = load_scalar_device_host(beta_device_host);
-    if(alpha != 0 || beta != 1)
+    template <typename I, typename J, typename A, typename X, typename Y, typename U>
+    ROCSPARSE_KERNEL(WG_SIZE)
+    void csrmvn_lrb_short_rows_kernel(bool conj,
+                                      I    nnz,
+                                      J* __restrict__ rows_bins,
+                                      J* __restrict__ n_rows_bins,
+                                      const uint32_t bin_id,
+                                      U              alpha_device_host,
+                                      const I* __restrict__ csr_row_ptr,
+                                      const J* __restrict__ csr_col_ind,
+                                      const A* __restrict__ csr_val,
+                                      const X* __restrict__ x,
+                                      U beta_device_host,
+                                      Y* __restrict__ y,
+                                      rocsparse_index_base idx_base)
     {
-        csrmvn_lrb_short_rows_device<WG_SIZE>(conj,
-                                              nnz,
-                                              rows_bins,
-                                              n_rows_bins,
-                                              bin_id,
-                                              alpha,
-                                              csr_row_ptr,
-                                              csr_col_ind,
-                                              csr_val,
-                                              x,
-                                              beta,
-                                              y,
-                                              idx_base);
+        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto beta  = load_scalar_device_host(beta_device_host);
+        if(alpha != 0 || beta != 1)
+        {
+            rocsparse::csrmvn_lrb_short_rows_device<WG_SIZE>(conj,
+                                                             nnz,
+                                                             rows_bins,
+                                                             n_rows_bins,
+                                                             bin_id,
+                                                             alpha,
+                                                             csr_row_ptr,
+                                                             csr_col_ind,
+                                                             csr_val,
+                                                             x,
+                                                             beta,
+                                                             y,
+                                                             idx_base);
+        }
     }
-}
 
-template <typename I, typename J, typename A, typename X, typename Y, typename U>
-ROCSPARSE_KERNEL(WG_SIZE)
-void csrmvn_lrb_short_rows_2_kernel(bool conj,
-                                    I    nnz,
-                                    J* __restrict__ rows_bins,
-                                    J* __restrict__ n_rows_bins,
-                                    const uint32_t bin_id,
-                                    U              alpha_device_host,
-                                    const I* __restrict__ csr_row_ptr,
-                                    const J* __restrict__ csr_col_ind,
-                                    const A* __restrict__ csr_val,
-                                    const X* __restrict__ x,
-                                    U beta_device_host,
-                                    Y* __restrict__ y,
-                                    rocsparse_index_base idx_base)
-{
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    auto beta  = load_scalar_device_host(beta_device_host);
-    if(alpha != 0 || beta != 1)
+    template <typename I, typename J, typename A, typename X, typename Y, typename U>
+    ROCSPARSE_KERNEL(WG_SIZE)
+    void csrmvn_lrb_short_rows_2_kernel(bool conj,
+                                        I    nnz,
+                                        J* __restrict__ rows_bins,
+                                        J* __restrict__ n_rows_bins,
+                                        const uint32_t bin_id,
+                                        U              alpha_device_host,
+                                        const I* __restrict__ csr_row_ptr,
+                                        const J* __restrict__ csr_col_ind,
+                                        const A* __restrict__ csr_val,
+                                        const X* __restrict__ x,
+                                        U beta_device_host,
+                                        Y* __restrict__ y,
+                                        rocsparse_index_base idx_base)
     {
-        csrmvn_lrb_short_rows_2_device<WG_SIZE, CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS>(conj,
-                                                                                  nnz,
-                                                                                  rows_bins,
-                                                                                  n_rows_bins,
-                                                                                  bin_id,
-                                                                                  alpha,
-                                                                                  csr_row_ptr,
-                                                                                  csr_col_ind,
-                                                                                  csr_val,
-                                                                                  x,
-                                                                                  beta,
-                                                                                  y,
-                                                                                  idx_base);
+        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto beta  = load_scalar_device_host(beta_device_host);
+        if(alpha != 0 || beta != 1)
+        {
+            rocsparse::csrmvn_lrb_short_rows_2_device<WG_SIZE, CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS>(
+                conj,
+                nnz,
+                rows_bins,
+                n_rows_bins,
+                bin_id,
+                alpha,
+                csr_row_ptr,
+                csr_col_ind,
+                csr_val,
+                x,
+                beta,
+                y,
+                idx_base);
+        }
     }
-}
 
-template <unsigned int BLOCKSIZE,
-          unsigned int WF_SIZE,
-          typename I,
-          typename J,
-          typename A,
-          typename X,
-          typename Y,
-          typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void csrmvn_lrb_medium_rows_warp_reduce_kernel(bool    conj,
-                                               I       nnz,
-                                               int64_t count,
-                                               J* __restrict__ rows_bins,
-                                               J* __restrict__ n_rows_bins,
-                                               const uint32_t bin_id,
-                                               U              alpha_device_host,
-                                               const I* __restrict__ csr_row_ptr,
-                                               const J* __restrict__ csr_col_ind,
-                                               const A* __restrict__ csr_val,
-                                               const X* __restrict__ x,
-                                               U beta_device_host,
-                                               Y* __restrict__ y,
-                                               rocsparse_index_base idx_base)
-{
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    auto beta  = load_scalar_device_host(beta_device_host);
-    if(alpha != 0 || beta != 1)
+    template <unsigned int BLOCKSIZE,
+              unsigned int WF_SIZE,
+              typename I,
+              typename J,
+              typename A,
+              typename X,
+              typename Y,
+              typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void csrmvn_lrb_medium_rows_warp_reduce_kernel(bool    conj,
+                                                   I       nnz,
+                                                   int64_t count,
+                                                   J* __restrict__ rows_bins,
+                                                   J* __restrict__ n_rows_bins,
+                                                   const uint32_t bin_id,
+                                                   U              alpha_device_host,
+                                                   const I* __restrict__ csr_row_ptr,
+                                                   const J* __restrict__ csr_col_ind,
+                                                   const A* __restrict__ csr_val,
+                                                   const X* __restrict__ x,
+                                                   U beta_device_host,
+                                                   Y* __restrict__ y,
+                                                   rocsparse_index_base idx_base)
     {
-        csrmvn_lrb_medium_rows_warp_reduce_device<BLOCKSIZE, WF_SIZE>(conj,
-                                                                      nnz,
-                                                                      count,
-                                                                      rows_bins,
-                                                                      n_rows_bins,
-                                                                      bin_id,
-                                                                      alpha,
-                                                                      csr_row_ptr,
-                                                                      csr_col_ind,
-                                                                      csr_val,
-                                                                      x,
-                                                                      beta,
-                                                                      y,
-                                                                      idx_base);
+        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto beta  = load_scalar_device_host(beta_device_host);
+        if(alpha != 0 || beta != 1)
+        {
+            rocsparse::csrmvn_lrb_medium_rows_warp_reduce_device<BLOCKSIZE, WF_SIZE>(conj,
+                                                                                     nnz,
+                                                                                     count,
+                                                                                     rows_bins,
+                                                                                     n_rows_bins,
+                                                                                     bin_id,
+                                                                                     alpha,
+                                                                                     csr_row_ptr,
+                                                                                     csr_col_ind,
+                                                                                     csr_val,
+                                                                                     x,
+                                                                                     beta,
+                                                                                     y,
+                                                                                     idx_base);
+        }
     }
-}
 
-template <unsigned int BLOCKSIZE,
-          typename I,
-          typename J,
-          typename A,
-          typename X,
-          typename Y,
-          typename U>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void csrmvn_lrb_medium_rows_kernel(bool conj,
-                                   I    nnz,
-                                   J* __restrict__ rows_bins,
-                                   J* __restrict__ n_rows_bins,
-                                   const uint32_t bin_id,
-                                   U              alpha_device_host,
-                                   const I* __restrict__ csr_row_ptr,
-                                   const J* __restrict__ csr_col_ind,
-                                   const A* __restrict__ csr_val,
-                                   const X* __restrict__ x,
-                                   U beta_device_host,
-                                   Y* __restrict__ y,
-                                   rocsparse_index_base idx_base)
-{
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    auto beta  = load_scalar_device_host(beta_device_host);
-    if(alpha != 0 || beta != 1)
+    template <unsigned int BLOCKSIZE,
+              typename I,
+              typename J,
+              typename A,
+              typename X,
+              typename Y,
+              typename U>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void csrmvn_lrb_medium_rows_kernel(bool conj,
+                                       I    nnz,
+                                       J* __restrict__ rows_bins,
+                                       J* __restrict__ n_rows_bins,
+                                       const uint32_t bin_id,
+                                       U              alpha_device_host,
+                                       const I* __restrict__ csr_row_ptr,
+                                       const J* __restrict__ csr_col_ind,
+                                       const A* __restrict__ csr_val,
+                                       const X* __restrict__ x,
+                                       U beta_device_host,
+                                       Y* __restrict__ y,
+                                       rocsparse_index_base idx_base)
     {
-        csrmvn_lrb_medium_rows_device<BLOCKSIZE>(conj,
-                                                 nnz,
-                                                 rows_bins,
-                                                 n_rows_bins,
-                                                 bin_id,
-                                                 alpha,
-                                                 csr_row_ptr,
-                                                 csr_col_ind,
-                                                 csr_val,
-                                                 x,
-                                                 beta,
-                                                 y,
-                                                 idx_base);
+        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto beta  = load_scalar_device_host(beta_device_host);
+        if(alpha != 0 || beta != 1)
+        {
+            rocsparse::csrmvn_lrb_medium_rows_device<BLOCKSIZE>(conj,
+                                                                nnz,
+                                                                rows_bins,
+                                                                n_rows_bins,
+                                                                bin_id,
+                                                                alpha,
+                                                                csr_row_ptr,
+                                                                csr_col_ind,
+                                                                csr_val,
+                                                                x,
+                                                                beta,
+                                                                y,
+                                                                idx_base);
+        }
     }
-}
 
-template <typename I, typename J, typename A, typename X, typename Y, typename U>
-ROCSPARSE_KERNEL(WG_SIZE)
-void csrmvn_lrb_long_rows_kernel(bool conj,
-                                 I    nnz,
-                                 unsigned int* __restrict__ wg_flags,
-                                 J* __restrict__ rows_bins,
-                                 J* __restrict__ n_rows_bins,
-                                 const uint32_t bin_id,
-                                 U              alpha_device_host,
-                                 const I* __restrict__ csr_row_ptr,
-                                 const J* __restrict__ csr_col_ind,
-                                 const A* __restrict__ csr_val,
-                                 const X* __restrict__ x,
-                                 U beta_device_host,
-                                 Y* __restrict__ y,
-                                 rocsparse_index_base idx_base)
-{
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    auto beta  = load_scalar_device_host(beta_device_host);
-    if(alpha != 0 || beta != 1)
+    template <typename I, typename J, typename A, typename X, typename Y, typename U>
+    ROCSPARSE_KERNEL(WG_SIZE)
+    void csrmvn_lrb_long_rows_kernel(bool conj,
+                                     I    nnz,
+                                     unsigned int* __restrict__ wg_flags,
+                                     J* __restrict__ rows_bins,
+                                     J* __restrict__ n_rows_bins,
+                                     const uint32_t bin_id,
+                                     U              alpha_device_host,
+                                     const I* __restrict__ csr_row_ptr,
+                                     const J* __restrict__ csr_col_ind,
+                                     const A* __restrict__ csr_val,
+                                     const X* __restrict__ x,
+                                     U beta_device_host,
+                                     Y* __restrict__ y,
+                                     rocsparse_index_base idx_base)
     {
-        csrmvn_lrb_long_rows_device<WG_SIZE, BLOCK_MULTIPLIER>(conj,
-                                                               nnz,
-                                                               wg_flags,
-                                                               rows_bins,
-                                                               n_rows_bins,
-                                                               bin_id,
-                                                               alpha,
-                                                               csr_row_ptr,
-                                                               csr_col_ind,
-                                                               csr_val,
-                                                               x,
-                                                               beta,
-                                                               y,
-                                                               idx_base);
+        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto beta  = load_scalar_device_host(beta_device_host);
+        if(alpha != 0 || beta != 1)
+        {
+            rocsparse::csrmvn_lrb_long_rows_device<WG_SIZE, BLOCK_MULTIPLIER>(conj,
+                                                                              nnz,
+                                                                              wg_flags,
+                                                                              rows_bins,
+                                                                              n_rows_bins,
+                                                                              bin_id,
+                                                                              alpha,
+                                                                              csr_row_ptr,
+                                                                              csr_col_ind,
+                                                                              csr_val,
+                                                                              x,
+                                                                              beta,
+                                                                              y,
+                                                                              idx_base);
+        }
     }
 }
 
 template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
-rocsparse_status rocsparse_csrmv_lrb_template_dispatch(rocsparse_handle          handle,
-                                                       rocsparse_operation       trans,
-                                                       J                         m,
-                                                       J                         n,
-                                                       I                         nnz,
-                                                       U                         alpha_device_host,
-                                                       const rocsparse_mat_descr descr,
-                                                       const A*                  csr_val,
-                                                       const I*                  csr_row_ptr,
-                                                       const J*                  csr_col_ind,
-                                                       rocsparse_csrmv_info      info,
-                                                       const X*                  x,
-                                                       U                         beta_device_host,
-                                                       Y*                        y,
-                                                       bool                      force_conj)
+rocsparse_status rocsparse::csrmv_lrb_template_dispatch(rocsparse_handle          handle,
+                                                        rocsparse_operation       trans,
+                                                        J                         m,
+                                                        J                         n,
+                                                        I                         nnz,
+                                                        U                         alpha_device_host,
+                                                        const rocsparse_mat_descr descr,
+                                                        const A*                  csr_val,
+                                                        const I*                  csr_row_ptr,
+                                                        const J*                  csr_col_ind,
+                                                        rocsparse_csrmv_info      info,
+                                                        const X*                  x,
+                                                        U                         beta_device_host,
+                                                        Y*                        y,
+                                                        bool                      force_conj)
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(6, descr);
@@ -654,17 +660,17 @@ rocsparse_status rocsparse_csrmv_lrb_template_dispatch(rocsparse_handle         
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, ATYPE)                                      \
-    template rocsparse_status rocsparse_csrmv_analysis_lrb_template_dispatch( \
-        rocsparse_handle          handle,                                     \
-        rocsparse_operation       trans,                                      \
-        JTYPE                     m,                                          \
-        JTYPE                     n,                                          \
-        ITYPE                     nnz,                                        \
-        const rocsparse_mat_descr descr,                                      \
-        const ATYPE*              csr_val,                                    \
-        const ITYPE*              csr_row_ptr,                                \
-        const JTYPE*              csr_col_ind,                                \
+#define INSTANTIATE(ITYPE, JTYPE, ATYPE)                                       \
+    template rocsparse_status rocsparse::csrmv_analysis_lrb_template_dispatch( \
+        rocsparse_handle          handle,                                      \
+        rocsparse_operation       trans,                                       \
+        JTYPE                     m,                                           \
+        JTYPE                     n,                                           \
+        ITYPE                     nnz,                                         \
+        const rocsparse_mat_descr descr,                                       \
+        const ATYPE*              csr_val,                                     \
+        const ITYPE*              csr_row_ptr,                                 \
+        const JTYPE*              csr_col_ind,                                 \
         rocsparse_mat_info        info);
 
 // Uniform precision
@@ -688,22 +694,22 @@ INSTANTIATE(int64_t, int64_t, int8_t);
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(TTYPE, ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, UTYPE)        \
-    template rocsparse_status rocsparse_csrmv_lrb_template_dispatch<TTYPE>( \
-        rocsparse_handle          handle,                                   \
-        rocsparse_operation       trans,                                    \
-        JTYPE                     m,                                        \
-        JTYPE                     n,                                        \
-        ITYPE                     nnz,                                      \
-        UTYPE                     alpha_device_host,                        \
-        const rocsparse_mat_descr descr,                                    \
-        const ATYPE*              csr_val,                                  \
-        const ITYPE*              csr_row_ptr,                              \
-        const JTYPE*              csr_col_ind,                              \
-        rocsparse_csrmv_info      info,                                     \
-        const XTYPE*              x,                                        \
-        UTYPE                     beta_device_host,                         \
-        YTYPE*                    y,                                        \
+#define INSTANTIATE(TTYPE, ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, UTYPE)         \
+    template rocsparse_status rocsparse::csrmv_lrb_template_dispatch<TTYPE>( \
+        rocsparse_handle          handle,                                    \
+        rocsparse_operation       trans,                                     \
+        JTYPE                     m,                                         \
+        JTYPE                     n,                                         \
+        ITYPE                     nnz,                                       \
+        UTYPE                     alpha_device_host,                         \
+        const rocsparse_mat_descr descr,                                     \
+        const ATYPE*              csr_val,                                   \
+        const ITYPE*              csr_row_ptr,                               \
+        const JTYPE*              csr_col_ind,                               \
+        rocsparse_csrmv_info      info,                                      \
+        const XTYPE*              x,                                         \
+        UTYPE                     beta_device_host,                          \
+        YTYPE*                    y,                                         \
         bool                      force_conj);
 
 // Uniform precision

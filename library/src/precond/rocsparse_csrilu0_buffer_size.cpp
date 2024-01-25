@@ -39,16 +39,16 @@ namespace rocsparse
                                                      rocsparse_mat_info        info,
                                                      size_t*                   buffer_size)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size_template(handle,
-                                                                       rocsparse_operation_none,
-                                                                       m,
-                                                                       nnz,
-                                                                       descr,
-                                                                       csr_val,
-                                                                       csr_row_ptr,
-                                                                       csr_col_ind,
-                                                                       info,
-                                                                       buffer_size));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_buffer_size_template(handle,
+                                                                        rocsparse_operation_none,
+                                                                        m,
+                                                                        nnz,
+                                                                        descr,
+                                                                        csr_val,
+                                                                        csr_row_ptr,
+                                                                        csr_col_ind,
+                                                                        info,
+                                                                        buffer_size));
         return rocsparse_status_success;
     }
 

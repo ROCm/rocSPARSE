@@ -145,17 +145,17 @@ rocsparse_status rocsparse::csric0_analysis_template(rocsparse_handle          h
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&info->csric0_info));
 
     // Perform analysis
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_trm_analysis(handle,
-                                                     rocsparse_operation_none,
-                                                     m,
-                                                     nnz,
-                                                     descr,
-                                                     csr_val,
-                                                     csr_row_ptr,
-                                                     csr_col_ind,
-                                                     info->csric0_info,
-                                                     (rocsparse_int**)&info->zero_pivot,
-                                                     temp_buffer));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(handle,
+                                                      rocsparse_operation_none,
+                                                      m,
+                                                      nnz,
+                                                      descr,
+                                                      csr_val,
+                                                      csr_row_ptr,
+                                                      csr_col_ind,
+                                                      info->csric0_info,
+                                                      (rocsparse_int**)&info->zero_pivot,
+                                                      temp_buffer));
 
     {
         // setup info->singular_pivot
@@ -540,16 +540,16 @@ namespace rocsparse
                                                  rocsparse_mat_info        info,
                                                  size_t*                   buffer_size)
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size_template(handle,
-                                                                       rocsparse_operation_none,
-                                                                       m,
-                                                                       nnz,
-                                                                       descr,
-                                                                       csr_val,
-                                                                       csr_row_ptr,
-                                                                       csr_col_ind,
-                                                                       info,
-                                                                       buffer_size));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_buffer_size_template(handle,
+                                                                        rocsparse_operation_none,
+                                                                        m,
+                                                                        nnz,
+                                                                        descr,
+                                                                        csr_val,
+                                                                        csr_row_ptr,
+                                                                        csr_col_ind,
+                                                                        info,
+                                                                        buffer_size));
         return rocsparse_status_success;
     }
 

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,17 +27,17 @@
 #include "handle.h"
 
 template <typename I, typename T>
-rocsparse_status rocsparse_gemvi_template(rocsparse_handle     handle,
-                                          rocsparse_operation  trans,
-                                          I                    m,
-                                          I                    n,
-                                          const T*             alpha_device_host,
-                                          const T*             A,
-                                          int64_t              lda,
-                                          I                    nnz,
-                                          const T*             x_val,
-                                          const I*             x_ind,
-                                          const T*             beta_device_host,
-                                          T*                   y,
-                                          rocsparse_index_base idx_base,
-                                          void*                temp_buffer);
+rocsparse_status gemvi_template(rocsparse_handle     handle,
+                                rocsparse_operation  trans,
+                                I                    m,
+                                I                    n,
+                                const T*             alpha_device_host,
+                                const T*             A,
+                                int64_t              lda,
+                                I                    nnz,
+                                const T*             x_val,
+                                const I*             x_ind,
+                                const T*             beta_device_host,
+                                T*                   y,
+                                rocsparse_index_base idx_base,
+                                void*                temp_buffer);

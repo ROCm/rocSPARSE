@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,128 +35,151 @@
 #define ROWS_FOR_VECTOR 1
 #define WG_SIZE 256
 
-__attribute__((unused)) static unsigned int flp2(unsigned int x)
+namespace rocsparse
 {
-    x |= (x >> 1);
-    x |= (x >> 2);
-    x |= (x >> 4);
-    x |= (x >> 8);
-    x |= (x >> 16);
-    return x - (x >> 1);
-}
+    __attribute__((unused)) static unsigned int flp2(unsigned int x)
+    {
+        x |= (x >> 1);
+        x |= (x >> 2);
+        x |= (x >> 4);
+        x |= (x >> 8);
+        x |= (x >> 16);
+        return x - (x >> 1);
+    }
 
-// Short rows in CSR-Adaptive are batched together into a single row block.
-// If there are a relatively small number of these, then we choose to do
-// a horizontal reduction (groups of threads all reduce the same row).
-// If there are many threads (e.g. more threads than the maximum size
-// of our workgroup) then we choose to have each thread serially reduce
-// the row.
-// This function calculates the number of threads that could team up
-// to reduce these groups of rows. For instance, if you have a
-// workgroup size of 256 and 4 rows, you could have 64 threads
-// working on each row. If you have 5 rows, only 32 threads could
-// reliably work on each row because our reduction assumes power-of-2.
-static unsigned long long numThreadsForReduction(unsigned long long num_rows)
-{
+    // Short rows in CSR-Adaptive are batched together into a single row block.
+    // If there are a relatively small number of these, then we choose to do
+    // a horizontal reduction (groups of threads all reduce the same row).
+    // If there are many threads (e.g. more threads than the maximum size
+    // of our workgroup) then we choose to have each thread serially reduce
+    // the row.
+    // This function calculates the number of threads that could team up
+    // to reduce these groups of rows. For instance, if you have a
+    // workgroup size of 256 and 4 rows, you could have 64 threads
+    // working on each row. If you have 5 rows, only 32 threads could
+    // reliably work on each row because our reduction assumes power-of-2.
+    static unsigned long long numThreadsForReduction(unsigned long long num_rows)
+    {
 #if defined(__INTEL_COMPILER)
-    return WG_SIZE >> (_bit_scan_reverse(num_rows - 1) + 1);
+        return WG_SIZE >> (_bit_scan_reverse(num_rows - 1) + 1);
 #elif(defined(__clang__) && __has_builtin(__builtin_clz)) \
     || !defined(__clang) && defined(__GNUG__)             \
            && ((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 30202)
-    return (WG_SIZE >> (8 * sizeof(int) - __builtin_clz(num_rows - 1)));
+        return (WG_SIZE >> (8 * sizeof(int) - __builtin_clz(num_rows - 1)));
 #elif defined(_MSC_VER) && (_MSC_VER >= 1400)
-    unsigned long long bit_returned;
-    _BitScanReverse(&bit_returned, (num_rows - 1));
-    return WG_SIZE >> (bit_returned + 1);
+        unsigned long long bit_returned;
+        _BitScanReverse(&bit_returned, (num_rows - 1));
+        return WG_SIZE >> (bit_returned + 1);
 #else
-    return flp2(WG_SIZE / num_rows);
+        return flp2(WG_SIZE / num_rows);
 #endif
-}
-
-template <typename I>
-static inline I maxRowsInABlock(const I* rowBlocks, size_t rowBlockSize)
-{
-    I max = 0;
-    for(size_t i = 1; i < rowBlockSize; i++)
-    {
-        I current_row = rowBlocks[i];
-        I prev_row    = rowBlocks[i - 1];
-
-        if(max < current_row - prev_row)
-            max = current_row - prev_row;
-    }
-    return max;
-}
-
-template <typename I, typename J>
-static inline void ComputeRowBlocks(I*       rowBlocks,
-                                    J*       wgIds,
-                                    size_t&  rowBlockSize,
-                                    const I* rowDelimiters,
-                                    I        nRows,
-                                    bool     allocate_row_blocks = true)
-{
-    I* rowBlocksBase;
-
-    // Start at one because of rowBlock[0]
-    I total_row_blocks = 1;
-
-    if(allocate_row_blocks)
-    {
-        rowBlocksBase = rowBlocks;
-        *rowBlocks    = 0;
-        *wgIds        = 0;
-        ++rowBlocks;
-        ++wgIds;
     }
 
-    I sum = 0;
-    I i;
-    I last_i = 0;
-
-    I consecutive_long_rows = 0;
-    for(i = 1; i <= nRows; ++i)
+    template <typename I>
+    static inline I maxRowsInABlock(const I* rowBlocks, size_t rowBlockSize)
     {
-        I row_length = (rowDelimiters[i] - rowDelimiters[i - 1]);
-        sum += row_length;
+        I max = 0;
+        for(size_t i = 1; i < rowBlockSize; i++)
+        {
+            I current_row = rowBlocks[i];
+            I prev_row    = rowBlocks[i - 1];
 
-        // The following section of code calculates whether you're moving between
-        // a series of "short" rows and a series of "long" rows.
-        // This is because the reduction in CSR-Adaptive likes things to be
-        // roughly the same length. Long rows can be reduced horizontally.
-        // Short rows can be reduced one-thread-per-row. Try not to mix them.
-        if(row_length > 128)
-        {
-            ++consecutive_long_rows;
+            if(max < current_row - prev_row)
+                max = current_row - prev_row;
         }
-        else if(consecutive_long_rows > 0)
+        return max;
+    }
+
+    template <typename I, typename J>
+    static inline void ComputeRowBlocks(I*       rowBlocks,
+                                        J*       wgIds,
+                                        size_t&  rowBlockSize,
+                                        const I* rowDelimiters,
+                                        I        nRows,
+                                        bool     allocate_row_blocks = true)
+    {
+        I* rowBlocksBase;
+
+        // Start at one because of rowBlock[0]
+        I total_row_blocks = 1;
+
+        if(allocate_row_blocks)
         {
-            // If it turns out we WERE in a long-row region, cut if off now.
-            if(row_length < 32) // Now we're in a short-row region
-            {
-                consecutive_long_rows = -1;
-            }
-            else
-            {
-                consecutive_long_rows++;
-            }
+            rowBlocksBase = rowBlocks;
+            *rowBlocks    = 0;
+            *wgIds        = 0;
+            ++rowBlocks;
+            ++wgIds;
         }
 
-        // If you just entered into a "long" row from a series of short rows,
-        // then we need to make sure we cut off those short rows. Put them in
-        // their own workgroup.
-        if(consecutive_long_rows == 1)
+        I sum = 0;
+        I i;
+        I last_i = 0;
+
+        I consecutive_long_rows = 0;
+        for(i = 1; i <= nRows; ++i)
         {
-            // Assuming there *was* a previous workgroup. If not, nothing to do here.
-            if(i - last_i > 1)
+            I row_length = (rowDelimiters[i] - rowDelimiters[i - 1]);
+            sum += row_length;
+
+            // The following section of code calculates whether you're moving between
+            // a series of "short" rows and a series of "long" rows.
+            // This is because the reduction in CSR-Adaptive likes things to be
+            // roughly the same length. Long rows can be reduced horizontally.
+            // Short rows can be reduced one-thread-per-row. Try not to mix them.
+            if(row_length > 128)
             {
+                ++consecutive_long_rows;
+            }
+            else if(consecutive_long_rows > 0)
+            {
+                // If it turns out we WERE in a long-row region, cut if off now.
+                if(row_length < 32) // Now we're in a short-row region
+                {
+                    consecutive_long_rows = -1;
+                }
+                else
+                {
+                    consecutive_long_rows++;
+                }
+            }
+
+            // If you just entered into a "long" row from a series of short rows,
+            // then we need to make sure we cut off those short rows. Put them in
+            // their own workgroup.
+            if(consecutive_long_rows == 1)
+            {
+                // Assuming there *was* a previous workgroup. If not, nothing to do here.
+                if(i - last_i > 1)
+                {
+                    if(allocate_row_blocks)
+                    {
+                        *rowBlocks = i - 1;
+
+                        // If this row fits into CSR-Stream, calculate how many rows
+                        // can be used to do a parallel reduction.
+                        // Fill in the low-order bits with the numThreadsForRed
+                        if(((i - 1) - last_i) > static_cast<I>(ROWS_FOR_VECTOR))
+                        {
+                            *(wgIds - 1) |= numThreadsForReduction((i - 1) - last_i);
+                        }
+
+                        ++rowBlocks;
+                        ++wgIds;
+                    }
+
+                    ++total_row_blocks;
+                    last_i = i - 1;
+                    sum    = row_length;
+                }
+            }
+            else if(consecutive_long_rows == -1)
+            {
+                // We see the first short row after some long ones that
+                // didn't previously fill up a row block.
                 if(allocate_row_blocks)
                 {
                     *rowBlocks = i - 1;
-
-                    // If this row fits into CSR-Stream, calculate how many rows
-                    // can be used to do a parallel reduction.
-                    // Fill in the low-order bits with the numThreadsForRed
                     if(((i - 1) - last_i) > static_cast<I>(ROWS_FOR_VECTOR))
                     {
                         *(wgIds - 1) |= numThreadsForReduction((i - 1) - last_i);
@@ -167,154 +190,134 @@ static inline void ComputeRowBlocks(I*       rowBlocks,
                 }
 
                 ++total_row_blocks;
-                last_i = i - 1;
-                sum    = row_length;
+                last_i                = i - 1;
+                sum                   = row_length;
+                consecutive_long_rows = 0;
             }
-        }
-        else if(consecutive_long_rows == -1)
-        {
-            // We see the first short row after some long ones that
-            // didn't previously fill up a row block.
-            if(allocate_row_blocks)
+
+            // Now, what's up with this row? What did it do?
+
+            // exactly one row results in non-zero elements to be greater than blockSize
+            // This is csr-vector case;
+            if((i - last_i == 1) && sum > static_cast<I>(BLOCK_SIZE))
             {
-                *rowBlocks = i - 1;
-                if(((i - 1) - last_i) > static_cast<I>(ROWS_FOR_VECTOR))
+                I numWGReq = static_cast<I>(
+                    std::ceil(static_cast<double>(row_length) / (BLOCK_MULTIPLIER * BLOCK_SIZE)));
+
+                // Check to ensure #workgroups can fit in 32 bits, if not
+                // then the last workgroup will do all the remaining work
+                // Note: Maximum number of workgroups is 2^31-1 = 2147483647
+                static constexpr I maxNumberOfWorkgroups = static_cast<I>(INT_MAX);
+                numWGReq = (numWGReq < maxNumberOfWorkgroups) ? numWGReq : maxNumberOfWorkgroups;
+
+                if(allocate_row_blocks)
                 {
-                    *(wgIds - 1) |= numThreadsForReduction((i - 1) - last_i);
+                    for(I w = 1; w < numWGReq; ++w)
+                    {
+                        *rowBlocks = (i - 1);
+                        *wgIds |= static_cast<J>(w);
+
+                        ++rowBlocks;
+                        ++wgIds;
+                    }
+
+                    *rowBlocks = i;
+                    ++rowBlocks;
+                    ++wgIds;
                 }
 
-                ++rowBlocks;
-                ++wgIds;
+                total_row_blocks += numWGReq;
+                last_i                = i;
+                sum                   = 0;
+                consecutive_long_rows = 0;
             }
-
-            ++total_row_blocks;
-            last_i                = i - 1;
-            sum                   = row_length;
-            consecutive_long_rows = 0;
-        }
-
-        // Now, what's up with this row? What did it do?
-
-        // exactly one row results in non-zero elements to be greater than blockSize
-        // This is csr-vector case;
-        if((i - last_i == 1) && sum > static_cast<I>(BLOCK_SIZE))
-        {
-            I numWGReq = static_cast<I>(
-                std::ceil(static_cast<double>(row_length) / (BLOCK_MULTIPLIER * BLOCK_SIZE)));
-
-            // Check to ensure #workgroups can fit in 32 bits, if not
-            // then the last workgroup will do all the remaining work
-            // Note: Maximum number of workgroups is 2^31-1 = 2147483647
-            static constexpr I maxNumberOfWorkgroups = static_cast<I>(INT_MAX);
-            numWGReq = (numWGReq < maxNumberOfWorkgroups) ? numWGReq : maxNumberOfWorkgroups;
-
-            if(allocate_row_blocks)
+            // more than one row results in non-zero elements to be greater than blockSize
+            // This is csr-stream case; wgIds holds number of parallel reduction threads
+            else if((i - last_i > 1) && sum > static_cast<I>(BLOCK_SIZE))
             {
-                for(I w = 1; w < numWGReq; ++w)
+                // This row won't fit, so back off one.
+                --i;
+
+                if(allocate_row_blocks)
                 {
-                    *rowBlocks = (i - 1);
-                    *wgIds |= static_cast<J>(w);
+                    *rowBlocks = i;
+                    if((i - last_i) > static_cast<I>(ROWS_FOR_VECTOR))
+                    {
+                        *(wgIds - 1) |= numThreadsForReduction(i - last_i);
+                    }
 
                     ++rowBlocks;
                     ++wgIds;
                 }
 
-                *rowBlocks = i;
-                ++rowBlocks;
-                ++wgIds;
+                ++total_row_blocks;
+                last_i                = i;
+                sum                   = 0;
+                consecutive_long_rows = 0;
             }
-
-            total_row_blocks += numWGReq;
-            last_i                = i;
-            sum                   = 0;
-            consecutive_long_rows = 0;
-        }
-        // more than one row results in non-zero elements to be greater than blockSize
-        // This is csr-stream case; wgIds holds number of parallel reduction threads
-        else if((i - last_i > 1) && sum > static_cast<I>(BLOCK_SIZE))
-        {
-            // This row won't fit, so back off one.
-            --i;
-
-            if(allocate_row_blocks)
+            // This is csr-stream case; wgIds holds number of parallel reduction threads
+            else if(sum == static_cast<I>(BLOCK_SIZE))
             {
-                *rowBlocks = i;
-                if((i - last_i) > static_cast<I>(ROWS_FOR_VECTOR))
+                if(allocate_row_blocks)
                 {
-                    *(wgIds - 1) |= numThreadsForReduction(i - last_i);
+                    *rowBlocks = i;
+                    if((i - last_i) > static_cast<I>(ROWS_FOR_VECTOR))
+                    {
+                        *(wgIds - 1) |= numThreadsForReduction(i - last_i);
+                    }
+
+                    ++rowBlocks;
+                    ++wgIds;
                 }
 
-                ++rowBlocks;
-                ++wgIds;
+                ++total_row_blocks;
+                last_i                = i;
+                sum                   = 0;
+                consecutive_long_rows = 0;
             }
-
-            ++total_row_blocks;
-            last_i                = i;
-            sum                   = 0;
-            consecutive_long_rows = 0;
         }
-        // This is csr-stream case; wgIds holds number of parallel reduction threads
-        else if(sum == static_cast<I>(BLOCK_SIZE))
+
+        // If we didn't fill a row block with the last row, make sure we don't lose it.
+        if(allocate_row_blocks && *(rowBlocks - 1) != nRows)
         {
-            if(allocate_row_blocks)
+            *rowBlocks = nRows;
+            if((nRows - last_i) > static_cast<I>(ROWS_FOR_VECTOR))
             {
-                *rowBlocks = i;
-                if((i - last_i) > static_cast<I>(ROWS_FOR_VECTOR))
-                {
-                    *(wgIds - 1) |= numThreadsForReduction(i - last_i);
-                }
-
-                ++rowBlocks;
-                ++wgIds;
+                *(wgIds - 1) |= numThreadsForReduction(i - last_i);
             }
 
-            ++total_row_blocks;
-            last_i                = i;
-            sum                   = 0;
-            consecutive_long_rows = 0;
+            ++rowBlocks;
         }
-    }
 
-    // If we didn't fill a row block with the last row, make sure we don't lose it.
-    if(allocate_row_blocks && *(rowBlocks - 1) != nRows)
-    {
-        *rowBlocks = nRows;
-        if((nRows - last_i) > static_cast<I>(ROWS_FOR_VECTOR))
+        ++total_row_blocks;
+
+        if(allocate_row_blocks)
         {
-            *(wgIds - 1) |= numThreadsForReduction(i - last_i);
+            size_t dist = std::distance(rowBlocksBase, rowBlocks);
+
+            assert((dist) <= rowBlockSize);
+            // Update the size of rowBlocks to reflect the actual amount of memory used
+            rowBlockSize = dist;
         }
-
-        ++rowBlocks;
-    }
-
-    ++total_row_blocks;
-
-    if(allocate_row_blocks)
-    {
-        size_t dist = std::distance(rowBlocksBase, rowBlocks);
-
-        assert((dist) <= rowBlockSize);
-        // Update the size of rowBlocks to reflect the actual amount of memory used
-        rowBlockSize = dist;
-    }
-    else
-    {
-        rowBlockSize = total_row_blocks;
+        else
+        {
+            rowBlockSize = total_row_blocks;
+        }
     }
 }
 
 template <typename I, typename J, typename A>
 rocsparse_status
-    rocsparse_csrmv_analysis_adaptive_template_dispatch(rocsparse_handle          handle,
-                                                        rocsparse_operation       trans,
-                                                        J                         m,
-                                                        J                         n,
-                                                        I                         nnz,
-                                                        const rocsparse_mat_descr descr,
-                                                        const A*                  csr_val,
-                                                        const I*                  csr_row_ptr,
-                                                        const J*                  csr_col_ind,
-                                                        rocsparse_mat_info        info)
+    rocsparse::csrmv_analysis_adaptive_template_dispatch(rocsparse_handle          handle,
+                                                         rocsparse_operation       trans,
+                                                         J                         m,
+                                                         J                         n,
+                                                         I                         nnz,
+                                                         const rocsparse_mat_descr descr,
+                                                         const A*                  csr_val,
+                                                         const I*                  csr_row_ptr,
+                                                         const J*                  csr_col_ind,
+                                                         rocsparse_mat_info        info)
 {
     // Clear csrmv info
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
@@ -404,79 +407,84 @@ rocsparse_status
     return rocsparse_status_success;
 }
 
-template <typename I, typename J, typename A, typename X, typename Y, typename U>
-ROCSPARSE_KERNEL(WG_SIZE)
-void csrmvn_adaptive_kernel(bool conj,
-                            I    nnz,
-                            const I* __restrict__ row_blocks,
-                            unsigned int* __restrict__ wg_flags,
-                            const J* __restrict__ wg_ids,
-                            U alpha_device_host,
-                            const I* __restrict__ csr_row_ptr,
-                            const J* __restrict__ csr_col_ind,
-                            const A* __restrict__ csr_val,
-                            const X* __restrict__ x,
-                            U beta_device_host,
-                            Y* __restrict__ y,
-                            rocsparse_index_base idx_base)
+namespace rocsparse
 {
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    auto beta  = load_scalar_device_host(beta_device_host);
-    if(alpha != 0 || beta != 1)
+    template <typename I, typename J, typename A, typename X, typename Y, typename U>
+    ROCSPARSE_KERNEL(WG_SIZE)
+    void csrmvn_adaptive_kernel(bool conj,
+                                I    nnz,
+                                const I* __restrict__ row_blocks,
+                                unsigned int* __restrict__ wg_flags,
+                                const J* __restrict__ wg_ids,
+                                U alpha_device_host,
+                                const I* __restrict__ csr_row_ptr,
+                                const J* __restrict__ csr_col_ind,
+                                const A* __restrict__ csr_val,
+                                const X* __restrict__ x,
+                                U beta_device_host,
+                                Y* __restrict__ y,
+                                rocsparse_index_base idx_base)
     {
-        csrmvn_adaptive_device<BLOCK_SIZE, BLOCK_MULTIPLIER, ROWS_FOR_VECTOR, WG_SIZE>(conj,
-                                                                                       nnz,
-                                                                                       row_blocks,
-                                                                                       wg_flags,
-                                                                                       wg_ids,
-                                                                                       alpha,
-                                                                                       csr_row_ptr,
-                                                                                       csr_col_ind,
-                                                                                       csr_val,
-                                                                                       x,
-                                                                                       beta,
-                                                                                       y,
-                                                                                       idx_base);
+        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto beta  = load_scalar_device_host(beta_device_host);
+        if(alpha != 0 || beta != 1)
+        {
+            rocsparse::
+                csrmvn_adaptive_device<BLOCK_SIZE, BLOCK_MULTIPLIER, ROWS_FOR_VECTOR, WG_SIZE>(
+                    conj,
+                    nnz,
+                    row_blocks,
+                    wg_flags,
+                    wg_ids,
+                    alpha,
+                    csr_row_ptr,
+                    csr_col_ind,
+                    csr_val,
+                    x,
+                    beta,
+                    y,
+                    idx_base);
+        }
     }
-}
 
-template <rocsparse_int MAX_ROWS,
-          typename I,
-          typename J,
-          typename A,
-          typename X,
-          typename Y,
-          typename U>
-ROCSPARSE_KERNEL(WG_SIZE)
-void csrmvn_symm_adaptive_kernel(bool conj,
-                                 I    nnz,
-                                 I    max_rows,
-                                 const I* __restrict__ row_blocks,
-                                 U alpha_device_host,
-                                 const I* __restrict__ csr_row_ptr,
-                                 const J* __restrict__ csr_col_ind,
-                                 const A* __restrict__ csr_val,
-                                 const X* __restrict__ x,
-                                 U beta_device_host,
-                                 Y* __restrict__ y,
-                                 rocsparse_index_base idx_base)
-{
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    auto beta  = load_scalar_device_host(beta_device_host);
-    if(alpha != 0 || beta != 1)
+    template <rocsparse_int MAX_ROWS,
+              typename I,
+              typename J,
+              typename A,
+              typename X,
+              typename Y,
+              typename U>
+    ROCSPARSE_KERNEL(WG_SIZE)
+    void csrmvn_symm_adaptive_kernel(bool conj,
+                                     I    nnz,
+                                     I    max_rows,
+                                     const I* __restrict__ row_blocks,
+                                     U alpha_device_host,
+                                     const I* __restrict__ csr_row_ptr,
+                                     const J* __restrict__ csr_col_ind,
+                                     const A* __restrict__ csr_val,
+                                     const X* __restrict__ x,
+                                     U beta_device_host,
+                                     Y* __restrict__ y,
+                                     rocsparse_index_base idx_base)
     {
-        csrmvn_symm_adaptive_device<BLOCK_SIZE, MAX_ROWS, WG_SIZE>(conj,
-                                                                   nnz,
-                                                                   max_rows,
-                                                                   row_blocks,
-                                                                   alpha,
-                                                                   csr_row_ptr,
-                                                                   csr_col_ind,
-                                                                   csr_val,
-                                                                   x,
-                                                                   beta,
-                                                                   y,
-                                                                   idx_base);
+        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto beta  = load_scalar_device_host(beta_device_host);
+        if(alpha != 0 || beta != 1)
+        {
+            rocsparse::csrmvn_symm_adaptive_device<BLOCK_SIZE, MAX_ROWS, WG_SIZE>(conj,
+                                                                                  nnz,
+                                                                                  max_rows,
+                                                                                  row_blocks,
+                                                                                  alpha,
+                                                                                  csr_row_ptr,
+                                                                                  csr_col_ind,
+                                                                                  csr_val,
+                                                                                  x,
+                                                                                  beta,
+                                                                                  y,
+                                                                                  idx_base);
+        }
     }
 }
 
@@ -498,27 +506,27 @@ void csrmvn_symm_large_adaptive_kernel(bool conj,
     auto beta  = load_scalar_device_host(beta_device_host);
     if(alpha != 0 || beta != 1)
     {
-        csrmvn_symm_large_adaptive_device<BLOCK_SIZE, WG_SIZE>(
+        rocsparse::csrmvn_symm_large_adaptive_device<BLOCK_SIZE, WG_SIZE>(
             conj, nnz, row_blocks, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y, idx_base);
     }
 }
 
 template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
-rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    handle,
-                                                            rocsparse_operation trans,
-                                                            J                   m,
-                                                            J                   n,
-                                                            I                   nnz,
-                                                            U                   alpha_device_host,
-                                                            const rocsparse_mat_descr descr,
-                                                            const A*                  csr_val,
-                                                            const I*                  csr_row_ptr,
-                                                            const J*                  csr_col_ind,
-                                                            rocsparse_csrmv_info      info,
-                                                            const X*                  x,
-                                                            U    beta_device_host,
-                                                            Y*   y,
-                                                            bool force_conj)
+rocsparse_status rocsparse::csrmv_adaptive_template_dispatch(rocsparse_handle    handle,
+                                                             rocsparse_operation trans,
+                                                             J                   m,
+                                                             J                   n,
+                                                             I                   nnz,
+                                                             U                   alpha_device_host,
+                                                             const rocsparse_mat_descr descr,
+                                                             const A*                  csr_val,
+                                                             const I*                  csr_row_ptr,
+                                                             const J*                  csr_col_ind,
+                                                             rocsparse_csrmv_info      info,
+                                                             const X*                  x,
+                                                             U    beta_device_host,
+                                                             Y*   y,
+                                                             bool force_conj)
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(6, descr);
@@ -553,7 +561,7 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
         // Run different csrmv kernels
         dim3 csrmvn_blocks((info->adaptive.size) - 1);
         dim3 csrmvn_threads(WG_SIZE);
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_adaptive_kernel),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_adaptive_kernel),
                                            csrmvn_blocks,
                                            csrmvn_threads,
                                            0,
@@ -589,7 +597,7 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
         I max_rows = static_cast<I>(info->max_rows);
         if(max_rows <= 64)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_symm_adaptive_kernel<64>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<64>),
                                                csrmvn_blocks,
                                                csrmvn_threads,
                                                0,
@@ -609,7 +617,7 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
         }
         else if(max_rows <= 128)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_symm_adaptive_kernel<128>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<128>),
                                                csrmvn_blocks,
                                                csrmvn_threads,
                                                0,
@@ -629,7 +637,7 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
         }
         else if(max_rows <= 256)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_symm_adaptive_kernel<256>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<256>),
                                                csrmvn_blocks,
                                                csrmvn_threads,
                                                0,
@@ -649,7 +657,7 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
         }
         else if(max_rows <= 512)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_symm_adaptive_kernel<512>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<512>),
                                                csrmvn_blocks,
                                                csrmvn_threads,
                                                0,
@@ -669,7 +677,7 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
         }
         else if(max_rows <= 1024)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_symm_adaptive_kernel<1024>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<1024>),
                                                csrmvn_blocks,
                                                csrmvn_threads,
                                                0,
@@ -689,7 +697,7 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
         }
         else if(max_rows <= 2048)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_symm_adaptive_kernel<2048>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<2048>),
                                                csrmvn_blocks,
                                                csrmvn_threads,
                                                0,
@@ -735,17 +743,17 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, ATYPE)                                           \
-    template rocsparse_status rocsparse_csrmv_analysis_adaptive_template_dispatch( \
-        rocsparse_handle          handle,                                          \
-        rocsparse_operation       trans,                                           \
-        JTYPE                     m,                                               \
-        JTYPE                     n,                                               \
-        ITYPE                     nnz,                                             \
-        const rocsparse_mat_descr descr,                                           \
-        const ATYPE*              csr_val,                                         \
-        const ITYPE*              csr_row_ptr,                                     \
-        const JTYPE*              csr_col_ind,                                     \
+#define INSTANTIATE(ITYPE, JTYPE, ATYPE)                                            \
+    template rocsparse_status rocsparse::csrmv_analysis_adaptive_template_dispatch( \
+        rocsparse_handle          handle,                                           \
+        rocsparse_operation       trans,                                            \
+        JTYPE                     m,                                                \
+        JTYPE                     n,                                                \
+        ITYPE                     nnz,                                              \
+        const rocsparse_mat_descr descr,                                            \
+        const ATYPE*              csr_val,                                          \
+        const ITYPE*              csr_row_ptr,                                      \
+        const JTYPE*              csr_col_ind,                                      \
         rocsparse_mat_info        info);
 
 // Uniform precision
@@ -769,22 +777,22 @@ INSTANTIATE(int64_t, int64_t, int8_t);
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(TTYPE, ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, UTYPE)             \
-    template rocsparse_status rocsparse_csrmv_adaptive_template_dispatch<TTYPE>( \
-        rocsparse_handle          handle,                                        \
-        rocsparse_operation       trans,                                         \
-        JTYPE                     m,                                             \
-        JTYPE                     n,                                             \
-        ITYPE                     nnz,                                           \
-        UTYPE                     alpha_device_host,                             \
-        const rocsparse_mat_descr descr,                                         \
-        const ATYPE*              csr_val,                                       \
-        const ITYPE*              csr_row_ptr,                                   \
-        const JTYPE*              csr_col_ind,                                   \
-        rocsparse_csrmv_info      info,                                          \
-        const XTYPE*              x,                                             \
-        UTYPE                     beta_device_host,                              \
-        YTYPE*                    y,                                             \
+#define INSTANTIATE(TTYPE, ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, UTYPE)              \
+    template rocsparse_status rocsparse::csrmv_adaptive_template_dispatch<TTYPE>( \
+        rocsparse_handle          handle,                                         \
+        rocsparse_operation       trans,                                          \
+        JTYPE                     m,                                              \
+        JTYPE                     n,                                              \
+        ITYPE                     nnz,                                            \
+        UTYPE                     alpha_device_host,                              \
+        const rocsparse_mat_descr descr,                                          \
+        const ATYPE*              csr_val,                                        \
+        const ITYPE*              csr_row_ptr,                                    \
+        const JTYPE*              csr_col_ind,                                    \
+        rocsparse_csrmv_info      info,                                           \
+        const XTYPE*              x,                                              \
+        UTYPE                     beta_device_host,                               \
+        YTYPE*                    y,                                              \
         bool                      force_conj);
 
 // Uniform precision

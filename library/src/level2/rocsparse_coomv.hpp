@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,52 +26,40 @@
 
 #include "handle.h"
 
-typedef enum rocsparse_coomv_alg_
+namespace rocsparse
 {
-    rocsparse_coomv_alg_default = 0,
-    rocsparse_coomv_alg_segmented,
-    rocsparse_coomv_alg_atomic
-} rocsparse_coomv_alg;
+    typedef enum rocsparse_coomv_alg_
+    {
+        rocsparse_coomv_alg_default = 0,
+        rocsparse_coomv_alg_segmented,
+        rocsparse_coomv_alg_atomic
+    } rocsparse_coomv_alg;
 
-template <typename I, typename A>
-rocsparse_status rocsparse_coomv_analysis_template(rocsparse_handle          handle,
-                                                   rocsparse_operation       trans,
-                                                   rocsparse_coomv_alg       alg,
-                                                   I                         m,
-                                                   I                         n,
-                                                   int64_t                   nnz,
-                                                   const rocsparse_mat_descr descr,
-                                                   const A*                  coo_val,
-                                                   const I*                  coo_row_ind,
-                                                   const I*                  coo_col_ind);
+    template <typename I, typename A>
+    rocsparse_status coomv_analysis_template(rocsparse_handle          handle,
+                                             rocsparse_operation       trans,
+                                             rocsparse_coomv_alg       alg,
+                                             I                         m,
+                                             I                         n,
+                                             int64_t                   nnz,
+                                             const rocsparse_mat_descr descr,
+                                             const A*                  coo_val,
+                                             const I*                  coo_row_ind,
+                                             const I*                  coo_col_ind);
 
-template <typename T, typename I, typename A, typename X, typename Y>
-rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
-                                          rocsparse_operation       trans,
-                                          rocsparse_coomv_alg       alg,
-                                          I                         m,
-                                          I                         n,
-                                          int64_t                   nnz,
-                                          const T*                  alpha_device_host,
-                                          const rocsparse_mat_descr descr,
-                                          const A*                  coo_val,
-                                          const I*                  coo_row_ind,
-                                          const I*                  coo_col_ind,
-                                          const X*                  x,
-                                          const T*                  beta_device_host,
-                                          Y*                        y);
-
-template <typename T>
-rocsparse_status rocsparse_coomv_impl(rocsparse_handle          handle,
-                                      rocsparse_operation       trans,
-                                      rocsparse_int             m,
-                                      rocsparse_int             n,
-                                      rocsparse_int             nnz,
-                                      const T*                  alpha_device_host,
-                                      const rocsparse_mat_descr descr,
-                                      const T*                  coo_val,
-                                      const rocsparse_int*      coo_row_ind,
-                                      const rocsparse_int*      coo_col_ind,
-                                      const T*                  x,
-                                      const T*                  beta_device_host,
-                                      T*                        y);
+    template <typename T, typename I, typename A, typename X, typename Y>
+    rocsparse_status coomv_template(rocsparse_handle          handle,
+                                    rocsparse_operation       trans,
+                                    rocsparse_coomv_alg       alg,
+                                    I                         m,
+                                    I                         n,
+                                    int64_t                   nnz,
+                                    const T*                  alpha_device_host,
+                                    const rocsparse_mat_descr descr,
+                                    const A*                  coo_val,
+                                    const I*                  coo_row_ind,
+                                    const I*                  coo_col_ind,
+                                    const X*                  x,
+                                    const T*                  beta_device_host,
+                                    Y*                        y);
+}

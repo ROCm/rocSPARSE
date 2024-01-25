@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,24 +26,27 @@
 
 #include "utility.h"
 
-typedef enum rocsparse_coomv_aos_alg_
+namespace rocsparse
 {
-    rocsparse_coomv_aos_alg_default = 0,
-    rocsparse_coomv_aos_alg_segmented,
-    rocsparse_coomv_aos_alg_atomic
-} rocsparse_coomv_aos_alg;
+    typedef enum rocsparse_coomv_aos_alg_
+    {
+        rocsparse_coomv_aos_alg_default = 0,
+        rocsparse_coomv_aos_alg_segmented,
+        rocsparse_coomv_aos_alg_atomic
+    } rocsparse_coomv_aos_alg;
 
-template <typename T, typename I, typename A, typename X, typename Y>
-rocsparse_status rocsparse_coomv_aos_template(rocsparse_handle          handle,
-                                              rocsparse_operation       trans,
-                                              rocsparse_coomv_aos_alg   alg,
-                                              I                         m,
-                                              I                         n,
-                                              int64_t                   nnz,
-                                              const T*                  alpha_device_host,
-                                              const rocsparse_mat_descr descr,
-                                              const A*                  coo_val,
-                                              const I*                  coo_ind,
-                                              const X*                  x,
-                                              const T*                  beta_device_host,
-                                              Y*                        y);
+    template <typename T, typename I, typename A, typename X, typename Y>
+    rocsparse_status coomv_aos_template(rocsparse_handle          handle,
+                                        rocsparse_operation       trans,
+                                        rocsparse_coomv_aos_alg   alg,
+                                        I                         m,
+                                        I                         n,
+                                        int64_t                   nnz,
+                                        const T*                  alpha_device_host,
+                                        const rocsparse_mat_descr descr,
+                                        const A*                  coo_val,
+                                        const I*                  coo_ind,
+                                        const X*                  x,
+                                        const T*                  beta_device_host,
+                                        Y*                        y);
+}

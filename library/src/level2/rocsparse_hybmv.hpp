@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,15 @@
 
 #include "handle.h"
 
-template <typename T>
-rocsparse_status rocsparse_hybmv_template(rocsparse_handle          handle,
-                                          rocsparse_operation       trans,
-                                          const T*                  alpha,
-                                          const rocsparse_mat_descr descr,
-                                          const rocsparse_hyb_mat   hyb,
-                                          const T*                  x,
-                                          const T*                  beta,
-                                          T*                        y);
+namespace rocsparse
+{
+    template <typename T>
+    rocsparse_status hybmv_template(rocsparse_handle          handle,
+                                    rocsparse_operation       trans,
+                                    const T*                  alpha,
+                                    const rocsparse_mat_descr descr,
+                                    const rocsparse_hyb_mat   hyb,
+                                    const T*                  x,
+                                    const T*                  beta,
+                                    T*                        y);
+}

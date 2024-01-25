@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,42 +26,45 @@
 
 #include "handle.h"
 
-template <typename T, typename I, typename J, typename U>
-rocsparse_status rocsparse_bsrxmv_template_dispatch(rocsparse_handle          handle,
-                                                    rocsparse_direction       dir,
-                                                    rocsparse_operation       trans,
-                                                    J                         size_of_mask,
-                                                    J                         mb,
-                                                    J                         nb,
-                                                    I                         nnzb,
-                                                    U                         alpha_device_host,
-                                                    const rocsparse_mat_descr descr,
-                                                    const T*                  bsr_val,
-                                                    const J*                  bsr_mask_ptr,
-                                                    const I*                  bsr_row_ptr,
-                                                    const I*                  bsr_end_ptr,
-                                                    const J*                  bsr_col_ind,
-                                                    J                         block_dim,
-                                                    const T*                  x,
-                                                    U                         beta_device_host,
-                                                    T*                        y);
+namespace rocsparse
+{
+    template <typename T, typename I, typename J, typename U>
+    rocsparse_status bsrxmv_template_dispatch(rocsparse_handle          handle,
+                                              rocsparse_direction       dir,
+                                              rocsparse_operation       trans,
+                                              J                         size_of_mask,
+                                              J                         mb,
+                                              J                         nb,
+                                              I                         nnzb,
+                                              U                         alpha_device_host,
+                                              const rocsparse_mat_descr descr,
+                                              const T*                  bsr_val,
+                                              const J*                  bsr_mask_ptr,
+                                              const I*                  bsr_row_ptr,
+                                              const I*                  bsr_end_ptr,
+                                              const J*                  bsr_col_ind,
+                                              J                         block_dim,
+                                              const T*                  x,
+                                              U                         beta_device_host,
+                                              T*                        y);
 
-template <typename T, typename I, typename J>
-rocsparse_status rocsparse_bsrxmv_template(rocsparse_handle          handle,
-                                           rocsparse_direction       dir,
-                                           rocsparse_operation       trans,
-                                           J                         size_of_mask,
-                                           J                         mb,
-                                           J                         nb,
-                                           I                         nnzb,
-                                           const T*                  alpha_device_host,
-                                           const rocsparse_mat_descr descr,
-                                           const T*                  bsr_val,
-                                           const J*                  bsr_mask_ptr,
-                                           const I*                  bsr_row_ptr,
-                                           const I*                  bsr_end_ptr,
-                                           const J*                  bsr_col_ind,
-                                           J                         block_dim,
-                                           const T*                  x,
-                                           const T*                  beta_device_host,
-                                           T*                        y);
+    template <typename T, typename I, typename J>
+    rocsparse_status bsrxmv_template(rocsparse_handle          handle,
+                                     rocsparse_direction       dir,
+                                     rocsparse_operation       trans,
+                                     J                         size_of_mask,
+                                     J                         mb,
+                                     J                         nb,
+                                     I                         nnzb,
+                                     const T*                  alpha_device_host,
+                                     const rocsparse_mat_descr descr,
+                                     const T*                  bsr_val,
+                                     const J*                  bsr_mask_ptr,
+                                     const I*                  bsr_row_ptr,
+                                     const I*                  bsr_end_ptr,
+                                     const J*                  bsr_col_ind,
+                                     J                         block_dim,
+                                     const T*                  x,
+                                     const T*                  beta_device_host,
+                                     T*                        y);
+}

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,19 @@
 
 #include "handle.h"
 
-template <typename T, typename I, typename A, typename X, typename Y>
-rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,
-                                          rocsparse_operation       trans,
-                                          I                         m,
-                                          I                         n,
-                                          const T*                  alpha,
-                                          const rocsparse_mat_descr descr,
-                                          const A*                  ell_val,
-                                          const I*                  ell_col_ind,
-                                          I                         ell_width,
-                                          const X*                  x,
-                                          const T*                  beta,
-                                          Y*                        y);
+namespace rocsparse
+{
+    template <typename T, typename I, typename A, typename X, typename Y>
+    rocsparse_status ellmv_template(rocsparse_handle          handle,
+                                    rocsparse_operation       trans,
+                                    I                         m,
+                                    I                         n,
+                                    const T*                  alpha,
+                                    const rocsparse_mat_descr descr,
+                                    const A*                  ell_val,
+                                    const I*                  ell_col_ind,
+                                    I                         ell_width,
+                                    const X*                  x,
+                                    const T*                  beta,
+                                    Y*                        y);
+}

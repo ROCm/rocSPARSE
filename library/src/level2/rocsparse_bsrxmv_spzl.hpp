@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,55 +30,20 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void bsrxmv_scale_array(I mb,
-                        I size_of_mask,
-                        I block_dim,
-                        const I* __restrict__ bsr_mask_ptr,
-                        T* __restrict__ y,
-                        T                    beta,
-                        rocsparse_index_base idx_base)
+namespace rocsparse
 {
-    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
-
-    // Do not run out of bounds
-    if(bsr_mask_ptr == nullptr)
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void bsrxmv_scale_array(I mb,
+                            I size_of_mask,
+                            I block_dim,
+                            const I* __restrict__ bsr_mask_ptr,
+                            T* __restrict__ y,
+                            T                    beta,
+                            rocsparse_index_base idx_base)
     {
-        if(idx >= block_dim * mb)
-        {
-            return;
-        }
+        I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
-        y[idx] *= beta;
-    }
-    else
-    {
-        if(idx >= block_dim * size_of_mask)
-        {
-            return;
-        }
-
-        I shift = (bsr_mask_ptr[idx / block_dim] - idx_base) * block_dim;
-
-        y[shift + (idx % block_dim)] *= beta;
-    }
-}
-
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void bsrxmv_scale_array(I mb,
-                        I size_of_mask,
-                        I block_dim,
-                        const I* __restrict__ bsr_mask_ptr,
-                        T* __restrict__ y,
-                        const T*             beta,
-                        rocsparse_index_base idx_base)
-{
-    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
-
-    if(*beta != static_cast<T>(1))
-    {
         // Do not run out of bounds
         if(bsr_mask_ptr == nullptr)
         {
@@ -87,7 +52,7 @@ void bsrxmv_scale_array(I mb,
                 return;
             }
 
-            y[idx] *= (*beta);
+            y[idx] *= beta;
         }
         else
         {
@@ -98,135 +63,53 @@ void bsrxmv_scale_array(I mb,
 
             I shift = (bsr_mask_ptr[idx / block_dim] - idx_base) * block_dim;
 
-            y[shift + (idx % block_dim)] *= (*beta);
+            y[shift + (idx % block_dim)] *= beta;
         }
     }
-}
 
-template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
-void bsrxmvn_2x2(rocsparse_handle     handle,
-                 rocsparse_direction  dir,
-                 J                    mb,
-                 I                    nnzb,
-                 U                    alpha_device_host,
-                 J                    size_of_mask,
-                 const J*             bsr_mask_ptr,
-                 const I*             bsr_row_ptr,
-                 const I*             bsr_end_ptr,
-                 const J*             bsr_col_ind,
-                 const A*             bsr_val,
-                 const X*             x,
-                 U                    beta_device_host,
-                 Y*                   y,
-                 rocsparse_index_base base);
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void bsrxmv_scale_array(I mb,
+                            I size_of_mask,
+                            I block_dim,
+                            const I* __restrict__ bsr_mask_ptr,
+                            T* __restrict__ y,
+                            const T*             beta,
+                            rocsparse_index_base idx_base)
+    {
+        I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
-template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
-void bsrxmvn_3x3(rocsparse_handle     handle,
-                 rocsparse_direction  dir,
-                 J                    mb,
-                 I                    nnzb,
-                 U                    alpha_device_host,
-                 J                    size_of_mask,
-                 const J*             bsr_mask_ptr,
-                 const I*             bsr_row_ptr,
-                 const I*             bsr_end_ptr,
-                 const J*             bsr_col_ind,
-                 const A*             bsr_val,
-                 const X*             x,
-                 U                    beta_device_host,
-                 Y*                   y,
-                 rocsparse_index_base base);
+        if(*beta != static_cast<T>(1))
+        {
+            // Do not run out of bounds
+            if(bsr_mask_ptr == nullptr)
+            {
+                if(idx >= block_dim * mb)
+                {
+                    return;
+                }
 
-template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
-void bsrxmvn_4x4(rocsparse_handle     handle,
-                 rocsparse_direction  dir,
-                 J                    mb,
-                 I                    nnzb,
-                 U                    alpha_device_host,
-                 J                    size_of_mask,
-                 const J*             bsr_mask_ptr,
-                 const I*             bsr_row_ptr,
-                 const I*             bsr_end_ptr,
-                 const J*             bsr_col_ind,
-                 const A*             bsr_val,
-                 const X*             x,
-                 U                    beta_device_host,
-                 Y*                   y,
-                 rocsparse_index_base base);
+                y[idx] *= (*beta);
+            }
+            else
+            {
+                if(idx >= block_dim * size_of_mask)
+                {
+                    return;
+                }
 
-template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
-void bsrxmvn_5x5(rocsparse_handle     handle,
-                 rocsparse_direction  dir,
-                 J                    mb,
-                 I                    nnzb,
-                 U                    alpha_device_host,
-                 J                    size_of_mask,
-                 const J*             bsr_mask_ptr,
-                 const I*             bsr_row_ptr,
-                 const I*             bsr_end_ptr,
-                 const J*             bsr_col_ind,
-                 const A*             bsr_val,
-                 const X*             x,
-                 U                    beta_device_host,
-                 Y*                   y,
-                 rocsparse_index_base base);
+                I shift = (bsr_mask_ptr[idx / block_dim] - idx_base) * block_dim;
 
-template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
-void bsrxmvn_8x8(rocsparse_handle     handle,
-                 rocsparse_direction  dir,
-                 J                    mb,
-                 I                    nnzb,
-                 U                    alpha_device_host,
-                 J                    size_of_mask,
-                 const J*             bsr_mask_ptr,
-                 const I*             bsr_row_ptr,
-                 const I*             bsr_end_ptr,
-                 const J*             bsr_col_ind,
-                 const A*             bsr_val,
-                 const X*             x,
-                 U                    beta_device_host,
-                 Y*                   y,
-                 rocsparse_index_base base);
+                y[shift + (idx % block_dim)] *= (*beta);
+            }
+        }
+    }
 
-template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
-void bsrxmvn_16x16(rocsparse_handle     handle,
-                   rocsparse_direction  dir,
-                   J                    mb,
-                   I                    nnzb,
-                   U                    alpha_device_host,
-                   J                    size_of_mask,
-                   const J*             bsr_mask_ptr,
-                   const I*             bsr_row_ptr,
-                   const I*             bsr_end_ptr,
-                   const J*             bsr_col_ind,
-                   const A*             bsr_val,
-                   const X*             x,
-                   U                    beta_device_host,
-                   Y*                   y,
-                   rocsparse_index_base base);
-
-template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
-void bsrxmvn_17_32(rocsparse_handle     handle,
-                   rocsparse_direction  dir,
-                   J                    mb,
-                   I                    nnzb,
-                   U                    alpha_device_host,
-                   J                    size_of_mask,
-                   const J*             bsr_mask_ptr,
-                   const I*             bsr_row_ptr,
-                   const I*             bsr_end_ptr,
-                   const J*             bsr_col_ind,
-                   const A*             bsr_val,
-                   J                    bsr_dim,
-                   const X*             x,
-                   U                    beta_device_host,
-                   Y*                   y,
-                   rocsparse_index_base base);
-
-template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
-void bsrxmvn_general(rocsparse_handle     handle,
+    template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
+    void bsrxmvn_2x2(rocsparse_handle     handle,
                      rocsparse_direction  dir,
                      J                    mb,
+                     I                    nnzb,
                      U                    alpha_device_host,
                      J                    size_of_mask,
                      const J*             bsr_mask_ptr,
@@ -234,8 +117,128 @@ void bsrxmvn_general(rocsparse_handle     handle,
                      const I*             bsr_end_ptr,
                      const J*             bsr_col_ind,
                      const A*             bsr_val,
-                     J                    bsr_dim,
                      const X*             x,
                      U                    beta_device_host,
                      Y*                   y,
                      rocsparse_index_base base);
+
+    template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
+    void bsrxmvn_3x3(rocsparse_handle     handle,
+                     rocsparse_direction  dir,
+                     J                    mb,
+                     I                    nnzb,
+                     U                    alpha_device_host,
+                     J                    size_of_mask,
+                     const J*             bsr_mask_ptr,
+                     const I*             bsr_row_ptr,
+                     const I*             bsr_end_ptr,
+                     const J*             bsr_col_ind,
+                     const A*             bsr_val,
+                     const X*             x,
+                     U                    beta_device_host,
+                     Y*                   y,
+                     rocsparse_index_base base);
+
+    template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
+    void bsrxmvn_4x4(rocsparse_handle     handle,
+                     rocsparse_direction  dir,
+                     J                    mb,
+                     I                    nnzb,
+                     U                    alpha_device_host,
+                     J                    size_of_mask,
+                     const J*             bsr_mask_ptr,
+                     const I*             bsr_row_ptr,
+                     const I*             bsr_end_ptr,
+                     const J*             bsr_col_ind,
+                     const A*             bsr_val,
+                     const X*             x,
+                     U                    beta_device_host,
+                     Y*                   y,
+                     rocsparse_index_base base);
+
+    template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
+    void bsrxmvn_5x5(rocsparse_handle     handle,
+                     rocsparse_direction  dir,
+                     J                    mb,
+                     I                    nnzb,
+                     U                    alpha_device_host,
+                     J                    size_of_mask,
+                     const J*             bsr_mask_ptr,
+                     const I*             bsr_row_ptr,
+                     const I*             bsr_end_ptr,
+                     const J*             bsr_col_ind,
+                     const A*             bsr_val,
+                     const X*             x,
+                     U                    beta_device_host,
+                     Y*                   y,
+                     rocsparse_index_base base);
+
+    template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
+    void bsrxmvn_8x8(rocsparse_handle     handle,
+                     rocsparse_direction  dir,
+                     J                    mb,
+                     I                    nnzb,
+                     U                    alpha_device_host,
+                     J                    size_of_mask,
+                     const J*             bsr_mask_ptr,
+                     const I*             bsr_row_ptr,
+                     const I*             bsr_end_ptr,
+                     const J*             bsr_col_ind,
+                     const A*             bsr_val,
+                     const X*             x,
+                     U                    beta_device_host,
+                     Y*                   y,
+                     rocsparse_index_base base);
+
+    template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
+    void bsrxmvn_16x16(rocsparse_handle     handle,
+                       rocsparse_direction  dir,
+                       J                    mb,
+                       I                    nnzb,
+                       U                    alpha_device_host,
+                       J                    size_of_mask,
+                       const J*             bsr_mask_ptr,
+                       const I*             bsr_row_ptr,
+                       const I*             bsr_end_ptr,
+                       const J*             bsr_col_ind,
+                       const A*             bsr_val,
+                       const X*             x,
+                       U                    beta_device_host,
+                       Y*                   y,
+                       rocsparse_index_base base);
+
+    template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
+    void bsrxmvn_17_32(rocsparse_handle     handle,
+                       rocsparse_direction  dir,
+                       J                    mb,
+                       I                    nnzb,
+                       U                    alpha_device_host,
+                       J                    size_of_mask,
+                       const J*             bsr_mask_ptr,
+                       const I*             bsr_row_ptr,
+                       const I*             bsr_end_ptr,
+                       const J*             bsr_col_ind,
+                       const A*             bsr_val,
+                       J                    bsr_dim,
+                       const X*             x,
+                       U                    beta_device_host,
+                       Y*                   y,
+                       rocsparse_index_base base);
+
+    template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
+    void bsrxmvn_general(rocsparse_handle     handle,
+                         rocsparse_direction  dir,
+                         J                    mb,
+                         U                    alpha_device_host,
+                         J                    size_of_mask,
+                         const J*             bsr_mask_ptr,
+                         const I*             bsr_row_ptr,
+                         const I*             bsr_end_ptr,
+                         const J*             bsr_col_ind,
+                         const A*             bsr_val,
+                         J                    bsr_dim,
+                         const X*             x,
+                         U                    beta_device_host,
+                         Y*                   y,
+                         rocsparse_index_base base);
+}

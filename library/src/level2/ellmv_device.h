@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,109 +26,112 @@
 
 #include "common.h"
 
-// ELL SpMV for general, non-transposed matrices
-template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
-ROCSPARSE_DEVICE_ILF void ellmvn_device(I                    m,
-                                        I                    n,
-                                        I                    ell_width,
-                                        T                    alpha,
-                                        const I*             ell_col_ind,
-                                        const A*             ell_val,
-                                        const X*             x,
-                                        T                    beta,
-                                        Y*                   y,
-                                        rocsparse_index_base idx_base)
+namespace rocsparse
 {
-    I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
-
-    if(ai >= m)
+    // ELL SpMV for general, non-transposed matrices
+    template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
+    ROCSPARSE_DEVICE_ILF void ellmvn_device(I                    m,
+                                            I                    n,
+                                            I                    ell_width,
+                                            T                    alpha,
+                                            const I*             ell_col_ind,
+                                            const A*             ell_val,
+                                            const X*             x,
+                                            T                    beta,
+                                            Y*                   y,
+                                            rocsparse_index_base idx_base)
     {
-        return;
-    }
+        I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 
-    T sum = static_cast<T>(0);
-    for(I p = 0; p < ell_width; ++p)
-    {
-        int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
-        I       col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
-
-        if(col >= 0 && col < n)
+        if(ai >= m)
         {
-            sum = rocsparse_fma<T>(
-                rocsparse_nontemporal_load(ell_val + idx), rocsparse_ldg(x + col), sum);
+            return;
         }
-        else
+
+        T sum = static_cast<T>(0);
+        for(I p = 0; p < ell_width; ++p)
         {
-            break;
-        }
-    }
+            int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
+            I       col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
 
-    if(beta != static_cast<T>(0))
-    {
-        Y yv = rocsparse_nontemporal_load(y + ai);
-        rocsparse_nontemporal_store(rocsparse_fma<T>(beta, yv, alpha * sum), y + ai);
-    }
-    else
-    {
-        rocsparse_nontemporal_store(alpha * sum, y + ai);
-    }
-}
-
-// Scale
-template <typename I, typename Y, typename T>
-ROCSPARSE_DEVICE_ILF void ellmvt_scale_device(I size, T scalar, Y* data)
-{
-    I idx = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if(idx >= size)
-    {
-        return;
-    }
-
-    data[idx] *= scalar;
-}
-
-// ELL SpMV for general, (conjugate) transposed matrices
-template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
-ROCSPARSE_DEVICE_ILF void ellmvt_device(rocsparse_operation  trans,
-                                        I                    m,
-                                        I                    n,
-                                        I                    ell_width,
-                                        T                    alpha,
-                                        const I*             ell_col_ind,
-                                        const A*             ell_val,
-                                        const X*             x,
-                                        Y*                   y,
-                                        rocsparse_index_base idx_base)
-{
-    I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
-
-    if(ai >= m)
-    {
-        return;
-    }
-
-    T row_val = alpha * rocsparse_ldg(x + ai);
-
-    for(I p = 0; p < ell_width; ++p)
-    {
-        int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
-        I       col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
-
-        if(col >= 0 && col < n)
-        {
-            A val = rocsparse_nontemporal_load(ell_val + idx);
-
-            if(trans == rocsparse_operation_conjugate_transpose)
+            if(col >= 0 && col < n)
             {
-                val = rocsparse_conj(val);
+                sum = rocsparse_fma<T>(
+                    rocsparse_nontemporal_load(ell_val + idx), rocsparse_ldg(x + col), sum);
             }
+            else
+            {
+                break;
+            }
+        }
 
-            rocsparse_atomic_add(&y[col], row_val * val);
+        if(beta != static_cast<T>(0))
+        {
+            Y yv = rocsparse_nontemporal_load(y + ai);
+            rocsparse_nontemporal_store(rocsparse_fma<T>(beta, yv, alpha * sum), y + ai);
         }
         else
         {
-            break;
+            rocsparse_nontemporal_store(alpha * sum, y + ai);
+        }
+    }
+
+    // Scale
+    template <typename I, typename Y, typename T>
+    ROCSPARSE_DEVICE_ILF void ellmvt_scale_device(I size, T scalar, Y* data)
+    {
+        I idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+        if(idx >= size)
+        {
+            return;
+        }
+
+        data[idx] *= scalar;
+    }
+
+    // ELL SpMV for general, (conjugate) transposed matrices
+    template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
+    ROCSPARSE_DEVICE_ILF void ellmvt_device(rocsparse_operation  trans,
+                                            I                    m,
+                                            I                    n,
+                                            I                    ell_width,
+                                            T                    alpha,
+                                            const I*             ell_col_ind,
+                                            const A*             ell_val,
+                                            const X*             x,
+                                            Y*                   y,
+                                            rocsparse_index_base idx_base)
+    {
+        I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+
+        if(ai >= m)
+        {
+            return;
+        }
+
+        T row_val = alpha * rocsparse_ldg(x + ai);
+
+        for(I p = 0; p < ell_width; ++p)
+        {
+            int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
+            I       col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
+
+            if(col >= 0 && col < n)
+            {
+                A val = rocsparse_nontemporal_load(ell_val + idx);
+
+                if(trans == rocsparse_operation_conjugate_transpose)
+                {
+                    val = rocsparse_conj(val);
+                }
+
+                rocsparse_atomic_add(&y[col], row_val * val);
+            }
+            else
+            {
+                break;
+            }
         }
     }
 }

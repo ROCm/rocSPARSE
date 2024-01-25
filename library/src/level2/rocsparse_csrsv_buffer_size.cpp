@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,16 @@
 #include <rocprim/rocprim.hpp>
 
 template <typename I, typename J, typename T>
-rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          handle,
-                                                      rocsparse_operation       trans,
-                                                      J                         m,
-                                                      I                         nnz,
-                                                      const rocsparse_mat_descr descr,
-                                                      const T*                  csr_val,
-                                                      const I*                  csr_row_ptr,
-                                                      const J*                  csr_col_ind,
-                                                      rocsparse_mat_info        info,
-                                                      size_t*                   buffer_size)
+rocsparse_status rocsparse::csrsv_buffer_size_template(rocsparse_handle          handle,
+                                                       rocsparse_operation       trans,
+                                                       J                         m,
+                                                       I                         nnz,
+                                                       const rocsparse_mat_descr descr,
+                                                       const T*                  csr_val,
+                                                       const I*                  csr_row_ptr,
+                                                       const J*                  csr_col_ind,
+                                                       rocsparse_mat_info        info,
+                                                       size_t*                   buffer_size)
 {
     // Check for valid handle and matrix descriptor
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -139,17 +139,17 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                            \
-    template rocsparse_status rocsparse_csrsv_buffer_size_template( \
-        rocsparse_handle          handle,                           \
-        rocsparse_operation       trans,                            \
-        JTYPE                     m,                                \
-        ITYPE                     nnz,                              \
-        const rocsparse_mat_descr descr,                            \
-        const TTYPE*              csr_val,                          \
-        const ITYPE*              csr_row_ptr,                      \
-        const JTYPE*              csr_col_ind,                      \
-        rocsparse_mat_info        info,                             \
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                             \
+    template rocsparse_status rocsparse::csrsv_buffer_size_template( \
+        rocsparse_handle          handle,                            \
+        rocsparse_operation       trans,                             \
+        JTYPE                     m,                                 \
+        ITYPE                     nnz,                               \
+        const rocsparse_mat_descr descr,                             \
+        const TTYPE*              csr_val,                           \
+        const ITYPE*              csr_row_ptr,                       \
+        const JTYPE*              csr_col_ind,                       \
+        rocsparse_mat_info        info,                              \
         size_t*                   buffer_size);
 
 INSTANTIATE(int32_t, int32_t, float);
@@ -184,7 +184,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                      size_t*                   buffer_size)                       \
     try                                                                                           \
     {                                                                                             \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size_template(                           \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_buffer_size_template(                          \
             handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size)); \
         return rocsparse_status_success;                                                          \
     }                                                                                             \

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,7 @@ rocsparse_status rocsparse_csrsm_buffer_size_core(rocsparse_handle          hand
         //
         // Call csrsv.
         //
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size_template(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_buffer_size_template(
             handle, trans_A, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size));
         *buffer_size += ((sizeof(T) * m - 1) / 256 + 1) * 256;
         return rocsparse_status_success;
