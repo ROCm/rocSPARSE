@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,46 +26,27 @@
 
 #include "handle.h"
 
-template <typename T, typename U>
-rocsparse_status rocsparse_gebsrmm_template_dispatch(rocsparse_handle          handle,
-                                                     rocsparse_direction       dir,
-                                                     rocsparse_operation       trans_A,
-                                                     rocsparse_operation       trans_B,
-                                                     rocsparse_int             mb,
-                                                     rocsparse_int             n,
-                                                     rocsparse_int             kb,
-                                                     rocsparse_int             nnzb,
-                                                     U                         alpha,
-                                                     const rocsparse_mat_descr descr,
-                                                     const T*                  bsr_val,
-                                                     const rocsparse_int*      bsr_row_ptr,
-                                                     const rocsparse_int*      bsr_col_ind,
-                                                     rocsparse_int             row_block_dim,
-                                                     rocsparse_int             col_block_dim,
-                                                     const T*                  B,
-                                                     int64_t                   ldb,
-                                                     U                         beta,
-                                                     T*                        C,
-                                                     int64_t                   ldc);
-
-template <typename T>
-rocsparse_status rocsparse_gebsrmm_template(rocsparse_handle          handle,
-                                            rocsparse_direction       dir,
-                                            rocsparse_operation       trans_A,
-                                            rocsparse_operation       trans_B,
-                                            rocsparse_int             mb,
-                                            rocsparse_int             n,
-                                            rocsparse_int             kb,
-                                            rocsparse_int             nnzb,
-                                            const T*                  alpha,
-                                            const rocsparse_mat_descr descr,
-                                            const T*                  bsr_val,
-                                            const rocsparse_int*      bsr_row_ptr,
-                                            const rocsparse_int*      bsr_col_ind,
-                                            rocsparse_int             row_block_dim,
-                                            rocsparse_int             col_block_dim,
-                                            const T*                  B,
-                                            int64_t                   ldb,
-                                            const T*                  beta,
-                                            T*                        C,
-                                            int64_t                   ldc);
+namespace rocsparse
+{
+    template <typename T, typename U>
+    rocsparse_status gebsrmm_template_dispatch(rocsparse_handle          handle,
+                                               rocsparse_direction       dir,
+                                               rocsparse_operation       trans_A,
+                                               rocsparse_operation       trans_B,
+                                               rocsparse_int             mb,
+                                               rocsparse_int             n,
+                                               rocsparse_int             kb,
+                                               rocsparse_int             nnzb,
+                                               U                         alpha,
+                                               const rocsparse_mat_descr descr,
+                                               const T*                  bsr_val,
+                                               const rocsparse_int*      bsr_row_ptr,
+                                               const rocsparse_int*      bsr_col_ind,
+                                               rocsparse_int             row_block_dim,
+                                               rocsparse_int             col_block_dim,
+                                               const T*                  B,
+                                               int64_t                   ldb,
+                                               U                         beta,
+                                               T*                        C,
+                                               int64_t                   ldc);
+}

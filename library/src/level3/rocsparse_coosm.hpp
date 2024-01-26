@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,57 +26,60 @@
 
 #include "handle.h"
 
-template <typename I, typename T>
-rocsparse_status rocsparse_coosm_buffer_size_template(rocsparse_handle          handle,
-                                                      rocsparse_operation       trans_A,
-                                                      rocsparse_operation       trans_B,
-                                                      I                         m,
-                                                      I                         nrhs,
-                                                      int64_t                   nnz,
-                                                      const T*                  alpha,
-                                                      const rocsparse_mat_descr descr,
-                                                      const T*                  coo_val,
-                                                      const I*                  coo_row_ind,
-                                                      const I*                  coo_col_ind,
-                                                      const T*                  B,
-                                                      int64_t                   ldb,
-                                                      rocsparse_mat_info        info,
-                                                      rocsparse_solve_policy    policy,
-                                                      size_t*                   buffer_size);
-
-template <typename I, typename T>
-rocsparse_status rocsparse_coosm_analysis_template(rocsparse_handle          handle,
-                                                   rocsparse_operation       trans_A,
-                                                   rocsparse_operation       trans_B,
-                                                   I                         m,
-                                                   I                         nrhs,
-                                                   int64_t                   nnz,
-                                                   const T*                  alpha,
-                                                   const rocsparse_mat_descr descr,
-                                                   const T*                  coo_val,
-                                                   const I*                  coo_row_ind,
-                                                   const I*                  coo_col_ind,
-                                                   const T*                  B,
-                                                   int64_t                   ldb,
-                                                   rocsparse_mat_info        info,
-                                                   rocsparse_analysis_policy analysis,
-                                                   rocsparse_solve_policy    solve,
-                                                   void*                     temp_buffer);
-
-template <typename I, typename T>
-rocsparse_status rocsparse_coosm_solve_template(rocsparse_handle          handle,
+namespace rocsparse
+{
+    template <typename I, typename T>
+    rocsparse_status coosm_buffer_size_template(rocsparse_handle          handle,
                                                 rocsparse_operation       trans_A,
                                                 rocsparse_operation       trans_B,
                                                 I                         m,
                                                 I                         nrhs,
                                                 int64_t                   nnz,
-                                                const T*                  alpha_device_host,
+                                                const T*                  alpha,
                                                 const rocsparse_mat_descr descr,
                                                 const T*                  coo_val,
                                                 const I*                  coo_row_ind,
                                                 const I*                  coo_col_ind,
-                                                T*                        B,
+                                                const T*                  B,
                                                 int64_t                   ldb,
                                                 rocsparse_mat_info        info,
                                                 rocsparse_solve_policy    policy,
-                                                void*                     temp_buffer);
+                                                size_t*                   buffer_size);
+
+    template <typename I, typename T>
+    rocsparse_status coosm_analysis_template(rocsparse_handle          handle,
+                                             rocsparse_operation       trans_A,
+                                             rocsparse_operation       trans_B,
+                                             I                         m,
+                                             I                         nrhs,
+                                             int64_t                   nnz,
+                                             const T*                  alpha,
+                                             const rocsparse_mat_descr descr,
+                                             const T*                  coo_val,
+                                             const I*                  coo_row_ind,
+                                             const I*                  coo_col_ind,
+                                             const T*                  B,
+                                             int64_t                   ldb,
+                                             rocsparse_mat_info        info,
+                                             rocsparse_analysis_policy analysis,
+                                             rocsparse_solve_policy    solve,
+                                             void*                     temp_buffer);
+
+    template <typename I, typename T>
+    rocsparse_status coosm_solve_template(rocsparse_handle          handle,
+                                          rocsparse_operation       trans_A,
+                                          rocsparse_operation       trans_B,
+                                          I                         m,
+                                          I                         nrhs,
+                                          int64_t                   nnz,
+                                          const T*                  alpha_device_host,
+                                          const rocsparse_mat_descr descr,
+                                          const T*                  coo_val,
+                                          const I*                  coo_row_ind,
+                                          const I*                  coo_col_ind,
+                                          T*                        B,
+                                          int64_t                   ldb,
+                                          rocsparse_mat_info        info,
+                                          rocsparse_solve_policy    policy,
+                                          void*                     temp_buffer);
+}

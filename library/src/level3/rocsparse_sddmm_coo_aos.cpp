@@ -25,7 +25,7 @@
 #include "rocsparse_sddmm_coox_kernel.hpp"
 
 template <typename I, typename J, typename T>
-struct rocsparse_sddmm_st<rocsparse_format_coo_aos, rocsparse_sddmm_alg_default, I, J, T>
+struct rocsparse::rocsparse_sddmm_st<rocsparse_format_coo_aos, rocsparse_sddmm_alg_default, I, J, T>
 {
 
     static rocsparse_status buffer_size(rocsparse_handle     handle,
@@ -106,62 +106,62 @@ struct rocsparse_sddmm_st<rocsparse_format_coo_aos, rocsparse_sddmm_alg_default,
     {
 
         static constexpr int NB = 512;
-#define HLAUNCH(K_)                                                                \
-    int64_t num_blocks_x = (nnz - 1) / (NB / K_) + 1;                              \
-    dim3    blocks(num_blocks_x);                                                  \
-    dim3    threads(NB);                                                           \
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((sddmm_coox_kernel<NB, K_, true, I, J, T>), \
-                                       blocks,                                     \
-                                       threads,                                    \
-                                       0,                                          \
-                                       handle->stream,                             \
-                                       trans_A,                                    \
-                                       trans_B,                                    \
-                                       order_A,                                    \
-                                       order_B,                                    \
-                                       m,                                          \
-                                       n,                                          \
-                                       k,                                          \
-                                       nnz,                                        \
-                                       *(const T*)alpha,                           \
-                                       A_val,                                      \
-                                       A_ld,                                       \
-                                       B_val,                                      \
-                                       B_ld,                                       \
-                                       *(const T*)beta,                            \
-                                       (T*)C_val_data,                             \
-                                       (const I*)C_row_data,                       \
-                                       (const J*)C_col_data,                       \
-                                       C_base,                                     \
+#define HLAUNCH(K_)                                                                           \
+    int64_t num_blocks_x = (nnz - 1) / (NB / K_) + 1;                                         \
+    dim3    blocks(num_blocks_x);                                                             \
+    dim3    threads(NB);                                                                      \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::sddmm_coox_kernel<NB, K_, true, I, J, T>), \
+                                       blocks,                                                \
+                                       threads,                                               \
+                                       0,                                                     \
+                                       handle->stream,                                        \
+                                       trans_A,                                               \
+                                       trans_B,                                               \
+                                       order_A,                                               \
+                                       order_B,                                               \
+                                       m,                                                     \
+                                       n,                                                     \
+                                       k,                                                     \
+                                       nnz,                                                   \
+                                       *(const T*)alpha,                                      \
+                                       A_val,                                                 \
+                                       A_ld,                                                  \
+                                       B_val,                                                 \
+                                       B_ld,                                                  \
+                                       *(const T*)beta,                                       \
+                                       (T*)C_val_data,                                        \
+                                       (const I*)C_row_data,                                  \
+                                       (const J*)C_col_data,                                  \
+                                       C_base,                                                \
                                        (T*)buffer)
 
-#define DLAUNCH(K_)                                                                \
-    int64_t num_blocks_x = (nnz - 1) / (NB / K_) + 1;                              \
-    dim3    blocks(num_blocks_x);                                                  \
-    dim3    threads(NB);                                                           \
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((sddmm_coox_kernel<NB, K_, true, I, J, T>), \
-                                       blocks,                                     \
-                                       threads,                                    \
-                                       0,                                          \
-                                       handle->stream,                             \
-                                       trans_A,                                    \
-                                       trans_B,                                    \
-                                       order_A,                                    \
-                                       order_B,                                    \
-                                       m,                                          \
-                                       n,                                          \
-                                       k,                                          \
-                                       nnz,                                        \
-                                       alpha,                                      \
-                                       A_val,                                      \
-                                       A_ld,                                       \
-                                       B_val,                                      \
-                                       B_ld,                                       \
-                                       beta,                                       \
-                                       (T*)C_val_data,                             \
-                                       (const I*)C_row_data,                       \
-                                       (const J*)C_col_data,                       \
-                                       C_base,                                     \
+#define DLAUNCH(K_)                                                                           \
+    int64_t num_blocks_x = (nnz - 1) / (NB / K_) + 1;                                         \
+    dim3    blocks(num_blocks_x);                                                             \
+    dim3    threads(NB);                                                                      \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::sddmm_coox_kernel<NB, K_, true, I, J, T>), \
+                                       blocks,                                                \
+                                       threads,                                               \
+                                       0,                                                     \
+                                       handle->stream,                                        \
+                                       trans_A,                                               \
+                                       trans_B,                                               \
+                                       order_A,                                               \
+                                       order_B,                                               \
+                                       m,                                                     \
+                                       n,                                                     \
+                                       k,                                                     \
+                                       nnz,                                                   \
+                                       alpha,                                                 \
+                                       A_val,                                                 \
+                                       A_ld,                                                  \
+                                       B_val,                                                 \
+                                       B_ld,                                                  \
+                                       beta,                                                  \
+                                       (T*)C_val_data,                                        \
+                                       (const I*)C_row_data,                                  \
+                                       (const J*)C_col_data,                                  \
+                                       C_base,                                                \
                                        (T*)buffer)
 
         if(handle->pointer_mode == rocsparse_pointer_mode_host)
@@ -212,7 +212,7 @@ struct rocsparse_sddmm_st<rocsparse_format_coo_aos, rocsparse_sddmm_alg_default,
 };
 
 template <typename I, typename J, typename T>
-struct rocsparse_sddmm_st<rocsparse_format_coo_aos, rocsparse_sddmm_alg_dense, I, J, T>
+struct rocsparse::rocsparse_sddmm_st<rocsparse_format_coo_aos, rocsparse_sddmm_alg_dense, I, J, T>
 {
     static rocsparse_status buffer_size(rocsparse_handle     handle,
                                         rocsparse_operation  trans_A,
@@ -357,7 +357,7 @@ struct rocsparse_sddmm_st<rocsparse_format_coo_aos, rocsparse_sddmm_alg_dense, I
         const dim3 blocks(num_blocks_x);
         const dim3 threads(NB);
 
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((sddmm_coox_sample_kernel<NB, true, I, J, T>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::sddmm_coox_sample_kernel<NB, true, I, J, T>),
                                            blocks,
                                            threads,
                                            0,
@@ -376,17 +376,17 @@ struct rocsparse_sddmm_st<rocsparse_format_coo_aos, rocsparse_sddmm_alg_dense, I
     }
 };
 
-#define INSTANTIATE(ITYPE_, JTYPE_, TTYPE_)                         \
-    template struct rocsparse_sddmm_st<rocsparse_format_coo_aos,    \
-                                       rocsparse_sddmm_alg_default, \
-                                       ITYPE_,                      \
-                                       JTYPE_,                      \
-                                       TTYPE_>;                     \
-    template struct rocsparse_sddmm_st<rocsparse_format_coo_aos,    \
-                                       rocsparse_sddmm_alg_dense,   \
-                                       ITYPE_,                      \
-                                       JTYPE_,                      \
-                                       TTYPE_>
+#define INSTANTIATE(ITYPE_, JTYPE_, TTYPE_)                                    \
+    template struct rocsparse::rocsparse_sddmm_st<rocsparse_format_coo_aos,    \
+                                                  rocsparse_sddmm_alg_default, \
+                                                  ITYPE_,                      \
+                                                  JTYPE_,                      \
+                                                  TTYPE_>;                     \
+    template struct rocsparse::rocsparse_sddmm_st<rocsparse_format_coo_aos,    \
+                                                  rocsparse_sddmm_alg_dense,   \
+                                                  ITYPE_,                      \
+                                                  JTYPE_,                      \
+                                                  TTYPE_>
 
 INSTANTIATE(int32_t, int32_t, float);
 INSTANTIATE(int32_t, int32_t, double);
