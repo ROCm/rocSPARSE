@@ -33,11 +33,11 @@
 #include "rocsparse_csrmv.hpp"
 #include "rocsparse_ellmv.hpp"
 
-rocsparse_indextype determine_I_index_type(rocsparse_const_spmat_descr mat);
-rocsparse_indextype determine_J_index_type(rocsparse_const_spmat_descr mat);
-
 namespace rocsparse
 {
+    rocsparse_indextype determine_I_index_type(rocsparse_const_spmat_descr mat);
+    rocsparse_indextype determine_J_index_type(rocsparse_const_spmat_descr mat);
+
     static rocsparse_status check_spmv_alg(rocsparse_format format, rocsparse_spmv_alg alg)
     {
         switch(format)
@@ -867,23 +867,24 @@ try
     ROCSPARSE_CHECKARG(6, y, (y->init == false), rocsparse_status_not_initialized);
     // LCOV_EXCL_STOP
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse::spmv_dynamic_dispatch(determine_I_index_type(mat),
-                                                               determine_J_index_type(mat),
-                                                               mat->data_type,
-                                                               x->data_type,
-                                                               y->data_type,
-                                                               compute_type,
-                                                               handle,
-                                                               trans,
-                                                               alpha,
-                                                               mat,
-                                                               x,
-                                                               beta,
-                                                               y,
-                                                               alg,
-                                                               stage,
-                                                               buffer_size,
-                                                               temp_buffer));
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse::spmv_dynamic_dispatch(rocsparse::determine_I_index_type(mat),
+                                         rocsparse::determine_J_index_type(mat),
+                                         mat->data_type,
+                                         x->data_type,
+                                         y->data_type,
+                                         compute_type,
+                                         handle,
+                                         trans,
+                                         alpha,
+                                         mat,
+                                         x,
+                                         beta,
+                                         y,
+                                         alg,
+                                         stage,
+                                         buffer_size,
+                                         temp_buffer));
     return rocsparse_status_success;
 }
 catch(...)

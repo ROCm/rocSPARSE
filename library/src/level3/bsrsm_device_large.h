@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,330 +26,339 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void bsrsm_upper_large_kernel(rocsparse_int        mb,
-                              rocsparse_int        nrhs,
-                              const rocsparse_int* bsr_row_ptr,
-                              const rocsparse_int* bsr_col_ind,
-                              const T*             bsr_val,
-                              rocsparse_int        block_dim,
-                              T*                   X,
-                              rocsparse_int        ldx,
-                              int*                 done_array,
-                              const rocsparse_int* map,
-                              rocsparse_int*       zero_pivot,
-                              rocsparse_index_base idx_base,
-                              rocsparse_diag_type  diag_type,
-                              rocsparse_direction  dir)
+namespace rocsparse
 {
-    static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
-
-    int lid = threadIdx.x & (WFSIZE - 1);
-
-    // Index into the row map
-    rocsparse_int idx = blockIdx.x % mb;
-
-    // Get the BSR row this thread block will operate on
-    rocsparse_int row = map[idx];
-
-    // Get the id of the rhs, this thread block will operate on
-    rocsparse_int id = blockIdx.x / mb * mb;
-
-    // Current row entry and exit point
-    rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
-
-    // Column index (rhs) into X
-    rocsparse_int col_X = blockIdx.x / mb * NCOLS + threadIdx.x / WFSIZE;
-
-    // Initialize local_col with mb
-    rocsparse_int local_col = mb;
-
-    // Loop over current row
-    rocsparse_int j;
-    for(j = row_end - 1; j >= row_begin; --j)
+    template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void bsrsm_upper_large_kernel(rocsparse_int        mb,
+                                  rocsparse_int        nrhs,
+                                  const rocsparse_int* bsr_row_ptr,
+                                  const rocsparse_int* bsr_col_ind,
+                                  const T*             bsr_val,
+                                  rocsparse_int        block_dim,
+                                  T*                   X,
+                                  rocsparse_int        ldx,
+                                  int*                 done_array,
+                                  const rocsparse_int* map,
+                                  rocsparse_int*       zero_pivot,
+                                  rocsparse_index_base idx_base,
+                                  rocsparse_diag_type  diag_type,
+                                  rocsparse_direction  dir)
     {
-        // Current column index
-        local_col = bsr_col_ind[j] - idx_base;
+        static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
 
-        // Processing upper triangular
+        int lid = threadIdx.x & (WFSIZE - 1);
 
-        // Ignore all diagonal entries and below
-        if(local_col <= row)
+        // Index into the row map
+        rocsparse_int idx = blockIdx.x % mb;
+
+        // Get the BSR row this thread block will operate on
+        rocsparse_int row = map[idx];
+
+        // Get the id of the rhs, this thread block will operate on
+        rocsparse_int id = blockIdx.x / mb * mb;
+
+        // Current row entry and exit point
+        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+
+        // Column index (rhs) into X
+        rocsparse_int col_X = blockIdx.x / mb * NCOLS + threadIdx.x / WFSIZE;
+
+        // Initialize local_col with mb
+        rocsparse_int local_col = mb;
+
+        // Loop over current row
+        rocsparse_int j;
+        for(j = row_end - 1; j >= row_begin; --j)
         {
-            break;
-        }
+            // Current column index
+            local_col = bsr_col_ind[j] - idx_base;
 
-        // Spin loop until dependency has been resolved
-        if(threadIdx.x == 0)
-        {
-            int local_done = __hip_atomic_load(
-                &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            unsigned int times_through = 0;
-            while(!local_done)
+            // Processing upper triangular
+
+            // Ignore all diagonal entries and below
+            if(local_col <= row)
             {
-                if(SLEEP)
-                {
-                    for(unsigned int i = 0; i < times_through; ++i)
-                    {
-                        __builtin_amdgcn_s_sleep(1);
-                    }
+                break;
+            }
 
-                    if(times_through < 3907)
-                    {
-                        ++times_through;
-                    }
-                }
-
-                local_done = __hip_atomic_load(
+            // Spin loop until dependency has been resolved
+            if(threadIdx.x == 0)
+            {
+                int local_done = __hip_atomic_load(
                     &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+                unsigned int times_through = 0;
+                while(!local_done)
+                {
+                    if(SLEEP)
+                    {
+                        for(unsigned int i = 0; i < times_through; ++i)
+                        {
+                            __builtin_amdgcn_s_sleep(1);
+                        }
+
+                        if(times_through < 3907)
+                        {
+                            ++times_through;
+                        }
+                    }
+
+                    local_done = __hip_atomic_load(
+                        &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+                }
+            }
+
+            // Make sure updated X is visible globally
+            __threadfence();
+
+            // Wait for spin looping thread to finish as the whole block depends on this row
+            __syncthreads();
+
+            // Local sum computation
+
+            // Do not run out of bounds
+            if(col_X < nrhs)
+            {
+                // Loop over rows of the BSR block
+                for(int bi = lid; bi < block_dim; bi += WFSIZE)
+                {
+                    // Local sum accumulator
+                    T sum = static_cast<T>(0);
+
+                    // Loop over columns of the BSR block
+                    for(int bj = 0; bj < block_dim; ++bj)
+                    {
+                        sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
+                                            X[(block_dim * local_col + bj) * ldx + col_X],
+                                            sum);
+                    }
+
+                    // Write local sum to X
+                    X[(block_dim * row + bi) * ldx + col_X] -= sum;
+                }
             }
         }
 
-        // Make sure updated X is visible globally
-        __threadfence();
+        bool pivot = false;
 
-        // Wait for spin looping thread to finish as the whole block depends on this row
-        __syncthreads();
-
-        // Local sum computation
-
-        // Do not run out of bounds
-        if(col_X < nrhs)
+        // Process diagonal
+        if(row < mb && row == local_col && col_X < nrhs)
         {
             // Loop over rows of the BSR block
-            for(int bi = lid; bi < block_dim; bi += WFSIZE)
+            for(int bi = block_dim - 1; bi >= 0; --bi)
             {
-                // Local sum accumulator
-                T sum = static_cast<T>(0);
+                // Load diagonal matrix entry
+                T diag = (diag_type == rocsparse_diag_type_non_unit)
+                             ? bsr_val[BSR_IND(j, bi, bi, dir)]
+                             : static_cast<T>(1);
 
-                // Loop over columns of the BSR block
-                for(int bj = 0; bj < block_dim; ++bj)
+                // Load result of bi-th BSR row
+                T val = X[(block_dim * row + bi) * ldx + col_X];
+
+                // Check for numerical pivot
+                if(diag == static_cast<T>(0))
                 {
-                    sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
-                                        X[(block_dim * local_col + bj) * ldx + col_X],
-                                        sum);
+                    pivot = true;
+                }
+                else
+                {
+                    // Divide result of bi-th BSR row by diagonal entry
+                    X[(block_dim * row + bi) * ldx + col_X] = val /= diag;
                 }
 
-                // Write local sum to X
-                X[(block_dim * row + bi) * ldx + col_X] -= sum;
-            }
-        }
-    }
-
-    bool pivot = false;
-
-    // Process diagonal
-    if(row < mb && row == local_col && col_X < nrhs)
-    {
-        // Loop over rows of the BSR block
-        for(int bi = block_dim - 1; bi >= 0; --bi)
-        {
-            // Load diagonal matrix entry
-            T diag = (diag_type == rocsparse_diag_type_non_unit) ? bsr_val[BSR_IND(j, bi, bi, dir)]
-                                                                 : static_cast<T>(1);
-
-            // Load result of bi-th BSR row
-            T val = X[(block_dim * row + bi) * ldx + col_X];
-
-            // Check for numerical pivot
-            if(diag == static_cast<T>(0))
-            {
-                pivot = true;
-            }
-            else
-            {
-                // Divide result of bi-th BSR row by diagonal entry
-                X[(block_dim * row + bi) * ldx + col_X] = val /= diag;
-            }
-
-            // Update remaining non-diagonal entries
-            for(int bj = lid; bj < bi; bj += WFSIZE)
-            {
-                X[(block_dim * row + bj) * ldx + col_X] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
-            }
-        }
-    }
-
-    // Make sure X is written to global memory before setting row is done flag
-    __threadfence();
-
-    // Wait for all threads to finish the threadfence before we mark the row "done"
-    __syncthreads();
-
-    if(row < mb && threadIdx.x == 0)
-    {
-        // Write "row is done" flag
-        __hip_atomic_store(&done_array[row + id], 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-
-        if(pivot == true)
-        {
-            rocsparse_atomic_min(zero_pivot, row + idx_base);
-        }
-    }
-}
-
-template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void bsrsm_lower_large_kernel(rocsparse_int        mb,
-                              rocsparse_int        nrhs,
-                              const rocsparse_int* bsr_row_ptr,
-                              const rocsparse_int* bsr_col_ind,
-                              const T*             bsr_val,
-                              rocsparse_int        block_dim,
-                              T*                   X,
-                              rocsparse_int        ldx,
-                              int*                 done_array,
-                              const rocsparse_int* map,
-                              rocsparse_int*       zero_pivot,
-                              rocsparse_index_base idx_base,
-                              rocsparse_diag_type  diag_type,
-                              rocsparse_direction  dir)
-{
-    static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
-
-    int lid = threadIdx.x & (WFSIZE - 1);
-
-    // Index into the row map
-    rocsparse_int idx = blockIdx.x % mb;
-
-    // Get the BSR row this thread block will operate on
-    rocsparse_int row = map[idx];
-
-    // Get the id of the rhs, this thread block will operate on
-    rocsparse_int id = blockIdx.x / mb * mb;
-
-    // Current row entry and exit point
-    rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
-
-    // Column index into X
-    rocsparse_int col_X = blockIdx.x / mb * NCOLS + threadIdx.x / WFSIZE;
-
-    // Initialize local_col with mb
-    rocsparse_int local_col = mb;
-
-    // Loop over current row
-    rocsparse_int j;
-    for(j = row_begin; j < row_end; ++j)
-    {
-        // Current column index
-        local_col = bsr_col_ind[j] - idx_base;
-
-        // Processing lower triangular
-
-        // Ignore all diagonal entries and above
-        if(local_col >= row)
-        {
-            break;
-        }
-
-        // Spin loop until dependency has been resolved
-        if(threadIdx.x == 0)
-        {
-            int local_done = __hip_atomic_load(
-                &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            unsigned int times_through = 0;
-            while(!local_done)
-            {
-                if(SLEEP)
+                // Update remaining non-diagonal entries
+                for(int bj = lid; bj < bi; bj += WFSIZE)
                 {
-                    for(unsigned int i = 0; i < times_through; ++i)
-                    {
-                        __builtin_amdgcn_s_sleep(1);
-                    }
-
-                    if(times_through < 3907)
-                    {
-                        ++times_through;
-                    }
+                    X[(block_dim * row + bj) * ldx + col_X]
+                        -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
                 }
-
-                local_done = __hip_atomic_load(
-                    &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
             }
         }
 
-        // Make sure updated X is visible globally
+        // Make sure X is written to global memory before setting row is done flag
         __threadfence();
 
-        // Wait for spin looping thread to finish as the whole block depends on this row
+        // Wait for all threads to finish the threadfence before we mark the row "done"
         __syncthreads();
 
-        // Local sum computation
+        if(row < mb && threadIdx.x == 0)
+        {
+            // Write "row is done" flag
+            __hip_atomic_store(
+                &done_array[row + id], 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 
-        // Do not run out of bounds
-        if(col_X < nrhs)
+            if(pivot == true)
+            {
+                rocsparse_atomic_min(zero_pivot, row + idx_base);
+            }
+        }
+    }
+
+    template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void bsrsm_lower_large_kernel(rocsparse_int        mb,
+                                  rocsparse_int        nrhs,
+                                  const rocsparse_int* bsr_row_ptr,
+                                  const rocsparse_int* bsr_col_ind,
+                                  const T*             bsr_val,
+                                  rocsparse_int        block_dim,
+                                  T*                   X,
+                                  rocsparse_int        ldx,
+                                  int*                 done_array,
+                                  const rocsparse_int* map,
+                                  rocsparse_int*       zero_pivot,
+                                  rocsparse_index_base idx_base,
+                                  rocsparse_diag_type  diag_type,
+                                  rocsparse_direction  dir)
+    {
+        static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
+
+        int lid = threadIdx.x & (WFSIZE - 1);
+
+        // Index into the row map
+        rocsparse_int idx = blockIdx.x % mb;
+
+        // Get the BSR row this thread block will operate on
+        rocsparse_int row = map[idx];
+
+        // Get the id of the rhs, this thread block will operate on
+        rocsparse_int id = blockIdx.x / mb * mb;
+
+        // Current row entry and exit point
+        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+
+        // Column index into X
+        rocsparse_int col_X = blockIdx.x / mb * NCOLS + threadIdx.x / WFSIZE;
+
+        // Initialize local_col with mb
+        rocsparse_int local_col = mb;
+
+        // Loop over current row
+        rocsparse_int j;
+        for(j = row_begin; j < row_end; ++j)
+        {
+            // Current column index
+            local_col = bsr_col_ind[j] - idx_base;
+
+            // Processing lower triangular
+
+            // Ignore all diagonal entries and above
+            if(local_col >= row)
+            {
+                break;
+            }
+
+            // Spin loop until dependency has been resolved
+            if(threadIdx.x == 0)
+            {
+                int local_done = __hip_atomic_load(
+                    &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+                unsigned int times_through = 0;
+                while(!local_done)
+                {
+                    if(SLEEP)
+                    {
+                        for(unsigned int i = 0; i < times_through; ++i)
+                        {
+                            __builtin_amdgcn_s_sleep(1);
+                        }
+
+                        if(times_through < 3907)
+                        {
+                            ++times_through;
+                        }
+                    }
+
+                    local_done = __hip_atomic_load(
+                        &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+                }
+            }
+
+            // Make sure updated X is visible globally
+            __threadfence();
+
+            // Wait for spin looping thread to finish as the whole block depends on this row
+            __syncthreads();
+
+            // Local sum computation
+
+            // Do not run out of bounds
+            if(col_X < nrhs)
+            {
+                // Loop over rows of the BSR block
+                for(int bi = lid; bi < block_dim; bi += WFSIZE)
+                {
+                    // Local sum accumulator
+                    T sum = static_cast<T>(0);
+
+                    // Loop over columns of the BSR block
+                    for(int bj = 0; bj < block_dim; ++bj)
+                    {
+                        sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
+                                            X[(block_dim * local_col + bj) * ldx + col_X],
+                                            sum);
+                    }
+
+                    // Write local sum to X
+                    X[(block_dim * row + bi) * ldx + col_X] -= sum;
+                }
+            }
+        }
+
+        bool pivot = false;
+
+        // Process diagonal
+        if(row < mb && row == local_col && col_X < nrhs)
         {
             // Loop over rows of the BSR block
-            for(int bi = lid; bi < block_dim; bi += WFSIZE)
+            for(int bi = 0; bi < block_dim; ++bi)
             {
-                // Local sum accumulator
-                T sum = static_cast<T>(0);
+                // Load diagonal matrix entry
+                T diag = (diag_type == rocsparse_diag_type_non_unit)
+                             ? bsr_val[BSR_IND(j, bi, bi, dir)]
+                             : static_cast<T>(1);
 
-                // Loop over columns of the BSR block
-                for(int bj = 0; bj < block_dim; ++bj)
+                // Load result of bi-th BSR row
+                T val = X[(block_dim * row + bi) * ldx + col_X];
+
+                // Check for numerical pivot
+                if(diag == static_cast<T>(0))
                 {
-                    sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
-                                        X[(block_dim * local_col + bj) * ldx + col_X],
-                                        sum);
+                    pivot = true;
+                }
+                else
+                {
+                    // Divide result of bi-th BSR row by diagonal entry
+                    X[(block_dim * row + bi) * ldx + col_X] = val /= diag;
                 }
 
-                // Write local sum to X
-                X[(block_dim * row + bi) * ldx + col_X] -= sum;
+                // Update remaining non-diagonal entries
+                for(int bj = bi + lid + 1; bj < block_dim; bj += WFSIZE)
+                {
+                    X[(block_dim * row + bj) * ldx + col_X]
+                        -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
+                }
             }
         }
-    }
 
-    bool pivot = false;
+        // Make sure X is written to global memory before setting row is done flag
+        __threadfence();
 
-    // Process diagonal
-    if(row < mb && row == local_col && col_X < nrhs)
-    {
-        // Loop over rows of the BSR block
-        for(int bi = 0; bi < block_dim; ++bi)
+        // Wait for all threads to finish the threadfence before we mark the row "done"
+        __syncthreads();
+
+        if(row < mb && threadIdx.x == 0)
         {
-            // Load diagonal matrix entry
-            T diag = (diag_type == rocsparse_diag_type_non_unit) ? bsr_val[BSR_IND(j, bi, bi, dir)]
-                                                                 : static_cast<T>(1);
+            // Write "row is done" flag
+            __hip_atomic_store(
+                &done_array[row + id], 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 
-            // Load result of bi-th BSR row
-            T val = X[(block_dim * row + bi) * ldx + col_X];
-
-            // Check for numerical pivot
-            if(diag == static_cast<T>(0))
+            if(pivot == true)
             {
-                pivot = true;
+                rocsparse_atomic_min(zero_pivot, row + idx_base);
             }
-            else
-            {
-                // Divide result of bi-th BSR row by diagonal entry
-                X[(block_dim * row + bi) * ldx + col_X] = val /= diag;
-            }
-
-            // Update remaining non-diagonal entries
-            for(int bj = bi + lid + 1; bj < block_dim; bj += WFSIZE)
-            {
-                X[(block_dim * row + bj) * ldx + col_X] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
-            }
-        }
-    }
-
-    // Make sure X is written to global memory before setting row is done flag
-    __threadfence();
-
-    // Wait for all threads to finish the threadfence before we mark the row "done"
-    __syncthreads();
-
-    if(row < mb && threadIdx.x == 0)
-    {
-        // Write "row is done" flag
-        __hip_atomic_store(&done_array[row + id], 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-
-        if(pivot == true)
-        {
-            rocsparse_atomic_min(zero_pivot, row + idx_base);
         }
     }
 }

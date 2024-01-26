@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,79 +25,235 @@
 
 #include "common.h"
 
-// See Yang C., Bulu? A., Owens J.D. (2018) Design Principles for Sparse Matrix Multiplication on the GPU.
-// In: Aldinucci M., Padovani L., Torquati M. (eds) Euro-Par 2018: Parallel Processing. Euro-Par 2018.
-// Lecture Notes in Computer Science, vol 11014. Springer, Cham. https://doi.org/10.1007/978-3-319-96983-1_48
-template <unsigned int BLOCKSIZE,
-          unsigned int WF_SIZE,
-          bool         TRANSB,
-          typename I,
-          typename J,
-          typename A,
-          typename B,
-          typename C,
-          typename T>
-ROCSPARSE_DEVICE_ILF void csrmmnn_merge_main_device(bool conj_A,
-                                                    bool conj_B,
-                                                    J    ncol,
-                                                    J    M,
-                                                    J    N,
-                                                    J    K,
-                                                    I    nnz,
-                                                    T    alpha,
-                                                    J* __restrict__ row_block_red,
-                                                    T* __restrict__ val_block_red,
-                                                    const J* __restrict__ row_limits,
-                                                    const I* __restrict__ csr_row_ptr,
-                                                    const J* __restrict__ csr_col_ind,
-                                                    const A* __restrict__ csr_val,
-                                                    const B* __restrict__ dense_B,
-                                                    int64_t ldb,
-                                                    T       beta,
-                                                    C* __restrict__ dense_C,
-                                                    int64_t              ldc,
-                                                    rocsparse_order      order,
-                                                    rocsparse_index_base idx_base)
+namespace rocsparse
 {
-    int tid = hipThreadIdx_x;
-    int bid = hipBlockIdx_x;
-    int lid = tid & (WF_SIZE - 1);
-    int wid = tid / WF_SIZE;
-
-    __shared__ J shared_row[BLOCKSIZE];
-    __shared__ T shared_val[BLOCKSIZE * WF_SIZE];
-
-    J left  = row_limits[bid];
-    J right = row_limits[bid + 1];
-
-    J row_ind = -1;
-    J col_ind = 0;
-    T val     = static_cast<T>(0);
-
-    if((BLOCKSIZE * bid + tid) < nnz)
+    // See Yang C., Bulu? A., Owens J.D. (2018) Design Principles for Sparse Matrix Multiplication on the GPU.
+    // In: Aldinucci M., Padovani L., Torquati M. (eds) Euro-Par 2018: Parallel Processing. Euro-Par 2018.
+    // Lecture Notes in Computer Science, vol 11014. Springer, Cham. https://doi.org/10.1007/978-3-319-96983-1_48
+    template <unsigned int BLOCKSIZE,
+              unsigned int WF_SIZE,
+              bool         TRANSB,
+              typename I,
+              typename J,
+              typename A,
+              typename B,
+              typename C,
+              typename T>
+    ROCSPARSE_DEVICE_ILF void csrmmnn_merge_main_device(bool conj_A,
+                                                        bool conj_B,
+                                                        J    ncol,
+                                                        J    M,
+                                                        J    N,
+                                                        J    K,
+                                                        I    nnz,
+                                                        T    alpha,
+                                                        J* __restrict__ row_block_red,
+                                                        T* __restrict__ val_block_red,
+                                                        const J* __restrict__ row_limits,
+                                                        const I* __restrict__ csr_row_ptr,
+                                                        const J* __restrict__ csr_col_ind,
+                                                        const A* __restrict__ csr_val,
+                                                        const B* __restrict__ dense_B,
+                                                        int64_t ldb,
+                                                        T       beta,
+                                                        C* __restrict__ dense_C,
+                                                        int64_t              ldc,
+                                                        rocsparse_order      order,
+                                                        rocsparse_index_base idx_base)
     {
-        while(left < right)
+        int tid = hipThreadIdx_x;
+        int bid = hipBlockIdx_x;
+        int lid = tid & (WF_SIZE - 1);
+        int wid = tid / WF_SIZE;
+
+        __shared__ J shared_row[BLOCKSIZE];
+        __shared__ T shared_val[BLOCKSIZE * WF_SIZE];
+
+        J left  = row_limits[bid];
+        J right = row_limits[bid + 1];
+
+        J row_ind = -1;
+        J col_ind = 0;
+        T val     = static_cast<T>(0);
+
+        if((BLOCKSIZE * bid + tid) < nnz)
         {
-            J mid = (left + right) / 2;
-            if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
+            while(left < right)
             {
-                left = mid + 1;
+                J mid = (left + right) / 2;
+                if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
+                {
+                    left = mid + 1;
+                }
+                else
+                {
+                    right = mid;
+                }
             }
-            else
+            row_ind = left;
+            col_ind = rocsparse_nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
+            val     = alpha
+                  * conj_val(rocsparse_nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
+        }
+
+        shared_row[tid] = row_ind;
+        __syncthreads();
+
+        for(J colB = 0; colB < ncol; colB += WF_SIZE)
+        {
+            T valB[WF_SIZE];
+            for(unsigned int i = 0; i < WF_SIZE; ++i)
             {
-                right = mid;
+                T v = rocsparse_shfl(val, i, WF_SIZE);
+                J c = __shfl(col_ind, i, WF_SIZE);
+
+                if(!TRANSB)
+                {
+                    valB[i] = v * conj_val(dense_B[c + ldb * (colB + lid)], conj_B);
+                }
+                else
+                {
+                    valB[i] = v * conj_val(dense_B[ldb * c + colB + lid], conj_B);
+                }
+            }
+
+            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            {
+                shared_val[BLOCKSIZE * lid + WF_SIZE * wid + i] = valB[i];
+            }
+            __syncthreads();
+
+            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            {
+                valB[i] = shared_val[BLOCKSIZE * i + tid];
+            }
+
+            // segmented reduction
+            for(J j = 1; j < BLOCKSIZE; j <<= 1)
+            {
+                if(tid >= j)
+                {
+                    if(row_ind == shared_row[tid - j])
+                    {
+                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        {
+                            valB[i] = valB[i] + shared_val[BLOCKSIZE * i + tid - j];
+                        }
+                    }
+                }
+                __syncthreads();
+                for(unsigned int i = 0; i < WF_SIZE; ++i)
+                {
+                    shared_val[BLOCKSIZE * i + tid] = valB[i];
+                }
+                __syncthreads();
+            }
+
+            // All lanes but the last one write their result in C.
+            if(tid < (BLOCKSIZE - 1))
+            {
+                if(row_ind != shared_row[tid + 1] && row_ind >= 0)
+                {
+                    if(order == rocsparse_order_column)
+                    {
+                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        {
+                            dense_C[row_ind + ldc * (colB + i)] += valB[i];
+                        }
+                    }
+                    else
+                    {
+                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        {
+                            dense_C[colB + i + ldc * row_ind] += valB[i];
+                        }
+                    }
+                }
+            }
+
+            if(tid == (BLOCKSIZE - 1))
+            {
+                for(unsigned int i = 0; i < WF_SIZE; ++i)
+                {
+                    val_block_red[hipGridDim_x * (colB + i) + bid] = valB[i];
+                }
             }
         }
-        row_ind = left;
-        col_ind = rocsparse_nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
-        val = alpha * conj_val(rocsparse_nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
+
+        if(tid == (BLOCKSIZE - 1))
+        {
+            row_block_red[bid] = row_ind;
+        }
     }
 
-    shared_row[tid] = row_ind;
-    __syncthreads();
-
-    for(J colB = 0; colB < ncol; colB += WF_SIZE)
+    template <unsigned int BLOCKSIZE,
+              unsigned int WF_SIZE,
+              bool         TRANSB,
+              typename I,
+              typename J,
+              typename A,
+              typename B,
+              typename C,
+              typename T>
+    ROCSPARSE_DEVICE_ILF void csrmmnn_merge_remainder_device(bool conj_A,
+                                                             bool conj_B,
+                                                             J    offset,
+                                                             J    M,
+                                                             J    N,
+                                                             J    K,
+                                                             I    nnz,
+                                                             T    alpha,
+                                                             J* __restrict__ row_block_red,
+                                                             T* __restrict__ val_block_red,
+                                                             const J* __restrict__ row_limits,
+                                                             const I* __restrict__ csr_row_ptr,
+                                                             const J* __restrict__ csr_col_ind,
+                                                             const A* __restrict__ csr_val,
+                                                             const B* __restrict__ dense_B,
+                                                             int64_t ldb,
+                                                             T       beta,
+                                                             C* __restrict__ dense_C,
+                                                             int64_t              ldc,
+                                                             rocsparse_order      order,
+                                                             rocsparse_index_base idx_base)
     {
+        int tid = hipThreadIdx_x;
+        int bid = hipBlockIdx_x;
+        int lid = tid & (WF_SIZE - 1);
+        int wid = tid / WF_SIZE;
+
+        __shared__ J shared_row[BLOCKSIZE];
+        __shared__ T shared_val[BLOCKSIZE * WF_SIZE];
+
+        J left  = row_limits[bid];
+        J right = row_limits[bid + 1];
+
+        J row_ind = -1;
+        J col_ind = 0;
+        T val     = static_cast<T>(0);
+
+        if(BLOCKSIZE * bid + tid < nnz)
+        {
+            while(left < right)
+            {
+                J mid = (left + right) / 2;
+                if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
+                {
+                    left = mid + 1;
+                }
+                else
+                {
+                    right = mid;
+                }
+            }
+            row_ind = left;
+            col_ind = rocsparse_nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
+            val     = alpha
+                  * conj_val(rocsparse_nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
+        }
+
+        J colB = offset;
+
         T valB[WF_SIZE];
         for(unsigned int i = 0; i < WF_SIZE; ++i)
         {
@@ -106,14 +262,18 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_merge_main_device(bool conj_A,
 
             if(!TRANSB)
             {
-                valB[i] = v * conj_val(dense_B[c + ldb * (colB + lid)], conj_B);
+                valB[i] = (colB + lid) < N ? v * conj_val(dense_B[c + ldb * (colB + lid)], conj_B)
+                                           : static_cast<T>(0);
             }
             else
             {
-                valB[i] = v * conj_val(dense_B[ldb * c + colB + lid], conj_B);
+                valB[i] = (colB + lid) < N ? v * conj_val(dense_B[ldb * c + (colB + lid)], conj_B)
+                                           : static_cast<T>(0);
             }
         }
 
+        __syncthreads();
+        shared_row[tid] = row_ind;
         for(unsigned int i = 0; i < WF_SIZE; ++i)
         {
             shared_val[BLOCKSIZE * lid + WF_SIZE * wid + i] = valB[i];
@@ -155,14 +315,20 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_merge_main_device(bool conj_A,
                 {
                     for(unsigned int i = 0; i < WF_SIZE; ++i)
                     {
-                        dense_C[row_ind + ldc * (colB + i)] += valB[i];
+                        if((colB + i) < N)
+                        {
+                            dense_C[row_ind + ldc * (colB + i)] += valB[i];
+                        }
                     }
                 }
                 else
                 {
                     for(unsigned int i = 0; i < WF_SIZE; ++i)
                     {
-                        dense_C[colB + i + ldc * row_ind] += valB[i];
+                        if((colB + i) < N)
+                        {
+                            dense_C[colB + i + ldc * row_ind] += valB[i];
+                        }
                     }
                 }
             }
@@ -170,628 +336,472 @@ ROCSPARSE_DEVICE_ILF void csrmmnn_merge_main_device(bool conj_A,
 
         if(tid == (BLOCKSIZE - 1))
         {
+            row_block_red[bid] = row_ind;
             for(unsigned int i = 0; i < WF_SIZE; ++i)
             {
-                val_block_red[hipGridDim_x * (colB + i) + bid] = valB[i];
-            }
-        }
-    }
-
-    if(tid == (BLOCKSIZE - 1))
-    {
-        row_block_red[bid] = row_ind;
-    }
-}
-
-template <unsigned int BLOCKSIZE,
-          unsigned int WF_SIZE,
-          bool         TRANSB,
-          typename I,
-          typename J,
-          typename A,
-          typename B,
-          typename C,
-          typename T>
-ROCSPARSE_DEVICE_ILF void csrmmnn_merge_remainder_device(bool conj_A,
-                                                         bool conj_B,
-                                                         J    offset,
-                                                         J    M,
-                                                         J    N,
-                                                         J    K,
-                                                         I    nnz,
-                                                         T    alpha,
-                                                         J* __restrict__ row_block_red,
-                                                         T* __restrict__ val_block_red,
-                                                         const J* __restrict__ row_limits,
-                                                         const I* __restrict__ csr_row_ptr,
-                                                         const J* __restrict__ csr_col_ind,
-                                                         const A* __restrict__ csr_val,
-                                                         const B* __restrict__ dense_B,
-                                                         int64_t ldb,
-                                                         T       beta,
-                                                         C* __restrict__ dense_C,
-                                                         int64_t              ldc,
-                                                         rocsparse_order      order,
-                                                         rocsparse_index_base idx_base)
-{
-    int tid = hipThreadIdx_x;
-    int bid = hipBlockIdx_x;
-    int lid = tid & (WF_SIZE - 1);
-    int wid = tid / WF_SIZE;
-
-    __shared__ J shared_row[BLOCKSIZE];
-    __shared__ T shared_val[BLOCKSIZE * WF_SIZE];
-
-    J left  = row_limits[bid];
-    J right = row_limits[bid + 1];
-
-    J row_ind = -1;
-    J col_ind = 0;
-    T val     = static_cast<T>(0);
-
-    if(BLOCKSIZE * bid + tid < nnz)
-    {
-        while(left < right)
-        {
-            J mid = (left + right) / 2;
-            if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
-            {
-                left = mid + 1;
-            }
-            else
-            {
-                right = mid;
-            }
-        }
-        row_ind = left;
-        col_ind = rocsparse_nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
-        val = alpha * conj_val(rocsparse_nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
-    }
-
-    J colB = offset;
-
-    T valB[WF_SIZE];
-    for(unsigned int i = 0; i < WF_SIZE; ++i)
-    {
-        T v = rocsparse_shfl(val, i, WF_SIZE);
-        J c = __shfl(col_ind, i, WF_SIZE);
-
-        if(!TRANSB)
-        {
-            valB[i] = (colB + lid) < N ? v * conj_val(dense_B[c + ldb * (colB + lid)], conj_B)
-                                       : static_cast<T>(0);
-        }
-        else
-        {
-            valB[i] = (colB + lid) < N ? v * conj_val(dense_B[ldb * c + (colB + lid)], conj_B)
-                                       : static_cast<T>(0);
-        }
-    }
-
-    __syncthreads();
-    shared_row[tid] = row_ind;
-    for(unsigned int i = 0; i < WF_SIZE; ++i)
-    {
-        shared_val[BLOCKSIZE * lid + WF_SIZE * wid + i] = valB[i];
-    }
-    __syncthreads();
-
-    for(unsigned int i = 0; i < WF_SIZE; ++i)
-    {
-        valB[i] = shared_val[BLOCKSIZE * i + tid];
-    }
-
-    // segmented reduction
-    for(J j = 1; j < BLOCKSIZE; j <<= 1)
-    {
-        if(tid >= j)
-        {
-            if(row_ind == shared_row[tid - j])
-            {
-                for(unsigned int i = 0; i < WF_SIZE; ++i)
+                if((colB + i) < N)
                 {
-                    valB[i] = valB[i] + shared_val[BLOCKSIZE * i + tid - j];
-                }
-            }
-        }
-        __syncthreads();
-        for(unsigned int i = 0; i < WF_SIZE; ++i)
-        {
-            shared_val[BLOCKSIZE * i + tid] = valB[i];
-        }
-        __syncthreads();
-    }
-
-    // All lanes but the last one write their result in C.
-    if(tid < (BLOCKSIZE - 1))
-    {
-        if(row_ind != shared_row[tid + 1] && row_ind >= 0)
-        {
-            if(order == rocsparse_order_column)
-            {
-                for(unsigned int i = 0; i < WF_SIZE; ++i)
-                {
-                    if((colB + i) < N)
-                    {
-                        dense_C[row_ind + ldc * (colB + i)] += valB[i];
-                    }
-                }
-            }
-            else
-            {
-                for(unsigned int i = 0; i < WF_SIZE; ++i)
-                {
-                    if((colB + i) < N)
-                    {
-                        dense_C[colB + i + ldc * row_ind] += valB[i];
-                    }
+                    val_block_red[hipGridDim_x * (colB + i) + bid] = valB[i];
                 }
             }
         }
     }
 
-    if(tid == (BLOCKSIZE - 1))
+    // Segmented block reduction kernel
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* __restrict__ rows,
+                                                    T* __restrict__ vals)
     {
-        row_block_red[bid] = row_ind;
-        for(unsigned int i = 0; i < WF_SIZE; ++i)
+        int tid = hipThreadIdx_x;
+
+        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
         {
-            if((colB + i) < N)
+            T val = static_cast<T>(0);
+            if(tid >= j)
             {
-                val_block_red[hipGridDim_x * (colB + i) + bid] = valB[i];
+                if(rows[tid] == rows[tid - j])
+                {
+                    val = vals[tid - j];
+                }
             }
+            __syncthreads();
+
+            vals[tid] = vals[tid] + val;
+            __syncthreads();
         }
     }
-}
 
-// Segmented block reduction kernel
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* __restrict__ rows, T* __restrict__ vals)
-{
-    int tid = hipThreadIdx_x;
-
-    for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+    // Do the final block reduction of the block reduction buffers back into global memory
+    template <unsigned int BLOCKSIZE, typename I, typename J, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void csrmmnn_general_block_reduce(I nblocks,
+                                      const J* __restrict__ row_block_red,
+                                      const T* __restrict__ val_block_red,
+                                      T*              dense_C,
+                                      int64_t         ldc,
+                                      rocsparse_order order)
     {
-        T val = static_cast<T>(0);
-        if(tid >= j)
-        {
-            if(rows[tid] == rows[tid - j])
-            {
-                val = vals[tid - j];
-            }
-        }
-        __syncthreads();
+        int tid = hipThreadIdx_x;
 
-        vals[tid] = vals[tid] + val;
-        __syncthreads();
-    }
-}
+        // Shared memory to hold row indices and values for segmented reduction
+        __shared__ I shared_row[BLOCKSIZE];
+        __shared__ T shared_val[BLOCKSIZE];
 
-// Do the final block reduction of the block reduction buffers back into global memory
-template <unsigned int BLOCKSIZE, typename I, typename J, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void csrmmnn_general_block_reduce(I nblocks,
-                                  const J* __restrict__ row_block_red,
-                                  const T* __restrict__ val_block_red,
-                                  T*              dense_C,
-                                  int64_t         ldc,
-                                  rocsparse_order order)
-{
-    int tid = hipThreadIdx_x;
-
-    // Shared memory to hold row indices and values for segmented reduction
-    __shared__ I shared_row[BLOCKSIZE];
-    __shared__ T shared_val[BLOCKSIZE];
-
-    shared_row[tid] = -1;
-    shared_val[tid] = static_cast<T>(0);
-
-    __syncthreads();
-
-    I col = hipBlockIdx_x;
-
-    for(I i = tid; i < nblocks; i += BLOCKSIZE)
-    {
-        // Copy data to reduction buffers
-        shared_row[tid] = row_block_red[i];
-        shared_val[tid] = val_block_red[i + nblocks * col];
+        shared_row[tid] = -1;
+        shared_val[tid] = static_cast<T>(0);
 
         __syncthreads();
 
-        // Do segmented block reduction
-        segmented_blockreduce<BLOCKSIZE>(shared_row, shared_val);
+        I col = hipBlockIdx_x;
 
-        // Add reduced sum to C if valid
-        I row   = shared_row[tid];
-        I rowp1 = (tid < BLOCKSIZE - 1) ? shared_row[tid + 1] : -1;
-
-        if(row != rowp1 && row >= 0)
+        for(I i = tid; i < nblocks; i += BLOCKSIZE)
         {
-            if(order == rocsparse_order_column)
-            {
-                dense_C[row + ldc * col] = dense_C[row + ldc * col] + shared_val[tid];
-            }
-            else
-            {
-                dense_C[col + ldc * row] = dense_C[col + ldc * row] + shared_val[tid];
-            }
-        }
+            // Copy data to reduction buffers
+            shared_row[tid] = row_block_red[i];
+            shared_val[tid] = val_block_red[i + nblocks * col];
 
-        __syncthreads();
-    }
-}
+            __syncthreads();
 
-// Scale kernel for beta != 1.0
-template <unsigned int BLOCKSIZE, typename I, typename C, typename T>
-ROCSPARSE_DEVICE_ILF void csrmmnn_merge_scale_device(
-    I m, I n, T beta, C* __restrict__ data, int64_t ld, rocsparse_order order)
-{
-    I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+            // Do segmented block reduction
+            segmented_blockreduce<BLOCKSIZE>(shared_row, shared_val);
 
-    if(gid >= m * n)
-    {
-        return;
-    }
+            // Add reduced sum to C if valid
+            I row   = shared_row[tid];
+            I rowp1 = (tid < BLOCKSIZE - 1) ? shared_row[tid + 1] : -1;
 
-    I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
-    I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
-
-    if(beta == 0)
-    {
-        data[lid + ld * wid] = 0;
-    }
-    else
-    {
-        data[lid + ld * wid] *= beta;
-    }
-}
-
-template <unsigned int BLOCKSIZE, unsigned int NNZ_PER_BLOCK, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void csrmmnn_merge_compute_row_limits(J m,
-                                      I nblocks,
-                                      I nnz,
-                                      const I* __restrict__ csr_row_ptr,
-                                      J* __restrict__ row_limits,
-                                      rocsparse_index_base idx_base)
-{
-    I gid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
-
-    if(gid >= nblocks)
-    {
-        return;
-    }
-
-    I s0 = NNZ_PER_BLOCK * gid;
-
-    J left  = 0;
-    J right = m;
-    J mid   = (left + right) / 2;
-    while((csr_row_ptr[left] - idx_base) < s0 && left < mid && right > mid)
-    {
-        if((csr_row_ptr[mid] - idx_base) <= s0)
-        {
-            left = mid;
-        }
-        else
-        {
-            right = mid;
-        }
-        mid = (left + right) / 2;
-    }
-
-    row_limits[gid] = left;
-
-    if(gid == nblocks - 1)
-    {
-        row_limits[gid + 1] = m;
-    }
-}
-
-template <unsigned int BLOCKSIZE,
-          unsigned int WF_SIZE,
-          unsigned int LOOPS,
-          bool         TRANSB,
-          typename T,
-          typename I,
-          typename J,
-          typename A,
-          typename B,
-          typename C>
-ROCSPARSE_DEVICE_ILF void csrmmnt_merge_main_device(bool conj_A,
-                                                    bool conj_B,
-                                                    J    ncol,
-                                                    J    M,
-                                                    J    N,
-                                                    J    K,
-                                                    I    nnz,
-                                                    T    alpha,
-                                                    const J* __restrict__ row_limits,
-                                                    const I* __restrict__ csr_row_ptr,
-                                                    const J* __restrict__ csr_col_ind,
-                                                    const A* __restrict__ csr_val,
-                                                    const B* __restrict__ dense_B,
-                                                    int64_t ldb,
-                                                    C* __restrict__ dense_C,
-                                                    int64_t              ldc,
-                                                    rocsparse_order      order,
-                                                    rocsparse_index_base idx_base)
-{
-    int tid = hipThreadIdx_x;
-    int bid = hipBlockIdx_x;
-    int lid = tid & (WF_SIZE - 1);
-
-    J left  = row_limits[bid];
-    J right = row_limits[bid + 1];
-
-    J row = 0;
-    J col = 0;
-    T val = static_cast<T>(0);
-
-    if((BLOCKSIZE * bid + tid) < nnz)
-    {
-        // Compute COO row index on the fly
-        while(left < right)
-        {
-            J mid = (left + right) / 2;
-            if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
-            {
-                left = mid + 1;
-            }
-            else
-            {
-                right = mid;
-            }
-        }
-
-        row = left;
-        col = rocsparse_nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
-        val = conj_val(rocsparse_nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
-    }
-
-    for(J l = 0; l < ncol; l += WF_SIZE * LOOPS)
-    {
-        J colB = l + lid;
-
-        T sum[LOOPS]{};
-
-        J current_row = rocsparse_shfl(row, 0, WF_SIZE);
-
-        for(unsigned int i = 0; i < WF_SIZE; ++i)
-        {
-            T v = rocsparse_shfl(val, i, WF_SIZE);
-            J c = rocsparse_shfl(col, i, WF_SIZE);
-            J r = rocsparse_shfl(row, i, WF_SIZE);
-
-            if(r != current_row)
+            if(row != rowp1 && row >= 0)
             {
                 if(order == rocsparse_order_column)
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
-                    {
-                        rocsparse_atomic_add(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
-                                             alpha * sum[p]);
-                    }
+                    dense_C[row + ldc * col] = dense_C[row + ldc * col] + shared_val[tid];
                 }
                 else
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
-                    {
-                        rocsparse_atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
-                                             alpha * sum[p]);
-                    }
-                }
-
-                for(unsigned int p = 0; p < LOOPS; p++)
-                {
-                    sum[p] = static_cast<T>(0);
-                }
-
-                current_row = r;
-            }
-
-            if(TRANSB)
-            {
-                for(unsigned int p = 0; p < LOOPS; p++)
-                {
-                    sum[p] = rocsparse_fma<T>(
-                        v, conj_val(dense_B[c * ldb + colB + p * WF_SIZE], conj_B), sum[p]);
+                    dense_C[col + ldc * row] = dense_C[col + ldc * row] + shared_val[tid];
                 }
             }
-            else
-            {
-                for(unsigned int p = 0; p < LOOPS; p++)
-                {
-                    sum[p] = rocsparse_fma<T>(
-                        v, conj_val(dense_B[(colB + p * WF_SIZE) * ldb + c], conj_B), sum[p]);
-                }
-            }
+
+            __syncthreads();
+        }
+    }
+
+    // Scale kernel for beta != 1.0
+    template <unsigned int BLOCKSIZE, typename I, typename C, typename T>
+    ROCSPARSE_DEVICE_ILF void csrmmnn_merge_scale_device(
+        I m, I n, T beta, C* __restrict__ data, int64_t ld, rocsparse_order order)
+    {
+        I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+        if(gid >= m * n)
+        {
+            return;
         }
 
-        if(order == rocsparse_order_column)
+        I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
+        I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
+
+        if(beta == 0)
         {
-            for(unsigned int p = 0; p < LOOPS; p++)
-            {
-                rocsparse_atomic_add(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
-                                     alpha * sum[p]);
-            }
+            data[lid + ld * wid] = 0;
         }
         else
         {
-            for(unsigned int p = 0; p < LOOPS; p++)
-            {
-                rocsparse_atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
-                                     alpha * sum[p]);
-            }
+            data[lid + ld * wid] *= beta;
         }
     }
-}
 
-template <unsigned int BLOCKSIZE,
-          unsigned int WF_SIZE,
-          bool         TRANSB,
-          typename T,
-          typename I,
-          typename J,
-          typename A,
-          typename B,
-          typename C>
-ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
-                                                         bool conj_B,
-                                                         J    ncol_offset,
-                                                         J    M,
-                                                         J    N,
-                                                         J    K,
-                                                         I    nnz,
-                                                         T    alpha,
-                                                         const J* __restrict__ row_limits,
-                                                         const I* __restrict__ csr_row_ptr,
-                                                         const J* __restrict__ csr_col_ind,
-                                                         const A* __restrict__ csr_val,
-                                                         const B* __restrict__ dense_B,
-                                                         int64_t ldb,
-                                                         C* __restrict__ dense_C,
-                                                         int64_t              ldc,
-                                                         rocsparse_order      order,
-                                                         rocsparse_index_base idx_base)
-{
-    int tid = hipThreadIdx_x;
-    int bid = hipBlockIdx_x;
-    int lid = tid & (WF_SIZE - 1);
-    int wid = tid / WF_SIZE;
-
-    __shared__ J shared_row[(BLOCKSIZE / WF_SIZE) * WF_SIZE];
-    __shared__ T shared_val[(BLOCKSIZE / WF_SIZE) * WF_SIZE];
-
-    J left  = row_limits[bid];
-    J right = row_limits[bid + 1];
-
-    J row = 0;
-    J col = 0;
-    T val = static_cast<T>(0);
-
-    if((BLOCKSIZE * bid + tid) < nnz)
+    template <unsigned int BLOCKSIZE, unsigned int NNZ_PER_BLOCK, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void csrmmnn_merge_compute_row_limits(J m,
+                                          I nblocks,
+                                          I nnz,
+                                          const I* __restrict__ csr_row_ptr,
+                                          J* __restrict__ row_limits,
+                                          rocsparse_index_base idx_base)
     {
-        // Compute COO row index on the fly
-        while(left < right)
+        I gid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+        if(gid >= nblocks)
         {
-            J mid = (left + right) / 2;
-            if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
+            return;
+        }
+
+        I s0 = NNZ_PER_BLOCK * gid;
+
+        J left  = 0;
+        J right = m;
+        J mid   = (left + right) / 2;
+        while((csr_row_ptr[left] - idx_base) < s0 && left < mid && right > mid)
+        {
+            if((csr_row_ptr[mid] - idx_base) <= s0)
             {
-                left = mid + 1;
+                left = mid;
             }
             else
             {
                 right = mid;
             }
+            mid = (left + right) / 2;
         }
 
-        row = left;
-        col = rocsparse_nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
-        val = conj_val(rocsparse_nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
+        row_limits[gid] = left;
+
+        if(gid == nblocks - 1)
+        {
+            row_limits[gid + 1] = m;
+        }
     }
 
-    for(J l = ncol_offset; l < N; l += WF_SIZE)
+    template <unsigned int BLOCKSIZE,
+              unsigned int WF_SIZE,
+              unsigned int LOOPS,
+              bool         TRANSB,
+              typename T,
+              typename I,
+              typename J,
+              typename A,
+              typename B,
+              typename C>
+    ROCSPARSE_DEVICE_ILF void csrmmnt_merge_main_device(bool conj_A,
+                                                        bool conj_B,
+                                                        J    ncol,
+                                                        J    M,
+                                                        J    N,
+                                                        J    K,
+                                                        I    nnz,
+                                                        T    alpha,
+                                                        const J* __restrict__ row_limits,
+                                                        const I* __restrict__ csr_row_ptr,
+                                                        const J* __restrict__ csr_col_ind,
+                                                        const A* __restrict__ csr_val,
+                                                        const B* __restrict__ dense_B,
+                                                        int64_t ldb,
+                                                        C* __restrict__ dense_C,
+                                                        int64_t              ldc,
+                                                        rocsparse_order      order,
+                                                        rocsparse_index_base idx_base)
     {
-        J colB = l + lid;
+        int tid = hipThreadIdx_x;
+        int bid = hipBlockIdx_x;
+        int lid = tid & (WF_SIZE - 1);
 
-        T sum         = static_cast<T>(0);
-        J current_row = rocsparse_shfl(row, 0, WF_SIZE);
+        J left  = row_limits[bid];
+        J right = row_limits[bid + 1];
 
-        for(unsigned int i = 0; i < WF_SIZE; ++i)
+        J row = 0;
+        J col = 0;
+        T val = static_cast<T>(0);
+
+        if((BLOCKSIZE * bid + tid) < nnz)
         {
-            T v = rocsparse_shfl(val, i, WF_SIZE);
-            J c = rocsparse_shfl(col, i, WF_SIZE);
-            J r = rocsparse_shfl(row, i, WF_SIZE);
-
-            if(r != current_row)
+            // Compute COO row index on the fly
+            while(left < right)
             {
-                if(colB < N)
+                J mid = (left + right) / 2;
+                if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
                 {
-                    if(order == rocsparse_order_column)
-                    {
-                        rocsparse_atomic_add(&dense_C[colB * ldc + current_row], alpha * sum);
-                    }
-                    else
-                    {
-                        rocsparse_atomic_add(&dense_C[current_row * ldc + colB], alpha * sum);
-                    }
-                }
-
-                sum = static_cast<T>(0);
-
-                current_row = r;
-            }
-
-            if(colB < N)
-            {
-                if(TRANSB)
-                {
-                    sum = rocsparse_fma<T>(v, conj_val(dense_B[c * ldb + colB], conj_B), sum);
+                    left = mid + 1;
                 }
                 else
                 {
-                    sum = rocsparse_fma<T>(v, conj_val(dense_B[colB * ldb + c], conj_B), sum);
+                    right = mid;
                 }
             }
+
+            row = left;
+            col = rocsparse_nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
+            val = conj_val(rocsparse_nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
         }
 
-        __syncthreads();
-        shared_row[(BLOCKSIZE / WF_SIZE) * lid + wid] = current_row;
-        shared_val[(BLOCKSIZE / WF_SIZE) * lid + wid] = sum;
-        __syncthreads();
-
-        current_row = shared_row[tid];
-        sum         = shared_val[tid];
-
-        int slid = tid & ((BLOCKSIZE / WF_SIZE) - 1);
-        int swid = tid / (BLOCKSIZE / WF_SIZE);
-
-        // segmented reduction
-        for(J j = 1; j < (BLOCKSIZE / WF_SIZE); j <<= 1)
+        for(J l = 0; l < ncol; l += WF_SIZE * LOOPS)
         {
-            if(slid >= j)
-            {
-                if(current_row == shared_row[slid - j])
-                {
-                    sum = sum + shared_val[(BLOCKSIZE / WF_SIZE) * swid + slid - j];
-                }
-            }
-            __syncthreads();
-            shared_val[(BLOCKSIZE / WF_SIZE) * swid + slid] = sum;
-            __syncthreads();
-        }
+            J colB = l + lid;
 
-        if(slid < ((BLOCKSIZE / WF_SIZE) - 1))
-        {
-            if(current_row != shared_row[slid + 1] && current_row >= 0)
+            T sum[LOOPS]{};
+
+            J current_row = rocsparse_shfl(row, 0, WF_SIZE);
+
+            for(unsigned int i = 0; i < WF_SIZE; ++i)
             {
-                if((l + swid) < N)
+                T v = rocsparse_shfl(val, i, WF_SIZE);
+                J c = rocsparse_shfl(col, i, WF_SIZE);
+                J r = rocsparse_shfl(row, i, WF_SIZE);
+
+                if(r != current_row)
                 {
                     if(order == rocsparse_order_column)
                     {
-                        rocsparse_atomic_add(&dense_C[(l + swid) * ldc + current_row], alpha * sum);
+                        for(unsigned int p = 0; p < LOOPS; p++)
+                        {
+                            rocsparse_atomic_add(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
+                                                 alpha * sum[p]);
+                        }
                     }
                     else
                     {
-                        rocsparse_atomic_add(&dense_C[current_row * ldc + (l + swid)], alpha * sum);
+                        for(unsigned int p = 0; p < LOOPS; p++)
+                        {
+                            rocsparse_atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
+                                                 alpha * sum[p]);
+                        }
+                    }
+
+                    for(unsigned int p = 0; p < LOOPS; p++)
+                    {
+                        sum[p] = static_cast<T>(0);
+                    }
+
+                    current_row = r;
+                }
+
+                if(TRANSB)
+                {
+                    for(unsigned int p = 0; p < LOOPS; p++)
+                    {
+                        sum[p] = rocsparse_fma<T>(
+                            v, conj_val(dense_B[c * ldb + colB + p * WF_SIZE], conj_B), sum[p]);
+                    }
+                }
+                else
+                {
+                    for(unsigned int p = 0; p < LOOPS; p++)
+                    {
+                        sum[p] = rocsparse_fma<T>(
+                            v, conj_val(dense_B[(colB + p * WF_SIZE) * ldb + c], conj_B), sum[p]);
                     }
                 }
             }
+
+            if(order == rocsparse_order_column)
+            {
+                for(unsigned int p = 0; p < LOOPS; p++)
+                {
+                    rocsparse_atomic_add(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
+                                         alpha * sum[p]);
+                }
+            }
+            else
+            {
+                for(unsigned int p = 0; p < LOOPS; p++)
+                {
+                    rocsparse_atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
+                                         alpha * sum[p]);
+                }
+            }
+        }
+    }
+
+    template <unsigned int BLOCKSIZE,
+              unsigned int WF_SIZE,
+              bool         TRANSB,
+              typename T,
+              typename I,
+              typename J,
+              typename A,
+              typename B,
+              typename C>
+    ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
+                                                             bool conj_B,
+                                                             J    ncol_offset,
+                                                             J    M,
+                                                             J    N,
+                                                             J    K,
+                                                             I    nnz,
+                                                             T    alpha,
+                                                             const J* __restrict__ row_limits,
+                                                             const I* __restrict__ csr_row_ptr,
+                                                             const J* __restrict__ csr_col_ind,
+                                                             const A* __restrict__ csr_val,
+                                                             const B* __restrict__ dense_B,
+                                                             int64_t ldb,
+                                                             C* __restrict__ dense_C,
+                                                             int64_t              ldc,
+                                                             rocsparse_order      order,
+                                                             rocsparse_index_base idx_base)
+    {
+        int tid = hipThreadIdx_x;
+        int bid = hipBlockIdx_x;
+        int lid = tid & (WF_SIZE - 1);
+        int wid = tid / WF_SIZE;
+
+        __shared__ J shared_row[(BLOCKSIZE / WF_SIZE) * WF_SIZE];
+        __shared__ T shared_val[(BLOCKSIZE / WF_SIZE) * WF_SIZE];
+
+        J left  = row_limits[bid];
+        J right = row_limits[bid + 1];
+
+        J row = 0;
+        J col = 0;
+        T val = static_cast<T>(0);
+
+        if((BLOCKSIZE * bid + tid) < nnz)
+        {
+            // Compute COO row index on the fly
+            while(left < right)
+            {
+                J mid = (left + right) / 2;
+                if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
+                {
+                    left = mid + 1;
+                }
+                else
+                {
+                    right = mid;
+                }
+            }
+
+            row = left;
+            col = rocsparse_nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
+            val = conj_val(rocsparse_nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
         }
 
-        if(slid == ((BLOCKSIZE / WF_SIZE) - 1))
+        for(J l = ncol_offset; l < N; l += WF_SIZE)
         {
-            if(current_row >= 0)
+            J colB = l + lid;
+
+            T sum         = static_cast<T>(0);
+            J current_row = rocsparse_shfl(row, 0, WF_SIZE);
+
+            for(unsigned int i = 0; i < WF_SIZE; ++i)
             {
-                if((l + swid) < N)
+                T v = rocsparse_shfl(val, i, WF_SIZE);
+                J c = rocsparse_shfl(col, i, WF_SIZE);
+                J r = rocsparse_shfl(row, i, WF_SIZE);
+
+                if(r != current_row)
                 {
-                    if(order == rocsparse_order_column)
+                    if(colB < N)
                     {
-                        rocsparse_atomic_add(&dense_C[(l + swid) * ldc + current_row], alpha * sum);
+                        if(order == rocsparse_order_column)
+                        {
+                            rocsparse_atomic_add(&dense_C[colB * ldc + current_row], alpha * sum);
+                        }
+                        else
+                        {
+                            rocsparse_atomic_add(&dense_C[current_row * ldc + colB], alpha * sum);
+                        }
+                    }
+
+                    sum = static_cast<T>(0);
+
+                    current_row = r;
+                }
+
+                if(colB < N)
+                {
+                    if(TRANSB)
+                    {
+                        sum = rocsparse_fma<T>(v, conj_val(dense_B[c * ldb + colB], conj_B), sum);
                     }
                     else
                     {
-                        rocsparse_atomic_add(&dense_C[current_row * ldc + (l + swid)], alpha * sum);
+                        sum = rocsparse_fma<T>(v, conj_val(dense_B[colB * ldb + c], conj_B), sum);
+                    }
+                }
+            }
+
+            __syncthreads();
+            shared_row[(BLOCKSIZE / WF_SIZE) * lid + wid] = current_row;
+            shared_val[(BLOCKSIZE / WF_SIZE) * lid + wid] = sum;
+            __syncthreads();
+
+            current_row = shared_row[tid];
+            sum         = shared_val[tid];
+
+            int slid = tid & ((BLOCKSIZE / WF_SIZE) - 1);
+            int swid = tid / (BLOCKSIZE / WF_SIZE);
+
+            // segmented reduction
+            for(J j = 1; j < (BLOCKSIZE / WF_SIZE); j <<= 1)
+            {
+                if(slid >= j)
+                {
+                    if(current_row == shared_row[slid - j])
+                    {
+                        sum = sum + shared_val[(BLOCKSIZE / WF_SIZE) * swid + slid - j];
+                    }
+                }
+                __syncthreads();
+                shared_val[(BLOCKSIZE / WF_SIZE) * swid + slid] = sum;
+                __syncthreads();
+            }
+
+            if(slid < ((BLOCKSIZE / WF_SIZE) - 1))
+            {
+                if(current_row != shared_row[slid + 1] && current_row >= 0)
+                {
+                    if((l + swid) < N)
+                    {
+                        if(order == rocsparse_order_column)
+                        {
+                            rocsparse_atomic_add(&dense_C[(l + swid) * ldc + current_row],
+                                                 alpha * sum);
+                        }
+                        else
+                        {
+                            rocsparse_atomic_add(&dense_C[current_row * ldc + (l + swid)],
+                                                 alpha * sum);
+                        }
+                    }
+                }
+            }
+
+            if(slid == ((BLOCKSIZE / WF_SIZE) - 1))
+            {
+                if(current_row >= 0)
+                {
+                    if((l + swid) < N)
+                    {
+                        if(order == rocsparse_order_column)
+                        {
+                            rocsparse_atomic_add(&dense_C[(l + swid) * ldc + current_row],
+                                                 alpha * sum);
+                        }
+                        else
+                        {
+                            rocsparse_atomic_add(&dense_C[current_row * ldc + (l + swid)],
+                                                 alpha * sum);
+                        }
                     }
                 }
             }

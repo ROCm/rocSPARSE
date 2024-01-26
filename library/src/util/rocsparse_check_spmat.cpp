@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,11 @@
 #include "rocsparse_check_matrix_ell.hpp"
 #include "rocsparse_check_matrix_gebsr.hpp"
 
-rocsparse_indextype determine_I_index_type(rocsparse_const_spmat_descr mat);
-rocsparse_indextype determine_J_index_type(rocsparse_const_spmat_descr mat);
+namespace rocsparse
+{
+    rocsparse_indextype determine_I_index_type(rocsparse_const_spmat_descr mat);
+    rocsparse_indextype determine_J_index_type(rocsparse_const_spmat_descr mat);
+}
 
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_check_spmat_template(rocsparse_handle            handle,
@@ -380,16 +383,17 @@ try
 
     ROCSPARSE_CHECKARG(1, mat, (mat->init == false), rocsparse_status_not_initialized);
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_check_spmat_dynamic_dispatch(determine_I_index_type(mat),
-                                                                     determine_J_index_type(mat),
-                                                                     mat->data_type,
-                                                                     mat->format,
-                                                                     handle,
-                                                                     mat,
-                                                                     data_status,
-                                                                     stage,
-                                                                     buffer_size,
-                                                                     temp_buffer));
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse_check_spmat_dynamic_dispatch(rocsparse::determine_I_index_type(mat),
+                                               rocsparse::determine_J_index_type(mat),
+                                               mat->data_type,
+                                               mat->format,
+                                               handle,
+                                               mat,
+                                               data_status,
+                                               stage,
+                                               buffer_size,
+                                               temp_buffer));
     return rocsparse_status_success;
 }
 catch(...)
