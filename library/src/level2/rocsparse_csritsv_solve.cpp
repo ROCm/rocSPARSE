@@ -115,38 +115,38 @@ namespace
             case rocsparse_operation_transpose:
             case rocsparse_operation_none:
             {
-                hipLaunchKernelGGL((kernel_inverse_diagonal<BLOCKSIZE, false>),
-                                   blocks,
-                                   threads,
-                                   0,
-                                   handle->stream,
-                                   m,
-                                   csr_ind,
-                                   csr_val,
-                                   csr_base,
-                                   invdiag,
-                                   csr_diag_ind,
-                                   ptr_shift,
-                                   csr_diag_ind_base,
-                                   zero_pivot);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_inverse_diagonal<BLOCKSIZE, false>),
+                                                   blocks,
+                                                   threads,
+                                                   0,
+                                                   handle->stream,
+                                                   m,
+                                                   csr_ind,
+                                                   csr_val,
+                                                   csr_base,
+                                                   invdiag,
+                                                   csr_diag_ind,
+                                                   ptr_shift,
+                                                   csr_diag_ind_base,
+                                                   zero_pivot);
                 break;
             }
             case rocsparse_operation_conjugate_transpose:
             {
-                hipLaunchKernelGGL((kernel_inverse_diagonal<BLOCKSIZE, true>),
-                                   blocks,
-                                   threads,
-                                   0,
-                                   handle->stream,
-                                   m,
-                                   csr_ind,
-                                   csr_val,
-                                   csr_base,
-                                   invdiag,
-                                   csr_diag_ind,
-                                   ptr_shift,
-                                   csr_diag_ind_base,
-                                   zero_pivot);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_inverse_diagonal<BLOCKSIZE, true>),
+                                                   blocks,
+                                                   threads,
+                                                   0,
+                                                   handle->stream,
+                                                   m,
+                                                   csr_ind,
+                                                   csr_val,
+                                                   csr_base,
+                                                   invdiag,
+                                                   csr_diag_ind,
+                                                   ptr_shift,
+                                                   csr_diag_ind_base,
+                                                   zero_pivot);
                 break;
             }
             }
@@ -238,25 +238,25 @@ rocsparse_status rocsparse_csritsv_solve_template(rocsparse_handle          hand
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
 
-                hipLaunchKernelGGL((scale_array<BLOCKSIZE>),
-                                   blocks,
-                                   threads,
-                                   0,
-                                   handle->stream,
-                                   m,
-                                   y,
-                                   alpha_device_host);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<BLOCKSIZE>),
+                                                   blocks,
+                                                   threads,
+                                                   0,
+                                                   handle->stream,
+                                                   m,
+                                                   y,
+                                                   alpha_device_host);
             }
             else
             {
-                hipLaunchKernelGGL((scale_array<BLOCKSIZE>),
-                                   blocks,
-                                   threads,
-                                   0,
-                                   handle->stream,
-                                   m,
-                                   y,
-                                   *alpha_device_host);
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<BLOCKSIZE>),
+                                                   blocks,
+                                                   threads,
+                                                   0,
+                                                   handle->stream,
+                                                   m,
+                                                   y,
+                                                   *alpha_device_host);
             }
 
             return rocsparse_status_success;
@@ -470,6 +470,9 @@ rocsparse_status rocsparse_csritsv_solve_template(rocsparse_handle          hand
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse_csrmv_template<T, I, J, T, T, T>)(handle,
                                                              trans,
+                                                             info != nullptr
+                                                                 ? rocsparse_csrmv_alg_adaptive
+                                                                 : rocsparse_csrmv_alg_stream,
                                                              m,
                                                              m,
                                                              nnz,
@@ -509,15 +512,15 @@ rocsparse_status rocsparse_csritsv_solve_template(rocsparse_handle          hand
             //
             // Add scale the residual
             //
-            hipLaunchKernelGGL((kernel_add_scaled_residual<BLOCKSIZE>),
-                               blocks,
-                               threads,
-                               0,
-                               handle->stream,
-                               m,
-                               y_p,
-                               y,
-                               invdiag);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_add_scaled_residual<BLOCKSIZE>),
+                                               blocks,
+                                               threads,
+                                               0,
+                                               handle->stream,
+                                               m,
+                                               y_p,
+                                               y,
+                                               invdiag);
 
             if(break_loop)
             {
@@ -564,6 +567,9 @@ rocsparse_status rocsparse_csritsv_solve_template(rocsparse_handle          hand
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse_csrmv_template<T, I, J, T, T, T>)(handle,
                                                              trans,
+                                                             info != nullptr
+                                                                 ? rocsparse_csrmv_alg_adaptive
+                                                                 : rocsparse_csrmv_alg_stream,
                                                              m,
                                                              m,
                                                              nnz,

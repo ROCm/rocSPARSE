@@ -327,24 +327,24 @@ struct kernels_type_dispatch
                             rocsparse_index_base base)
     {
         const J size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
-        hipLaunchKernelGGL((bsrxmvn_8x8_kernel<128, T>),
-                           dim3(size),
-                           dim3(128),
-                           0,
-                           handle->stream,
-                           mb,
-                           dir,
-                           alpha_device_host,
-                           size_of_mask,
-                           bsr_mask_ptr,
-                           bsr_row_ptr,
-                           bsr_end_ptr,
-                           bsr_col_ind,
-                           bsr_val,
-                           x,
-                           beta_device_host,
-                           y,
-                           base);
+        THROW_IF_HIPLAUNCHKERNELGGL_ERROR((bsrxmvn_8x8_kernel<128, T>),
+                                          dim3(size),
+                                          dim3(128),
+                                          0,
+                                          handle->stream,
+                                          mb,
+                                          dir,
+                                          alpha_device_host,
+                                          size_of_mask,
+                                          bsr_mask_ptr,
+                                          bsr_row_ptr,
+                                          bsr_end_ptr,
+                                          bsr_col_ind,
+                                          bsr_val,
+                                          x,
+                                          beta_device_host,
+                                          y,
+                                          base);
     }
 };
 
@@ -373,24 +373,24 @@ struct kernels_type_dispatch<float, float, float, float>
         if(wsize == 32)
         {
             const J size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
-            hipLaunchKernelGGL((bsrxmvn_8x8_kernel<128, float>),
-                               dim3(size),
-                               dim3(128),
-                               0,
-                               handle->stream,
-                               mb,
-                               dir,
-                               alpha_device_host,
-                               size_of_mask,
-                               bsr_mask_ptr,
-                               bsr_row_ptr,
-                               bsr_end_ptr,
-                               bsr_col_ind,
-                               bsr_val,
-                               x,
-                               beta_device_host,
-                               y,
-                               base);
+            THROW_IF_HIPLAUNCHKERNELGGL_ERROR((bsrxmvn_8x8_kernel<128, float>),
+                                              dim3(size),
+                                              dim3(128),
+                                              0,
+                                              handle->stream,
+                                              mb,
+                                              dir,
+                                              alpha_device_host,
+                                              size_of_mask,
+                                              bsr_mask_ptr,
+                                              bsr_row_ptr,
+                                              bsr_end_ptr,
+                                              bsr_col_ind,
+                                              bsr_val,
+                                              x,
+                                              beta_device_host,
+                                              y,
+                                              base);
         }
         else
         {
@@ -403,45 +403,47 @@ struct kernels_type_dispatch<float, float, float, float>
 
             if(rocsparse_direction_row == dir)
             {
-                hipLaunchKernelGGL((sbsrxmvn_8x8_kernel<nthreads_per_warp * nwarps_per_block,
-                                                        rocsparse_direction_row>),
-                                   grid1d_dim,
-                                   block2d_dim,
-                                   0,
-                                   handle->stream,
-                                   mb,
-                                   alpha_device_host,
-                                   size_of_mask,
-                                   bsr_mask_ptr,
-                                   bsr_row_ptr,
-                                   bsr_end_ptr,
-                                   bsr_col_ind,
-                                   bsr_val,
-                                   x,
-                                   beta_device_host,
-                                   y,
-                                   base);
+                THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (sbsrxmvn_8x8_kernel<nthreads_per_warp * nwarps_per_block,
+                                         rocsparse_direction_row>),
+                    grid1d_dim,
+                    block2d_dim,
+                    0,
+                    handle->stream,
+                    mb,
+                    alpha_device_host,
+                    size_of_mask,
+                    bsr_mask_ptr,
+                    bsr_row_ptr,
+                    bsr_end_ptr,
+                    bsr_col_ind,
+                    bsr_val,
+                    x,
+                    beta_device_host,
+                    y,
+                    base);
             }
             else
             {
-                hipLaunchKernelGGL((sbsrxmvn_8x8_kernel<nthreads_per_warp * nwarps_per_block,
-                                                        rocsparse_direction_column>),
-                                   grid1d_dim,
-                                   block2d_dim,
-                                   0,
-                                   handle->stream,
-                                   mb,
-                                   alpha_device_host,
-                                   size_of_mask,
-                                   bsr_mask_ptr,
-                                   bsr_row_ptr,
-                                   bsr_end_ptr,
-                                   bsr_col_ind,
-                                   bsr_val,
-                                   x,
-                                   beta_device_host,
-                                   y,
-                                   base);
+                THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (sbsrxmvn_8x8_kernel<nthreads_per_warp * nwarps_per_block,
+                                         rocsparse_direction_column>),
+                    grid1d_dim,
+                    block2d_dim,
+                    0,
+                    handle->stream,
+                    mb,
+                    alpha_device_host,
+                    size_of_mask,
+                    bsr_mask_ptr,
+                    bsr_row_ptr,
+                    bsr_end_ptr,
+                    bsr_col_ind,
+                    bsr_val,
+                    x,
+                    beta_device_host,
+                    y,
+                    base);
             }
         }
     }

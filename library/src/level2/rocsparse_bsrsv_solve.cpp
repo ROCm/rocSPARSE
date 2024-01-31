@@ -29,18 +29,18 @@
 
 #include "bsrsv_device.h"
 
-#define LAUNCH_BSRSV_GTHR_DIM(bsize, wfsize, dim)                 \
-    hipLaunchKernelGGL((bsr_gather<wfsize, bsize / wfsize, dim>), \
-                       dim3((wfsize * nnzb - 1) / bsize + 1),     \
-                       dim3(wfsize, bsize / wfsize),              \
-                       0,                                         \
-                       stream,                                    \
-                       dir,                                       \
-                       nnzb,                                      \
-                       (rocsparse_int*)bsrsv->trmt_perm,          \
-                       bsr_val,                                   \
-                       bsrt_val,                                  \
-                       block_dim)
+#define LAUNCH_BSRSV_GTHR_DIM(bsize, wfsize, dim)                                 \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsr_gather<wfsize, bsize / wfsize, dim>), \
+                                       dim3((wfsize * nnzb - 1) / bsize + 1),     \
+                                       dim3(wfsize, bsize / wfsize),              \
+                                       0,                                         \
+                                       stream,                                    \
+                                       dir,                                       \
+                                       nnzb,                                      \
+                                       (rocsparse_int*)bsrsv->trmt_perm,          \
+                                       bsr_val,                                   \
+                                       bsrt_val,                                  \
+                                       block_dim)
 
 #define LAUNCH_BSRSV_GTHR(bsize, wfsize, dim) \
     if(dim <= 2)                              \
@@ -84,47 +84,47 @@
         }                                                              \
     }
 
-#define LAUNCH_BSRSV_LOWER_SHARED(bsize, wfsize, dim, arch)            \
-    hipLaunchKernelGGL((bsrsv_lower_shared<bsize, wfsize, dim, arch>), \
-                       dim3((wfsize * mb - 1) / bsize + 1),            \
-                       dim3(bsize),                                    \
-                       0,                                              \
-                       stream,                                         \
-                       mb,                                             \
-                       alpha_device_host,                              \
-                       local_bsr_row_ptr,                              \
-                       local_bsr_col_ind,                              \
-                       local_bsr_val,                                  \
-                       block_dim,                                      \
-                       x,                                              \
-                       y,                                              \
-                       done_array,                                     \
-                       (rocsparse_int*)bsrsv->row_map,                 \
-                       (rocsparse_int*)info->zero_pivot,               \
-                       descr->base,                                    \
-                       descr->diag_type,                               \
-                       dir)
+#define LAUNCH_BSRSV_LOWER_SHARED(bsize, wfsize, dim, arch)                            \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrsv_lower_shared<bsize, wfsize, dim, arch>), \
+                                       dim3((wfsize * mb - 1) / bsize + 1),            \
+                                       dim3(bsize),                                    \
+                                       0,                                              \
+                                       stream,                                         \
+                                       mb,                                             \
+                                       alpha_device_host,                              \
+                                       local_bsr_row_ptr,                              \
+                                       local_bsr_col_ind,                              \
+                                       local_bsr_val,                                  \
+                                       block_dim,                                      \
+                                       x,                                              \
+                                       y,                                              \
+                                       done_array,                                     \
+                                       (rocsparse_int*)bsrsv->row_map,                 \
+                                       (rocsparse_int*)info->zero_pivot,               \
+                                       descr->base,                                    \
+                                       descr->diag_type,                               \
+                                       dir)
 
-#define LAUNCH_BSRSV_UPPER_SHARED(bsize, wfsize, dim, arch)            \
-    hipLaunchKernelGGL((bsrsv_upper_shared<bsize, wfsize, dim, arch>), \
-                       dim3((wfsize * mb - 1) / bsize + 1),            \
-                       dim3(bsize),                                    \
-                       0,                                              \
-                       stream,                                         \
-                       mb,                                             \
-                       alpha_device_host,                              \
-                       local_bsr_row_ptr,                              \
-                       local_bsr_col_ind,                              \
-                       local_bsr_val,                                  \
-                       block_dim,                                      \
-                       x,                                              \
-                       y,                                              \
-                       done_array,                                     \
-                       (rocsparse_int*)bsrsv->row_map,                 \
-                       (rocsparse_int*)info->zero_pivot,               \
-                       descr->base,                                    \
-                       descr->diag_type,                               \
-                       dir)
+#define LAUNCH_BSRSV_UPPER_SHARED(bsize, wfsize, dim, arch)                            \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrsv_upper_shared<bsize, wfsize, dim, arch>), \
+                                       dim3((wfsize * mb - 1) / bsize + 1),            \
+                                       dim3(bsize),                                    \
+                                       0,                                              \
+                                       stream,                                         \
+                                       mb,                                             \
+                                       alpha_device_host,                              \
+                                       local_bsr_row_ptr,                              \
+                                       local_bsr_col_ind,                              \
+                                       local_bsr_val,                                  \
+                                       block_dim,                                      \
+                                       x,                                              \
+                                       y,                                              \
+                                       done_array,                                     \
+                                       (rocsparse_int*)bsrsv->row_map,                 \
+                                       (rocsparse_int*)info->zero_pivot,               \
+                                       descr->base,                                    \
+                                       descr->diag_type,                               \
+                                       dir)
 
 #define LAUNCH_BSRSV_GENERAL(fill, ptr, bsize, wfsize, arch, asic) \
     if(fill == rocsparse_fill_mode_lower)                          \
@@ -150,47 +150,47 @@
         }                                                          \
     }
 
-#define LAUNCH_BSRSV_LOWER_GENERAL(bsize, wfsize, arch)            \
-    hipLaunchKernelGGL((bsrsv_lower_general<bsize, wfsize, arch>), \
-                       dim3((wfsize * mb - 1) / bsize + 1),        \
-                       dim3(bsize),                                \
-                       0,                                          \
-                       stream,                                     \
-                       mb,                                         \
-                       alpha_device_host,                          \
-                       local_bsr_row_ptr,                          \
-                       local_bsr_col_ind,                          \
-                       local_bsr_val,                              \
-                       block_dim,                                  \
-                       x,                                          \
-                       y,                                          \
-                       done_array,                                 \
-                       (rocsparse_int*)bsrsv->row_map,             \
-                       (rocsparse_int*)info->zero_pivot,           \
-                       descr->base,                                \
-                       descr->diag_type,                           \
-                       dir)
+#define LAUNCH_BSRSV_LOWER_GENERAL(bsize, wfsize, arch)                            \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrsv_lower_general<bsize, wfsize, arch>), \
+                                       dim3((wfsize * mb - 1) / bsize + 1),        \
+                                       dim3(bsize),                                \
+                                       0,                                          \
+                                       stream,                                     \
+                                       mb,                                         \
+                                       alpha_device_host,                          \
+                                       local_bsr_row_ptr,                          \
+                                       local_bsr_col_ind,                          \
+                                       local_bsr_val,                              \
+                                       block_dim,                                  \
+                                       x,                                          \
+                                       y,                                          \
+                                       done_array,                                 \
+                                       (rocsparse_int*)bsrsv->row_map,             \
+                                       (rocsparse_int*)info->zero_pivot,           \
+                                       descr->base,                                \
+                                       descr->diag_type,                           \
+                                       dir)
 
-#define LAUNCH_BSRSV_UPPER_GENERAL(bsize, wfsize, arch)            \
-    hipLaunchKernelGGL((bsrsv_upper_general<bsize, wfsize, arch>), \
-                       dim3((wfsize * mb - 1) / bsize + 1),        \
-                       dim3(bsize),                                \
-                       0,                                          \
-                       stream,                                     \
-                       mb,                                         \
-                       alpha_device_host,                          \
-                       local_bsr_row_ptr,                          \
-                       local_bsr_col_ind,                          \
-                       local_bsr_val,                              \
-                       block_dim,                                  \
-                       x,                                          \
-                       y,                                          \
-                       done_array,                                 \
-                       (rocsparse_int*)bsrsv->row_map,             \
-                       (rocsparse_int*)info->zero_pivot,           \
-                       descr->base,                                \
-                       descr->diag_type,                           \
-                       dir)
+#define LAUNCH_BSRSV_UPPER_GENERAL(bsize, wfsize, arch)                            \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsrsv_upper_general<bsize, wfsize, arch>), \
+                                       dim3((wfsize * mb - 1) / bsize + 1),        \
+                                       dim3(bsize),                                \
+                                       0,                                          \
+                                       stream,                                     \
+                                       mb,                                         \
+                                       alpha_device_host,                          \
+                                       local_bsr_row_ptr,                          \
+                                       local_bsr_col_ind,                          \
+                                       local_bsr_val,                              \
+                                       block_dim,                                  \
+                                       x,                                          \
+                                       y,                                          \
+                                       done_array,                                 \
+                                       (rocsparse_int*)bsrsv->row_map,             \
+                                       (rocsparse_int*)info->zero_pivot,           \
+                                       descr->base,                                \
+                                       descr->diag_type,                           \
+                                       dir)
 
 template <unsigned int  BLOCKSIZE,
           unsigned int  WFSIZE,

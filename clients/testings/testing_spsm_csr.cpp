@@ -146,6 +146,23 @@ void testing_spsm_csr(const Arguments& arg)
     I nnz_A;
     matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val, M, N, nnz_A, base);
 
+    //
+    // Scale values.
+    //
+    {
+        const size_t       size = hcsr_val.size();
+        floating_data_t<T> mx   = floating_data_t<T>(0);
+        for(size_t i = 0; i < size; ++i)
+        {
+            mx = std::max(mx, std::abs(hcsr_val[i]));
+        }
+        mx = floating_data_t<T>(1.0) / mx;
+        for(size_t i = 0; i < size; ++i)
+        {
+            hcsr_val[i] *= mx;
+        }
+    }
+
     J B_m = (trans_B == rocsparse_operation_none) ? M : K;
     J B_n = (trans_B == rocsparse_operation_none) ? K : M;
 
@@ -228,6 +245,10 @@ void testing_spsm_csr(const Arguments& arg)
                             base,
                             ttype,
                             rocsparse_format_csr);
+
+    ldb = std::max(int64_t(1), ldb);
+    ldc = std::max(int64_t(1), ldc);
+
     rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, rocsparse_order_column);
     rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, rocsparse_order_column);
     rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, rocsparse_order_column);

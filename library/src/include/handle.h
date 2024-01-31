@@ -27,6 +27,7 @@
 #include "rocsparse-auxiliary.h"
 #include "rocsparse-version.h"
 
+#include "rocsparse_blas.h"
 #include <fstream>
 #include <hip/hip_runtime_api.h>
 #include <iostream>
@@ -56,6 +57,10 @@ struct _rocsparse_handle
     rocsparse_status set_stream(hipStream_t user_stream);
     // get stream
     rocsparse_status get_stream(hipStream_t* user_stream) const;
+    // set pointer mode
+    rocsparse_status set_pointer_mode(rocsparse_pointer_mode user_mode);
+    // get pointer mode
+    rocsparse_status get_pointer_mode(rocsparse_pointer_mode* user_mode) const;
 
     // device id
     int device;
@@ -80,6 +85,8 @@ struct _rocsparse_handle
     // device complex one
     rocsparse_float_complex*  cone;
     rocsparse_double_complex* zone;
+    // blas handle
+    rocsparse_blas_handle blas_handle;
 
     // logging streams
     std::ofstream log_trace_ofs;
@@ -201,6 +208,26 @@ struct _rocsparse_color_info
 {
 };
 
+struct rocsparse_adaptive_info
+{
+    size_t        size{}; // num row blocks
+    void*         row_blocks{};
+    unsigned int* wg_flags{};
+    void*         wg_ids{};
+};
+
+struct rocsparse_lrb_info
+{
+    void* rows_offsets_scratch{}; // size of m
+    void* rows_bins{}; // size of m
+    void* n_rows_bins{}; // size of 32
+
+    size_t        size{};
+    unsigned int* wg_flags{};
+
+    int64_t nRowsBins[32]{}; // host array
+};
+
 /********************************************************************************
  * \brief rocsparse_csrmv_info is a structure holding the rocsparse csrmv info
  * data gathered during csrmv_analysis. It must be initialized using the
@@ -209,12 +236,8 @@ struct _rocsparse_color_info
  *******************************************************************************/
 struct _rocsparse_csrmv_info
 {
-    // num row blocks
-    size_t size{};
-    // row blocks
-    void*         row_blocks{};
-    unsigned int* wg_flags{};
-    void*         wg_ids{};
+    rocsparse_adaptive_info adaptive;
+    rocsparse_lrb_info      lrb;
 
     // some data to verify correct execution
     rocsparse_operation         trans = rocsparse_operation_none;

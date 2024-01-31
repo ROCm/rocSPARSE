@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 /*! \file
- *  \brief auto_testing_bad_arg.hpp provides common testing utilities.
+ *  \brief auto_testing_bad_arg.hpp provides common testing utilities
  */
 
 #pragma once
@@ -315,7 +315,8 @@ inline void auto_testing_bad_arg_excluding(F f, int n, const int* idx, const cha
                           << "'" //
                           << std::endl
                           << "   reason: statuses do not match, argument checking returns "
-                          << status_from_routine << std::endl;
+                          << status_from_routine << ", but it should return " << status
+                          << std::endl;
                 auto_testing_bad_arg_print(ts...);
                 EXPECT_ROCSPARSE_STATUS(status_from_routine, status);
             }

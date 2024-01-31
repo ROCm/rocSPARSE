@@ -615,7 +615,8 @@ typedef enum rocsparse_spmv_alg_
     rocsparse_spmv_alg_csr_stream   = 3, /**< CSR SpMV algorithm 2 (stream) for CSR matrices. */
     rocsparse_spmv_alg_ell          = 4, /**< ELL SpMV algorithm for ELL matrices. */
     rocsparse_spmv_alg_coo_atomic   = 5, /**< COO SpMV algorithm 2 (atomic) for COO matrices. */
-    rocsparse_spmv_alg_bsr          = 6 /**< BSR SpMV algorithm 1 for BSR matrices. */
+    rocsparse_spmv_alg_bsr          = 6, /**< BSR SpMV algorithm 1 for BSR matrices. */
+    rocsparse_spmv_alg_csr_lrb      = 7 /**< CSR SpMV algorithm 3 (LRB) for CSR matrices. */
 } rocsparse_spmv_alg;
 
 /*! \ingroup types_module
@@ -726,6 +727,7 @@ typedef enum rocsparse_spmm_alg_
 typedef enum rocsparse_sddmm_alg_
 {
     rocsparse_sddmm_alg_default = 0, /**< Default sddmm algorithm for the given format. */
+    rocsparse_sddmm_alg_dense   = 1 /**< Sddmm algorithm using dense blas operations. */
 } rocsparse_sddmm_alg;
 
 /*! \ingroup types_module

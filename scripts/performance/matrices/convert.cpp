@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2018-2020 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -120,7 +120,7 @@ int read_mtx_matrix(const char*          filename,
     int snnz;
 
     sscanf(line, "%d %d %d", &nrow, &ncol, &snnz);
-    nnz = symm ? (snnz - nrow) * 2 + nrow : snnz;
+    nnz = symm ? 2 * snnz : snnz;
 
     std::vector<int>    unsorted_row(nnz);
     std::vector<int>    unsorted_col(nnz);
@@ -172,6 +172,8 @@ int read_mtx_matrix(const char*          filename,
         }
     }
     fclose(f);
+
+    nnz = idx;
 
     row.resize(nnz);
     col.resize(nnz);

@@ -17,7 +17,7 @@ def runCI =
 
     // customize for project
     prj.paths.build_command = './install.sh --matrices-dir-install ${JENKINS_HOME_DIR}/rocsparse_matrices && ./install.sh -c --matrices-dir ${JENKINS_HOME_DIR}/rocsparse_matrices'
-    prj.libraryDependencies = ['rocPRIM']
+    prj.libraryDependencies = ['rocPRIM', 'rocBLAS-internal']
     prj.timeout.test = 600
     prj.defaults.ccache = true
 

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,12 @@
 
 #include "handle.h"
 
+#include "rocsparse_csrmv.hpp"
+
 template <typename I, typename J, typename A>
 rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans,
+                                                   rocsparse_csrmv_alg       alg,
                                                    J                         m,
                                                    J                         n,
                                                    I                         nnz,
@@ -41,6 +44,7 @@ rocsparse_status rocsparse_cscmv_analysis_template(rocsparse_handle          han
 template <typename T, typename I, typename J, typename A, typename X, typename Y>
 rocsparse_status rocsparse_cscmv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
+                                          rocsparse_csrmv_alg       alg,
                                           J                         m,
                                           J                         n,
                                           I                         nnz,

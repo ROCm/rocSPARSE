@@ -140,7 +140,7 @@ rocsparse_status rocsparse_importer_rocalution::import_sparse_csx(
     this->m_info_csx.in = new std::ifstream(this->m_filename, std::ios::in | std::ios::binary);
     if(!this->m_info_csx.in->is_open())
     {
-        std::cerr << "cannot open file '" << this->m_filename << "'" << std::endl;
+        missing_file_error_message(this->m_filename.c_str());
         return rocsparse_status_internal_error;
     }
     std::string header;

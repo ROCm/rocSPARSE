@@ -88,8 +88,40 @@ static inline hipError_t rocsparse_assign_async(T* dest, T value, hipStream_t st
     // Use a kernel instead of memcpy, because memcpy is synchronous if the source is not in
     // pinned memory.
     // Memset lacks a 64bit option, but would involve a similar implicit kernel anyways.
-    hipLaunchKernelGGL(rocsparse_assign_kernel, dim3(1), dim3(1), 0, stream, dest, value);
-    return hipGetLastError();
+
+    if(false == rocsparse_debug_variables.get_debug_kernel_launch())
+    {
+        hipLaunchKernelGGL(rocsparse_assign_kernel, dim3(1), dim3(1), 0, stream, dest, value);
+        return hipSuccess;
+    }
+    else
+    {
+        {
+            const hipError_t err = hipGetLastError();
+            if(err != hipSuccess)
+            {
+                std::stringstream s;
+                s << "prior to hipLaunchKernelGGL"
+                  << ", hip error detected: code '" << err << "', name '" << hipGetErrorName(err)
+                  << "', description '" << hipGetErrorString(err) << "'";
+                ROCSPARSE_ERROR_MESSAGE(get_rocsparse_status_for_hip_status(err), s.str().c_str());
+                return err;
+            }
+        }
+        hipLaunchKernelGGL(rocsparse_assign_kernel, dim3(1), dim3(1), 0, stream, dest, value);
+        {
+            const hipError_t err = hipGetLastError();
+            if(err != hipSuccess)
+            {
+                std::stringstream s;
+                s << "hip error detected: code '" << err << "', name '" << hipGetErrorName(err)
+                  << "', description '" << hipGetErrorString(err) << "'";
+                ROCSPARSE_ERROR_MESSAGE(get_rocsparse_status_for_hip_status(err), s.str().c_str());
+                return err;
+            }
+        }
+        return hipSuccess;
+    }
 }
 
 // if trace logging is turned on with
@@ -328,6 +360,22 @@ struct rocsparse_enum_utils
 {
     template <typename U>
     static inline bool is_invalid(U value_);
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmat_attribute value)
+{
+    switch(value)
+    {
+    case rocsparse_spmat_fill_mode:
+    case rocsparse_spmat_diag_type:
+    case rocsparse_spmat_matrix_type:
+    case rocsparse_spmat_storage_mode:
+    {
+        return false;
+    }
+    }
+    return true;
 };
 
 template <>
@@ -580,6 +628,7 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
     case rocsparse_spmv_alg_ell:
     case rocsparse_spmv_alg_coo_atomic:
     case rocsparse_spmv_alg_bsr:
+    case rocsparse_spmv_alg_csr_lrb:
     {
         return false;
     }
@@ -745,6 +794,10 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_sddmm_alg value_)
     {
         return false;
     }
+    case rocsparse_sddmm_alg_dense:
+    {
+        return false;
+    }
     }
     return true;
 };
@@ -827,6 +880,33 @@ struct floating_traits<rocsparse_double_complex>
 template <typename T>
 using floating_data_t = typename floating_traits<T>::data_t;
 
+template <typename T>
+rocsparse_datatype get_datatype();
+
+template <>
+inline rocsparse_datatype get_datatype<float>()
+{
+    return rocsparse_datatype_f32_r;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<double>()
+{
+    return rocsparse_datatype_f64_r;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<rocsparse_float_complex>()
+{
+    return rocsparse_datatype_f32_c;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<rocsparse_double_complex>()
+{
+    return rocsparse_datatype_f64_c;
+}
+
 #include "envariables.h"
 #include "memstat.h"
 
@@ -838,3 +918,17 @@ rocsparse_status   rocsparse_calculate_nnz(
       int64_t m, rocsparse_indextype indextype, const void* ptr, int64_t* nnz, hipStream_t stream);
 size_t rocsparse_indextype_sizeof(rocsparse_indextype that);
 size_t rocsparse_datatype_sizeof(rocsparse_datatype that);
+
+template <typename S, typename T>
+inline rocsparse_status rocsparse_internal_convert_scalar(const S s, T& t)
+{
+    if(s <= std::numeric_limits<T>::max() && s >= std::numeric_limits<T>::min())
+    {
+        t = static_cast<T>(s);
+        return rocsparse_status_success;
+    }
+    else
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_type_mismatch);
+    }
+}

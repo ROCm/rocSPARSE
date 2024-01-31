@@ -78,7 +78,7 @@ _rocsparse_handle::_rocsparse_handle()
     THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&zone, sizeof(rocsparse_double_complex)));
 
     // Execute empty kernel for initialization
-    hipLaunchKernelGGL(init_kernel, dim3(1), dim3(1), 0, stream);
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(init_kernel, dim3(1), dim3(1), 0, stream);
 
     // Execute memset for initialization
     THROW_IF_HIP_ERROR(hipMemsetAsync(sone, 0, sizeof(float), stream));
@@ -101,6 +101,12 @@ _rocsparse_handle::_rocsparse_handle()
 
     // Wait for device transfer to finish
     THROW_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
+    // create blas handle
+    THROW_IF_ROCSPARSE_ERROR(rocsparse_blas_create_handle(&this->blas_handle));
+    THROW_IF_ROCSPARSE_ERROR(rocsparse_blas_set_stream(this->blas_handle, this->stream));
+    THROW_IF_ROCSPARSE_ERROR(
+        rocsparse_blas_set_pointer_mode(this->blas_handle, this->pointer_mode));
 
     // Open log file
     if(layer_mode & rocsparse_layer_mode_log_trace)
@@ -132,6 +138,13 @@ _rocsparse_handle::~_rocsparse_handle()
     PRINT_IF_HIP_ERROR(rocsparse_hipFree(cone));
     PRINT_IF_HIP_ERROR(rocsparse_hipFree(zone));
 
+    // destroy blas handle
+    rocsparse_status status = rocsparse_blas_destroy_handle(this->blas_handle);
+    if(status != rocsparse_status_success)
+    {
+        ROCSPARSE_ERROR_MESSAGE(status, "handle error");
+    }
+
     // Close log files
     if(log_trace_ofs.is_open())
     {
@@ -160,6 +173,10 @@ rocsparse_status _rocsparse_handle::set_stream(hipStream_t user_stream)
 {
     // TODO check if stream is valid
     stream = user_stream;
+
+    // blas set stream
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_blas_set_stream(this->blas_handle, user_stream));
+
     return rocsparse_status_success;
 }
 
@@ -169,6 +186,29 @@ rocsparse_status _rocsparse_handle::set_stream(hipStream_t user_stream)
 rocsparse_status _rocsparse_handle::get_stream(hipStream_t* user_stream) const
 {
     *user_stream = stream;
+    return rocsparse_status_success;
+}
+
+/*******************************************************************************
+ * set pointer mode
+ ******************************************************************************/
+rocsparse_status _rocsparse_handle::set_pointer_mode(rocsparse_pointer_mode user_mode)
+{
+    // TODO check if stream is valid
+    this->pointer_mode = user_mode;
+
+    // blas set stream
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_blas_set_pointer_mode(this->blas_handle, user_mode));
+
+    return rocsparse_status_success;
+}
+
+/*******************************************************************************
+ * get pointer mode
+ ******************************************************************************/
+rocsparse_status _rocsparse_handle::get_pointer_mode(rocsparse_pointer_mode* user_mode) const
+{
+    *user_mode = this->pointer_mode;
     return rocsparse_status_success;
 }
 
@@ -212,11 +252,17 @@ rocsparse_status rocsparse_copy_csrmv_info(rocsparse_csrmv_info       dest,
 
     // check if destination already contains data. If it does, verify its allocated arrays are the same size as source
     bool previously_created = false;
-    previously_created |= (dest->size != 0);
 
-    previously_created |= (dest->row_blocks != nullptr);
-    previously_created |= (dest->wg_flags != nullptr);
-    previously_created |= (dest->wg_ids != nullptr);
+    previously_created |= (dest->adaptive.size != 0);
+    previously_created |= (dest->adaptive.row_blocks != nullptr);
+    previously_created |= (dest->adaptive.wg_flags != nullptr);
+    previously_created |= (dest->adaptive.wg_ids != nullptr);
+
+    previously_created |= (dest->lrb.size != 0);
+    previously_created |= (dest->lrb.wg_flags != nullptr);
+    previously_created |= (dest->lrb.rows_offsets_scratch != nullptr);
+    previously_created |= (dest->lrb.rows_bins != nullptr);
+    previously_created |= (dest->lrb.n_rows_bins != nullptr);
 
     previously_created |= (dest->trans != rocsparse_operation_none);
     previously_created |= (dest->m != 0);
@@ -233,7 +279,8 @@ rocsparse_status rocsparse_copy_csrmv_info(rocsparse_csrmv_info       dest,
     {
         // Sparsity pattern of dest and src must match
         bool invalid = false;
-        invalid |= (dest->size != src->size);
+        invalid |= (dest->adaptive.size != src->adaptive.size);
+        invalid |= (dest->lrb.size != src->lrb.size);
         invalid |= (dest->trans != src->trans);
         invalid |= (dest->m != src->m);
         invalid |= (dest->n != src->n);
@@ -288,47 +335,100 @@ rocsparse_status rocsparse_copy_csrmv_info(rocsparse_csrmv_info       dest,
     }
     }
 
-    if(src->row_blocks != nullptr)
+    if(src->adaptive.row_blocks != nullptr)
     {
-        if(dest->row_blocks == nullptr)
+        if(dest->adaptive.row_blocks == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->row_blocks, I_size * src->size));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->adaptive.row_blocks,
+                                                    I_size * src->adaptive.size));
         }
-        RETURN_IF_HIP_ERROR(hipMemcpy(
-            dest->row_blocks, src->row_blocks, I_size * src->size, hipMemcpyDeviceToDevice));
-    }
-
-    if(src->wg_flags != nullptr)
-    {
-        if(dest->wg_flags == nullptr)
-        {
-            RETURN_IF_HIP_ERROR(
-                rocsparse_hipMalloc((void**)&dest->wg_flags, sizeof(unsigned int) * src->size));
-        }
-        RETURN_IF_HIP_ERROR(hipMemcpy(dest->wg_flags,
-                                      src->wg_flags,
-                                      sizeof(unsigned int) * src->size,
+        RETURN_IF_HIP_ERROR(hipMemcpy(dest->adaptive.row_blocks,
+                                      src->adaptive.row_blocks,
+                                      I_size * src->adaptive.size,
                                       hipMemcpyDeviceToDevice));
     }
 
-    if(src->wg_ids != nullptr)
+    if(src->adaptive.wg_flags != nullptr)
     {
-        if(dest->wg_ids == nullptr)
+        if(dest->adaptive.wg_flags == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->wg_ids, J_size * src->size));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->adaptive.wg_flags,
+                                                    sizeof(unsigned int) * src->adaptive.size));
         }
-        RETURN_IF_HIP_ERROR(
-            hipMemcpy(dest->wg_ids, src->wg_ids, J_size * src->size, hipMemcpyDeviceToDevice));
+        RETURN_IF_HIP_ERROR(hipMemcpy(dest->adaptive.wg_flags,
+                                      src->adaptive.wg_flags,
+                                      sizeof(unsigned int) * src->adaptive.size,
+                                      hipMemcpyDeviceToDevice));
     }
 
-    dest->size         = src->size;
-    dest->trans        = src->trans;
-    dest->m            = src->m;
-    dest->n            = src->n;
-    dest->nnz          = src->nnz;
-    dest->max_rows     = src->max_rows;
-    dest->index_type_I = src->index_type_I;
-    dest->index_type_J = src->index_type_J;
+    if(src->adaptive.wg_ids != nullptr)
+    {
+        if(dest->adaptive.wg_ids == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc((void**)&dest->adaptive.wg_ids, J_size * src->adaptive.size));
+        }
+        RETURN_IF_HIP_ERROR(hipMemcpy(dest->adaptive.wg_ids,
+                                      src->adaptive.wg_ids,
+                                      J_size * src->adaptive.size,
+                                      hipMemcpyDeviceToDevice));
+    }
+
+    if(src->lrb.wg_flags != nullptr)
+    {
+        if(dest->lrb.wg_flags == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->lrb.wg_flags,
+                                                    sizeof(unsigned int) * src->lrb.size));
+        }
+        RETURN_IF_HIP_ERROR(hipMemcpy(dest->lrb.wg_flags,
+                                      src->lrb.wg_flags,
+                                      sizeof(unsigned int) * src->lrb.size,
+                                      hipMemcpyDeviceToDevice));
+    }
+
+    if(src->lrb.rows_offsets_scratch != nullptr)
+    {
+        if(dest->lrb.rows_offsets_scratch == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc((void**)&dest->lrb.rows_offsets_scratch, J_size * src->m));
+        }
+        RETURN_IF_HIP_ERROR(hipMemcpy(dest->lrb.rows_offsets_scratch,
+                                      src->lrb.rows_offsets_scratch,
+                                      J_size * src->m,
+                                      hipMemcpyDeviceToDevice));
+    }
+
+    if(src->lrb.rows_bins != nullptr)
+    {
+        if(dest->lrb.rows_bins == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->lrb.rows_bins, J_size * src->m));
+        }
+        RETURN_IF_HIP_ERROR(hipMemcpy(
+            dest->lrb.rows_bins, src->lrb.rows_bins, J_size * src->m, hipMemcpyDeviceToDevice));
+    }
+
+    if(src->lrb.n_rows_bins != nullptr)
+    {
+        if(dest->lrb.n_rows_bins == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->lrb.n_rows_bins, J_size * 32));
+        }
+        RETURN_IF_HIP_ERROR(hipMemcpy(
+            dest->lrb.n_rows_bins, src->lrb.n_rows_bins, J_size * 32, hipMemcpyDeviceToDevice));
+    }
+
+    dest->adaptive.size = src->adaptive.size;
+    dest->lrb.size      = src->lrb.size;
+    dest->trans         = src->trans;
+    dest->m             = src->m;
+    dest->n             = src->n;
+    dest->nnz           = src->nnz;
+    dest->max_rows      = src->max_rows;
+    dest->index_type_I  = src->index_type_I;
+    dest->index_type_J  = src->index_type_J;
 
     // Not owned by the info struct. Just pointers to externally allocated memory
     dest->descr       = src->descr;
@@ -348,13 +448,26 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
         return rocsparse_status_success;
     }
 
-    // Clean up row blocks
-    if(info->size > 0)
+    // Clean up adaptive arrays
+    if(info->adaptive.size > 0)
     {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->row_blocks));
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->wg_flags));
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->wg_ids));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->adaptive.row_blocks));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->adaptive.wg_flags));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->adaptive.wg_ids));
     }
+
+    if(info->lrb.size > 0)
+    {
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->lrb.wg_flags));
+    }
+
+    if(info->m > 0)
+    {
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->lrb.rows_offsets_scratch));
+        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->lrb.rows_bins));
+    }
+
+    RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->lrb.n_rows_bins));
 
     // Destruct
     try

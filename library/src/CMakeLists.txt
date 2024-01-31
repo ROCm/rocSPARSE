@@ -34,6 +34,7 @@ set(rocsparse_source
   src/handle.cpp
   src/status.cpp
   src/rocsparse_auxiliary.cpp
+  src/rocsparse_blas.cpp
   src/rocsparse_envariables.cpp
   src/rocsparse_memstat.cpp
   ##
@@ -73,6 +74,9 @@ set(rocsparse_source
   src/level2/rocsparse_bsrsv_solve.cpp
   src/level2/rocsparse_coomv.cpp
   src/level2/rocsparse_coomv_aos.cpp
+  src/level2/rocsparse_csrmv_template_stream.cpp
+  src/level2/rocsparse_csrmv_template_adaptive.cpp
+  src/level2/rocsparse_csrmv_template_lrb.cpp
   src/level2/rocsparse_csrmv.cpp
   src/level2/rocsparse_cscmv.cpp
   src/level2/rocsparse_csrsv.cpp
@@ -149,10 +153,13 @@ set(rocsparse_source
 
 # Extra
   src/extra/rocsparse_bsrgeam.cpp
+  src/extra/rocsparse_bsrgeam_nnzb.cpp
+  src/extra/rocsparse_csrgeam.cpp
+  src/extra/rocsparse_csrgeam_nnz.cpp
+  #
   src/extra/rocsparse_bsrgemm_buffer_size.cpp
   src/extra/rocsparse_bsrgemm_nnz.cpp
   src/extra/rocsparse_bsrgemm.cpp
-  src/extra/rocsparse_csrgeam.cpp
   src/extra/rocsparse_csrgemm.cpp
   src/extra/rocsparse_csrgemm_symbolic.cpp
   src/extra/rocsparse_csrgemm_numeric.cpp
@@ -202,19 +209,24 @@ set(rocsparse_source
   src/conversion/rocsparse_csr2dense.cpp
   src/conversion/rocsparse_csc2dense.cpp
   src/conversion/rocsparse_coo2dense.cpp
+  src/conversion/rocsparse_coo2dense_aos.cpp
   src/conversion/rocsparse_nnz_compress.cpp
   src/conversion/rocsparse_csr2coo.cpp
   src/conversion/rocsparse_csr2csc.cpp
   src/conversion/rocsparse_gebsr2gebsc.cpp
   src/conversion/rocsparse_csr2bsr.cpp
+  src/conversion/rocsparse_csr2bsr_nnz.cpp
   src/conversion/rocsparse_csr2gebsr.cpp
   src/conversion/rocsparse_csr2ell.cpp
+  src/conversion/rocsparse_csr2ell_strided_batched.cpp
+  src/conversion/rocsparse_csr2ell_width.cpp
   src/conversion/rocsparse_csr2hyb.cpp
   src/conversion/rocsparse_csr2csr_compress.cpp
   src/conversion/rocsparse_prune_csr2csr.cpp
   src/conversion/rocsparse_prune_csr2csr_by_percentage.cpp
   src/conversion/rocsparse_coo2csr.cpp
   src/conversion/rocsparse_ell2csr.cpp
+  src/conversion/rocsparse_ell2dense.cpp
   src/conversion/rocsparse_hyb2csr.cpp
   src/conversion/rocsparse_bsr2csr.cpp
   src/conversion/rocsparse_gebsr2csr.cpp
@@ -227,6 +239,26 @@ set(rocsparse_source
   src/conversion/rocsparse_sparse_to_dense.cpp
   src/conversion/rocsparse_dense_to_sparse.cpp
   src/conversion/rocsparse_bsrpad_value.cpp
+  #
+  src/conversion/rocsparse_gcsr2bsr.cpp
+  src/conversion/rocsparse_gcsr2bsr_nnz.cpp
+  src/conversion/rocsparse_gbsr2csr.cpp
+  src/conversion/rocsparse_gcoo2csr.cpp
+  src/conversion/rocsparse_gcsc2csr.cpp
+  src/conversion/rocsparse_gcoo2coo_aos.cpp
+  src/conversion/rocsparse_gcoo_aos2coo.cpp
+  src/conversion/rocsparse_gcoo_aos2csr.cpp
+  src/conversion/rocsparse_gcsr2coo_aos.cpp
+  src/conversion/rocsparse_gcoosort.cpp
+  src/conversion/rocsparse_gcreate_identity_permutation.cpp
+  src/conversion/rocsparse_gcsr2csc.cpp
+  src/conversion/rocsparse_gcsr2coo.cpp
+  src/conversion/rocsparse_gcsr2ell.cpp
+  src/conversion/rocsparse_gell2csr.cpp
+  src/conversion/rocsparse_ggthr.cpp
+  src/conversion/rocsparse_convert_array.cpp
+
+
 
 # Reordering
   src/reordering/rocsparse_csrcolor.cpp

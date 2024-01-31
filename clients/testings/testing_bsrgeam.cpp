@@ -29,7 +29,7 @@
 template <typename T>
 void testing_bsrgeam_bad_arg(const Arguments& arg)
 {
-    static const size_t safe_size = 100;
+    static const size_t safe_size = 1;
     T                   h_alpha   = 0.6;
     T                   h_beta    = 0.2;
 
@@ -60,9 +60,15 @@ void testing_bsrgeam_bad_arg(const Arguments& arg)
     const rocsparse_int*      bsr_col_ind_B = (const rocsparse_int*)0x4;
     const rocsparse_mat_descr descr_C       = local_descr_C;
     T*                        bsr_val_C     = (T*)0x4;
-    rocsparse_int*            bsr_row_ptr_C = (rocsparse_int*)0x4;
-    rocsparse_int*            bsr_col_ind_C = (rocsparse_int*)0x4;
-    rocsparse_int*            nnzb_C        = (rocsparse_int*)0x4;
+
+    host_dense_vector<rocsparse_int> hbsr_row_ptr_C(safe_size + 1);
+    hbsr_row_ptr_C[0] = 0;
+    hbsr_row_ptr_C[1] = 1;
+    device_dense_vector<rocsparse_int> dbsr_row_ptr_C(hbsr_row_ptr_C);
+
+    rocsparse_int* bsr_row_ptr_C = (rocsparse_int*)dbsr_row_ptr_C;
+    rocsparse_int* bsr_col_ind_C = (rocsparse_int*)0x4;
+    rocsparse_int* nnzb_C        = (rocsparse_int*)0x4;
 
 #define PARAMS_NNZB                                                                         \
     handle, dir, mb, nb, block_dim, descr_A, nnzb_A, bsr_row_ptr_A, bsr_col_ind_A, descr_B, \
@@ -73,9 +79,8 @@ void testing_bsrgeam_bad_arg(const Arguments& arg)
         bsr_col_ind_A, beta, descr_B, nnzb_B, bsr_val_B, bsr_row_ptr_B, bsr_col_ind_B, descr_C, \
         bsr_val_C, bsr_row_ptr_C, bsr_col_ind_C
 
-    auto_testing_bad_arg(rocsparse_bsrgeam_nnzb, PARAMS_NNZB);
-    auto_testing_bad_arg(rocsparse_bsrgeam<T>, PARAMS);
-
+    bad_arg_analysis(rocsparse_bsrgeam_nnzb, PARAMS_NNZB);
+    bad_arg_analysis(rocsparse_bsrgeam<T>, PARAMS);
     for(auto val : rocsparse_matrix_type_t::values)
     {
         if(val != rocsparse_matrix_type_general)
@@ -88,6 +93,7 @@ void testing_bsrgeam_bad_arg(const Arguments& arg)
             EXPECT_ROCSPARSE_STATUS(rocsparse_bsrgeam<T>(PARAMS), rocsparse_status_not_implemented);
         }
     }
+
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_A, rocsparse_matrix_type_general));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_B, rocsparse_matrix_type_general));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_C, rocsparse_matrix_type_general));
@@ -447,7 +453,7 @@ void testing_bsrgeam(const Arguments& arg)
                                                          &nnzb_C));
         }
 
-        gpu_analysis_time_used = get_time_us() - gpu_analysis_time_used;
+        gpu_analysis_time_used = (get_time_us() - gpu_analysis_time_used) / number_hot_calls;
 
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)

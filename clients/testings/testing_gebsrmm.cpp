@@ -306,7 +306,6 @@ void testing_gebsrmm(const Arguments& arg)
     rocsparse_int        col_block_dim = arg.col_block_dimA;
     rocsparse_operation  transA        = arg.transA;
     rocsparse_operation  transB        = arg.transB;
-    rocsparse_direction  direction     = arg.direction;
     rocsparse_index_base base          = arg.baseA;
 
     rocsparse_int Mb = (M + row_block_dim - 1) / row_block_dim;

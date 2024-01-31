@@ -49,6 +49,7 @@ struct rocsparse_sddmm_st
                                         const J*             C_col_data,
                                         T*                   C_val_data,
                                         rocsparse_index_base C_base,
+                                        rocsparse_mat_descr  C_descr,
                                         rocsparse_sddmm_alg  alg,
                                         size_t*              buffer_size);
 
@@ -71,6 +72,7 @@ struct rocsparse_sddmm_st
                                        const J*             C_col_data,
                                        T*                   C_val_data,
                                        rocsparse_index_base C_base,
+                                       rocsparse_mat_descr  C_descr,
                                        rocsparse_sddmm_alg  alg,
                                        void*                buffer);
 
@@ -93,6 +95,7 @@ struct rocsparse_sddmm_st
                                     const J*             C_col_data,
                                     T*                   C_val_data,
                                     rocsparse_index_base C_base,
+                                    rocsparse_mat_descr  C_descr,
                                     rocsparse_sddmm_alg  alg,
                                     void*                buffer);
 
@@ -133,6 +136,7 @@ struct rocsparse_sddmm_st
                 (const J*)mat_C->const_col_data,
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 out_buffer_size)));
             return rocsparse_status_success;
@@ -160,6 +164,7 @@ struct rocsparse_sddmm_st
                 (const J*)mat_C->const_row_data,
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 out_buffer_size)));
             return rocsparse_status_success;
@@ -186,6 +191,7 @@ struct rocsparse_sddmm_st
                 (const J*)mat_C->const_col_data,
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 out_buffer_size)));
             return rocsparse_status_success;
@@ -213,6 +219,7 @@ struct rocsparse_sddmm_st
                 (const J*)(((const I*)mat_C->const_ind_data) + 1),
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 out_buffer_size)));
             return rocsparse_status_success;
@@ -258,6 +265,7 @@ struct rocsparse_sddmm_st
                 (const J*)mat_C->const_col_data,
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 buffer)));
             return rocsparse_status_success;
@@ -284,6 +292,7 @@ struct rocsparse_sddmm_st
                 (const J*)mat_C->const_row_data,
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 buffer)));
             return rocsparse_status_success;
@@ -310,6 +319,7 @@ struct rocsparse_sddmm_st
                 (const J*)mat_C->const_col_data,
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 buffer)));
             return rocsparse_status_success;
@@ -336,6 +346,7 @@ struct rocsparse_sddmm_st
                 (const J*)(((const I*)mat_C->const_ind_data) + 1),
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 buffer)));
             return rocsparse_status_success;
@@ -381,6 +392,7 @@ struct rocsparse_sddmm_st
                 (const J*)mat_C->const_col_data,
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 buffer)));
             return rocsparse_status_success;
@@ -407,6 +419,7 @@ struct rocsparse_sddmm_st
                 (const J*)mat_C->const_row_data,
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 buffer)));
             return rocsparse_status_success;
@@ -433,6 +446,7 @@ struct rocsparse_sddmm_st
                 (const J*)mat_C->const_col_data,
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 buffer)));
             return rocsparse_status_success;
@@ -459,6 +473,7 @@ struct rocsparse_sddmm_st
                 (const J*)(((const I*)mat_C->const_ind_data) + 1),
                 (T*)mat_C->val_data,
                 mat_C->idx_base,
+                mat_C->descr,
                 alg,
                 buffer)));
             return rocsparse_status_success;

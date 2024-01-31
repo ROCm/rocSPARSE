@@ -310,6 +310,8 @@ constexpr auto rocsparse_sddmmalg2string(rocsparse_sddmm_alg alg)
     {
     case rocsparse_sddmm_alg_default:
         return "default";
+    case rocsparse_sddmm_alg_dense:
+        return "dense";
     }
     return "invalid";
 }
@@ -357,6 +359,8 @@ constexpr auto rocsparse_spmvalg2string(rocsparse_spmv_alg alg)
         return "ell";
     case rocsparse_spmv_alg_coo_atomic:
         return "cooatomic";
+    case rocsparse_spmv_alg_csr_lrb:
+        return "csrlrb";
     }
     return "invalid";
 }

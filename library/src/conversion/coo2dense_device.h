@@ -59,3 +59,36 @@ void coo2dense_kernel(I                    m,
         A[lda * row + col] = val;
     }
 }
+
+template <unsigned int BLOCKSIZE, typename I, typename T>
+ROCSPARSE_KERNEL(BLOCKSIZE)
+void coo2dense_aos_kernel(I                    m,
+                          I                    n,
+                          int64_t              nnz,
+                          int64_t              lda,
+                          rocsparse_index_base base,
+                          const T*             coo_val,
+                          const I*             coo_ind,
+                          T*                   A,
+                          rocsparse_order      order)
+{
+    const auto NUM_THREADS = hipGridDim_x * BLOCKSIZE;
+
+    const auto gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+    for(auto idx = gid; idx < nnz; idx += NUM_THREADS)
+    {
+        I row = coo_ind[2 * idx] - base;
+        I col = coo_ind[2 * idx + 1] - base;
+        T val = coo_val[idx];
+
+        if(order == rocsparse_order_column)
+        {
+            A[lda * col + row] = val;
+        }
+        else
+        {
+            A[lda * row + col] = val;
+        }
+    }
+}

@@ -25,6 +25,7 @@
 #include <windows.h>
 #endif
 
+#include "rocsparse_clients_envariables.hpp"
 #include "utility.hpp"
 
 #include <chrono>
@@ -86,6 +87,44 @@ std::string rocsparse_exepath()
     }
     return pathstr;
 #endif
+}
+
+/* ==================================================================================== */
+// Return path where the test data file (rocsparse_test.data) is located
+std::string rocsparse_datapath()
+{
+    // first check an environment variable
+    if(rocsparse_clients_envariables::is_defined(rocsparse_clients_envariables::TEST_DATA_DIR))
+    {
+        return rocsparse_clients_envariables::get(rocsparse_clients_envariables::TEST_DATA_DIR);
+    }
+
+#ifdef WIN32
+    fs::path        share_path = fs::path(rocsparse_exepath() + "../share/rocsparse/test");
+    std::error_code ec;
+    fs::path        path = fs::canonical(share_path, ec);
+    if(!ec)
+    {
+        if(fs::exists(path, ec) && !ec)
+        {
+            path += path.empty() ? "" : "/";
+            return path.string();
+        }
+    }
+#else
+    std::string pathstr;
+    std::string share_path = rocsparse_exepath() + "../share/rocsparse/test";
+    char*       path       = realpath(share_path.c_str(), 0);
+    if(path != NULL)
+    {
+        pathstr = path;
+        pathstr += "/";
+        free(path);
+        return pathstr;
+    }
+#endif
+
+    return rocsparse_exepath();
 }
 
 /* ============================================================================================ */

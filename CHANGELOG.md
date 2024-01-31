@@ -2,6 +2,13 @@
 
 Full documentation for rocSPARSE is available at [rocm.docs.amd.com](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
+## rocSPARSE 3.0.3 for ROCm 6.1.0
+### Added
+- Added new LRB algorithm to SpMV
+### Changed
+### Improved
+### Known Issues
+
 ## rocSPARSE 3.0.2 for ROCm 6.0.0
 ### Added
 - Added rocsparse_inverse_permutation
@@ -26,6 +33,11 @@ Full documentation for rocSPARSE is available at [rocm.docs.amd.com](https://roc
 - Fixed a bug in rocsparse-bench, where SpMV algorithm was not taken into account in CSR format
 - Fixed the BSR/GEBSR routines bsrmv, bsrsv, bsrmm, bsrgeam, gebsrmv, gebsrmm so that block_dim==0 is considered an invalid size
 - Fixed bug where passing nnz = 0 to doti or dotci did not always return a dot product of 0
+- Fixed gpsv minimum size to m >= 3
+- Improved spin-looping algorithms
+- Improved documentation
+- Improved verbose output during argument checking on API function calls
+### Known Issues
 
 ## rocSPARSE 2.5.4 for ROCm 5.7.0
 ### Added

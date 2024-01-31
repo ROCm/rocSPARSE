@@ -27,7 +27,7 @@
 template <typename T>
 void testing_csrgeam_bad_arg(const Arguments& arg)
 {
-    static const size_t safe_size = 100;
+    static const size_t safe_size = 1;
     T                   h_alpha   = 0.6;
     T                   h_beta    = 0.2;
 
@@ -56,9 +56,15 @@ void testing_csrgeam_bad_arg(const Arguments& arg)
     const rocsparse_int*      csr_col_ind_B = (const rocsparse_int*)0x4;
     const rocsparse_mat_descr descr_C       = local_descr_C;
     T*                        csr_val_C     = (T*)0x4;
-    rocsparse_int*            csr_row_ptr_C = (rocsparse_int*)0x4;
-    rocsparse_int*            csr_col_ind_C = (rocsparse_int*)0x4;
-    rocsparse_int*            nnz_C         = (rocsparse_int*)0x4;
+
+    host_dense_vector<rocsparse_int> hcsr_row_ptr_C(safe_size + 1);
+    hcsr_row_ptr_C[0] = 0;
+    hcsr_row_ptr_C[1] = 1;
+    device_dense_vector<rocsparse_int> dcsr_row_ptr_C(hcsr_row_ptr_C);
+
+    rocsparse_int* csr_row_ptr_C = (rocsparse_int*)dcsr_row_ptr_C;
+    rocsparse_int* csr_col_ind_C = (rocsparse_int*)0x4;
+    rocsparse_int* nnz_C         = (rocsparse_int*)0x4;
 
 #define PARAMS_NNZ                                                                             \
     handle, m, n, descr_A, nnz_A, csr_row_ptr_A, csr_col_ind_A, descr_B, nnz_B, csr_row_ptr_B, \
@@ -69,8 +75,8 @@ void testing_csrgeam_bad_arg(const Arguments& arg)
         nnz_B, csr_val_B, csr_row_ptr_B, csr_col_ind_B, descr_C, csr_val_C, csr_row_ptr_C,       \
         csr_col_ind_C
 
-    auto_testing_bad_arg(rocsparse_csrgeam_nnz, PARAMS_NNZ);
-    auto_testing_bad_arg(rocsparse_csrgeam<T>, PARAMS);
+    bad_arg_analysis(rocsparse_csrgeam_nnz, PARAMS_NNZ);
+    bad_arg_analysis(rocsparse_csrgeam<T>, PARAMS);
 
     for(auto val : rocsparse_matrix_type_t::values)
     {
@@ -470,7 +476,7 @@ void testing_csrgeam(const Arguments& arg)
                                                         &nnz_C));
         }
 
-        gpu_analysis_time_used = get_time_us() - gpu_analysis_time_used;
+        gpu_analysis_time_used = (get_time_us() - gpu_analysis_time_used) / number_hot_calls;
 
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)

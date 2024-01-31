@@ -57,8 +57,7 @@ rocsparse_status rocsparse_importer_mlbsr::import_sparse_gebsx(rocsparse_directi
     this->m_f = fopen(this->m_filename.c_str(), "r");
     if(!this->m_f)
     {
-        std::cerr << "rocsparse_importer_mlbsr::import_sparse_gebsx: cannot open file '"
-                  << this->m_filename << "' " << std::endl;
+        missing_file_error_message(this->m_filename.c_str());
         return rocsparse_status_internal_error;
     }
 

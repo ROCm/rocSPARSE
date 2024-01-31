@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,12 +35,11 @@
 
 #include <hip/hip_runtime_api.h>
 #include <vector>
-/* ==================================================================================== */
+
 // Return index type
 template <typename I>
 inline rocsparse_indextype get_indextype(void);
 
-/* ==================================================================================== */
 // Return data type
 template <typename T>
 inline rocsparse_datatype get_datatype(void);
@@ -113,7 +112,6 @@ inline rocsparse_datatype get_datatype<rocsparse_double_complex>(void)
     return rocsparse_datatype_f64_c;
 }
 
-/* ==================================================================================== */
 /*! \brief  local handle which is automatically created and destroyed  */
 class rocsparse_local_handle
 {
@@ -124,13 +122,21 @@ public:
         : capture_started(false)
         , graph_testing(false)
     {
-        rocsparse_create_handle(&this->handle);
+        const rocsparse_status status = rocsparse_create_handle(&this->handle);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
     rocsparse_local_handle(const Arguments& arg)
         : capture_started(false)
         , graph_testing(arg.graph_test)
     {
-        rocsparse_create_handle(&this->handle);
+        const rocsparse_status status = rocsparse_create_handle(&this->handle);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
     ~rocsparse_local_handle()
     {
@@ -212,7 +218,6 @@ private:
     bool        graph_testing;
 };
 
-/* ==================================================================================== */
 /*! \brief  local matrix descriptor which is automatically created and destroyed  */
 class rocsparse_local_mat_descr
 {
@@ -221,7 +226,11 @@ class rocsparse_local_mat_descr
 public:
     rocsparse_local_mat_descr()
     {
-        rocsparse_create_mat_descr(&this->descr);
+        const rocsparse_status status = rocsparse_create_mat_descr(&this->descr);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
 
     ~rocsparse_local_mat_descr()
@@ -240,7 +249,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local matrix info which is automatically created and destroyed  */
 class rocsparse_local_mat_info
 {
@@ -249,7 +257,11 @@ class rocsparse_local_mat_info
 public:
     rocsparse_local_mat_info()
     {
-        rocsparse_create_mat_info(&this->info);
+        const rocsparse_status status = rocsparse_create_mat_info(&this->info);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
     ~rocsparse_local_mat_info()
     {
@@ -260,7 +272,11 @@ public:
     void reset()
     {
         rocsparse_destroy_mat_info(this->info);
-        rocsparse_create_mat_info(&this->info);
+        const rocsparse_status status = rocsparse_create_mat_info(&this->info);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
 
     // Allow rocsparse_local_mat_info to be used anywhere rocsparse_mat_info is expected
@@ -274,7 +290,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local color info which is automatically created and destroyed  */
 class rocsparse_local_color_info
 {
@@ -283,7 +298,11 @@ class rocsparse_local_color_info
 public:
     rocsparse_local_color_info()
     {
-        rocsparse_create_color_info(&this->info);
+        const rocsparse_status status = rocsparse_create_color_info(&this->info);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
     ~rocsparse_local_color_info()
     {
@@ -294,7 +313,11 @@ public:
     void reset()
     {
         rocsparse_destroy_color_info(this->info);
-        rocsparse_create_color_info(&this->info);
+        const rocsparse_status status = rocsparse_create_color_info(&this->info);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
 
     // Allow rocsparse_local_color_info to be used anywhere rocsparse_color_info is expected
@@ -308,7 +331,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  hyb matrix structure helper to access data for tests  */
 struct test_hyb
 {
@@ -325,7 +347,6 @@ struct test_hyb
     void*                   coo_val;
 };
 
-/* ==================================================================================== */
 /*! \brief  local hyb matrix structure which is automatically created and destroyed  */
 class rocsparse_local_hyb_mat
 {
@@ -334,7 +355,11 @@ class rocsparse_local_hyb_mat
 public:
     rocsparse_local_hyb_mat()
     {
-        rocsparse_create_hyb_mat(&this->hyb);
+        const rocsparse_status status = rocsparse_create_hyb_mat(&this->hyb);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
     ~rocsparse_local_hyb_mat()
     {
@@ -352,7 +377,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local dense vector structure which is automatically created and destroyed  */
 class rocsparse_local_spvec
 {
@@ -367,8 +391,12 @@ public:
                           rocsparse_index_base idx_base,
                           rocsparse_datatype   compute_type)
     {
-        rocsparse_create_spvec_descr(
+        const rocsparse_status status = rocsparse_create_spvec_descr(
             &this->descr, size, nnz, indices, values, idx_type, idx_base, compute_type);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
     ~rocsparse_local_spvec()
     {
@@ -389,7 +417,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local sparse matrix structure which is automatically created and destroyed  */
 class rocsparse_local_spmat
 {
@@ -406,16 +433,20 @@ public:
                           rocsparse_index_base idx_base,
                           rocsparse_datatype   compute_type)
     {
-        rocsparse_create_coo_descr(&this->descr,
-                                   m,
-                                   n,
-                                   nnz,
-                                   coo_row_ind,
-                                   coo_col_ind,
-                                   coo_val,
-                                   idx_type,
-                                   idx_base,
-                                   compute_type);
+        const rocsparse_status status = rocsparse_create_coo_descr(&this->descr,
+                                                                   m,
+                                                                   n,
+                                                                   nnz,
+                                                                   coo_row_ind,
+                                                                   coo_col_ind,
+                                                                   coo_val,
+                                                                   idx_type,
+                                                                   idx_base,
+                                                                   compute_type);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
 
     template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
@@ -441,8 +472,12 @@ public:
                           rocsparse_index_base idx_base,
                           rocsparse_datatype   compute_type)
     {
-        rocsparse_create_coo_aos_descr(
+        const rocsparse_status status = rocsparse_create_coo_aos_descr(
             &this->descr, m, n, nnz, coo_ind, coo_val, idx_type, idx_base, compute_type);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
 
     template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
@@ -467,32 +502,40 @@ public:
 
         if(format == rocsparse_format_csr)
         {
-            rocsparse_create_csr_descr(&this->descr,
-                                       m,
-                                       n,
-                                       nnz,
-                                       row_col_ptr,
-                                       row_col_ind,
-                                       val,
-                                       row_col_ptr_type,
-                                       row_col_ind_type,
-                                       idx_base,
-                                       compute_type);
+            const rocsparse_status status = rocsparse_create_csr_descr(&this->descr,
+                                                                       m,
+                                                                       n,
+                                                                       nnz,
+                                                                       row_col_ptr,
+                                                                       row_col_ind,
+                                                                       val,
+                                                                       row_col_ptr_type,
+                                                                       row_col_ind_type,
+                                                                       idx_base,
+                                                                       compute_type);
+            if(status != rocsparse_status_success)
+            {
+                throw(status);
+            }
         }
         else
         {
             assert(format == rocsparse_format_csc);
-            rocsparse_create_csc_descr(&this->descr,
-                                       m,
-                                       n,
-                                       nnz,
-                                       row_col_ptr,
-                                       row_col_ind,
-                                       val,
-                                       row_col_ptr_type,
-                                       row_col_ind_type,
-                                       idx_base,
-                                       compute_type);
+            const rocsparse_status status = rocsparse_create_csc_descr(&this->descr,
+                                                                       m,
+                                                                       n,
+                                                                       nnz,
+                                                                       row_col_ptr,
+                                                                       row_col_ind,
+                                                                       val,
+                                                                       row_col_ptr_type,
+                                                                       row_col_ind_type,
+                                                                       idx_base,
+                                                                       compute_type);
+            if(status != rocsparse_status_success)
+            {
+                throw(status);
+            }
         }
     }
 
@@ -534,19 +577,23 @@ public:
 
         if(format == rocsparse_format_bsr)
         {
-            rocsparse_create_bsr_descr(&this->descr,
-                                       mb,
-                                       nb,
-                                       nnzb,
-                                       block_dir,
-                                       block_dim,
-                                       row_col_ptr,
-                                       row_col_ind,
-                                       val,
-                                       row_col_ptr_type,
-                                       row_col_ind_type,
-                                       idx_base,
-                                       compute_type);
+            const rocsparse_status status = rocsparse_create_bsr_descr(&this->descr,
+                                                                       mb,
+                                                                       nb,
+                                                                       nnzb,
+                                                                       block_dir,
+                                                                       block_dim,
+                                                                       row_col_ptr,
+                                                                       row_col_ind,
+                                                                       val,
+                                                                       row_col_ptr_type,
+                                                                       row_col_ind_type,
+                                                                       idx_base,
+                                                                       compute_type);
+            if(status != rocsparse_status_success)
+            {
+                throw(status);
+            }
         }
     }
 
@@ -583,17 +630,21 @@ public:
                           rocsparse_index_base idx_base,
                           rocsparse_datatype   compute_type)
     {
-        rocsparse_create_bell_descr(&this->descr,
-                                    m,
-                                    n,
-                                    block_dir,
-                                    block_size,
-                                    ell_cols,
-                                    ell_col_ind,
-                                    ell_val,
-                                    idx_type,
-                                    idx_base,
-                                    compute_type);
+        const rocsparse_status status = rocsparse_create_bell_descr(&this->descr,
+                                                                    m,
+                                                                    n,
+                                                                    block_dir,
+                                                                    block_size,
+                                                                    ell_cols,
+                                                                    ell_col_ind,
+                                                                    ell_val,
+                                                                    idx_type,
+                                                                    idx_base,
+                                                                    compute_type);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
 
     rocsparse_local_spmat(int64_t              m,
@@ -605,8 +656,12 @@ public:
                           rocsparse_index_base idx_base,
                           rocsparse_datatype   compute_type)
     {
-        rocsparse_create_ell_descr(
+        const rocsparse_status status = rocsparse_create_ell_descr(
             &this->descr, m, n, ell_col_ind, ell_val, ell_width, idx_type, idx_base, compute_type);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
 
     template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
@@ -633,7 +688,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local dense vector structure which is automatically created and destroyed  */
 class rocsparse_local_dnvec
 {
@@ -642,7 +696,12 @@ class rocsparse_local_dnvec
 public:
     rocsparse_local_dnvec(int64_t size, void* values, rocsparse_datatype compute_type)
     {
-        rocsparse_create_dnvec_descr(&this->descr, size, values, compute_type);
+        const rocsparse_status status
+            = rocsparse_create_dnvec_descr(&this->descr, size, values, compute_type);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
 
     template <memory_mode::value_t MODE, typename T>
@@ -668,7 +727,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*! \brief  local dense matrix structure which is automatically created and destroyed  */
 class rocsparse_local_dnmat
 {
@@ -682,7 +740,12 @@ public:
                           rocsparse_datatype compute_type,
                           rocsparse_order    order)
     {
-        rocsparse_create_dnmat_descr(&this->descr, rows, cols, ld, values, compute_type, order);
+        const rocsparse_status status = rocsparse_create_dnmat_descr(
+            &this->descr, rows, cols, ld, values, compute_type, order);
+        if(status != rocsparse_status_success)
+        {
+            throw(status);
+        }
     }
 
     template <memory_mode::value_t MODE, typename T>
@@ -708,7 +771,6 @@ public:
     }
 };
 
-/* ==================================================================================== */
 /*  timing: HIP only provides very limited timers function clock() and not general;
             rocsparse sync CPU and device and use more accurate CPU timer*/
 
@@ -722,8 +784,10 @@ double get_time_us(void);
  */
 double get_time_us_sync(hipStream_t stream);
 
-/* ==================================================================================== */
-// Return path of this executable
+/*! \brief Return path of this executable */
 std::string rocsparse_exepath();
+
+/*! \brief Return path where the test data file (rocsparse_test.data) is located */
+std::string rocsparse_datapath();
 
 #endif // UTILITY_HPP

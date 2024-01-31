@@ -27,70 +27,74 @@
 
 #include "gtsv_nopivot_strided_batch_device.h"
 
-#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_POW2_STAGE1(T, block_size, stride, iter)  \
-    hipLaunchKernelGGL((gtsv_nopivot_strided_batch_pcr_pow2_stage1_kernel<block_size>), \
-                       dim3(((m - 1) / block_size + 1), batch_count, 1),                \
-                       dim3(block_size, 1, 1),                                          \
-                       0,                                                               \
-                       handle->stream,                                                  \
-                       stride,                                                          \
-                       m,                                                               \
-                       batch_count,                                                     \
-                       ((iter == 0) ? batch_stride : m),                                \
-                       ((iter == 0) ? dl : (((iter & 1) == 0) ? da0 : da1)),            \
-                       ((iter == 0) ? d : (((iter & 1) == 0) ? db0 : db1)),             \
-                       ((iter == 0) ? du : (((iter & 1) == 0) ? dc0 : dc1)),            \
-                       ((iter == 0) ? x : (((iter & 1) == 0) ? drhs0 : drhs1)),         \
-                       (((iter & 1) == 0) ? da1 : da0),                                 \
-                       (((iter & 1) == 0) ? db1 : db0),                                 \
-                       (((iter & 1) == 0) ? dc1 : dc0),                                 \
-                       (((iter & 1) == 0) ? drhs1 : drhs0));
+#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_POW2_STAGE1(T, block_size, stride, iter) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                                \
+        (gtsv_nopivot_strided_batch_pcr_pow2_stage1_kernel<block_size>),               \
+        dim3(((m - 1) / block_size + 1), batch_count, 1),                              \
+        dim3(block_size, 1, 1),                                                        \
+        0,                                                                             \
+        handle->stream,                                                                \
+        stride,                                                                        \
+        m,                                                                             \
+        batch_count,                                                                   \
+        ((iter == 0) ? batch_stride : m),                                              \
+        ((iter == 0) ? dl : (((iter & 1) == 0) ? da0 : da1)),                          \
+        ((iter == 0) ? d : (((iter & 1) == 0) ? db0 : db1)),                           \
+        ((iter == 0) ? du : (((iter & 1) == 0) ? dc0 : dc1)),                          \
+        ((iter == 0) ? x : (((iter & 1) == 0) ? drhs0 : drhs1)),                       \
+        (((iter & 1) == 0) ? da1 : da0),                                               \
+        (((iter & 1) == 0) ? db1 : db0),                                               \
+        (((iter & 1) == 0) ? dc1 : dc0),                                               \
+        (((iter & 1) == 0) ? drhs1 : drhs0));
 
-#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_CR_POW2_STAGE2(T, block_size, iter)          \
-    hipLaunchKernelGGL((gtsv_nopivot_strided_batch_cr_pow2_stage2_kernel<block_size>), \
-                       dim3(subsystem_count, batch_count, 1),                          \
-                       dim3(block_size),                                               \
-                       0,                                                              \
-                       handle->stream,                                                 \
-                       m,                                                              \
-                       batch_count,                                                    \
-                       batch_stride,                                                   \
-                       (((iter & 1) != 0) ? da1 : da0),                                \
-                       (((iter & 1) != 0) ? db1 : db0),                                \
-                       (((iter & 1) != 0) ? dc1 : dc0),                                \
-                       (((iter & 1) != 0) ? drhs1 : drhs0),                            \
-                       x);
+#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_CR_POW2_STAGE2(T, block_size, iter) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                       \
+        (gtsv_nopivot_strided_batch_cr_pow2_stage2_kernel<block_size>),       \
+        dim3(subsystem_count, batch_count, 1),                                \
+        dim3(block_size),                                                     \
+        0,                                                                    \
+        handle->stream,                                                       \
+        m,                                                                    \
+        batch_count,                                                          \
+        batch_stride,                                                         \
+        (((iter & 1) != 0) ? da1 : da0),                                      \
+        (((iter & 1) != 0) ? db1 : db0),                                      \
+        (((iter & 1) != 0) ? dc1 : dc0),                                      \
+        (((iter & 1) != 0) ? drhs1 : drhs0),                                  \
+        x);
 
-#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_CR_POW2_SHARED(T, block_size)                \
-    hipLaunchKernelGGL((gtsv_nopivot_strided_batch_cr_pow2_shared_kernel<block_size>), \
-                       dim3(batch_count),                                              \
-                       dim3(block_size),                                               \
-                       0,                                                              \
-                       handle->stream,                                                 \
-                       m,                                                              \
-                       batch_count,                                                    \
-                       batch_stride,                                                   \
-                       dl,                                                             \
-                       d,                                                              \
-                       du,                                                             \
-                       x);
+#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_CR_POW2_SHARED(T, block_size) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                 \
+        (gtsv_nopivot_strided_batch_cr_pow2_shared_kernel<block_size>), \
+        dim3(batch_count),                                              \
+        dim3(block_size),                                               \
+        0,                                                              \
+        handle->stream,                                                 \
+        m,                                                              \
+        batch_count,                                                    \
+        batch_stride,                                                   \
+        dl,                                                             \
+        d,                                                              \
+        du,                                                             \
+        x);
 
-#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_POW2_SHARED(T, block_size)                \
-    hipLaunchKernelGGL((gtsv_nopivot_strided_batch_pcr_pow2_shared_kernel<block_size>), \
-                       dim3(batch_count),                                               \
-                       dim3(block_size),                                                \
-                       0,                                                               \
-                       handle->stream,                                                  \
-                       m,                                                               \
-                       batch_count,                                                     \
-                       batch_stride,                                                    \
-                       dl,                                                              \
-                       d,                                                               \
-                       du,                                                              \
-                       x);
+#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_POW2_SHARED(T, block_size) \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                  \
+        (gtsv_nopivot_strided_batch_pcr_pow2_shared_kernel<block_size>), \
+        dim3(batch_count),                                               \
+        dim3(block_size),                                                \
+        0,                                                               \
+        handle->stream,                                                  \
+        m,                                                               \
+        batch_count,                                                     \
+        batch_stride,                                                    \
+        dl,                                                              \
+        d,                                                               \
+        du,                                                              \
+        x);
 
 #define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_CRPCR_POW2_SHARED(T, block_size, pcr_size) \
-    hipLaunchKernelGGL(                                                              \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                              \
         (gtsv_nopivot_strided_batch_crpcr_pow2_shared_kernel<block_size, pcr_size>), \
         dim3(batch_count),                                                           \
         dim3(block_size),                                                            \
@@ -104,53 +108,53 @@
         du,                                                                          \
         x);
 
-#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_SHARED(T, block_size)                \
-    hipLaunchKernelGGL((gtsv_nopivot_strided_batch_pcr_shared_kernel<block_size>), \
-                       dim3(batch_count),                                          \
-                       dim3(block_size),                                           \
-                       0,                                                          \
-                       handle->stream,                                             \
-                       m,                                                          \
-                       batch_count,                                                \
-                       batch_stride,                                               \
-                       dl,                                                         \
-                       d,                                                          \
-                       du,                                                         \
-                       x);
+#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_SHARED(T, block_size)                                \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gtsv_nopivot_strided_batch_pcr_shared_kernel<block_size>), \
+                                       dim3(batch_count),                                          \
+                                       dim3(block_size),                                           \
+                                       0,                                                          \
+                                       handle->stream,                                             \
+                                       m,                                                          \
+                                       batch_count,                                                \
+                                       batch_stride,                                               \
+                                       dl,                                                         \
+                                       d,                                                          \
+                                       du,                                                         \
+                                       x);
 
-#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_STAGE1(T, block_size, stride, iter)  \
-    hipLaunchKernelGGL((gtsv_nopivot_strided_batch_pcr_stage1_kernel<block_size>), \
-                       dim3(((m - 1) / block_size + 1), batch_count, 1),           \
-                       dim3(block_size),                                           \
-                       0,                                                          \
-                       handle->stream,                                             \
-                       stride,                                                     \
-                       m,                                                          \
-                       batch_count,                                                \
-                       ((iter == 0) ? batch_stride : m),                           \
-                       ((iter == 0) ? dl : (((iter & 1) == 0) ? da0 : da1)),       \
-                       ((iter == 0) ? d : (((iter & 1) == 0) ? db0 : db1)),        \
-                       ((iter == 0) ? du : (((iter & 1) == 0) ? dc0 : dc1)),       \
-                       ((iter == 0) ? x : (((iter & 1) == 0) ? drhs0 : drhs1)),    \
-                       (((iter & 1) == 0) ? da1 : da0),                            \
-                       (((iter & 1) == 0) ? db1 : db0),                            \
-                       (((iter & 1) == 0) ? dc1 : dc0),                            \
-                       (((iter & 1) == 0) ? drhs1 : drhs0));
+#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_STAGE1(T, block_size, stride, iter)                  \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gtsv_nopivot_strided_batch_pcr_stage1_kernel<block_size>), \
+                                       dim3(((m - 1) / block_size + 1), batch_count, 1),           \
+                                       dim3(block_size),                                           \
+                                       0,                                                          \
+                                       handle->stream,                                             \
+                                       stride,                                                     \
+                                       m,                                                          \
+                                       batch_count,                                                \
+                                       ((iter == 0) ? batch_stride : m),                           \
+                                       ((iter == 0) ? dl : (((iter & 1) == 0) ? da0 : da1)),       \
+                                       ((iter == 0) ? d : (((iter & 1) == 0) ? db0 : db1)),        \
+                                       ((iter == 0) ? du : (((iter & 1) == 0) ? dc0 : dc1)),       \
+                                       ((iter == 0) ? x : (((iter & 1) == 0) ? drhs0 : drhs1)),    \
+                                       (((iter & 1) == 0) ? da1 : da0),                            \
+                                       (((iter & 1) == 0) ? db1 : db0),                            \
+                                       (((iter & 1) == 0) ? dc1 : dc0),                            \
+                                       (((iter & 1) == 0) ? drhs1 : drhs0));
 
-#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_STAGE2(T, block_size, iter)          \
-    hipLaunchKernelGGL((gtsv_nopivot_strided_batch_pcr_stage2_kernel<block_size>), \
-                       dim3(subsystem_count, batch_count, 1),                      \
-                       dim3(block_size),                                           \
-                       0,                                                          \
-                       handle->stream,                                             \
-                       m,                                                          \
-                       batch_count,                                                \
-                       batch_stride,                                               \
-                       (((iter & 1) != 0) ? da1 : da0),                            \
-                       (((iter & 1) != 0) ? db1 : db0),                            \
-                       (((iter & 1) != 0) ? dc1 : dc0),                            \
-                       (((iter & 1) != 0) ? drhs1 : drhs0),                        \
-                       x);
+#define LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_STAGE2(T, block_size, iter)                          \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gtsv_nopivot_strided_batch_pcr_stage2_kernel<block_size>), \
+                                       dim3(subsystem_count, batch_count, 1),                      \
+                                       dim3(block_size),                                           \
+                                       0,                                                          \
+                                       handle->stream,                                             \
+                                       m,                                                          \
+                                       batch_count,                                                \
+                                       batch_stride,                                               \
+                                       (((iter & 1) != 0) ? da1 : da0),                            \
+                                       (((iter & 1) != 0) ? db1 : db0),                            \
+                                       (((iter & 1) != 0) ? dc1 : dc0),                            \
+                                       (((iter & 1) != 0) ? drhs1 : drhs0),                        \
+                                       x);
 
 template <typename T>
 rocsparse_status
@@ -271,6 +275,7 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_small_template(rocsparse_
     }
     else
     {
+        std::cout << "batch_count " << batch_count << std::endl;
         if(m <= 4)
         {
             LAUNCH_GTSV_NOPIVOT_STRIDED_BATCH_PCR_SHARED(T, 4);
@@ -412,7 +417,6 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_template(rocsparse_handle
                                                                 rocsparse_int    batch_stride,
                                                                 void*            temp_buffer)
 {
-
     log_trace(handle,
               replaceX<T>("rocsparse_Xgtsv_no_pivot_strided_batch"),
               m,
@@ -436,6 +440,11 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_template(rocsparse_handle
     ROCSPARSE_CHECKARG_ARRAY(5, batch_count, x);
     ROCSPARSE_CHECKARG(
         8, temp_buffer, (m > 512 && temp_buffer == nullptr), rocsparse_status_invalid_pointer);
+
+    if(batch_count == 0)
+    {
+        return rocsparse_status_success;
+    }
 
     // If m is small we can solve the systems entirely in shared memory
     if(m <= 512)

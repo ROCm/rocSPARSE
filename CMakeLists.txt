@@ -178,6 +178,7 @@ message(STATUS "AMDGPU_TARGETS: ${AMDGPU_TARGETS}")
 
 # Find rocprim package
 find_package(rocprim REQUIRED)
+find_package(rocblas 4.1.0 REQUIRED)
 
 if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
   find_package( hip REQUIRED CONFIG PATHS ${HIP_DIR} ${ROCM_PATH} /opt/rocm )
@@ -185,7 +186,7 @@ endif( )
 
 # Setup version
 set(VERSION_STRING "3.0.2")
-set(SOVERSION_STRING "1.0.0")
+set(SOVERSION_STRING "1.0")
 
 rocm_setup_version(VERSION ${VERSION_STRING})
 set(rocsparse_SOVERSION ${SOVERSION_STRING})
@@ -251,7 +252,7 @@ if(BUILD_CLIENTS)
 endif()
 
 # Package specific CPACK vars
-rocm_package_add_dependencies(DEPENDS "hip-rocclr >= 3.5.0")
+rocm_package_add_dependencies(DEPENDS "hip-rocclr >= 3.5.0" "rocblas >= 4.1.0")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 

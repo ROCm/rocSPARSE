@@ -355,7 +355,7 @@ add_executable(rocsparse-test rocsparse_test_main.cpp ${ROCSPARSE_TEST_SOURCES} 
 target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
 
 # Target compile options
-target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-unused-command-line-argument -Wall)
+target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-deprecated -Wno-unused-command-line-argument -Wall)
 if (rocsparseio_FOUND)
   message("Compiles rocSPARSE client with rocSPARSEIO to import/export matrices.")
   target_compile_options(rocsparse-test PRIVATE -DROCSPARSEIO)
@@ -398,7 +398,7 @@ add_custom_target(rocsparse-test-data
 
 add_dependencies(rocsparse-test  rocsparse-test-data rocsparse-common)
 
-rocm_install(FILES ${ROCSPARSE_TEST_DATA} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT tests)
+rocm_install(FILES ${ROCSPARSE_TEST_DATA} DESTINATION "${CMAKE_INSTALL_DATADIR}/rocsparse/test" COMPONENT tests)
 
 if (WIN32)
   # for now adding in all .dll as dependency chain is not cmake based on win32
@@ -408,6 +408,7 @@ if (WIN32)
     $ENV{HIP_DIR}/bin/*.dll
     $ENV{HIP_DIR}/bin/hipinfo.exe
     ${CMAKE_SOURCE_DIR}/rtest.*
+    $ENV{rocblas_DIR}/bin/*.dll
     C:/Windows/System32/libomp140*.dll
   )
   foreach( file_i ${third_party_dlls})

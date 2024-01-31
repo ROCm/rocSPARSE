@@ -32,7 +32,7 @@
 #include "gebsr2csr_device.h"
 
 #define launch_gebsr2csr_block_per_row_1_32_kernel(block_size, brow_block_dim, bcol_block_dim) \
-    hipLaunchKernelGGL(                                                                        \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                                        \
         (gebsr2csr_block_per_row_1_32_kernel<block_size, brow_block_dim, bcol_block_dim>),     \
         dim3(mb),                                                                              \
         dim3(block_size),                                                                      \
@@ -52,30 +52,30 @@
         csr_row_ptr,                                                                           \
         csr_col_ind);
 
-#define launch_gebsr2csr_block_per_row_33_128_kernel(                                 \
-    block_size, brow_block_dim, bcol_block_dim, sub_row_block_dim, sub_col_block_dim) \
-    hipLaunchKernelGGL((gebsr2csr_block_per_row_33_128_kernel<block_size,             \
-                                                              brow_block_dim,         \
-                                                              bcol_block_dim,         \
-                                                              sub_row_block_dim,      \
-                                                              sub_col_block_dim>),    \
-                       dim3(mb),                                                      \
-                       dim3(block_size),                                              \
-                       0,                                                             \
-                       stream,                                                        \
-                       dir,                                                           \
-                       mb,                                                            \
-                       nb,                                                            \
-                       bsr_descr->base,                                               \
-                       bsr_val,                                                       \
-                       bsr_row_ptr,                                                   \
-                       bsr_col_ind,                                                   \
-                       row_block_dim,                                                 \
-                       col_block_dim,                                                 \
-                       csr_descr->base,                                               \
-                       csr_val,                                                       \
-                       csr_row_ptr,                                                   \
-                       csr_col_ind);
+#define launch_gebsr2csr_block_per_row_33_128_kernel(                                              \
+    block_size, brow_block_dim, bcol_block_dim, sub_row_block_dim, sub_col_block_dim)              \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((gebsr2csr_block_per_row_33_128_kernel<block_size,          \
+                                                                              brow_block_dim,      \
+                                                                              bcol_block_dim,      \
+                                                                              sub_row_block_dim,   \
+                                                                              sub_col_block_dim>), \
+                                       dim3(mb),                                                   \
+                                       dim3(block_size),                                           \
+                                       0,                                                          \
+                                       stream,                                                     \
+                                       dir,                                                        \
+                                       mb,                                                         \
+                                       nb,                                                         \
+                                       bsr_descr->base,                                            \
+                                       bsr_val,                                                    \
+                                       bsr_row_ptr,                                                \
+                                       bsr_col_ind,                                                \
+                                       row_block_dim,                                              \
+                                       col_block_dim,                                              \
+                                       csr_descr->base,                                            \
+                                       csr_val,                                                    \
+                                       csr_row_ptr,                                                \
+                                       csr_col_ind);
 
 template <typename T>
 rocsparse_status rocsparse_gebsr2csr_template_dispatch(rocsparse_handle          handle,
@@ -98,19 +98,20 @@ rocsparse_status rocsparse_gebsr2csr_template_dispatch(rocsparse_handle         
 
     if(row_block_dim == col_block_dim)
     {
-        return rocsparse_bsr2csr_template_dispatch(handle,
-                                                   dir,
-                                                   mb,
-                                                   nb,
-                                                   bsr_descr,
-                                                   bsr_val,
-                                                   bsr_row_ptr,
-                                                   bsr_col_ind,
-                                                   row_block_dim,
-                                                   csr_descr,
-                                                   csr_val,
-                                                   csr_row_ptr,
-                                                   csr_col_ind);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_bsr2csr_core(handle,
+                                                         dir,
+                                                         mb,
+                                                         nb,
+                                                         bsr_descr,
+                                                         bsr_val,
+                                                         bsr_row_ptr,
+                                                         bsr_col_ind,
+                                                         row_block_dim,
+                                                         csr_descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind));
+        return rocsparse_status_success;
     }
 
     if(row_block_dim <= 2)
@@ -439,14 +440,14 @@ rocsparse_status rocsparse_gebsr2csr_template(rocsparse_handle          handle, 
     {
         if(csr_row_ptr != nullptr)
         {
-            hipLaunchKernelGGL((set_array_to_value<256>),
-                               dim3(((m + 1) - 1) / 256 + 1),
-                               dim3(256),
-                               0,
-                               handle->stream,
-                               (m + 1),
-                               csr_row_ptr,
-                               static_cast<rocsparse_int>(csr_descr->base));
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                                               dim3(((m + 1) - 1) / 256 + 1),
+                                               dim3(256),
+                                               0,
+                                               handle->stream,
+                                               (m + 1),
+                                               csr_row_ptr,
+                                               static_cast<rocsparse_int>(csr_descr->base));
         }
 
         return rocsparse_status_success;

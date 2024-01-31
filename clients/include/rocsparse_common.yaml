@@ -148,6 +148,7 @@ Datatypes:
       bases: [c_int ]
       attr:
         rocsparse_sddmm_alg_default: 0
+        rocsparse_sddmm_alg_dense: 1
   - rocsparse_spmv_alg:
       bases: [c_int ]
       attr:
@@ -157,6 +158,8 @@ Datatypes:
         rocsparse_spmv_alg_csr_stream: 3
         rocsparse_spmv_alg_ell: 4
         rocsparse_spmv_alg_coo_atomic: 5
+        rocsparse_spmv_alg_bsr: 6
+        rocsparse_spmv_alg_csr_lrb: 7
   - rocsparse_spsv_alg:
       bases: [c_int ]
       attr:

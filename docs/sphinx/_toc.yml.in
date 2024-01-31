@@ -4,5 +4,8 @@ root: index
 subtrees:
   - numbered: False
     entries:
-    - file: design
+    - file: Linux_Install_Guide
+    - file: Windows_Install_Guide
+    - file: api
     - file: usermanual
+    - file: design

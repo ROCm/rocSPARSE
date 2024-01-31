@@ -42,8 +42,7 @@ void csr2csc_permute_kernel(I nnz,
         return;
     }
 
-    I idx = map[gid];
-
+    I idx     = map[gid];
     out1[gid] = in1[idx];
     out2[gid] = in2[idx];
 }
