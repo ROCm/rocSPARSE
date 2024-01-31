@@ -122,8 +122,13 @@ void testing_spsm_csr(const Arguments& arg)
     rocsparse_spsm_alg   alg             = arg.spsm_alg;
     rocsparse_diag_type  diag            = arg.diag;
     rocsparse_fill_mode  uplo            = arg.uplo;
+    rocsparse_order      order_B         = arg.orderB;
+    rocsparse_order      order_C         = arg.orderC;
     rocsparse_int        ld_multiplier_B = arg.ld_multiplier_B;
     rocsparse_int        ld_multiplier_C = arg.ld_multiplier_C;
+
+    // In the generic routines, C is always non-transposed (op(A) * C = op(B))
+    rocsparse_operation trans_C = rocsparse_operation_none;
 
     T halpha = arg.get_alpha<T>();
 
@@ -166,18 +171,25 @@ void testing_spsm_csr(const Arguments& arg)
     J B_m = (trans_B == rocsparse_operation_none) ? M : K;
     J B_n = (trans_B == rocsparse_operation_none) ? K : M;
 
-    J C_m = (trans_B == rocsparse_operation_none) ? M : K;
-    J C_n = (trans_B == rocsparse_operation_none) ? K : M;
+    J C_m = M;
+    J C_n = K;
 
-    int64_t ldb = (trans_B == rocsparse_operation_none) ? int64_t(ld_multiplier_B) * M
-                                                        : int64_t(ld_multiplier_B) * K;
-    int64_t ldc = (trans_B == rocsparse_operation_none) ? int64_t(ld_multiplier_C) * M
-                                                        : int64_t(ld_multiplier_C) * K;
+    int64_t ldb = (order_B == rocsparse_order_column)
+                      ? ((trans_B == rocsparse_operation_none) ? (int64_t(ld_multiplier_B) * M)
+                                                               : (int64_t(ld_multiplier_B) * K))
+                      : ((trans_B == rocsparse_operation_none) ? (int64_t(ld_multiplier_B) * K)
+                                                               : (int64_t(ld_multiplier_B) * M));
 
-    int64_t nrowB = ldb;
-    int64_t ncolB = B_n;
-    int64_t nrowC = ldc;
-    int64_t ncolC = C_n;
+    int64_t ldc = (order_C == rocsparse_order_column) ? (int64_t(ld_multiplier_C) * M)
+                                                      : (int64_t(ld_multiplier_C) * K);
+
+    ldb = std::max(int64_t(1), ldb);
+    ldc = std::max(int64_t(1), ldc);
+
+    int64_t nrowB = (order_B == rocsparse_order_column) ? ldb : B_m;
+    int64_t ncolB = (order_B == rocsparse_order_column) ? B_n : ldb;
+    int64_t nrowC = (order_C == rocsparse_order_column) ? ldc : C_m;
+    int64_t ncolC = (order_C == rocsparse_order_column) ? C_n : ldc;
 
     // Non-squared matrices are not supported
     if(M != N)
@@ -193,25 +205,149 @@ void testing_spsm_csr(const Arguments& arg)
     host_dense_matrix<T> hC_gold(nrowC, ncolC);
 
     rocsparse_matrix_utils::init(htemp);
-    for(J j = 0; j < B_n; j++)
-    {
-        for(J i = 0; i < B_m; i++)
-        {
-            hB[i + ldb * j] = htemp[i + B_m * j];
-        }
-    }
 
     // Copy B to C
-    for(J j = 0; j < B_n; j++)
+    if(order_B == rocsparse_order_column)
+    {
+        for(J j = 0; j < B_n; j++)
+        {
+            for(J i = 0; i < B_m; i++)
+            {
+                hB[i + ldb * j] = htemp[i + B_m * j];
+            }
+        }
+
+        if(trans_B == rocsparse_operation_none)
+        {
+            if(order_C == rocsparse_order_column)
+            {
+                for(J j = 0; j < B_n; j++)
+                {
+                    for(J i = 0; i < B_m; i++)
+                    {
+                        hC_1[i + ldc * j] = hB[i + ldb * j];
+                    }
+                }
+            }
+            else
+            {
+                for(J j = 0; j < B_n; j++)
+                {
+                    for(J i = 0; i < B_m; i++)
+                    {
+                        hC_1[i * ldc + j] = hB[i + ldb * j];
+                    }
+                }
+            }
+        }
+        else
+        {
+            if(order_C == rocsparse_order_column)
+            {
+                for(J j = 0; j < B_n; j++)
+                {
+                    for(J i = 0; i < B_m; i++)
+                    {
+                        hC_1[i * ldc + j] = hB[i + ldb * j];
+                    }
+                }
+            }
+            else
+            {
+                for(J j = 0; j < B_n; j++)
+                {
+                    for(J i = 0; i < B_m; i++)
+                    {
+                        hC_1[i + ldc * j] = hB[i + ldb * j];
+                    }
+                }
+            }
+        }
+    }
+    else
     {
         for(J i = 0; i < B_m; i++)
         {
-            hC_1[i + ldc * j] = hB[i + ldb * j];
+            for(J j = 0; j < B_n; j++)
+            {
+                hB[ldb * i + j] = htemp[B_n * i + j];
+            }
+        }
+
+        if(trans_B == rocsparse_operation_none)
+        {
+            if(order_C == rocsparse_order_column)
+            {
+                for(J j = 0; j < B_n; j++)
+                {
+                    for(J i = 0; i < B_m; i++)
+                    {
+                        hC_1[i + ldc * j] = hB[ldb * i + j];
+                    }
+                }
+            }
+            else
+            {
+                for(J j = 0; j < B_n; j++)
+                {
+                    for(J i = 0; i < B_m; i++)
+                    {
+                        hC_1[i * ldc + j] = hB[ldb * i + j];
+                    }
+                }
+            }
+        }
+        else
+        {
+            if(order_C == rocsparse_order_column)
+            {
+                for(J j = 0; j < B_n; j++)
+                {
+                    for(J i = 0; i < B_m; i++)
+                    {
+                        hC_1[i * ldc + j] = hB[ldb * i + j];
+                    }
+                }
+            }
+            else
+            {
+                for(J j = 0; j < B_n; j++)
+                {
+                    for(J i = 0; i < B_m; i++)
+                    {
+                        hC_1[i + ldc * j] = hB[ldb * i + j];
+                    }
+                }
+            }
         }
     }
 
     hC_2    = hC_1;
     hC_gold = hC_1;
+
+    if(trans_B == rocsparse_operation_conjugate_transpose)
+    {
+        if(order_C == rocsparse_order_column)
+        {
+            for(J j = 0; j < C_n; j++)
+            {
+                for(J i = 0; i < C_m; i++)
+                {
+                    hC_gold[i + ldc * j] = rocsparse_conj<T>(hC_gold[i + ldc * j]);
+                }
+            }
+        }
+        else
+        {
+            for(J i = 0; i < C_m; i++)
+            {
+                for(J j = 0; j < C_n; j++)
+                {
+                    hC_gold[ldc * i + j] = rocsparse_conj<T>(hC_gold[ldc * i + j]);
+                }
+            }
+        }
+    }
 
     // Allocate device memory
     device_vector<I>       dcsr_row_ptr(M + 1);
@@ -246,12 +382,9 @@ void testing_spsm_csr(const Arguments& arg)
                             ttype,
                             rocsparse_format_csr);
 
-    ldb = std::max(int64_t(1), ldb);
-    ldc = std::max(int64_t(1), ldc);
-
-    rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, rocsparse_order_column);
-    rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, rocsparse_order_column);
-    rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, rocsparse_order_column);
+    rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order_B);
+    rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order_C);
+    rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order_C);
 
     CHECK_ROCSPARSE_ERROR(
         rocsparse_spmat_set_attribute(A, rocsparse_spmat_fill_mode, &uplo, sizeof(uplo)));
@@ -349,81 +482,23 @@ void testing_spsm_csr(const Arguments& arg)
         // CPU csrsm
         J analysis_pivot = -1;
         J solve_pivot    = -1;
-        if(K > 1)
-        {
-            host_csrsm<I, J, T>(M,
-                                K,
-                                nnz_A,
-                                trans_A,
-                                trans_B,
-                                halpha,
-                                hcsr_row_ptr,
-                                hcsr_col_ind,
-                                hcsr_val,
-                                hC_gold,
-                                ldc,
-                                diag,
-                                uplo,
-                                base,
-                                &analysis_pivot,
-                                &solve_pivot);
-        }
-        else
-        {
-            if(K > 0)
-            {
-                if(trans_B == rocsparse_operation_none)
-                {
-                    host_dense_matrix<T> hx(hC_gold.m, hC_gold.n);
-                    host_dense_matrix<T> hy(hC_gold.m, hC_gold.n);
-                    hx.transfer_from(hC_gold);
-                    host_csrsv<I, J, T>(trans_A,
-                                        M,
-                                        nnz_A,
-                                        halpha,
-                                        hcsr_row_ptr,
-                                        hcsr_col_ind,
-                                        hcsr_val,
-                                        hx,
-                                        hy,
-                                        diag,
-                                        uplo,
-                                        base,
-                                        &analysis_pivot,
-                                        &solve_pivot);
-                    hC_gold.transfer_from(hy);
-                }
-                else
-                {
-                    host_dense_matrix<T> hx(hC_gold.m, hC_gold.n);
-                    host_dense_matrix<T> hy(hC_gold.m, hC_gold.n);
-                    hx.transfer_from(hC_gold);
-                    host_csrsv<I, J, T>(trans_A,
-                                        M,
-                                        nnz_A,
-                                        halpha,
-                                        hcsr_row_ptr,
-                                        hcsr_col_ind,
-                                        hcsr_val,
-                                        hx,
-                                        hy,
-                                        diag,
-                                        uplo,
-                                        base,
-                                        &analysis_pivot,
-                                        &solve_pivot);
-                    hC_gold.transfer_from(hy);
-                }
-            }
-            else
-            {
-                analysis_pivot = M + 1;
-                solve_pivot    = M + 1;
-                solve_pivot    = std::min(solve_pivot, analysis_pivot);
-                analysis_pivot = (analysis_pivot == M + 1) ? -1 : analysis_pivot;
-                solve_pivot    = (solve_pivot == M + 1) ? -1 : solve_pivot;
-            }
-        }
+        host_csrsm<I, J, T>(M,
+                            K,
+                            nnz_A,
+                            trans_A,
+                            trans_C,
+                            halpha,
+                            hcsr_row_ptr,
+                            hcsr_col_ind,
+                            hcsr_val,
+                            hC_gold,
+                            ldc,
+                            order_C,
+                            diag,
+                            uplo,
+                            base,
+                            &analysis_pivot,
+                            &solve_pivot);
 
         if(analysis_pivot == -1 && solve_pivot == -1)
         {
@@ -738,7 +813,325 @@ static void testing_spsm_csr_extra0(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
 }
 
+static void
+    spsm_csr_B_conjugate(const Arguments& arg, rocsparse_order order_B, rocsparse_order order_C)
+{
+    // This test verifies that the conjugate transpose is working correctly
+    static const bool    verbose = false;
+    rocsparse_operation  trans_A = rocsparse_operation_none;
+    rocsparse_operation  trans_B = rocsparse_operation_conjugate_transpose;
+    rocsparse_index_base base    = rocsparse_index_base_zero;
+
+    rocsparse_spsm_alg  alg  = rocsparse_spsm_alg_default;
+    rocsparse_fill_mode uplo = rocsparse_fill_mode_lower;
+    rocsparse_diag_type diag = rocsparse_diag_type_non_unit;
+
+    rocsparse_int m   = 3;
+    rocsparse_int k   = 2;
+    rocsparse_int ldb = (order_B == rocsparse_order_column) ? k : m;
+    rocsparse_int ldc = (order_C == rocsparse_order_column) ? m : k;
+
+    rocsparse_indextype itype        = get_indextype<rocsparse_int>();
+    rocsparse_indextype jtype        = get_indextype<rocsparse_int>();
+    rocsparse_datatype  compute_type = get_datatype<rocsparse_float_complex>();
+
+    // Create rocsparse handle
+    rocsparse_local_handle handle(arg);
+
+    rocsparse_float_complex halpha = rocsparse_float_complex(1, 0);
+
+    //     1 0 0
+    // A = 3 2 0
+    //     4 2 -2
+    rocsparse_int                        nnz_A        = 6;
+    host_vector<rocsparse_int>           hcsr_row_ptr = {0, 1, 3, 6};
+    host_vector<rocsparse_int>           hcsr_col_ind = {0, 0, 1, 0, 1, 2};
+    host_vector<rocsparse_float_complex> hcsr_val     = {1, 3, 2, 4, 2, -2};
+
+    // B = (1, 1)  (2, -1)  (0,  1)
+    //     (1, 0)  (-1, 1)  (3, -2)
+    const host_vector<rocsparse_float_complex> hB_row_order = {rocsparse_float_complex(1, 1),
+                                                               rocsparse_float_complex(2, -1),
+                                                               rocsparse_float_complex(0, 1),
+                                                               rocsparse_float_complex(1, 0),
+                                                               rocsparse_float_complex(-1, 1),
+                                                               rocsparse_float_complex(3, -2)};
+    const host_vector<rocsparse_float_complex> hB_col_order = {rocsparse_float_complex(1, 1),
+                                                               rocsparse_float_complex(1, 0),
+                                                               rocsparse_float_complex(2, -1),
+                                                               rocsparse_float_complex(-1, 1),
+                                                               rocsparse_float_complex(0, 1),
+                                                               rocsparse_float_complex(3, -2)};
+
+    // C = (1, 1)  (2, 2)
+    //     (3, 3)  (4, 4)
+    //     (5, 5)  (6, 6)
+    const host_vector<rocsparse_float_complex> hC_row_order = {rocsparse_float_complex(1, 1),
+                                                               rocsparse_float_complex(2, 2),
+                                                               rocsparse_float_complex(3, 3),
+                                                               rocsparse_float_complex(4, 4),
+                                                               rocsparse_float_complex(5, 5),
+                                                               rocsparse_float_complex(6, 6)};
+    const host_vector<rocsparse_float_complex> hC_col_order = {rocsparse_float_complex(1, 1),
+                                                               rocsparse_float_complex(3, 3),
+                                                               rocsparse_float_complex(5, 5),
+                                                               rocsparse_float_complex(2, 2),
+                                                               rocsparse_float_complex(4, 4),
+                                                               rocsparse_float_complex(6, 6)};
+
+    host_vector<rocsparse_float_complex> hB(k * m);
+    host_vector<rocsparse_float_complex> hC(m * k);
+
+    for(rocsparse_int i = 0; i < k * m; i++)
+    {
+        hB[i] = (order_B == rocsparse_order_column) ? hB_col_order[i] : hB_row_order[i];
+    }
+
+    for(rocsparse_int i = 0; i < m * k; i++)
+    {
+        hC[i] = (order_C == rocsparse_order_column) ? hC_col_order[i] : hC_row_order[i];
+    }
+
+    if(verbose)
+    {
+        std::cout << "A" << std::endl;
+        for(rocsparse_int i = 0; i < m; i++)
+        {
+            rocsparse_int                        start = hcsr_row_ptr[i] - base;
+            rocsparse_int                        end   = hcsr_row_ptr[i + 1] - base;
+            std::vector<rocsparse_float_complex> temp(m, 0);
+            for(rocsparse_int j = start; j < end; j++)
+            {
+                temp[hcsr_col_ind[j] - base] = hcsr_val[j];
+            }
+
+            for(rocsparse_int j = 0; j < m; j++)
+            {
+                std::cout << temp[j] << " ";
+            }
+            std::cout << "" << std::endl;
+        }
+        std::cout << "" << std::endl;
+
+        std::cout << "B" << std::endl;
+        if(order_B == rocsparse_order_column)
+        {
+            for(rocsparse_int i = 0; i < m; i++)
+            {
+                for(rocsparse_int j = 0; j < k; j++)
+                {
+                    std::cout << hB[i + ldb * j] << " ";
+                }
+                std::cout << "" << std::endl;
+            }
+        }
+        else
+        {
+            for(rocsparse_int i = 0; i < k; i++)
+            {
+                for(rocsparse_int j = 0; j < m; j++)
+                {
+                    std::cout << hB[ldb * i + j] << " ";
+                }
+                std::cout << "" << std::endl;
+            }
+        }
+        std::cout << "" << std::endl;
+
+        std::cout << "C" << std::endl;
+        if(order_C == rocsparse_order_column)
+        {
+            for(rocsparse_int i = 0; i < m; i++)
+            {
+                for(rocsparse_int j = 0; j < k; j++)
+                {
+                    std::cout << hC[i + ldc * j] << " ";
+                }
+                std::cout << "" << std::endl;
+            }
+        }
+        else
+        {
+            for(rocsparse_int i = 0; i < m; i++)
+            {
+                for(rocsparse_int j = 0; j < k; j++)
+                {
+                    std::cout << hC[ldc * i + j] << " ";
+                }
+                std::cout << "" << std::endl;
+            }
+        }
+        std::cout << "" << std::endl;
+    }
+
+    device_vector<rocsparse_int>           dcsr_row_ptr(m + 1);
+    device_vector<rocsparse_int>           dcsr_col_ind(nnz_A);
+    device_vector<rocsparse_float_complex> dcsr_val(nnz_A);
+    device_vector<rocsparse_float_complex> dB(k * m);
+    device_vector<rocsparse_float_complex> dC(m * k);
+
+    // Copy data from CPU to device
+    CHECK_HIP_ERROR(hipMemcpy(
+        dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(
+        dcsr_col_ind, hcsr_col_ind.data(), sizeof(rocsparse_int) * nnz_A, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(
+        dcsr_val, hcsr_val.data(), sizeof(rocsparse_float_complex) * nnz_A, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(
+        hipMemcpy(dB, hB, sizeof(rocsparse_float_complex) * k * m, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(
+        hipMemcpy(dC, hC, sizeof(rocsparse_float_complex) * m * k, hipMemcpyHostToDevice));
+
+    // Create descriptors
+    rocsparse_local_spmat A(m,
+                            m,
+                            nnz_A,
+                            dcsr_row_ptr,
+                            dcsr_col_ind,
+                            dcsr_val,
+                            itype,
+                            jtype,
+                            base,
+                            compute_type,
+                            rocsparse_format_csr);
+
+    rocsparse_local_dnmat B(k, m, ldb, dB, compute_type, order_B);
+    rocsparse_local_dnmat C(m, k, ldc, dC, compute_type, order_C);
+
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_spmat_set_attribute(A, rocsparse_spmat_fill_mode, &uplo, sizeof(uplo)));
+
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_spmat_set_attribute(A, rocsparse_spmat_diag_type, &diag, sizeof(diag)));
+
+    // Query SpSM buffer
+    size_t buffer_size;
+    CHECK_ROCSPARSE_ERROR(rocsparse_spsm(handle,
+                                         trans_A,
+                                         trans_B,
+                                         &halpha,
+                                         A,
+                                         B,
+                                         C,
+                                         compute_type,
+                                         alg,
+                                         rocsparse_spsm_stage_buffer_size,
+                                         &buffer_size,
+                                         nullptr));
+
+    // Allocate buffer
+    void* dbuffer;
+    CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
+
+    // Perform analysis on host
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+    CHECK_ROCSPARSE_ERROR(rocsparse_spsm(handle,
+                                         trans_A,
+                                         trans_B,
+                                         &halpha,
+                                         A,
+                                         B,
+                                         C,
+                                         compute_type,
+                                         alg,
+                                         rocsparse_spsm_stage_preprocess,
+                                         nullptr,
+                                         dbuffer));
+
+    CHECK_ROCSPARSE_ERROR(testing::rocsparse_spsm(handle,
+                                                  trans_A,
+                                                  trans_B,
+                                                  &halpha,
+                                                  A,
+                                                  B,
+                                                  C,
+                                                  compute_type,
+                                                  alg,
+                                                  rocsparse_spsm_stage_compute,
+                                                  &buffer_size,
+                                                  dbuffer));
+
+    CHECK_HIP_ERROR(hipDeviceSynchronize());
+
+    // Copy output to host
+    CHECK_HIP_ERROR(
+        hipMemcpy(hC, dC, sizeof(rocsparse_float_complex) * m * k, hipMemcpyDeviceToHost));
+
+    if(verbose)
+    {
+        std::cout << "C" << std::endl;
+        if(order_C == rocsparse_order_column)
+        {
+            for(rocsparse_int i = 0; i < m; i++)
+            {
+                for(rocsparse_int j = 0; j < k; j++)
+                {
+                    std::cout << hC[i + ldc * j] << " ";
+                }
+                std::cout << "" << std::endl;
+            }
+        }
+        else
+        {
+            for(rocsparse_int i = 0; i < m; i++)
+            {
+                for(rocsparse_int j = 0; j < k; j++)
+                {
+                    std::cout << hC[ldc * i + j] << " ";
+                }
+                std::cout << "" << std::endl;
+            }
+        }
+        std::cout << "" << std::endl;
+    }
+
+    // Manually computed correct solution
+    // C = (1, -1)    (1, 0)
+    //     (-0.5, 2)  (-2, -0.5)
+    //     (1.5, 0.5) (-1.5, -1.5)
+    const host_vector<rocsparse_float_complex> hC_solution_row_order
+        = {rocsparse_float_complex(1, -1),
+           rocsparse_float_complex(1, 0),
+           rocsparse_float_complex(-0.5, 2),
+           rocsparse_float_complex(-2, -0.5),
+           rocsparse_float_complex(1.5, 0.5),
+           rocsparse_float_complex(-1.5, -1.5)};
+    const host_vector<rocsparse_float_complex> hC_solution_col_order
+        = {rocsparse_float_complex(1, -1),
+           rocsparse_float_complex(-0.5, 2),
+           rocsparse_float_complex(1.5, 0.5),
+           rocsparse_float_complex(1, 0),
+           rocsparse_float_complex(-2, -0.5),
+           rocsparse_float_complex(-1.5, -1.5)};
+
+    host_dense_matrix<rocsparse_float_complex> hC_gpu(m, k);
+    for(rocsparse_int i = 0; i < m * k; i++)
+    {
+        hC_gpu[i] = hC[i];
+    }
+    host_dense_matrix<rocsparse_float_complex> hC_cpu(m, k);
+
+    for(rocsparse_int i = 0; i < m * k; i++)
+    {
+        hC_cpu[i] = (order_C == rocsparse_order_column) ? hC_solution_col_order[i]
+                                                        : hC_solution_row_order[i];
+    }
+
+    hC_cpu.unit_check(hC_gpu);
+
+    CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
+}
+
+static void testing_spsm_csr_extra1(const Arguments& arg)
+{
+    spsm_csr_B_conjugate(arg, rocsparse_order_row, rocsparse_order_row);
+    spsm_csr_B_conjugate(arg, rocsparse_order_row, rocsparse_order_column);
+    spsm_csr_B_conjugate(arg, rocsparse_order_column, rocsparse_order_row);
+    spsm_csr_B_conjugate(arg, rocsparse_order_column, rocsparse_order_column);
+}
+
 void testing_spsm_csr_extra(const Arguments& arg)
 {
     testing_spsm_csr_extra0(arg);
+    testing_spsm_csr_extra1(arg);
 }

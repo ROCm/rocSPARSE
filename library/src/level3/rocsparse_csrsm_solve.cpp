@@ -86,24 +86,24 @@ namespace rocsparse
     }
 
     template <typename I, typename J, typename T, typename U>
-    rocsparse_status csrsm_solve_dispatch(rocsparse_handle          handle,
-                                          rocsparse_operation       trans_A,
-                                          rocsparse_operation       trans_B,
-                                          J                         m,
-                                          J                         nrhs,
-                                          I                         nnz,
-                                          U                         alpha,
-                                          const rocsparse_mat_descr descr,
-                                          const T*                  csr_val,
-                                          const I*                  csr_row_ptr,
-                                          const J*                  csr_col_ind,
-                                          T*                        B,
-                                          int64_t                   ldb,
-                                          rocsparse_mat_info        info,
-                                          rocsparse_solve_policy    policy,
-                                          void*                     temp_buffer)
+    static rocsparse_status csrsm_solve_dispatch(rocsparse_handle          handle,
+                                                 rocsparse_operation       trans_A,
+                                                 rocsparse_operation       trans_B,
+                                                 J                         m,
+                                                 J                         nrhs,
+                                                 I                         nnz,
+                                                 U                         alpha,
+                                                 const rocsparse_mat_descr descr,
+                                                 const T*                  csr_val,
+                                                 const I*                  csr_row_ptr,
+                                                 const J*                  csr_col_ind,
+                                                 T*                        B,
+                                                 int64_t                   ldb,
+                                                 rocsparse_order           order_B,
+                                                 rocsparse_mat_info        info,
+                                                 rocsparse_solve_policy    policy,
+                                                 void*                     temp_buffer)
     {
-
         // Stream
         hipStream_t stream = handle->stream;
 
@@ -132,7 +132,7 @@ namespace rocsparse
 
         // Temporary array to store transpose of B
         T* Bt = B;
-        if(trans_B == rocsparse_operation_none)
+        if((trans_B == rocsparse_operation_none && order_B == rocsparse_order_column))
         {
             Bt = reinterpret_cast<T*>(ptr);
             ptr += ((sizeof(T) * m * nrhs - 1) / 256 + 1) * 256;
@@ -167,7 +167,7 @@ namespace rocsparse
         int64_t ldimB = ldb;
 
         // Transpose B if B is not transposed yet to improve performance
-        if(trans_B == rocsparse_operation_none)
+        if((trans_B == rocsparse_operation_none && order_B == rocsparse_order_column))
         {
             // Leading dimension for transposed B
             ldimB = nrhs;
@@ -496,8 +496,9 @@ namespace rocsparse
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
             }
         }
+
         // Transpose B back if B was not initially transposed
-        if(trans_B == rocsparse_operation_none)
+        if((trans_B == rocsparse_operation_none && order_B == rocsparse_order_column))
         {
 #define CSRSM_DIM_X 32
 #define CSRSM_DIM_Y 8
@@ -548,20 +549,22 @@ rocsparse_status rocsparse::csrsm_solve_core(rocsparse_handle          handle,
                                              const J*                  csr_col_ind,
                                              T*                        B,
                                              int64_t                   ldb,
+                                             rocsparse_order           order_B,
                                              rocsparse_mat_info        info,
                                              rocsparse_solve_policy    policy,
                                              void*                     temp_buffer)
 {
-
     if(nrhs == 1)
     {
         //
         // Call csrsv.
         //
-        T* y                = reinterpret_cast<T*>(temp_buffer);
-        temp_buffer         = reinterpret_cast<void*>(reinterpret_cast<char*>(temp_buffer)
+        T* y        = reinterpret_cast<T*>(temp_buffer);
+        temp_buffer = reinterpret_cast<void*>(reinterpret_cast<char*>(temp_buffer)
                                               + ((sizeof(T) * m - 1) / 256 + 1) * 256);
-        const int64_t b_inc = (trans_B == rocsparse_operation_none) ? 1 : ldb;
+        const int64_t b_inc
+            = (trans_B == rocsparse_operation_none && order_B == rocsparse_order_column) ? 1 : ldb;
+
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_solve_template(handle,
                                                                   trans_A,
                                                                   m,
@@ -578,39 +581,25 @@ rocsparse_status rocsparse::csrsm_solve_core(rocsparse_handle          handle,
                                                                   policy,
                                                                   temp_buffer));
 
-        switch(trans_B)
-        {
-        case rocsparse_operation_none:
+        if((trans_B == rocsparse_operation_none && order_B == rocsparse_order_column))
         {
             RETURN_IF_HIP_ERROR(
                 hipMemcpyAsync(B, y, m * sizeof(T), hipMemcpyDeviceToDevice, handle->stream));
-            break;
         }
-        case rocsparse_operation_transpose:
-        case rocsparse_operation_conjugate_transpose:
+        else
         {
-            if(ldb == 1)
-            {
-                RETURN_IF_HIP_ERROR(
-                    hipMemcpyAsync(B, y, m * sizeof(T), hipMemcpyDeviceToDevice, handle->stream));
-            }
-            else
-            {
-                static constexpr unsigned int BLOCKSIZE = 1024;
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (rocsparse::csrsm_solve_copy_y_to_B<BLOCKSIZE, T>),
-                    dim3((m - 1) / BLOCKSIZE + 1),
-                    dim3(BLOCKSIZE),
-                    0,
-                    handle->stream,
-                    m,
-                    B,
-                    ldb,
-                    y);
-            }
-            break;
+            static constexpr unsigned int BLOCKSIZE = 1024;
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrsm_solve_copy_y_to_B<BLOCKSIZE, T>),
+                                               dim3((m - 1) / BLOCKSIZE + 1),
+                                               dim3(BLOCKSIZE),
+                                               0,
+                                               handle->stream,
+                                               m,
+                                               B,
+                                               ldb,
+                                               y);
         }
-        }
+
         return rocsparse_status_success;
     }
 
@@ -629,6 +618,7 @@ rocsparse_status rocsparse::csrsm_solve_core(rocsparse_handle          handle,
                                                                   csr_col_ind,
                                                                   B,
                                                                   ldb,
+                                                                  order_B,
                                                                   info,
                                                                   policy,
                                                                   temp_buffer));
@@ -649,6 +639,7 @@ rocsparse_status rocsparse::csrsm_solve_core(rocsparse_handle          handle,
                                                                   csr_col_ind,
                                                                   B,
                                                                   ldb,
+                                                                  order_B,
                                                                   info,
                                                                   policy,
                                                                   temp_buffer));
@@ -669,6 +660,7 @@ rocsparse_status rocsparse::csrsm_solve_quickreturn(rocsparse_handle          ha
                                                     const void*               csr_col_ind,
                                                     void*                     B,
                                                     int64_t                   ldb,
+                                                    rocsparse_order           order_B,
                                                     rocsparse_mat_info        info,
                                                     rocsparse_solve_policy    policy,
                                                     void*                     temp_buffer)
@@ -683,22 +675,23 @@ rocsparse_status rocsparse::csrsm_solve_quickreturn(rocsparse_handle          ha
 
 namespace rocsparse
 {
-    static rocsparse_status csrsm_solve_checkarg(rocsparse_handle          handle, //0
-                                                 rocsparse_operation       trans_A, //1
-                                                 rocsparse_operation       trans_B, //2
-                                                 int64_t                   m, //3
-                                                 int64_t                   nrhs, //4
-                                                 int64_t                   nnz, //5
-                                                 const void*               alpha, //6
-                                                 const rocsparse_mat_descr descr, //7
-                                                 const void*               csr_val, //8
-                                                 const void*               csr_row_ptr, //9
-                                                 const void*               csr_col_ind, //10
-                                                 void*                     B, //11
-                                                 int64_t                   ldb, //12
-                                                 rocsparse_mat_info        info, //13
-                                                 rocsparse_solve_policy    policy, //14
-                                                 void*                     temp_buffer) //15
+    rocsparse_status csrsm_solve_checkarg(rocsparse_handle          handle, //0
+                                          rocsparse_operation       trans_A, //1
+                                          rocsparse_operation       trans_B, //2
+                                          int64_t                   m, //3
+                                          int64_t                   nrhs, //4
+                                          int64_t                   nnz, //5
+                                          const void*               alpha, //6
+                                          const rocsparse_mat_descr descr, //7
+                                          const void*               csr_val, //8
+                                          const void*               csr_row_ptr, //9
+                                          const void*               csr_col_ind, //10
+                                          void*                     B, //11
+                                          int64_t                   ldb, //12
+                                          rocsparse_order           order_B, // non-classified
+                                          rocsparse_mat_info        info, //13
+                                          rocsparse_solve_policy    policy, //14
+                                          void*                     temp_buffer) //15
     {
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
         ROCSPARSE_CHECKARG_ENUM(1, trans_A);
@@ -732,6 +725,7 @@ namespace rocsparse
                                                                            csr_col_ind,
                                                                            B,
                                                                            ldb,
+                                                                           order_B,
                                                                            info,
                                                                            policy,
                                                                            temp_buffer);
@@ -779,6 +773,7 @@ namespace rocsparse
                                       const J*                  csr_col_ind,
                                       T*                        B,
                                       int64_t                   ldb,
+                                      rocsparse_order           order_B,
                                       rocsparse_mat_info        info,
                                       rocsparse_solve_policy    policy,
                                       void*                     temp_buffer)
@@ -798,6 +793,7 @@ namespace rocsparse
                   (const void*&)csr_col_ind,
                   (const void*&)B,
                   ldb,
+                  order_B,
                   (const void*&)info,
                   policy,
                   (const void*&)temp_buffer);
@@ -815,6 +811,7 @@ namespace rocsparse
                                                                         csr_col_ind,
                                                                         B,
                                                                         ldb,
+                                                                        order_B,
                                                                         info,
                                                                         policy,
                                                                         temp_buffer);
@@ -838,6 +835,7 @@ namespace rocsparse
                                                               csr_col_ind,
                                                               B,
                                                               ldb,
+                                                              order_B,
                                                               info,
                                                               policy,
                                                               temp_buffer));
@@ -859,6 +857,7 @@ namespace rocsparse
                                                           const JTYPE*              csr_col_ind, \
                                                           TTYPE*                    B,           \
                                                           int64_t                   ldb,         \
+                                                          rocsparse_order           order_B,     \
                                                           rocsparse_mat_info        info,        \
                                                           rocsparse_solve_policy    policy,      \
                                                           void*                     temp_buffer);
@@ -882,46 +881,47 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
  *    C wrapper
  * ===========================================================================
  */
-#define C_IMPL(NAME, ITYPE, JTYPE, TTYPE)                                    \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,       \
-                                     rocsparse_operation       trans_A,      \
-                                     rocsparse_operation       trans_B,      \
-                                     JTYPE                     m,            \
-                                     JTYPE                     nrhs,         \
-                                     ITYPE                     nnz,          \
-                                     const TTYPE*              alpha,        \
-                                     const rocsparse_mat_descr descr,        \
-                                     const TTYPE*              csr_val,      \
-                                     const ITYPE*              csr_row_ptr,  \
-                                     const JTYPE*              csr_col_ind,  \
-                                     TTYPE*                    B,            \
-                                     JTYPE                     ldb,          \
-                                     rocsparse_mat_info        info,         \
-                                     rocsparse_solve_policy    policy,       \
-                                     void*                     temp_buffer)  \
-    try                                                                      \
-    {                                                                        \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsm_solve_impl(handle,        \
-                                                              trans_A,       \
-                                                              trans_B,       \
-                                                              m,             \
-                                                              nrhs,          \
-                                                              nnz,           \
-                                                              alpha,         \
-                                                              descr,         \
-                                                              csr_val,       \
-                                                              csr_row_ptr,   \
-                                                              csr_col_ind,   \
-                                                              B,             \
-                                                              ldb,           \
-                                                              info,          \
-                                                              policy,        \
-                                                              temp_buffer)); \
-        return rocsparse_status_success;                                     \
-    }                                                                        \
-    catch(...)                                                               \
-    {                                                                        \
-        RETURN_ROCSPARSE_EXCEPTION();                                        \
+#define C_IMPL(NAME, ITYPE, JTYPE, TTYPE)                                             \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                \
+                                     rocsparse_operation       trans_A,               \
+                                     rocsparse_operation       trans_B,               \
+                                     JTYPE                     m,                     \
+                                     JTYPE                     nrhs,                  \
+                                     ITYPE                     nnz,                   \
+                                     const TTYPE*              alpha,                 \
+                                     const rocsparse_mat_descr descr,                 \
+                                     const TTYPE*              csr_val,               \
+                                     const ITYPE*              csr_row_ptr,           \
+                                     const JTYPE*              csr_col_ind,           \
+                                     TTYPE*                    B,                     \
+                                     JTYPE                     ldb,                   \
+                                     rocsparse_mat_info        info,                  \
+                                     rocsparse_solve_policy    policy,                \
+                                     void*                     temp_buffer)           \
+    try                                                                               \
+    {                                                                                 \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsm_solve_impl(handle,                 \
+                                                              trans_A,                \
+                                                              trans_B,                \
+                                                              m,                      \
+                                                              nrhs,                   \
+                                                              nnz,                    \
+                                                              alpha,                  \
+                                                              descr,                  \
+                                                              csr_val,                \
+                                                              csr_row_ptr,            \
+                                                              csr_col_ind,            \
+                                                              B,                      \
+                                                              ldb,                    \
+                                                              rocsparse_order_column, \
+                                                              info,                   \
+                                                              policy,                 \
+                                                              temp_buffer));          \
+        return rocsparse_status_success;                                              \
+    }                                                                                 \
+    catch(...)                                                                        \
+    {                                                                                 \
+        RETURN_ROCSPARSE_EXCEPTION();                                                 \
     }
 
 C_IMPL(rocsparse_scsrsm_solve, int32_t, int32_t, float);

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -318,6 +318,7 @@ void host_csrsv(rocsparse_operation  trans,
                 const J*             csr_col_ind,
                 const T*             csr_val,
                 const T*             x,
+                int64_t              x_inc,
                 T*                   y,
                 rocsparse_diag_type  diag_type,
                 rocsparse_fill_mode  fill_mode,
@@ -599,6 +600,7 @@ void host_csrsm(J                    M,
                 const T*             csr_val,
                 T*                   B,
                 int64_t              ldb,
+                rocsparse_order      order_B,
                 rocsparse_diag_type  diag_type,
                 rocsparse_fill_mode  fill_mode,
                 rocsparse_index_base base,
@@ -617,6 +619,7 @@ void host_coosm(I                    M,
                 const T*             coo_val,
                 T*                   B,
                 int64_t              ldb,
+                rocsparse_order      order_B,
                 rocsparse_diag_type  diag_type,
                 rocsparse_fill_mode  fill_mode,
                 rocsparse_index_base base,
