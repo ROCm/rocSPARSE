@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -260,6 +260,7 @@ void testing_csrilusv(const Arguments& arg)
                                                 hcsr_col_ind,
                                                 hcsr_val_gold,
                                                 hx,
+                                                (int64_t)1,
                                                 hz_gold,
                                                 rocsparse_diag_type_unit,
                                                 rocsparse_fill_mode_lower,
@@ -274,6 +275,7 @@ void testing_csrilusv(const Arguments& arg)
                                                 hcsr_col_ind,
                                                 hcsr_val_gold,
                                                 hz_gold,
+                                                (int64_t)1,
                                                 hy_gold,
                                                 rocsparse_diag_type_non_unit,
                                                 rocsparse_fill_mode_upper,

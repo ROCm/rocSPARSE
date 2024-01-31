@@ -41,6 +41,7 @@ namespace rocsparse
                                                    const void*               csr_col_ind,
                                                    const void*               B,
                                                    int64_t                   ldb,
+                                                   rocsparse_order           order_B,
                                                    rocsparse_mat_info        info,
                                                    rocsparse_solve_policy    policy,
                                                    size_t*                   buffer_size);
@@ -59,6 +60,7 @@ namespace rocsparse
                                             const J*                  csr_col_ind,
                                             const T*                  B,
                                             int64_t                   ldb,
+                                            rocsparse_order           order_B,
                                             rocsparse_mat_info        info,
                                             rocsparse_solve_policy    policy,
                                             size_t*                   buffer_size);
@@ -145,6 +147,7 @@ namespace rocsparse
                                              const void*               csr_col_ind,
                                              void*                     B,
                                              int64_t                   ldb,
+                                             rocsparse_order           order_B,
                                              rocsparse_mat_info        info,
                                              rocsparse_solve_policy    policy,
                                              void*                     temp_buffer);
@@ -163,6 +166,7 @@ namespace rocsparse
                                       const J*                  csr_col_ind,
                                       T*                        B,
                                       int64_t                   ldb,
+                                      rocsparse_order           order_B,
                                       rocsparse_mat_info        info,
                                       rocsparse_solve_policy    policy,
                                       void*                     temp_buffer);

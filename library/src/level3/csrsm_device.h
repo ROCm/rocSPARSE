@@ -210,17 +210,8 @@ namespace rocsparse
             int64_t idx_X = local_col * ldb + col_B;
 
             // Local sum computation for each lane
-            if(transB == rocsparse_operation_conjugate_transpose)
-            {
-                local_sum = (col_B < nrhs)
-                                ? rocsparse_fma(-local_val, rocsparse_conj(B[idx_X]), local_sum)
-                                : static_cast<T>(0);
-            }
-            else
-            {
-                local_sum = (col_B < nrhs) ? rocsparse_fma(-local_val, B[idx_X], local_sum)
-                                           : static_cast<T>(0);
-            }
+            local_sum = (col_B < nrhs) ? rocsparse_fma(-local_val, B[idx_X], local_sum)
+                                       : static_cast<T>(0);
         }
 
         // If we have non unit diagonal, take the diagonal into account

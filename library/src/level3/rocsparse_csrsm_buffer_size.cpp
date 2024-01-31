@@ -44,6 +44,7 @@ rocsparse_status rocsparse::csrsm_buffer_size_core(rocsparse_handle          han
                                                    const J*                  csr_col_ind,
                                                    const T*                  B,
                                                    int64_t                   ldb,
+                                                   rocsparse_order           order_B,
                                                    rocsparse_mat_info        info,
                                                    rocsparse_solve_policy    policy,
                                                    size_t*                   buffer_size)
@@ -104,7 +105,7 @@ rocsparse_status rocsparse::csrsm_buffer_size_core(rocsparse_handle          han
     *buffer_size += rocprim_size;
 
     // Additional buffer to store transpose of B, if trans_B == rocsparse_operation_none
-    if(trans_B == rocsparse_operation_none)
+    if(trans_B == rocsparse_operation_none && order_B == rocsparse_order_column)
     {
         *buffer_size += ((sizeof(T) * m * nrhs - 1) / 256 + 1) * 256;
     }
@@ -142,6 +143,7 @@ rocsparse_status rocsparse::csrsm_buffer_size_quickreturn(rocsparse_handle      
                                                           const void*               csr_col_ind,
                                                           const void*               B,
                                                           int64_t                   ldb,
+                                                          rocsparse_order           order_B,
                                                           rocsparse_mat_info        info,
                                                           rocsparse_solve_policy    policy,
                                                           size_t*                   buffer_size)
@@ -171,9 +173,10 @@ namespace rocsparse
                                                        const void*               csr_col_ind, //10
                                                        const void*               B, //11
                                                        int64_t                   ldb, //12
-                                                       rocsparse_mat_info        info, //13
-                                                       rocsparse_solve_policy    policy, //14
-                                                       size_t*                   buffer_size) //15
+                                                       rocsparse_order    order_B, // non-classified
+                                                       rocsparse_mat_info info, //13
+                                                       rocsparse_solve_policy policy, //14
+                                                       size_t*                buffer_size) //15
     {
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
         ROCSPARSE_CHECKARG_ENUM(1, trans_A);
@@ -206,6 +209,7 @@ namespace rocsparse
                                                                                  csr_col_ind,
                                                                                  B,
                                                                                  ldb,
+                                                                                 order_B,
                                                                                  info,
                                                                                  policy,
                                                                                  buffer_size);
@@ -252,6 +256,7 @@ namespace rocsparse
                                                    const J*                  csr_col_ind,
                                                    const T*                  B,
                                                    int64_t                   ldb,
+                                                   rocsparse_order           order_B,
                                                    rocsparse_mat_info        info,
                                                    rocsparse_solve_policy    policy,
                                                    size_t*                   buffer_size)
@@ -271,6 +276,7 @@ namespace rocsparse
                   (const void*&)csr_col_ind,
                   (const void*&)B,
                   ldb,
+                  order_B,
                   (const void*&)info,
                   policy,
                   (const void*&)buffer_size);
@@ -288,6 +294,7 @@ namespace rocsparse
                                                                               csr_col_ind,
                                                                               B,
                                                                               ldb,
+                                                                              order_B,
                                                                               info,
                                                                               policy,
                                                                               buffer_size);
@@ -311,6 +318,7 @@ namespace rocsparse
                                                                     csr_col_ind,
                                                                     B,
                                                                     ldb,
+                                                                    order_B,
                                                                     info,
                                                                     policy,
                                                                     buffer_size));
@@ -332,6 +340,7 @@ namespace rocsparse
                                                                 const JTYPE*           csr_col_ind, \
                                                                 const TTYPE*           B,           \
                                                                 int64_t                ldb,         \
+                                                                rocsparse_order        order_B,     \
                                                                 rocsparse_mat_info     info,        \
                                                                 rocsparse_solve_policy policy,      \
                                                                 size_t*                buffer_size);
@@ -355,46 +364,47 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
  *    C wrapper
  * ===========================================================================
  */
-#define C_IMPL(NAME, ITYPE, JTYPE, TTYPE)                                          \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,             \
-                                     rocsparse_operation       trans_A,            \
-                                     rocsparse_operation       trans_B,            \
-                                     JTYPE                     m,                  \
-                                     JTYPE                     nrhs,               \
-                                     ITYPE                     nnz,                \
-                                     const TTYPE*              alpha,              \
-                                     const rocsparse_mat_descr descr,              \
-                                     const TTYPE*              csr_val,            \
-                                     const ITYPE*              csr_row_ptr,        \
-                                     const JTYPE*              csr_col_ind,        \
-                                     const TTYPE*              B,                  \
-                                     JTYPE                     ldb,                \
-                                     rocsparse_mat_info        info,               \
-                                     rocsparse_solve_policy    policy,             \
-                                     size_t*                   buffer_size)        \
-    try                                                                            \
-    {                                                                              \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsm_buffer_size_impl(handle,        \
-                                                                    trans_A,       \
-                                                                    trans_B,       \
-                                                                    m,             \
-                                                                    nrhs,          \
-                                                                    nnz,           \
-                                                                    alpha,         \
-                                                                    descr,         \
-                                                                    csr_val,       \
-                                                                    csr_row_ptr,   \
-                                                                    csr_col_ind,   \
-                                                                    B,             \
-                                                                    ldb,           \
-                                                                    info,          \
-                                                                    policy,        \
-                                                                    buffer_size)); \
-        return rocsparse_status_success;                                           \
-    }                                                                              \
-    catch(...)                                                                     \
-    {                                                                              \
-        RETURN_ROCSPARSE_EXCEPTION();                                              \
+#define C_IMPL(NAME, ITYPE, JTYPE, TTYPE)                                                   \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                      \
+                                     rocsparse_operation       trans_A,                     \
+                                     rocsparse_operation       trans_B,                     \
+                                     JTYPE                     m,                           \
+                                     JTYPE                     nrhs,                        \
+                                     ITYPE                     nnz,                         \
+                                     const TTYPE*              alpha,                       \
+                                     const rocsparse_mat_descr descr,                       \
+                                     const TTYPE*              csr_val,                     \
+                                     const ITYPE*              csr_row_ptr,                 \
+                                     const JTYPE*              csr_col_ind,                 \
+                                     const TTYPE*              B,                           \
+                                     JTYPE                     ldb,                         \
+                                     rocsparse_mat_info        info,                        \
+                                     rocsparse_solve_policy    policy,                      \
+                                     size_t*                   buffer_size)                 \
+    try                                                                                     \
+    {                                                                                       \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsm_buffer_size_impl(handle,                 \
+                                                                    trans_A,                \
+                                                                    trans_B,                \
+                                                                    m,                      \
+                                                                    nrhs,                   \
+                                                                    nnz,                    \
+                                                                    alpha,                  \
+                                                                    descr,                  \
+                                                                    csr_val,                \
+                                                                    csr_row_ptr,            \
+                                                                    csr_col_ind,            \
+                                                                    B,                      \
+                                                                    ldb,                    \
+                                                                    rocsparse_order_column, \
+                                                                    info,                   \
+                                                                    policy,                 \
+                                                                    buffer_size));          \
+        return rocsparse_status_success;                                                    \
+    }                                                                                       \
+    catch(...)                                                                              \
+    {                                                                                       \
+        RETURN_ROCSPARSE_EXCEPTION();                                                       \
     }
 
 C_IMPL(rocsparse_scsrsm_buffer_size, int32_t, int32_t, float);

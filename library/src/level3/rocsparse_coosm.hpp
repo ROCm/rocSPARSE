@@ -24,62 +24,165 @@
 
 #pragma once
 
-#include "handle.h"
+#include "definitions.h"
 
 namespace rocsparse
 {
-    template <typename I, typename T>
-    rocsparse_status coosm_buffer_size_template(rocsparse_handle          handle,
-                                                rocsparse_operation       trans_A,
-                                                rocsparse_operation       trans_B,
-                                                I                         m,
-                                                I                         nrhs,
-                                                int64_t                   nnz,
-                                                const T*                  alpha,
-                                                const rocsparse_mat_descr descr,
-                                                const T*                  coo_val,
-                                                const I*                  coo_row_ind,
-                                                const I*                  coo_col_ind,
-                                                const T*                  B,
-                                                int64_t                   ldb,
-                                                rocsparse_mat_info        info,
-                                                rocsparse_solve_policy    policy,
-                                                size_t*                   buffer_size);
+    rocsparse_status coosm_buffer_size_quickreturn(rocsparse_handle          handle,
+                                                   rocsparse_operation       trans_A,
+                                                   rocsparse_operation       trans_B,
+                                                   int64_t                   m,
+                                                   int64_t                   nrhs,
+                                                   int64_t                   nnz,
+                                                   const void*               alpha_device_host,
+                                                   const rocsparse_mat_descr descr,
+                                                   const void*               coo_val,
+                                                   const void*               coo_row_ind,
+                                                   const void*               coo_col_ind,
+                                                   const void*               B,
+                                                   int64_t                   ldb,
+                                                   rocsparse_order           order_B,
+                                                   rocsparse_mat_info        info,
+                                                   rocsparse_solve_policy    policy,
+                                                   size_t*                   buffer_size);
 
     template <typename I, typename T>
-    rocsparse_status coosm_analysis_template(rocsparse_handle          handle,
+    rocsparse_status coosm_buffer_size_core(rocsparse_handle          handle,
+                                            rocsparse_operation       trans_A,
+                                            rocsparse_operation       trans_B,
+                                            I                         m,
+                                            I                         nrhs,
+                                            int64_t                   nnz,
+                                            const T*                  alpha_device_host,
+                                            const rocsparse_mat_descr descr,
+                                            const T*                  coo_val,
+                                            const I*                  coo_row_ind,
+                                            const I*                  coo_col_ind,
+                                            const T*                  B,
+                                            int64_t                   ldb,
+                                            rocsparse_order           order_B,
+                                            rocsparse_mat_info        info,
+                                            rocsparse_solve_policy    policy,
+                                            size_t*                   buffer_size);
+
+    template <typename... P>
+    rocsparse_status coosm_buffer_size_template(P&&... p)
+    {
+
+        const rocsparse_status status = rocsparse::coosm_buffer_size_quickreturn(p...);
+
+        if(status != rocsparse_status_continue)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(status);
+            return rocsparse_status_success;
+        }
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::coosm_buffer_size_core(p...));
+        return rocsparse_status_success;
+    }
+
+    rocsparse_status coosm_analysis_quickreturn(rocsparse_handle          handle,
+                                                rocsparse_operation       trans_A,
+                                                rocsparse_operation       trans_B,
+                                                int64_t                   m,
+                                                int64_t                   nrhs,
+                                                int64_t                   nnz,
+                                                const void*               alpha_device_host,
+                                                const rocsparse_mat_descr descr,
+                                                const void*               coo_val,
+                                                const void*               coo_row_ind,
+                                                const void*               coo_col_ind,
+                                                const void*               B,
+                                                int64_t                   ldb,
+                                                rocsparse_mat_info        info,
+                                                rocsparse_analysis_policy analysis,
+                                                rocsparse_solve_policy    solve,
+                                                void*                     temp_buffer);
+
+    template <typename I, typename T>
+    rocsparse_status coosm_analysis_core(rocsparse_handle          handle,
+                                         rocsparse_operation       trans_A,
+                                         rocsparse_operation       trans_B,
+                                         I                         m,
+                                         I                         nrhs,
+                                         int64_t                   nnz,
+                                         const T*                  alpha_device_host,
+                                         const rocsparse_mat_descr descr,
+                                         const T*                  coo_val,
+                                         const I*                  coo_row_ind,
+                                         const I*                  coo_col_ind,
+                                         const T*                  B,
+                                         int64_t                   ldb,
+                                         rocsparse_mat_info        info,
+                                         rocsparse_analysis_policy analysis,
+                                         rocsparse_solve_policy    solve,
+                                         void*                     temp_buffer);
+
+    template <typename... P>
+    rocsparse_status coosm_analysis_template(P&&... p)
+    {
+
+        const rocsparse_status status = rocsparse::coosm_analysis_quickreturn(p...);
+
+        if(status != rocsparse_status_continue)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(status);
+            return rocsparse_status_success;
+        }
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::coosm_analysis_core(p...));
+        return rocsparse_status_success;
+    }
+
+    rocsparse_status coosm_solve_quickreturn(rocsparse_handle          handle,
                                              rocsparse_operation       trans_A,
                                              rocsparse_operation       trans_B,
-                                             I                         m,
-                                             I                         nrhs,
+                                             int64_t                   m,
+                                             int64_t                   nrhs,
                                              int64_t                   nnz,
-                                             const T*                  alpha,
+                                             const void*               alpha_device_host,
                                              const rocsparse_mat_descr descr,
-                                             const T*                  coo_val,
-                                             const I*                  coo_row_ind,
-                                             const I*                  coo_col_ind,
-                                             const T*                  B,
+                                             const void*               coo_val,
+                                             const void*               coo_row_ind,
+                                             const void*               coo_col_ind,
+                                             void*                     B,
                                              int64_t                   ldb,
+                                             rocsparse_order           order_B,
                                              rocsparse_mat_info        info,
-                                             rocsparse_analysis_policy analysis,
-                                             rocsparse_solve_policy    solve,
+                                             rocsparse_solve_policy    policy,
                                              void*                     temp_buffer);
 
     template <typename I, typename T>
-    rocsparse_status coosm_solve_template(rocsparse_handle          handle,
-                                          rocsparse_operation       trans_A,
-                                          rocsparse_operation       trans_B,
-                                          I                         m,
-                                          I                         nrhs,
-                                          int64_t                   nnz,
-                                          const T*                  alpha_device_host,
-                                          const rocsparse_mat_descr descr,
-                                          const T*                  coo_val,
-                                          const I*                  coo_row_ind,
-                                          const I*                  coo_col_ind,
-                                          T*                        B,
-                                          int64_t                   ldb,
-                                          rocsparse_mat_info        info,
-                                          rocsparse_solve_policy    policy,
-                                          void*                     temp_buffer);
+    rocsparse_status coosm_solve_core(rocsparse_handle          handle,
+                                      rocsparse_operation       trans_A,
+                                      rocsparse_operation       trans_B,
+                                      I                         m,
+                                      I                         nrhs,
+                                      int64_t                   nnz,
+                                      const T*                  alpha_device_host,
+                                      const rocsparse_mat_descr descr,
+                                      const T*                  coo_val,
+                                      const I*                  coo_row_ind,
+                                      const I*                  coo_col_ind,
+                                      T*                        B,
+                                      int64_t                   ldb,
+                                      rocsparse_order           order_B,
+                                      rocsparse_mat_info        info,
+                                      rocsparse_solve_policy    policy,
+                                      void*                     temp_buffer);
+
+    template <typename... P>
+    rocsparse_status coosm_solve_template(P&&... p)
+    {
+        const rocsparse_status status = rocsparse::coosm_solve_quickreturn(p...);
+
+        if(status != rocsparse_status_continue)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(status);
+            return rocsparse_status_success;
+        }
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::coosm_solve_core(p...));
+        return rocsparse_status_success;
+    }
 }
