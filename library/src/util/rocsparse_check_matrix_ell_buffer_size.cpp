@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,61 +29,66 @@
 
 #include "check_matrix_ell_device.h"
 
-const char* rocsparse_datastatus2string(rocsparse_data_status data_status);
+namespace rocsparse
+{
+    const char* datastatus2string(rocsparse_data_status data_status);
+}
 
 template <typename T, typename I>
-rocsparse_status rocsparse_check_matrix_ell_buffer_size_core(rocsparse_handle       handle,
-                                                             I                      m,
-                                                             I                      n,
-                                                             I                      ell_width,
-                                                             const T*               ell_val,
-                                                             const I*               ell_col_ind,
-                                                             rocsparse_index_base   idx_base,
-                                                             rocsparse_matrix_type  matrix_type,
-                                                             rocsparse_fill_mode    uplo,
-                                                             rocsparse_storage_mode storage,
-                                                             size_t*                buffer_size)
+rocsparse_status rocsparse::check_matrix_ell_buffer_size_core(rocsparse_handle       handle,
+                                                              I                      m,
+                                                              I                      n,
+                                                              I                      ell_width,
+                                                              const T*               ell_val,
+                                                              const I*               ell_col_ind,
+                                                              rocsparse_index_base   idx_base,
+                                                              rocsparse_matrix_type  matrix_type,
+                                                              rocsparse_fill_mode    uplo,
+                                                              rocsparse_storage_mode storage,
+                                                              size_t*                buffer_size)
 {
     *buffer_size = ((sizeof(rocsparse_data_status) - 1) / 256 + 1) * 256;
     return rocsparse_status_success;
 }
 
-template <typename T, typename I>
-rocsparse_status
-    rocsparse_check_matrix_ell_buffer_size_quickreturn(rocsparse_handle       handle,
-                                                       I                      m,
-                                                       I                      n,
-                                                       I                      ell_width,
-                                                       const T*               ell_val,
-                                                       const I*               ell_col_ind,
-                                                       rocsparse_index_base   idx_base,
-                                                       rocsparse_matrix_type  matrix_type,
-                                                       rocsparse_fill_mode    uplo,
-                                                       rocsparse_storage_mode storage,
-                                                       size_t*                buffer_size)
+namespace rocsparse
 {
-    if(m == 0 || ell_width == 0)
+    template <typename T, typename I>
+    rocsparse_status check_matrix_ell_buffer_size_quickreturn(rocsparse_handle       handle,
+                                                              I                      m,
+                                                              I                      n,
+                                                              I                      ell_width,
+                                                              const T*               ell_val,
+                                                              const I*               ell_col_ind,
+                                                              rocsparse_index_base   idx_base,
+                                                              rocsparse_matrix_type  matrix_type,
+                                                              rocsparse_fill_mode    uplo,
+                                                              rocsparse_storage_mode storage,
+                                                              size_t*                buffer_size)
     {
-        *buffer_size = 0;
-        return rocsparse_status_success;
-    }
+        if(m == 0 || ell_width == 0)
+        {
+            *buffer_size = 0;
+            return rocsparse_status_success;
+        }
 
-    return rocsparse_status_continue;
+        return rocsparse_status_continue;
+    }
 }
 
 template <typename T, typename I>
 rocsparse_status
-    rocsparse_check_matrix_ell_buffer_size_checkarg(rocsparse_handle       handle, //0
-                                                    I                      m, //1
-                                                    I                      n, //2
-                                                    I                      ell_width, //3
-                                                    const T*               ell_val, //4
-                                                    const I*               ell_col_ind, //5
-                                                    rocsparse_index_base   idx_base, //6
-                                                    rocsparse_matrix_type  matrix_type, //7
-                                                    rocsparse_fill_mode    uplo, //8
-                                                    rocsparse_storage_mode storage, //9
-                                                    size_t*                buffer_size) //10
+    rocsparse::check_matrix_ell_buffer_size_checkarg(rocsparse_handle       handle, //0
+                                                     I                      m, //1
+                                                     I                      n, //2
+                                                     I                      ell_width, //3
+                                                     const T*               ell_val, //4
+                                                     const I*               ell_col_ind, //5
+                                                     rocsparse_index_base   idx_base, //6
+                                                     rocsparse_matrix_type  matrix_type, //7
+                                                     rocsparse_fill_mode    uplo, //8
+                                                     rocsparse_storage_mode storage, //9
+                                                     size_t*                buffer_size) //10
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -101,17 +106,18 @@ rocsparse_status
     ROCSPARSE_CHECKARG_ENUM(9, storage);
     ROCSPARSE_CHECKARG_POINTER(10, buffer_size);
 
-    const rocsparse_status status = rocsparse_check_matrix_ell_buffer_size_quickreturn(handle,
-                                                                                       m,
-                                                                                       n,
-                                                                                       ell_width,
-                                                                                       ell_val,
-                                                                                       ell_col_ind,
-                                                                                       idx_base,
-                                                                                       matrix_type,
-                                                                                       uplo,
-                                                                                       storage,
-                                                                                       buffer_size);
+    const rocsparse_status status
+        = rocsparse::check_matrix_ell_buffer_size_quickreturn(handle,
+                                                              m,
+                                                              n,
+                                                              ell_width,
+                                                              ell_val,
+                                                              ell_col_ind,
+                                                              idx_base,
+                                                              matrix_type,
+                                                              uplo,
+                                                              storage,
+                                                              buffer_size);
 
     if(status != rocsparse_status_continue)
     {
@@ -122,30 +128,30 @@ rocsparse_status
     return rocsparse_status_continue;
 }
 
-#define INSTANTIATE(ITYPE, TTYPE)                                                            \
-    template rocsparse_status rocsparse_check_matrix_ell_buffer_size_core<TTYPE, ITYPE>(     \
-        rocsparse_handle       handle,                                                       \
-        ITYPE                  m,                                                            \
-        ITYPE                  n,                                                            \
-        ITYPE                  ell_width,                                                    \
-        const TTYPE*           ell_val,                                                      \
-        const ITYPE*           ell_col_ind,                                                  \
-        rocsparse_index_base   idx_base,                                                     \
-        rocsparse_matrix_type  matrix_type,                                                  \
-        rocsparse_fill_mode    uplo,                                                         \
-        rocsparse_storage_mode storage,                                                      \
-        size_t*                buffer_size);                                                                \
-    template rocsparse_status rocsparse_check_matrix_ell_buffer_size_checkarg<TTYPE, ITYPE>( \
-        rocsparse_handle       handle,                                                       \
-        ITYPE                  m,                                                            \
-        ITYPE                  n,                                                            \
-        ITYPE                  ell_width,                                                    \
-        const TTYPE*           ell_val,                                                      \
-        const ITYPE*           ell_col_ind,                                                  \
-        rocsparse_index_base   idx_base,                                                     \
-        rocsparse_matrix_type  matrix_type,                                                  \
-        rocsparse_fill_mode    uplo,                                                         \
-        rocsparse_storage_mode storage,                                                      \
+#define INSTANTIATE(ITYPE, TTYPE)                                                             \
+    template rocsparse_status rocsparse::check_matrix_ell_buffer_size_core<TTYPE, ITYPE>(     \
+        rocsparse_handle       handle,                                                        \
+        ITYPE                  m,                                                             \
+        ITYPE                  n,                                                             \
+        ITYPE                  ell_width,                                                     \
+        const TTYPE*           ell_val,                                                       \
+        const ITYPE*           ell_col_ind,                                                   \
+        rocsparse_index_base   idx_base,                                                      \
+        rocsparse_matrix_type  matrix_type,                                                   \
+        rocsparse_fill_mode    uplo,                                                          \
+        rocsparse_storage_mode storage,                                                       \
+        size_t*                buffer_size);                                                                 \
+    template rocsparse_status rocsparse::check_matrix_ell_buffer_size_checkarg<TTYPE, ITYPE>( \
+        rocsparse_handle       handle,                                                        \
+        ITYPE                  m,                                                             \
+        ITYPE                  n,                                                             \
+        ITYPE                  ell_width,                                                     \
+        const TTYPE*           ell_val,                                                       \
+        const ITYPE*           ell_col_ind,                                                   \
+        rocsparse_index_base   idx_base,                                                      \
+        rocsparse_matrix_type  matrix_type,                                                   \
+        rocsparse_fill_mode    uplo,                                                          \
+        rocsparse_storage_mode storage,                                                       \
         size_t*                buffer_size);
 
 INSTANTIATE(int32_t, float);
@@ -163,37 +169,37 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
  *    C wrapper
  * ===========================================================================
  */
-#define C_IMPL(NAME, TYPE)                                                                    \
-    extern "C" rocsparse_status NAME(rocsparse_handle       handle,                           \
-                                     rocsparse_int          m,                                \
-                                     rocsparse_int          n,                                \
-                                     rocsparse_int          ell_width,                        \
-                                     const TYPE*            ell_val,                          \
-                                     const rocsparse_int*   ell_col_ind,                      \
-                                     rocsparse_index_base   idx_base,                         \
-                                     rocsparse_matrix_type  matrix_type,                      \
-                                     rocsparse_fill_mode    uplo,                             \
-                                     rocsparse_storage_mode storage,                          \
-                                     size_t*                buffer_size)                      \
-    try                                                                                       \
-    {                                                                                         \
-        RETURN_IF_ROCSPARSE_ERROR(                                                            \
-            (rocsparse_check_matrix_ell_buffer_size_impl<TYPE, rocsparse_int>(handle,         \
-                                                                              m,              \
-                                                                              n,              \
-                                                                              ell_width,      \
-                                                                              ell_val,        \
-                                                                              ell_col_ind,    \
-                                                                              idx_base,       \
-                                                                              matrix_type,    \
-                                                                              uplo,           \
-                                                                              storage,        \
-                                                                              buffer_size))); \
-        return rocsparse_status_success;                                                      \
-    }                                                                                         \
-    catch(...)                                                                                \
-    {                                                                                         \
-        RETURN_ROCSPARSE_EXCEPTION();                                                         \
+#define C_IMPL(NAME, TYPE)                                                                     \
+    extern "C" rocsparse_status NAME(rocsparse_handle       handle,                            \
+                                     rocsparse_int          m,                                 \
+                                     rocsparse_int          n,                                 \
+                                     rocsparse_int          ell_width,                         \
+                                     const TYPE*            ell_val,                           \
+                                     const rocsparse_int*   ell_col_ind,                       \
+                                     rocsparse_index_base   idx_base,                          \
+                                     rocsparse_matrix_type  matrix_type,                       \
+                                     rocsparse_fill_mode    uplo,                              \
+                                     rocsparse_storage_mode storage,                           \
+                                     size_t*                buffer_size)                       \
+    try                                                                                        \
+    {                                                                                          \
+        RETURN_IF_ROCSPARSE_ERROR(                                                             \
+            (rocsparse::check_matrix_ell_buffer_size_impl<TYPE, rocsparse_int>(handle,         \
+                                                                               m,              \
+                                                                               n,              \
+                                                                               ell_width,      \
+                                                                               ell_val,        \
+                                                                               ell_col_ind,    \
+                                                                               idx_base,       \
+                                                                               matrix_type,    \
+                                                                               uplo,           \
+                                                                               storage,        \
+                                                                               buffer_size))); \
+        return rocsparse_status_success;                                                       \
+    }                                                                                          \
+    catch(...)                                                                                 \
+    {                                                                                          \
+        RETURN_ROCSPARSE_EXCEPTION();                                                          \
     }
 
 C_IMPL(rocsparse_scheck_matrix_ell_buffer_size, float);
