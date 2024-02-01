@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,102 +26,105 @@
 
 #include "common.h"
 
-ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_status,
-                                             rocsparse_data_status  status)
+namespace rocsparse
 {
-    if(status != rocsparse_data_status_success)
+    ROCSPARSE_DEVICE_ILF void record_data_status(rocsparse_data_status* data_status,
+                                                 rocsparse_data_status  status)
     {
-        *data_status = status;
-    }
-}
-
-template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void check_matrix_coo_device(J       m,
-                             J       n,
-                             int64_t nnz,
-                             const T* __restrict__ coo_val,
-                             const I* __restrict__ coo_row_ind,
-                             const J* __restrict__ coo_col_ind,
-                             rocsparse_index_base   idx_base,
-                             rocsparse_matrix_type  matrix_type,
-                             rocsparse_fill_mode    uplo,
-                             rocsparse_storage_mode storage,
-                             rocsparse_data_status* data_status)
-{
-    int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-    if(gid >= nnz)
-    {
-        return;
-    }
-
-    // Check actual COO arrays for valid data
-    I row = coo_row_ind[gid] - idx_base;
-    I col = coo_col_ind[gid] - idx_base;
-
-    if(row < 0 || row >= m)
-    {
-        record_data_status(data_status, rocsparse_data_status_invalid_index);
-        return;
-    }
-
-    if(col < 0 || col >= n)
-    {
-        record_data_status(data_status, rocsparse_data_status_invalid_index);
-        return;
-    }
-
-    // check if values are inf or nan
-    T val = coo_val[gid];
-    if(rocsparse_is_inf(val))
-    {
-        record_data_status(data_status, rocsparse_data_status_inf);
-        return;
-    }
-
-    if(rocsparse_is_nan(val))
-    {
-        record_data_status(data_status, rocsparse_data_status_nan);
-        return;
-    }
-
-    // Check matrix type and fill mode is correct
-    if(matrix_type != rocsparse_matrix_type_general)
-    {
-        if(uplo == rocsparse_fill_mode_lower)
+        if(status != rocsparse_data_status_success)
         {
-            if(row < col)
-            {
-                record_data_status(data_status, rocsparse_data_status_invalid_fill);
-                return;
-            }
-        }
-        else
-        {
-            if(row > col)
-            {
-                record_data_status(data_status, rocsparse_data_status_invalid_fill);
-                return;
-            }
+            *data_status = status;
         }
     }
 
-    // Check sorting is correct
-    if(storage == rocsparse_storage_mode_sorted)
+    template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void check_matrix_coo_device(J       m,
+                                 J       n,
+                                 int64_t nnz,
+                                 const T* __restrict__ coo_val,
+                                 const I* __restrict__ coo_row_ind,
+                                 const J* __restrict__ coo_col_ind,
+                                 rocsparse_index_base   idx_base,
+                                 rocsparse_matrix_type  matrix_type,
+                                 rocsparse_fill_mode    uplo,
+                                 rocsparse_storage_mode storage,
+                                 rocsparse_data_status* data_status)
     {
-        if(gid < nnz - 1)
+        int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+        if(gid >= nnz)
         {
-            I next_row = coo_row_ind[gid + 1] - idx_base;
+            return;
+        }
 
-            if(row == next_row)
+        // Check actual COO arrays for valid data
+        I row = coo_row_ind[gid] - idx_base;
+        I col = coo_col_ind[gid] - idx_base;
+
+        if(row < 0 || row >= m)
+        {
+            record_data_status(data_status, rocsparse_data_status_invalid_index);
+            return;
+        }
+
+        if(col < 0 || col >= n)
+        {
+            record_data_status(data_status, rocsparse_data_status_invalid_index);
+            return;
+        }
+
+        // check if values are inf or nan
+        T val = coo_val[gid];
+        if(rocsparse_is_inf(val))
+        {
+            record_data_status(data_status, rocsparse_data_status_inf);
+            return;
+        }
+
+        if(rocsparse_is_nan(val))
+        {
+            record_data_status(data_status, rocsparse_data_status_nan);
+            return;
+        }
+
+        // Check matrix type and fill mode is correct
+        if(matrix_type != rocsparse_matrix_type_general)
+        {
+            if(uplo == rocsparse_fill_mode_lower)
             {
-                I next_col = coo_col_ind[gid + 1] - idx_base;
-
-                if(col > next_col && (next_col >= 0 && next_col < n))
+                if(row < col)
                 {
-                    record_data_status(data_status, rocsparse_data_status_invalid_sorting);
+                    record_data_status(data_status, rocsparse_data_status_invalid_fill);
                     return;
+                }
+            }
+            else
+            {
+                if(row > col)
+                {
+                    record_data_status(data_status, rocsparse_data_status_invalid_fill);
+                    return;
+                }
+            }
+        }
+
+        // Check sorting is correct
+        if(storage == rocsparse_storage_mode_sorted)
+        {
+            if(gid < nnz - 1)
+            {
+                I next_row = coo_row_ind[gid + 1] - idx_base;
+
+                if(row == next_row)
+                {
+                    I next_col = coo_col_ind[gid + 1] - idx_base;
+
+                    if(col > next_col && (next_col >= 0 && next_col < n))
+                    {
+                        record_data_status(data_status, rocsparse_data_status_invalid_sorting);
+                        return;
+                    }
                 }
             }
         }
