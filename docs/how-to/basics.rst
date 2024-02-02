@@ -1,40 +1,44 @@
-******
-Basics
-******
+.. meta::
+  :description: rocSPARSE documentation and API reference library
+  :keywords: rocSPARSE, ROCm, API, documentation
 
-Device and Stream Management
-============================
-:cpp:func:`hipSetDevice` and :cpp:func:`hipGetDevice` are HIP device management APIs.
-They are NOT part of the rocSPARSE API.
+.. _rocsparse-docs:
 
-Asynchronous Execution
-----------------------
-All rocSPARSE library functions, unless otherwise stated, are non blocking and executed asynchronously with respect to the host. They may return before the actual computation has finished. To force synchronization, :cpp:func:`hipDeviceSynchronize` or :cpp:func:`hipStreamSynchronize` can be used. This will ensure that all previously executed rocSPARSE functions on the device / this particular stream have completed.
+********************************************************************
+rocSPARSE User Guide
+********************************************************************
 
 HIP Device Management
----------------------
-Before a HIP kernel invocation, users need to call :cpp:func:`hipSetDevice` to set a device, e.g. device 1. If users do not explicitly call it, the system by default sets it as device 0. Unless users explicitly call :cpp:func:`hipSetDevice` to set to another device, their HIP kernels are always launched on device 0.
+=====================
+Before starting a HIP kernel you can call :cpp:func:`hipSetDevice` to set the device to run the kernel on, for example device 2. Unless you explicitly specify a different device HIP kernels always run on device 0. This is a HIP (and CUDA) device management approach and is not specific to the rocSPARSE library. rocSPARSE honors this approach and assumes you have set the preferred device before a rocSPARSE routine call.
 
-The above is a HIP (and CUDA) device management approach and has nothing to do with rocSPARSE. rocSPARSE honors the approach above and assumes users have already set the device before a rocSPARSE routine call.
+Once you set the device, you can create a handle with :ref:`rocsparse_create_handle_`. Subsequent rocSPARSE routines take this handle as an input parameter. rocSPARSE ONLY queries (by :cpp:func:`hipGetDevice`) the user's device; rocSPARSE does NOT set the device for users. If rocSPARSE does not see a valid device, it returns an error message. It is your responsibility to provide a valid device to rocSPARSE and ensure the device safety. 
 
-Once users set the device, they create a handle with :ref:`rocsparse_create_handle_`.
+The handle should be destroyed at the end using :ref:`rocsparse_destroy_handle_` to release the resources consumed by the rocSPARSE library. You CANNOT switch devices between :ref:`rocsparse_create_handle_` and :ref:`rocsparse_destroy_handle_`. If you want to change the device, you must destroy the current handle and create another rocSPARSE handle on a new device.
 
-Subsequent rocSPARSE routines take this handle as an input parameter. rocSPARSE ONLY queries (by :cpp:func:`hipGetDevice`) the user's device; rocSPARSE does NOT set the device for users. If rocSPARSE does not see a valid device, it returns an error message. It is the users' responsibility to provide a valid device to rocSPARSE and ensure the device safety.
+.. note::
 
-Users CANNOT switch devices between :ref:`rocsparse_create_handle_` and :ref:`rocsparse_destroy_handle_`. If users want to change device, they must destroy the current handle and create another rocSPARSE handle.
+   :cpp:func:`hipSetDevice` and :cpp:func:`hipGetDevice` are NOT part of the rocSPARSE API. They are part of the `HIP Runtime API - Device Management <https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/group___device.html>`_.
+
 
 HIP Stream Management
----------------------
-HIP kernels are always launched in a queue (also known as stream).
+=====================
+HIP kernels are always launched in a queue (also known as a stream). If you do not explicitly specify a stream, the system provides and maintains a default stream. You cannot create or destroy the default stream. However, you can freely create new streams (with :cpp:func:`hipStreamCreate`) and bind it to a rocSPARSE handle using :ref:`rocsparse_set_stream_`. HIP kernels are invoked in rocSPARSE routines. The rocSPARSE handle is always associated with a stream, and rocSPARSE passes its stream to the kernels inside the routine. One rocSPARSE routine only takes one stream in a single invocation. If you create a stream, you are responsible for destroying it. Refer to `HIP Runtime API - Stream Management <https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/group___stream.html>`_ for more information. 
 
-If users do not explicitly specify a stream, the system provides a default stream, maintained by the system. Users cannot create or destroy the default stream. However, users can freely create new streams (with :cpp:func:`hipStreamCreate`) and bind it to the rocSPARSE handle using :ref:`rocsparse_set_stream_`. HIP kernels are invoked in rocSPARSE routines. The rocSPARSE handle is always associated with a stream, and rocSPARSE passes its stream to the kernels inside the routine. One rocSPARSE routine only takes one stream in a single invocation. If users create a stream, they are responsible for destroying it.
+Asynchronous Execution
+======================
+All rocSPARSE library functions are non-blocking and executed asynchronously with respect to the host, except functions having memory allocation inside preventing asynchronicity. The function may return immediately, or before the actual computation has finished. To force synchronization, use either :cpp:func:`hipDeviceSynchronize` or :cpp:func:`hipStreamSynchronize`. This will ensure that all previously executed rocSPARSE functions on the device, or in the particular stream, have completed.
 
 Multiple Streams and Multiple Devices
--------------------------------------
-If the system under test has multiple HIP devices, users can run multiple rocSPARSE handles concurrently, but can NOT run a single rocSPARSE handle on different discrete devices. Each handle is associated with a particular singular device, and a new handle should be created for each additional device.
+=====================================
+If a system has multiple HIP devices, you can run multiple rocSPARSE handles concurrently. However, you can NOT run a single rocSPARSE handle concurrently on multiple discrete devices. Each handle can only be associated with a single device, and a new handle should be created for each additional device.
 
 Storage Formats
 ===============
+The following describes supported matrix storage formats.  
+
+.. note::
+    The different storage formats support indexing from a base of 0 or 1 as described in :ref:`index_base`.
 
 COO storage format
 ------------------
@@ -360,14 +364,10 @@ ELL storage format, and the irregular part of the matrix is stored in COO storag
 be applied when converting a CSR matrix to a matrix in HYB storage format. For further details on the partitioning schemes,
 see :ref:`rocsparse_hyb_partition_`.
 
-API
----
-
-For a complete list of the public rocSPARSE API, see :ref:`api`.
-
+.. _index_base:
 
 Storage schemes and indexing base
----------------------------------
+=================================
 rocSPARSE supports 0 and 1 based indexing.
 The index base is selected by the :cpp:enum:`rocsparse_index_base` type which is either passed as standalone parameter or as part of the :cpp:type:`rocsparse_mat_descr` type.
 
@@ -375,15 +375,15 @@ Furthermore, dense vectors are represented with a 1D array, stored linearly in m
 Sparse vectors are represented by a 1D data array stored linearly in memory that hold all non-zero elements and a 1D indexing array stored linearly in memory that hold the positions of the corresponding non-zero elements.
 
 Pointer mode
-------------
+============
 The auxiliary functions :cpp:func:`rocsparse_set_pointer_mode` and :cpp:func:`rocsparse_get_pointer_mode` are used to set and get the value of the state variable :cpp:enum:`rocsparse_pointer_mode`.
 If :cpp:enum:`rocsparse_pointer_mode` is equal to :cpp:enumerator:`rocsparse_pointer_mode_host`, then scalar parameters must be allocated on the host.
 If :cpp:enum:`rocsparse_pointer_mode` is equal to :cpp:enumerator:`rocsparse_pointer_mode_device`, then scalar parameters must be allocated on the device.
 
 There are two types of scalar parameter:
 
-  1. Scaling parameters, such as `alpha` and `beta` used in e.g. :cpp:func:`rocsparse_scsrmv`, :cpp:func:`rocsparse_scoomv`, ...
-  2. Scalar results from functions such as :cpp:func:`rocsparse_sdoti`, :cpp:func:`rocsparse_cdotci`, ...
+  1. Scaling parameters, such as `alpha` and `beta` used for example in :cpp:func:`rocsparse_scsrmv` and :cpp:func:`rocsparse_scoomv`
+  2. Scalar results from functions such as :cpp:func:`rocsparse_sdoti` or :cpp:func:`rocsparse_cdotci`
 
 For scalar parameters such as alpha and beta, memory can be allocated on the host heap or stack, when :cpp:enum:`rocsparse_pointer_mode` is equal to :cpp:enumerator:`rocsparse_pointer_mode_host`.
 The kernel launch is asynchronous, and if the scalar parameter is on the heap, it can be freed after the return from the kernel launch.
@@ -393,16 +393,13 @@ For scalar results, when :cpp:enum:`rocsparse_pointer_mode` is equal to :cpp:enu
 Using :cpp:enum:`rocsparse_pointer_mode` equal to :cpp:enumerator:`rocsparse_pointer_mode_device`, the function will return after the asynchronous launch.
 Similarly to vector and matrix results, the scalar result is only available when the kernel has completed execution.
 
-Asynchronous API
-----------------
-Except a functions having memory allocation inside preventing asynchronicity, all rocSPARSE functions are configured to operate in non-blocking fashion with respect to CPU, meaning these library functions return immediately.
-
 hipSPARSE
 ---------
-hipSPARSE is a SPARSE marshalling library, with multiple supported backends.
-It sits between the application and a `worker` SPARSE library, marshalling inputs into the backend library and marshalling results back to the application.
-hipSPARSE exports an interface that does not require the client to change, regardless of the chosen backend.
-Currently, hipSPARSE supports rocSPARSE and cuSPARSE as backends.
+hipSPARSE is a SPARSE marshalling library, with multiple supported backends. It sits between the application and a `worker` 
+SPARSE library, marshalling inputs into the backend library and marshalling results back to the application. hipSPARSE exports 
+an interface that does not require the client to change, regardless of the chosen backend. 
+hipSPARSE supports rocSPARSE and cuSPARSE as backends.
+
 hipSPARSE focuses on convenience and portability.
 If performance outweighs these factors, then using rocSPARSE itself is highly recommended.
 hipSPARSE can be found on `GitHub <https://github.com/ROCm/hipSPARSE/>`_.

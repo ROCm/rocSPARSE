@@ -1,7 +1,12 @@
+.. meta::
+  :description: rocSPARSE documentation and API reference library
+  :keywords: rocSPARSE, ROCm, API, documentation
+
 .. _rocsparse_extra_functions_:
 
+********************************************************************
 Sparse Extra Functions
-======================
+********************************************************************
 
 This module holds all sparse extra routines.
 

@@ -1,7 +1,12 @@
+.. meta::
+  :description: rocSPARSE documentation and API reference library
+  :keywords: rocSPARSE, ROCm, API, documentation
+
 .. _rocsparse_level3_functions_:
 
+********************************************************************
 Sparse Level 3 Functions
-========================
+********************************************************************
 
 This module holds all sparse level 3 routines.
 
