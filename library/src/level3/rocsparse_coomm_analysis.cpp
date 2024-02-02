@@ -22,7 +22,7 @@
 *
 * ************************************************************************ */
 
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_coomm.hpp"
 #include "utility.h"
 

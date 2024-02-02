@@ -26,8 +26,8 @@
 #include "rocsparse_csrsv.hpp"
 
 #include "../level1/rocsparse_gthr.hpp"
+#include "control.h"
 #include "csrsv_device.h"
-#include "definitions.h"
 #include "utility.h"
 
 namespace rocsparse

@@ -29,7 +29,7 @@
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "bsrilu0_device.h"
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 #define LAUNCH_BSRILU28()                                                               \

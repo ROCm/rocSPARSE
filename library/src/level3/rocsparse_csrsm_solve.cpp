@@ -25,7 +25,7 @@
 #include "rocsparse_csrsm.hpp"
 
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 #include "../level1/rocsparse_gthr.hpp"

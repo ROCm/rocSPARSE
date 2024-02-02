@@ -22,7 +22,7 @@
  *
  * ************************************************************************ */
 #include "rocsparse_coosm.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_csrsm.hpp"
 #include "utility.h"
 #include <rocprim/rocprim.hpp>

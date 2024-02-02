@@ -29,7 +29,7 @@
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "bsric0_device.h"
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 #define LAUNCH_BSRIC_2_8_UNROLLED(T, block_size, maz_nnzb, bsr_block_dim)             \

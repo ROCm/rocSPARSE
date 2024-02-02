@@ -24,7 +24,7 @@
 
 #include "internal/conversion/rocsparse_gebsr2csr.h"
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_bsr2csr.hpp"
 #include "rocsparse_gebsr2csr.hpp"
 #include "utility.h"

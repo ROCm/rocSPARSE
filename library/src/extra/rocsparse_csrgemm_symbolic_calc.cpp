@@ -24,7 +24,7 @@
 
 #include "rocsparse_csrgemm_symbolic_calc.hpp"
 #include "../conversion/rocsparse_identity.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "internal/extra/rocsparse_csrgemm.h"
 #include "rocsparse_csrgemm.hpp"
 #include "utility.h"

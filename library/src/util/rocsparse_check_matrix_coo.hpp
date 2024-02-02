@@ -23,7 +23,7 @@
  * ************************************************************************ */
 #pragma once
 
-#include "definitions.h"
+#include "control.h"
 
 namespace rocsparse
 {

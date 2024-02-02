@@ -21,7 +21,7 @@
  *
  * ************************************************************************ */
 
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_csr2bsr.hpp"
 #include "rocsparse_gcsr2bsr.hpp"
 

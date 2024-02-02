@@ -22,15 +22,10 @@
  *
  * ************************************************************************ */
 #include "internal/util/rocsparse_check_matrix_gebsc.h"
-#include "definitions.h"
 #include "rocsparse_check_matrix_gebsc.hpp"
 #include "rocsparse_check_matrix_gebsr.hpp"
+#include "to_string.hpp"
 #include "utility.h"
-
-namespace rocsparse
-{
-    std::string matrixtype2string(rocsparse_matrix_type type);
-}
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse::check_matrix_gebsc_core(rocsparse_handle       handle,
@@ -139,7 +134,8 @@ rocsparse_status rocsparse::check_matrix_gebsc_checkarg(rocsparse_handle       h
         if(row_block_dim != col_block_dim || mb != nb)
         {
             log_debug(handle,
-                      ("Matrix was specified to be " + rocsparse::matrixtype2string(matrix_type)
+                      ("Matrix was specified to be "
+                       + std::string(rocsparse::to_string(matrix_type))
                        + " but (row_block_dim != col_block_dim || mb != nb)"));
         }
     }

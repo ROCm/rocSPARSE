@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "internal/generic/rocsparse_spgemm.h"
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 #include "rocsparse_bsrgemm.hpp"

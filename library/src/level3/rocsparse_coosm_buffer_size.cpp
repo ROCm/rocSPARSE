@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_coosm.hpp"
 #include "rocsparse_csrsm.hpp"
 #include "utility.h"

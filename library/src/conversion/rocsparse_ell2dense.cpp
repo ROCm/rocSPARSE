@@ -24,7 +24,7 @@
 
 #include "rocsparse_ell2dense.hpp"
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 #include "ell2dense_device.h"

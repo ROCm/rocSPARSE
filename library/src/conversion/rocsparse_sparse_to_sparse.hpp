@@ -21,7 +21,7 @@
  *
  * ************************************************************************ */
 #pragma once
-#include "definitions.h"
+#include "control.h"
 #include "internal/generic/rocsparse_sparse_to_sparse.h"
 
 struct _rocsparse_sparse_to_sparse_descr

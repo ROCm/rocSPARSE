@@ -42,7 +42,7 @@ namespace rocsparse
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void shift_offsets_kernel(J size, const I* __restrict__ in, I* __restrict__ out)
     {
-        J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
         if(gid >= size)
         {
@@ -58,12 +58,12 @@ namespace rocsparse
                              const I* __restrict__ bsr_row_ptr,
                              rocsparse_data_status* data_status)
     {
-        I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
         if(gid < mb)
         {
-            I start = bsr_row_ptr[gid] - bsr_row_ptr[0];
-            I end   = bsr_row_ptr[gid + 1] - bsr_row_ptr[0];
+            const I start = bsr_row_ptr[gid] - bsr_row_ptr[0];
+            const I end   = bsr_row_ptr[gid + 1] - bsr_row_ptr[0];
 
             if(start < 0 || end < 0)
             {
@@ -97,15 +97,15 @@ namespace rocsparse
                                    rocsparse_storage_mode storage,
                                    rocsparse_data_status* data_status)
     {
-        I row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const I row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
         if(row >= mb)
         {
             return;
         }
 
-        I start = bsr_row_ptr[row] - bsr_row_ptr[0];
-        I end   = bsr_row_ptr[row + 1] - bsr_row_ptr[0];
+        const I start = bsr_row_ptr[row] - bsr_row_ptr[0];
+        const I end   = bsr_row_ptr[row + 1] - bsr_row_ptr[0];
 
         if(start < 0 || end < 0)
         {
@@ -121,7 +121,7 @@ namespace rocsparse
 
         for(I j = start; j < end; j++)
         {
-            J col = bsr_col_ind[j] - idx_base;
+            const J col = bsr_col_ind[j] - idx_base;
 
             // Check columns are in range [0...nb)
             if(col < 0 || col >= nb)
@@ -133,8 +133,8 @@ namespace rocsparse
             // Check that there are no duplicate columns
             if(j >= start + 1)
             {
-                J scol      = bsr_col_ind_sorted[j] - idx_base;
-                J prev_scol = bsr_col_ind_sorted[j - 1] - idx_base;
+                const J scol      = bsr_col_ind_sorted[j] - idx_base;
+                const J prev_scol = bsr_col_ind_sorted[j - 1] - idx_base;
 
                 if(scol == prev_scol && (prev_scol >= 0 && prev_scol < nb))
                 {
@@ -150,8 +150,8 @@ namespace rocsparse
                 {
                     for(J c = 0; c < col_block_dim; c++)
                     {
-                        T val = bsr_val[int64_t(row_block_dim) * col_block_dim * j
-                                        + col_block_dim * r + c];
+                        const T val = bsr_val[int64_t(row_block_dim) * col_block_dim * j
+                                              + col_block_dim * r + c];
                         if(rocsparse_is_inf(val))
                         {
                             record_data_status(data_status, rocsparse_data_status_inf);
@@ -172,8 +172,8 @@ namespace rocsparse
                 {
                     for(J r = 0; r < row_block_dim; r++)
                     {
-                        T val = bsr_val[int64_t(row_block_dim) * col_block_dim * j
-                                        + row_block_dim * c + r];
+                        const T val = bsr_val[int64_t(row_block_dim) * col_block_dim * j
+                                              + row_block_dim * c + r];
                         if(rocsparse_is_inf(val))
                         {
                             record_data_status(data_status, rocsparse_data_status_inf);
@@ -215,7 +215,7 @@ namespace rocsparse
             {
                 if(j >= start + 1)
                 {
-                    J prev_col = bsr_col_ind[j - 1] - idx_base;
+                    const J prev_col = bsr_col_ind[j - 1] - idx_base;
 
                     if(col <= prev_col && (prev_col >= 0 && prev_col < nb))
                     {

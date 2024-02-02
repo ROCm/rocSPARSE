@@ -23,17 +23,11 @@
  * ************************************************************************ */
 #include "internal/util/rocsparse_check_matrix_coo.h"
 
-#include "definitions.h"
 #include "rocsparse_check_matrix_coo.hpp"
+#include "to_string.hpp"
 #include "utility.h"
 
 #include "check_matrix_coo_device.h"
-
-namespace rocsparse
-{
-    std::string matrixtype2string(rocsparse_matrix_type type);
-    const char* datastatus2string(rocsparse_data_status data_status);
-}
 
 template <typename T, typename I>
 rocsparse_status rocsparse::check_matrix_coo_buffer_size_core(rocsparse_handle       handle,
@@ -114,8 +108,8 @@ rocsparse_status
         if(m != n)
         {
             log_debug(handle,
-                      ("Matrix was specified to be " + rocsparse::matrixtype2string(matrix_type)
-                       + " but m != n"));
+                      ("Matrix was specified to be "
+                       + std::string(rocsparse::to_string(matrix_type)) + " but m != n"));
         }
     }
     ROCSPARSE_CHECKARG(2,

@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_coomv_aos.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 #include "coomv_device.h"

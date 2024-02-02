@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "internal/generic/rocsparse_spmv.h"
-#include "definitions.h"
+#include "control.h"
 #include "handle.h"
 #include "utility.h"
 

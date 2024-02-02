@@ -23,7 +23,7 @@
 
 #include "rocsparse_ggthr.hpp"
 #include "../level1/rocsparse_gthr.hpp"
-#include "definitions.h"
+#include "control.h"
 
 rocsparse_status rocsparse::ggthr(rocsparse_handle     handle_,
                                   int64_t              nnz,

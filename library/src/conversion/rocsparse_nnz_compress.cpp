@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include "internal/conversion/rocsparse_nnz_compress.h"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_nnz_compress.hpp"
 #include "utility.h"
 

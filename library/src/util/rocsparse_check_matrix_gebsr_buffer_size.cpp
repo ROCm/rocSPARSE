@@ -23,19 +23,12 @@
  * ************************************************************************ */
 #include "internal/util/rocsparse_check_matrix_gebsr.h"
 
-#include "definitions.h"
 #include "rocsparse_check_matrix_gebsr.hpp"
 #include "utility.h"
 
 #include <rocprim/rocprim.hpp>
 
 #include "check_matrix_gebsr_device.h"
-
-namespace rocsparse
-{
-    std::string matrixtype2string(rocsparse_matrix_type type);
-    const char* datastatus2string(rocsparse_data_status data_status);
-}
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse::check_matrix_gebsr_buffer_size_core(rocsparse_handle      handle,

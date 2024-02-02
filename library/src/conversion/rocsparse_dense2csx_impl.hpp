@@ -25,7 +25,7 @@
 
 #include "utility.h"
 
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_dense2csx.hpp"
 #include <rocprim/rocprim.hpp>
 

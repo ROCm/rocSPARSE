@@ -24,7 +24,7 @@
 
 #include "internal/conversion/rocsparse_gebsr2gebsc.h"
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "internal/conversion/rocsparse_coo2csr.h"
 #include "internal/conversion/rocsparse_csr2coo.h"
 #include "internal/conversion/rocsparse_inverse_permutation.h"

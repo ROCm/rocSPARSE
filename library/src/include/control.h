@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 
 #include "argdescr.h"
 #include "message.h"
-#include "status.h"
 #include <iostream>
 
 /*******************************************************************************
@@ -41,43 +40,10 @@
 #define ROCSPARSE_COV_EXCL_START (void)("LCOV_EXCL_START")
 #define ROCSPARSE_COV_EXCL_STOP (void)("LCOV_EXCL_STOP")
 
-constexpr auto rocsparse_status2string(rocsparse_status status)
-{
-    switch(status)
-    {
-    case rocsparse_status_success:
-        return "success";
-    case rocsparse_status_invalid_handle:
-        return "invalid handle";
-    case rocsparse_status_not_implemented:
-        return "not implemented";
-    case rocsparse_status_invalid_pointer:
-        return "invalid pointer";
-    case rocsparse_status_invalid_size:
-        return "invalid size";
-    case rocsparse_status_memory_error:
-        return "memory error";
-    case rocsparse_status_internal_error:
-        return "internal error";
-    case rocsparse_status_invalid_value:
-        return "invalid value";
-    case rocsparse_status_arch_mismatch:
-        return "arch mismatch";
-    case rocsparse_status_zero_pivot:
-        return "zero pivot";
-    case rocsparse_status_not_initialized:
-        return "not initialized";
-    case rocsparse_status_type_mismatch:
-        return "type mismatch";
-    case rocsparse_status_requires_sorted_storage:
-        return "requires sorted storage";
-    case rocsparse_status_thrown_exception:
-        return "thrown exception";
-    case rocsparse_status_continue:
-        return "continue";
-    }
-    return "<not listed>";
-}
+/*******************************************************************************
+ * \brief convert hipError_t to rocsparse_status
+ ******************************************************************************/
+rocsparse_status get_rocsparse_status_for_hip_status(hipError_t status);
 
 //
 //
@@ -271,3 +237,17 @@ inline void dprint(I size_, const T* v, const char* name_ = nullptr, I short_siz
             return STATUS;                                            \
         }                                                             \
     } while(false)
+
+#define PRINT_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                                             \
+    {                                                                                          \
+        hipError_t TMP_STATUS_FOR_CHECK = INPUT_STATUS_FOR_CHECK;                              \
+        if(TMP_STATUS_FOR_CHECK != hipSuccess)                                                 \
+        {                                                                                      \
+            std::stringstream s;                                                               \
+            s << "hip error detected: code '" << TMP_STATUS_FOR_CHECK << "', name '"           \
+              << hipGetErrorName(TMP_STATUS_FOR_CHECK) << "', description '"                   \
+              << hipGetErrorString(TMP_STATUS_FOR_CHECK) << "'";                               \
+            ROCSPARSE_ERROR_MESSAGE(get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK), \
+                                    s.str().c_str());                                          \
+        }                                                                                      \
+    }

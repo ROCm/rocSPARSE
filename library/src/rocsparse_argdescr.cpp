@@ -1,7 +1,7 @@
 /*! \file */
 
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,12 @@
 
 #include "rocsparse-export.h"
 
-#include "definitions.h"
+#include "control.h"
 #include "envariables.h"
 #include <map>
 
 #include "debug.h"
+#include "to_string.hpp"
 
 int64_t rocsparse_get_pid()
 {
@@ -204,7 +205,7 @@ std::ostream& operator<<(std::ostream& os, const rocsparse_argdescr_st& that_)
        << "//                             \"arg_index\" : \"" << that_.m_arg_index << "\","
        << std::endl
        << "//                             \"status\"    : \""
-       << rocsparse_status2string(that_.m_status) << "\"";
+       << rocsparse::to_string(that_.m_status) << "\"";
 
     if(that_.m_msg[0] != '\0')
     {

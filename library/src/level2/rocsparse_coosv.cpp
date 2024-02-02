@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_coosv.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_csrsv.hpp"
 #include "utility.h"
 #include <rocprim/rocprim.hpp>

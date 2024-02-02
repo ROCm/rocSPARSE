@@ -27,7 +27,7 @@
 #include "rocsparse_csrgemm.hpp"
 
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_csrgemm_numeric_calc.hpp"
 #include "rocsparse_csrgemm_numeric_mult.hpp"
 #include "utility.h"

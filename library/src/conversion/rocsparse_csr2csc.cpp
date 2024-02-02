@@ -24,7 +24,7 @@
 
 #include "internal/conversion/rocsparse_csr2csc.h"
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_csr2csc.hpp"
 #include "utility.h"
 

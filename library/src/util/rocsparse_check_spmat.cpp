@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "internal/generic/rocsparse_check_spmat.h"
-#include "definitions.h"
+#include "control.h"
 #include "handle.h"
 #include "utility.h"
 
@@ -280,32 +280,38 @@ namespace rocsparse
                                                   rocsparse_format    format,
                                                   Ts&&... ts)
     {
-#define DISPATCH_COMPUTE_TYPE(ITYPE, JTYPE, CTYPE)                                             \
-    switch(CTYPE)                                                                              \
-    {                                                                                          \
-    case rocsparse_datatype_f32_r:                                                             \
-    {                                                                                          \
-        return rocsparse::check_spmat_template<ITYPE, JTYPE, float>(ts...);                    \
-    }                                                                                          \
-    case rocsparse_datatype_f64_r:                                                             \
-    {                                                                                          \
-        return rocsparse::check_spmat_template<ITYPE, JTYPE, double>(ts...);                   \
-    }                                                                                          \
-    case rocsparse_datatype_f32_c:                                                             \
-    {                                                                                          \
-        return rocsparse::check_spmat_template<ITYPE, JTYPE, rocsparse_float_complex>(ts...);  \
-    }                                                                                          \
-    case rocsparse_datatype_f64_c:                                                             \
-    {                                                                                          \
-        return rocsparse::check_spmat_template<ITYPE, JTYPE, rocsparse_double_complex>(ts...); \
-    }                                                                                          \
-    case rocsparse_datatype_i8_r:                                                              \
-    case rocsparse_datatype_u8_r:                                                              \
-    case rocsparse_datatype_i32_r:                                                             \
-    case rocsparse_datatype_u32_r:                                                             \
-    {                                                                                          \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);                           \
-    }                                                                                          \
+#define DISPATCH_COMPUTE_TYPE(ITYPE, JTYPE, CTYPE)                                                 \
+    switch(CTYPE)                                                                                  \
+    {                                                                                              \
+    case rocsparse_datatype_f32_r:                                                                 \
+    {                                                                                              \
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::check_spmat_template<ITYPE, JTYPE, float>(ts...)));  \
+        return rocsparse_status_success;                                                           \
+    }                                                                                              \
+    case rocsparse_datatype_f64_r:                                                                 \
+    {                                                                                              \
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::check_spmat_template<ITYPE, JTYPE, double>(ts...))); \
+        return rocsparse_status_success;                                                           \
+    }                                                                                              \
+    case rocsparse_datatype_f32_c:                                                                 \
+    {                                                                                              \
+        RETURN_IF_ROCSPARSE_ERROR(                                                                 \
+            (rocsparse::check_spmat_template<ITYPE, JTYPE, rocsparse_float_complex>(ts...)));      \
+        return rocsparse_status_success;                                                           \
+    }                                                                                              \
+    case rocsparse_datatype_f64_c:                                                                 \
+    {                                                                                              \
+        RETURN_IF_ROCSPARSE_ERROR(                                                                 \
+            (rocsparse::check_spmat_template<ITYPE, JTYPE, rocsparse_double_complex>(ts...)));     \
+        return rocsparse_status_success;                                                           \
+    }                                                                                              \
+    case rocsparse_datatype_i8_r:                                                                  \
+    case rocsparse_datatype_u8_r:                                                                  \
+    case rocsparse_datatype_i32_r:                                                                 \
+    case rocsparse_datatype_u32_r:                                                                 \
+    {                                                                                              \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);                               \
+    }                                                                                              \
     }
 
         switch(itype)

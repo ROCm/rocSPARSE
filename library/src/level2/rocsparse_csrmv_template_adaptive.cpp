@@ -23,12 +23,13 @@
  * ************************************************************************ */
 
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_csrmv.hpp"
 #include "utility.h"
 
 #include "csrmv_device.h"
 #include "csrmv_symm_device.h"
+#include <vector>
 
 #define BLOCK_SIZE 1024
 #define BLOCK_MULTIPLIER 3

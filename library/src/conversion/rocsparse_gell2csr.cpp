@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_gell2csr.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "handle.h"
 #include "rocsparse_ell2csr.hpp"
 

@@ -51,7 +51,7 @@ namespace rocsparse
                                  rocsparse_storage_mode storage,
                                  rocsparse_data_status* data_status)
     {
-        int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
         if(gid >= nnz)
         {
@@ -59,8 +59,8 @@ namespace rocsparse
         }
 
         // Check actual COO arrays for valid data
-        I row = coo_row_ind[gid] - idx_base;
-        I col = coo_col_ind[gid] - idx_base;
+        const I row = coo_row_ind[gid] - idx_base;
+        const I col = coo_col_ind[gid] - idx_base;
 
         if(row < 0 || row >= m)
         {
@@ -75,7 +75,7 @@ namespace rocsparse
         }
 
         // check if values are inf or nan
-        T val = coo_val[gid];
+        const T val = coo_val[gid];
         if(rocsparse_is_inf(val))
         {
             record_data_status(data_status, rocsparse_data_status_inf);
@@ -114,11 +114,11 @@ namespace rocsparse
         {
             if(gid < nnz - 1)
             {
-                I next_row = coo_row_ind[gid + 1] - idx_base;
+                const I next_row = coo_row_ind[gid + 1] - idx_base;
 
                 if(row == next_row)
                 {
-                    I next_col = coo_col_ind[gid + 1] - idx_base;
+                    const I next_col = coo_col_ind[gid + 1] - idx_base;
 
                     if(col > next_col && (next_col >= 0 && next_col < n))
                     {

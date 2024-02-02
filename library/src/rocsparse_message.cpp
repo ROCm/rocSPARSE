@@ -1,7 +1,7 @@
 /*! \file */
 
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,10 @@
  *
  * ************************************************************************ */
 
+#include "control.h"
 #include "debug.h"
-#include "definitions.h"
 #include "envariables.h"
+#include "to_string.hpp"
 #include <map>
 
 void rocsparse_message(const char* msg_, const char* function_, const char* file_, int line_)
@@ -61,7 +62,7 @@ void rocsparse_error_message(
                   << "//                            \"line\"    : \"" << line_ << "\"," << std::endl
                   << "//                            \"file\"    : \"" << file_ << "\"," << std::endl
                   << "//                            \"status\"  : \""
-                  << rocsparse_status2string(status_) << "\"," << std::endl
+                  << rocsparse::to_string(status_) << "\"," << std::endl
                   << "//                            \"msg\"     : \"" << msg_ << "\" }"
                   << std::endl;
     }

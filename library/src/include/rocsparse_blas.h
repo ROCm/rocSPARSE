@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,8 @@ typedef enum rocsparse_blas_impl_
     rocsparse_blas_impl_default,
     rocsparse_blas_impl_rocblas
 } rocsparse_blas_impl;
+
+const char* to_string(rocsparse_blas_impl value);
 
 typedef struct _rocsparse_blas_rocblas_handle* rocsparse_blas_rocblas_handle;
 

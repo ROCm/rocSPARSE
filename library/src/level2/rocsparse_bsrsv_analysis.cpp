@@ -25,7 +25,7 @@
 #include "internal/level2/rocsparse_bsrsv.h"
 #include "rocsparse_bsrsv.hpp"
 
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 #include "../level2/rocsparse_csrsv.hpp"

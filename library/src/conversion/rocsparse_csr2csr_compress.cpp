@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include "internal/conversion/rocsparse_csr2csr_compress.h"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_csr2csr_compress.hpp"
 #include "utility.h"
 

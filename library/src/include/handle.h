@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,6 @@
 #include "rocsparse_blas.h"
 #include <fstream>
 #include <hip/hip_runtime_api.h>
-#include <iostream>
-#include <vector>
 
 /*! \brief typedefs to opaque info structs */
 typedef struct _rocsparse_trm_info*     rocsparse_trm_info;

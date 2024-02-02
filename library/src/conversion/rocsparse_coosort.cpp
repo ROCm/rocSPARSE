@@ -27,8 +27,8 @@
 
 #include "utility.h"
 
+#include "control.h"
 #include "coosort_device.h"
-#include "definitions.h"
 #include "rocsparse_coosort.hpp"
 #include "rocsparse_identity.hpp"
 #include <rocprim/rocprim.hpp>

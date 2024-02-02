@@ -24,7 +24,6 @@
 # rocSPARSE source
 set(rocsparse_source
   src/handle.cpp
-  src/status.cpp
   src/rocsparse_auxiliary.cpp
   src/rocsparse_blas.cpp
   src/rocsparse_blas_rocblas.cpp
@@ -34,6 +33,8 @@ set(rocsparse_source
   src/rocsparse_debug.cpp
   src/rocsparse_argdescr.cpp
   src/rocsparse_message.cpp
+  ##
+  src/to_string.cpp
 
 # Level1
   src/level1/rocsparse_axpyi.cpp

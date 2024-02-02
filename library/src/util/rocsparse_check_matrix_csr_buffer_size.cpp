@@ -23,55 +23,13 @@
  * ************************************************************************ */
 #include "internal/util/rocsparse_check_matrix_csr.h"
 
-#include "definitions.h"
 #include "rocsparse_check_matrix_csr.hpp"
+#include "to_string.hpp"
 #include "utility.h"
 
 #include "check_matrix_csr_device.h"
 
 #include <rocprim/rocprim.hpp>
-
-namespace rocsparse
-{
-    std::string matrixtype2string(rocsparse_matrix_type type)
-    {
-        switch(type)
-        {
-        case rocsparse_matrix_type_general:
-            return "general";
-        case rocsparse_matrix_type_symmetric:
-            return "symmetric";
-        case rocsparse_matrix_type_hermitian:
-            return "hermitian";
-        case rocsparse_matrix_type_triangular:
-            return "triangular";
-        }
-        return "invalid";
-    }
-
-    const char* datastatus2string(rocsparse_data_status data_status)
-    {
-        switch(data_status)
-        {
-        case rocsparse_data_status_success:
-            return "No errors in data detected";
-        case rocsparse_data_status_inf:
-            return "An inf value was found in the values array.";
-        case rocsparse_data_status_nan:
-            return "An nan value was found in the values array.";
-        case rocsparse_data_status_invalid_offset_ptr:
-            return "An invalid offset pointer was detected.";
-        case rocsparse_data_status_invalid_index:
-            return "An invalid index was detected.";
-        case rocsparse_data_status_duplicate_entry:
-            return "A duplicate entry was detected.";
-        case rocsparse_data_status_invalid_sorting:
-            return "Sorting mode was detected to be invalid.";
-        case rocsparse_data_status_invalid_fill:
-            return "Fill mode was detected to be invalid.";
-        }
-    }
-}
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse::check_matrix_csr_buffer_size_core(rocsparse_handle       handle,
@@ -174,8 +132,8 @@ rocsparse_status
         if(m != n)
         {
             log_debug(handle,
-                      ("Matrix was specified to be " + rocsparse::matrixtype2string(matrix_type)
-                       + " but m != n"));
+                      ("Matrix was specified to be "
+                       + std::string(rocsparse::to_string(matrix_type)) + " but m != n"));
         }
     }
     ROCSPARSE_CHECKARG(2,

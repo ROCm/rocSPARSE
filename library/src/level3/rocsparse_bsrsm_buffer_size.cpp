@@ -22,7 +22,7 @@
  *
  * ************************************************************************ */
 
-#include "definitions.h"
+#include "control.h"
 #include "internal/level3/rocsparse_bsrsm.h"
 #include "rocsparse_bsrsm.hpp"
 #include "utility.h"

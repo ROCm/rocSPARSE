@@ -24,7 +24,7 @@
 
 #include "internal/extra/rocsparse_csrgeam.h"
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_csrgeam.hpp"
 #include "utility.h"
 

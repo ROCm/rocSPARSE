@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,7 +81,7 @@ inline void open_log_stream(std::ostream** log_os,
 
 /**
  * @brief Invoke functor for each argument in variadic parameter pack.
- * @detail
+ * @details
  * The variatic template function each_args applies the functor f
  * to each argument in the expansion of the parameter pack xs...
 

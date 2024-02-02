@@ -22,15 +22,10 @@
  *
  * ************************************************************************ */
 #include "internal/util/rocsparse_check_matrix_csc.h"
-#include "definitions.h"
 #include "rocsparse_check_matrix_csc.hpp"
 #include "rocsparse_check_matrix_csr.hpp"
+#include "to_string.hpp"
 #include "utility.h"
-
-namespace rocsparse
-{
-    std::string matrixtype2string(rocsparse_matrix_type type);
-}
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse::check_matrix_csc_core(rocsparse_handle       handle,
@@ -119,8 +114,8 @@ rocsparse_status rocsparse::check_matrix_csc_checkarg(rocsparse_handle       han
         if(m != n)
         {
             log_debug(handle,
-                      ("Matrix was specified to be " + rocsparse::matrixtype2string(matrix_type)
-                       + " but m != n"));
+                      ("Matrix was specified to be "
+                       + std::string(rocsparse::to_string(matrix_type)) + " but m != n"));
         }
     }
     ROCSPARSE_CHECKARG(2,
