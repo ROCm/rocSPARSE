@@ -24,7 +24,7 @@
 
 #include "rocsparse_cscmm.hpp"
 
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 template <typename T, typename I, typename J, typename A>

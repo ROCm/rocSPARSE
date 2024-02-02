@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  *
  * ************************************************************************ */
 #include "rocsparse_blas_rocblas.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "handle.h"
 
 #ifdef ROCSPARSE_WITH_ROCBLAS

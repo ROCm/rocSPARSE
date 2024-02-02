@@ -27,7 +27,7 @@
 #include "../conversion/rocsparse_csr2coo.hpp"
 #include "rocsparse_csrmm.hpp"
 
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 namespace rocsparse

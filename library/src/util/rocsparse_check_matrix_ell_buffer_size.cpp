@@ -23,16 +23,10 @@
  * ************************************************************************ */
 #include "internal/util/rocsparse_check_matrix_ell.h"
 
-#include "definitions.h"
 #include "rocsparse_check_matrix_ell.hpp"
 #include "utility.h"
 
 #include "check_matrix_ell_device.h"
-
-namespace rocsparse
-{
-    const char* datastatus2string(rocsparse_data_status data_status);
-}
 
 template <typename T, typename I>
 rocsparse_status rocsparse::check_matrix_ell_buffer_size_core(rocsparse_handle       handle,

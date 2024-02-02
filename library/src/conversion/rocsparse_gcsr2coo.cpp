@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_gcsr2coo.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_convert_array.hpp"
 #include "rocsparse_csr2coo.hpp"
 

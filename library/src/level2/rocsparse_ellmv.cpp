@@ -25,7 +25,7 @@
 #include "internal/level2/rocsparse_ellmv.h"
 #include "rocsparse_ellmv.hpp"
 
-#include "definitions.h"
+#include "control.h"
 #include "ellmv_device.h"
 #include "utility.h"
 

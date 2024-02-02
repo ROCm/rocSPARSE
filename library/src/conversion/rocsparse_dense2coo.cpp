@@ -21,7 +21,7 @@
 * THE SOFTWARE.
 *
 * ************************************************************************ */
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 #include "internal/conversion/rocsparse_dense2coo.h"

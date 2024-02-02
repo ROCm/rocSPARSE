@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_gcoosort.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_coosort.hpp"
 
 rocsparse_status rocsparse::gcoosort_buffer_size(rocsparse_handle    handle_,

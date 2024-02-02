@@ -28,8 +28,8 @@
 #include "../conversion/rocsparse_csr2coo.hpp"
 #include "../conversion/rocsparse_identity.hpp"
 #include "../level1/rocsparse_gthr.hpp"
+#include "control.h"
 #include "csrsv_device.h"
-#include "definitions.h"
 #include "utility.h"
 #include <rocprim/rocprim.hpp>
 

@@ -24,7 +24,7 @@
 
 #include "rocsparse_coo2dense_aos.hpp"
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 #include "coo2dense_device.h"

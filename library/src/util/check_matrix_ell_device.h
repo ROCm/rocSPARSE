@@ -50,7 +50,7 @@ namespace rocsparse
                                  rocsparse_storage_mode storage,
                                  rocsparse_data_status* data_status)
     {
-        I row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const I row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
         if(row >= m)
         {
@@ -59,7 +59,7 @@ namespace rocsparse
 
         for(I j = 0; j < ell_width; j++)
         {
-            I col = ell_col_ind[m * j + row] - idx_base;
+            const I col = ell_col_ind[m * j + row] - idx_base;
 
             if(ell_col_ind[m * j + row] == -1)
             {
@@ -73,7 +73,7 @@ namespace rocsparse
                 return;
             }
 
-            T val = ell_val[m * j + row];
+            const T val = ell_val[m * j + row];
             if(rocsparse_is_inf(val))
             {
                 record_data_status(data_status, rocsparse_data_status_inf);
@@ -90,7 +90,7 @@ namespace rocsparse
             {
                 if(j > 0)
                 {
-                    I prev_col = ell_col_ind[m * (j - 1) + row] - idx_base;
+                    const I prev_col = ell_col_ind[m * (j - 1) + row] - idx_base;
                     if(prev_col >= col)
                     {
                         record_data_status(data_status, rocsparse_data_status_invalid_sorting);

@@ -22,16 +22,11 @@
  *
  * ************************************************************************ */
 #include "internal/util/rocsparse_check_matrix_ell.h"
-#include "definitions.h"
 #include "rocsparse_check_matrix_ell.hpp"
+#include "to_string.hpp"
 #include "utility.h"
 
 #include "check_matrix_ell_device.h"
-
-namespace rocsparse
-{
-    const char* datastatus2string(rocsparse_data_status data_status);
-}
 
 template <typename T, typename I>
 rocsparse_status rocsparse::check_matrix_ell_core(rocsparse_handle       handle,
@@ -84,7 +79,7 @@ rocsparse_status rocsparse::check_matrix_ell_core(rocsparse_handle       handle,
 
     if(*data_status != rocsparse_data_status_success)
     {
-        log_debug(handle, rocsparse::datastatus2string(*data_status));
+        log_debug(handle, rocsparse::to_string(*data_status));
     }
 
     return rocsparse_status_success;

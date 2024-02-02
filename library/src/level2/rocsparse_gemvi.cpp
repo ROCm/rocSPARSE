@@ -25,7 +25,7 @@
 #include "internal/level2/rocsparse_gemvi.h"
 #include "rocsparse_gemvi.hpp"
 
-#include "definitions.h"
+#include "control.h"
 #include "gemvi_device.h"
 #include "utility.h"
 

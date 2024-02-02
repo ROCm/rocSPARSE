@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include "internal/conversion/rocsparse_gebsr2gebsr.h"
-#include "definitions.h"
+#include "control.h"
 #include "internal/conversion/rocsparse_coo2csr.h"
 #include "internal/conversion/rocsparse_csr2gebsr.h"
 #include "rocsparse_gebsr2gebsr.hpp"

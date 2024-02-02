@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,26 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "definitions.h"
+#include "control.h"
 #include "handle.h"
 #include "rocsparse_blas_rocblas.hpp"
 #include "utility.h"
+
+const char* to_string(rocsparse_blas_impl value)
+{
+
+#define CASE(C) \
+    case C:     \
+        return #C
+    switch(value)
+    {
+        CASE(rocsparse_blas_impl_none);
+        CASE(rocsparse_blas_impl_default);
+        CASE(rocsparse_blas_impl_rocblas);
+    }
+    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+#undef case
+};
 
 rocsparse_status rocsparse_blas_create_handle(rocsparse_blas_handle* pblas_handle,
                                               rocsparse_blas_impl    blas_impl)

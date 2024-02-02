@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "internal/generic/rocsparse_spitsv.h"
-#include "definitions.h"
+#include "control.h"
 #include "handle.h"
 #include "rocsparse_csritsv.hpp"
 #include "utility.h"

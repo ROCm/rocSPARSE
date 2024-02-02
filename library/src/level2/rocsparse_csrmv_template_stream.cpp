@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_csrmv.hpp"
 #include "utility.h"
 

@@ -24,7 +24,7 @@
 
 #include "internal/level2/rocsparse_coomv.h"
 #include "../conversion/rocsparse_coo2csr.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_coomv.hpp"
 #include "utility.h"
 

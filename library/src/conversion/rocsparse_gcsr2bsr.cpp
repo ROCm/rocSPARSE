@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_gcsr2bsr.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "handle.h"
 #include "rocsparse_csr2bsr.hpp"
 

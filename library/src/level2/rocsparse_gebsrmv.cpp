@@ -26,7 +26,7 @@
 #include "rocsparse_csrmv.hpp"
 #include "rocsparse_gebsrmv.hpp"
 
-#include "definitions.h"
+#include "control.h"
 #include "gebsrmv_device.h"
 #include "handle.h"
 #include "utility.h"

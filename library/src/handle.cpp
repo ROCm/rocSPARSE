@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "handle.h"
-#include "definitions.h"
+#include "control.h"
 #include "logging.h"
 #include "utility.h"
 
@@ -978,4 +978,43 @@ std::string rocsparse_handle_get_arch_name(rocsparse_handle handle)
 std::string rocsparse_handle_get_xnack_mode(rocsparse_handle handle)
 {
     return XnackMode<hipDeviceProp_t>{}(handle->properties);
+}
+
+/*******************************************************************************
+ * \brief convert hipError_t to rocsparse_status
+ * TODO - enumerate library calls to hip runtime, enumerate possible errors from
+ * those calls
+ ******************************************************************************/
+rocsparse_status get_rocsparse_status_for_hip_status(hipError_t status)
+{
+    switch(status)
+    {
+    // success
+    case hipSuccess:
+        return rocsparse_status_success;
+
+    // internal hip memory allocation
+    case hipErrorMemoryAllocation:
+    case hipErrorLaunchOutOfResources:
+        return rocsparse_status_memory_error;
+
+    // user-allocated hip memory
+    case hipErrorInvalidDevicePointer: // hip memory
+        return rocsparse_status_invalid_pointer;
+
+    // user-allocated device, stream, event
+    case hipErrorInvalidDevice:
+    case hipErrorInvalidResourceHandle:
+        return rocsparse_status_invalid_handle;
+
+    // library using hip incorrectly
+    case hipErrorInvalidValue:
+        return rocsparse_status_internal_error;
+
+    // hip runtime failing
+    case hipErrorNoDevice: // no hip devices
+    case hipErrorUnknown:
+    default:
+        return rocsparse_status_internal_error;
+    }
 }

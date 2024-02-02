@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include "internal/conversion/rocsparse_prune_csr2csr.h"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_nnz_compress.hpp"
 #include "rocsparse_prune_csr2csr.hpp"
 #include "utility.h"

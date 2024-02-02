@@ -25,7 +25,7 @@
 #include "rocsparse_cscmv.hpp"
 #include "rocsparse_csrmv.hpp"
 
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 template <typename I, typename J, typename A>

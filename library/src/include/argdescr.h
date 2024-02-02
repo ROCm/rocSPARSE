@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,12 @@
 #pragma once
 
 #include "debug.h"
-#include "envariables.h"
-#include "status.h"
-#include <iostream>
 
 ///
 /// @brief Log in argument error description.
 /// @param function_file_ name of the file this routine is called from.
 /// @param function_name_ name of the routine this routine is called from.
+/// @param function_line_ line of the file this routine is called from.
 /// @param arg_name_ name of the argument of the routine this routine is called from.
 /// @param arg_index_ index of the argument of the routine this routine is called from.
 /// @param status_  returned status of the routine this routine is called from.

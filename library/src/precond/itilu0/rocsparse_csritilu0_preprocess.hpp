@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 #ifndef ROCSPARSE_CSRITILU0_PREPROCESS_HPP
 #define ROCSPARSE_CSRITILU0_PREPROCESS_HPP
 
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 template <typename I, typename J>

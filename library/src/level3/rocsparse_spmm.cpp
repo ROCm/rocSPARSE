@@ -21,7 +21,7 @@
  *
  * ************************************************************************ */
 
-#include "definitions.h"
+#include "control.h"
 #include "handle.h"
 #include "rocsparse.h"
 #include "utility.h"

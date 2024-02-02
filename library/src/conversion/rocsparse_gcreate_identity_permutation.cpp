@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_gcreate_identity_permutation.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_identity.hpp"
 #include "utility.h"
 

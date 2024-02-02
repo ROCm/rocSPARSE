@@ -22,19 +22,13 @@
  *
  * ************************************************************************ */
 #include "internal/util/rocsparse_check_matrix_gebsr.h"
-#include "definitions.h"
 #include "rocsparse_check_matrix_gebsr.hpp"
+#include "to_string.hpp"
 #include "utility.h"
 
 #include <rocprim/rocprim.hpp>
 
 #include "check_matrix_gebsr_device.h"
-
-namespace rocsparse
-{
-    const char* datastatus2string(rocsparse_data_status data_status);
-    std::string matrixtype2string(rocsparse_matrix_type type);
-}
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handle,
@@ -97,7 +91,7 @@ rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handl
 
     if(*data_status != rocsparse_data_status_success)
     {
-        log_debug(handle, rocsparse::datastatus2string(*data_status));
+        log_debug(handle, rocsparse::to_string(*data_status));
 
         return rocsparse_status_success;
     }
@@ -262,7 +256,7 @@ rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handl
 
     if(*data_status != rocsparse_data_status_success)
     {
-        log_debug(handle, rocsparse::datastatus2string(*data_status));
+        log_debug(handle, rocsparse::to_string(*data_status));
     }
 
     return rocsparse_status_success;
@@ -338,7 +332,8 @@ rocsparse_status rocsparse::check_matrix_gebsr_checkarg(rocsparse_handle       h
         if(row_block_dim != col_block_dim || mb != nb)
         {
             log_debug(handle,
-                      ("Matrix was specified to be " + rocsparse::matrixtype2string(matrix_type)
+                      ("Matrix was specified to be "
+                       + std::string(rocsparse::to_string(matrix_type))
                        + " but (row_block_dim != col_block_dim || mb != nb)"));
         }
     }

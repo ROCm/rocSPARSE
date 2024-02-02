@@ -24,7 +24,7 @@
 
 #include "internal/level2/rocsparse_csrmv.h"
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 #include "rocsparse_csrmv.hpp"

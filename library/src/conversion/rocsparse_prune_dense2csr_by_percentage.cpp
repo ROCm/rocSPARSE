@@ -23,7 +23,7 @@
 * ************************************************************************ */
 
 #include "internal/conversion/rocsparse_prune_dense2csr_by_percentage.h"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_prune_dense2csr_by_percentage.hpp"
 #include "utility.h"
 

@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_bellmm.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "utility.h"
 
 namespace rocsparse

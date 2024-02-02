@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "internal/generic/rocsparse_dense_to_sparse.h"
-#include "definitions.h"
+#include "control.h"
 #include "handle.h"
 #include "utility.h"
 

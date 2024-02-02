@@ -23,7 +23,7 @@
  * ************************************************************************ */
 #include "internal/util/rocsparse_check_matrix_hyb.h"
 
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_check_matrix_coo.hpp"
 #include "rocsparse_check_matrix_ell.hpp"
 #include "utility.h"

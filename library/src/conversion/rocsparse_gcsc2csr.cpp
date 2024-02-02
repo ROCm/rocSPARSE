@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_gcsc2csr.hpp"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_csr2csc.hpp"
 #include "utility.h"
 

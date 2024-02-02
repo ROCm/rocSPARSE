@@ -24,8 +24,8 @@
 
 #include "internal/extra/rocsparse_csrgemm.h"
 #include "../conversion/rocsparse_identity.hpp"
+#include "control.h"
 #include "csrgemm_device.h"
-#include "definitions.h"
 #include "rocsparse_csrgemm.hpp"
 #include "rocsparse_csrgemm_mult.hpp"
 #include "rocsparse_csrgemm_multadd.hpp"

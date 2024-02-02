@@ -22,7 +22,7 @@
  *
  * ************************************************************************ */
 #include "common.h"
-#include "definitions.h"
+#include "control.h"
 #include "rocsparse_csxsldu.hpp"
 #include "utility.h"
 #include <rocprim/rocprim.hpp>

@@ -22,8 +22,8 @@
  *
  * ************************************************************************ */
 
+#include "control.h"
 #include "csrgemm_device.h"
-#include "definitions.h"
 #include "rocsparse_csrgemm_nnz_calc.hpp"
 #include "rocsparse_csrgemm_scal.hpp"
 #include "utility.h"
