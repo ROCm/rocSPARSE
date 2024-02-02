@@ -1,5 +1,12 @@
+.. meta::
+  :description: rocSPARSE documentation and API reference library
+  :keywords: rocSPARSE, ROCm, API, documentation
+
+.. _rocsparse_generic_functions_:
+
+********************************************************************
 Sparse Generic Functions
-========================
+********************************************************************
 
 This module holds all sparse generic routines.
 

@@ -1,7 +1,7 @@
 .. _api:
 
-Exported Sparse Functions
-=========================
+Exported rocSPARSE Functions
+============================
 
 Auxiliary Functions
 -------------------

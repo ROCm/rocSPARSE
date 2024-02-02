@@ -1,7 +1,12 @@
+.. meta::
+  :description: rocSPARSE documentation and API reference library
+  :keywords: rocSPARSE, ROCm, API, documentation
+
 .. _rocsparse_auxiliary_functions_:
 
+********************************************************************
 Sparse Auxiliary Functions
-==========================
+********************************************************************
 
 This module holds all sparse auxiliary functions.
 
