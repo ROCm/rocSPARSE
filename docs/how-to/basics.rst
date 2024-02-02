@@ -2,7 +2,7 @@
   :description: rocSPARSE documentation and API reference library
   :keywords: rocSPARSE, ROCm, API, documentation
 
-.. _rocsparse-docs:
+.. _rocsparse_docs:
 
 ********************************************************************
 rocSPARSE User Guide
@@ -12,7 +12,7 @@ HIP Device Management
 =====================
 Before starting a HIP kernel you can call :cpp:func:`hipSetDevice` to set the device to run the kernel on, for example device 2. Unless you explicitly specify a different device HIP kernels always run on device 0. This is a HIP (and CUDA) device management approach and is not specific to the rocSPARSE library. rocSPARSE honors this approach and assumes you have set the preferred device before a rocSPARSE routine call.
 
-Once you set the device, you can create a handle with :ref:`rocsparse_create_handle_`. Subsequent rocSPARSE routines take this handle as an input parameter. rocSPARSE ONLY queries (by :cpp:func:`hipGetDevice`) the user's device; rocSPARSE does NOT set the device for users. If rocSPARSE does not see a valid device, it returns an error message. It is your responsibility to provide a valid device to rocSPARSE and ensure the device safety. 
+Once you set the device, you can create a handle with :ref:`rocsparse_create_handle_`. Subsequent rocSPARSE routines take this handle as an input parameter. rocSPARSE ONLY queries (by :cpp:func:`hipGetDevice`) the user's device; rocSPARSE does NOT set the device for users. If rocSPARSE does not see a valid device, it returns an error message. It is your responsibility to provide a valid device to rocSPARSE and ensure the device safety.
 
 The handle should be destroyed at the end using :ref:`rocsparse_destroy_handle_` to release the resources consumed by the rocSPARSE library. You CANNOT switch devices between :ref:`rocsparse_create_handle_` and :ref:`rocsparse_destroy_handle_`. If you want to change the device, you must destroy the current handle and create another rocSPARSE handle on a new device.
 
@@ -23,7 +23,7 @@ The handle should be destroyed at the end using :ref:`rocsparse_destroy_handle_`
 
 HIP Stream Management
 =====================
-HIP kernels are always launched in a queue (also known as a stream). If you do not explicitly specify a stream, the system provides and maintains a default stream. You cannot create or destroy the default stream. However, you can freely create new streams (with :cpp:func:`hipStreamCreate`) and bind it to a rocSPARSE handle using :ref:`rocsparse_set_stream_`. HIP kernels are invoked in rocSPARSE routines. The rocSPARSE handle is always associated with a stream, and rocSPARSE passes its stream to the kernels inside the routine. One rocSPARSE routine only takes one stream in a single invocation. If you create a stream, you are responsible for destroying it. Refer to `HIP Runtime API - Stream Management <https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/group___stream.html>`_ for more information. 
+HIP kernels are always launched in a queue (also known as a stream). If you do not explicitly specify a stream, the system provides and maintains a default stream. You cannot create or destroy the default stream. However, you can freely create new streams (with :cpp:func:`hipStreamCreate`) and bind it to a rocSPARSE handle using :ref:`rocsparse_set_stream_`. HIP kernels are invoked in rocSPARSE routines. The rocSPARSE handle is always associated with a stream, and rocSPARSE passes its stream to the kernels inside the routine. One rocSPARSE routine only takes one stream in a single invocation. If you create a stream, you are responsible for destroying it. Refer to `HIP Runtime API - Stream Management <https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/group___stream.html>`_ for more information.
 
 Asynchronous Execution
 ======================
@@ -35,7 +35,7 @@ If a system has multiple HIP devices, you can run multiple rocSPARSE handles con
 
 Storage Formats
 ===============
-The following describes supported matrix storage formats.  
+The following describes supported matrix storage formats.
 
 .. note::
     The different storage formats support indexing from a base of 0 or 1 as described in :ref:`index_base`.
@@ -395,9 +395,9 @@ Similarly to vector and matrix results, the scalar result is only available when
 
 hipSPARSE
 ---------
-hipSPARSE is a SPARSE marshalling library, with multiple supported backends. It sits between the application and a `worker` 
-SPARSE library, marshalling inputs into the backend library and marshalling results back to the application. hipSPARSE exports 
-an interface that does not require the client to change, regardless of the chosen backend. 
+hipSPARSE is a SPARSE marshalling library, with multiple supported backends. It sits between the application and a `worker`
+SPARSE library, marshalling inputs into the backend library and marshalling results back to the application. hipSPARSE exports
+an interface that does not require the client to change, regardless of the chosen backend.
 hipSPARSE supports rocSPARSE and cuSPARSE as backends.
 
 hipSPARSE focuses on convenience and portability.

@@ -2,7 +2,7 @@
   :description: rocSPARSE documentation and API reference library
   :keywords: rocSPARSE, ROCm, API, documentation
 
-.. _rocsparse-logging:
+.. _rocsparse_logging:
 
 ********************************************************************
 Activity Logging
@@ -29,11 +29,11 @@ When logging is enabled, each rocSPARSE function call will write the function na
 
     Performance will degrade when logging is enabled. By default, the environment variable ``ROCSPARSE_LAYER`` is unset and logging is disabled.
 
-To capture activity logging in a file set the following environment variables as needed: 
+To capture activity logging in a file set the following environment variables as needed:
 
   * ``ROCSPARSE_LOG_TRACE_PATH`` specifies a path and file name to capture trace logging streamed to that file
-  * ``ROCSPARSE_LOG_BENCH_PATH`` specifies a path and file name to capture bench logging 
-  * ``ROCSPARSE_LOG_DEBUG_PATH`` specifies a path and file name to capture debug logging 
+  * ``ROCSPARSE_LOG_BENCH_PATH`` specifies a path and file name to capture bench logging
+  * ``ROCSPARSE_LOG_DEBUG_PATH`` specifies a path and file name to capture debug logging
 
 .. note::
 
