@@ -77,7 +77,7 @@ Further details are given in :ref:`rocsparse_clients`.
 Sparse Linear Algebra Subroutines
 ---------------------------------
 
-Each sparse linear algebra subroutine is implemented in a set of source files in the 
+Each sparse linear algebra subroutine is implemented in a set of source files in the
 corresponding directory: ``rocsparse_<subroutine>.cpp``, ``rocsparse_<subroutine>.hpp`` and ``<subroutine>_device.h``,
 where <subroutine> indicates any of the rocSPARSE library functions.
 
@@ -85,7 +85,7 @@ where <subroutine> indicates any of the rocSPARSE library functions.
 Furthermore, ``rocsparse_<subroutine>.hpp`` implements the API functionality, using the precision as template parameter.
 Finally, ``<subroutine>_device.h`` implements the device code, required for the computation of the subroutine.
 
-.. note:: 
+.. note::
     Each API exposed subroutine is expected to return a :cpp:type:`rocsparse_status`.
     Additionally, each device function is expected to use a specified stream which is accessible through the libraries handle.
 
@@ -386,7 +386,7 @@ Unit Tests
 ----------
 
 Multiple unit tests are available to test for bad arguments, invalid parameters and sparse routine functionality.
-The unit tests are based on `googletest <https://github.com/google/googletest>`_.
+The unit tests are based on `GoogleTest <https://github.com/google/googletest>`_.
 The tests cover all routines that are exposed by the API, including all available floating-point precision.
 
 Benchmarks
