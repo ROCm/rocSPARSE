@@ -1,19 +1,24 @@
-===================================
-Installation and Building for Linux
-===================================
+.. meta::
+  :description: rocSPARSE documentation and API reference library
+  :keywords: rocSPARSE, ROCm, API, documentation
 
--------------
+.. _linux-install:
+
+********************************************************************
+Installation and building for Linux
+********************************************************************
+
 Prerequisites
--------------
+=============
 
 - A ROCm enabled platform. `ROCm Documentation <https://docs.amd.com/>`_ has more information on
   supported GPUs, Linux distributions, and Windows SKUs. It also has information on how to install ROCm.
 
------------------------------
-Installing pre-built packages
------------------------------
 
-For detailed instructions on how to set up ROCm on different platforms, see the `ROCm Documentation <https://rocm.docs.amd.com/en/latest/index.html>`_.
+Installing pre-built packages
+=============================
+
+For detailed instructions on how to set up ROCm on different platforms, see the `ROCm Documentation <https://docs.amd.com/>`_.
 
 rocSPARSE can be installed on e.g. Ubuntu using
 
@@ -25,14 +30,15 @@ rocSPARSE can be installed on e.g. Ubuntu using
 Once installed, rocSPARSE can be used just like any other library with a C API.
 The header file will need to be included in the user code in order to make calls into rocSPARSE, and the rocSPARSE shared library will become link-time and run-time dependent for the user application.
 
-------------------------------
+
 Building rocSPARSE from source
-------------------------------
+==============================
+
 Building from source is not necessary, as rocSPARSE can be used after installing the pre-built packages as described above.
 If desired, the following instructions can be used to build rocSPARSE from source.
 
 Requirements
-^^^^^^^^^^^^
+------------
 
 - `git <https://git-scm.com/>`_
 - `CMake <https://cmake.org/>`_ 3.5 or later
@@ -41,7 +47,7 @@ Requirements
 - `googletest <https://github.com/google/googletest>`_ (optional, for clients)
 
 Download rocSPARSE
-^^^^^^^^^^^^^^^^^^
+-------------------
 The rocSPARSE source code is available at the `rocSPARSE GitHub page <https://github.com/ROCm/rocSPARSE>`_.
 Download the master branch using:
 
@@ -51,11 +57,11 @@ Download the master branch using:
   $ cd rocSPARSE
 
 Below are steps to build different packages of the library, including dependencies and clients.
-It is recommended to install rocSPARSE using the `install.sh` script.
+It is recommended to install rocSPARSE using the ``install.sh`` script.
 
-Using `install.sh` to build rocSPARSE with dependencies
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The following table lists common uses of `install.sh` to build dependencies + library.
+Using ``install.sh`` to build rocSPARSE with dependencies
+----------------------------------------------------------
+The following table lists common uses of ``install.sh`` to build dependencies + library.
 
 .. tabularcolumns::
       |\X{1}{6}|\X{5}{6}|
@@ -70,9 +76,9 @@ Command                     Description
 `./install.sh -i -a gfx908` Build library specifically for architecture gfx908, then build and install rocSPARSE package in `/opt/rocm/rocsparse`. You will be prompted for sudo access. This will install for all users.
 =========================== ====
 
-Using `install.sh` to build rocSPARSE with dependencies and clients
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The client contains example code, unit tests and benchmarks. Common uses of `install.sh` to build them are listed in the table below.
+Using ``install.sh`` to build rocSPARSE with dependencies and clients
+----------------------------------------------------------------------
+The client contains example code, unit tests and benchmarks. Common uses of ``install.sh`` to build them are listed in the table below.
 
 .. tabularcolumns::
       |\X{1}{6}|\X{5}{6}|
@@ -90,7 +96,7 @@ Command                       Description
 ============================= ====
 
 Using individual commands to build rocSPARSE
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------------
 CMake 3.5 or later is required in order to build rocSPARSE.
 The rocSPARSE library contains both, host and device code, therefore the HIP compiler must be specified during cmake configuration process.
 
@@ -136,13 +142,13 @@ rocSPARSE with dependencies and clients can be built using the following command
   $ make install
 
 Common build problems
-^^^^^^^^^^^^^^^^^^^^^
+=====================
 #. **Issue:** Could not find a package configuration file provided by "ROCM" with any of the following names: ROCMConfig.cmake, rocm-config.cmake
 
    **Solution:** Install `ROCm cmake modules <https://github.com/ROCm/rocm-cmake>`_
 
 Simple Test
-^^^^^^^^^^^
+-----------
 You can test the installation by running one of the rocSPARSE examples, after successfully compiling the library with clients.
 
 ::
@@ -153,9 +159,9 @@ You can test the installation by running one of the rocSPARSE examples, after su
    # Execute rocSPARSE example
    $ ./example_csrmv 1000
 
------------------
+
 Supported Targets
------------------
+=================
 Currently, rocSPARSE is supported under the following operating systems
 
 - `Ubuntu 16.04 <https://ubuntu.com/>`_

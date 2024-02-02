@@ -1,87 +1,38 @@
+.. meta::
+  :description: rocSPARSE documentation and API reference library
+  :keywords: rocSPARSE, ROCm, API, documentation
+
 .. _design:
 
 ********************
 Design Documentation
 ********************
 
-Design and Philosophy
-=====================
+This document is intended for advanced developers that want to understand, modify or extend the functionality of the rocSPARSE library. 
+
 The rocSPARSE library is developed using the `Hourglass API` approach.
-This is especially helpful to offer a thin C89 API to the user and still get all the convenience of C++.
+This provides a thin C89 API while still having all the convenience of C++.
 As a side effect, ABI related binary compatibility issues can be avoided.
 Furthermore, this approach allows rocSPARSE routines to be used by other programming languages.
 
 In public API header files, rocSPARSE only relies on functions, pointers, forward declared structs, enumerations and type defs.
-Additionally, rocSPARSE introduces multiple library and object handles by using opaque types to hide layout and implementation details from the user.
+rocSPARSE introduces multiple library and object handles by using opaque types to hide layout and implementation details from the user.
 
 Temporary Device Memory
 =======================
-Many routines exposed by the rocSPARSE API require a temporary storage buffer on the device.
-rocSPARSE notion is that the user is responsible for such buffer allocation and deallocation.
+Many routines exposed by the rocSPARSE API require a temporary storage buffer on the device. You are responsible for buffer allocation and deallocation.
 Hence, allocated buffers can be re-used and do not need to be regularly (de)allocated on every single API call.
-For this purpose, routines that require a temporary storage buffer offer a special API function to query for the storage buffer size, e.g. :cpp:func:`rocsparse_scsrsv_buffer_size`.
-
-.. _rocsparse_contributing:
-
-Contributing
-============
-
-How to contribute
------------------
-Our code contriubtion guidelines closely follows the model of GitHub pull-requests. This repository follows the git flow workflow, which dictates a /master branch where releases are cut, and a /develop branch which serves as an integration branch for new code.
-
-A `git extention <https://github.com/nvie/gitflow>`_ has been developed to ease the use of the 'git flow' methodology, but requires manual installation by the user. Please refer to the projects wiki.
-
-Pull-request guidelines
------------------------
-* Target the **develop** branch for integration.
-* Ensure code builds successfully.
-* Do not break existing test cases
-* New functionality will only be merged with new unit tests.
-
-  * New unit tests should integrate within the existing `googletest framework <https://github.com/google/googletest/blob/master/googletest/docs/primer.md>`_.
-  * Tests must have good code coverage.
-  * Code must also have benchmark tests, and performance must approach the compute bound limit or memory bound limit.
-
-StyleGuide
-----------
-**Interface**
-
-* All public APIs are C89 compatible; all other library code should use C++14.
-* Our minimum supported compiler is clang 3.6.
-* Avoid CamelCase.
-* This rule applies specifically to publicly visible APIs, but is also encouraged (not mandated) for internal code.
-
-**Format**
-
-C and C++ code is formatted using clang-format. To format a file, use
-
-::
-
-  /opt/rocm/llvm/bin/clang-format -style=file -i <file>
-
-To format all files, run the following script in rocSPARSE directory:
-
-::
-
-  #!/bin/bash
-
-  find . -iname '*.h' \
-  -o -iname '*.hpp' \
-  -o -iname '*.cpp' \
-  -o -iname '*.h.in' \
-  -o -iname '*.hpp.in' \
-  -o -iname '*.cpp.in' \
-  -o -iname '*.cl' \
-  | grep -v 'build' \
-  | xargs -n 1 -P 8 -I{} /opt/rocm/llvm/bin/clang-format -style=file -i {}
+For this purpose, routines that require a temporary storage buffer offer a special API function to query for the storage buffer size, for example :cpp:func:`rocsparse_scsrsv_buffer_size`.
 
 Library Source Organization
 ===========================
 
-The `library/include` directory
--------------------------------
-This directory contains all files that are exposed to the user.
+The following is the structure of the rocSPARSE library in the GitHub repository. 
+
+`library/include/` directory
+----------------------------
+
+The `library/include` directory contains all files that are exposed to the user.
 The rocSPARSE API, is declared here.
 
 =========================== ===========
@@ -95,12 +46,13 @@ File                        Description
 `rocsparse-version.h.in`    Provides the configured version and settings that is initially set by CMake during compilation.
 =========================== ===========
 
-The `library/src/` directory
+`library/src/` directory
 ----------------------------
+
 This directory contains all rocSPARSE library source files.
 The root of the `library/src/` directory hosts the implementation of the library handle and auxiliary functions.
-Furthermore, each sub-directory is responsible for the specific class of sparse linear algebra subroutines.
-Finally, the `library/src/include` directory defines :ref:`rocsparse_common`, :ref:`rocsparse_macros`, :ref:`rocsparse_mat_struct` and :ref:`rocsparse_logging`.
+Each sub-directory is responsible for the specific class of sparse linear algebra subroutines.
+The `library/src/include` directory defines :ref:`rocsparse_common`, :ref:`rocsparse_macros`, :ref:`rocsparse_mat_struct` and :ref:`rocsparse_logging`.
 
 ========================= ===========
 File                      Description
@@ -116,23 +68,28 @@ File                      Description
 `include/utility.h`       Implementation of different rocSPARSE logging functionality.
 ========================= ===========
 
-The `clients/` directory
+`clients/` directory
 ------------------------
+
 This directory contains all clients, e.g. samples, unit tests and benchmarks.
 Further details are given in :ref:`rocsparse_clients`.
 
 Sparse Linear Algebra Subroutines
 ---------------------------------
-Each sparse linear algebra subroutine is implemented in a set of source files in the corresponding directory: ``rocsparse_subroutine.cpp``, ``rocsparse_subroutine.hpp`` and ``subroutine_device.h``.
 
-``rocsparse_subroutine.cpp`` implements the C wrapper and the API functionality for each precision supported.
-Furthermore, ``rocsparse_subroutine.hpp`` implements the API functionality, using the precision as template parameter.
-Finally, ``subroutine_device.h`` implements the device code, required for the computation of the subroutine.
+Each sparse linear algebra subroutine is implemented in a set of source files in the 
+corresponding directory: ``rocsparse_<subroutine>.cpp``, ``rocsparse_<subroutine>.hpp`` and ``<subroutine>_device.h``,
+where <subroutine> indicates any of the rocSPARSE library functions.
 
-.. note:: Each API exposed subroutine is expected to return a :cpp:type:`rocsparse_status`.
-.. note:: Additionally, each device function is expected to use the user given stream which is accessible through the libraries handle.
+``rocsparse_<subroutine>.cpp`` implements the C wrapper and the API functionality for each precision supported.
+Furthermore, ``rocsparse_<subroutine>.hpp`` implements the API functionality, using the precision as template parameter.
+Finally, ``<subroutine>_device.h`` implements the device code, required for the computation of the subroutine.
 
-Below is a sample for ``rocsparse_subroutine.cpp``, ``rocsparse_subroutine.hpp`` and ``subroutine_device.h``.
+.. note:: 
+    Each API exposed subroutine is expected to return a :cpp:type:`rocsparse_status`.
+    Additionally, each device function is expected to use a specified stream which is accessible through the libraries handle.
+
+The following is a sample for ``rocsparse_<subroutine>.cpp``, ``rocsparse_<subroutine>.hpp`` and ``<subroutine>_device.h``.
 
 .. code-block:: cpp
    :caption: rocsparse_subroutine.cpp
@@ -309,14 +266,17 @@ Below is a sample for ``rocsparse_subroutine.cpp``, ``rocsparse_subroutine.hpp``
 
    #endif // SUBROUTINE_DEVICE_H
 
+
 Important Functions and Data Structures
 =======================================
+
 This section describes important rocSPARSE functions and data structures.
 
 .. _rocsparse_common:
 
 Commonly Shared Device-Code
 ---------------------------
+
 The following table lists multiple device functions that are shared among several rocSPARSE functions.
 
 ================================= ===========
@@ -341,6 +301,7 @@ Device function                   Description
 
 Status-Flag Macros
 ------------------
+
 The following table lists the status-flag macros available in rocSPARSE and their purpose.
 
 =================================== ===========
@@ -356,28 +317,30 @@ Macro                               Description
 
 The `rocsparse_mat_info` Structure
 ----------------------------------
+
 The rocSPARSE :cpp:type:`rocsparse_mat_info` is a structure holding all matrix meta information that is gathered during analysis routines.
 
-The following table lists all currently available internal meta data structures:
+The following table lists all currently available internal metadata structures:
 
 ========================== ===========
 Meta data structure        Description
 ========================== ===========
-``rocsparse_csrmv_info``   Structure to hold analysis meta data for sparse matrix vector multiplication in CSR format.
-``rocsparse_csrtr_info``   Structure to hold analysis meta data for operations on sparse triangular matrices, e.g. dependency graph.
-``rocsparse_csrgemm_info`` Structure to hold analysis meta data for sparse matrix sparse matrix multiplication in CSR format.
+``rocsparse_csrmv_info``   Structure to hold analysis metadata for sparse matrix vector multiplication in CSR format.
+``rocsparse_csrtr_info``   Structure to hold analysis metadata for operations on sparse triangular matrices, for example dependency graph.
+``rocsparse_csrgemm_info`` Structure to hold analysis metadata for sparse matrix sparse matrix multiplication in CSR format.
 ========================== ===========
 
 Cross-Routine Data Sharing
 ``````````````````````````
-Already collected meta data, such as the dependency graph of a sparse matrix, can be shared among multiple routines.
+
+Already collected metadata, such as the dependency graph of a sparse matrix, can be shared among multiple routines.
 For example, if the incomplete LU factorization of a sparse matrix is computed, the gathered analysis data can be shared for subsequent lower triangular solves of the same matrix.
 This behavior can be specified by the :ref:`rocsparse_analysis_policy_` parameter.
 
-The following table lists subroutines that can in some cases share meta data:
+The following table lists subroutines that can in some cases share metadata:
 
 ================================== ====
-Subroutine                         Sharing meta data with
+Subroutine                         Sharing metadata with
 ================================== ====
 :cpp:func:`rocsparse_scsrsv_solve` :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_scsrilu0`
 :cpp:func:`rocsparse_dcsrsv_solve` :cpp:func:`rocsparse_dcsric0`, :cpp:func:`rocsparse_dcsrilu0`
@@ -393,22 +356,24 @@ Subroutine                         Sharing meta data with
 :cpp:func:`rocsparse_zcsrilu0`     :cpp:func:`rocsparse_zcsric0`, :cpp:func:`rocsparse_zcsrsv_solve`
 ================================== ====
 
-.. note:: It is important to note, that on rocSPARSE extensions, this functionality can be further expanded to improve meta data collection performance significantly.
+.. note:: It is important to note, that on rocSPARSE extensions, this functionality can be further expanded to improve metadata collection performance significantly.
 
 .. _rocsparse_clients:
 
 Clients
 =======
+
 rocSPARSE clients host a variety of different examples as well as a unit test and benchmarking package.
 For detailed instructions on how to build rocSPARSE with clients, see :ref:`rocsparse_building`.
 
-Examples
+Samples
 --------
-The examples collection offers sample implementations of the rocSPARSE API.
+
+The `clients/samples` collection offers sample implementations of the rocSPARSE API.
 In the following table, available examples with description, are listed.
 
 ============== ===========
-Example        Description
+Sample         Description
 ============== ===========
 example_coomv  Perform sparse matrix vector multiplication in COO format
 example_csrmv  Perform sparse matrix vector multiplication in CSR format
@@ -419,12 +384,14 @@ example_hybmv  Perform sparse matrix vector multiplication in HYB format
 
 Unit Tests
 ----------
+
 Multiple unit tests are available to test for bad arguments, invalid parameters and sparse routine functionality.
 The unit tests are based on `googletest <https://github.com/google/googletest>`_.
 The tests cover all routines that are exposed by the API, including all available floating-point precision.
 
 Benchmarks
 ----------
+
 rocSPARSE offers a benchmarking tool that can be compiled with the clients package.
 The benchmark tool can perform any API exposed routine combined with time measurement.
 To set up a benchmark run, multiple options are available.

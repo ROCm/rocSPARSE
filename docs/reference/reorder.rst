@@ -1,7 +1,12 @@
+.. meta::
+  :description: rocSPARSE documentation and API reference library
+  :keywords: rocSPARSE, ROCm, API, documentation
+
 .. _rocsparse_reordering_functions_:
 
-Reordering Functions
-====================
+********************************************************************
+Sparse Reordering Functions
+********************************************************************
 
 This module holds all sparse reordering routines.
 

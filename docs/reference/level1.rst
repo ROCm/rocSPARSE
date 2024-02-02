@@ -1,7 +1,12 @@
+.. meta::
+  :description: rocSPARSE documentation and API reference library
+  :keywords: rocSPARSE, ROCm, API, documentation
+
 .. _rocsparse_level1_functions_:
 
+********************************************************************
 Sparse Level 1 Functions
-========================
+********************************************************************
 
 The sparse level 1 routines describe operations between a vector in sparse format and a vector in dense format. This section describes all rocSPARSE level 1 sparse linear algebra functions.
 

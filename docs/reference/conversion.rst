@@ -1,7 +1,12 @@
+.. meta::
+  :description: rocSPARSE documentation and API reference library
+  :keywords: rocSPARSE, ROCm, API, documentation
+
 .. _rocsparse_conversion_functions_:
 
+********************************************************************
 Sparse Conversion Functions
-===========================
+********************************************************************
 
 This module holds all sparse conversion routines.
 

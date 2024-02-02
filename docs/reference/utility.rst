@@ -1,7 +1,12 @@
+.. meta::
+  :description: rocSPARSE documentation and API reference library
+  :keywords: rocSPARSE, ROCm, API, documentation
+
 .. _rocsparse_utility_functions_:
 
-Utility Functions
-=================
+********************************************************************
+Sparse Utility Functions
+********************************************************************
 
 This module holds all sparse utility routines.
 
