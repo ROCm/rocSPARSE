@@ -72,20 +72,20 @@ namespace
                 const J j = ind[k] - base;
                 if(j == tid)
                 {
-                    const T local_val = (!CONJ) ? val[k] : rocsparse_conj(val[k]);
+                    const T local_val = (!CONJ) ? val[k] : rocsparse::conj(val[k]);
                     if(local_val != static_cast<T>(0))
                     {
                         invdiag[tid] = static_cast<T>(1) / local_val;
                     }
                     else
                     {
-                        rocsparse_atomic_min<rocsparse_int>(zero_pivot, tid + base);
+                        rocsparse::atomic_min<rocsparse_int>(zero_pivot, tid + base);
                         invdiag[tid] = static_cast<T>(1);
                     }
                 }
                 else
                 {
-                    rocsparse_atomic_min<rocsparse_int>(zero_pivot, tid + base);
+                    rocsparse::atomic_min<rocsparse_int>(zero_pivot, tid + base);
                     invdiag[tid] = static_cast<T>(1);
                 }
             }
@@ -238,7 +238,7 @@ rocsparse_status rocsparse::csritsv_solve_template(rocsparse_handle          han
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
 
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<BLOCKSIZE>),
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<BLOCKSIZE>),
                                                    blocks,
                                                    threads,
                                                    0,
@@ -249,7 +249,7 @@ rocsparse_status rocsparse::csritsv_solve_template(rocsparse_handle          han
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<BLOCKSIZE>),
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<BLOCKSIZE>),
                                                    blocks,
                                                    threads,
                                                    0,

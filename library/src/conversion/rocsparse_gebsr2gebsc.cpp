@@ -57,7 +57,7 @@ namespace rocsparse
         {
             if(bsc_col_ptr != nullptr)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
                                                    dim3(nb / 256 + 1),
                                                    dim3(256),
                                                    0,
@@ -72,7 +72,7 @@ namespace rocsparse
 
         if(nnzb == 0)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
                                                dim3(nb / 256 + 1),
                                                dim3(256),
                                                0,

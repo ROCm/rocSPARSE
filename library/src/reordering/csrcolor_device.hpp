@@ -50,7 +50,7 @@ namespace rocsparse
         sdata[hipThreadIdx_x] = mx;
 
         __syncthreads();
-        rocsparse_blockreduce_max<BLOCKSIZE>(hipThreadIdx_x, sdata);
+        rocsparse::blockreduce_max<BLOCKSIZE>(hipThreadIdx_x, sdata);
         if(hipThreadIdx_x == 0)
         {
             workspace[hipBlockIdx_x] = sdata[0];
@@ -66,7 +66,7 @@ namespace rocsparse
         sdata[hipThreadIdx_x] = workspace[hipThreadIdx_x];
 
         __syncthreads();
-        rocsparse_blockreduce_max<BLOCKSIZE>(hipThreadIdx_x, sdata);
+        rocsparse::blockreduce_max<BLOCKSIZE>(hipThreadIdx_x, sdata);
         if(hipThreadIdx_x == 0)
         {
             workspace[0] = sdata[0];
@@ -96,7 +96,7 @@ namespace rocsparse
         sdata[hipThreadIdx_x] = sum;
 
         __syncthreads();
-        rocsparse_blockreduce_sum<BLOCKSIZE>(hipThreadIdx_x, sdata);
+        rocsparse::blockreduce_sum<BLOCKSIZE>(hipThreadIdx_x, sdata);
         if(hipThreadIdx_x == 0)
         {
             workspace[hipBlockIdx_x] = sdata[0];
@@ -112,7 +112,7 @@ namespace rocsparse
         sdata[hipThreadIdx_x] = workspace[hipThreadIdx_x];
 
         __syncthreads();
-        rocsparse_blockreduce_sum<BLOCKSIZE>(hipThreadIdx_x, sdata);
+        rocsparse::blockreduce_sum<BLOCKSIZE>(hipThreadIdx_x, sdata);
         if(hipThreadIdx_x == 0)
         {
             workspace[0] = sdata[0];

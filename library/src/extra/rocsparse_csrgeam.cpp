@@ -158,7 +158,7 @@ namespace rocsparse
                     table[shf_B] = true;
 
                     // Add values of B
-                    data[shf_B] = rocsparse_fma(beta, csr_val_B[row_begin_B], data[shf_B]);
+                    data[shf_B] = rocsparse::fma(beta, csr_val_B[row_begin_B], data[shf_B]);
                 }
                 else
                 {

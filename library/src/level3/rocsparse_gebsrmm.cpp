@@ -285,7 +285,7 @@ namespace rocsparse
 
                 if(handle->pointer_mode == rocsparse_pointer_mode_device)
                 {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array_2d<256>),
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array_2d<256>),
                                                        dim3((C_size - 1) / 256 + 1),
                                                        dim3(256),
                                                        0,
@@ -300,7 +300,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array_2d<256>),
+                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array_2d<256>),
                                                        dim3((C_size - 1) / 256 + 1),
                                                        dim3(256),
                                                        0,

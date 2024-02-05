@@ -190,7 +190,7 @@ rocsparse_status rocsparse::csr2csc_template(rocsparse_handle     handle,
 
     if(nnz == 0)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
                                            dim3(n / 256 + 1),
                                            dim3(256),
                                            0,
@@ -278,7 +278,7 @@ rocsparse_status rocsparse::csr2csc_impl(rocsparse_handle     handle, //0
     {
         if(nnz == 0 && csc_col_ptr != nullptr)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
                                                dim3(n / 256 + 1),
                                                dim3(256),
                                                0,

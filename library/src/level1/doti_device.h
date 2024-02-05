@@ -54,7 +54,7 @@ namespace rocsparse
 #pragma unroll
             for(unsigned int i = 0; i < LOOPS; i++)
             {
-                dot = rocsparse_fma<T>(
+                dot = rocsparse::fma<T>(
                     y[x_ind[idx + i * BLOCKSIZE] - idx_base], x_val[idx + i * BLOCKSIZE], dot);
             }
 
@@ -66,7 +66,7 @@ namespace rocsparse
 
         for(I i = gid + stride; i < nnz; i += hipGridDim_x * BLOCKSIZE)
         {
-            dot = rocsparse_fma<T>(y[x_ind[i] - idx_base], x_val[i], dot);
+            dot = rocsparse::fma<T>(y[x_ind[i] - idx_base], x_val[i], dot);
         }
 
         __shared__ T sdata[BLOCKSIZE];
@@ -74,7 +74,7 @@ namespace rocsparse
 
         __syncthreads();
 
-        rocsparse_blockreduce_sum<BLOCKSIZE>(tid, sdata);
+        rocsparse::blockreduce_sum<BLOCKSIZE>(tid, sdata);
 
         if(tid == 0)
         {
@@ -93,7 +93,7 @@ namespace rocsparse
         sdata[tid] = workspace[tid];
         __syncthreads();
 
-        rocsparse_blockreduce_sum<BLOCKSIZE>(tid, sdata);
+        rocsparse::blockreduce_sum<BLOCKSIZE>(tid, sdata);
 
         if(tid == 0)
         {

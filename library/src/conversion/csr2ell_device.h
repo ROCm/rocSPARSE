@@ -48,7 +48,7 @@ namespace rocsparse
 
         __syncthreads();
 
-        rocsparse_blockreduce_max<BLOCKSIZE>(tid, sdata);
+        rocsparse::blockreduce_max<BLOCKSIZE>(tid, sdata);
 
         if(tid == 0)
         {
@@ -73,7 +73,7 @@ namespace rocsparse
 
         __syncthreads();
 
-        rocsparse_blockreduce_max<BLOCKSIZE>(tid, sdata);
+        rocsparse::blockreduce_max<BLOCKSIZE>(tid, sdata);
 
         if(tid == 0)
         {

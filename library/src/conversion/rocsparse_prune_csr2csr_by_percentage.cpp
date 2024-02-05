@@ -289,7 +289,7 @@ rocsparse_status
     {
         if(nnz_total_dev_host_ptr != nullptr && csr_row_ptr_C != nullptr)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
                                                dim3(m / 256 + 1),
                                                dim3(256),
                                                0,

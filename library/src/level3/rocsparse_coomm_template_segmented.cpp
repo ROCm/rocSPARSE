@@ -81,15 +81,15 @@ namespace rocsparse
         while(idx < (offset + LOOPS * BLOCKSIZE))
         {
             I row = (idx < nnz)
-                        ? rocsparse_nontemporal_load(&coo_row_ind[idx + batch_stride_A * batch])
+                        ? rocsparse::nontemporal_load(&coo_row_ind[idx + batch_stride_A * batch])
                               - idx_base
                         : -1;
             I col = (idx < nnz)
-                        ? rocsparse_nontemporal_load(&coo_col_ind[idx + batch_stride_A * batch])
+                        ? rocsparse::nontemporal_load(&coo_col_ind[idx + batch_stride_A * batch])
                               - idx_base
                         : 0;
             T val = (idx < nnz) ? alpha
-                                      * conj_val(rocsparse_nontemporal_load(
+                                      * conj_val(rocsparse::nontemporal_load(
                                                      &coo_val[idx + batch_stride_A * batch]),
                                                  conj_A)
                                 : static_cast<T>(0);
@@ -98,8 +98,8 @@ namespace rocsparse
 
             for(unsigned int i = 0; i < WF_SIZE; ++i)
             {
-                T v = rocsparse_shfl(val, i, WF_SIZE);
-                I c = rocsparse_shfl(col, i, WF_SIZE);
+                T v = rocsparse::shfl(val, i, WF_SIZE);
+                I c = rocsparse::shfl(col, i, WF_SIZE);
 
                 if(!TRANSB)
                 {
@@ -284,15 +284,15 @@ namespace rocsparse
         while(idx < (offset + LOOPS * BLOCKSIZE))
         {
             I row = (idx < nnz)
-                        ? rocsparse_nontemporal_load(&coo_row_ind[idx + batch_stride_A * batch])
+                        ? rocsparse::nontemporal_load(&coo_row_ind[idx + batch_stride_A * batch])
                               - idx_base
                         : -1;
             I col = (idx < nnz)
-                        ? rocsparse_nontemporal_load(&coo_col_ind[idx + batch_stride_A * batch])
+                        ? rocsparse::nontemporal_load(&coo_col_ind[idx + batch_stride_A * batch])
                               - idx_base
                         : 0;
             T val = (idx < nnz) ? alpha
-                                      * conj_val(rocsparse_nontemporal_load(
+                                      * conj_val(rocsparse::nontemporal_load(
                                                      &coo_val[idx + batch_stride_A * batch]),
                                                  conj_A)
                                 : static_cast<T>(0);
@@ -301,7 +301,7 @@ namespace rocsparse
 
             for(unsigned int i = 0; i < WF_SIZE; ++i)
             {
-                T v = rocsparse_shfl(val, i, WF_SIZE);
+                T v = rocsparse::shfl(val, i, WF_SIZE);
                 I c = __shfl(col, i, WF_SIZE);
 
                 if(!TRANSB)

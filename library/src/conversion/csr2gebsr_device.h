@@ -104,7 +104,7 @@ namespace rocsparse
 
             __threadfence_block();
 
-            rocsparse_wfreduce_min<WFSIZE / ROW_BLOCKDIM>(&index_k);
+            rocsparse::wfreduce_min<WFSIZE / ROW_BLOCKDIM>(&index_k);
             next_k = __shfl(index_k, WFSIZE / ROW_BLOCKDIM - 1, WFSIZE / ROW_BLOCKDIM);
 
             if(found[wid] && lid == 0)
@@ -112,7 +112,7 @@ namespace rocsparse
                 nnzb_per_row[wid]++;
             }
 
-            rocsparse_wfreduce_min<WFSIZE>(&min_block_col);
+            rocsparse::wfreduce_min<WFSIZE>(&min_block_col);
             chunk_begin = __shfl(min_block_col, WFSIZE - 1, WFSIZE);
 
             __threadfence_block();
@@ -201,7 +201,7 @@ namespace rocsparse
 
             __syncthreads();
 
-            rocsparse_wfreduce_min<BLOCKSIZE / ROW_BLOCKDIM>(&index_k);
+            rocsparse::wfreduce_min<BLOCKSIZE / ROW_BLOCKDIM>(&index_k);
             next_k = __shfl(index_k, (BLOCKSIZE / ROW_BLOCKDIM) - 1, BLOCKSIZE / ROW_BLOCKDIM);
 
             if(found && tid == 0)
@@ -212,7 +212,7 @@ namespace rocsparse
             shared[tid] = min_block_col;
             __syncthreads();
 
-            rocsparse_blockreduce_min<BLOCKSIZE>(tid, shared);
+            rocsparse::blockreduce_min<BLOCKSIZE>(tid, shared);
 
             chunk_begin = shared[0];
             __syncthreads();
@@ -293,7 +293,7 @@ namespace rocsparse
             //
             // last thread in segment will contain the min after this call
             //
-            rocsparse_wfreduce_min<BLOCKSIZE>(&min_block_col_index);
+            rocsparse::wfreduce_min<BLOCKSIZE>(&min_block_col_index);
 
             //
             // broadcast min_block_col_index from last thread in segment to all threads in segment
@@ -409,7 +409,7 @@ namespace rocsparse
 
             __threadfence_block();
 
-            rocsparse_wfreduce_min<WFSIZE / ROW_BLOCKDIM>(&index_k);
+            rocsparse::wfreduce_min<WFSIZE / ROW_BLOCKDIM>(&index_k);
             next_k = __shfl(index_k, (WFSIZE / ROW_BLOCKDIM) - 1, WFSIZE / ROW_BLOCKDIM);
 
             int offset = 0;
@@ -445,7 +445,7 @@ namespace rocsparse
 
             block_row_begin += offset;
 
-            rocsparse_wfreduce_min<WFSIZE>(&min_block_col);
+            rocsparse::wfreduce_min<WFSIZE>(&min_block_col);
             chunk_begin = __shfl(min_block_col, WFSIZE - 1, WFSIZE);
 
             __threadfence_block();
@@ -537,7 +537,7 @@ namespace rocsparse
 
             __syncthreads();
 
-            rocsparse_wfreduce_min<BLOCKSIZE / ROW_BLOCKDIM>(&index_k);
+            rocsparse::wfreduce_min<BLOCKSIZE / ROW_BLOCKDIM>(&index_k);
             next_k = __shfl(index_k, (BLOCKSIZE / ROW_BLOCKDIM) - 1, BLOCKSIZE / ROW_BLOCKDIM);
 
             int offset = 0;
@@ -576,7 +576,7 @@ namespace rocsparse
             __syncthreads();
             block_row_begin += offset;
 
-            rocsparse_blockreduce_min<BLOCKSIZE>(tid, shared);
+            rocsparse::blockreduce_min<BLOCKSIZE>(tid, shared);
 
             chunk_begin = shared[0];
             __syncthreads();
@@ -674,7 +674,7 @@ namespace rocsparse
             }
 
             // find minimum CSR column index across all threads in this segment and store in last thread of segment
-            rocsparse_wfreduce_min<BLOCKSIZE>(&min_csr_col_index);
+            rocsparse::wfreduce_min<BLOCKSIZE>(&min_csr_col_index);
 
             // have last thread in segment write to BSR column indices array
             if(min_csr_col_index < n && lane_id == BLOCKSIZE - 1)

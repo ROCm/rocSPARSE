@@ -47,8 +47,8 @@ namespace rocsparse
             if(c > 0)
             {
                 const rocsparse_int p = (tid + base_);
-                rocsparse_atomic_min(position, p);
-                rocsparse_atomic_add(count, c);
+                rocsparse::atomic_min(position, p);
+                rocsparse::atomic_add(count, c);
             }
         }
     }
@@ -70,8 +70,8 @@ namespace rocsparse
             if(c > 0)
             {
                 const rocsparse_int p = (tid + base_);
-                rocsparse_atomic_min(position, p);
-                rocsparse_atomic_add(count, c);
+                rocsparse::atomic_min(position, p);
+                rocsparse::atomic_add(count, c);
             }
         }
     }
@@ -91,7 +91,7 @@ namespace rocsparse
             const J c = (((ind_[ptr_[tid + shift] - shift - base_] - base_) == tid) ? 1 : 0);
             if(c > 0)
             {
-                rocsparse_atomic_add(count, c);
+                rocsparse::atomic_add(count, c);
             }
         }
     }

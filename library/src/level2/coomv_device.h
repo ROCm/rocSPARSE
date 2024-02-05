@@ -79,10 +79,10 @@ namespace rocsparse
 
         if(idx < nnz)
         {
-            row = rocsparse_nontemporal_load(coo_row_ind + idx) - idx_base;
-            val = static_cast<T>(rocsparse_nontemporal_load(coo_val + idx))
-                  * static_cast<T>(
-                      rocsparse_ldg(x + rocsparse_nontemporal_load(coo_col_ind + idx) - idx_base));
+            row = rocsparse::nontemporal_load(coo_row_ind + idx) - idx_base;
+            val = static_cast<T>(rocsparse::nontemporal_load(coo_val + idx))
+                  * static_cast<T>(rocsparse::ldg(x + rocsparse::nontemporal_load(coo_col_ind + idx)
+                                                  - idx_base));
         }
         else
         {
@@ -115,7 +115,7 @@ namespace rocsparse
         {
             if(row != shared_row[tid + 1] && row >= 0)
             {
-                y[row] = rocsparse_fma<T>(alpha, val, y[row]);
+                y[row] = rocsparse::fma<T>(alpha, val, y[row]);
             }
         }
 
@@ -129,10 +129,10 @@ namespace rocsparse
             // nnz % BLOCKSIZE != 0
             if(idx < nnz)
             {
-                row = rocsparse_nontemporal_load(coo_row_ind + idx) - idx_base;
-                val = static_cast<T>(rocsparse_nontemporal_load(coo_val + idx))
-                      * static_cast<T>(rocsparse_ldg(
-                          x + rocsparse_nontemporal_load(coo_col_ind + idx) - idx_base));
+                row = rocsparse::nontemporal_load(coo_row_ind + idx) - idx_base;
+                val = static_cast<T>(rocsparse::nontemporal_load(coo_val + idx))
+                      * static_cast<T>(rocsparse::ldg(
+                          x + rocsparse::nontemporal_load(coo_col_ind + idx) - idx_base));
             }
             else
             {
@@ -152,7 +152,7 @@ namespace rocsparse
                 }
                 else if(prevrow >= 0)
                 {
-                    y[prevrow] = rocsparse_fma<T>(alpha, shared_val[BLOCKSIZE - 1], y[prevrow]);
+                    y[prevrow] = rocsparse::fma<T>(alpha, shared_val[BLOCKSIZE - 1], y[prevrow]);
                 }
             }
 
@@ -182,7 +182,7 @@ namespace rocsparse
             {
                 if(row != shared_row[tid + 1] && row >= 0)
                 {
-                    y[row] = rocsparse_fma<T>(alpha, val, y[row]);
+                    y[row] = rocsparse::fma<T>(alpha, val, y[row]);
                 }
             }
         }
@@ -190,8 +190,8 @@ namespace rocsparse
         // Write last entries into buffers for segmented block reduction
         if(tid == BLOCKSIZE - 1)
         {
-            rocsparse_nontemporal_store(row, row_block_red + hipBlockIdx_x);
-            rocsparse_nontemporal_store(alpha * val, val_block_red + hipBlockIdx_x);
+            rocsparse::nontemporal_store(row, row_block_red + hipBlockIdx_x);
+            rocsparse::nontemporal_store(alpha * val, val_block_red + hipBlockIdx_x);
         }
     }
 
@@ -288,10 +288,10 @@ namespace rocsparse
 
         if(idx < nnz)
         {
-            row = rocsparse_nontemporal_load(coo_ind + 2 * idx) - idx_base;
-            val = static_cast<T>(rocsparse_nontemporal_load(coo_val + idx))
-                  * static_cast<T>(rocsparse_ldg(
-                      x + rocsparse_nontemporal_load(coo_ind + 2 * idx + 1) - idx_base));
+            row = rocsparse::nontemporal_load(coo_ind + 2 * idx) - idx_base;
+            val = static_cast<T>(rocsparse::nontemporal_load(coo_val + idx))
+                  * static_cast<T>(rocsparse::ldg(
+                      x + rocsparse::nontemporal_load(coo_ind + 2 * idx + 1) - idx_base));
         }
         else
         {
@@ -324,7 +324,7 @@ namespace rocsparse
         {
             if(row != shared_row[tid + 1] && row >= 0)
             {
-                y[row] = rocsparse_fma<T>(alpha, val, y[row]);
+                y[row] = rocsparse::fma<T>(alpha, val, y[row]);
             }
         }
 
@@ -338,10 +338,10 @@ namespace rocsparse
             // nnz % BLOCKSIZE != 0
             if(idx < nnz)
             {
-                row = rocsparse_nontemporal_load(coo_ind + 2 * idx) - idx_base;
-                val = static_cast<T>(rocsparse_nontemporal_load(coo_val + idx))
-                      * static_cast<T>(rocsparse_ldg(
-                          x + rocsparse_nontemporal_load(coo_ind + 2 * idx + 1) - idx_base));
+                row = rocsparse::nontemporal_load(coo_ind + 2 * idx) - idx_base;
+                val = static_cast<T>(rocsparse::nontemporal_load(coo_val + idx))
+                      * static_cast<T>(rocsparse::ldg(
+                          x + rocsparse::nontemporal_load(coo_ind + 2 * idx + 1) - idx_base));
             }
             else
             {
@@ -361,7 +361,7 @@ namespace rocsparse
                 }
                 else if(prevrow >= 0)
                 {
-                    y[prevrow] = rocsparse_fma<T>(alpha, shared_val[BLOCKSIZE - 1], y[prevrow]);
+                    y[prevrow] = rocsparse::fma<T>(alpha, shared_val[BLOCKSIZE - 1], y[prevrow]);
                 }
             }
 
@@ -391,7 +391,7 @@ namespace rocsparse
             {
                 if(row != shared_row[tid + 1] && row >= 0)
                 {
-                    y[row] = rocsparse_fma<T>(alpha, val, y[row]);
+                    y[row] = rocsparse::fma<T>(alpha, val, y[row]);
                 }
             }
         }
@@ -399,8 +399,8 @@ namespace rocsparse
         // Write last entries into buffers for segmented block reduction
         if(tid == BLOCKSIZE - 1)
         {
-            rocsparse_nontemporal_store(row, row_block_red + hipBlockIdx_x);
-            rocsparse_nontemporal_store(alpha * val, val_block_red + hipBlockIdx_x);
+            rocsparse::nontemporal_store(row, row_block_red + hipBlockIdx_x);
+            rocsparse::nontemporal_store(alpha * val, val_block_red + hipBlockIdx_x);
         }
     }
 
@@ -434,9 +434,9 @@ namespace rocsparse
 
         if(idx < nnz)
         {
-            row = rocsparse_nontemporal_load(&coo_row_ind[idx]) - idx_base;
-            col = rocsparse_nontemporal_load(&coo_col_ind[idx]) - idx_base;
-            val = static_cast<T>(rocsparse_nontemporal_load(&coo_val[idx]))
+            row = rocsparse::nontemporal_load(&coo_row_ind[idx]) - idx_base;
+            col = rocsparse::nontemporal_load(&coo_col_ind[idx]) - idx_base;
+            val = static_cast<T>(rocsparse::nontemporal_load(&coo_val[idx]))
                   * static_cast<T>(x[col]);
         }
         else
@@ -469,7 +469,7 @@ namespace rocsparse
         {
             if(row != shared_row[tid + 1] && row >= 0)
             {
-                rocsparse_atomic_add(&y[row], alpha * val);
+                rocsparse::atomic_add(&y[row], alpha * val);
             }
         }
 
@@ -482,9 +482,9 @@ namespace rocsparse
 
                 if(idx < nnz)
                 {
-                    row = rocsparse_nontemporal_load(&coo_row_ind[idx]) - idx_base;
-                    col = rocsparse_nontemporal_load(&coo_col_ind[idx]) - idx_base;
-                    val = static_cast<T>(rocsparse_nontemporal_load(&coo_val[idx]))
+                    row = rocsparse::nontemporal_load(&coo_row_ind[idx]) - idx_base;
+                    col = rocsparse::nontemporal_load(&coo_col_ind[idx]) - idx_base;
+                    val = static_cast<T>(rocsparse::nontemporal_load(&coo_val[idx]))
                           * static_cast<T>(x[col]);
                 }
                 else
@@ -506,7 +506,7 @@ namespace rocsparse
                     }
                     else if(prevrow >= 0)
                     {
-                        rocsparse_atomic_add(&y[prevrow], alpha * shared_val[BLOCKSIZE - 1]);
+                        rocsparse::atomic_add(&y[prevrow], alpha * shared_val[BLOCKSIZE - 1]);
                     }
                 }
 
@@ -534,7 +534,7 @@ namespace rocsparse
                 {
                     if(row != shared_row[tid + 1] && row >= 0)
                     {
-                        rocsparse_atomic_add(&y[row], alpha * val);
+                        rocsparse::atomic_add(&y[row], alpha * val);
                     }
                 }
             }
@@ -544,7 +544,7 @@ namespace rocsparse
         {
             if(row >= 0)
             {
-                rocsparse_atomic_add(&y[row], alpha * val);
+                rocsparse::atomic_add(&y[row], alpha * val);
             }
         }
     }
@@ -578,9 +578,9 @@ namespace rocsparse
 
         if(idx < nnz)
         {
-            row = rocsparse_nontemporal_load(&coo_ind[2 * idx]) - idx_base;
-            col = rocsparse_nontemporal_load(&coo_ind[2 * idx + 1]) - idx_base;
-            val = static_cast<T>(rocsparse_nontemporal_load(&coo_val[idx]))
+            row = rocsparse::nontemporal_load(&coo_ind[2 * idx]) - idx_base;
+            col = rocsparse::nontemporal_load(&coo_ind[2 * idx + 1]) - idx_base;
+            val = static_cast<T>(rocsparse::nontemporal_load(&coo_val[idx]))
                   * static_cast<T>(x[col]);
         }
         else
@@ -613,7 +613,7 @@ namespace rocsparse
         {
             if(row != shared_row[tid + 1] && row >= 0)
             {
-                rocsparse_atomic_add(&y[row], alpha * val);
+                rocsparse::atomic_add(&y[row], alpha * val);
             }
         }
 
@@ -624,9 +624,9 @@ namespace rocsparse
 
             if(idx < nnz)
             {
-                row = rocsparse_nontemporal_load(&coo_ind[2 * idx]) - idx_base;
-                col = rocsparse_nontemporal_load(&coo_ind[2 * idx + 1]) - idx_base;
-                val = static_cast<T>(rocsparse_nontemporal_load(&coo_val[idx]))
+                row = rocsparse::nontemporal_load(&coo_ind[2 * idx]) - idx_base;
+                col = rocsparse::nontemporal_load(&coo_ind[2 * idx + 1]) - idx_base;
+                val = static_cast<T>(rocsparse::nontemporal_load(&coo_val[idx]))
                       * static_cast<T>(x[col]);
             }
             else
@@ -648,7 +648,7 @@ namespace rocsparse
                 }
                 else if(prevrow >= 0)
                 {
-                    rocsparse_atomic_add(&y[prevrow], alpha * shared_val[BLOCKSIZE - 1]);
+                    rocsparse::atomic_add(&y[prevrow], alpha * shared_val[BLOCKSIZE - 1]);
                 }
             }
 
@@ -676,7 +676,7 @@ namespace rocsparse
             {
                 if(row != shared_row[tid + 1] && row >= 0)
                 {
-                    rocsparse_atomic_add(&y[row], alpha * val);
+                    rocsparse::atomic_add(&y[row], alpha * val);
                 }
             }
         }
@@ -685,7 +685,7 @@ namespace rocsparse
         {
             if(row >= 0)
             {
-                rocsparse_atomic_add(&y[row], alpha * val);
+                rocsparse::atomic_add(&y[row], alpha * val);
             }
         }
     }
@@ -710,10 +710,10 @@ namespace rocsparse
 
         I row = coo_row_ind[gid] - idx_base;
         I col = coo_col_ind[gid] - idx_base;
-        A val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse_conj(coo_val[gid])
+        A val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse::conj(coo_val[gid])
                                                                    : coo_val[gid];
 
-        rocsparse_atomic_add(&y[col], alpha * val * x[row]);
+        rocsparse::atomic_add(&y[col], alpha * val * x[row]);
     }
 
     template <typename I, typename A, typename X, typename Y, typename T>
@@ -735,9 +735,9 @@ namespace rocsparse
 
         I row = coo_ind[2 * gid] - idx_base;
         I col = coo_ind[2 * gid + 1] - idx_base;
-        A val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse_conj(coo_val[gid])
+        A val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse::conj(coo_val[gid])
                                                                    : coo_val[gid];
 
-        rocsparse_atomic_add(&y[col], alpha * val * x[row]);
+        rocsparse::atomic_add(&y[col], alpha * val * x[row]);
     }
 }

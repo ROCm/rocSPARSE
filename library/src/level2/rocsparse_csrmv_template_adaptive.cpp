@@ -583,7 +583,7 @@ rocsparse_status rocsparse::csrmv_adaptive_template_dispatch(rocsparse_handle   
     }
     else if(descr->type == rocsparse_matrix_type_symmetric)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<256>),
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
                                            dim3((m - 1) / 256 + 1),
                                            dim3(256),
                                            0,

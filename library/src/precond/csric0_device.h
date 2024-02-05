@@ -101,7 +101,7 @@ namespace rocsparse
                     // key is already inserted, done
                     break;
                 }
-                else if(rocsparse_atomic_cas(&table[hash], -1, key) == -1)
+                else if(rocsparse::atomic_cas(&table[hash], -1, key) == -1)
                 {
                     // inserted key into the table, done
                     data[hash] = j;
@@ -182,7 +182,7 @@ namespace rocsparse
                         // Entry found, do linear combination
                         rocsparse_int idx = data[hash];
                         local_sum
-                            = rocsparse_fma(csr_val[k], rocsparse_conj(csr_val[idx]), local_sum);
+                            = rocsparse::fma(csr_val[k], rocsparse::conj(csr_val[idx]), local_sum);
                         break;
                     }
                     else
@@ -194,13 +194,13 @@ namespace rocsparse
             }
 
             // Accumulate row sum
-            local_sum = rocsparse_wfreduce_sum<WFSIZE>(local_sum);
+            local_sum = rocsparse::wfreduce_sum<WFSIZE>(local_sum);
 
             // Last lane id computes the Cholesky factor and writes it to global memory
             if(lid == WFSIZE - 1)
             {
                 local_val = (local_val - local_sum) * diag_val;
-                sum       = rocsparse_fma(local_val, rocsparse_conj(local_val), sum);
+                sum       = rocsparse::fma(local_val, rocsparse::conj(local_val), sum);
 
                 csr_val[j] = local_val;
             }
@@ -214,14 +214,15 @@ namespace rocsparse
                 const T diag_val = csr_val[row_diag] - sum;
 
                 // test for negative value and numerical small value
-                if((rocsparse_real(diag_val) <= (tol_sq)) && (rocsparse_imag(diag_val) == 0))
+                if((rocsparse::real(diag_val) <= (tol_sq)) && (rocsparse::imag(diag_val) == 0))
                 {
-                    rocsparse_atomic_min(singular_pivot, (row + idx_base));
+                    rocsparse::atomic_min(singular_pivot, (row + idx_base));
                 }
 
-                if((csr_val[row_diag] = sqrt(rocsparse_abs(diag_val))) == static_cast<T>(0))
+                if((csr_val[row_diag] = rocsparse::sqrt(rocsparse::abs(diag_val)))
+                   == static_cast<T>(0))
                 {
-                    rocsparse_atomic_min(zero_pivot, (row + idx_base));
+                    rocsparse::atomic_min(zero_pivot, (row + idx_base));
                 }
             }
         }
@@ -332,7 +333,7 @@ namespace rocsparse
                 if(lid == 0)
                 {
                     // We are looking for the first zero pivot
-                    rocsparse_atomic_min(zero_pivot, local_col + idx_base);
+                    rocsparse::atomic_min(zero_pivot, local_col + idx_base);
                 }
 
                 // Skip this row if it has a zero pivot
@@ -340,12 +341,12 @@ namespace rocsparse
             }
 
             // Row has numerical singular diagonal
-            if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= tol))
+            if((rocsparse::imag(diag_val) == 0) && (rocsparse::real(diag_val) <= tol))
             {
                 if(lid == 0)
                 {
                     // We are looking for the first singular pivot
-                    rocsparse_atomic_min(singular_pivot, local_col + idx_base);
+                    rocsparse::atomic_min(singular_pivot, local_col + idx_base);
                 }
 
                 // Don't skip this row if it has a singular pivot
@@ -386,18 +387,18 @@ namespace rocsparse
                 if(col_j == col_k)
                 {
                     // If a match has been found, do linear combination
-                    local_sum = rocsparse_fma(csr_val[k], rocsparse_conj(csr_val[m]), local_sum);
+                    local_sum = rocsparse::fma(csr_val[k], rocsparse::conj(csr_val[m]), local_sum);
                 }
             }
 
             // Accumulate row sum
-            local_sum = rocsparse_wfreduce_sum<WFSIZE>(local_sum);
+            local_sum = rocsparse::wfreduce_sum<WFSIZE>(local_sum);
 
             // Last lane id computes the Cholesky factor and writes it to global memory
             if(lid == WFSIZE - 1)
             {
                 local_val = (local_val - local_sum) * diag_val;
-                sum       = rocsparse_fma(local_val, rocsparse_conj(local_val), sum);
+                sum       = rocsparse::fma(local_val, rocsparse::conj(local_val), sum);
 
                 csr_val[j] = local_val;
             }
@@ -411,15 +412,15 @@ namespace rocsparse
                 const T diag_val = csr_val[row_diag] - sum;
 
                 // check for negative value and numerical small value
-                if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= (tol_sq)))
+                if((rocsparse::imag(diag_val) == 0) && (rocsparse::real(diag_val) <= (tol_sq)))
                 {
-                    rocsparse_atomic_min(singular_pivot, (row + idx_base));
+                    rocsparse::atomic_min(singular_pivot, (row + idx_base));
                 }
 
-                csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
+                csr_val[row_diag] = rocsparse::sqrt(rocsparse::abs(csr_val[row_diag] - sum));
                 if(csr_val[row_diag] == static_cast<T>(0))
                 {
-                    rocsparse_atomic_min(zero_pivot, (row + idx_base));
+                    rocsparse::atomic_min(zero_pivot, (row + idx_base));
                 }
             }
         }

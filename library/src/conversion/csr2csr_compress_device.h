@@ -51,11 +51,11 @@ namespace rocsparse
         for(rocsparse_int i = 0; i < LOOPS; i++)
         {
             T value
-                = (gid < nnz_A) ? rocsparse_nontemporal_load(csr_val_A + gid) : static_cast<T>(0);
+                = (gid < nnz_A) ? rocsparse::nontemporal_load(csr_val_A + gid) : static_cast<T>(0);
 
             // Check if value in matrix will be kept
-            bool predicate = rocsparse_abs(value) > rocsparse_real(tol)
-                                     && rocsparse_abs(value) > std::numeric_limits<float>::min()
+            bool predicate = rocsparse::abs(value) > rocsparse::real(tol)
+                                     && rocsparse::abs(value) > std::numeric_limits<float>::min()
                                  ? true
                                  : false;
 
@@ -98,11 +98,11 @@ namespace rocsparse
                                    + wid];
 
             T value
-                = (gid < nnz_A) ? rocsparse_nontemporal_load(csr_val_A + gid) : static_cast<T>(0);
+                = (gid < nnz_A) ? rocsparse::nontemporal_load(csr_val_A + gid) : static_cast<T>(0);
 
             // Check if value in matrix will be kept
-            bool predicate = rocsparse_abs(value) > rocsparse_real(tol)
-                                     && rocsparse_abs(value) > std::numeric_limits<float>::min()
+            bool predicate = rocsparse::abs(value) > rocsparse::real(tol)
+                                     && rocsparse::abs(value) > std::numeric_limits<float>::min()
                                  ? true
                                  : false;
 
@@ -189,8 +189,8 @@ namespace rocsparse
 
                 // Check if value in matrix will be kept
                 const bool predicate
-                    = rocsparse_abs(value) > rocsparse_real(tol)
-                              && rocsparse_abs(value) > std::numeric_limits<float>::min()
+                    = rocsparse::abs(value) > rocsparse::real(tol)
+                              && rocsparse::abs(value) > std::numeric_limits<float>::min()
                           ? true
                           : false;
 

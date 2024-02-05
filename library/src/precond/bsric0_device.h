@@ -66,7 +66,7 @@ namespace rocsparse
         {
             if(tidx == 0 && tidy == 0)
             {
-                rocsparse_atomic_min(zero_pivot, block_row + idx_base);
+                rocsparse::atomic_min(zero_pivot, block_row + idx_base);
 
                 // Last lane in wavefront writes "we are done" flag for its block row
                 __hip_atomic_store(
@@ -187,49 +187,49 @@ namespace rocsparse
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * tidx + 0];
                         T v2      = bsr_val[idx + BSRDIM * tidy + 0];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 2)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * tidx + 1];
                         T v2      = bsr_val[idx + BSRDIM * tidy + 1];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 3)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * tidx + 2];
                         T v2      = bsr_val[idx + BSRDIM * tidy + 2];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 4)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * tidx + 3];
                         T v2      = bsr_val[idx + BSRDIM * tidy + 3];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 5)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * tidx + 4];
                         T v2      = bsr_val[idx + BSRDIM * tidy + 4];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 6)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * tidx + 5];
                         T v2      = bsr_val[idx + BSRDIM * tidy + 5];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 7)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * tidx + 6];
                         T v2      = bsr_val[idx + BSRDIM * tidy + 6];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 8)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * tidx + 7];
                         T v2      = bsr_val[idx + BSRDIM * tidy + 7];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                 }
                 else
@@ -238,49 +238,49 @@ namespace rocsparse
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * 0 + tidx];
                         T v2      = bsr_val[idx + BSRDIM * 0 + tidy];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 2)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * 1 + tidx];
                         T v2      = bsr_val[idx + BSRDIM * 1 + tidy];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 3)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * 2 + tidx];
                         T v2      = bsr_val[idx + BSRDIM * 2 + tidy];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 4)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * 3 + tidx];
                         T v2      = bsr_val[idx + BSRDIM * 3 + tidy];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 5)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * 4 + tidx];
                         T v2      = bsr_val[idx + BSRDIM * 4 + tidy];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 6)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * 5 + tidx];
                         T v2      = bsr_val[idx + BSRDIM * 5 + tidy];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 7)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * 6 + tidx];
                         T v2      = bsr_val[idx + BSRDIM * 6 + tidy];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     if(BSRDIM >= 8)
                     {
                         T v1      = bsr_val[idx2 + BSRDIM * 7 + tidx];
                         T v2      = bsr_val[idx + BSRDIM * 7 + tidy];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                 }
             }
@@ -303,7 +303,7 @@ namespace rocsparse
                     if(tidx == 0 && tidy == 0)
                     {
                         // We are looking for the first zero pivot
-                        rocsparse_atomic_min(zero_pivot, block_col + idx_base);
+                        rocsparse::atomic_min(zero_pivot, block_col + idx_base);
                     }
 
                     diag_val = static_cast<T>(1);
@@ -315,7 +315,7 @@ namespace rocsparse
                 {
                     T v1      = local_values[k][p];
                     T v2      = values[tidy][p];
-                    local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                    local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                 }
 
                 // Compute the Cholesky factor and writes it to shared memory
@@ -325,7 +325,7 @@ namespace rocsparse
                 __threadfence_block();
 
                 row_sum[tidy][tidx]
-                    = rocsparse_fma(val, rocsparse_conj(values[tidx][k]), row_sum[tidy][tidx]);
+                    = rocsparse::fma(val, rocsparse::conj(values[tidx][k]), row_sum[tidy][tidx]);
 
                 __threadfence_block();
             }
@@ -359,7 +359,7 @@ namespace rocsparse
         {
             if(k == tidy)
             {
-                values[k][k] = sqrt(rocsparse_abs(values[k][k] - row_sum[k][k]));
+                values[k][k] = rocsparse::sqrt(rocsparse::abs(values[k][k] - row_sum[k][k]));
             }
 
             __threadfence_block();
@@ -373,7 +373,7 @@ namespace rocsparse
                 if(tidx == 0 && tidy == 0)
                 {
                     // We are looking for the first zero pivot
-                    rocsparse_atomic_min(zero_pivot, block_row + idx_base);
+                    rocsparse::atomic_min(zero_pivot, block_row + idx_base);
                 }
 
                 // Normally would break here but to avoid divergence set diag_val to one and continue
@@ -395,7 +395,7 @@ namespace rocsparse
                 __threadfence_block();
 
                 row_sum[tidy][tidx]
-                    = rocsparse_fma(val, rocsparse_conj(values[tidx][k]), row_sum[tidy][tidx]);
+                    = rocsparse::fma(val, rocsparse::conj(values[tidx][k]), row_sum[tidy][tidx]);
             }
 
             __threadfence_block();
@@ -456,7 +456,7 @@ namespace rocsparse
         {
             if(tidx == 0 && tidy == 0)
             {
-                rocsparse_atomic_min(zero_pivot, block_row + idx_base);
+                rocsparse::atomic_min(zero_pivot, block_row + idx_base);
 
                 // Last lane in wavefront writes "we are done" flag for its block row
                 __hip_atomic_store(
@@ -590,7 +590,7 @@ namespace rocsparse
                                                        : static_cast<T>(0);
                         T v2      = (tidy < block_dim) ? bsr_val[idx + block_dim * tidy + p]
                                                        : static_cast<T>(0);
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     else
                     {
@@ -598,7 +598,7 @@ namespace rocsparse
                                                        : static_cast<T>(0);
                         T v2      = (tidy < block_dim) ? bsr_val[idx + block_dim * p + tidy]
                                                        : static_cast<T>(0);
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                 }
             }
@@ -621,7 +621,7 @@ namespace rocsparse
                     if(tidx == 0 && tidy == 0)
                     {
                         // We are looking for the first zero pivot
-                        rocsparse_atomic_min(zero_pivot, block_col + idx_base);
+                        rocsparse::atomic_min(zero_pivot, block_col + idx_base);
                     }
 
                     diag_val = static_cast<T>(1);
@@ -633,7 +633,7 @@ namespace rocsparse
                 {
                     T v1      = local_values[k][p];
                     T v2      = values[tidy][p];
-                    local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                    local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                 }
 
                 // Compute the Cholesky factor and writes it to shared memory
@@ -643,7 +643,7 @@ namespace rocsparse
                 __threadfence_block();
 
                 row_sum[tidy][tidx]
-                    = rocsparse_fma(val, rocsparse_conj(values[tidx][k]), row_sum[tidy][tidx]);
+                    = rocsparse::fma(val, rocsparse::conj(values[tidx][k]), row_sum[tidy][tidx]);
 
                 __threadfence_block();
             }
@@ -688,7 +688,7 @@ namespace rocsparse
         {
             if(k == tidy)
             {
-                values[k][k] = sqrt(rocsparse_abs(values[k][k] - row_sum[k][k]));
+                values[k][k] = rocsparse::sqrt(rocsparse::abs(values[k][k] - row_sum[k][k]));
             }
 
             __threadfence_block();
@@ -702,7 +702,7 @@ namespace rocsparse
                 if(tidx == 0 && tidy == 0)
                 {
                     // We are looking for the first zero pivot
-                    rocsparse_atomic_min(zero_pivot, block_row + idx_base);
+                    rocsparse::atomic_min(zero_pivot, block_row + idx_base);
                 }
 
                 // Normally would break here but to avoid divergence set diag_val to one and continue
@@ -724,7 +724,7 @@ namespace rocsparse
                 __threadfence_block();
 
                 row_sum[tidy][tidx]
-                    = rocsparse_fma(val, rocsparse_conj(values[tidx][k]), row_sum[tidy][tidx]);
+                    = rocsparse::fma(val, rocsparse::conj(values[tidx][k]), row_sum[tidy][tidx]);
             }
 
             __threadfence_block();
@@ -793,7 +793,7 @@ namespace rocsparse
         {
             if(tidx == 0 && tidy == 0)
             {
-                rocsparse_atomic_min(zero_pivot, block_row + idx_base);
+                rocsparse::atomic_min(zero_pivot, block_row + idx_base);
 
                 // Last lane in wavefront writes "we are done" flag for its block row
                 __hip_atomic_store(
@@ -936,14 +936,14 @@ namespace rocsparse
                             T v1      = bsr_val[idx2 + block_dim * q + p];
                             T v2      = (tidy < block_dim) ? bsr_val[idx + block_dim * tidy + p]
                                                            : static_cast<T>(0);
-                            local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                            local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                         }
                         else
                         {
                             T v1      = bsr_val[idx2 + block_dim * p + q];
                             T v2      = (tidy < block_dim) ? bsr_val[idx + block_dim * p + tidy]
                                                            : static_cast<T>(0);
-                            local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                            local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                         }
                     }
 
@@ -967,7 +967,7 @@ namespace rocsparse
                     if(tidx == 0 && tidy == 0)
                     {
                         // We are looking for the first zero pivot
-                        rocsparse_atomic_min(zero_pivot, block_col + idx_base);
+                        rocsparse::atomic_min(zero_pivot, block_col + idx_base);
                     }
 
                     diag_val = static_cast<T>(1);
@@ -980,7 +980,7 @@ namespace rocsparse
                 {
                     T v1      = local_values[k][p];
                     T v2      = values[tidy][p];
-                    local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                    local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                 }
 
                 // Compute the Cholesky factor and writes it to global memory
@@ -992,7 +992,7 @@ namespace rocsparse
                 for(rocsparse_int q = tidx; q < block_dim; q += DIMX)
                 {
                     row_sum[tidy][q]
-                        = rocsparse_fma(val, rocsparse_conj(values[q][k]), row_sum[tidy][q]);
+                        = rocsparse::fma(val, rocsparse::conj(values[q][k]), row_sum[tidy][q]);
                 }
 
                 __threadfence_block();
@@ -1043,7 +1043,7 @@ namespace rocsparse
         {
             if(k == tidy)
             {
-                values[k][k] = sqrt(rocsparse_abs(values[k][k] - row_sum[k][k]));
+                values[k][k] = rocsparse::sqrt(rocsparse::abs(values[k][k] - row_sum[k][k]));
             }
 
             __threadfence_block();
@@ -1060,7 +1060,7 @@ namespace rocsparse
                 if(tidx == 0 && tidy == 0)
                 {
                     // We are looking for the first zero pivot
-                    rocsparse_atomic_min(zero_pivot, block_row + idx_base);
+                    rocsparse::atomic_min(zero_pivot, block_row + idx_base);
                 }
 
                 // Normally would break here but to avoid divergence set diag_val to one and continue
@@ -1081,7 +1081,7 @@ namespace rocsparse
                 for(rocsparse_int q = tidx; q < block_dim; q += DIMX)
                 {
                     row_sum[tidy][q]
-                        = rocsparse_fma(val, rocsparse_conj(values[q][k]), row_sum[tidy][q]);
+                        = rocsparse::fma(val, rocsparse::conj(values[q][k]), row_sum[tidy][q]);
                 }
             }
 
@@ -1154,7 +1154,7 @@ namespace rocsparse
         {
             if(tidx == 0 && tidy == 0)
             {
-                rocsparse_atomic_min(zero_pivot, block_row + idx_base);
+                rocsparse::atomic_min(zero_pivot, block_row + idx_base);
 
                 // Last lane in wavefront writes "we are done" flag for its block row
                 __hip_atomic_store(
@@ -1279,14 +1279,14 @@ namespace rocsparse
                             T v1      = bsr_val[idx2 + block_dim * q + p];
                             T v2      = (tidy < block_dim) ? bsr_val[idx + block_dim * tidy + p]
                                                            : static_cast<T>(0);
-                            local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                            local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                         }
                         else
                         {
                             T v1      = bsr_val[idx2 + block_dim * p + q];
                             T v2      = (tidy < block_dim) ? bsr_val[idx + block_dim * p + tidy]
                                                            : static_cast<T>(0);
-                            local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                            local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                         }
                     }
 
@@ -1310,7 +1310,7 @@ namespace rocsparse
                     if(tidx == 0 && tidy == 0)
                     {
                         // We are looking for the first zero pivot
-                        rocsparse_atomic_min(zero_pivot, block_col + idx_base);
+                        rocsparse::atomic_min(zero_pivot, block_col + idx_base);
                     }
 
                     diag_val = static_cast<T>(1);
@@ -1326,14 +1326,14 @@ namespace rocsparse
                         T v1
                             = bsr_val[block_dim * block_dim * local_block_diag + block_dim * k + p];
                         T v2      = values[tidy][p];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                     else
                     {
                         T v1
                             = bsr_val[block_dim * block_dim * local_block_diag + block_dim * p + k];
                         T v2      = values[tidy][p];
-                        local_sum = rocsparse_fma(v1, rocsparse_conj(v2), local_sum);
+                        local_sum = rocsparse::fma(v1, rocsparse::conj(v2), local_sum);
                     }
                 }
 
@@ -1346,7 +1346,7 @@ namespace rocsparse
                 for(rocsparse_int q = tidx; q < block_dim; q += DIMX)
                 {
                     row_sum[tidy][q]
-                        = rocsparse_fma(val, rocsparse_conj(values[q][k]), row_sum[tidy][q]);
+                        = rocsparse::fma(val, rocsparse::conj(values[q][k]), row_sum[tidy][q]);
                 }
 
                 __threadfence_block();
@@ -1397,7 +1397,7 @@ namespace rocsparse
         {
             if(k == tidy)
             {
-                values[k][k] = sqrt(rocsparse_abs(values[k][k] - row_sum[k][k]));
+                values[k][k] = rocsparse::sqrt(rocsparse::abs(values[k][k] - row_sum[k][k]));
             }
 
             __threadfence_block();
@@ -1414,7 +1414,7 @@ namespace rocsparse
                 if(tidx == 0 && tidy == 0)
                 {
                     // We are looking for the first zero pivot
-                    rocsparse_atomic_min(zero_pivot, block_row + idx_base);
+                    rocsparse::atomic_min(zero_pivot, block_row + idx_base);
                 }
 
                 // Normally would break here but to avoid divergence set diag_val to one and continue
@@ -1435,7 +1435,7 @@ namespace rocsparse
                 for(rocsparse_int q = tidx; q < block_dim; q += DIMX)
                 {
                     row_sum[tidy][q]
-                        = rocsparse_fma(val, rocsparse_conj(values[q][k]), row_sum[tidy][q]);
+                        = rocsparse::fma(val, rocsparse::conj(values[q][k]), row_sum[tidy][q]);
                 }
             }
 
@@ -1499,7 +1499,7 @@ namespace rocsparse
         {
             if(lid == WFSIZE - 1)
             {
-                rocsparse_atomic_min(zero_pivot, block_row + idx_base);
+                rocsparse::atomic_min(zero_pivot, block_row + idx_base);
 
                 // Last lane in wavefront writes "we are done" flag for its block row
                 __hip_atomic_store(
@@ -1578,7 +1578,7 @@ namespace rocsparse
                         if(lid == 0)
                         {
                             // We are looking for the first zero pivot
-                            rocsparse_atomic_min(zero_pivot, block_col + idx_base);
+                            rocsparse::atomic_min(zero_pivot, block_col + idx_base);
                         }
 
                         // Normally would break here but to avoid divergence set diag_val to one and continue
@@ -1652,14 +1652,14 @@ namespace rocsparse
                                     }
 
                                     // If a match has been found, do linear combination
-                                    local_sum = rocsparse_fma(vp, rocsparse_conj(vj), local_sum);
+                                    local_sum = rocsparse::fma(vp, rocsparse::conj(vj), local_sum);
                                 }
                             }
                         }
                     }
 
                     val     = (val - local_sum) / diag_val;
-                    row_sum = rocsparse_fma(val, rocsparse_conj(val), row_sum);
+                    row_sum = rocsparse::fma(val, rocsparse::conj(val), row_sum);
 
                     if(direction == rocsparse_direction_row)
                     {
@@ -1680,7 +1680,8 @@ namespace rocsparse
                 // Check if 'col' row is complete
                 if(j == row)
                 {
-                    bsr_val[row_diag] = sqrt(rocsparse_abs(bsr_val[row_diag] - row_sum));
+                    bsr_val[row_diag]
+                        = rocsparse::sqrt(rocsparse::abs(bsr_val[row_diag] - row_sum));
                 }
 
                 // Ensure previous writes to global memory are seen by all threads
@@ -1695,7 +1696,7 @@ namespace rocsparse
                     if(lid == 0)
                     {
                         // We are looking for the first zero pivot
-                        rocsparse_atomic_min(zero_pivot, block_row + idx_base);
+                        rocsparse::atomic_min(zero_pivot, block_row + idx_base);
                     }
 
                     // Normally would break here but to avoid divergence set diag_val to one and continue
@@ -1739,7 +1740,7 @@ namespace rocsparse
                             }
 
                             // If a match has been found, do linear combination
-                            local_sum = rocsparse_fma(vk, rocsparse_conj(vj), local_sum);
+                            local_sum = rocsparse::fma(vk, rocsparse::conj(vj), local_sum);
                         }
                     }
 
@@ -1761,11 +1762,11 @@ namespace rocsparse
                         }
 
                         // If a match has been found, do linear combination
-                        local_sum = rocsparse_fma(vk, rocsparse_conj(vj), local_sum);
+                        local_sum = rocsparse::fma(vk, rocsparse::conj(vj), local_sum);
                     }
 
                     val     = (val - local_sum) / diag_val;
-                    row_sum = rocsparse_fma(val, rocsparse_conj(val), row_sum);
+                    row_sum = rocsparse::fma(val, rocsparse::conj(val), row_sum);
 
                     if(direction == rocsparse_direction_row)
                     {

@@ -97,7 +97,7 @@ namespace rocsparse
             }
 
             // last thread in segment will contain the min after this call
-            rocsparse_wfreduce_min<WF_SEGMENT_SIZE>(&min_block_col_index);
+            rocsparse::wfreduce_min<WF_SEGMENT_SIZE>(&min_block_col_index);
 
             // broadcast min_block_col_index from last thread in segment to all threads in segment
             min_block_col_index = __shfl(min_block_col_index, WF_SEGMENT_SIZE - 1, WF_SEGMENT_SIZE);
@@ -201,7 +201,7 @@ namespace rocsparse
             }
 
             // find minimum CSR column index across all threads in this segment and store in last thread of segment
-            rocsparse_wfreduce_min<WF_SEGMENT_SIZE>(&min_block_col);
+            rocsparse::wfreduce_min<WF_SEGMENT_SIZE>(&min_block_col);
 
             // have last thread in segment write to CSR column indices array
             if(min_block_col < nb_C && wf_segment_lane_id == WF_SEGMENT_SIZE - 1)

@@ -122,7 +122,7 @@ namespace rocsparse
 
                 for(rocsparse_int bj = 0; bj < block_dim; ++bj)
                 {
-                    local_sum = rocsparse_fma(
+                    local_sum = rocsparse::fma(
                         bsr_val[BSR_IND(j, bi, bj, dir)], y[local_col * block_dim + bj], local_sum);
                 }
 
@@ -172,7 +172,7 @@ namespace rocsparse
 
             if(pivot == true)
             {
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }
@@ -271,7 +271,7 @@ namespace rocsparse
 
                 for(rocsparse_int bj = 0; bj < block_dim; ++bj)
                 {
-                    local_sum = rocsparse_fma(
+                    local_sum = rocsparse::fma(
                         bsr_val[BSR_IND(j, bi, bj, dir)], y[local_col * block_dim + bj], local_sum);
                 }
 
@@ -321,7 +321,7 @@ namespace rocsparse
 
             if(pivot == true)
             {
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }
@@ -447,7 +447,7 @@ namespace rocsparse
                 for(rocsparse_int l = 0; l < BSRDIM; ++l)
                 {
                     local_sum
-                        = rocsparse_fma(-bsr_values[lid + l * BSRDIM], bsr_updates[l], local_sum);
+                        = rocsparse::fma(-bsr_values[lid + l * BSRDIM], bsr_updates[l], local_sum);
                 }
             }
         }
@@ -465,7 +465,7 @@ namespace rocsparse
                                                                      : static_cast<T>(1);
 
                 // Load result of bi-th BSR row
-                T val = rocsparse_shfl(local_sum, bi);
+                T val = rocsparse::shfl(local_sum, bi);
 
                 // Check for numerical pivot
                 if(diag == static_cast<T>(0))
@@ -483,7 +483,7 @@ namespace rocsparse
                 {
                     if(bi < lid)
                     {
-                        local_sum = rocsparse_fma(-val, bsr_values[lid + bi * BSRDIM], local_sum);
+                        local_sum = rocsparse::fma(-val, bsr_values[lid + bi * BSRDIM], local_sum);
                     }
                     else if(lid == bi)
                     {
@@ -507,7 +507,7 @@ namespace rocsparse
             // Find the minimum pivot, if applicable
             if(pivot == true)
             {
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }
@@ -633,7 +633,7 @@ namespace rocsparse
                 for(rocsparse_int l = 0; l < BSRDIM; ++l)
                 {
                     local_sum
-                        = rocsparse_fma(-bsr_values[lid + l * BSRDIM], bsr_updates[l], local_sum);
+                        = rocsparse::fma(-bsr_values[lid + l * BSRDIM], bsr_updates[l], local_sum);
                 }
             }
         }
@@ -651,7 +651,7 @@ namespace rocsparse
                                                                      : static_cast<T>(1);
 
                 // Load result of bi-th BSR row
-                T val = rocsparse_shfl(local_sum, bi);
+                T val = rocsparse::shfl(local_sum, bi);
 
                 // Check for numerical pivot
                 if(diag == static_cast<T>(0))
@@ -669,7 +669,7 @@ namespace rocsparse
                 {
                     if(bi > lid)
                     {
-                        local_sum = rocsparse_fma(-val, bsr_values[lid + bi * BSRDIM], local_sum);
+                        local_sum = rocsparse::fma(-val, bsr_values[lid + bi * BSRDIM], local_sum);
                     }
                     else if(lid == bi)
                     {
@@ -693,7 +693,7 @@ namespace rocsparse
             // Find the minimum pivot, if applicable
             if(pivot == true)
             {
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }

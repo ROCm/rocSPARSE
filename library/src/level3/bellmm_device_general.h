@@ -122,9 +122,9 @@ namespace rocsparse
                         {
                             for(I l = 0; l < BELL_BLOCK_DIM; l++)
                             {
-                                sum = rocsparse_fma<T>(
-                                    rocsparse_conj(shared_A[BELL_BLOCK_DIM * l + tidx]),
-                                    rocsparse_conj(shared_B[BELL_BLOCK_DIM * tidy + l]),
+                                sum = rocsparse::fma<T>(
+                                    rocsparse::conj(shared_A[BELL_BLOCK_DIM * l + tidx]),
+                                    rocsparse::conj(shared_B[BELL_BLOCK_DIM * tidy + l]),
                                     sum);
                             }
                         }
@@ -133,9 +133,9 @@ namespace rocsparse
                         {
                             for(I l = 0; l < BELL_BLOCK_DIM; l++)
                             {
-                                sum = rocsparse_fma<T>(
+                                sum = rocsparse::fma<T>(
                                     shared_A[BELL_BLOCK_DIM * l + tidx],
-                                    rocsparse_conj(shared_B[BELL_BLOCK_DIM * tidy + l]),
+                                    rocsparse::conj(shared_B[BELL_BLOCK_DIM * tidy + l]),
                                     sum);
                             }
                         }
@@ -144,8 +144,8 @@ namespace rocsparse
                         {
                             for(I l = 0; l < BELL_BLOCK_DIM; l++)
                             {
-                                sum = rocsparse_fma<T>(
-                                    rocsparse_conj(shared_A[BELL_BLOCK_DIM * l + tidx]),
+                                sum = rocsparse::fma<T>(
+                                    rocsparse::conj(shared_A[BELL_BLOCK_DIM * l + tidx]),
                                     shared_B[BELL_BLOCK_DIM * tidy + l],
                                     sum);
                             }
@@ -154,9 +154,9 @@ namespace rocsparse
                         {
                             for(I l = 0; l < BELL_BLOCK_DIM; l++)
                             {
-                                sum = rocsparse_fma<T>(shared_A[BELL_BLOCK_DIM * l + tidx],
-                                                       shared_B[BELL_BLOCK_DIM * tidy + l],
-                                                       sum);
+                                sum = rocsparse::fma<T>(shared_A[BELL_BLOCK_DIM * l + tidx],
+                                                        shared_B[BELL_BLOCK_DIM * tidy + l],
+                                                        sum);
                             }
                         }
                     }
@@ -176,7 +176,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    dense_C[shift_C] = rocsparse_fma(beta, dense_C[shift_C], alpha * sum);
+                    dense_C[shift_C] = rocsparse::fma(beta, dense_C[shift_C], alpha * sum);
                 }
             }
         }

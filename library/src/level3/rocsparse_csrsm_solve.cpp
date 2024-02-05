@@ -82,7 +82,7 @@ namespace rocsparse
     void csrsm_transpose(
         I m, I n, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
     {
-        dense_transpose_device<DIM_X, DIM_Y>(m, n, (T)1, A, lda, B, ldb);
+        rocsparse::dense_transpose_device<DIM_X, DIM_Y>(m, n, (T)1, A, lda, B, ldb);
     }
 
     template <typename I, typename J, typename T, typename U>
@@ -218,7 +218,7 @@ namespace rocsparse
             if(trans_A == rocsparse_operation_conjugate_transpose)
             {
                 // conjugate csrt_val
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((conjugate<256, I, T>),
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::conjugate<256, I, T>),
                                                    dim3((nnz - 1) / 256 + 1),
                                                    dim3(256),
                                                    0,
@@ -505,17 +505,18 @@ namespace rocsparse
             dim3 csrsm_blocks((m - 1) / CSRSM_DIM_X + 1);
             dim3 csrsm_threads(CSRSM_DIM_X * CSRSM_DIM_Y);
 
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((dense_transpose_back<CSRSM_DIM_X, CSRSM_DIM_Y>),
-                                               csrsm_blocks,
-                                               csrsm_threads,
-                                               0,
-                                               stream,
-                                               m,
-                                               nrhs,
-                                               Bt,
-                                               ldimB,
-                                               B,
-                                               ldb);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::dense_transpose_back<CSRSM_DIM_X, CSRSM_DIM_Y>),
+                csrsm_blocks,
+                csrsm_threads,
+                0,
+                stream,
+                m,
+                nrhs,
+                Bt,
+                ldimB,
+                B,
+                ldb);
 #undef CSRSM_DIM_X
 #undef CSRSM_DIM_Y
         }

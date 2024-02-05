@@ -82,15 +82,15 @@ namespace rocsparse
         {
             // Get corresponding COO entry
             I r = (idx < nnz)
-                      ? rocsparse_nontemporal_load(coo_row_ind + idx + batch_stride_A * batch)
+                      ? rocsparse::nontemporal_load(coo_row_ind + idx + batch_stride_A * batch)
                             - idx_base
                       : -1;
             I c = (idx < nnz)
-                      ? rocsparse_nontemporal_load(coo_col_ind + idx + batch_stride_A * batch)
+                      ? rocsparse::nontemporal_load(coo_col_ind + idx + batch_stride_A * batch)
                             - idx_base
                       : 0;
             T v = (idx < nnz)
-                      ? alpha * rocsparse_nontemporal_load(coo_val + idx + batch_stride_A * batch)
+                      ? alpha * rocsparse::nontemporal_load(coo_val + idx + batch_stride_A * batch)
                       : static_cast<T>(0);
 
             row = r;
@@ -102,7 +102,7 @@ namespace rocsparse
                     for(unsigned int p = 0; p < COLS; p++)
                     {
                         val[p] = v
-                                 * rocsparse_conj(
+                                 * rocsparse::conj(
                                      dense_B[c * ldb + (col_offset + p) + batch_stride_B * batch]);
                     }
                 }
@@ -121,7 +121,7 @@ namespace rocsparse
                     for(unsigned int p = 0; p < COLS; p++)
                     {
                         val[p] = v
-                                 * rocsparse_conj(
+                                 * rocsparse::conj(
                                      dense_B[(col_offset + p) * ldb + c + batch_stride_B * batch]);
                     }
                 }
@@ -153,7 +153,7 @@ namespace rocsparse
                     {
                         for(unsigned int p = 0; p < COLS; p++)
                         {
-                            rocsparse_atomic_add(
+                            rocsparse::atomic_add(
                                 &dense_C[prevrow + (col_offset + p) * ldc + batch_stride_C * batch],
                                 shared_val[p][WF_SIZE - 1]);
                         }
@@ -162,7 +162,7 @@ namespace rocsparse
                     {
                         for(unsigned int p = 0; p < COLS; p++)
                         {
-                            rocsparse_atomic_add(
+                            rocsparse::atomic_add(
                                 &dense_C[(col_offset + p) + prevrow * ldc + batch_stride_C * batch],
                                 shared_val[p][WF_SIZE - 1]);
                         }
@@ -214,7 +214,7 @@ namespace rocsparse
                     {
                         for(unsigned int p = 0; p < COLS; p++)
                         {
-                            rocsparse_atomic_add(
+                            rocsparse::atomic_add(
                                 &dense_C[row + (col_offset + p) * ldc + batch_stride_C * batch],
                                 val[p]);
                         }
@@ -223,7 +223,7 @@ namespace rocsparse
                     {
                         for(unsigned int p = 0; p < COLS; p++)
                         {
-                            rocsparse_atomic_add(
+                            rocsparse::atomic_add(
                                 &dense_C[(col_offset + p) + row * ldc + batch_stride_C * batch],
                                 val[p]);
                         }
@@ -241,7 +241,7 @@ namespace rocsparse
             {
                 for(unsigned int p = 0; p < COLS; p++)
                 {
-                    rocsparse_atomic_add(
+                    rocsparse::atomic_add(
                         &dense_C[row + (col_offset + p) * ldc + batch_stride_C * batch], val[p]);
                 }
             }
@@ -249,7 +249,7 @@ namespace rocsparse
             {
                 for(unsigned int p = 0; p < COLS; p++)
                 {
-                    rocsparse_atomic_add(
+                    rocsparse::atomic_add(
                         &dense_C[(col_offset + p) + row * ldc + batch_stride_C * batch], val[p]);
                 }
             }

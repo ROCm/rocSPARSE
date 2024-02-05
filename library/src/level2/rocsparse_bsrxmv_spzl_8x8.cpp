@@ -71,7 +71,7 @@ namespace rocsparse
                 for(; offset < offset_end; offset++)
                 {
                     const J jam0 = bsr_col_ind[offset] - idx_base;
-                    fk           = rocsparse_fma(*bsr_val, x[local_j + jam0 * block_size], fk);
+                    fk           = rocsparse::fma(*bsr_val, x[local_j + jam0 * block_size], fk);
                     bsr_val += sq_block_size;
                 }
             }
@@ -84,7 +84,7 @@ namespace rocsparse
                 for(; offset < offset_end; offset++)
                 {
                     const J jam0 = bsr_col_ind[offset] - idx_base;
-                    fk           = rocsparse_fma(*bsr_val, x[local_j + jam0 * block_size], fk);
+                    fk           = rocsparse::fma(*bsr_val, x[local_j + jam0 * block_size], fk);
                     bsr_val += sq_block_size;
                 }
             }
@@ -204,7 +204,7 @@ namespace rocsparse
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
-                sum = rocsparse_fma<T>(*bsr_val, x[col + idx], sum);
+                sum = rocsparse::fma<T>(*bsr_val, x[col + idx], sum);
             }
             bsr_val += NBLOCKS * SQBSRDIM;
         }
@@ -256,7 +256,7 @@ namespace rocsparse
             if(beta != static_cast<T>(0))
             {
                 y[row * BSRDIM + hipThreadIdx_x]
-                    = rocsparse_fma<T>(beta, y[row * BSRDIM + hipThreadIdx_x], alpha * sum);
+                    = rocsparse::fma<T>(beta, y[row * BSRDIM + hipThreadIdx_x], alpha * sum);
             }
             else
             {

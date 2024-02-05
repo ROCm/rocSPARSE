@@ -227,7 +227,7 @@ rocsparse_status rocsparse::coomv_analysis_template(rocsparse_handle          ha
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::coo2csr_template(
                 handle, coo_row_ind, (I)nnz, m, csr_row_ptr, descr->base));
 
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr_max_nnz_per_row<256, I, I>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csr_max_nnz_per_row<256, I, I>),
                                                dim3((m - 1) / 256 + 1),
                                                dim3(256),
                                                0,
@@ -260,14 +260,15 @@ rocsparse_status rocsparse::coomv_analysis_template(rocsparse_handle          ha
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse::coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
 
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csr_max_nnz_per_row<256, int64_t, int64_t>),
-                                               dim3((m - 1) / 256 + 1),
-                                               dim3(256),
-                                               0,
-                                               handle->stream,
-                                               m,
-                                               csr_row_ptr,
-                                               max_nnz);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::csr_max_nnz_per_row<256, int64_t, int64_t>),
+                dim3((m - 1) / 256 + 1),
+                dim3(256),
+                0,
+                handle->stream,
+                m,
+                csr_row_ptr,
+                max_nnz);
 
             int64_t local_max_nnz;
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
@@ -627,7 +628,7 @@ rocsparse_status rocsparse::coomv_template(rocsparse_handle          handle,
         {
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<256>),
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
                                                    dim3((ysize - 1) / 256 + 1),
                                                    dim3(256),
                                                    0,
@@ -638,7 +639,7 @@ rocsparse_status rocsparse::coomv_template(rocsparse_handle          handle,
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<256>),
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
                                                    dim3((ysize - 1) / 256 + 1),
                                                    dim3(256),
                                                    0,

@@ -161,7 +161,7 @@ rocsparse_status rocsparse::prune_dense2csr_nnz_template(rocsparse_handle       
     {
         if(nnz_total_dev_host_ptr != nullptr && csr_row_ptr != nullptr)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
                                                dim3(m / 256 + 1),
                                                dim3(256),
                                                0,

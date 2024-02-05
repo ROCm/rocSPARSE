@@ -39,6 +39,6 @@ namespace rocsparse
             return;
         }
 
-        output[thread_id] = rocsparse_abs(csr_val_A[thread_id]);
+        output[thread_id] = rocsparse::abs(csr_val_A[thread_id]);
     }
 }

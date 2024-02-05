@@ -135,7 +135,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
         }
         else
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256, J, I>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256, J, I>),
                                                dim3(m / 256 + 1),
                                                dim3(256),
                                                0,

@@ -100,17 +100,17 @@ namespace rocsparse
 
                     // Compute the sum of the three rows within the BSR blocks of the current
                     // BSR row
-                    sum0 = rocsparse_fma<T>(bval[0], x[col + 0], sum0);
-                    sum1 = rocsparse_fma<T>(bval[1], x[col + 0], sum1);
-                    sum2 = rocsparse_fma<T>(bval[2], x[col + 0], sum2);
+                    sum0 = rocsparse::fma<T>(bval[0], x[col + 0], sum0);
+                    sum1 = rocsparse::fma<T>(bval[1], x[col + 0], sum1);
+                    sum2 = rocsparse::fma<T>(bval[2], x[col + 0], sum2);
 
-                    sum0 = rocsparse_fma<T>(bval[3], x[col + 1], sum0);
-                    sum1 = rocsparse_fma<T>(bval[4], x[col + 1], sum1);
-                    sum2 = rocsparse_fma<T>(bval[5], x[col + 1], sum2);
+                    sum0 = rocsparse::fma<T>(bval[3], x[col + 1], sum0);
+                    sum1 = rocsparse::fma<T>(bval[4], x[col + 1], sum1);
+                    sum2 = rocsparse::fma<T>(bval[5], x[col + 1], sum2);
 
-                    sum0 = rocsparse_fma<T>(bval[6], x[col + 2], sum0);
-                    sum1 = rocsparse_fma<T>(bval[7], x[col + 2], sum1);
-                    sum2 = rocsparse_fma<T>(bval[8], x[col + 2], sum2);
+                    sum0 = rocsparse::fma<T>(bval[6], x[col + 2], sum0);
+                    sum1 = rocsparse::fma<T>(bval[7], x[col + 2], sum1);
+                    sum2 = rocsparse::fma<T>(bval[8], x[col + 2], sum2);
                     bval += VALOFFSET;
                 }
             }
@@ -122,35 +122,35 @@ namespace rocsparse
 
                     // Compute the sum of the three rows within the BSR blocks of the current
                     // BSR row
-                    sum0 = rocsparse_fma<T>(bval[0], x[col + 0], sum0);
-                    sum0 = rocsparse_fma<T>(bval[1], x[col + 1], sum0);
-                    sum0 = rocsparse_fma<T>(bval[2], x[col + 2], sum0);
+                    sum0 = rocsparse::fma<T>(bval[0], x[col + 0], sum0);
+                    sum0 = rocsparse::fma<T>(bval[1], x[col + 1], sum0);
+                    sum0 = rocsparse::fma<T>(bval[2], x[col + 2], sum0);
 
-                    sum1 = rocsparse_fma<T>(bval[3], x[col + 0], sum1);
-                    sum1 = rocsparse_fma<T>(bval[4], x[col + 1], sum1);
-                    sum1 = rocsparse_fma<T>(bval[5], x[col + 2], sum1);
+                    sum1 = rocsparse::fma<T>(bval[3], x[col + 0], sum1);
+                    sum1 = rocsparse::fma<T>(bval[4], x[col + 1], sum1);
+                    sum1 = rocsparse::fma<T>(bval[5], x[col + 2], sum1);
 
-                    sum2 = rocsparse_fma<T>(bval[6], x[col + 0], sum2);
-                    sum2 = rocsparse_fma<T>(bval[7], x[col + 1], sum2);
-                    sum2 = rocsparse_fma<T>(bval[8], x[col + 2], sum2);
+                    sum2 = rocsparse::fma<T>(bval[6], x[col + 0], sum2);
+                    sum2 = rocsparse::fma<T>(bval[7], x[col + 1], sum2);
+                    sum2 = rocsparse::fma<T>(bval[8], x[col + 2], sum2);
                     bval += VALOFFSET;
                 }
             }
         }
 
         // Each wavefront accumulates its BSR block row sum
-        sum0 = rocsparse_wfreduce_sum<WFSIZE>(sum0);
-        sum1 = rocsparse_wfreduce_sum<WFSIZE>(sum1);
-        sum2 = rocsparse_wfreduce_sum<WFSIZE>(sum2);
+        sum0 = rocsparse::wfreduce_sum<WFSIZE>(sum0);
+        sum1 = rocsparse::wfreduce_sum<WFSIZE>(sum1);
+        sum2 = rocsparse::wfreduce_sum<WFSIZE>(sum2);
 
         // Last lane of each wavefront writes its result to global memory
         if(lid == WFSIZE - 1)
         {
             if(beta != static_cast<T>(0))
             {
-                y[row * BSRDIM + 0] = rocsparse_fma<T>(beta, y[row * BSRDIM + 0], alpha * sum0);
-                y[row * BSRDIM + 1] = rocsparse_fma<T>(beta, y[row * BSRDIM + 1], alpha * sum1);
-                y[row * BSRDIM + 2] = rocsparse_fma<T>(beta, y[row * BSRDIM + 2], alpha * sum2);
+                y[row * BSRDIM + 0] = rocsparse::fma<T>(beta, y[row * BSRDIM + 0], alpha * sum0);
+                y[row * BSRDIM + 1] = rocsparse::fma<T>(beta, y[row * BSRDIM + 1], alpha * sum1);
+                y[row * BSRDIM + 2] = rocsparse::fma<T>(beta, y[row * BSRDIM + 2], alpha * sum2);
             }
             else
             {

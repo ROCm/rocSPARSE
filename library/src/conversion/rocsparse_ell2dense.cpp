@@ -105,7 +105,7 @@ rocsparse_status rocsparse::ell2dense_template(rocsparse_handle          handle,
     // RETURN_IF_HIP_ERROR(hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, stream));
 
     // Set memory to zero.
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((memset2d_kernel<512>),
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::memset2d_kernel<512>),
                                        dim3((m * n - 1) / 512 + 1),
                                        dim3(512),
                                        0,

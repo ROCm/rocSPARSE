@@ -193,7 +193,7 @@ namespace rocsparse
                             for(int c = 0; c < BLOCKDIM; c++)
                             {
                                 data[BLOCKDIM * BLOCKDIM * shf_B + BLOCKDIM * r + c]
-                                    = rocsparse_fma(
+                                    = rocsparse::fma(
                                         beta,
                                         bsr_val_B[BLOCKDIM * BLOCKDIM * row_begin_B + BLOCKDIM * r
                                                   + c],
@@ -208,7 +208,7 @@ namespace rocsparse
                             for(int c = 0; c < BLOCKDIM; c++)
                             {
                                 data[BLOCKDIM * BLOCKDIM * shf_B + BLOCKDIM * r + c]
-                                    = rocsparse_fma(
+                                    = rocsparse::fma(
                                         beta,
                                         bsr_val_B[BLOCKDIM * BLOCKDIM * row_begin_B + BLOCKDIM * c
                                                   + r],
@@ -444,14 +444,14 @@ namespace rocsparse
                     {
                         if(dir == rocsparse_direction_row)
                         {
-                            sdata[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * r + c] = rocsparse_fma(
+                            sdata[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * r + c] = rocsparse::fma(
                                 beta,
                                 bsr_val_B[block_dim * block_dim * row_begin_B + block_dim * r + c],
                                 sdata[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * r + c]);
                         }
                         else
                         {
-                            sdata[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * c + r] = rocsparse_fma(
+                            sdata[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * c + r] = rocsparse::fma(
                                 beta,
                                 bsr_val_B[block_dim * block_dim * row_begin_B + block_dim * c + r],
                                 sdata[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * c + r]);
@@ -509,7 +509,7 @@ namespace rocsparse
 
             __syncthreads();
 
-            rocsparse_blockreduce_sum<BLOCKSIZE / (BLOCKDIM * BLOCKDIM)>(tid, sdone);
+            rocsparse::blockreduce_sum<BLOCKSIZE / (BLOCKDIM * BLOCKDIM)>(tid, sdone);
         }
     }
 
@@ -657,14 +657,14 @@ namespace rocsparse
                     {
                         if(dir == rocsparse_direction_row)
                         {
-                            sdata[BLOCKDIM * BLOCKDIM * shf_B + BLOCKDIM * r + c] = rocsparse_fma(
+                            sdata[BLOCKDIM * BLOCKDIM * shf_B + BLOCKDIM * r + c] = rocsparse::fma(
                                 beta,
                                 bsr_val_B[block_dim * block_dim * row_begin_B + block_dim * r + c],
                                 sdata[BLOCKDIM * BLOCKDIM * shf_B + BLOCKDIM * r + c]);
                         }
                         else
                         {
-                            sdata[BLOCKDIM * BLOCKDIM * shf_B + BLOCKDIM * c + r] = rocsparse_fma(
+                            sdata[BLOCKDIM * BLOCKDIM * shf_B + BLOCKDIM * c + r] = rocsparse::fma(
                                 beta,
                                 bsr_val_B[block_dim * block_dim * row_begin_B + block_dim * c + r],
                                 sdata[BLOCKDIM * BLOCKDIM * shf_B + BLOCKDIM * c + r]);
@@ -782,7 +782,7 @@ namespace rocsparse
 
                 __syncthreads();
 
-                rocsparse_blockreduce_min<(BLOCKSIZE / (BLOCKDIM * BLOCKDIM))>(tid, stable);
+                rocsparse::blockreduce_min<(BLOCKSIZE / (BLOCKDIM * BLOCKDIM))>(tid, stable);
 
                 min_col = stable[0];
 
@@ -939,18 +939,18 @@ namespace rocsparse
                             if(dir == rocsparse_direction_row)
                             {
                                 data[BLOCKDIM * wid + (i + lid)]
-                                    = rocsparse_fma(beta,
-                                                    bsr_val_B[block_dim * block_dim * row_begin_B
-                                                              + block_dim * wid + (i + lid)],
-                                                    data[BLOCKDIM * wid + (i + lid)]);
+                                    = rocsparse::fma(beta,
+                                                     bsr_val_B[block_dim * block_dim * row_begin_B
+                                                               + block_dim * wid + (i + lid)],
+                                                     data[BLOCKDIM * wid + (i + lid)]);
                             }
                             else
                             {
                                 data[BLOCKDIM * (i + lid) + wid]
-                                    = rocsparse_fma(beta,
-                                                    bsr_val_B[block_dim * block_dim * row_begin_B
-                                                              + block_dim * (i + lid) + wid],
-                                                    data[BLOCKDIM * (i + lid) + wid]);
+                                    = rocsparse::fma(beta,
+                                                     bsr_val_B[block_dim * block_dim * row_begin_B
+                                                               + block_dim * (i + lid) + wid],
+                                                     data[BLOCKDIM * (i + lid) + wid]);
                             }
                         }
                     }

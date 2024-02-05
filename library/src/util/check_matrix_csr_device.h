@@ -146,13 +146,13 @@ namespace rocsparse
 
             // check if values are inf or nan
             const T val = csr_val[j];
-            if(rocsparse_is_inf(val))
+            if(rocsparse::is_inf(val))
             {
                 record_data_status(data_status, rocsparse_data_status_inf);
                 return;
             }
 
-            if(rocsparse_is_nan(val))
+            if(rocsparse::is_nan(val))
             {
                 record_data_status(data_status, rocsparse_data_status_nan);
                 return;

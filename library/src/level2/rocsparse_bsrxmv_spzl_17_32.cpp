@@ -89,7 +89,7 @@ namespace rocsparse
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
-                sum = rocsparse_fma<T>(*bsr_val, x[col + idx], sum);
+                sum = rocsparse::fma<T>(*bsr_val, x[col + idx], sum);
                 bsr_val += SQBSRDIM;
             }
         }
@@ -145,7 +145,7 @@ namespace rocsparse
             if(beta != static_cast<T>(0))
             {
                 y[row * BSRDIM + hipThreadIdx_x]
-                    = rocsparse_fma<T>(beta, y[row * BSRDIM + hipThreadIdx_x], alpha * sum);
+                    = rocsparse::fma<T>(beta, y[row * BSRDIM + hipThreadIdx_x], alpha * sum);
             }
             else
             {

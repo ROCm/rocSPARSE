@@ -152,13 +152,13 @@ namespace rocsparse
                     {
                         const T val = bsr_val[int64_t(row_block_dim) * col_block_dim * j
                                               + col_block_dim * r + c];
-                        if(rocsparse_is_inf(val))
+                        if(rocsparse::is_inf(val))
                         {
                             record_data_status(data_status, rocsparse_data_status_inf);
                             return;
                         }
 
-                        if(rocsparse_is_nan(val))
+                        if(rocsparse::is_nan(val))
                         {
                             record_data_status(data_status, rocsparse_data_status_nan);
                             return;
@@ -174,13 +174,13 @@ namespace rocsparse
                     {
                         const T val = bsr_val[int64_t(row_block_dim) * col_block_dim * j
                                               + row_block_dim * c + r];
-                        if(rocsparse_is_inf(val))
+                        if(rocsparse::is_inf(val))
                         {
                             record_data_status(data_status, rocsparse_data_status_inf);
                             return;
                         }
 
-                        if(rocsparse_is_nan(val))
+                        if(rocsparse::is_nan(val))
                         {
                             record_data_status(data_status, rocsparse_data_status_nan);
                             return;

@@ -102,7 +102,7 @@ ROCSPARSE_DEVICE_ILF void device_calculate(const J i,
         const J jy = uind_[ky] - base_;
         if(jx == jy)
         {
-            sum = (jx == jy) ? rocsparse_fma(ilu0_[kx], ilu0_[uperm_[ky]], sum) : sum;
+            sum = (jx == jy) ? rocsparse::fma(ilu0_[kx], ilu0_[uperm_[ky]], sum) : sum;
         }
         kx = (jx <= jy) ? (kx + 1) : kx;
         ky = (jx >= jy) ? (ky + 1) : ky;
@@ -141,7 +141,7 @@ ROCSPARSE_DEVICE_ILF void device_calculate(const J i,
         {
             if((lind_[kx] - base_) == j)
             {
-                sum = rocsparse_fma(ilu0_[kx], diag, sum);
+                sum = rocsparse::fma(ilu0_[kx], diag, sum);
                 break;
             }
         }
@@ -232,7 +232,7 @@ void kernel_calculate(const J m_,
         //
         // Current Warp reduce.
         //
-        rocsparse_wfreduce_max<WFSIZE>(&nrm);
+        rocsparse::wfreduce_max<WFSIZE>(&nrm);
         if(lid == WFSIZE - 1)
         {
             nrms[wid] = nrm;
@@ -242,14 +242,14 @@ void kernel_calculate(const J m_,
         //
         // Reduce over warps.
         //
-        rocsparse_blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, nrms);
+        rocsparse::blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, nrms);
 
         //
         // Atomic to reduce over blocks.
         //
         if(hipThreadIdx_x == 0)
         {
-            rocsparse_atomic_max(nrm_, nrms[0] / nrm0_[0]);
+            rocsparse::atomic_max(nrm_, nrms[0] / nrm0_[0]);
         }
     }
 }
@@ -376,16 +376,16 @@ void kernel_calculate_coo(const J m_,
 
     if(RESIDUAL)
     {
-        rocsparse_wfreduce_max<WFSIZE>(&nrm);
+        rocsparse::wfreduce_max<WFSIZE>(&nrm);
         if(lid == WFSIZE - 1)
         {
             nrms[wid] = nrm;
         }
         __syncthreads();
-        rocsparse_blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, nrms);
+        rocsparse::blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, nrms);
         if(hipThreadIdx_x == 0)
         {
-            rocsparse_atomic_max(nrm_, nrms[0] / nrm0_[0]);
+            rocsparse::atomic_max(nrm_, nrms[0] / nrm0_[0]);
         }
     }
 }
@@ -1047,19 +1047,19 @@ void kernel_compute_unnz(J m_,
     }
     data[hipThreadIdx_x] = nnz;
     __syncthreads();
-    rocsparse_blockreduce_sum<BLOCKSIZE>(hipThreadIdx_x, data);
+    rocsparse::blockreduce_sum<BLOCKSIZE>(hipThreadIdx_x, data);
     if(hipThreadIdx_x == 0)
     {
-        rocsparse_atomic_add(nnz_, data[0]);
+        rocsparse::atomic_add(nnz_, data[0]);
     }
     if(nnz_diag_ != nullptr)
     {
         data[hipThreadIdx_x] = nnz_diag;
         __syncthreads();
-        rocsparse_blockreduce_sum<BLOCKSIZE>(hipThreadIdx_x, data);
+        rocsparse::blockreduce_sum<BLOCKSIZE>(hipThreadIdx_x, data);
         if(hipThreadIdx_x == 0)
         {
-            rocsparse_atomic_add(nnz_diag_, data[0]);
+            rocsparse::atomic_add(nnz_diag_, data[0]);
         }
     }
 }
