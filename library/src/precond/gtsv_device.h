@@ -246,7 +246,7 @@ namespace rocsparse
                             rocsparse_int* __restrict__ pivot)
     {
         // From Bunch-Kaufman pivoting criteria
-        const double kappa = 0.5 * (sqrt(5.0) - 1.0);
+        const double kappa = 0.5 * (rocsparse::sqrt(5.0) - 1.0);
 
         rocsparse_int tidx = hipThreadIdx_x;
         rocsparse_int bidx = hipBlockIdx_x;
@@ -276,13 +276,13 @@ namespace rocsparse
             // decide whether we should use 1x1 or 2x2 pivoting using Bunch-Kaufman
             // pivoting criteria
             double sigma = 0;
-            sigma        = max(rocsparse_abs(ak_1), rocsparse_abs(ak_2));
-            sigma        = max(rocsparse_abs(bk_1), sigma);
-            sigma        = max(rocsparse_abs(ck), sigma);
-            sigma        = max(rocsparse_abs(ck_1), sigma);
+            sigma        = max(rocsparse::abs(ak_1), rocsparse::abs(ak_2));
+            sigma        = max(rocsparse::abs(bk_1), sigma);
+            sigma        = max(rocsparse::abs(ck), sigma);
+            sigma        = max(rocsparse::abs(ck_1), sigma);
 
             // 1x1 pivoting
-            if(rocsparse_abs(bk) * sigma >= kappa * rocsparse_abs(ak_1 * ck)
+            if(rocsparse::abs(bk) * sigma >= kappa * rocsparse::abs(ak_1 * ck)
                || k == (BLOCKDIM - 1) * nblocks)
             {
                 T iBk = static_cast<T>(1) / bk;
@@ -445,21 +445,21 @@ namespace rocsparse
 
                     if(k < (BLOCKDIM - 1) * nblocks)
                     {
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse::fma(
                             -ak_1, rhsk_col0, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)]);
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse::fma(
                             -ak_1, rhsk_col1, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)]);
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)] = rocsparse::fma(
                             -ak_1, rhsk_col2, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)]);
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)] = rocsparse::fma(
                             -ak_1, rhsk_col3, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)]);
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 4)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 4)] = rocsparse::fma(
                             -ak_1, rhsk_col4, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 4)]);
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 5)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 5)] = rocsparse::fma(
                             -ak_1, rhsk_col5, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 5)]);
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 6)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 6)] = rocsparse::fma(
                             -ak_1, rhsk_col6, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 6)]);
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 7)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 7)] = rocsparse::fma(
                             -ak_1, rhsk_col7, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 7)]);
                     }
                 }
@@ -477,13 +477,13 @@ namespace rocsparse
 
                     if(k < (BLOCKDIM - 1) * nblocks)
                     {
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse::fma(
                             -ak_1, rhsk_col0, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)]);
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse::fma(
                             -ak_1, rhsk_col1, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)]);
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)] = rocsparse::fma(
                             -ak_1, rhsk_col2, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)]);
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)] = rocsparse::fma(
                             -ak_1, rhsk_col3, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)]);
                     }
                 }
@@ -497,9 +497,9 @@ namespace rocsparse
 
                     if(k < (BLOCKDIM - 1) * nblocks)
                     {
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse::fma(
                             -ak_1, rhsk_col0, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)]);
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse::fma(
                             -ak_1, rhsk_col1, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)]);
                     }
                 }
@@ -511,7 +511,7 @@ namespace rocsparse
 
                     if(k < (BLOCKDIM - 1) * nblocks)
                     {
-                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse_fma(
+                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse::fma(
                             -ak_1, rhsk_col0, rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)]);
                     }
                 }
@@ -732,74 +732,74 @@ namespace rocsparse
                 if(COLS == 8)
                 {
                     rhs[k + gid + m_pad * (COLS * bidy + 0)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 0)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 0)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 1)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 1)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 1)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 2)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 2)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 2)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 3)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 3)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 3)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 4)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 4)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 4)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 4)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 4)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 5)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 5)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 5)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 5)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 5)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 6)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 6)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 6)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 6)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 6)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 7)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 7)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 7)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 7)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 7)]);
                 }
                 else if(COLS == 4)
                 {
                     rhs[k + gid + m_pad * (COLS * bidy + 0)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 0)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 0)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 1)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 1)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 1)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 2)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 2)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 2)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 3)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 3)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 3)]);
                 }
                 else if(COLS == 2)
                 {
                     rhs[k + gid + m_pad * (COLS * bidy + 0)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 0)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 0)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 1)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 1)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 1)]);
                 }
                 else
                 {
                     rhs[k + gid + m_pad * (COLS * bidy + 0)]
-                        = rocsparse_fma(mt_tmp,
-                                        rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)],
-                                        rhs[k + gid + m_pad * (COLS * bidy + 0)]);
+                        = rocsparse::fma(mt_tmp,
+                                         rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)],
+                                         rhs[k + gid + m_pad * (COLS * bidy + 0)]);
                 }
 
                 k -= nblocks;
@@ -821,37 +821,37 @@ namespace rocsparse
                     T tmp7 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 7)];
 
                     rhs[k + gid + m_pad * (COLS * bidy + 0)]
-                        = rocsparse_fma(mt_tmp, tmp0, rhs[k + gid + m_pad * (COLS * bidy + 0)]);
+                        = rocsparse::fma(mt_tmp, tmp0, rhs[k + gid + m_pad * (COLS * bidy + 0)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 1)]
-                        = rocsparse_fma(mt_tmp, tmp1, rhs[k + gid + m_pad * (COLS * bidy + 1)]);
+                        = rocsparse::fma(mt_tmp, tmp1, rhs[k + gid + m_pad * (COLS * bidy + 1)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 2)]
-                        = rocsparse_fma(mt_tmp, tmp2, rhs[k + gid + m_pad * (COLS * bidy + 2)]);
+                        = rocsparse::fma(mt_tmp, tmp2, rhs[k + gid + m_pad * (COLS * bidy + 2)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 3)]
-                        = rocsparse_fma(mt_tmp, tmp3, rhs[k + gid + m_pad * (COLS * bidy + 3)]);
+                        = rocsparse::fma(mt_tmp, tmp3, rhs[k + gid + m_pad * (COLS * bidy + 3)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 4)]
-                        = rocsparse_fma(mt_tmp, tmp4, rhs[k + gid + m_pad * (COLS * bidy + 4)]);
+                        = rocsparse::fma(mt_tmp, tmp4, rhs[k + gid + m_pad * (COLS * bidy + 4)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 5)]
-                        = rocsparse_fma(mt_tmp, tmp5, rhs[k + gid + m_pad * (COLS * bidy + 5)]);
+                        = rocsparse::fma(mt_tmp, tmp5, rhs[k + gid + m_pad * (COLS * bidy + 5)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 6)]
-                        = rocsparse_fma(mt_tmp, tmp6, rhs[k + gid + m_pad * (COLS * bidy + 6)]);
+                        = rocsparse::fma(mt_tmp, tmp6, rhs[k + gid + m_pad * (COLS * bidy + 6)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 7)]
-                        = rocsparse_fma(mt_tmp, tmp7, rhs[k + gid + m_pad * (COLS * bidy + 7)]);
+                        = rocsparse::fma(mt_tmp, tmp7, rhs[k + gid + m_pad * (COLS * bidy + 7)]);
 
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse::fma(
                         mt_tmp1, tmp0, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse::fma(
                         mt_tmp1, tmp1, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 1)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 2)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 2)] = rocsparse::fma(
                         mt_tmp1, tmp2, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 2)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 3)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 3)] = rocsparse::fma(
                         mt_tmp1, tmp3, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 3)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 4)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 4)] = rocsparse::fma(
                         mt_tmp1, tmp4, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 4)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 5)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 5)] = rocsparse::fma(
                         mt_tmp1, tmp5, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 5)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 6)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 6)] = rocsparse::fma(
                         mt_tmp1, tmp6, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 6)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 7)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 7)] = rocsparse::fma(
                         mt_tmp1, tmp7, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 7)]);
                 }
                 else if(COLS == 4)
@@ -862,21 +862,21 @@ namespace rocsparse
                     T tmp3 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)];
 
                     rhs[k + gid + m_pad * (COLS * bidy + 0)]
-                        = rocsparse_fma(mt_tmp, tmp0, rhs[k + gid + m_pad * (COLS * bidy + 0)]);
+                        = rocsparse::fma(mt_tmp, tmp0, rhs[k + gid + m_pad * (COLS * bidy + 0)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 1)]
-                        = rocsparse_fma(mt_tmp, tmp1, rhs[k + gid + m_pad * (COLS * bidy + 1)]);
+                        = rocsparse::fma(mt_tmp, tmp1, rhs[k + gid + m_pad * (COLS * bidy + 1)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 2)]
-                        = rocsparse_fma(mt_tmp, tmp2, rhs[k + gid + m_pad * (COLS * bidy + 2)]);
+                        = rocsparse::fma(mt_tmp, tmp2, rhs[k + gid + m_pad * (COLS * bidy + 2)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 3)]
-                        = rocsparse_fma(mt_tmp, tmp3, rhs[k + gid + m_pad * (COLS * bidy + 3)]);
+                        = rocsparse::fma(mt_tmp, tmp3, rhs[k + gid + m_pad * (COLS * bidy + 3)]);
 
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse::fma(
                         mt_tmp1, tmp0, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse::fma(
                         mt_tmp1, tmp1, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 1)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 2)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 2)] = rocsparse::fma(
                         mt_tmp1, tmp2, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 2)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 3)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 3)] = rocsparse::fma(
                         mt_tmp1, tmp3, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 3)]);
                 }
                 else if(COLS == 2)
@@ -885,13 +885,13 @@ namespace rocsparse
                     T tmp1 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)];
 
                     rhs[k + gid + m_pad * (COLS * bidy + 0)]
-                        = rocsparse_fma(mt_tmp, tmp0, rhs[k + gid + m_pad * (COLS * bidy + 0)]);
+                        = rocsparse::fma(mt_tmp, tmp0, rhs[k + gid + m_pad * (COLS * bidy + 0)]);
                     rhs[k + gid + m_pad * (COLS * bidy + 1)]
-                        = rocsparse_fma(mt_tmp, tmp1, rhs[k + gid + m_pad * (COLS * bidy + 1)]);
+                        = rocsparse::fma(mt_tmp, tmp1, rhs[k + gid + m_pad * (COLS * bidy + 1)]);
 
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse::fma(
                         mt_tmp1, tmp0, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse_fma(
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 1)] = rocsparse::fma(
                         mt_tmp1, tmp1, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 1)]);
                 }
                 else
@@ -899,8 +899,8 @@ namespace rocsparse
                     T tmp0 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)];
 
                     rhs[k + gid + m_pad * (COLS * bidy + 0)]
-                        = rocsparse_fma(mt_tmp, tmp0, rhs[k + gid + m_pad * (COLS * bidy + 0)]);
-                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse_fma(
+                        = rocsparse::fma(mt_tmp, tmp0, rhs[k + gid + m_pad * (COLS * bidy + 0)]);
+                    rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)] = rocsparse::fma(
                         mt_tmp1, tmp0, rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)]);
                 }
 

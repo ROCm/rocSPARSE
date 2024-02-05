@@ -371,7 +371,7 @@ rocsparse_status rocsparse::gebsrmv_template(rocsparse_handle          handle, /
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<256>),
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
                                                    dim3((ysize - 1) / 256 + 1),
                                                    dim3(256),
                                                    0,
@@ -382,7 +382,7 @@ rocsparse_status rocsparse::gebsrmv_template(rocsparse_handle          handle, /
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((scale_array<256>),
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
                                                    dim3((ysize - 1) / 256 + 1),
                                                    dim3(256),
                                                    0,

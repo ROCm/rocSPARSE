@@ -129,9 +129,9 @@ namespace rocsparse
                     // Loop over columns of the BSR block
                     for(int bj = 0; bj < block_dim; ++bj)
                     {
-                        sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
-                                            X[(block_dim * local_col + bj) * ldx + col_X],
-                                            sum);
+                        sum = rocsparse::fma(bsr_val[BSR_IND(j, bi, bj, dir)],
+                                             X[(block_dim * local_col + bj) * ldx + col_X],
+                                             sum);
                     }
 
                     // Write local sum to X
@@ -190,7 +190,7 @@ namespace rocsparse
 
             if(pivot == true)
             {
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }
@@ -296,9 +296,9 @@ namespace rocsparse
                     // Loop over columns of the BSR block
                     for(int bj = 0; bj < block_dim; ++bj)
                     {
-                        sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
-                                            X[(block_dim * local_col + bj) * ldx + col_X],
-                                            sum);
+                        sum = rocsparse::fma(bsr_val[BSR_IND(j, bi, bj, dir)],
+                                             X[(block_dim * local_col + bj) * ldx + col_X],
+                                             sum);
                     }
 
                     // Write local sum to X
@@ -357,7 +357,7 @@ namespace rocsparse
 
             if(pivot == true)
             {
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }

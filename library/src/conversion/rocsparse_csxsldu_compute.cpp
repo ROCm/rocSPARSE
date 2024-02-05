@@ -313,7 +313,7 @@ rocsparse_status rocsparse::csxsldu_compute_template(rocsparse_handle handle_,
                 else
                 {
                     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                        (set_array_to_value<256>),
+                        (rocsparse::set_array_to_value<256>),
                         dim3(((sizet + 1) - 1) / 256 + 1),
                         dim3(256),
                         0,
@@ -388,7 +388,7 @@ rocsparse_status rocsparse::csxsldu_compute_template(rocsparse_handle handle_,
                 else
                 {
                     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                        (set_array_to_value<256>),
+                        (rocsparse::set_array_to_value<256>),
                         dim3(((sizet + 1) - 1) / 256 + 1),
                         dim3(256),
                         0,

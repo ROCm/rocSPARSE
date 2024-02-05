@@ -72,7 +72,7 @@ namespace rocsparse
         {
             for(I j = wid; j < nnz; j += BLOCKSIZE / WFSIZE)
             {
-                sum = rocsparse_fma(x_val[j], A[(x_ind[j] - idx_base) * lda + row], sum);
+                sum = rocsparse::fma(x_val[j], A[(x_ind[j] - idx_base) * lda + row], sum);
             }
         }
 
@@ -104,7 +104,7 @@ namespace rocsparse
         {
             if(beta != static_cast<T>(0))
             {
-                y[row] = rocsparse_fma(alpha, sdata[lid], beta * y[row]);
+                y[row] = rocsparse::fma(alpha, sdata[lid], beta * y[row]);
             }
             else
             {

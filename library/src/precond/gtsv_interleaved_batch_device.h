@@ -117,7 +117,7 @@ namespace rocsparse
             T ak_1 = dl[ind_k_1];
             T bk   = d[ind_k];
 
-            if(rocsparse_abs(bk) < rocsparse_abs(ak_1))
+            if(rocsparse::abs(bk) < rocsparse::abs(ak_1))
             {
                 T bk_1 = d[ind_k_1];
                 T ck   = du[ind_k];
@@ -221,30 +221,30 @@ namespace rocsparse
             T ck   = du[ind_k];
             T ck_1 = du[ind_k_1];
 
-            T radius = rocsparse_sqrt(
-                rocsparse_abs(bk * rocsparse_conj(bk) + ak_1 * rocsparse_conj(ak_1)));
+            T radius = rocsparse::sqrt(
+                rocsparse::abs(bk * rocsparse::conj(bk) + ak_1 * rocsparse::conj(ak_1)));
 
             // Apply Givens rotation
             // | cos  sin | |bk    ck   0   |
             // |-sin  cos | |ak_1  bk_1 ck_1|
-            T cos_theta = rocsparse_conj(bk) / radius;
-            T sin_theta = rocsparse_conj(ak_1) / radius;
+            T cos_theta = rocsparse::conj(bk) / radius;
+            T sin_theta = rocsparse::conj(ak_1) / radius;
 
-            d[ind_k] = rocsparse_fma(bk, cos_theta, ak_1 * sin_theta);
-            d[ind_k_1]
-                = rocsparse_fma(-ck, rocsparse_conj(sin_theta), bk_1 * rocsparse_conj(cos_theta));
-            du[ind_k]                 = rocsparse_fma(ck, cos_theta, bk_1 * sin_theta);
-            du[ind_k_1]               = ck_1 * rocsparse_conj(cos_theta);
+            d[ind_k]   = rocsparse::fma(bk, cos_theta, ak_1 * sin_theta);
+            d[ind_k_1] = rocsparse::fma(
+                -ck, rocsparse::conj(sin_theta), bk_1 * rocsparse::conj(cos_theta));
+            du[ind_k]                 = rocsparse::fma(ck, cos_theta, bk_1 * sin_theta);
+            du[ind_k_1]               = ck_1 * rocsparse::conj(cos_theta);
             r2[batch_count * i + gid] = ck_1 * sin_theta;
 
             // Apply Givens rotation to rhs vector
             // | cos  sin | |xk  |
             // |-sin  cos | |xk_1|
-            T xk     = x[ind_k];
-            T xk_1   = x[ind_k_1];
-            x[ind_k] = rocsparse_fma(xk, cos_theta, xk_1 * sin_theta);
-            x[ind_k_1]
-                = rocsparse_fma(-xk, rocsparse_conj(sin_theta), xk_1 * rocsparse_conj(cos_theta));
+            T xk       = x[ind_k];
+            T xk_1     = x[ind_k_1];
+            x[ind_k]   = rocsparse::fma(xk, cos_theta, xk_1 * sin_theta);
+            x[ind_k_1] = rocsparse::fma(
+                -xk, rocsparse::conj(sin_theta), xk_1 * rocsparse::conj(cos_theta));
         }
 
         x[batch_stride * (m - 1) + gid]

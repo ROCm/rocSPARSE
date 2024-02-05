@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -144,17 +144,17 @@ void kernel_nrminf(size_t nitems_,
 
     __syncthreads();
 
-    rocsparse_blockreduce_max<BLOCKSIZE>(tid, shared);
+    rocsparse::blockreduce_max<BLOCKSIZE>(tid, shared);
 
     if(tid == 0)
     {
         if(nrm0_ != nullptr)
         {
-            rocsparse_atomic_max(nrm_, shared[0] / nrm0_[0]);
+            rocsparse::atomic_max(nrm_, shared[0] / nrm0_[0]);
         }
         else
         {
-            rocsparse_atomic_max(nrm_, shared[0]);
+            rocsparse::atomic_max(nrm_, shared[0]);
         }
     }
 }
@@ -176,17 +176,17 @@ void kernel_nrminf_diff(size_t nitems_,
 
     __syncthreads();
 
-    rocsparse_blockreduce_max<BLOCKSIZE>(tid, shared);
+    rocsparse::blockreduce_max<BLOCKSIZE>(tid, shared);
 
     if(tid == 0)
     {
         if(nrm0_ != nullptr)
         {
-            rocsparse_atomic_max(nrm_, shared[0] / nrm0_[0]);
+            rocsparse::atomic_max(nrm_, shared[0] / nrm0_[0]);
         }
         else
         {
-            rocsparse_atomic_max(nrm_, shared[0]);
+            rocsparse::atomic_max(nrm_, shared[0]);
         }
     }
 }

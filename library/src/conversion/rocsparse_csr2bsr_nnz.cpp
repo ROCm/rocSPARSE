@@ -102,7 +102,7 @@ rocsparse_status rocsparse::csr2bsr_nnz_quickreturn(rocsparse_handle          ha
         if(bsr_row_ptr != nullptr)
         {
             const J mb = (m + block_dim - 1) / block_dim;
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
                                                dim3(((mb + 1) - 1) / 256 + 1),
                                                dim3(256),
                                                0,
@@ -244,7 +244,7 @@ rocsparse_status rocsparse::csr2bsr_nnz_core(rocsparse_handle          handle,
 
         if(bsr_row_ptr != nullptr)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
                                                dim3(((mb + 1) - 1) / 256 + 1),
                                                dim3(256),
                                                0,

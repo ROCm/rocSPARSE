@@ -136,7 +136,7 @@ namespace rocsparse
                     if(bj < block_dim)
                     {
                         sdata2[bj][threadIdx.x]
-                            = rocsparse_fma(-val, sdata1[bj][bi], sdata2[bj][threadIdx.x]);
+                            = rocsparse::fma(-val, sdata1[bj][bi], sdata2[bj][threadIdx.x]);
                     }
 
                     __threadfence_block();
@@ -185,7 +185,7 @@ namespace rocsparse
 
                         for(rocsparse_int bk = 0; bk < block_dim; ++bk)
                         {
-                            sum = rocsparse_fma(
+                            sum = rocsparse::fma(
                                 sdata2[bk][threadIdx.x], sdata1[threadIdx.y][bk], sum);
                         }
 
@@ -220,7 +220,7 @@ namespace rocsparse
                     // Numeric boost
                     if(boost)
                     {
-                        diag = (boost_tol >= rocsparse_abs(diag)) ? boost_val : diag;
+                        diag = (boost_tol >= rocsparse::abs(diag)) ? boost_val : diag;
 
                         __threadfence_block();
 
@@ -259,7 +259,7 @@ namespace rocsparse
                         rocsparse_int bj = bi + 1 + threadIdx.y;
                         if(bj < block_dim)
                         {
-                            sdata1[bj][bk] = rocsparse_fma(-val, sdata1[bj][bi], sdata1[bj][bk]);
+                            sdata1[bj][bk] = rocsparse::fma(-val, sdata1[bj][bi], sdata1[bj][bk]);
                         }
                     }
                 }
@@ -292,7 +292,7 @@ namespace rocsparse
                     rocsparse_int bj = bi + 1 + threadIdx.y;
                     if(bj < block_dim)
                     {
-                        sdata2[threadIdx.x][bj] = rocsparse_fma(
+                        sdata2[threadIdx.x][bj] = rocsparse::fma(
                             -sdata1[bi][bj], sdata2[threadIdx.x][bi], sdata2[threadIdx.x][bj]);
                     }
                 }
@@ -321,7 +321,7 @@ namespace rocsparse
             if(pivot)
             {
                 // Atomically set minimum zero pivot, if found
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }
@@ -444,7 +444,7 @@ namespace rocsparse
                         // Do linear combination
                         for(rocsparse_int bj = bi + 1 + threadIdx.y; bj < block_dim; bj += DIMY)
                         {
-                            sdata2[bj][bk] = rocsparse_fma(-val, sdata1[bj][bi], sdata2[bj][bk]);
+                            sdata2[bj][bk] = rocsparse::fma(-val, sdata1[bj][bi], sdata2[bj][bk]);
                         }
                     }
 
@@ -505,7 +505,7 @@ namespace rocsparse
 
                                 for(rocsparse_int bk = 0; bk < block_dim; ++bk)
                                 {
-                                    sum = rocsparse_fma(sdata2[bk][bi], sdata1[bj][bk], sum);
+                                    sum = rocsparse::fma(sdata2[bk][bi], sdata1[bj][bk], sum);
                                 }
 
                                 // Write back to global row m
@@ -542,7 +542,7 @@ namespace rocsparse
                     // Numeric boost
                     if(boost)
                     {
-                        diag = (boost_tol >= rocsparse_abs(diag)) ? boost_val : diag;
+                        diag = (boost_tol >= rocsparse::abs(diag)) ? boost_val : diag;
 
                         __threadfence_block();
 
@@ -579,7 +579,7 @@ namespace rocsparse
                         // Do linear combination
                         for(rocsparse_int bj = bi + 1 + threadIdx.y; bj < block_dim; bj += DIMY)
                         {
-                            sdata1[bj][bk] = rocsparse_fma(-val, sdata1[bj][bi], sdata1[bj][bk]);
+                            sdata1[bj][bk] = rocsparse::fma(-val, sdata1[bj][bi], sdata1[bj][bk]);
                         }
                     }
                 }
@@ -619,7 +619,7 @@ namespace rocsparse
                         for(rocsparse_int bj = bi + 1 + threadIdx.y; bj < block_dim; bj += DIMY)
                         {
                             sdata2[bk][bj]
-                                = rocsparse_fma(-sdata1[bi][bj], sdata2[bk][bi], sdata2[bk][bj]);
+                                = rocsparse::fma(-sdata1[bi][bj], sdata2[bk][bi], sdata2[bk][bj]);
                         }
                     }
                 }
@@ -650,7 +650,7 @@ namespace rocsparse
             if(pivot)
             {
                 // Atomically set minimum zero pivot, if found
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }
@@ -760,7 +760,7 @@ namespace rocsparse
                         // Do linear combination
                         for(rocsparse_int bj = bi + 1 + threadIdx.y; bj < block_dim; bj += DIMY)
                         {
-                            bsr_val[BSR_IND(j, bk, bj, dir)] = rocsparse_fma(
+                            bsr_val[BSR_IND(j, bk, bj, dir)] = rocsparse::fma(
                                 -val, sdata[bj][bi], bsr_val[BSR_IND(j, bk, bj, dir)]);
                         }
                     }
@@ -813,7 +813,7 @@ namespace rocsparse
 
                                 for(rocsparse_int bk = 0; bk < block_dim; ++bk)
                                 {
-                                    sum = rocsparse_fma(
+                                    sum = rocsparse::fma(
                                         bsr_val[BSR_IND(j, bi, bk, dir)], sdata[bj][bk], sum);
                                 }
 
@@ -851,7 +851,7 @@ namespace rocsparse
                     // Numeric boost
                     if(boost)
                     {
-                        diag = (boost_tol >= rocsparse_abs(diag)) ? boost_val : diag;
+                        diag = (boost_tol >= rocsparse::abs(diag)) ? boost_val : diag;
 
                         __threadfence_block();
 
@@ -888,7 +888,7 @@ namespace rocsparse
                         // Do linear combination
                         for(rocsparse_int bj = bi + 1 + threadIdx.y; bj < block_dim; bj += DIMY)
                         {
-                            sdata[bj][bk] = rocsparse_fma(-val, sdata[bj][bi], sdata[bj][bk]);
+                            sdata[bj][bk] = rocsparse::fma(-val, sdata[bj][bi], sdata[bj][bk]);
                         }
                     }
                 }
@@ -927,9 +927,9 @@ namespace rocsparse
                     {
                         for(rocsparse_int bj = bi + 1 + threadIdx.y; bj < block_dim; bj += DIMY)
                         {
-                            sdata[bk][bj] = rocsparse_fma(-bsr_val[BSR_IND(row_diag, bj, bi, dir)],
-                                                          sdata[bk][bi],
-                                                          sdata[bk][bj]);
+                            sdata[bk][bj] = rocsparse::fma(-bsr_val[BSR_IND(row_diag, bj, bi, dir)],
+                                                           sdata[bk][bi],
+                                                           sdata[bk][bj]);
                         }
                     }
                 }
@@ -960,7 +960,7 @@ namespace rocsparse
             if(pivot)
             {
                 // Atomically set minimum zero pivot, if found
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }
@@ -1079,9 +1079,9 @@ namespace rocsparse
                         for(rocsparse_int bj = bi + 1; bj < block_dim; ++bj)
                         {
                             bsr_val[BSR_IND(j, bk, bj, dir)]
-                                = rocsparse_fma(-val,
-                                                bsr_val[BSR_IND(diag_j, bi, bj, dir)],
-                                                bsr_val[BSR_IND(j, bk, bj, dir)]);
+                                = rocsparse::fma(-val,
+                                                 bsr_val[BSR_IND(diag_j, bi, bj, dir)],
+                                                 bsr_val[BSR_IND(j, bk, bj, dir)]);
                         }
                     }
                 }
@@ -1119,9 +1119,9 @@ namespace rocsparse
 
                                 for(rocsparse_int bk = 0; bk < block_dim; ++bk)
                                 {
-                                    sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bk, dir)],
-                                                        bsr_val[BSR_IND(k, bk, bj, dir)],
-                                                        sum);
+                                    sum = rocsparse::fma(bsr_val[BSR_IND(j, bi, bk, dir)],
+                                                         bsr_val[BSR_IND(k, bk, bj, dir)],
+                                                         sum);
                                 }
 
                                 bsr_val[BSR_IND(m, bi, bj, dir)] -= sum;
@@ -1142,7 +1142,7 @@ namespace rocsparse
                     // Numeric boost
                     if(boost)
                     {
-                        diag = (boost_tol >= rocsparse_abs(diag)) ? boost_val : diag;
+                        diag = (boost_tol >= rocsparse::abs(diag)) ? boost_val : diag;
 
                         if(lid == 0)
                         {
@@ -1172,9 +1172,9 @@ namespace rocsparse
                         for(rocsparse_int bj = bi + 1; bj < block_dim; ++bj)
                         {
                             bsr_val[BSR_IND(row_diag, bk, bj, dir)]
-                                = rocsparse_fma(-val,
-                                                bsr_val[BSR_IND(row_diag, bi, bj, dir)],
-                                                bsr_val[BSR_IND(row_diag, bk, bj, dir)]);
+                                = rocsparse::fma(-val,
+                                                 bsr_val[BSR_IND(row_diag, bi, bj, dir)],
+                                                 bsr_val[BSR_IND(row_diag, bk, bj, dir)]);
                         }
                     }
                 }
@@ -1190,9 +1190,9 @@ namespace rocsparse
                         for(rocsparse_int bj = bi + 1; bj < block_dim; ++bj)
                         {
                             bsr_val[BSR_IND(j, bj, bk, dir)]
-                                = rocsparse_fma(-bsr_val[BSR_IND(row_diag, bj, bi, dir)],
-                                                bsr_val[BSR_IND(j, bi, bk, dir)],
-                                                bsr_val[BSR_IND(j, bj, bk, dir)]);
+                                = rocsparse::fma(-bsr_val[BSR_IND(row_diag, bj, bi, dir)],
+                                                 bsr_val[BSR_IND(j, bi, bk, dir)],
+                                                 bsr_val[BSR_IND(j, bj, bk, dir)]);
                         }
                     }
                 }
@@ -1212,7 +1212,7 @@ namespace rocsparse
             if(pivot)
             {
                 // Atomically set minimum zero pivot, if found
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }

@@ -128,7 +128,7 @@ namespace rocsparse
             }
 
             // Gather nprod
-            nprod = rocsparse_wfreduce_sum<WFSIZE>(nprod);
+            nprod = rocsparse::wfreduce_sum<WFSIZE>(nprod);
         }
 
         // Last lane writes result
@@ -315,7 +315,7 @@ namespace rocsparse
         __syncthreads();
 
         // Reduce block
-        rocsparse_blockreduce_max<BLOCKSIZE>(hipThreadIdx_x, sdata);
+        rocsparse::blockreduce_max<BLOCKSIZE>(hipThreadIdx_x, sdata);
 
         // Write result
         if(hipThreadIdx_x == 0)
@@ -338,7 +338,7 @@ namespace rocsparse
         __syncthreads();
 
         // Reduce block
-        rocsparse_blockreduce_max<BLOCKSIZE>(hipThreadIdx_x, sdata);
+        rocsparse::blockreduce_max<BLOCKSIZE>(hipThreadIdx_x, sdata);
 
         // Write result
         if(hipThreadIdx_x == 0)
@@ -366,7 +366,7 @@ namespace rocsparse
             else if(table[hash] == -1)
             {
                 // If empty, add element with atomic
-                if(rocsparse_atomic_cas<I>(&table[hash], -1, key) == -1)
+                if(rocsparse::atomic_cas<I>(&table[hash], -1, key) == -1)
                 {
                     // Increment number of insertions
                     return true;
@@ -396,16 +396,16 @@ namespace rocsparse
             if(table[hash] == key)
             {
                 // Element already present, add value to exsiting entry
-                rocsparse_atomic_add(&data[hash], val);
+                rocsparse::atomic_add(&data[hash], val);
                 break;
             }
             else if(table[hash] == empty)
             {
                 // If empty, add element with atomic
-                if(rocsparse_atomic_cas<I>(&table[hash], empty, key) == empty)
+                if(rocsparse::atomic_cas<I>(&table[hash], empty, key) == empty)
                 {
                     // Add value
-                    rocsparse_atomic_add(&data[hash], val);
+                    rocsparse::atomic_add(&data[hash], val);
                     break;
                 }
             }
@@ -518,7 +518,7 @@ namespace rocsparse
 
         // Accumulate all row nnz within each (sub)wavefront to obtain the total row nnz
         // of the current row
-        nnz = rocsparse_wfreduce_sum<WFSIZE>(nnz);
+        nnz = rocsparse::wfreduce_sum<WFSIZE>(nnz);
 
         // Write result to global memory
         if(lid == WFSIZE - 1)
@@ -618,7 +618,7 @@ namespace rocsparse
 
         // Accumulate all row nnz within each (sub)wavefront to obtain the total row nnz
         // of the current row
-        nnz = rocsparse_wfreduce_sum<WFSIZE>(nnz);
+        nnz = rocsparse::wfreduce_sum<WFSIZE>(nnz);
 
         // Write result to shared memory for final reduction by first wavefront
         if(lid == WFSIZE - 1)
@@ -633,7 +633,7 @@ namespace rocsparse
         nnz = (hipThreadIdx_x < BLOCKSIZE / WFSIZE) ? table[hipThreadIdx_x] : 0;
 
         // First wavefront computes final sum
-        nnz = rocsparse_wfreduce_sum<BLOCKSIZE / WFSIZE>(nnz);
+        nnz = rocsparse::wfreduce_sum<BLOCKSIZE / WFSIZE>(nnz);
 
         // Write result to global memory
         if(hipThreadIdx_x == BLOCKSIZE / WFSIZE - 1)
@@ -764,7 +764,7 @@ namespace rocsparse
                     }
 
                     // Obtain the minimum of all k that exceed the current chunks end point
-                    rocsparse_wfreduce_min<WFSIZE>(&next_k);
+                    rocsparse::wfreduce_min<WFSIZE>(&next_k);
 
                     // Store the minimum globally for the next chunk
                     if(lid == WFSIZE - 1)
@@ -805,14 +805,14 @@ namespace rocsparse
             }
 
             // Gather wavefront-wide minimum for the next chunks starting column index
-            rocsparse_wfreduce_min<WFSIZE>(&min_col);
+            rocsparse::wfreduce_min<WFSIZE>(&min_col);
 
             // Last thread in each wavefront finds block-wide minimum atomically
             if(lid == WFSIZE - 1)
             {
                 // Atomically determine the new chunks beginning (minimum column index of B
                 // that is larger than the current chunks end point)
-                rocsparse_atomic_min(&next_chunk, min_col);
+                rocsparse::atomic_min(&next_chunk, min_col);
             }
 
             // Wait for all threads to finish row nnz operation
@@ -826,13 +826,13 @@ namespace rocsparse
             }
 
             // Gather wavefront-wide nnz for the current chunk
-            chunk_nnz = rocsparse_wfreduce_sum<WFSIZE>(chunk_nnz);
+            chunk_nnz = rocsparse::wfreduce_sum<WFSIZE>(chunk_nnz);
 
             // Last thread in each wavefront accumulates block-wide nnz atomically
             if(lid == WFSIZE - 1)
             {
                 // Atomically add this chunks nnz to the total row nnz
-                rocsparse_atomic_add(&nnz, chunk_nnz);
+                rocsparse::atomic_add(&nnz, chunk_nnz);
             }
 
             // Wait for atomics to be processed
@@ -1337,7 +1337,7 @@ namespace rocsparse
                             table[col_B - chunk_begin] = 1;
 
                             // Atomically accumulate the intermediate products
-                            rocsparse_atomic_add(&data[col_B - chunk_begin], val_A * csr_val_B[k]);
+                            rocsparse::atomic_add(&data[col_B - chunk_begin], val_A * csr_val_B[k]);
                         }
                         else if(col_B >= chunk_end)
                         {
@@ -1352,7 +1352,7 @@ namespace rocsparse
                     }
 
                     // Obtain the minimum of all k that exceed the current chunks end point
-                    rocsparse_wfreduce_min<WFSIZE>(&next_k);
+                    rocsparse::wfreduce_min<WFSIZE>(&next_k);
 
                     // Store the minimum globally for the next chunk
                     if(lid == WFSIZE - 1)
@@ -1381,7 +1381,7 @@ namespace rocsparse
                         table[col_D - chunk_begin] = 1;
 
                         // Atomically accumulate the entry of D
-                        rocsparse_atomic_add(&data[col_D - chunk_begin], beta * csr_val_D[j]);
+                        rocsparse::atomic_add(&data[col_D - chunk_begin], beta * csr_val_D[j]);
                     }
                     else if(col_D >= chunk_end)
                     {
@@ -1396,14 +1396,14 @@ namespace rocsparse
             }
 
             // Gather wavefront-wide minimum for the next chunks starting column index
-            rocsparse_wfreduce_min<WFSIZE>(&min_col);
+            rocsparse::wfreduce_min<WFSIZE>(&min_col);
 
             // Last thread in each wavefront finds block-wide minimum atomically
             if(lid == WFSIZE - 1)
             {
                 // Atomically determine the new chunks beginning (minimum column index of B
                 // that is larger than the current chunks end point)
-                rocsparse_atomic_min(&next_chunk, min_col);
+                rocsparse::atomic_min(&next_chunk, min_col);
             }
 
             // Wait for all threads to finish

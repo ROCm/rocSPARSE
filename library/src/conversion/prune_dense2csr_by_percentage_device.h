@@ -42,6 +42,6 @@ namespace rocsparse
         rocsparse_int row = thread_id % m;
         rocsparse_int col = thread_id / m;
 
-        output[m * col + row] = rocsparse_abs(A[lda * col + row]);
+        output[m * col + row] = rocsparse::abs(A[lda * col + row]);
     }
 }

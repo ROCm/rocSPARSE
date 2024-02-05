@@ -117,13 +117,13 @@ namespace rocsparse
             T v1 = dlp1;
             T v2 = dsp2;
 
-            T v1v2sq = rocsparse_fma(v1, v1, v2 * v2);
+            T v1v2sq = rocsparse::fma(v1, v1, v2 * v2);
 
             if(v1v2sq != static_cast<T>(0))
             {
                 T diag = d[idp0];
-                T val  = rocsparse_sqrt(rocsparse_fma(diag, diag, v1v2sq));
-                T a_ii = (rocsparse_gt(diag, static_cast<T>(0))) ? diag + val : diag - val;
+                T val  = rocsparse::sqrt(rocsparse::fma(diag, diag, v1v2sq));
+                T a_ii = (rocsparse::gt(diag, static_cast<T>(0))) ? diag + val : diag - val;
 
                 v1 = v1 / a_ii;
                 v2 = v2 / a_ii;
@@ -131,15 +131,15 @@ namespace rocsparse
                 T sq   = a_ii * a_ii;
                 T beta = static_cast<T>(2) * sq / (v1v2sq + sq);
                 T tau  = static_cast<T>(2)
-                        / rocsparse_fma(v2, v2, (rocsparse_fma(v1, v1, static_cast<T>(1))));
+                        / rocsparse::fma(v2, v2, (rocsparse::fma(v1, v1, static_cast<T>(1))));
 
                 // Process the five diagonals
-                T d1 = rocsparse_fma(v2, dsp2, rocsparse_fma(v1, dlp1, diag)) * beta;
-                T d2 = rocsparse_fma(v2, dlp2, rocsparse_fma(v1, dp1, du[idp0])) * beta;
-                T d3 = rocsparse_fma(v2, dp2, rocsparse_fma(v1, dup1, dw[idp0])) * beta;
-                T d4 = rocsparse_fma(v2, dup2, rocsparse_fma(v1, dwp1, t1[idp0c])) * beta;
-                T d5 = rocsparse_fma(v2, dwp2, rocsparse_fma(v1, t1[idp1c], t2[idp0c])) * beta;
-                T fs = rocsparse_fma(v2, Bp2, rocsparse_fma(v1, Bp1, B[idp0c])) * tau;
+                T d1 = rocsparse::fma(v2, dsp2, rocsparse::fma(v1, dlp1, diag)) * beta;
+                T d2 = rocsparse::fma(v2, dlp2, rocsparse::fma(v1, dp1, du[idp0])) * beta;
+                T d3 = rocsparse::fma(v2, dp2, rocsparse::fma(v1, dup1, dw[idp0])) * beta;
+                T d4 = rocsparse::fma(v2, dup2, rocsparse::fma(v1, dwp1, t1[idp0c])) * beta;
+                T d5 = rocsparse::fma(v2, dwp2, rocsparse::fma(v1, t1[idp1c], t2[idp0c])) * beta;
+                T fs = rocsparse::fma(v2, Bp2, rocsparse::fma(v1, Bp1, B[idp0c])) * tau;
 
                 // Update
                 d[idp0] -= d1;
@@ -150,20 +150,20 @@ namespace rocsparse
                 B[idp0c] -= fs;
 
                 dl[idp1]  = v1;
-                d[idp1]   = rocsparse_fma(-d2, v1, dp1);
-                du[idp1]  = rocsparse_fma(-d3, v1, dup1);
-                dw[idp1]  = rocsparse_fma(-d4, v1, dwp1);
-                t1[idp1c] = rocsparse_fma(-d5, v1, t1[idp1c]);
-                B[idp1c]  = rocsparse_fma(-v1, fs, Bp1);
+                d[idp1]   = rocsparse::fma(-d2, v1, dp1);
+                du[idp1]  = rocsparse::fma(-d3, v1, dup1);
+                dw[idp1]  = rocsparse::fma(-d4, v1, dwp1);
+                t1[idp1c] = rocsparse::fma(-d5, v1, t1[idp1c]);
+                B[idp1c]  = rocsparse::fma(-v1, fs, Bp1);
 
                 if(!second_last_row)
                 {
                     ds[idp2] = v2;
-                    dl[idp2] = rocsparse_fma(-d2, v2, dlp2);
-                    d[idp2]  = rocsparse_fma(-d3, v2, dp2);
-                    du[idp2] = rocsparse_fma(-d4, v2, dup2);
-                    dw[idp2] = rocsparse_fma(-d5, v2, dwp2);
-                    B[idp2c] = rocsparse_fma(-v2, fs, Bp2);
+                    dl[idp2] = rocsparse::fma(-d2, v2, dlp2);
+                    d[idp2]  = rocsparse::fma(-d3, v2, dp2);
+                    du[idp2] = rocsparse::fma(-d4, v2, dup2);
+                    dw[idp2] = rocsparse::fma(-d5, v2, dwp2);
+                    B[idp2c] = rocsparse::fma(-v2, fs, Bp2);
                 }
             }
         }
@@ -234,28 +234,28 @@ namespace rocsparse
             T wk_1 = dw[ind_k_1];
             T wk_2 = dw[ind_k_2];
 
-            radius = rocsparse_sqrt(rocsparse_abs(
-                rocsparse_fma(lk_1, rocsparse_conj(lk_1), sk_2 * rocsparse_conj(sk_2))));
+            radius = rocsparse::sqrt(rocsparse::abs(
+                rocsparse::fma(lk_1, rocsparse::conj(lk_1), sk_2 * rocsparse::conj(sk_2))));
 
-            cos_theta = rocsparse_conj(lk_1) / radius;
-            sin_theta = rocsparse_conj(sk_2) / radius;
+            cos_theta = rocsparse::conj(lk_1) / radius;
+            sin_theta = rocsparse::conj(sk_2) / radius;
 
-            T dlk_1_new = rocsparse_fma(lk_1, cos_theta, sk_2 * sin_theta);
-            T dk_1_new  = rocsparse_fma(dk_1, cos_theta, lk_2 * sin_theta);
-            T duk_1_new = rocsparse_fma(uk_1, cos_theta, dk_2 * sin_theta);
-            T dwk_1_new = rocsparse_fma(wk_1, cos_theta, uk_2 * sin_theta);
+            T dlk_1_new = rocsparse::fma(lk_1, cos_theta, sk_2 * sin_theta);
+            T dk_1_new  = rocsparse::fma(dk_1, cos_theta, lk_2 * sin_theta);
+            T duk_1_new = rocsparse::fma(uk_1, cos_theta, dk_2 * sin_theta);
+            T dwk_1_new = rocsparse::fma(wk_1, cos_theta, uk_2 * sin_theta);
 
             dl[ind_k_1] = dlk_1_new;
-            dl[ind_k_2]
-                = rocsparse_fma(-dk_1, rocsparse_conj(sin_theta), lk_2 * rocsparse_conj(cos_theta));
+            dl[ind_k_2] = rocsparse::fma(
+                -dk_1, rocsparse::conj(sin_theta), lk_2 * rocsparse::conj(cos_theta));
             d[ind_k_1] = dk_1_new;
-            d[ind_k_2]
-                = rocsparse_fma(-uk_1, rocsparse_conj(sin_theta), dk_2 * rocsparse_conj(cos_theta));
+            d[ind_k_2] = rocsparse::fma(
+                -uk_1, rocsparse::conj(sin_theta), dk_2 * rocsparse::conj(cos_theta));
             du[ind_k_1] = duk_1_new;
-            du[ind_k_2]
-                = rocsparse_fma(-wk_1, rocsparse_conj(sin_theta), uk_2 * rocsparse_conj(cos_theta));
+            du[ind_k_2] = rocsparse::fma(
+                -wk_1, rocsparse::conj(sin_theta), uk_2 * rocsparse::conj(cos_theta));
             dw[ind_k_1]                     = dwk_1_new;
-            dw[ind_k_2]                     = wk_2 * rocsparse_conj(cos_theta);
+            dw[ind_k_2]                     = wk_2 * rocsparse::conj(cos_theta);
             r3[batch_count * (i + 1) + gid] = wk_2 * sin_theta;
 
             // Apply first Givens rotation to rhs vector
@@ -263,9 +263,9 @@ namespace rocsparse
             // |-sin  cos | |xk_2|
             T xk_1     = x[ind_k_1];
             T xk_2     = x[ind_k_2];
-            x[ind_k_1] = rocsparse_fma(xk_1, cos_theta, xk_2 * sin_theta);
-            x[ind_k_2]
-                = rocsparse_fma(-xk_1, rocsparse_conj(sin_theta), xk_2 * rocsparse_conj(cos_theta));
+            x[ind_k_1] = rocsparse::fma(xk_1, cos_theta, xk_2 * sin_theta);
+            x[ind_k_2] = rocsparse::fma(
+                -xk_1, rocsparse::conj(sin_theta), xk_2 * rocsparse::conj(cos_theta));
 
             // Apply second Givens rotation
             // | cos  sin | |dk   uk   wk   rk   0   |
@@ -280,32 +280,32 @@ namespace rocsparse
             T rk   = r3[batch_count * i + gid];
             T rk_1 = r3[batch_count * (i + 1) + gid];
 
-            radius = rocsparse_sqrt(
-                rocsparse_abs(rocsparse_fma(dk, rocsparse_conj(dk), lk_1 * rocsparse_conj(lk_1))));
-            cos_theta = rocsparse_conj(dk) / radius;
-            sin_theta = rocsparse_conj(lk_1) / radius;
+            radius    = rocsparse::sqrt(rocsparse::abs(
+                rocsparse::fma(dk, rocsparse::conj(dk), lk_1 * rocsparse::conj(lk_1))));
+            cos_theta = rocsparse::conj(dk) / radius;
+            sin_theta = rocsparse::conj(lk_1) / radius;
 
-            d[ind_k] = rocsparse_fma(dk, cos_theta, lk_1 * sin_theta);
-            d[ind_k_1]
-                = rocsparse_fma(-uk, rocsparse_conj(sin_theta), dk_1 * rocsparse_conj(cos_theta));
-            du[ind_k] = rocsparse_fma(uk, cos_theta, dk_1 * sin_theta);
-            du[ind_k_1]
-                = rocsparse_fma(-wk, rocsparse_conj(sin_theta), uk_1 * rocsparse_conj(cos_theta));
-            dw[ind_k] = rocsparse_fma(wk, cos_theta, uk_1 * sin_theta);
-            dw[ind_k_1]
-                = rocsparse_fma(-rk, rocsparse_conj(sin_theta), wk_1 * rocsparse_conj(cos_theta));
-            r3[batch_count * i + gid]       = rocsparse_fma(rk, cos_theta, wk_1 * sin_theta);
-            r3[batch_count * (i + 1) + gid] = rk_1 * rocsparse_conj(cos_theta);
+            d[ind_k]   = rocsparse::fma(dk, cos_theta, lk_1 * sin_theta);
+            d[ind_k_1] = rocsparse::fma(
+                -uk, rocsparse::conj(sin_theta), dk_1 * rocsparse::conj(cos_theta));
+            du[ind_k]   = rocsparse::fma(uk, cos_theta, dk_1 * sin_theta);
+            du[ind_k_1] = rocsparse::fma(
+                -wk, rocsparse::conj(sin_theta), uk_1 * rocsparse::conj(cos_theta));
+            dw[ind_k]   = rocsparse::fma(wk, cos_theta, uk_1 * sin_theta);
+            dw[ind_k_1] = rocsparse::fma(
+                -rk, rocsparse::conj(sin_theta), wk_1 * rocsparse::conj(cos_theta));
+            r3[batch_count * i + gid]       = rocsparse::fma(rk, cos_theta, wk_1 * sin_theta);
+            r3[batch_count * (i + 1) + gid] = rk_1 * rocsparse::conj(cos_theta);
             r4[batch_count * i + gid]       = rk_1 * sin_theta;
 
             // Apply second Givens rotation to rhs vector
             // | cos  sin | |xk  |
             // |-sin  cos | |xk_1|
-            T xk     = x[ind_k];
-            xk_1     = x[ind_k_1];
-            x[ind_k] = rocsparse_fma(xk, cos_theta, xk_1 * sin_theta);
-            x[ind_k_1]
-                = rocsparse_fma(-xk, rocsparse_conj(sin_theta), xk_1 * rocsparse_conj(cos_theta));
+            T xk       = x[ind_k];
+            xk_1       = x[ind_k_1];
+            x[ind_k]   = rocsparse::fma(xk, cos_theta, xk_1 * sin_theta);
+            x[ind_k_1] = rocsparse::fma(
+                -xk, rocsparse::conj(sin_theta), xk_1 * rocsparse::conj(cos_theta));
         }
 
         // Apply last Givens rotation
@@ -321,22 +321,22 @@ namespace rocsparse
         T rk   = r3[batch_count * (m - 2) + gid];
         T rk_1 = r3[batch_count * (m - 1) + gid];
 
-        T radius = rocsparse_sqrt(
-            rocsparse_abs(rocsparse_fma(dk, rocsparse_conj(dk), lk_1 * rocsparse_conj(lk_1))));
-        T cos_theta = rocsparse_conj(dk) / radius;
-        T sin_theta = rocsparse_conj(lk_1) / radius;
+        T radius = rocsparse::sqrt(
+            rocsparse::abs(rocsparse::fma(dk, rocsparse::conj(dk), lk_1 * rocsparse::conj(lk_1))));
+        T cos_theta = rocsparse::conj(dk) / radius;
+        T sin_theta = rocsparse::conj(lk_1) / radius;
 
-        d[batch_stride * (m - 2) + gid] = rocsparse_fma(dk, cos_theta, lk_1 * sin_theta);
+        d[batch_stride * (m - 2) + gid] = rocsparse::fma(dk, cos_theta, lk_1 * sin_theta);
         d[batch_stride * (m - 1) + gid]
-            = rocsparse_fma(-uk, rocsparse_conj(sin_theta), dk_1 * rocsparse_conj(cos_theta));
-        du[batch_stride * (m - 2) + gid] = rocsparse_fma(uk, cos_theta, dk_1 * sin_theta);
+            = rocsparse::fma(-uk, rocsparse::conj(sin_theta), dk_1 * rocsparse::conj(cos_theta));
+        du[batch_stride * (m - 2) + gid] = rocsparse::fma(uk, cos_theta, dk_1 * sin_theta);
         du[batch_stride * (m - 1) + gid]
-            = rocsparse_fma(-wk, rocsparse_conj(sin_theta), uk_1 * rocsparse_conj(cos_theta));
-        dw[batch_stride * (m - 2) + gid] = rocsparse_fma(wk, cos_theta, uk_1 * sin_theta);
+            = rocsparse::fma(-wk, rocsparse::conj(sin_theta), uk_1 * rocsparse::conj(cos_theta));
+        dw[batch_stride * (m - 2) + gid] = rocsparse::fma(wk, cos_theta, uk_1 * sin_theta);
         dw[batch_stride * (m - 1) + gid]
-            = rocsparse_fma(-rk, rocsparse_conj(sin_theta), wk_1 * rocsparse_conj(cos_theta));
-        r3[batch_count * (m - 2) + gid] = rocsparse_fma(rk, cos_theta, wk_1 * sin_theta);
-        r3[batch_count * (m - 1) + gid] = rk_1 * rocsparse_conj(cos_theta);
+            = rocsparse::fma(-rk, rocsparse::conj(sin_theta), wk_1 * rocsparse::conj(cos_theta));
+        r3[batch_count * (m - 2) + gid] = rocsparse::fma(rk, cos_theta, wk_1 * sin_theta);
+        r3[batch_count * (m - 1) + gid] = rk_1 * rocsparse::conj(cos_theta);
         r4[batch_count * (m - 2) + gid] = rk_1 * sin_theta;
 
         // Apply last Givens rotation to rhs vector
@@ -344,9 +344,9 @@ namespace rocsparse
         // |-sin  cos | |xk_1|
         T xk                            = x[batch_stride * (m - 2) + gid];
         T xk_1                          = x[batch_stride * (m - 1) + gid];
-        x[batch_stride * (m - 2) + gid] = rocsparse_fma(xk, cos_theta, xk_1 * sin_theta);
+        x[batch_stride * (m - 2) + gid] = rocsparse::fma(xk, cos_theta, xk_1 * sin_theta);
         x[batch_stride * (m - 1) + gid]
-            = rocsparse_fma(-xk, rocsparse_conj(sin_theta), xk_1 * rocsparse_conj(cos_theta));
+            = rocsparse::fma(-xk, rocsparse::conj(sin_theta), xk_1 * rocsparse::conj(cos_theta));
 
         // Backward substitution on upper triangular R * x = x
         x[batch_stride * (m - 1) + gid]

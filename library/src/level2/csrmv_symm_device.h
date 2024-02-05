@@ -66,12 +66,12 @@ namespace rocsparse
             for(I j = row_start + lid; j < row_end; j += WF_SIZE)
             {
                 A val = conj_val(csr_val[j], conj);
-                sum   = rocsparse_fma<T>(
-                    alpha * val, rocsparse_ldg(x + csr_col_ind[j] - idx_base), sum);
+                sum   = rocsparse::fma<T>(
+                    alpha * val, rocsparse::ldg(x + csr_col_ind[j] - idx_base), sum);
             }
 
             // Obtain row sum using parallel reduction
-            sum = rocsparse_wfreduce_sum<WF_SIZE>(sum);
+            sum = rocsparse::wfreduce_sum<WF_SIZE>(sum);
 
             // First thread of each wavefront writes result into global memory
             if(lid == WF_SIZE - 1)
@@ -82,7 +82,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    y[row] = rocsparse_fma<T>(beta, y[row], sum);
+                    y[row] = rocsparse::fma<T>(beta, y[row], sum);
                 }
             }
         }
@@ -125,7 +125,7 @@ namespace rocsparse
                 if(col != row)
                 {
                     A val = conj_val(csr_val[j], conj);
-                    rocsparse_atomic_add(&y[col], row_val * val);
+                    rocsparse::atomic_add(&y[col], row_val * val);
                 }
             }
         }
@@ -316,10 +316,10 @@ namespace rocsparse
                     if((myCol != myRow) && (col + i) < (csr_row_ptr[stop_row] - idx_base))
                     {
                         if(myCol >= (stop_cols_idx) && myCol < stop_row)
-                            rocsparse_atomic_add(&cols_in_rows[myCol - (stop_cols_idx)],
-                                                 (partial_sums[lid + i] * x[myRow]));
+                            rocsparse::atomic_add(&cols_in_rows[myCol - (stop_cols_idx)],
+                                                  (partial_sums[lid + i] * x[myRow]));
                         else
-                            rocsparse_atomic_add(&y[myCol], (partial_sums[lid + i] * x[myRow]));
+                            rocsparse::atomic_add(&y[myCol], (partial_sums[lid + i] * x[myRow]));
                     }
 
                     // For the lower triangular, the matrix value is already in partial_sums.
@@ -343,10 +343,10 @@ namespace rocsparse
                     if((myCol != myRow) && (col + i) < (csr_row_ptr[stop_row] - idx_base))
                     {
                         if(myCol >= (stop_cols_idx) && myCol < stop_row)
-                            rocsparse_atomic_add(&cols_in_rows[myCol - (stop_cols_idx)],
-                                                 (partial_sums[lid + i] * x[myRow]));
+                            rocsparse::atomic_add(&cols_in_rows[myCol - (stop_cols_idx)],
+                                                  (partial_sums[lid + i] * x[myRow]));
                         else
-                            rocsparse_atomic_add(&y[myCol], (partial_sums[lid + i] * x[myRow]));
+                            rocsparse::atomic_add(&y[myCol], (partial_sums[lid + i] * x[myRow]));
                     }
 
                     // For the lower triangular, the matrix value is already in partial_sums.
@@ -362,7 +362,7 @@ namespace rocsparse
 
             for(I l = lid; l < (end_cols_idx - (stop_row - row)); l += WG_SIZE)
             {
-                rocsparse_atomic_add(&y[stop_cols_idx + l], cols_in_rows[l]);
+                rocsparse::atomic_add(&y[stop_cols_idx + l], cols_in_rows[l]);
             }
 
             __syncthreads();
@@ -421,7 +421,7 @@ namespace rocsparse
                         += cols_in_rows[lid
                                         + (end_cols_idx
                                            - (stop_row - row))]; // sum from upper triangular matrix
-                    rocsparse_atomic_add(&y[row + lid], temp);
+                    rocsparse::atomic_add(&y[row + lid], temp);
                 }
             }
             else
@@ -446,7 +446,7 @@ namespace rocsparse
                     // put that into the output for each row.
                     temp += cols_in_rows[end_cols_idx - stop_row
                                          + local_row]; // sum from upper triangular matrix
-                    rocsparse_atomic_add(&y[local_row], temp);
+                    rocsparse::atomic_add(&y[local_row], temp);
                     local_row += hipBlockDim_x;
                 }
             }
@@ -465,7 +465,7 @@ namespace rocsparse
                 for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
                 {
                     J col = csr_col_ind[j] - idx_base;
-                    mySum = rocsparse_fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
+                    mySum = rocsparse::fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
                 }
 
                 partial_sums[lid] = mySum;
@@ -521,7 +521,7 @@ namespace rocsparse
                 // Write result
                 if(lid == 0)
                 {
-                    rocsparse_atomic_add(&y[myRow], alpha * partial_sums[0]);
+                    rocsparse::atomic_add(&y[myRow], alpha * partial_sums[0]);
                 }
                 myRow++;
             }
@@ -535,8 +535,8 @@ namespace rocsparse
                 J myCol  = csr_col_ind[j] - idx_base;
                 if(myCol != myRow2)
                 {
-                    rocsparse_atomic_add(&y[myCol],
-                                         (alpha * conj_val(csr_val[j], conj) * x[myRow2]));
+                    rocsparse::atomic_add(&y[myCol],
+                                          (alpha * conj_val(csr_val[j], conj) * x[myRow2]));
                 }
             }
         }
@@ -589,7 +589,7 @@ namespace rocsparse
             for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
                 J col = csr_col_ind[j] - idx_base;
-                mySum = rocsparse_fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
+                mySum = rocsparse::fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
             }
 
             partial_sums[lid] = mySum;
@@ -645,7 +645,7 @@ namespace rocsparse
             // Write result
             if(lid == 0)
             {
-                rocsparse_atomic_add(&y[myRow], alpha * partial_sums[0]);
+                rocsparse::atomic_add(&y[myRow], alpha * partial_sums[0]);
             }
             myRow++;
         }
@@ -659,7 +659,7 @@ namespace rocsparse
             J myCol  = csr_col_ind[j] - idx_base;
             if(myCol != myRow2)
             {
-                rocsparse_atomic_add(&y[myCol], (alpha * conj_val(csr_val[j], conj) * x[myRow2]));
+                rocsparse::atomic_add(&y[myCol], (alpha * conj_val(csr_val[j], conj) * x[myRow2]));
             }
         }
     }

@@ -98,13 +98,13 @@ namespace rocsparse
 #define LBSR_IND_R(j, bi, bj) (size_t(block_dim) * block_dim * (j) + (bi)*block_dim + (bj))
 #define LBSR_IND_C(j, bi, bj) (size_t(block_dim) * block_dim * (j) + (bi) + (bj)*block_dim)
 
-                    sum = rocsparse_fma<T>(
+                    sum = rocsparse::fma<T>(
                         bsr_val[LBSR_IND(j, bi, bj, dir)], x[block_dim * col + bj], sum);
                 }
             }
 
             // Each wavefront accumulates its BSR block row sum
-            sum = rocsparse_wfreduce_sum<WFSIZE>(sum);
+            sum = rocsparse::wfreduce_sum<WFSIZE>(sum);
 
             // Last lane of each wavefront writes its result to global memory
             if(lid == WFSIZE - 1)
@@ -112,7 +112,7 @@ namespace rocsparse
                 if(beta != static_cast<T>(0))
                 {
                     y[row * block_dim + bi]
-                        = rocsparse_fma<T>(beta, y[row * block_dim + bi], alpha * sum);
+                        = rocsparse::fma<T>(beta, y[row * block_dim + bi], alpha * sum);
                 }
                 else
                 {

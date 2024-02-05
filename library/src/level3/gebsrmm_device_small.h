@@ -108,7 +108,7 @@ namespace rocsparse
             __syncthreads();
             for(rocsparse_int j = 0; j < COL_BLOCK_DIM; j++)
             {
-                sum = rocsparse_fma(
+                sum = rocsparse::fma(
                     shared_A[BLOCK_DIM * j + tidx], shared_B[BLOCK_DIM * tidy + j], sum);
             }
 
@@ -123,7 +123,7 @@ namespace rocsparse
             }
             else
             {
-                C[global_row + colC] = rocsparse_fma(beta, C[global_row + colC], alpha * sum);
+                C[global_row + colC] = rocsparse::fma(beta, C[global_row + colC], alpha * sum);
             }
         }
     }

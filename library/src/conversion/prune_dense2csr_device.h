@@ -71,7 +71,7 @@ namespace rocsparse
                     for(rocsparse_int j = 0; j < 4; ++j)
                     {
                         res_A[k]
-                            += (rocsparse_abs(A[ind + k * DIM_X + (col + j) * lda]) > threshold)
+                            += (rocsparse::abs(A[ind + k * DIM_X + (col + j) * lda]) > threshold)
                                    ? 1
                                    : 0;
                     }
@@ -89,10 +89,10 @@ namespace rocsparse
                     {
                         if(col + j < n)
                         {
-                            res_A[k]
-                                += (rocsparse_abs(A[ind + k * DIM_X + (col + j) * lda]) > threshold)
-                                       ? 1
-                                       : 0;
+                            res_A[k] += (rocsparse::abs(A[ind + k * DIM_X + (col + j) * lda])
+                                         > threshold)
+                                            ? 1
+                                            : 0;
                         }
                     }
                 }
@@ -151,7 +151,7 @@ namespace rocsparse
                 const T value = dense_val[row_index + column_index * ld];
 
                 // Predicate.
-                const bool predicate = rocsparse_abs(value) > threshold;
+                const bool predicate = rocsparse::abs(value) > threshold;
 
                 // Mask of the wavefront.
                 const uint64_t wavefront_mask = __ballot(predicate);

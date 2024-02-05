@@ -191,17 +191,18 @@ namespace rocsparse
             if(table[hash] == key)
             {
                 // Element already present, add value to exsiting entry
-                rocsparse_atomic_add(&data[BLOCKDIM * BLOCKDIM * hash + BLOCKDIM * row + col], val);
+                rocsparse::atomic_add(&data[BLOCKDIM * BLOCKDIM * hash + BLOCKDIM * row + col],
+                                      val);
                 break;
             }
             else if(table[hash] == empty)
             {
                 // If empty, add element with atomic
-                if(rocsparse_atomic_cas(&table[hash], empty, key) == empty)
+                if(rocsparse::atomic_cas(&table[hash], empty, key) == empty)
                 {
                     // Add value
-                    rocsparse_atomic_add(&data[BLOCKDIM * BLOCKDIM * hash + BLOCKDIM * row + col],
-                                         val);
+                    rocsparse::atomic_add(&data[BLOCKDIM * BLOCKDIM * hash + BLOCKDIM * row + col],
+                                          val);
                     break;
                 }
             }
@@ -343,7 +344,7 @@ namespace rocsparse
                     // Insert key value pair into hash table
                     insert_pair_rxc<HASHVAL, HASHSIZE, 2>(
                         col_B,
-                        rocsparse_fma(val_A[0], val_B[0], val_A[1] * val_B[2]),
+                        rocsparse::fma(val_A[0], val_B[0], val_A[1] * val_B[2]),
                         0,
                         0,
                         table,
@@ -351,7 +352,7 @@ namespace rocsparse
                         nkb);
                     insert_pair_rxc<HASHVAL, HASHSIZE, 2>(
                         col_B,
-                        rocsparse_fma(val_A[0], val_B[1], val_A[1] * val_B[3]),
+                        rocsparse::fma(val_A[0], val_B[1], val_A[1] * val_B[3]),
                         0,
                         1,
                         table,
@@ -359,7 +360,7 @@ namespace rocsparse
                         nkb);
                     insert_pair_rxc<HASHVAL, HASHSIZE, 2>(
                         col_B,
-                        rocsparse_fma(val_A[2], val_B[0], val_A[3] * val_B[2]),
+                        rocsparse::fma(val_A[2], val_B[0], val_A[3] * val_B[2]),
                         1,
                         0,
                         table,
@@ -367,7 +368,7 @@ namespace rocsparse
                         nkb);
                     insert_pair_rxc<HASHVAL, HASHSIZE, 2>(
                         col_B,
-                        rocsparse_fma(val_A[2], val_B[1], val_A[3] * val_B[3]),
+                        rocsparse::fma(val_A[2], val_B[1], val_A[3] * val_B[3]),
                         1,
                         1,
                         table,
@@ -594,7 +595,7 @@ namespace rocsparse
                     // Insert key value pair into hash table
                     insert_pair_rxc<HASHVAL, HASHSIZE, 2>(
                         col_B,
-                        rocsparse_fma(val_A[0], val_B[0], val_A[1] * val_B[2]),
+                        rocsparse::fma(val_A[0], val_B[0], val_A[1] * val_B[2]),
                         0,
                         0,
                         table,
@@ -602,7 +603,7 @@ namespace rocsparse
                         nkb);
                     insert_pair_rxc<HASHVAL, HASHSIZE, 2>(
                         col_B,
-                        rocsparse_fma(val_A[0], val_B[1], val_A[1] * val_B[3]),
+                        rocsparse::fma(val_A[0], val_B[1], val_A[1] * val_B[3]),
                         0,
                         1,
                         table,
@@ -610,7 +611,7 @@ namespace rocsparse
                         nkb);
                     insert_pair_rxc<HASHVAL, HASHSIZE, 2>(
                         col_B,
-                        rocsparse_fma(val_A[2], val_B[0], val_A[3] * val_B[2]),
+                        rocsparse::fma(val_A[2], val_B[0], val_A[3] * val_B[2]),
                         1,
                         0,
                         table,
@@ -618,7 +619,7 @@ namespace rocsparse
                         nkb);
                     insert_pair_rxc<HASHVAL, HASHSIZE, 2>(
                         col_B,
-                        rocsparse_fma(val_A[2], val_B[1], val_A[3] * val_B[3]),
+                        rocsparse::fma(val_A[2], val_B[1], val_A[3] * val_B[3]),
                         1,
                         1,
                         table,
@@ -836,7 +837,7 @@ namespace rocsparse
                         {
                             for(int s = 0; s < block_dim; s++)
                             {
-                                val_AB = rocsparse_fma(
+                                val_AB = rocsparse::fma(
                                     bsr_val_A[block_dim * block_dim * j + block_dim * r + s],
                                     bsr_val_B[block_dim * block_dim * k + block_dim * s + c],
                                     val_AB);
@@ -846,7 +847,7 @@ namespace rocsparse
                         {
                             for(int s = 0; s < block_dim; s++)
                             {
-                                val_AB = rocsparse_fma(
+                                val_AB = rocsparse::fma(
                                     bsr_val_A[block_dim * block_dim * j + block_dim * s + r],
                                     bsr_val_B[block_dim * block_dim * k + block_dim * c + s],
                                     val_AB);
@@ -1044,7 +1045,7 @@ namespace rocsparse
                         {
                             for(int i = 0; i < block_dim; i++)
                             {
-                                val_AB = rocsparse_fma(
+                                val_AB = rocsparse::fma(
                                     bsr_val_A[block_dim * block_dim * j + block_dim * r + i],
                                     bsr_val_B[block_dim * block_dim * k + block_dim * i + c],
                                     val_AB);
@@ -1054,7 +1055,7 @@ namespace rocsparse
                         {
                             for(int i = 0; i < block_dim; i++)
                             {
-                                val_AB = rocsparse_fma(
+                                val_AB = rocsparse::fma(
                                     bsr_val_A[block_dim * block_dim * j + block_dim * i + r],
                                     bsr_val_B[block_dim * block_dim * k + block_dim * c + i],
                                     val_AB);
@@ -1312,11 +1313,11 @@ namespace rocsparse
                                         for(int i = 0; i < block_dim; i++)
                                         {
                                             val_AB
-                                                = rocsparse_fma(shared_A[BLOCKDIM * BLOCKDIM * wid
-                                                                         + BLOCKDIM * r + i],
-                                                                bsr_val_B[block_dim * block_dim * k
-                                                                          + block_dim * i + c],
-                                                                val_AB);
+                                                = rocsparse::fma(shared_A[BLOCKDIM * BLOCKDIM * wid
+                                                                          + BLOCKDIM * r + i],
+                                                                 bsr_val_B[block_dim * block_dim * k
+                                                                           + block_dim * i + c],
+                                                                 val_AB);
                                         }
                                     }
                                     else
@@ -1324,15 +1325,15 @@ namespace rocsparse
                                         for(int i = 0; i < block_dim; i++)
                                         {
                                             val_AB
-                                                = rocsparse_fma(shared_A[BLOCKDIM * BLOCKDIM * wid
-                                                                         + BLOCKDIM * i + r],
-                                                                bsr_val_B[block_dim * block_dim * k
-                                                                          + block_dim * c + i],
-                                                                val_AB);
+                                                = rocsparse::fma(shared_A[BLOCKDIM * BLOCKDIM * wid
+                                                                          + BLOCKDIM * i + r],
+                                                                 bsr_val_B[block_dim * block_dim * k
+                                                                           + block_dim * c + i],
+                                                                 val_AB);
                                         }
                                     }
 
-                                    rocsparse_atomic_add(
+                                    rocsparse::atomic_add(
                                         &data[BLOCKDIM * BLOCKDIM * (col_B - chunk_begin)
                                               + BLOCKDIM * r + c],
                                         alpha * val_AB);
@@ -1389,9 +1390,9 @@ namespace rocsparse
                                         * bsr_val_D[block_dim * block_dim * j + block_dim * c + r];
                             }
 
-                            rocsparse_atomic_add(&data[BLOCKDIM * BLOCKDIM * (col_D - chunk_begin)
-                                                       + BLOCKDIM * r + c],
-                                                 val_D);
+                            rocsparse::atomic_add(&data[BLOCKDIM * BLOCKDIM * (col_D - chunk_begin)
+                                                        + BLOCKDIM * r + c],
+                                                  val_D);
                         }
                     }
                     else if(col_D >= chunk_end)
@@ -1407,7 +1408,7 @@ namespace rocsparse
             {
                 // Atomically determine the new chunks beginning (minimum column index of B
                 // that is larger than the current chunks end point)
-                rocsparse_atomic_min(&next_chunk, min_col);
+                rocsparse::atomic_min(&next_chunk, min_col);
             }
 
             // Wait for all threads to finish
@@ -1603,7 +1604,7 @@ namespace rocsparse
                                     {
                                         for(int s = 0; s < block_dim; s++)
                                         {
-                                            val_AB = rocsparse_fma(
+                                            val_AB = rocsparse::fma(
                                                 bsr_val_A[block_dim * block_dim * j
                                                           + block_dim * wid + s],
                                                 bsr_val_B[block_dim * block_dim * k + block_dim * s
@@ -1615,7 +1616,7 @@ namespace rocsparse
                                     {
                                         for(int s = 0; s < block_dim; s++)
                                         {
-                                            val_AB = rocsparse_fma(
+                                            val_AB = rocsparse::fma(
                                                 bsr_val_A[block_dim * block_dim * j + block_dim * s
                                                           + wid],
                                                 bsr_val_B[block_dim * block_dim * k
@@ -1626,7 +1627,7 @@ namespace rocsparse
 
                                     data[BLOCKDIM * BLOCKDIM * (col_B - chunk_begin)
                                          + BLOCKDIM * wid + (i + lid)]
-                                        = rocsparse_fma(
+                                        = rocsparse::fma(
                                             alpha,
                                             val_AB,
                                             data[BLOCKDIM * BLOCKDIM * (col_B - chunk_begin)
@@ -1690,10 +1691,11 @@ namespace rocsparse
 
                                 data[BLOCKDIM * BLOCKDIM * (col_D - chunk_begin) + BLOCKDIM * wid
                                      + (i + lid)]
-                                    = rocsparse_fma(beta,
-                                                    val_D,
-                                                    data[BLOCKDIM * BLOCKDIM * (col_D - chunk_begin)
-                                                         + BLOCKDIM * wid + (i + lid)]);
+                                    = rocsparse::fma(
+                                        beta,
+                                        val_D,
+                                        data[BLOCKDIM * BLOCKDIM * (col_D - chunk_begin)
+                                             + BLOCKDIM * wid + (i + lid)]);
                             }
                         }
 

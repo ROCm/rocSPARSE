@@ -41,6 +41,6 @@ namespace rocsparse
         }
 
         I i  = x_ind[idx] - idx_base;
-        y[i] = rocsparse_fma(alpha, x_val[idx], y[i]);
+        y[i] = rocsparse::fma(alpha, x_val[idx], y[i]);
     }
 }

@@ -341,7 +341,7 @@ inline __device__ T sparse_dotproduct(J                          xn_,
     {
         jx  = xind_[ix_] - xbase_;
         jy  = yind_[iy_] - ybase_;
-        s   = (jx == jy) ? rocsparse_fma(x_[ix_], y_[iy_], s) : s;
+        s   = (jx == jy) ? rocsparse::fma(x_[ix_], y_[iy_], s) : s;
         ix_ = (jx <= jy) ? (ix_ + 1) : ix_;
         iy_ = (jx >= jy) ? (iy_ + 1) : iy_;
     }

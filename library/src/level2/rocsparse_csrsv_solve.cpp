@@ -150,7 +150,7 @@ namespace rocsparse
             if(trans == rocsparse_operation_conjugate_transpose)
             {
                 // conjugate csrt_val
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((conjugate<256, I, T>),
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::conjugate<256, I, T>),
                                                    dim3((nnz - 1) / 256 + 1),
                                                    dim3(256),
                                                    0,

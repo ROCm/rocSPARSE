@@ -65,10 +65,10 @@ namespace rocsparse
         }
 
         __syncthreads();
-        rocsparse_blockreduce_sum<BLOCKSIZE>(tid, shd);
+        rocsparse::blockreduce_sum<BLOCKSIZE>(tid, shd);
         if(tid == 0)
         {
-            shd[0] = rocsparse_atomic_add(count_out_of_limits_, shd[0]);
+            shd[0] = rocsparse::atomic_add(count_out_of_limits_, shd[0]);
         }
     }
 
@@ -265,10 +265,10 @@ namespace rocsparse
             }
 
             __syncthreads();
-            rocsparse_blockreduce_max<BLOCKSIZE>(tid, shd);
+            rocsparse::blockreduce_max<BLOCKSIZE>(tid, shd);
             if(tid == 0)
             {
-                shd[0] = rocsparse_atomic_max(conversion_error_, shd[0]);
+                shd[0] = rocsparse::atomic_max(conversion_error_, shd[0]);
             }
         }
     };
@@ -310,10 +310,10 @@ namespace rocsparse
             }
 
             __syncthreads();
-            rocsparse_blockreduce_max<BLOCKSIZE>(tid, shd);
+            rocsparse::blockreduce_max<BLOCKSIZE>(tid, shd);
             if(tid == 0)
             {
-                shd[0] = rocsparse_atomic_max(conversion_error_, shd[0]);
+                shd[0] = rocsparse::atomic_max(conversion_error_, shd[0]);
             }
         }
     };
@@ -372,10 +372,10 @@ namespace rocsparse
             }
 
             __syncthreads();
-            rocsparse_blockreduce_max<BLOCKSIZE>(tid, shd);
+            rocsparse::blockreduce_max<BLOCKSIZE>(tid, shd);
             if(tid == 0)
             {
-                shd[0] = rocsparse_atomic_max(conversion_error_, shd[0]);
+                shd[0] = rocsparse::atomic_max(conversion_error_, shd[0]);
             }
         }
     };

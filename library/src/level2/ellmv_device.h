@@ -52,12 +52,12 @@ namespace rocsparse
         for(I p = 0; p < ell_width; ++p)
         {
             int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
-            I       col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
+            I       col = rocsparse::nontemporal_load(ell_col_ind + idx) - idx_base;
 
             if(col >= 0 && col < n)
             {
-                sum = rocsparse_fma<T>(
-                    rocsparse_nontemporal_load(ell_val + idx), rocsparse_ldg(x + col), sum);
+                sum = rocsparse::fma<T>(
+                    rocsparse::nontemporal_load(ell_val + idx), rocsparse::ldg(x + col), sum);
             }
             else
             {
@@ -67,12 +67,12 @@ namespace rocsparse
 
         if(beta != static_cast<T>(0))
         {
-            Y yv = rocsparse_nontemporal_load(y + ai);
-            rocsparse_nontemporal_store(rocsparse_fma<T>(beta, yv, alpha * sum), y + ai);
+            Y yv = rocsparse::nontemporal_load(y + ai);
+            rocsparse::nontemporal_store(rocsparse::fma<T>(beta, yv, alpha * sum), y + ai);
         }
         else
         {
-            rocsparse_nontemporal_store(alpha * sum, y + ai);
+            rocsparse::nontemporal_store(alpha * sum, y + ai);
         }
     }
 
@@ -110,23 +110,23 @@ namespace rocsparse
             return;
         }
 
-        T row_val = alpha * rocsparse_ldg(x + ai);
+        T row_val = alpha * rocsparse::ldg(x + ai);
 
         for(I p = 0; p < ell_width; ++p)
         {
             int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
-            I       col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
+            I       col = rocsparse::nontemporal_load(ell_col_ind + idx) - idx_base;
 
             if(col >= 0 && col < n)
             {
-                A val = rocsparse_nontemporal_load(ell_val + idx);
+                A val = rocsparse::nontemporal_load(ell_val + idx);
 
                 if(trans == rocsparse_operation_conjugate_transpose)
                 {
-                    val = rocsparse_conj(val);
+                    val = rocsparse::conj(val);
                 }
 
-                rocsparse_atomic_add(&y[col], row_val * val);
+                rocsparse::atomic_add(&y[col], row_val * val);
             }
             else
             {

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -240,25 +240,25 @@ void kernel(bool               stopping_criteria,
                 //
                 if(compute_nrm_corr)
                 {
-                    rocsparse_wfreduce_max<WFSIZE>(&nrminf);
+                    rocsparse::wfreduce_max<WFSIZE>(&nrminf);
                     if(lid == (WFSIZE - 1))
                     {
                         sdata[wid] = nrminf;
                     }
                     __syncthreads();
-                    rocsparse_blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, sdata);
+                    rocsparse::blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, sdata);
                     nrminf = sdata[0] / nrm0[0];
                 }
 
                 if(compute_nrm_residual)
                 {
-                    rocsparse_wfreduce_max<WFSIZE>(&nrminf_residual);
+                    rocsparse::wfreduce_max<WFSIZE>(&nrminf_residual);
                     if(lid == (WFSIZE - 1))
                     {
                         sdata[wid] = nrminf_residual;
                     }
                     __syncthreads();
-                    rocsparse_blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, sdata);
+                    rocsparse::blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, sdata);
                     nrminf_residual = sdata[0] / nrm0[0];
                 }
 
@@ -310,17 +310,17 @@ void kernel(bool               stopping_criteria,
         //
         if(stopping_criteria)
         {
-            rocsparse_wfreduce_max<WFSIZE>(&iter);
+            rocsparse::wfreduce_max<WFSIZE>(&iter);
             if(lid == (WFSIZE - 1))
             {
                 sdata2[wid] = iter;
             }
             __syncthreads();
-            rocsparse_blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, sdata2);
+            rocsparse::blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, sdata2);
             iter = sdata2[0];
             if(hipThreadIdx_x == 0)
             {
-                rocsparse_atomic_max(niter__, iter + 1);
+                rocsparse::atomic_max(niter__, iter + 1);
             }
         }
     }
@@ -329,14 +329,14 @@ void kernel(bool               stopping_criteria,
     {
         if(hipThreadIdx_x == 0)
         {
-            rocsparse_atomic_max(nrms_corr, nrminf);
+            rocsparse::atomic_max(nrms_corr, nrminf);
         }
     }
     if(compute_nrm_residual)
     {
         if(hipThreadIdx_x == 0)
         {
-            rocsparse_atomic_max(nrms_residual, nrminf_residual);
+            rocsparse::atomic_max(nrms_residual, nrminf_residual);
         }
     }
 }

@@ -72,15 +72,15 @@ namespace rocsparse
             for(rocsparse_int i = start_A + segment_lane_id; i < end_A; i += SEGMENT_SIZE)
             {
                 const T value = csr_val_A[i];
-                if(rocsparse_abs(value) > rocsparse_real(tol)
-                   && rocsparse_abs(value) > std::numeric_limits<float>::min())
+                if(rocsparse::abs(value) > rocsparse::real(tol)
+                   && rocsparse::abs(value) > std::numeric_limits<float>::min())
                 {
                     count++;
                 }
             }
 
             // last thread in segment will contain the total count after this call
-            count = rocsparse_wfreduce_sum<SEGMENT_SIZE>(count);
+            count = rocsparse::wfreduce_sum<SEGMENT_SIZE>(count);
 
             // broadcast count from last thread in segment to all threads in segment
             count = __shfl(count, SEGMENT_SIZE - 1, SEGMENT_SIZE);

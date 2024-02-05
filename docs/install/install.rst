@@ -8,7 +8,7 @@
 Installation
 ************
 
-The *Installation Guide* offers two approaches to build and install the rocSPARSE library:  
+The *Installation Guide* offers two approaches to build and install the rocSPARSE library:
 
   * :ref:`linux-install`
   * :ref:`windows-install`

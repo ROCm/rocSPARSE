@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,8 @@
 #endif
 #endif
 
+namespace rocsparse
+{
 // BSR indexing macros
 #define BSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? BSR_IND_R(j, bi, bj) : BSR_IND_C(j, bi, bj))
 #define BSR_IND_R(j, bi, bj) (block_dim * block_dim * (j) + (bi) * block_dim + (bj))
@@ -63,84 +65,84 @@ __device__ __host__ __forceinline__ unsigned int fnp2(unsigned int x)
     return x;
 }
 
-__device__ __forceinline__ int8_t rocsparse_ldg(const int8_t* ptr) { return __ldg(ptr); }
-__device__ __forceinline__ int32_t rocsparse_ldg(const int32_t* ptr) { return __ldg(ptr); }
-__device__ __forceinline__ int64_t rocsparse_ldg(const int64_t* ptr) { return __ldg(ptr); }
-__device__ __forceinline__ float rocsparse_ldg(const float* ptr) { return __ldg(ptr); }
-__device__ __forceinline__ double rocsparse_ldg(const double* ptr) { return __ldg(ptr); }
-__device__ __forceinline__ rocsparse_float_complex rocsparse_ldg(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__ldg((const float*)ptr), __ldg((const float*)ptr + 1)); }
-__device__ __forceinline__ rocsparse_double_complex rocsparse_ldg(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__ldg((const double*)ptr), __ldg((const double*)ptr + 1)); }
+__device__ __forceinline__ int8_t ldg(const int8_t* ptr) { return __ldg(ptr); }
+__device__ __forceinline__ int32_t ldg(const int32_t* ptr) { return __ldg(ptr); }
+__device__ __forceinline__ int64_t ldg(const int64_t* ptr) { return __ldg(ptr); }
+__device__ __forceinline__ float ldg(const float* ptr) { return __ldg(ptr); }
+__device__ __forceinline__ double ldg(const double* ptr) { return __ldg(ptr); }
+__device__ __forceinline__ rocsparse_float_complex ldg(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__ldg((const float*)ptr), __ldg((const float*)ptr + 1)); }
+__device__ __forceinline__ rocsparse_double_complex ldg(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__ldg((const double*)ptr), __ldg((const double*)ptr + 1)); }
 
 
 template <typename T>
-__device__ __forceinline__ T rocsparse_fma(T p, T q, T r);
+__device__ __forceinline__ T fma(T p, T q, T r);
 
 template <>
-__device__ __forceinline__ int32_t rocsparse_fma(int32_t p, int32_t q, int32_t r) { return p * q + r; }
+__device__ __forceinline__ int32_t fma(int32_t p, int32_t q, int32_t r) { return p * q + r; }
 
 template <>
-__device__ __forceinline__ int64_t rocsparse_fma(int64_t p, int64_t q, int64_t r) { return p * q + r; }
+__device__ __forceinline__ int64_t fma(int64_t p, int64_t q, int64_t r) { return p * q + r; }
 
 template <>
-__device__ __forceinline__ float rocsparse_fma(float p, float q, float r) { return fma(p, q, r); }
+__device__ __forceinline__ float fma(float p, float q, float r) { return std::fma(p, q, r); }
 
 template <>
-__device__ __forceinline__ double rocsparse_fma(double p, double q, double r) { return fma(p, q, r); }
+__device__ __forceinline__ double fma(double p, double q, double r) { return std::fma(p, q, r); }
 
 template <>
-__device__ __forceinline__ rocsparse_float_complex rocsparse_fma(rocsparse_float_complex p, rocsparse_float_complex q, rocsparse_float_complex r) { return std::fma(p, q, r); }
+__device__ __forceinline__ rocsparse_float_complex fma(rocsparse_float_complex p, rocsparse_float_complex q, rocsparse_float_complex r) { return std::fma(p, q, r); }
 
 template <>
-__device__ __forceinline__ rocsparse_double_complex rocsparse_fma(rocsparse_double_complex p, rocsparse_double_complex q, rocsparse_double_complex r) { return std::fma(p, q, r); }
+__device__ __forceinline__ rocsparse_double_complex fma(rocsparse_double_complex p, rocsparse_double_complex q, rocsparse_double_complex r) { return std::fma(p, q, r); }
 
 
-__device__ __forceinline__ float rocsparse_abs(float x) { return x < 0.0f ? -x : x; }
-__device__ __forceinline__ double rocsparse_abs(double x) { return x < 0.0 ? -x : x; }
-__device__ __forceinline__ float rocsparse_abs(rocsparse_float_complex x) { return std::abs(x); }
-__device__ __forceinline__ double rocsparse_abs(rocsparse_double_complex x) { return std::abs(x); }
+__device__ __forceinline__ float abs(float x) { return x < 0.0f ? -x : x; }
+__device__ __forceinline__ double abs(double x) { return x < 0.0 ? -x : x; }
+__device__ __forceinline__ float abs(rocsparse_float_complex x) { return std::abs(x); }
+__device__ __forceinline__ double abs(rocsparse_double_complex x) { return std::abs(x); }
 
-__device__ __forceinline__ float rocsparse_sqrt(float val) { return sqrt(val); }
-__device__ __forceinline__ double rocsparse_sqrt(double val) { return sqrt(val); }
-__device__ __forceinline__ rocsparse_float_complex rocsparse_sqrt(rocsparse_float_complex val)
+__device__ __forceinline__ float sqrt(float val) { return std::sqrt(val); }
+__device__ __forceinline__ double sqrt(double val) { return std::sqrt(val); }
+__device__ __forceinline__ rocsparse_float_complex sqrt(rocsparse_float_complex val)
 {
     float x = std::real(val);
     float y = std::imag(val);
 
     float sgnp = (y < 0.0f) ? -1.0f : 1.0f;
-    float absz = rocsparse_abs(val);
+    float absz = rocsparse::abs(val);
 
-    return rocsparse_float_complex(sqrt((absz + x) * 0.5f), sgnp * sqrt((absz - x) * 0.5f));
+    return rocsparse_float_complex(std::sqrt((absz + x) * 0.5f), sgnp * std::sqrt((absz - x) * 0.5f));
 }
-__device__ __forceinline__ rocsparse_double_complex rocsparse_sqrt(rocsparse_double_complex val)
+__device__ __forceinline__ rocsparse_double_complex sqrt(rocsparse_double_complex val)
 {
     double x = std::real(val);
     double y = std::imag(val);
 
     double sgnp = (y < 0.0) ? -1.0 : 1.0;
-    double absz = rocsparse_abs(val);
+    double absz = rocsparse::abs(val);
 
-    return rocsparse_double_complex(sqrt((absz + x) * 0.5), sgnp * sqrt((absz - x) * 0.5));
+    return rocsparse_double_complex(std::sqrt((absz + x) * 0.5), sgnp * std::sqrt((absz - x) * 0.5));
 }
 
-__device__ __forceinline__ int32_t rocsparse_conj(const int32_t& x) { return x; }
-__device__ __forceinline__ float rocsparse_conj(const float& x) { return x; }
-__device__ __forceinline__ double rocsparse_conj(const double& x) { return x; }
-__device__ __forceinline__ rocsparse_float_complex rocsparse_conj(const rocsparse_float_complex& x) { return std::conj(x); }
-__device__ __forceinline__ rocsparse_double_complex rocsparse_conj(const rocsparse_double_complex& x) { return std::conj(x); }
+__device__ __forceinline__ int32_t conj(const int32_t& x) { return x; }
+__device__ __forceinline__ float conj(const float& x) { return x; }
+__device__ __forceinline__ double conj(const double& x) { return x; }
+__device__ __forceinline__ rocsparse_float_complex conj(const rocsparse_float_complex& x) { return std::conj(x); }
+__device__ __forceinline__ rocsparse_double_complex conj(const rocsparse_double_complex& x) { return std::conj(x); }
 
-__device__ __forceinline__ float rocsparse_real(const float& x) { return x; }
-__device__ __forceinline__ double rocsparse_real(const double& x) { return x; }
-__device__ __forceinline__ float rocsparse_real(const rocsparse_float_complex& x) { return std::real(x); }
-__device__ __forceinline__ double rocsparse_real(const rocsparse_double_complex& x) { return std::real(x); }
+__device__ __forceinline__ float real(const float& x) { return x; }
+__device__ __forceinline__ double real(const double& x) { return x; }
+__device__ __forceinline__ float real(const rocsparse_float_complex& x) { return std::real(x); }
+__device__ __forceinline__ double real(const rocsparse_double_complex& x) { return std::real(x); }
 
-__device__ __forceinline__ float rocsparse_imag(const float& x) { return static_cast<float>(0); }
-__device__ __forceinline__ double rocsparse_imag(const double& x) { return static_cast<double>(0); }
-__device__ __forceinline__ float rocsparse_imag(const rocsparse_float_complex& x) { return std::imag(x); }
-__device__ __forceinline__ double rocsparse_imag(const rocsparse_double_complex& x) { return std::imag(x); }
+__device__ __forceinline__ float imag(const float& x) { return static_cast<float>(0); }
+__device__ __forceinline__ double imag(const double& x) { return static_cast<double>(0); }
+__device__ __forceinline__ float imag(const rocsparse_float_complex& x) { return std::imag(x); }
+__device__ __forceinline__ double imag(const rocsparse_double_complex& x) { return std::imag(x); }
 
-__device__ __forceinline__ bool rocsparse_gt(const float& x, const float& y) { return x > y; }
-__device__ __forceinline__ bool rocsparse_gt(const double& x, const double& y) { return x > y; }
-__device__ __forceinline__ bool rocsparse_gt(const rocsparse_float_complex& x, const rocsparse_float_complex& y)
+__device__ __forceinline__ bool gt(const float& x, const float& y) { return x > y; }
+__device__ __forceinline__ bool gt(const double& x, const double& y) { return x > y; }
+__device__ __forceinline__ bool gt(const rocsparse_float_complex& x, const rocsparse_float_complex& y)
 {
     if(&x == &y)
     {
@@ -151,7 +153,7 @@ __device__ __forceinline__ bool rocsparse_gt(const rocsparse_float_complex& x, c
 
     return std::real(x) > std::real(y);
 }
-__device__ __forceinline__ bool rocsparse_gt(const rocsparse_double_complex& x, const rocsparse_double_complex& y)
+__device__ __forceinline__ bool gt(const rocsparse_double_complex& x, const rocsparse_double_complex& y)
 {
     if(&x == &y)
     {
@@ -163,49 +165,49 @@ __device__ __forceinline__ bool rocsparse_gt(const rocsparse_double_complex& x, 
     return std::real(x) > std::real(y);
 }
 
-__device__ __forceinline__ float rocsparse_nontemporal_load(const float* ptr) { return __builtin_nontemporal_load(ptr); }
-__device__ __forceinline__ double rocsparse_nontemporal_load(const double* ptr) { return __builtin_nontemporal_load(ptr); }
-__device__ __forceinline__ rocsparse_float_complex rocsparse_nontemporal_load(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__builtin_nontemporal_load((const float*)ptr), __builtin_nontemporal_load((const float*)ptr + 1)); }
-__device__ __forceinline__ rocsparse_double_complex rocsparse_nontemporal_load(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__builtin_nontemporal_load((const double*)ptr), __builtin_nontemporal_load((const double*)ptr + 1)); }
-__device__ __forceinline__ int8_t rocsparse_nontemporal_load(const int8_t* ptr) { return __builtin_nontemporal_load(ptr); }
-__device__ __forceinline__ int32_t rocsparse_nontemporal_load(const int32_t* ptr) { return __builtin_nontemporal_load(ptr); }
-__device__ __forceinline__ int64_t rocsparse_nontemporal_load(const int64_t* ptr) { return __builtin_nontemporal_load(ptr); }
+__device__ __forceinline__ float nontemporal_load(const float* ptr) { return __builtin_nontemporal_load(ptr); }
+__device__ __forceinline__ double nontemporal_load(const double* ptr) { return __builtin_nontemporal_load(ptr); }
+__device__ __forceinline__ rocsparse_float_complex nontemporal_load(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__builtin_nontemporal_load((const float*)ptr), __builtin_nontemporal_load((const float*)ptr + 1)); }
+__device__ __forceinline__ rocsparse_double_complex nontemporal_load(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__builtin_nontemporal_load((const double*)ptr), __builtin_nontemporal_load((const double*)ptr + 1)); }
+__device__ __forceinline__ int8_t nontemporal_load(const int8_t* ptr) { return __builtin_nontemporal_load(ptr); }
+__device__ __forceinline__ int32_t nontemporal_load(const int32_t* ptr) { return __builtin_nontemporal_load(ptr); }
+__device__ __forceinline__ int64_t nontemporal_load(const int64_t* ptr) { return __builtin_nontemporal_load(ptr); }
 
-__device__ __forceinline__ void rocsparse_nontemporal_store(float val, float* ptr) { __builtin_nontemporal_store(val, ptr); }
-__device__ __forceinline__ void rocsparse_nontemporal_store(double val, double* ptr) { __builtin_nontemporal_store(val, ptr); }
-__device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_float_complex val, rocsparse_float_complex* ptr) { __builtin_nontemporal_store(std::real(val), (float*)ptr); __builtin_nontemporal_store(std::imag(val), (float*)ptr + 1); }
-__device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_double_complex val, rocsparse_double_complex* ptr) { __builtin_nontemporal_store(std::real(val), (double*)ptr); __builtin_nontemporal_store(std::imag(val), (double*)ptr + 1); }
-__device__ __forceinline__ void rocsparse_nontemporal_store(int8_t val, int8_t* ptr) { __builtin_nontemporal_store(val, ptr); }
-__device__ __forceinline__ void rocsparse_nontemporal_store(int32_t val, int32_t* ptr) { __builtin_nontemporal_store(val, ptr); }
-__device__ __forceinline__ void rocsparse_nontemporal_store(int64_t val, int64_t* ptr) { __builtin_nontemporal_store(val, ptr); }
+__device__ __forceinline__ void nontemporal_store(float val, float* ptr) { __builtin_nontemporal_store(val, ptr); }
+__device__ __forceinline__ void nontemporal_store(double val, double* ptr) { __builtin_nontemporal_store(val, ptr); }
+__device__ __forceinline__ void nontemporal_store(rocsparse_float_complex val, rocsparse_float_complex* ptr) { __builtin_nontemporal_store(std::real(val), (float*)ptr); __builtin_nontemporal_store(std::imag(val), (float*)ptr + 1); }
+__device__ __forceinline__ void nontemporal_store(rocsparse_double_complex val, rocsparse_double_complex* ptr) { __builtin_nontemporal_store(std::real(val), (double*)ptr); __builtin_nontemporal_store(std::imag(val), (double*)ptr + 1); }
+__device__ __forceinline__ void nontemporal_store(int8_t val, int8_t* ptr) { __builtin_nontemporal_store(val, ptr); }
+__device__ __forceinline__ void nontemporal_store(int32_t val, int32_t* ptr) { __builtin_nontemporal_store(val, ptr); }
+__device__ __forceinline__ void nontemporal_store(int64_t val, int64_t* ptr) { __builtin_nontemporal_store(val, ptr); }
 
-__device__ __forceinline__ int32_t rocsparse_shfl(int32_t var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
-__device__ __forceinline__ int64_t rocsparse_shfl(int64_t var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
-__device__ __forceinline__ float rocsparse_shfl(float var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
-__device__ __forceinline__ double rocsparse_shfl(double var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
-__device__ __forceinline__ rocsparse_float_complex rocsparse_shfl(rocsparse_float_complex var, int src_lane, int width = warpSize) { return rocsparse_float_complex(__shfl(std::real(var), src_lane, width), __shfl(std::imag(var), src_lane, width)); }
-__device__ __forceinline__ rocsparse_double_complex rocsparse_shfl(rocsparse_double_complex var, int src_lane, int width = warpSize) { return rocsparse_double_complex(__shfl(std::real(var), src_lane, width), __shfl(std::imag(var), src_lane, width)); }
+__device__ __forceinline__ int32_t shfl(int32_t var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
+__device__ __forceinline__ int64_t shfl(int64_t var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
+__device__ __forceinline__ float shfl(float var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
+__device__ __forceinline__ double shfl(double var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
+__device__ __forceinline__ rocsparse_float_complex shfl(rocsparse_float_complex var, int src_lane, int width = warpSize) { return rocsparse_float_complex(__shfl(std::real(var), src_lane, width), __shfl(std::imag(var), src_lane, width)); }
+__device__ __forceinline__ rocsparse_double_complex shfl(rocsparse_double_complex var, int src_lane, int width = warpSize) { return rocsparse_double_complex(__shfl(std::real(var), src_lane, width), __shfl(std::imag(var), src_lane, width)); }
 
 template <typename T>
-__device__ __forceinline__ T rocsparse_atomic_min(T * ptr, T val)
+__device__ __forceinline__ T atomic_min(T * ptr, T val)
 {
   return atomicMin(ptr,val);
 }
 
 template <typename T>
-__device__ __forceinline__ T rocsparse_atomic_max(T * ptr, T val)
+__device__ __forceinline__ T atomic_max(T * ptr, T val)
 {
   return atomicMax(ptr,val);
 }
 
 template <typename T>
-__device__ __forceinline__ T rocsparse_atomic_add(T * ptr, T val)
+__device__ __forceinline__ T atomic_add(T * ptr, T val)
 {
   return atomicAdd(ptr,val);
 }
 
 template <typename T>
-__device__ __forceinline__ T rocsparse_atomic_cas(T * ptr, T cmp, T val)
+__device__ __forceinline__ T atomic_cas(T * ptr, T cmp, T val)
 {
   return atomicCAS(ptr, cmp, val);
 }
@@ -213,53 +215,53 @@ __device__ __forceinline__ T rocsparse_atomic_cas(T * ptr, T cmp, T val)
 
 
 template <>
-__device__ __forceinline__ int64_t rocsparse_atomic_min<int64_t>(int64_t * ptr, int64_t val)
+__device__ __forceinline__ int64_t atomic_min<int64_t>(int64_t * ptr, int64_t val)
 {
   return atomicMin((unsigned long long*)ptr, (unsigned long long)val);
 }
 
 template <>
-__device__ __forceinline__ int64_t rocsparse_atomic_max<int64_t>(int64_t * ptr, int64_t val)
+__device__ __forceinline__ int64_t atomic_max<int64_t>(int64_t * ptr, int64_t val)
 {
   return atomicMax((unsigned long long*)ptr, val);
 }
 
 
 template <>
-__device__ __forceinline__ int64_t rocsparse_atomic_add<int64_t>(int64_t * ptr, int64_t val)
+__device__ __forceinline__ int64_t atomic_add<int64_t>(int64_t * ptr, int64_t val)
 {
   return atomicAdd((unsigned long long*)ptr, val);
 }
 
 template <>
-__device__ __forceinline__ rocsparse_float_complex rocsparse_atomic_add(rocsparse_float_complex* ptr, rocsparse_float_complex val)
+__device__ __forceinline__ rocsparse_float_complex atomic_add(rocsparse_float_complex* ptr, rocsparse_float_complex val)
 {
     return rocsparse_float_complex(atomicAdd((float*)ptr, std::real(val)),
                                    atomicAdd((float*)ptr + 1, std::imag(val)));
 }
 
 template <>
-__device__ __forceinline__ rocsparse_double_complex rocsparse_atomic_add(rocsparse_double_complex* ptr, rocsparse_double_complex val)
+__device__ __forceinline__ rocsparse_double_complex atomic_add(rocsparse_double_complex* ptr, rocsparse_double_complex val)
 {
     return rocsparse_double_complex(atomicAdd((double*)ptr, std::real(val)),
                                     atomicAdd((double*)ptr + 1, std::imag(val)));
 }
 
 template <>
-__device__ __forceinline__ int64_t rocsparse_atomic_cas(int64_t* ptr, int64_t cmp, int64_t val)
+__device__ __forceinline__ int64_t atomic_cas(int64_t* ptr, int64_t cmp, int64_t val)
 {
   return atomicCAS((unsigned long long*)ptr, cmp, val);
 }
 
-__device__ __forceinline__ bool rocsparse_is_inf(float val){ return (val == std::numeric_limits<float>::infinity()); }
-__device__ __forceinline__ bool rocsparse_is_inf(double val){ return (val == std::numeric_limits<double>::infinity()); }
-__device__ __forceinline__ bool rocsparse_is_inf(rocsparse_float_complex val){ return (std::real(val) == std::numeric_limits<float>::infinity() || std::imag(val) == std::numeric_limits<float>::infinity()); }
-__device__ __forceinline__ bool rocsparse_is_inf(rocsparse_double_complex val){ return (std::real(val) == std::numeric_limits<double>::infinity() || std::imag(val) == std::numeric_limits<double>::infinity()); }
+__device__ __forceinline__ bool is_inf(float val){ return (val == std::numeric_limits<float>::infinity()); }
+__device__ __forceinline__ bool is_inf(double val){ return (val == std::numeric_limits<double>::infinity()); }
+__device__ __forceinline__ bool is_inf(rocsparse_float_complex val){ return (std::real(val) == std::numeric_limits<float>::infinity() || std::imag(val) == std::numeric_limits<float>::infinity()); }
+__device__ __forceinline__ bool is_inf(rocsparse_double_complex val){ return (std::real(val) == std::numeric_limits<double>::infinity() || std::imag(val) == std::numeric_limits<double>::infinity()); }
 
-__device__ __forceinline__ bool rocsparse_is_nan(float val){ return (val != val); }
-__device__ __forceinline__ bool rocsparse_is_nan(double val){ return (val != val); }
-__device__ __forceinline__ bool rocsparse_is_nan(rocsparse_float_complex val){ return (std::real(val) != std::real(val) || std::imag(val) != std::imag(val)); }
-__device__ __forceinline__ bool rocsparse_is_nan(rocsparse_double_complex val){ return (std::real(val) != std::real(val) || std::imag(val) != std::imag(val)); }
+__device__ __forceinline__ bool is_nan(float val){ return (val != val); }
+__device__ __forceinline__ bool is_nan(double val){ return (val != val); }
+__device__ __forceinline__ bool is_nan(rocsparse_float_complex val){ return (std::real(val) != std::real(val) || std::imag(val) != std::imag(val)); }
+__device__ __forceinline__ bool is_nan(rocsparse_double_complex val){ return (std::real(val) != std::real(val) || std::imag(val) != std::imag(val)); }
 
 template<typename T, typename I, typename J>
 __device__ __forceinline__ T* load_pointer(T* p, J batch, I stride)
@@ -276,13 +278,13 @@ __device__ __forceinline__ const T* load_pointer(const T* p, J batch, I stride)
 template <typename T>
 __device__ __forceinline__ T conj_val(T val, bool conj)
 {
-    return conj ? rocsparse_conj(val) : val;
+    return conj ? rocsparse::conj(val) : val;
 }
 
 
 // Block reduce kernel computing block sum
 template <unsigned int BLOCKSIZE, typename T>
-__device__ __forceinline__ void rocsparse_blockreduce_sum(int i, T* data)
+__device__ __forceinline__ void blockreduce_sum(int i, T* data)
 {
     if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = data[i] + data[i + 512]; } __syncthreads(); }
     if(BLOCKSIZE > 256) { if(i < 256 && i + 256 < BLOCKSIZE) { data[i] = data[i] + data[i + 256]; } __syncthreads(); }
@@ -298,7 +300,7 @@ __device__ __forceinline__ void rocsparse_blockreduce_sum(int i, T* data)
 
 // Block reduce kernel computing blockwide maximum entry
 template <unsigned int BLOCKSIZE, typename T>
-__device__ __forceinline__ void rocsparse_blockreduce_max(int i, T* data)
+__device__ __forceinline__ void blockreduce_max(int i, T* data)
 {
     if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = max(data[i], data[i + 512]); } __syncthreads(); }
     if(BLOCKSIZE > 256) { if(i < 256 && i + 256 < BLOCKSIZE) { data[i] = max(data[i], data[i + 256]); } __syncthreads(); }
@@ -314,7 +316,7 @@ __device__ __forceinline__ void rocsparse_blockreduce_max(int i, T* data)
 
 // Block reduce kernel computing blockwide minimum entry
 template <unsigned int BLOCKSIZE, typename T>
-__device__ __forceinline__ void rocsparse_blockreduce_min(int i, T* data)
+__device__ __forceinline__ void blockreduce_min(int i, T* data)
 {
     if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = min(data[i], data[i + 512]); } __syncthreads(); }
     if(BLOCKSIZE > 256) { if(i < 256 && i + 256 < BLOCKSIZE) { data[i] = min(data[i], data[i + 256]); } __syncthreads(); }
@@ -332,7 +334,7 @@ __device__ __forceinline__ void rocsparse_blockreduce_min(int i, T* data)
 #if ROCSPARSE_USE_MOVE_DPP
 
 template <unsigned int WFSIZE>
-static __device__ __forceinline__ void rocsparse_wfreduce_max(float* maximum)
+static __device__ __forceinline__ void wfreduce_max(float* maximum)
 {
     typedef union flt_b32
     {
@@ -385,7 +387,7 @@ static __device__ __forceinline__ void rocsparse_wfreduce_max(float* maximum)
 
 // DPP-based wavefront reduction maximum
 template <unsigned int WFSIZE>
-static __device__ __forceinline__ void rocsparse_wfreduce_max(double* maximum)
+static __device__ __forceinline__ void wfreduce_max(double* maximum)
 {
     typedef union i64_b32
     {
@@ -444,7 +446,7 @@ static __device__ __forceinline__ void rocsparse_wfreduce_max(double* maximum)
 
 // DPP-based wavefront reduction maximum
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
+__device__ __forceinline__ void wfreduce_max(int* maximum)
 {
     if(WFSIZE >  1) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x111, 0xf, 0xf, 0));
     if(WFSIZE >  2) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x112, 0xf, 0xf, 0));
@@ -456,7 +458,7 @@ __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
 
 // DPP-based wavefront reduction minimum
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_min(int* minimum)
+__device__ __forceinline__ void wfreduce_min(int* minimum)
 {
     if(WFSIZE >  1) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x111, 0xf, 0xf, 0));
     if(WFSIZE >  2) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x112, 0xf, 0xf, 0));
@@ -467,7 +469,7 @@ __device__ __forceinline__ void rocsparse_wfreduce_min(int* minimum)
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_min(int64_t* minimum)
+__device__ __forceinline__ void wfreduce_min(int64_t* minimum)
 {
     typedef union i64_b32
     {
@@ -525,7 +527,7 @@ __device__ __forceinline__ void rocsparse_wfreduce_min(int64_t* minimum)
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ int32_t rocsparse_wfreduce_sum(int32_t sum)
+__device__ __forceinline__ int32_t wfreduce_sum(int32_t sum)
 {
     if(WFSIZE >  1) sum += __hip_move_dpp(sum, 0x111, 0xf, 0xf, 0);
     if(WFSIZE >  2) sum += __hip_move_dpp(sum, 0x112, 0xf, 0xf, 0);
@@ -538,7 +540,7 @@ __device__ __forceinline__ int32_t rocsparse_wfreduce_sum(int32_t sum)
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ int64_t rocsparse_wfreduce_sum(int64_t sum)
+__device__ __forceinline__ int64_t wfreduce_sum(int64_t sum)
 {
     typedef union i64_b32
     {
@@ -598,7 +600,7 @@ __device__ __forceinline__ int64_t rocsparse_wfreduce_sum(int64_t sum)
 
 // DPP-based float wavefront reduction sum
 template <unsigned int WFSIZE>
-__device__ __forceinline__ float rocsparse_wfreduce_sum(float sum)
+__device__ __forceinline__ float wfreduce_sum(float sum)
 {
     typedef union flt_b32
     {
@@ -652,7 +654,7 @@ __device__ __forceinline__ float rocsparse_wfreduce_sum(float sum)
 
 // DPP-based double wavefront reduction
 template <unsigned int WFSIZE>
-__device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
+__device__ __forceinline__ double wfreduce_sum(double sum)
 {
     typedef union dbl_b32
     {
@@ -713,7 +715,7 @@ __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
 
 
 template <unsigned int WFSIZE>
-static __device__ __forceinline__ void rocsparse_wfreduce_max(double* maximum)
+static __device__ __forceinline__ void wfreduce_max(double* maximum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
@@ -721,16 +723,7 @@ static __device__ __forceinline__ void rocsparse_wfreduce_max(double* maximum)
     }
 }
 template <unsigned int WFSIZE>
-static __device__ __forceinline__ void rocsparse_wfreduce_max(float* maximum)
-{
-    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
-    {
-        *maximum = max(*maximum, __shfl_xor(*maximum, i));
-    }
-}
-
-template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
+static __device__ __forceinline__ void wfreduce_max(float* maximum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
@@ -739,7 +732,16 @@ __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_min(int* minimum)
+__device__ __forceinline__ void wfreduce_max(int* maximum)
+{
+    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
+    {
+        *maximum = max(*maximum, __shfl_xor(*maximum, i));
+    }
+}
+
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void wfreduce_min(int* minimum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
@@ -748,7 +750,7 @@ __device__ __forceinline__ void rocsparse_wfreduce_min(int* minimum)
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_min(int64_t* minimum)
+__device__ __forceinline__ void wfreduce_min(int64_t* minimum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
@@ -757,7 +759,7 @@ __device__ __forceinline__ void rocsparse_wfreduce_min(int64_t* minimum)
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ int32_t rocsparse_wfreduce_sum(int32_t sum)
+__device__ __forceinline__ int32_t wfreduce_sum(int32_t sum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
@@ -767,7 +769,7 @@ __device__ __forceinline__ int32_t rocsparse_wfreduce_sum(int32_t sum)
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ int64_t rocsparse_wfreduce_sum(int64_t sum)
+__device__ __forceinline__ int64_t wfreduce_sum(int64_t sum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
@@ -777,7 +779,7 @@ __device__ __forceinline__ int64_t rocsparse_wfreduce_sum(int64_t sum)
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ float rocsparse_wfreduce_sum(float sum)
+__device__ __forceinline__ float wfreduce_sum(float sum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
@@ -788,7 +790,7 @@ __device__ __forceinline__ float rocsparse_wfreduce_sum(float sum)
 }
 
 template <unsigned int WFSIZE>
-__device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
+__device__ __forceinline__ double wfreduce_sum(double sum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
@@ -801,301 +803,302 @@ __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
 
 // DPP-based complex float wavefront reduction sum
 template <unsigned int WFSIZE>
-__device__ __forceinline__ rocsparse_float_complex rocsparse_wfreduce_sum(rocsparse_float_complex sum)
+__device__ __forceinline__ rocsparse_float_complex wfreduce_sum(rocsparse_float_complex sum)
 {
-    return rocsparse_float_complex(rocsparse_wfreduce_sum<WFSIZE>(std::real(sum)),
-                                   rocsparse_wfreduce_sum<WFSIZE>(std::imag(sum)));
+    return rocsparse_float_complex(rocsparse::wfreduce_sum<WFSIZE>(std::real(sum)),
+                                   rocsparse::wfreduce_sum<WFSIZE>(std::imag(sum)));
 }
 
 // DPP-based complex double wavefront reduction
 template <unsigned int WFSIZE>
-__device__ __forceinline__ rocsparse_double_complex rocsparse_wfreduce_sum(rocsparse_double_complex sum)
+__device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_double_complex sum)
 {
-    return rocsparse_double_complex(rocsparse_wfreduce_sum<WFSIZE>(std::real(sum)),
-                                    rocsparse_wfreduce_sum<WFSIZE>(std::imag(sum)));
+    return rocsparse_double_complex(rocsparse::wfreduce_sum<WFSIZE>(std::real(sum)),
+                                    rocsparse::wfreduce_sum<WFSIZE>(std::imag(sum)));
 }
-// clang-format on
+    // clang-format on
 
-// Perform dense matrix transposition
-template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
-__device__ void dense_transpose_device(
-    I m, I n, T alpha, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
-{
-    int lid = threadIdx.x & (DIMX - 1);
-    int wid = threadIdx.x / DIMX;
-
-    I row_A = blockIdx.x * DIMX + lid;
-    I row_B = blockIdx.x * DIMX + wid;
-
-    __shared__ T sdata[DIMX][DIMX];
-
-    for(I j = 0; j < n; j += DIMX)
+    // Perform dense matrix transposition
+    template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
+    __device__ void dense_transpose_device(
+        I m, I n, T alpha, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
     {
-        __syncthreads();
+        int lid = threadIdx.x & (DIMX - 1);
+        int wid = threadIdx.x / DIMX;
 
-        I col_A = j + wid;
+        I row_A = blockIdx.x * DIMX + lid;
+        I row_B = blockIdx.x * DIMX + wid;
 
-        for(unsigned int k = 0; k < DIMX; k += DIMY)
+        __shared__ T sdata[DIMX][DIMX];
+
+        for(I j = 0; j < n; j += DIMX)
         {
-            if(row_A < m && col_A + k < n)
+            __syncthreads();
+
+            I col_A = j + wid;
+
+            for(unsigned int k = 0; k < DIMX; k += DIMY)
             {
-                sdata[wid + k][lid] = A[row_A + lda * (col_A + k)];
+                if(row_A < m && col_A + k < n)
+                {
+                    sdata[wid + k][lid] = A[row_A + lda * (col_A + k)];
+                }
             }
-        }
 
-        __syncthreads();
+            __syncthreads();
 
-        I col_B = j + lid;
+            I col_B = j + lid;
 
-        for(unsigned int k = 0; k < DIMX; k += DIMY)
-        {
-            if(col_B < n && row_B + k < m)
+            for(unsigned int k = 0; k < DIMX; k += DIMY)
             {
-                B[col_B + ldb * (row_B + k)] = alpha * sdata[lid][wid + k];
-            }
-        }
-    }
-}
-
-// Perform dense matrix back transposition
-template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
-ROCSPARSE_KERNEL(DIMX* DIMY)
-void dense_transpose_back(
-    I m, I n, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
-{
-    int lid = hipThreadIdx_x & (DIMX - 1);
-    int wid = hipThreadIdx_x / DIMX;
-
-    I row_A = hipBlockIdx_x * DIMX + wid;
-    I row_B = hipBlockIdx_x * DIMX + lid;
-
-    __shared__ T sdata[DIMX][DIMX];
-
-    for(I j = 0; j < n; j += DIMX)
-    {
-        __syncthreads();
-
-        I col_A = j + lid;
-
-        for(unsigned int k = 0; k < DIMX; k += DIMY)
-        {
-            if(col_A < n && row_A + k < m)
-            {
-                sdata[wid + k][lid] = A[col_A + lda * (row_A + k)];
-            }
-        }
-
-        __syncthreads();
-
-        I col_B = j + wid;
-
-        for(unsigned int k = 0; k < DIMX; k += DIMY)
-        {
-            if(row_B < m && col_B + k < n)
-            {
-                B[row_B + ldb * (col_B + k)] = sdata[lid][wid + k];
+                if(col_B < n && row_B + k < m)
+                {
+                    B[col_B + ldb * (row_B + k)] = alpha * sdata[lid][wid + k];
+                }
             }
         }
     }
-}
 
-// BSR gather functionality to permute the BSR values array
-template <unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM, typename I, typename T>
-ROCSPARSE_KERNEL(WFSIZE* DIMY)
-void bsr_gather(rocsparse_direction dir,
-                I                   nnzb,
-                const I* __restrict__ perm,
-                const T* __restrict__ bsr_val_A,
-                T* __restrict__ bsr_val_T,
-                I block_dim)
-{
-    int lid = threadIdx.x & (BSRDIM - 1);
-    int wid = threadIdx.x / BSRDIM;
-
-    // Non-permuted nnz index
-    I j = blockIdx.x * DIMY + threadIdx.y;
-
-    // Do not exceed the number of elements
-    if(j >= nnzb)
+    // Perform dense matrix back transposition
+    template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
+    ROCSPARSE_KERNEL(DIMX* DIMY)
+    void dense_transpose_back(
+        I m, I n, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
     {
-        return;
-    }
+        int lid = hipThreadIdx_x & (DIMX - 1);
+        int wid = hipThreadIdx_x / DIMX;
 
-    // Load the permuted nnz index
-    I p = perm[j];
+        I row_A = hipBlockIdx_x * DIMX + wid;
+        I row_B = hipBlockIdx_x * DIMX + lid;
 
-    // Gather values from A and store them to T with respect to the
-    // given row / column permutation
-    for(I bi = lid; bi < block_dim; bi += BSRDIM)
-    {
-        for(I bj = wid; bj < block_dim; bj += BSRDIM)
+        __shared__ T sdata[DIMX][DIMX];
+
+        for(I j = 0; j < n; j += DIMX)
         {
-            bsr_val_T[BSR_IND(j, bi, bj, dir)] = bsr_val_A[BSR_IND(p, bj, bi, dir)];
+            __syncthreads();
+
+            I col_A = j + lid;
+
+            for(unsigned int k = 0; k < DIMX; k += DIMY)
+            {
+                if(col_A < n && row_A + k < m)
+                {
+                    sdata[wid + k][lid] = A[col_A + lda * (row_A + k)];
+                }
+            }
+
+            __syncthreads();
+
+            I col_B = j + wid;
+
+            for(unsigned int k = 0; k < DIMX; k += DIMY)
+            {
+                if(row_B < m && col_B + k < n)
+                {
+                    B[row_B + ldb * (col_B + k)] = sdata[lid][wid + k];
+                }
+            }
         }
     }
-}
 
-// Set array to be filled with value
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void set_array_to_value(I m, T* __restrict__ array, T value)
-{
-    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
-
-    if(idx >= m)
+    // BSR gather functionality to permute the BSR values array
+    template <unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM, typename I, typename T>
+    ROCSPARSE_KERNEL(WFSIZE* DIMY)
+    void bsr_gather(rocsparse_direction dir,
+                    I                   nnzb,
+                    const I* __restrict__ perm,
+                    const T* __restrict__ bsr_val_A,
+                    T* __restrict__ bsr_val_T,
+                    I block_dim)
     {
-        return;
+        int lid = threadIdx.x & (BSRDIM - 1);
+        int wid = threadIdx.x / BSRDIM;
+
+        // Non-permuted nnz index
+        I j = blockIdx.x * DIMY + threadIdx.y;
+
+        // Do not exceed the number of elements
+        if(j >= nnzb)
+        {
+            return;
+        }
+
+        // Load the permuted nnz index
+        I p = perm[j];
+
+        // Gather values from A and store them to T with respect to the
+        // given row / column permutation
+        for(I bi = lid; bi < block_dim; bi += BSRDIM)
+        {
+            for(I bj = wid; bj < block_dim; bj += BSRDIM)
+            {
+                bsr_val_T[BSR_IND(j, bi, bj, dir)] = bsr_val_A[BSR_IND(p, bj, bi, dir)];
+            }
+        }
     }
 
-    array[idx] = value;
-}
-
-// Scale array by value
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void scale_array(I m, T* __restrict__ array, T value)
-{
-    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
-
-    if(idx >= m)
+    // Set array to be filled with value
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void set_array_to_value(I m, T* __restrict__ array, T value)
     {
-        return;
+        I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+        if(idx >= m)
+        {
+            return;
+        }
+
+        array[idx] = value;
     }
 
-    array[idx] *= value;
-}
-
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void scale_array(I m, T* __restrict__ array, const T* value)
-{
-    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
-
-    if(idx >= m)
+    // Scale array by value
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void scale_array(I m, T* __restrict__ array, T value)
     {
-        return;
+        I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+        if(idx >= m)
+        {
+            return;
+        }
+
+        array[idx] *= value;
     }
 
-    if(*value != static_cast<T>(1))
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void scale_array(I m, T* __restrict__ array, const T* value)
     {
-        array[idx] *= (*value);
-    }
-}
+        I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
-// Scale 2d array by value
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void scale_array_2d(
-    I m, I n, int64_t ld, int64_t stride, T* __restrict__ array, T value, rocsparse_order order)
-{
-    I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-    I batch = hipBlockIdx_y;
+        if(idx >= m)
+        {
+            return;
+        }
 
-    if(gid >= m * n)
-    {
-        return;
+        if(*value != static_cast<T>(1))
+        {
+            array[idx] *= (*value);
+        }
     }
 
-    I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
-    I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
-
-    if(value == static_cast<T>(0))
+    // Scale 2d array by value
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void scale_array_2d(
+        I m, I n, int64_t ld, int64_t stride, T* __restrict__ array, T value, rocsparse_order order)
     {
-        array[lid + ld * wid + stride * batch] = static_cast<T>(0);
-    }
-    else
-    {
-        array[lid + ld * wid + stride * batch] *= value;
-    }
-}
+        I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        I batch = hipBlockIdx_y;
 
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void scale_array_2d(I       m,
-                    I       n,
-                    int64_t ld,
-                    int64_t stride,
-                    T* __restrict__ array,
-                    const T*        value,
-                    rocsparse_order order)
-{
-    I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-    I batch = hipBlockIdx_y;
+        if(gid >= m * n)
+        {
+            return;
+        }
 
-    if(gid >= m * n)
-    {
-        return;
+        I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
+        I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
+
+        if(value == static_cast<T>(0))
+        {
+            array[lid + ld * wid + stride * batch] = static_cast<T>(0);
+        }
+        else
+        {
+            array[lid + ld * wid + stride * batch] *= value;
+        }
     }
 
-    I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
-    I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
-
-    if((*value) == static_cast<T>(0))
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void scale_array_2d(I       m,
+                        I       n,
+                        int64_t ld,
+                        int64_t stride,
+                        T* __restrict__ array,
+                        const T*        value,
+                        rocsparse_order order)
     {
-        array[lid + ld * wid + stride * batch] = static_cast<T>(0);
-    }
-    else
-    {
-        array[lid + ld * wid + stride * batch] *= (*value);
-    }
-}
+        I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        I batch = hipBlockIdx_y;
 
-// conjugate values in array
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void conjugate(I m, T* __restrict__ array)
-{
-    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+        if(gid >= m * n)
+        {
+            return;
+        }
 
-    if(idx >= m)
-    {
-        return;
-    }
+        I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
+        I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
 
-    array[idx] = rocsparse_conj(array[idx]);
-}
-
-template <unsigned int BLOCKSIZE, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void csr_max_nnz_per_row(J m, const I* __restrict__ csr_row_ptr, J* __restrict__ max_nnz)
-{
-    int tid = hipThreadIdx_x;
-    J   gid = tid + BLOCKSIZE * hipBlockIdx_x;
-
-    __shared__ I shared[BLOCKSIZE];
-
-    if(gid < m)
-    {
-        shared[tid] = csr_row_ptr[gid + 1] - csr_row_ptr[gid];
-    }
-    else
-    {
-        shared[tid] = 0;
+        if((*value) == static_cast<T>(0))
+        {
+            array[lid + ld * wid + stride * batch] = static_cast<T>(0);
+        }
+        else
+        {
+            array[lid + ld * wid + stride * batch] *= (*value);
+        }
     }
 
-    __syncthreads();
-
-    rocsparse_blockreduce_max<BLOCKSIZE>(tid, shared);
-
-    if(tid == 0)
+    // conjugate values in array
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void conjugate(I m, T* __restrict__ array)
     {
-        rocsparse_atomic_max(max_nnz, shared[0]);
-    }
-}
+        I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
-template <unsigned int BLOCKSIZE, typename I, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void memset2d_kernel(I m, I n, T value, T* __restrict__ data, int64_t ld, rocsparse_order order)
-{
-    I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        if(idx >= m)
+        {
+            return;
+        }
 
-    if(gid >= m * n)
-    {
-        return;
+        array[idx] = rocsparse::conj(array[idx]);
     }
 
-    I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
-    I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
+    template <unsigned int BLOCKSIZE, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void csr_max_nnz_per_row(J m, const I* __restrict__ csr_row_ptr, J* __restrict__ max_nnz)
+    {
+        int tid = hipThreadIdx_x;
+        J   gid = tid + BLOCKSIZE * hipBlockIdx_x;
 
-    data[lid + ld * wid] = value;
+        __shared__ I shared[BLOCKSIZE];
+
+        if(gid < m)
+        {
+            shared[tid] = csr_row_ptr[gid + 1] - csr_row_ptr[gid];
+        }
+        else
+        {
+            shared[tid] = 0;
+        }
+
+        __syncthreads();
+
+        rocsparse::blockreduce_max<BLOCKSIZE>(tid, shared);
+
+        if(tid == 0)
+        {
+            rocsparse::atomic_max(max_nnz, shared[0]);
+        }
+    }
+
+    template <unsigned int BLOCKSIZE, typename I, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void memset2d_kernel(I m, I n, T value, T* __restrict__ data, int64_t ld, rocsparse_order order)
+    {
+        I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+
+        if(gid >= m * n)
+        {
+            return;
+        }
+
+        I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
+        I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
+
+        data[lid + ld * wid] = value;
+    }
 }

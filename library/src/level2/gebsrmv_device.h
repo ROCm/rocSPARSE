@@ -79,13 +79,13 @@ namespace rocsparse
                 {
                     // Each lane computes the sum of a specific entry over all BSR blocks in
                     // the current row
-                    sum = rocsparse_fma(
+                    sum = rocsparse::fma(
                         bsr_val[GEBSR_IND(j, bi, bj, dir)], x[col_block_dim * col + bj], sum);
                 }
             }
 
             // Each wavefront accumulates its BSR block row sum
-            sum = rocsparse_wfreduce_sum<WFSIZE>(sum);
+            sum = rocsparse::wfreduce_sum<WFSIZE>(sum);
 
             // Last lane of each wavefront writes its result to global memory
             if(lid == WFSIZE - 1)
@@ -93,7 +93,7 @@ namespace rocsparse
                 if(beta != static_cast<T>(0))
                 {
                     y[row * row_block_dim + bi]
-                        = rocsparse_fma(beta, y[row * row_block_dim + bi], alpha * sum);
+                        = rocsparse::fma(beta, y[row * row_block_dim + bi], alpha * sum);
                 }
                 else
                 {
@@ -150,19 +150,19 @@ namespace rocsparse
             // BSR row
             for(unsigned int k = 0; k < COLBSRDIM; k++)
             {
-                sum = rocsparse_fma(bsr_val[COLBSRDIM * j + k], x[col + k], sum);
+                sum = rocsparse::fma(bsr_val[COLBSRDIM * j + k], x[col + k], sum);
             }
         }
 
         // Each wavefront accumulates its BSR block row sum
-        sum = rocsparse_wfreduce_sum<WFSIZE>(sum);
+        sum = rocsparse::wfreduce_sum<WFSIZE>(sum);
 
         // Last lane of each wavefront writes the two row sums to global memory
         if(lid == WFSIZE - 1)
         {
             if(beta != static_cast<T>(0))
             {
-                y[row] = rocsparse_fma(beta, y[row], alpha * sum);
+                y[row] = rocsparse::fma(beta, y[row], alpha * sum);
             }
             else
             {
@@ -224,11 +224,11 @@ namespace rocsparse
                 // BSR row
                 for(unsigned int k = 0; k < COLBSRDIM; k++)
                 {
-                    sum0 = rocsparse_fma(
+                    sum0 = rocsparse::fma(
                         bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
-                    sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + COLBSRDIM + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum1);
+                    sum1 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + COLBSRDIM + k],
+                                          x[COLBSRDIM * col + k],
+                                          sum1);
                 }
             }
         }
@@ -244,26 +244,26 @@ namespace rocsparse
                 // BSR row
                 for(unsigned int k = 0; k < COLBSRDIM; k++)
                 {
-                    sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
-                                         x[COLBSRDIM * col + k],
-                                         sum0);
-                    sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 1],
-                                         x[COLBSRDIM * col + k],
-                                         sum1);
+                    sum0 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
+                                          x[COLBSRDIM * col + k],
+                                          sum0);
+                    sum1 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 1],
+                                          x[COLBSRDIM * col + k],
+                                          sum1);
                 }
             }
         }
         // Each wavefront accumulates its BSR block row sum
-        sum0 = rocsparse_wfreduce_sum<WFSIZE>(sum0);
-        sum1 = rocsparse_wfreduce_sum<WFSIZE>(sum1);
+        sum0 = rocsparse::wfreduce_sum<WFSIZE>(sum0);
+        sum1 = rocsparse::wfreduce_sum<WFSIZE>(sum1);
 
         // Last lane of each wavefront writes the two row sums to global memory
         if(lid == WFSIZE - 1)
         {
             if(beta != static_cast<T>(0))
             {
-                y[row * ROWBSRDIM + 0] = rocsparse_fma(beta, y[row * ROWBSRDIM + 0], alpha * sum0);
-                y[row * ROWBSRDIM + 1] = rocsparse_fma(beta, y[row * ROWBSRDIM + 1], alpha * sum1);
+                y[row * ROWBSRDIM + 0] = rocsparse::fma(beta, y[row * ROWBSRDIM + 0], alpha * sum0);
+                y[row * ROWBSRDIM + 1] = rocsparse::fma(beta, y[row * ROWBSRDIM + 1], alpha * sum1);
             }
             else
             {
@@ -327,14 +327,14 @@ namespace rocsparse
                 // BSR row
                 for(unsigned int k = 0; k < COLBSRDIM; k++)
                 {
-                    sum0 = rocsparse_fma(
+                    sum0 = rocsparse::fma(
                         bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
-                    sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + COLBSRDIM + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum1);
-                    sum2 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + 2 * COLBSRDIM + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum2);
+                    sum1 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + COLBSRDIM + k],
+                                          x[COLBSRDIM * col + k],
+                                          sum1);
+                    sum2 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + 2 * COLBSRDIM + k],
+                                          x[COLBSRDIM * col + k],
+                                          sum2);
                 }
             }
         }
@@ -350,32 +350,32 @@ namespace rocsparse
                 // BSR row
                 for(unsigned int k = 0; k < COLBSRDIM; k++)
                 {
-                    sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
-                                         x[COLBSRDIM * col + k],
-                                         sum0);
-                    sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 1],
-                                         x[COLBSRDIM * col + k],
-                                         sum1);
-                    sum2 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 2],
-                                         x[COLBSRDIM * col + k],
-                                         sum2);
+                    sum0 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
+                                          x[COLBSRDIM * col + k],
+                                          sum0);
+                    sum1 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 1],
+                                          x[COLBSRDIM * col + k],
+                                          sum1);
+                    sum2 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 2],
+                                          x[COLBSRDIM * col + k],
+                                          sum2);
                 }
             }
         }
 
         // Each wavefront accumulates its BSR block row sum
-        sum0 = rocsparse_wfreduce_sum<WFSIZE>(sum0);
-        sum1 = rocsparse_wfreduce_sum<WFSIZE>(sum1);
-        sum2 = rocsparse_wfreduce_sum<WFSIZE>(sum2);
+        sum0 = rocsparse::wfreduce_sum<WFSIZE>(sum0);
+        sum1 = rocsparse::wfreduce_sum<WFSIZE>(sum1);
+        sum2 = rocsparse::wfreduce_sum<WFSIZE>(sum2);
 
         // Last lane of each wavefront writes the two row sums to global memory
         if(lid == WFSIZE - 1)
         {
             if(beta != static_cast<T>(0))
             {
-                y[row * ROWBSRDIM + 0] = rocsparse_fma(beta, y[row * ROWBSRDIM + 0], alpha * sum0);
-                y[row * ROWBSRDIM + 1] = rocsparse_fma(beta, y[row * ROWBSRDIM + 1], alpha * sum1);
-                y[row * ROWBSRDIM + 2] = rocsparse_fma(beta, y[row * ROWBSRDIM + 2], alpha * sum2);
+                y[row * ROWBSRDIM + 0] = rocsparse::fma(beta, y[row * ROWBSRDIM + 0], alpha * sum0);
+                y[row * ROWBSRDIM + 1] = rocsparse::fma(beta, y[row * ROWBSRDIM + 1], alpha * sum1);
+                y[row * ROWBSRDIM + 2] = rocsparse::fma(beta, y[row * ROWBSRDIM + 2], alpha * sum2);
             }
             else
             {
@@ -441,17 +441,17 @@ namespace rocsparse
                 // BSR row
                 for(unsigned int k = 0; k < COLBSRDIM; k++)
                 {
-                    sum0 = rocsparse_fma(
+                    sum0 = rocsparse::fma(
                         bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
-                    sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + COLBSRDIM + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum1);
-                    sum2 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + 2 * COLBSRDIM + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum2);
-                    sum3 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + 3 * COLBSRDIM + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum3);
+                    sum1 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + COLBSRDIM + k],
+                                          x[COLBSRDIM * col + k],
+                                          sum1);
+                    sum2 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + 2 * COLBSRDIM + k],
+                                          x[COLBSRDIM * col + k],
+                                          sum2);
+                    sum3 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + 3 * COLBSRDIM + k],
+                                          x[COLBSRDIM * col + k],
+                                          sum3);
                 }
             }
         }
@@ -467,37 +467,37 @@ namespace rocsparse
                 // BSR row
                 for(unsigned int k = 0; k < COLBSRDIM; k++)
                 {
-                    sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
-                                         x[COLBSRDIM * col + k],
-                                         sum0);
-                    sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 1],
-                                         x[COLBSRDIM * col + k],
-                                         sum1);
-                    sum2 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 2],
-                                         x[COLBSRDIM * col + k],
-                                         sum2);
-                    sum3 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 3],
-                                         x[COLBSRDIM * col + k],
-                                         sum3);
+                    sum0 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
+                                          x[COLBSRDIM * col + k],
+                                          sum0);
+                    sum1 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 1],
+                                          x[COLBSRDIM * col + k],
+                                          sum1);
+                    sum2 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 2],
+                                          x[COLBSRDIM * col + k],
+                                          sum2);
+                    sum3 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 3],
+                                          x[COLBSRDIM * col + k],
+                                          sum3);
                 }
             }
         }
 
         // Each wavefront accumulates its BSR block row sum
-        sum0 = rocsparse_wfreduce_sum<WFSIZE>(sum0);
-        sum1 = rocsparse_wfreduce_sum<WFSIZE>(sum1);
-        sum2 = rocsparse_wfreduce_sum<WFSIZE>(sum2);
-        sum3 = rocsparse_wfreduce_sum<WFSIZE>(sum3);
+        sum0 = rocsparse::wfreduce_sum<WFSIZE>(sum0);
+        sum1 = rocsparse::wfreduce_sum<WFSIZE>(sum1);
+        sum2 = rocsparse::wfreduce_sum<WFSIZE>(sum2);
+        sum3 = rocsparse::wfreduce_sum<WFSIZE>(sum3);
 
         // Last lane of each wavefront writes the two row sums to global memory
         if(lid == WFSIZE - 1)
         {
             if(beta != static_cast<T>(0))
             {
-                y[row * ROWBSRDIM + 0] = rocsparse_fma(beta, y[row * ROWBSRDIM + 0], alpha * sum0);
-                y[row * ROWBSRDIM + 1] = rocsparse_fma(beta, y[row * ROWBSRDIM + 1], alpha * sum1);
-                y[row * ROWBSRDIM + 2] = rocsparse_fma(beta, y[row * ROWBSRDIM + 2], alpha * sum2);
-                y[row * ROWBSRDIM + 3] = rocsparse_fma(beta, y[row * ROWBSRDIM + 3], alpha * sum3);
+                y[row * ROWBSRDIM + 0] = rocsparse::fma(beta, y[row * ROWBSRDIM + 0], alpha * sum0);
+                y[row * ROWBSRDIM + 1] = rocsparse::fma(beta, y[row * ROWBSRDIM + 1], alpha * sum1);
+                y[row * ROWBSRDIM + 2] = rocsparse::fma(beta, y[row * ROWBSRDIM + 2], alpha * sum2);
+                y[row * ROWBSRDIM + 3] = rocsparse::fma(beta, y[row * ROWBSRDIM + 3], alpha * sum3);
             }
             else
             {
@@ -557,7 +557,7 @@ namespace rocsparse
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
-                sum = rocsparse_fma(
+                sum = rocsparse::fma(
                     bsr_val[j * ROWBSRDIM * COLBSRDIM + hipThreadIdx_x], x[col + idx], sum);
             }
         }
@@ -704,7 +704,7 @@ namespace rocsparse
             if(beta != static_cast<T>(0))
             {
                 y[row * ROWBSRDIM + hipThreadIdx_x]
-                    = rocsparse_fma(beta, y[row * ROWBSRDIM + hipThreadIdx_x], alpha * sum);
+                    = rocsparse::fma(beta, y[row * ROWBSRDIM + hipThreadIdx_x], alpha * sum);
             }
             else
             {
@@ -761,7 +761,7 @@ namespace rocsparse
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
-                sum = rocsparse_fma(
+                sum = rocsparse::fma(
                     bsr_val[j * ROWBSRDIM * COLBSRDIM + hipThreadIdx_x], x[col + idx], sum);
             }
         }
@@ -920,7 +920,7 @@ namespace rocsparse
             if(beta != static_cast<T>(0))
             {
                 y[row * ROWBSRDIM + hipThreadIdx_x]
-                    = rocsparse_fma(beta, y[row * ROWBSRDIM + hipThreadIdx_x], alpha * sum);
+                    = rocsparse::fma(beta, y[row * ROWBSRDIM + hipThreadIdx_x], alpha * sum);
             }
             else
             {

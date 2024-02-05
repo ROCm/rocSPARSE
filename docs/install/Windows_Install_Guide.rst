@@ -21,7 +21,7 @@ Installing Prebuilt Packages
 rocSPARSE can be installed on Windows 11 or Windows 10 using the AMD HIP SDK installer.
 
 The simplest way to use rocSPARSE in your code would be using CMake for which you would add the SDK installation location to your
-``CMAKE_PREFIX_PATH``. 
+``CMAKE_PREFIX_PATH``.
 
 .. note::
    You must use quotes as the path contains a space.

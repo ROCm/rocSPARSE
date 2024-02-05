@@ -71,7 +71,7 @@ rocsparse_status rocsparse::coo2csr_template(rocsparse_handle     handle,
     {
         if(csr_row_ptr != nullptr)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<1>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<1>),
                                                dim3(1),
                                                dim3(1),
                                                0,

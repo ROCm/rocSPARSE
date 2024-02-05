@@ -167,31 +167,31 @@ namespace rocsparse
                         // Perform:
                         // for(rocsparse_int l = 0; l < BSR_BLOCK_DIM; l++)
                         // {
-                        //     sum = rocsparse_fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + l],
+                        //     sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + l],
                         //                         B[shared_col[wid][i] + l],
                         //                         sum);
                         // }
                         // as unrolled loop.
-                        sum = rocsparse_fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i],
-                                            B[shared_col[wid][i] + colB],
-                                            sum);
+                        sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i],
+                                             B[shared_col[wid][i] + colB],
+                                             sum);
                         if(BSR_BLOCK_DIM >= 2)
                         {
-                            sum = rocsparse_fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 1],
-                                                B[shared_col[wid][i] + 1 + colB],
-                                                sum);
+                            sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 1],
+                                                 B[shared_col[wid][i] + 1 + colB],
+                                                 sum);
                         }
                         if(BSR_BLOCK_DIM >= 3)
                         {
-                            sum = rocsparse_fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 2],
-                                                B[shared_col[wid][i] + 2 + colB],
-                                                sum);
+                            sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 2],
+                                                 B[shared_col[wid][i] + 2 + colB],
+                                                 sum);
                         }
                         if(BSR_BLOCK_DIM >= 4)
                         {
-                            sum = rocsparse_fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 3],
-                                                B[shared_col[wid][i] + 3 + colB],
-                                                sum);
+                            sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 3],
+                                                 B[shared_col[wid][i] + 3 + colB],
+                                                 sum);
                         }
                     }
                 }
@@ -205,7 +205,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    C[global_row + colC] = rocsparse_fma(beta, C[global_row + colC], alpha * sum);
+                    C[global_row + colC] = rocsparse::fma(beta, C[global_row + colC], alpha * sum);
                 }
             }
         }
@@ -347,28 +347,28 @@ namespace rocsparse
                         // Perform:
                         // for(rocsparse_int p = 0; p < BSR_BLOCK_DIM; p++)
                         // {
-                        //     T val_B = rocsparse_ldg(B + col + ldb * (p + shared_col[wid][i]));
-                        //     sum = rocsparse_fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + p], val_B, sum);
+                        //     T val_B = rocsparse::ldg(B + col + ldb * (p + shared_col[wid][i]));
+                        //     sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + p], val_B, sum);
                         // }
                         // as unrolled loop.
-                        T val_B = rocsparse_ldg(B + col + ldb * shared_col[wid][i]);
-                        sum = rocsparse_fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i], val_B, sum);
+                        T val_B = rocsparse::ldg(B + col + ldb * shared_col[wid][i]);
+                        sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i], val_B, sum);
                         if(BSR_BLOCK_DIM >= 2)
                         {
-                            val_B = rocsparse_ldg(B + col + ldb * (1 + shared_col[wid][i]));
-                            sum   = rocsparse_fma(
+                            val_B = rocsparse::ldg(B + col + ldb * (1 + shared_col[wid][i]));
+                            sum   = rocsparse::fma(
                                 shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 1], val_B, sum);
                         }
                         if(BSR_BLOCK_DIM >= 3)
                         {
-                            val_B = rocsparse_ldg(B + col + ldb * (2 + shared_col[wid][i]));
-                            sum   = rocsparse_fma(
+                            val_B = rocsparse::ldg(B + col + ldb * (2 + shared_col[wid][i]));
+                            sum   = rocsparse::fma(
                                 shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 2], val_B, sum);
                         }
                         if(BSR_BLOCK_DIM >= 4)
                         {
-                            val_B = rocsparse_ldg(B + col + ldb * (3 + shared_col[wid][i]));
-                            sum   = rocsparse_fma(
+                            val_B = rocsparse::ldg(B + col + ldb * (3 + shared_col[wid][i]));
+                            sum   = rocsparse::fma(
                                 shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 3], val_B, sum);
                         }
                     }
@@ -384,7 +384,7 @@ namespace rocsparse
                 else
                 {
                     C[global_row + col * ldc]
-                        = rocsparse_fma(beta, C[global_row + col * ldc], alpha * sum);
+                        = rocsparse::fma(beta, C[global_row + col * ldc], alpha * sum);
                 }
             }
         }

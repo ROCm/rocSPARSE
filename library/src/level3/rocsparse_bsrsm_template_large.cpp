@@ -30,17 +30,17 @@
 
 namespace rocsparse
 {
-#define LAUNCH_BSRSM_GTHR_DIM(bsize, wfsize, dim)                                 \
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((bsr_gather<wfsize, bsize / wfsize, dim>), \
-                                       dim3((wfsize * nnzb - 1) / bsize + 1),     \
-                                       dim3(wfsize, bsize / wfsize),              \
-                                       0,                                         \
-                                       stream,                                    \
-                                       dir,                                       \
-                                       nnzb,                                      \
-                                       (rocsparse_int*)bsrsm_info->trmt_perm,     \
-                                       bsr_val,                                   \
-                                       bsrt_val,                                  \
+#define LAUNCH_BSRSM_GTHR_DIM(bsize, wfsize, dim)                                            \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::bsr_gather<wfsize, bsize / wfsize, dim>), \
+                                       dim3((wfsize * nnzb - 1) / bsize + 1),                \
+                                       dim3(wfsize, bsize / wfsize),                         \
+                                       0,                                                    \
+                                       stream,                                               \
+                                       dir,                                                  \
+                                       nnzb,                                                 \
+                                       (rocsparse_int*)bsrsm_info->trmt_perm,                \
+                                       bsr_val,                                              \
+                                       bsrt_val,                                             \
                                        block_dim)
 
 #define LAUNCH_BSRSM_GTHR(bsize, wfsize, dim) \
@@ -88,7 +88,7 @@ namespace rocsparse
     {
         auto alpha = load_scalar_device_host(alpha_device_host);
 
-        dense_transpose_device<DIM_X, DIM_Y>(m, n, alpha, A, lda, B, ldb);
+        rocsparse::dense_transpose_device<DIM_X, DIM_Y>(m, n, alpha, A, lda, B, ldb);
     }
 
     template <typename T, typename U>
@@ -306,17 +306,18 @@ namespace rocsparse
             dim3 bsrsm_blocks((mb * block_dim - 1) / BSRSM_DIM_X + 1);
             dim3 bsrsm_threads(BSRSM_DIM_X * BSRSM_DIM_Y);
 
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((dense_transpose_back<BSRSM_DIM_X, BSRSM_DIM_Y>),
-                                               bsrsm_blocks,
-                                               bsrsm_threads,
-                                               0,
-                                               stream,
-                                               mb * block_dim,
-                                               nrhs,
-                                               Xt,
-                                               ldimX,
-                                               X,
-                                               ldx);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::dense_transpose_back<BSRSM_DIM_X, BSRSM_DIM_Y>),
+                bsrsm_blocks,
+                bsrsm_threads,
+                0,
+                stream,
+                mb * block_dim,
+                nrhs,
+                Xt,
+                ldimX,
+                X,
+                ldx);
 #undef BSRSM_DIM_X
 #undef BSRSM_DIM_Y
         }

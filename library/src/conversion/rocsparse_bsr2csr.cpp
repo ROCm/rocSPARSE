@@ -264,7 +264,7 @@ rocsparse_status rocsparse::bsr2csr_quickreturn(rocsparse_handle          handle
         if(csr_row_ptr != nullptr)
         {
             const I m = I(block_dim) * mb;
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((set_array_to_value<256>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
                                                dim3(((m + 1) - 1) / 256 + 1),
                                                dim3(256),
                                                0,

@@ -89,7 +89,7 @@ namespace rocsparse
             // non-zero values. We must then ensure that the output from the row
             // associated with the local_col is complete to ensure that we can
             // calculate the right answer.
-            local_col = rocsparse_nontemporal_load(csr_col_ind + j) - idx_base;
+            local_col = rocsparse::nontemporal_load(csr_col_ind + j) - idx_base;
 
             // Skip all columns where corresponding row belongs to this block
             if(local_col >= first_row)
@@ -168,7 +168,7 @@ namespace rocsparse
         }
 
         // Determine maximum local depth within the wavefront
-        rocsparse_wfreduce_max<WF_SIZE>(&local_max);
+        rocsparse::wfreduce_max<WF_SIZE>(&local_max);
 
         __threadfence_block();
 
@@ -185,12 +185,12 @@ namespace rocsparse
                 &done_array[row], local_max + 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 
             // Obtain maximum nnz
-            rocsparse_atomic_max(max_nnz, row_end - row_begin);
+            rocsparse::atomic_max(max_nnz, row_end - row_begin);
 
             if(csr_diag_ind[row] == -1 && diag_type == rocsparse_diag_type_non_unit)
             {
                 // We are looking for the first zero pivot
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }
@@ -254,7 +254,7 @@ namespace rocsparse
             // non-zero values. We must then ensure that the output from the row
             // associated with the local_col is complete to ensure that we can
             // calculate the right answer.
-            local_col = rocsparse_nontemporal_load(csr_col_ind + j) - idx_base;
+            local_col = rocsparse::nontemporal_load(csr_col_ind + j) - idx_base;
 
             // Skip all columns where corresponding row belongs to this block
             if(local_col <= last_row)
@@ -333,7 +333,7 @@ namespace rocsparse
         }
 
         // Determine maximum local depth within the wavefront
-        rocsparse_wfreduce_max<WF_SIZE>(&local_max);
+        rocsparse::wfreduce_max<WF_SIZE>(&local_max);
 
         __threadfence_block();
 
@@ -350,12 +350,12 @@ namespace rocsparse
                 &done_array[row], local_max + 1, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 
             // Obtain maximum nnz
-            rocsparse_atomic_max(max_nnz, row_end - row_begin);
+            rocsparse::atomic_max(max_nnz, row_end - row_begin);
 
             if(csr_diag_ind[row] == -1 && diag_type == rocsparse_diag_type_non_unit)
             {
                 // We are looking for the first zero pivot
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
             }
         }
     }
@@ -413,16 +413,16 @@ namespace rocsparse
         if(lid == 0)
         {
             // Lane 0 initializes its local sum with alpha and x
-            local_sum = alpha * rocsparse_nontemporal_load(x + x_inc * row);
+            local_sum = alpha * rocsparse::nontemporal_load(x + x_inc * row);
         }
 
         for(I j = row_begin + lid; j < row_end; j += WF_SIZE)
         {
             // Current column this lane operates on
-            J local_col = rocsparse_nontemporal_load(csr_col_ind + j) - idx_base;
+            J local_col = rocsparse::nontemporal_load(csr_col_ind + j) - idx_base;
 
             // Local value this lane operates with
-            T local_val = rocsparse_nontemporal_load(csr_val + j);
+            T local_val = rocsparse::nontemporal_load(csr_val + j);
 
             // Check for numerical zero
             if(local_val == static_cast<T>(0) && local_col == row
@@ -430,7 +430,7 @@ namespace rocsparse
             {
                 // Numerical zero pivot found, avoid division by 0
                 // and store index for later use.
-                rocsparse_atomic_min(zero_pivot, row + idx_base);
+                rocsparse::atomic_min(zero_pivot, row + idx_base);
                 local_val = static_cast<T>(1);
             }
 
@@ -508,11 +508,11 @@ namespace rocsparse
             __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
             // Local sum computation for each lane
-            local_sum = rocsparse_fma(-local_val, y[local_col], local_sum);
+            local_sum = rocsparse::fma(-local_val, y[local_col], local_sum);
         }
 
         // Gather all local sums for each lane
-        local_sum = rocsparse_wfreduce_sum<WF_SIZE>(local_sum);
+        local_sum = rocsparse::wfreduce_sum<WF_SIZE>(local_sum);
 
         // If we have non unit diagonal, take the diagonal into account
         // For unit diagonal, this would be multiplication with one
@@ -526,7 +526,7 @@ namespace rocsparse
         if(lid == WF_SIZE - 1)
         {
             // Store the rows result in y
-            rocsparse_nontemporal_store(local_sum, &y[row]);
+            rocsparse::nontemporal_store(local_sum, &y[row]);
 
             // Mark row as done
             __hip_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE, __HIP_MEMORY_SCOPE_AGENT);

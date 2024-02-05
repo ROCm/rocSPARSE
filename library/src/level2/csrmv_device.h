@@ -65,13 +65,13 @@ namespace rocsparse
             // Loop over non-zero elements
             for(I j = row_start + lid; j < row_end; j += WF_SIZE)
             {
-                sum = rocsparse_fma<T>(alpha * conj_val(csr_val[j], conj),
-                                       rocsparse_ldg(x + csr_col_ind[j] - idx_base),
-                                       sum);
+                sum = rocsparse::fma<T>(alpha * conj_val(csr_val[j], conj),
+                                        rocsparse::ldg(x + csr_col_ind[j] - idx_base),
+                                        sum);
             }
 
             // Obtain row sum using parallel reduction
-            sum = rocsparse_wfreduce_sum<WF_SIZE>(sum);
+            sum = rocsparse::wfreduce_sum<WF_SIZE>(sum);
 
             // First thread of each wavefront writes result into global memory
             if(lid == WF_SIZE - 1)
@@ -82,7 +82,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    y[row] = rocsparse_fma<T>(beta, y[row], sum);
+                    y[row] = rocsparse::fma<T>(beta, y[row], sum);
                 }
             }
         }
@@ -136,7 +136,7 @@ namespace rocsparse
                 J col = csr_col_ind[j] - idx_base;
                 A val = conj_val(csr_val[j], conj);
 
-                rocsparse_atomic_add(&y[col], row_val * val);
+                rocsparse::atomic_add(&y[col], row_val * val);
             }
         }
     }
@@ -326,7 +326,7 @@ namespace rocsparse
                     // performance improvement.
                     if(beta != static_cast<T>(0))
                     {
-                        temp_sum = rocsparse_fma<T>(beta, y[local_row], temp_sum);
+                        temp_sum = rocsparse::fma<T>(beta, y[local_row], temp_sum);
                     }
                     y[local_row] = temp_sum;
                 }
@@ -355,7 +355,7 @@ namespace rocsparse
                     // put that into the output for each row.
                     if(beta != static_cast<T>(0))
                     {
-                        temp_sum = rocsparse_fma<T>(beta, y[local_row], temp_sum);
+                        temp_sum = rocsparse::fma<T>(beta, y[local_row], temp_sum);
                     }
 
                     y[local_row] = temp_sum;
@@ -389,7 +389,7 @@ namespace rocsparse
                 // things.
                 for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
                 {
-                    temp_sum = rocsparse_fma<T>(
+                    temp_sum = rocsparse::fma<T>(
                         alpha * conj_val(csr_val[j], conj), x[csr_col_ind[j] - idx_base], temp_sum);
                 }
 
@@ -398,7 +398,7 @@ namespace rocsparse
                 __syncthreads();
 
                 // Reduce partial sums
-                rocsparse_blockreduce_sum<WG_SIZE>(lid, partialSums);
+                rocsparse::blockreduce_sum<WG_SIZE>(lid, partialSums);
 
                 if(lid == 0)
                 {
@@ -406,7 +406,7 @@ namespace rocsparse
 
                     if(beta != static_cast<T>(0))
                     {
-                        temp_sum = rocsparse_fma<T>(beta, y[row], temp_sum);
+                        temp_sum = rocsparse::fma<T>(beta, y[row], temp_sum);
                     }
 
                     y[row] = temp_sum;
@@ -445,7 +445,7 @@ namespace rocsparse
             // The first workgroup will eventually flip this flag, and you can move forward.
             __threadfence();
             while(gid != first_wg_in_row && lid == 0
-                  && ((rocsparse_atomic_max(&wg_flags[first_wg_in_row], 0U)) == compare_value))
+                  && ((rocsparse::atomic_max(&wg_flags[first_wg_in_row], 0U)) == compare_value))
                 ;
 
             // After you've passed the barrier, update your local flag to make sure that
@@ -460,7 +460,7 @@ namespace rocsparse
             // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
             for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
-                temp_sum = rocsparse_fma<T>(
+                temp_sum = rocsparse::fma<T>(
                     alpha * conj_val(csr_val[j], conj), x[csr_col_ind[j] - idx_base], temp_sum);
             }
 
@@ -469,11 +469,11 @@ namespace rocsparse
             __syncthreads();
 
             // Reduce partial sums
-            rocsparse_blockreduce_sum<WG_SIZE>(lid, partialSums);
+            rocsparse::blockreduce_sum<WG_SIZE>(lid, partialSums);
 
             if(lid == 0)
             {
-                rocsparse_atomic_add(y + row, partialSums[0]);
+                rocsparse::atomic_add(y + row, partialSums[0]);
             }
         }
     }
@@ -502,7 +502,7 @@ namespace rocsparse
 
             unsigned int target_bin = (row_len != 0) ? (unsigned int)ceil(log2f(row_len)) : 0;
 
-            rows_binoffsets_scratch[i] = rocsparse_atomic_add(&n_rows_bins[target_bin], (J)1);
+            rows_binoffsets_scratch[i] = rocsparse::atomic_add(&n_rows_bins[target_bin], (J)1);
         }
     }
 
@@ -639,7 +639,7 @@ namespace rocsparse
 
             if(beta != 0)
             {
-                acc = rocsparse_fma<T>(beta, y[row_id], acc);
+                acc = rocsparse::fma<T>(beta, y[row_id], acc);
             }
             y[row_id] = acc;
         }
@@ -732,7 +732,7 @@ namespace rocsparse
                 }
 
                 if(beta != 0)
-                    acc = rocsparse_fma<T>(beta, y[row_id], acc);
+                    acc = rocsparse::fma<T>(beta, y[row_id], acc);
                 y[row_id] = acc;
             }
         }
@@ -785,18 +785,18 @@ namespace rocsparse
 
         for(I j = vecStart + lid; j < vecEnd; j += WF_SIZE)
         {
-            temp_sum = rocsparse_fma<T>(
+            temp_sum = rocsparse::fma<T>(
                 alpha * conj_val(csr_val[j], conj), x[csr_col_ind[j] - idx_base], temp_sum);
         }
 
         // Obtain row sum using parallel warp reduction
-        temp_sum = rocsparse_wfreduce_sum<WF_SIZE>(temp_sum);
+        temp_sum = rocsparse::wfreduce_sum<WF_SIZE>(temp_sum);
 
         if(lid == WF_SIZE - 1)
         {
             if(beta != static_cast<T>(0))
             {
-                temp_sum = rocsparse_fma<T>(beta, y[row], temp_sum);
+                temp_sum = rocsparse::fma<T>(beta, y[row], temp_sum);
             }
 
             y[row] = temp_sum;
@@ -857,7 +857,7 @@ namespace rocsparse
         // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
         for(I j = vecStart + lid; j < vecEnd; j += BLOCKSIZE)
         {
-            temp_sum = rocsparse_fma<T>(
+            temp_sum = rocsparse::fma<T>(
                 alpha * conj_val(csr_val[j], conj), x[csr_col_ind[j] - idx_base], temp_sum);
         }
 
@@ -866,7 +866,7 @@ namespace rocsparse
         __syncthreads();
 
         // Reduce partial sums
-        rocsparse_blockreduce_sum<BLOCKSIZE>(lid, partialSums);
+        rocsparse::blockreduce_sum<BLOCKSIZE>(lid, partialSums);
 
         if(lid == 0)
         {
@@ -874,7 +874,7 @@ namespace rocsparse
 
             if(beta != static_cast<T>(0))
             {
-                temp_sum = rocsparse_fma<T>(beta, y[row], temp_sum);
+                temp_sum = rocsparse::fma<T>(beta, y[row], temp_sum);
             }
 
             y[row] = temp_sum;
@@ -960,7 +960,7 @@ namespace rocsparse
         // The first workgroup will eventually flip this flag, and you can move forward.
         __threadfence();
         while(gid != first_wg_in_row && lid == 0
-              && ((rocsparse_atomic_max(&wg_flags[first_wg_in_row], 0U)) == compare_value))
+              && ((rocsparse::atomic_max(&wg_flags[first_wg_in_row], 0U)) == compare_value))
             ;
 
         // After you've passed the barrier, update your local flag to make sure that
@@ -975,7 +975,7 @@ namespace rocsparse
         // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
         for(I j = vecStart + lid; j < vecEnd; j += BLOCKSIZE)
         {
-            temp_sum = rocsparse_fma<T>(
+            temp_sum = rocsparse::fma<T>(
                 alpha * conj_val(csr_val[j], conj), x[csr_col_ind[j] - idx_base], temp_sum);
         }
 
@@ -984,11 +984,11 @@ namespace rocsparse
         __syncthreads();
 
         // Reduce partial sums
-        rocsparse_blockreduce_sum<BLOCKSIZE>(lid, partialSums);
+        rocsparse::blockreduce_sum<BLOCKSIZE>(lid, partialSums);
 
         if(lid == 0)
         {
-            rocsparse_atomic_add((y + row), partialSums[0]);
+            rocsparse::atomic_add((y + row), partialSums[0]);
         }
     }
 }

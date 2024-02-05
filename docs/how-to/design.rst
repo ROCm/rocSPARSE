@@ -8,7 +8,7 @@
 Design Documentation
 ********************
 
-This document is intended for advanced developers that want to understand, modify or extend the functionality of the rocSPARSE library. 
+This document is intended for advanced developers that want to understand, modify or extend the functionality of the rocSPARSE library.
 
 The rocSPARSE library is developed using the `Hourglass API` approach.
 This provides a thin C89 API while still having all the convenience of C++.
@@ -27,7 +27,7 @@ For this purpose, routines that require a temporary storage buffer offer a speci
 Library Source Organization
 ===========================
 
-The following is the structure of the rocSPARSE library in the GitHub repository. 
+The following is the structure of the rocSPARSE library in the GitHub repository.
 
 `library/include/` directory
 ----------------------------

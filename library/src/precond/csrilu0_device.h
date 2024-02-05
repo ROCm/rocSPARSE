@@ -103,7 +103,7 @@ namespace rocsparse
                     // key is already inserted, done
                     break;
                 }
-                else if(rocsparse_atomic_cas(&table[hash], -1, key) == -1)
+                else if(rocsparse::atomic_cas(&table[hash], -1, key) == -1)
                 {
                     // inserted key into the table, done
                     data[hash] = j;
@@ -182,7 +182,7 @@ namespace rocsparse
                         // Entry found, do ILU computation
                         rocsparse_int idx_data = data[hash];
                         csr_val[idx_data]
-                            = rocsparse_fma(-local_val, csr_val[k], csr_val[idx_data]);
+                            = rocsparse::fma(-local_val, csr_val[k], csr_val[idx_data]);
                         break;
                     }
                     else
@@ -201,7 +201,7 @@ namespace rocsparse
         if(is_diag)
         {
             const auto diag_val     = csr_val[row_diag];
-            const auto abs_diag_val = rocsparse_abs(diag_val);
+            const auto abs_diag_val = rocsparse::abs(diag_val);
             if(boost)
             {
                 const bool is_too_small = (abs_diag_val <= boost_tol);
@@ -223,7 +223,7 @@ namespace rocsparse
                 {
                     if(lid == 0)
                     {
-                        rocsparse_atomic_min(singular_pivot, (row + idx_base));
+                        rocsparse::atomic_min(singular_pivot, (row + idx_base));
                     }
                 }
 
@@ -232,7 +232,7 @@ namespace rocsparse
                 {
                     if(lid == 0)
                     {
-                        rocsparse_atomic_min(zero_pivot, (row + idx_base));
+                        rocsparse::atomic_min(zero_pivot, (row + idx_base));
                     }
                 }
             }
@@ -376,7 +376,7 @@ namespace rocsparse
                 if(col_j == col_k)
                 {
                     // If a match has been found, do ILU computation
-                    csr_val[l] = rocsparse_fma(-local_val, csr_val[k], csr_val[l]);
+                    csr_val[l] = rocsparse::fma(-local_val, csr_val[k], csr_val[l]);
                 }
             }
         }
@@ -387,7 +387,7 @@ namespace rocsparse
         if(is_diag)
         {
             const auto diag_val     = csr_val[row_diag];
-            const auto abs_diag_val = rocsparse_abs(diag_val);
+            const auto abs_diag_val = rocsparse::abs(diag_val);
             if(boost)
             {
                 const bool is_too_small = (abs_diag_val <= boost_tol);
@@ -408,7 +408,7 @@ namespace rocsparse
                 {
                     if(lid == 0)
                     {
-                        rocsparse_atomic_min(singular_pivot, (row + idx_base));
+                        rocsparse::atomic_min(singular_pivot, (row + idx_base));
                     }
                 }
 
@@ -417,7 +417,7 @@ namespace rocsparse
                 {
                     if(lid == 0)
                     {
-                        rocsparse_atomic_min(zero_pivot, (row + idx_base));
+                        rocsparse::atomic_min(zero_pivot, (row + idx_base));
                     }
                 }
             }

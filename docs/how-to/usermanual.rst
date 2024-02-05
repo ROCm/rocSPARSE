@@ -8,7 +8,7 @@
 User Guide
 ***********
 
-The *User Guide* discusses how to work with the rocSPARSE library, building rocSPARSE routines, assigning devices, and streams for processing, and logging activity.   
+The *User Guide* discusses how to work with the rocSPARSE library, building rocSPARSE routines, assigning devices, and streams for processing, and logging activity.
 
   * :ref:`rocsparse-docs`
   * :ref:`rocsparse-logging`

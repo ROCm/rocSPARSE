@@ -44,7 +44,7 @@ namespace rocsparse
 
         for(I idx = gid; idx < nnz; idx += hipGridDim_x * BLOCKSIZE)
         {
-            dotc = rocsparse_fma<T>(y[x_ind[idx] - idx_base], rocsparse_conj(x_val[idx]), dotc);
+            dotc = rocsparse::fma<T>(y[x_ind[idx] - idx_base], rocsparse::conj(x_val[idx]), dotc);
         }
 
         __shared__ T sdata[BLOCKSIZE];
@@ -52,7 +52,7 @@ namespace rocsparse
 
         __syncthreads();
 
-        rocsparse_blockreduce_sum<BLOCKSIZE>(tid, sdata);
+        rocsparse::blockreduce_sum<BLOCKSIZE>(tid, sdata);
 
         if(tid == 0)
         {
@@ -71,7 +71,7 @@ namespace rocsparse
         sdata[tid] = workspace[tid];
         __syncthreads();
 
-        rocsparse_blockreduce_sum<BLOCKSIZE>(tid, sdata);
+        rocsparse::blockreduce_sum<BLOCKSIZE>(tid, sdata);
 
         if(tid == 0)
         {

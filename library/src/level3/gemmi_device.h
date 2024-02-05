@@ -77,13 +77,13 @@ namespace rocsparse
             T             val_B = csr_val[k];
             T             val_A = A[col_B * lda + col];
 
-            sum = rocsparse_fma(val_A, val_B, sum);
+            sum = rocsparse::fma(val_A, val_B, sum);
         }
 
         // Write result back to C
         if(beta != static_cast<T>(0))
         {
-            C[row * ldc + col] = rocsparse_fma(beta, C[row * ldc + col], alpha * sum);
+            C[row * ldc + col] = rocsparse::fma(beta, C[row * ldc + col], alpha * sum);
         }
         else
         {
