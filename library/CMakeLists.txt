@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -62,17 +62,6 @@ source_group("Header Files\\Public" FILES ${rocsparse_headers_public})
 # Include sources
 include(src/CMakeLists.txt)
 
-if (NOT WIN32)
-# Set Fortran module output directory
-set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include/rocsparse)
-
-# Create rocSPARSE Fortran module
-add_library(rocsparse_fortran OBJECT ${rocsparse_fortran_source})
-
-# Target compile options
-target_compile_options(rocsparse_fortran PRIVATE -std=f2003 -ffree-form -cpp)
-endif()
-
 # Create rocSPARSE library
 add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
 add_library(roc::rocsparse ALIAS rocsparse)
@@ -120,8 +109,6 @@ if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY AND NOT WIN32)
     WRAPPER_LOCATIONS ${CMAKE_INSTALL_INCLUDEDIR} rocsparse/${CMAKE_INSTALL_INCLUDEDIR}
   )
 endif( )
-
-
 
 # Force installation of .f module file
 rocm_install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse.f90"
