@@ -231,7 +231,25 @@ Tests:
   precision: *single_double_precisions_complex_real
   M_N: *M_N_range_nightly
   K: [32, 135]
-  block_dim: [5, 11, 33]
+  block_dim: [5, 11]
+  alpha_alphai: *alpha_range_nightly
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_transpose]
+  diag: [rocsparse_diag_type_unit]
+  uplo: [rocsparse_fill_mode_lower]
+  apol: [rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+
+- name: bsrsm
+  category: nightly
+  function: bsrsm
+  precision: *double_only_precisions_complex_real
+  M_N: *M_N_range_nightly
+  K: [32, 135]
+  block_dim: [33]
   alpha_alphai: *alpha_range_nightly
   direction: [rocsparse_direction_row]
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
