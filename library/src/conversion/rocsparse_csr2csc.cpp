@@ -54,7 +54,7 @@ rocsparse_status rocsparse::csr2csc_core(rocsparse_handle     handle,
     hipStream_t stream = handle->stream;
 
     unsigned int startbit = 0;
-    unsigned int endbit   = rocsparse_clz(n);
+    unsigned int endbit   = rocsparse::clz(n);
 
     // Temporary buffer entry points
     char* ptr = reinterpret_cast<char*>(temp_buffer);
@@ -241,20 +241,20 @@ rocsparse_status rocsparse::csr2csc_impl(rocsparse_handle     handle, //0
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsr2csc"),
-              m,
-              n,
-              nnz,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)csc_val,
-              (const void*&)csc_row_ind,
-              (const void*&)csc_col_ptr,
-              copy_values,
-              idx_base,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcsr2csc"),
+                         m,
+                         n,
+                         nnz,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)csc_val,
+                         (const void*&)csc_row_ind,
+                         (const void*&)csc_col_ptr,
+                         copy_values,
+                         idx_base,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -468,15 +468,15 @@ rocsparse_status rocsparse::csr2csc_buffer_size_impl(rocsparse_handle handle,
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              "rocsparse_csr2csc_buffer_size",
-              m,
-              n,
-              nnz,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              copy_values,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         "rocsparse_csr2csc_buffer_size",
+                         m,
+                         n,
+                         nnz,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         copy_values,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_SIZE(1, m);
     ROCSPARSE_CHECKARG_SIZE(2, n);

@@ -62,15 +62,15 @@ rocsparse_status rocsparse::nnz_compress_template(rocsparse_handle          hand
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xnnz_compress"),
-              m,
-              descr_A,
-              (const void*&)csr_val_A,
-              (const void*&)csr_row_ptr_A,
-              (const void*&)nnz_per_row,
-              (const void*&)nnz_C,
-              tol);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xnnz_compress"),
+                         m,
+                         descr_A,
+                         (const void*&)csr_val_A,
+                         (const void*&)csr_row_ptr_A,
+                         (const void*&)nnz_per_row,
+                         (const void*&)nnz_C,
+                         tol);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);

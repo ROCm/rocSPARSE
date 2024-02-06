@@ -59,8 +59,8 @@ namespace rocsparse
                           rocsparse_index_base base,
                           T* __restrict__ workspace)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
         {
             return;
@@ -478,19 +478,19 @@ struct rocsparse::rocsparse_sddmm_st<rocsparse_format_ell, rocsparse_sddmm_alg_d
                                                          k,
                                                          alpha,
                                                          A_val,
-                                                         get_datatype<T>(),
+                                                         rocsparse::get_datatype<T>(),
                                                          A_ld,
                                                          B_val,
-                                                         get_datatype<T>(),
+                                                         rocsparse::get_datatype<T>(),
                                                          B_ld,
                                                          beta,
                                                          dense,
-                                                         get_datatype<T>(),
+                                                         rocsparse::get_datatype<T>(),
                                                          m,
                                                          dense,
-                                                         get_datatype<T>(),
+                                                         rocsparse::get_datatype<T>(),
                                                          m,
-                                                         get_datatype<T>(),
+                                                         rocsparse::get_datatype<T>(),
                                                          rocsparse_blas_gemm_alg_standard,
                                                          0,
                                                          0));

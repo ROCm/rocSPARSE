@@ -100,16 +100,16 @@ rocsparse_status rocsparse::gtsv_no_pivot_buffer_size_template(rocsparse_handle 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgtsv_no_pivot_buffer_size"),
-              m,
-              n,
-              (const void*&)dl,
-              (const void*&)d,
-              (const void*&)du,
-              (const void*&)B,
-              ldb,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xgtsv_no_pivot_buffer_size"),
+                         m,
+                         n,
+                         (const void*&)dl,
+                         (const void*&)d,
+                         (const void*&)du,
+                         (const void*&)B,
+                         ldb,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_SIZE(1, m);
     ROCSPARSE_CHECKARG(1, m, (m <= 1), rocsparse_status_invalid_size);
@@ -557,16 +557,16 @@ rocsparse_status rocsparse::gtsv_no_pivot_template(rocsparse_handle handle,
                                                    rocsparse_int    ldb,
                                                    void*            temp_buffer)
 {
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgtsv_no_pivot"),
-              m,
-              n,
-              (const void*&)dl,
-              (const void*&)d,
-              (const void*&)du,
-              (const void*&)B,
-              ldb,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xgtsv_no_pivot"),
+                         m,
+                         n,
+                         (const void*&)dl,
+                         (const void*&)d,
+                         (const void*&)du,
+                         (const void*&)B,
+                         ldb,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);

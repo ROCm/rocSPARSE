@@ -48,16 +48,16 @@ rocsparse_status rocsparse::ell2dense_template(rocsparse_handle          handle,
     ROCSPARSE_CHECKARG_POINTER(3, ell_descr);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xell2dense"),
-              m,
-              n,
-              ell_descr,
-              ell_width,
-              (const void*&)ell_val,
-              (const void*&)ell_col_ind,
-              (const void*&)A,
-              lda);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xell2dense"),
+                         m,
+                         n,
+                         ell_descr,
+                         ell_width,
+                         (const void*&)ell_val,
+                         (const void*&)ell_col_ind,
+                         (const void*&)A,
+                         lda);
 
     // Check matrix type
     ROCSPARSE_CHECKARG(3,

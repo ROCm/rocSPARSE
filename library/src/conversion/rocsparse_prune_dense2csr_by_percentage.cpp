@@ -43,7 +43,7 @@ namespace rocsparse
                                      U       threshold_device_host,
                                      rocsparse_int* __restrict__ nnz_per_rows)
     {
-        auto threshold = load_scalar_device_host(threshold_device_host);
+        auto threshold = rocsparse::load_scalar_device_host(threshold_device_host);
         rocsparse::prune_dense2csr_nnz_device<DIM_X, DIM_Y>(m, n, A, lda, threshold, nnz_per_rows);
     }
 
@@ -81,19 +81,20 @@ rocsparse_status rocsparse::prune_dense2csr_by_percentage_buffer_size_template(
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xprune_dense2csr_by_percentage_buffer_size"),
-              m,
-              n,
-              (const void*&)A,
-              lda,
-              percentage,
-              descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              info,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(
+        handle,
+        rocsparse::replaceX<T>("rocsparse_Xprune_dense2csr_by_percentage_buffer_size"),
+        m,
+        n,
+        (const void*&)A,
+        lda,
+        percentage,
+        descr,
+        (const void*&)csr_val,
+        (const void*&)csr_row_ptr,
+        (const void*&)csr_col_ind,
+        info,
+        (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -139,18 +140,18 @@ rocsparse_status
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xprune_dense2csr_nnz_by_percentage"),
-              m,
-              n,
-              (const void*&)A,
-              lda,
-              (const void*&)percentage,
-              descr,
-              (const void*&)csr_row_ptr,
-              (const void*&)nnz_total_dev_host_ptr,
-              info,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xprune_dense2csr_nnz_by_percentage"),
+                         m,
+                         n,
+                         (const void*&)A,
+                         lda,
+                         (const void*&)percentage,
+                         descr,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)nnz_total_dev_host_ptr,
+                         info,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -370,19 +371,19 @@ rocsparse_status
                                                       void*                     temp_buffer) //11
 {
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xprune_dense2csr_by_percentage"),
-              m,
-              n,
-              (const void*&)A,
-              lda,
-              percentage,
-              descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              info,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xprune_dense2csr_by_percentage"),
+                         m,
+                         n,
+                         (const void*&)A,
+                         lda,
+                         percentage,
+                         descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         info,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);

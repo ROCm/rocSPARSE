@@ -286,13 +286,13 @@ extern "C" rocsparse_status rocsparse_dense_to_sparse(rocsparse_handle          
 try
 {
     // Logging
-    log_trace(handle,
-              "rocsparse_dense_sparse",
-              (const void*&)mat_A,
-              (const void*&)mat_B,
-              alg,
-              (const void*&)buffer_size,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_dense_sparse",
+                         (const void*&)mat_A,
+                         (const void*&)mat_B,
+                         alg,
+                         (const void*&)buffer_size,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 

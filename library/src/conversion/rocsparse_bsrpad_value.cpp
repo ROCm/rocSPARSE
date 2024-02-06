@@ -43,17 +43,17 @@ rocsparse_status rocsparse::bsrpad_value_template(rocsparse_handle          hand
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xbsrpad_value"),
-              m,
-              mb,
-              nnzb,
-              block_dim,
-              value,
-              bsr_descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xbsrpad_value"),
+                         m,
+                         mb,
+                         nnzb,
+                         block_dim,
+                         value,
+                         bsr_descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);

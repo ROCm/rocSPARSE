@@ -63,7 +63,7 @@ namespace rocsparse
                             const T* __restrict__ in,
                             T* __restrict__ out)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         rocsparse::csrgemm_copy_scale_device<BLOCKSIZE>(size, alpha, in, out);
     }
 }

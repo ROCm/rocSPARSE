@@ -238,8 +238,8 @@ namespace rocsparse
                                        rocsparse_index_base idx_base_B,
                                        rocsparse_index_base idx_base_C)
     {
-        const auto alpha = load_scalar_device_host(alpha_device_host);
-        const auto beta  = load_scalar_device_host(beta_device_host);
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         rocsparse::csrgeam_fill_multipass_device<BLOCKSIZE, WFSIZE>(m,
                                                                     n,
                                                                     alpha,
@@ -565,7 +565,7 @@ namespace rocsparse
     template <typename... P>
     static rocsparse_status csrgeam_impl(P&&... p)
     {
-        log_trace("rocsparse_Xcsrgeam", p...);
+        rocsparse::log_trace("rocsparse_Xcsrgeam", p...);
 
         const rocsparse_status status = rocsparse::csrgeam_checkarg(p...);
         if(status != rocsparse_status_continue)

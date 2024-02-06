@@ -49,7 +49,7 @@ try
 {
     ROCSPARSE_CHECKARG_POINTER(0, handle);
     *handle = new _rocsparse_handle();
-    log_trace(*handle, "rocsparse_create_handle");
+    rocsparse::log_trace(*handle, "rocsparse_create_handle");
     return rocsparse_status_success;
 }
 catch(...)
@@ -64,7 +64,7 @@ rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle)
 try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
-    log_trace(handle, "rocsparse_destroy_handle");
+    rocsparse::log_trace(handle, "rocsparse_destroy_handle");
     delete handle;
     return rocsparse_status_success;
 }
@@ -167,7 +167,7 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(1, mode);
     handle->pointer_mode = mode;
-    log_trace(handle, "rocsparse_set_pointer_mode", mode);
+    rocsparse::log_trace(handle, "rocsparse_set_pointer_mode", mode);
 
     RETURN_IF_ROCSPARSE_ERROR(handle->set_pointer_mode(mode));
     return rocsparse_status_success;
@@ -186,7 +186,7 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(1, mode);
     *mode = handle->pointer_mode;
-    log_trace(handle, "rocsparse_get_pointer_mode", *mode);
+    rocsparse::log_trace(handle, "rocsparse_get_pointer_mode", *mode);
 
     RETURN_IF_ROCSPARSE_ERROR(handle->get_pointer_mode(mode));
     return rocsparse_status_success;
@@ -204,7 +204,7 @@ rocsparse_status rocsparse_set_stream(rocsparse_handle handle, hipStream_t strea
 try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
-    log_trace(handle, "rocsparse_set_stream", stream_id);
+    rocsparse::log_trace(handle, "rocsparse_set_stream", stream_id);
 
     RETURN_IF_ROCSPARSE_ERROR(handle->set_stream(stream_id));
     return rocsparse_status_success;
@@ -221,7 +221,7 @@ rocsparse_status rocsparse_get_stream(rocsparse_handle handle, hipStream_t* stre
 try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
-    log_trace(handle, "rocsparse_get_stream", *stream_id);
+    rocsparse::log_trace(handle, "rocsparse_get_stream", *stream_id);
 
     RETURN_IF_ROCSPARSE_ERROR(handle->get_stream(stream_id));
     return rocsparse_status_success;
@@ -244,7 +244,7 @@ try
     *version = ROCSPARSE_VERSION_MAJOR * 100000 + ROCSPARSE_VERSION_MINOR * 100
                + ROCSPARSE_VERSION_PATCH;
 
-    log_trace(handle, "rocsparse_get_version", *version);
+    rocsparse::log_trace(handle, "rocsparse_get_version", *version);
 
     return rocsparse_status_success;
 }
@@ -266,7 +266,7 @@ try
 
     memcpy(rev, v, sizeof(v));
 
-    log_trace(handle, "rocsparse_get_git_rev", rev);
+    rocsparse::log_trace(handle, "rocsparse_get_git_rev", rev);
 
     return rocsparse_status_success;
 }
@@ -4175,183 +4175,3 @@ catch(...)
 #ifdef __cplusplus
 }
 #endif
-
-template <>
-rocsparse_indextype rocsparse_get_indextype<int32_t>()
-{
-    return rocsparse_indextype_i32;
-}
-
-template <>
-rocsparse_indextype rocsparse_get_indextype<uint16_t>()
-{
-    return rocsparse_indextype_u16;
-}
-
-template <>
-rocsparse_indextype rocsparse_get_indextype<int64_t>()
-{
-    return rocsparse_indextype_i64;
-}
-
-template <>
-rocsparse_datatype rocsparse_get_datatype<double>()
-{
-    return rocsparse_datatype_f64_r;
-}
-
-template <>
-rocsparse_datatype rocsparse_get_datatype<rocsparse_double_complex>()
-{
-    return rocsparse_datatype_f64_c;
-}
-
-template <>
-rocsparse_datatype rocsparse_get_datatype<float>()
-{
-    return rocsparse_datatype_f32_r;
-}
-
-template <>
-rocsparse_datatype rocsparse_get_datatype<rocsparse_float_complex>()
-{
-    return rocsparse_datatype_f32_c;
-}
-
-template <>
-rocsparse_datatype rocsparse_get_datatype<int32_t>()
-{
-    return rocsparse_datatype_i32_r;
-}
-
-template <>
-rocsparse_datatype rocsparse_get_datatype<uint32_t>()
-{
-    return rocsparse_datatype_u32_r;
-}
-
-template <>
-rocsparse_datatype rocsparse_get_datatype<int8_t>()
-{
-    return rocsparse_datatype_i8_r;
-}
-
-template <>
-rocsparse_datatype rocsparse_get_datatype<uint8_t>()
-{
-    return rocsparse_datatype_u8_r;
-}
-
-size_t rocsparse_indextype_sizeof(rocsparse_indextype that)
-{
-    switch(that)
-    {
-
-    case rocsparse_indextype_i32:
-    {
-        return sizeof(int32_t);
-    }
-    case rocsparse_indextype_i64:
-    {
-        return sizeof(int64_t);
-    }
-    case rocsparse_indextype_u16:
-    {
-        return sizeof(uint16_t);
-    }
-    }
-}
-
-size_t rocsparse_datatype_sizeof(rocsparse_datatype that)
-{
-    switch(that)
-    {
-    case rocsparse_datatype_i32_r:
-        return sizeof(int32_t);
-
-    case rocsparse_datatype_u32_r:
-    {
-        return sizeof(uint32_t);
-    }
-
-    case rocsparse_datatype_i8_r:
-    {
-        return sizeof(int8_t);
-    }
-
-    case rocsparse_datatype_u8_r:
-    {
-        return sizeof(uint8_t);
-    }
-    case rocsparse_datatype_f32_r:
-    {
-        return sizeof(float);
-    }
-
-    case rocsparse_datatype_f64_r:
-    {
-        return sizeof(double);
-    }
-
-    case rocsparse_datatype_f32_c:
-    {
-        return sizeof(rocsparse_float_complex);
-    }
-    case rocsparse_datatype_f64_c:
-    {
-        return sizeof(rocsparse_double_complex);
-    }
-    }
-}
-
-rocsparse_status rocsparse_calculate_nnz(
-    int64_t m, rocsparse_indextype indextype, const void* ptr, int64_t* nnz, hipStream_t stream)
-{
-    if(m == 0)
-    {
-        nnz[0] = 0;
-        return rocsparse_status_success;
-    }
-    const char* p = reinterpret_cast<const char*>(ptr) + rocsparse_indextype_sizeof(indextype) * m;
-    int64_t     end, start;
-    switch(indextype)
-    {
-    case rocsparse_indextype_i32:
-    {
-        int32_t u, v;
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &u, ptr, rocsparse_indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &v, p, rocsparse_indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
-        start = u;
-        end   = v;
-        break;
-    }
-    case rocsparse_indextype_i64:
-    {
-        int64_t u, v;
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &u, ptr, rocsparse_indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &v, p, rocsparse_indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
-        start = u;
-        end   = v;
-        break;
-    }
-    case rocsparse_indextype_u16:
-    {
-        uint16_t u, v;
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &u, ptr, rocsparse_indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            &v, p, rocsparse_indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-        start = u;
-        end   = v;
-        break;
-    }
-    }
-    nnz[0] = end - start;
-    return rocsparse_status_success;
-}

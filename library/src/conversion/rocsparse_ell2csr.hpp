@@ -82,7 +82,7 @@ namespace rocsparse
     template <typename... P>
     rocsparse_status ell2csr_impl(P... p)
     {
-        log_trace("ell2csr_impl", p...);
+        rocsparse::log_trace("ell2csr_impl", p...);
 
         const rocsparse_status status = rocsparse::ell2csr_checkarg(p...);
 
@@ -130,7 +130,7 @@ namespace rocsparse
     template <typename... P>
     rocsparse_status ell2csr_nnz_template(P... p)
     {
-        log_trace("rocsparse_ell2csr_nnz", p...);
+        rocsparse::log_trace("rocsparse_ell2csr_nnz", p...);
         const rocsparse_status status = rocsparse::ell2csr_nnz_quickreturn(p...);
         if(status != rocsparse_status_continue)
         {
@@ -144,7 +144,7 @@ namespace rocsparse
     template <typename... P>
     rocsparse_status ell2csr_nnz_impl(P... p)
     {
-        log_trace("rocsparse_ell2csr_nnz", p...);
+        rocsparse::log_trace("rocsparse_ell2csr_nnz", p...);
         const rocsparse_status status = rocsparse::ell2csr_nnz_checkarg(p...);
         if(status != rocsparse_status_continue)
         {

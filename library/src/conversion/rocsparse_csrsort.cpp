@@ -39,14 +39,14 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle     h
 try
 {
     // Logging
-    log_trace(handle,
-              "rocsparse_csrsort_buffer_size",
-              m,
-              n,
-              nnz,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         "rocsparse_csrsort_buffer_size",
+                         m,
+                         n,
+                         nnz,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -102,16 +102,16 @@ try
 {
 
     // Logging
-    log_trace(handle,
-              "rocsparse_csrsort",
-              m,
-              n,
-              nnz,
-              (const void*&)descr,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)perm,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_csrsort",
+                         m,
+                         n,
+                         nnz,
+                         (const void*&)descr,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)perm,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -132,7 +132,7 @@ try
     hipStream_t stream = handle->stream;
 
     unsigned int startbit = 0;
-    unsigned int endbit   = rocsparse_clz(n);
+    unsigned int endbit   = rocsparse::clz(n);
     size_t       size;
 
     if(perm != nullptr)

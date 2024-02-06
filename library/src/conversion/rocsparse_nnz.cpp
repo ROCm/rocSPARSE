@@ -227,17 +227,17 @@ rocsparse_status rocsparse::nnz_impl(rocsparse_handle          handle,
     //
     // Loggings
     //
-    log_trace(handle,
-              "rocsparse_nnz",
-              dir,
-              order,
-              m,
-              n,
-              descr,
-              (const void*&)A,
-              ld,
-              (const void*&)nnz_per_row_columns,
-              (const void*&)nnz_total_dev_host_ptr);
+    rocsparse::log_trace(handle,
+                         "rocsparse_nnz",
+                         dir,
+                         order,
+                         m,
+                         n,
+                         descr,
+                         (const void*&)A,
+                         ld,
+                         (const void*&)nnz_per_row_columns,
+                         (const void*&)nnz_total_dev_host_ptr);
 
     const rocsparse_status status = rocsparse::nnz_checkarg(
         handle, dir, m, n, descr, A, ld, nnz_per_row_columns, nnz_total_dev_host_ptr, order);

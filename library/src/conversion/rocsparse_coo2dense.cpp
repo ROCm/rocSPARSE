@@ -47,17 +47,17 @@ rocsparse_status rocsparse::coo2dense_template(rocsparse_handle          handle,
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcoo2dense"),
-              m,
-              n,
-              nnz,
-              descr,
-              (const void*&)coo_val,
-              (const void*&)coo_row_ind,
-              (const void*&)coo_col_ind,
-              (const void*&)A,
-              lda);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcoo2dense"),
+                         m,
+                         n,
+                         nnz,
+                         descr,
+                         (const void*&)coo_val,
+                         (const void*&)coo_row_ind,
+                         (const void*&)coo_col_ind,
+                         (const void*&)A,
+                         lda);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);

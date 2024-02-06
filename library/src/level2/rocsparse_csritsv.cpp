@@ -38,7 +38,8 @@ try
     ROCSPARSE_CHECKARG_POINTER(2, info);
 
     // Logging
-    log_trace(handle, "rocsparse_csritsv_zero_pivot", (const void*&)info, (const void*&)position);
+    rocsparse::log_trace(
+        handle, "rocsparse_csritsv_zero_pivot", (const void*&)info, (const void*&)position);
 
     // Check pointer arguments
     ROCSPARSE_CHECKARG_POINTER(3, position);
@@ -129,7 +130,8 @@ try
     ROCSPARSE_CHECKARG_POINTER(2, info);
 
     // Logging
-    log_trace(handle, "rocsparse_csritsv_clear", (const void*&)descr, (const void*&)info);
+    rocsparse::log_trace(
+        handle, "rocsparse_csritsv_clear", (const void*&)descr, (const void*&)info);
 
     // Clear csritsv meta data (this includes lower, upper and their transposed equivalents
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csritsv_info(info->csritsv_info));

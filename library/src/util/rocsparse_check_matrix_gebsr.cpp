@@ -60,7 +60,7 @@ rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handl
 
     if(nnzb != (end - start))
     {
-        log_debug(handle, "GEBSR row pointer array does not match nnzb.");
+        rocsparse::log_debug(handle, "GEBSR row pointer array does not match nnzb.");
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
@@ -91,7 +91,7 @@ rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handl
 
     if(*data_status != rocsparse_data_status_success)
     {
-        log_debug(handle, rocsparse::to_string(*data_status));
+        rocsparse::log_debug(handle, rocsparse::to_string(*data_status));
 
         return rocsparse_status_success;
     }
@@ -104,7 +104,7 @@ rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handl
     if(storage == rocsparse_storage_mode_unsorted)
     {
         unsigned int startbit = 0;
-        unsigned int endbit   = rocsparse_clz(nb);
+        unsigned int endbit   = rocsparse::clz(nb);
         size_t       size;
 
         // offsets buffer
@@ -256,7 +256,7 @@ rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handl
 
     if(*data_status != rocsparse_data_status_success)
     {
-        log_debug(handle, rocsparse::to_string(*data_status));
+        rocsparse::log_debug(handle, rocsparse::to_string(*data_status));
     }
 
     return rocsparse_status_success;
@@ -331,10 +331,10 @@ rocsparse_status rocsparse::check_matrix_gebsr_checkarg(rocsparse_handle       h
     {
         if(row_block_dim != col_block_dim || mb != nb)
         {
-            log_debug(handle,
-                      ("Matrix was specified to be "
-                       + std::string(rocsparse::to_string(matrix_type))
-                       + " but (row_block_dim != col_block_dim || mb != nb)"));
+            rocsparse::log_debug(handle,
+                                 ("Matrix was specified to be "
+                                  + std::string(rocsparse::to_string(matrix_type))
+                                  + " but (row_block_dim != col_block_dim || mb != nb)"));
         }
     }
 

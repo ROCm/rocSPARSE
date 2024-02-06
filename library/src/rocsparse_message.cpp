@@ -29,7 +29,7 @@
 #include "to_string.hpp"
 #include <map>
 
-void rocsparse_message(const char* msg_, const char* function_, const char* file_, int line_)
+void rocsparse::message(const char* msg_, const char* function_, const char* file_, int line_)
 {
     if(rocsparse_debug_variables.get_debug_verbose())
     {
@@ -39,10 +39,10 @@ void rocsparse_message(const char* msg_, const char* function_, const char* file
     }
 }
 
-void rocsparse_warning_message(const char* msg_,
-                               const char* function_,
-                               const char* file_,
-                               int         line_)
+void rocsparse::warning_message(const char* msg_,
+                                const char* function_,
+                                const char* file_,
+                                int         line_)
 {
     if(rocsparse_debug_variables.get_debug_verbose())
     {
@@ -52,7 +52,7 @@ void rocsparse_warning_message(const char* msg_,
     }
 }
 
-void rocsparse_error_message(
+void rocsparse::error_message(
     rocsparse_status status_, const char* msg_, const char* function_, const char* file_, int line_)
 {
     if(rocsparse_debug_variables.get_debug_verbose())

@@ -158,7 +158,7 @@ rocsparse_status rocsparse::sparse_to_csr_to_sparse(rocsparse_handle            
         if(csr_m > 0)
         {
             RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(
-                &TEMP_row__, rocsparse_indextype_sizeof(row_type) * (csr_m + 1)));
+                &TEMP_row__, rocsparse::indextype_sizeof(row_type) * (csr_m + 1)));
         }
         RETURN_ROCSPARSE_ERROR_IF(rocsparse_status_type_mismatch,
                                   (csr_nnz > std::numeric_limits<int32_t>::max()
@@ -167,9 +167,9 @@ rocsparse_status rocsparse::sparse_to_csr_to_sparse(rocsparse_handle            
         if(csr_nnz > 0)
         {
             RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(
-                &TEMP_col__, rocsparse_indextype_sizeof(source_->col_type) * csr_nnz));
+                &TEMP_col__, rocsparse::indextype_sizeof(source_->col_type) * csr_nnz));
             RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(
-                &TEMP_val__, rocsparse_datatype_sizeof(source_->data_type) * csr_nnz));
+                &TEMP_val__, rocsparse::datatype_sizeof(source_->data_type) * csr_nnz));
         }
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csr_descr(&intermediate,
                                                              csr_m,
@@ -237,13 +237,13 @@ rocsparse_status rocsparse::sparse_to_csr_to_sparse(rocsparse_handle            
         {
             RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(
                 &TEMP_col__,
-                rocsparse_indextype_sizeof(intermediate->col_type) * intermediate->nnz));
+                rocsparse::indextype_sizeof(intermediate->col_type) * intermediate->nnz));
             //
             // MUST BE CONDITIONAL
             //
             RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(
                 &TEMP_val__,
-                rocsparse_datatype_sizeof(intermediate->data_type) * intermediate->nnz));
+                rocsparse::datatype_sizeof(intermediate->data_type) * intermediate->nnz));
             rocsparse_csr_set_pointers(intermediate, TEMP_row__, TEMP_col__, TEMP_val__);
             break;
         }

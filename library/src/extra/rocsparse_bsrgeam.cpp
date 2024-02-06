@@ -56,8 +56,8 @@ namespace rocsparse
                                                  rocsparse_index_base idx_base_B,
                                                  rocsparse_index_base idx_base_C)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         rocsparse::bsrgeam_wf_per_row_multipass_2_3_device<BLOCKSIZE, BLOCKDIM, WFSIZE>(
             dir,
             mb,
@@ -100,8 +100,8 @@ namespace rocsparse
                                              rocsparse_index_base idx_base_B,
                                              rocsparse_index_base idx_base_C)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         rocsparse::bsrgeam_wf_per_row_multipass_device<BLOCKSIZE, BLOCKDIM>(dir,
                                                                             mb,
                                                                             nb,
@@ -143,8 +143,8 @@ namespace rocsparse
                                                 rocsparse_index_base idx_base_B,
                                                 rocsparse_index_base idx_base_C)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         rocsparse::bsrgeam_block_per_row_multipass_device<BLOCKSIZE, BLOCKDIM>(dir,
                                                                                mb,
                                                                                nb,
@@ -186,8 +186,8 @@ namespace rocsparse
                                                  rocsparse_index_base idx_base_B,
                                                  rocsparse_index_base idx_base_C)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         rocsparse::bsrgeam_block_per_row_multipass_device2<BLOCKSIZE, BLOCKDIM>(dir,
                                                                                 mb,
                                                                                 nb,
@@ -739,7 +739,7 @@ namespace rocsparse
     template <typename... P>
     static rocsparse_status bsrgeam_impl(P&&... p)
     {
-        log_trace("rocsparse_Xbsrgeam", p...);
+        rocsparse::log_trace("rocsparse_Xbsrgeam", p...);
 
         const rocsparse_status status = rocsparse::bsrgeam_checkarg(p...);
         if(status != rocsparse_status_continue)

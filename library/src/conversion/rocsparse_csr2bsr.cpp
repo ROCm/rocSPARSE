@@ -403,8 +403,8 @@ namespace rocsparse
         if(csr_val == nullptr || csr_col_ind == nullptr)
         {
             int64_t nnz;
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_calculate_nnz(
-                m, rocsparse_get_indextype<I>(), csr_row_ptr, &nnz, handle->stream));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::calculate_nnz(
+                m, rocsparse::get_indextype<I>(), csr_row_ptr, &nnz, handle->stream));
 
             ROCSPARSE_CHECKARG_ARRAY(5, nnz, csr_val);
             ROCSPARSE_CHECKARG_ARRAY(7, nnz, csr_col_ind);
@@ -416,7 +416,7 @@ namespace rocsparse
     template <typename... P>
     static rocsparse_status csr2bsr_impl(P&&... p)
     {
-        log_trace("rocsparse_Xcsr2bsr", p...);
+        rocsparse::log_trace("rocsparse_Xcsr2bsr", p...);
 
         int64_t                nnzb;
         const rocsparse_status status = rocsparse::csr2bsr_checkarg(p..., &nnzb);

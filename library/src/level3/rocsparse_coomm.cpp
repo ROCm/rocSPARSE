@@ -65,7 +65,7 @@ namespace rocsparse
                               int64_t         stride,
                               rocsparse_order order)
     {
-        auto beta = load_scalar_device_host(beta_device_host);
+        auto beta = rocsparse::load_scalar_device_host(beta_device_host);
         if(beta != static_cast<T>(1))
         {
             rocsparse::coommnn_scale_device<BLOCKSIZE>(m, n, beta, data, ld, stride, order);
@@ -892,34 +892,34 @@ rocsparse_status coomm_impl(rocsparse_handle          handle,
                             void*                     temp_buffer)
 {
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcoomm"),
-              trans_A,
-              trans_B,
-              alg,
-              m,
-              n,
-              k,
-              nnz,
-              batch_count_A,
-              batch_stride_A,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
-              (const void*&)descr,
-              (const void*&)coo_val,
-              (const void*&)coo_row_ind,
-              (const void*&)coo_col_ind,
-              (const void*&)dense_B,
-              ldb,
-              batch_count_B,
-              batch_stride_B,
-              order_B,
-              LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
-              (const void*&)dense_C,
-              ldc,
-              batch_count_C,
-              batch_stride_C,
-              order_C,
-              temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcoomm"),
+                         trans_A,
+                         trans_B,
+                         alg,
+                         m,
+                         n,
+                         k,
+                         nnz,
+                         batch_count_A,
+                         batch_stride_A,
+                         LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+                         (const void*&)descr,
+                         (const void*&)coo_val,
+                         (const void*&)coo_row_ind,
+                         (const void*&)coo_col_ind,
+                         (const void*&)dense_B,
+                         ldb,
+                         batch_count_B,
+                         batch_stride_B,
+                         order_B,
+                         LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+                         (const void*&)dense_C,
+                         ldc,
+                         batch_count_C,
+                         batch_stride_C,
+                         order_C,
+                         temp_buffer);
 
     const rocsparse_status status = rocsparse::coomm_checkarg<T>(handle,
                                                                  trans_A,

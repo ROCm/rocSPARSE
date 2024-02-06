@@ -43,18 +43,18 @@ try
     // Check for invalid handle
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     // Logging
-    log_trace(handle,
-              "rocsparse_spmv_ex",
-              trans,
-              (const void*&)alpha,
-              (const void*&)mat,
-              (const void*&)x,
-              (const void*&)beta,
-              (const void*&)y,
-              compute_type,
-              alg,
-              (const void*&)buffer_size,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_spmv_ex",
+                         trans,
+                         (const void*&)alpha,
+                         (const void*&)mat,
+                         (const void*&)x,
+                         (const void*&)beta,
+                         (const void*&)y,
+                         compute_type,
+                         alg,
+                         (const void*&)buffer_size,
+                         (const void*&)temp_buffer);
 
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_spmv(
         handle, trans, alpha, mat, x, beta, y, compute_type, alg, stage, buffer_size, temp_buffer));

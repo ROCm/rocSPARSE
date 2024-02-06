@@ -220,21 +220,21 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              "rocsparse_spitsv",
-              (const void*&)host_nmaxiter,
-              (const void*&)host_tol,
-              (const void*&)host_history,
-              trans,
-              (const void*&)alpha,
-              (const void*&)mat,
-              (const void*&)x,
-              (const void*&)y,
-              compute_type,
-              alg,
-              stage,
-              (const void*&)buffer_size,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_spitsv",
+                         (const void*&)host_nmaxiter,
+                         (const void*&)host_tol,
+                         (const void*&)host_history,
+                         trans,
+                         (const void*&)alpha,
+                         (const void*&)mat,
+                         (const void*&)x,
+                         (const void*&)y,
+                         compute_type,
+                         alg,
+                         stage,
+                         (const void*&)buffer_size,
+                         (const void*&)temp_buffer);
 
     // Check for invalid descriptors
     ROCSPARSE_CHECKARG_POINTER(6, mat);

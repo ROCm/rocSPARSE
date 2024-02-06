@@ -41,14 +41,14 @@ rocsparse_status rocsparse::doti_template(rocsparse_handle     handle,
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xdoti"),
-              nnz,
-              (const void*&)x_val,
-              (const void*&)x_ind,
-              (const void*&)y,
-              LOG_TRACE_SCALAR_VALUE(handle, result),
-              idx_base);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xdoti"),
+                         nnz,
+                         (const void*&)x_val,
+                         (const void*&)x_ind,
+                         (const void*&)y,
+                         LOG_TRACE_SCALAR_VALUE(handle, result),
+                         idx_base);
 
     // Check index base
     ROCSPARSE_CHECKARG_ENUM(6, idx_base);

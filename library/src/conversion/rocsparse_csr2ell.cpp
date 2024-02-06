@@ -192,7 +192,7 @@ namespace rocsparse
     template <typename... P>
     rocsparse_status csr2ell_impl(P&&... p)
     {
-        log_trace("rocsparse_Xcsr2ell", p...);
+        rocsparse::log_trace("rocsparse_Xcsr2ell", p...);
         const rocsparse_status status = rocsparse::csr2ell_checkarg(p...);
         if(status != rocsparse_status_continue)
         {

@@ -374,7 +374,7 @@ template <typename... P>
 rocsparse_status rocsparse_csrgemm_symbolic_impl(P&&... p)
 {
 
-    log_trace("rocsparse_csrgemm_symbolic", p...);
+    rocsparse::log_trace("rocsparse_csrgemm_symbolic", p...);
 
     const rocsparse_status status = rocsparse::csrgemm_symbolic_checkarg(p...);
     if(status != rocsparse_status_continue)
@@ -481,7 +481,7 @@ INSTANTIATE(int64_t, int64_t);
     }                                                                            \
     catch(...)                                                                   \
     {                                                                            \
-        return exception_to_rocsparse_status();                                  \
+        return rocsparse::exception_to_rocsparse_status();                       \
     }
 
 C_IMPL(rocsparse_csrgemm_symbolic);

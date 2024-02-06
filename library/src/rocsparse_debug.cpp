@@ -34,32 +34,32 @@
 
 static std::mutex s_mutex;
 
-bool rocsparse_debug_variables_st::get_debug() const
+bool rocsparse::debug_variables_st::get_debug() const
 {
     return debug;
 }
 
-bool rocsparse_debug_variables_st::get_debug_verbose() const
+bool rocsparse::debug_variables_st::get_debug_verbose() const
 {
     return debug_verbose;
 }
 
-bool rocsparse_debug_variables_st::get_debug_kernel_launch() const
+bool rocsparse::debug_variables_st::get_debug_kernel_launch() const
 {
     return debug_kernel_launch;
 }
 
-bool rocsparse_debug_variables_st::get_debug_arguments() const
+bool rocsparse::debug_variables_st::get_debug_arguments() const
 {
     return debug_arguments;
 }
 
-bool rocsparse_debug_variables_st::get_debug_arguments_verbose() const
+bool rocsparse::debug_variables_st::get_debug_arguments_verbose() const
 {
     return debug_arguments_verbose;
 }
 
-void rocsparse_debug_variables_st::set_debug(bool value)
+void rocsparse::debug_variables_st::set_debug(bool value)
 {
     if(value != debug)
     {
@@ -69,7 +69,7 @@ void rocsparse_debug_variables_st::set_debug(bool value)
     }
 }
 
-void rocsparse_debug_variables_st::set_debug_verbose(bool value)
+void rocsparse::debug_variables_st::set_debug_verbose(bool value)
 {
     if(value != debug_verbose)
     {
@@ -79,7 +79,7 @@ void rocsparse_debug_variables_st::set_debug_verbose(bool value)
     }
 }
 
-void rocsparse_debug_variables_st::set_debug_arguments(bool value)
+void rocsparse::debug_variables_st::set_debug_arguments(bool value)
 {
     if(value != debug_arguments)
     {
@@ -89,7 +89,7 @@ void rocsparse_debug_variables_st::set_debug_arguments(bool value)
     }
 }
 
-void rocsparse_debug_variables_st::set_debug_kernel_launch(bool value)
+void rocsparse::debug_variables_st::set_debug_kernel_launch(bool value)
 {
     if(value != debug_kernel_launch)
     {
@@ -99,7 +99,7 @@ void rocsparse_debug_variables_st::set_debug_kernel_launch(bool value)
     }
 }
 
-void rocsparse_debug_variables_st::set_debug_arguments_verbose(bool value)
+void rocsparse::debug_variables_st::set_debug_arguments_verbose(bool value)
 {
     if(value != debug_arguments_verbose)
     {

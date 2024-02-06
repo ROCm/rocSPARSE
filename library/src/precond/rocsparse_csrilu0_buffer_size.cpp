@@ -115,16 +115,16 @@ namespace rocsparse
                                                      rocsparse_mat_info        info,
                                                      size_t*                   buffer_size)
     {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrilu0_buffer_size"),
-                  m,
-                  nnz,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)info,
-                  (const void*&)buffer_size);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xcsrilu0_buffer_size"),
+                             m,
+                             nnz,
+                             (const void*&)descr,
+                             (const void*&)csr_val,
+                             (const void*&)csr_row_ptr,
+                             (const void*&)csr_col_ind,
+                             (const void*&)info,
+                             (const void*&)buffer_size);
 
         const rocsparse_status status = rocsparse::csrilu0_buffer_size_checkarg(
             handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);

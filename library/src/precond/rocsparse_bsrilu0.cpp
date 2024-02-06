@@ -126,12 +126,12 @@ namespace rocsparse
     {
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xbsrilu0_numeric_boost"),
-                  (const void*&)info,
-                  enable_boost,
-                  (const void*&)boost_tol,
-                  (const void*&)boost_val);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xbsrilu0_numeric_boost"),
+                             (const void*&)info,
+                             enable_boost,
+                             (const void*&)boost_tol,
+                             (const void*&)boost_val);
 
         ROCSPARSE_CHECKARG_POINTER(1, info);
 
@@ -172,19 +172,19 @@ rocsparse_status rocsparse::bsrilu0_analysis_template(rocsparse_handle          
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xbsrilu0_analysis"),
-              dir,
-              mb,
-              nnzb,
-              (const void*&)descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              block_dim,
-              (const void*&)info,
-              solve,
-              analysis);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xbsrilu0_analysis"),
+                         dir,
+                         mb,
+                         nnzb,
+                         (const void*&)descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         block_dim,
+                         (const void*&)info,
+                         solve,
+                         analysis);
 
     ROCSPARSE_CHECKARG_ENUM(1, dir);
     ROCSPARSE_CHECKARG_SIZE(2, mb);
@@ -290,11 +290,11 @@ namespace rocsparse
                      V                    boost_val_device_host)
     {
 
-        auto boost_tol = (enable_boost) ? load_scalar_device_host(boost_tol_device_host)
-                                        : zero_scalar_device_host(boost_tol_device_host);
+        auto boost_tol = (enable_boost) ? rocsparse::load_scalar_device_host(boost_tol_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_tol_device_host);
 
-        auto boost_val = (enable_boost) ? load_scalar_device_host(boost_val_device_host)
-                                        : zero_scalar_device_host(boost_val_device_host);
+        auto boost_val = (enable_boost) ? rocsparse::load_scalar_device_host(boost_val_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_val_device_host);
 
         rocsparse::bsrilu0_2_8_device<BLOCKSIZE, WFSIZE, BSRDIM>(dir,
                                                                  mb,
@@ -334,11 +334,11 @@ namespace rocsparse
                       U                    boost_tol_device_host,
                       V                    boost_val_device_host)
     {
-        auto boost_tol = (enable_boost) ? load_scalar_device_host(boost_tol_device_host)
-                                        : zero_scalar_device_host(boost_tol_device_host);
+        auto boost_tol = (enable_boost) ? rocsparse::load_scalar_device_host(boost_tol_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_tol_device_host);
 
-        auto boost_val = (enable_boost) ? load_scalar_device_host(boost_val_device_host)
-                                        : zero_scalar_device_host(boost_val_device_host);
+        auto boost_val = (enable_boost) ? rocsparse::load_scalar_device_host(boost_val_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_val_device_host);
 
         rocsparse::bsrilu0_9_32_device<BLOCKSIZE, WFSIZE, BSRDIM>(dir,
                                                                   mb,
@@ -378,11 +378,11 @@ namespace rocsparse
                        U                    boost_tol_device_host,
                        V                    boost_val_device_host)
     {
-        auto boost_tol = (enable_boost) ? load_scalar_device_host(boost_tol_device_host)
-                                        : zero_scalar_device_host(boost_tol_device_host);
+        auto boost_tol = (enable_boost) ? rocsparse::load_scalar_device_host(boost_tol_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_tol_device_host);
 
-        auto boost_val = (enable_boost) ? load_scalar_device_host(boost_val_device_host)
-                                        : zero_scalar_device_host(boost_val_device_host);
+        auto boost_val = (enable_boost) ? rocsparse::load_scalar_device_host(boost_val_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_val_device_host);
 
         rocsparse::bsrilu0_33_64_device<BLOCKSIZE, WFSIZE, BSRDIM>(dir,
                                                                    mb,
@@ -422,11 +422,11 @@ namespace rocsparse
                          U                    boost_tol_device_host,
                          V                    boost_val_device_host)
     {
-        auto boost_tol = (enable_boost) ? load_scalar_device_host(boost_tol_device_host)
-                                        : zero_scalar_device_host(boost_tol_device_host);
+        auto boost_tol = (enable_boost) ? rocsparse::load_scalar_device_host(boost_tol_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_tol_device_host);
 
-        auto boost_val = (enable_boost) ? load_scalar_device_host(boost_val_device_host)
-                                        : zero_scalar_device_host(boost_val_device_host);
+        auto boost_val = (enable_boost) ? rocsparse::load_scalar_device_host(boost_val_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_val_device_host);
 
         rocsparse::bsrilu0_general_device<BLOCKSIZE, WFSIZE, SLEEP>(dir,
                                                                     mb,
@@ -566,18 +566,18 @@ rocsparse_status rocsparse::bsrilu0_template(rocsparse_handle          handle,
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xbsrilu0"),
-              mb,
-              nnzb,
-              (const void*&)descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              block_dim,
-              (const void*&)info,
-              policy,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xbsrilu0"),
+                         mb,
+                         nnzb,
+                         (const void*&)descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         block_dim,
+                         (const void*&)info,
+                         policy,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_ENUM(1, dir);
     ROCSPARSE_CHECKARG_SIZE(2, mb);
@@ -661,7 +661,7 @@ try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     // Logging
-    log_trace(handle, "rocsparse_bsrilu0_clear", (const void*&)info);
+    rocsparse::log_trace(handle, "rocsparse_bsrilu0_clear", (const void*&)info);
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
 
@@ -723,18 +723,18 @@ namespace rocsparse
     {
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xbsrilu0_buffer_size"),
-                  dir,
-                  mb,
-                  nnzb,
-                  (const void*&)descr,
-                  (const void*&)bsr_val,
-                  (const void*&)bsr_row_ptr,
-                  (const void*&)bsr_col_ind,
-                  block_dim,
-                  (const void*&)info,
-                  (const void*&)buffer_size);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xbsrilu0_buffer_size"),
+                             dir,
+                             mb,
+                             nnzb,
+                             (const void*&)descr,
+                             (const void*&)bsr_val,
+                             (const void*&)bsr_row_ptr,
+                             (const void*&)bsr_col_ind,
+                             block_dim,
+                             (const void*&)info,
+                             (const void*&)buffer_size);
 
         ROCSPARSE_CHECKARG_ENUM(1, dir);
         ROCSPARSE_CHECKARG_SIZE(2, mb);
@@ -1057,7 +1057,8 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle, "rocsparse_bsrilu0_zero_pivot", (const void*&)info, (const void*&)position);
+    rocsparse::log_trace(
+        handle, "rocsparse_bsrilu0_zero_pivot", (const void*&)info, (const void*&)position);
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
     ROCSPARSE_CHECKARG_POINTER(2, position);

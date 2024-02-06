@@ -27,6 +27,8 @@
 #include "internal/precond/rocsparse_csritilu0.h"
 #include "rocsparse_csritilu0_driver.hpp"
 
+using namespace rocsparse;
+
 namespace rocsparse
 {
     template <typename T, typename J, typename... P>
@@ -93,13 +95,13 @@ rocsparse_status rocsparse::csritilu0_history_impl(rocsparse_handle     handle,
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              "rocsparse_csritilu0_history",
-              alg,
-              (const void*&)niter,
-              (const void*&)nrms,
-              buffer_size,
-              (const void*&)buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_csritilu0_history",
+                         alg,
+                         (const void*&)niter,
+                         (const void*&)nrms,
+                         buffer_size,
+                         (const void*&)buffer);
 
     ROCSPARSE_CHECKARG_ENUM(1, alg);
     ROCSPARSE_CHECKARG_POINTER(2, niter);

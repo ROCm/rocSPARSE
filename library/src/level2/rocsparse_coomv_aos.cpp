@@ -31,7 +31,7 @@
 using namespace rocsparse;
 
 template <>
-inline bool rocsparse_enum_utils::is_invalid(rocsparse_coomv_aos_alg value_)
+inline bool rocsparse::enum_utils::is_invalid(rocsparse_coomv_aos_alg value_)
 {
     switch(value_)
     {
@@ -51,7 +51,7 @@ namespace rocsparse
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void coomv_scale(I size, U beta_device_host, Y* __restrict__ data)
     {
-        auto beta = load_scalar_device_host(beta_device_host);
+        auto beta = rocsparse::load_scalar_device_host(beta_device_host);
         if(beta != 1)
         {
             rocsparse::coomv_scale_device<BLOCKSIZE>(size, beta, data);
@@ -77,7 +77,7 @@ namespace rocsparse
                                     T* __restrict__ val_block_red,
                                     rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         if(alpha != 0)
         {
             rocsparse::coomvn_aos_segmented_loops_device<BLOCKSIZE>(
@@ -93,7 +93,7 @@ namespace rocsparse
                                        const T* __restrict__ val_block_red,
                                        Y* __restrict__ y)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         if(alpha != 0)
         {
             rocsparse::coomvn_segmented_loops_reduce_device<BLOCKSIZE>(
@@ -117,7 +117,7 @@ namespace rocsparse
                                  Y* __restrict__ y,
                                  rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         if(alpha != 0)
         {
             rocsparse::coomvn_aos_atomic_loops_device<BLOCKSIZE, LOOPS>(
@@ -136,7 +136,7 @@ namespace rocsparse
                            Y* __restrict__ y,
                            rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         if(alpha != 0)
         {
             rocsparse::coomvt_aos_device(trans, nnz, alpha, coo_ind, coo_val, x, y, idx_base);
@@ -176,7 +176,7 @@ namespace rocsparse
         }
         else
         {
-            auto beta = load_scalar_device_host(beta_device_host);
+            auto beta = rocsparse::load_scalar_device_host(beta_device_host);
             // If beta == 0.0 we need to set y to 0
             if(beta == 0)
             {
@@ -270,7 +270,7 @@ namespace rocsparse
         }
         else
         {
-            auto beta = load_scalar_device_host(beta_device_host);
+            auto beta = rocsparse::load_scalar_device_host(beta_device_host);
             // If beta == 0.0 we need to set y to 0
             if(beta == static_cast<T>(0))
             {
@@ -444,19 +444,19 @@ rocsparse_status rocsparse::coomv_aos_template(rocsparse_handle          handle,
     ROCSPARSE_CHECKARG_POINTER(7, descr);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcoomv_aos"),
-              trans,
-              m,
-              n,
-              nnz,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
-              (const void*&)descr,
-              (const void*&)coo_val,
-              (const void*&)coo_ind,
-              (const void*&)x,
-              LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
-              (const void*&)y);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcoomv_aos"),
+                         trans,
+                         m,
+                         n,
+                         nnz,
+                         LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+                         (const void*&)descr,
+                         (const void*&)coo_val,
+                         (const void*&)coo_ind,
+                         (const void*&)x,
+                         LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+                         (const void*&)y);
 
     // Check index base
     ROCSPARSE_CHECKARG_ENUM(1, trans);

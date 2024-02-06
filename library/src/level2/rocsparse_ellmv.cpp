@@ -44,8 +44,8 @@ namespace rocsparse
                        Y* __restrict__ y,
                        rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha != 0 || beta != 1)
         {
             rocsparse::ellmvn_device<BLOCKSIZE>(
@@ -66,7 +66,7 @@ namespace rocsparse
                        Y* __restrict__ y,
                        rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         if(alpha != 0)
         {
             rocsparse::ellmvt_device<BLOCKSIZE>(
@@ -78,7 +78,7 @@ namespace rocsparse
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void ellmvt_scale_kernel(I size, U scalar_device_host, Y* __restrict__ data)
     {
-        auto scalar = load_scalar_device_host(scalar_device_host);
+        auto scalar = rocsparse::load_scalar_device_host(scalar_device_host);
         if(scalar != 1)
         {
             rocsparse::ellmvt_scale_device(size, scalar, data);
@@ -179,19 +179,19 @@ rocsparse_status rocsparse::ellmv_template(rocsparse_handle          handle, // 
     ROCSPARSE_CHECKARG_POINTER(5, descr);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xellmv"),
-              trans,
-              m,
-              n,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
-              (const void*&)descr,
-              (const void*&)ell_val,
-              (const void*&)ell_col_ind,
-              ell_width,
-              (const void*&)x,
-              LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
-              (const void*&)y);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xellmv"),
+                         trans,
+                         m,
+                         n,
+                         LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+                         (const void*&)descr,
+                         (const void*&)ell_val,
+                         (const void*&)ell_col_ind,
+                         ell_width,
+                         (const void*&)x,
+                         LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+                         (const void*&)y);
 
     ROCSPARSE_CHECKARG_ENUM(1, trans);
 

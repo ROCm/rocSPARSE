@@ -38,7 +38,7 @@ namespace rocsparse
                       T*                   y,
                       rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         if(alpha != static_cast<T>(0))
         {
             rocsparse::axpyi_device<BLOCKSIZE>(nnz, alpha, x_val, x_ind, y, idx_base);
@@ -59,13 +59,13 @@ rocsparse_status rocsparse::axpyi_template(rocsparse_handle     handle,
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xaxpyi"),
-              nnz,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha),
-              (const void*&)x_val,
-              (const void*&)x_ind,
-              (const void*&)y);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xaxpyi"),
+                         nnz,
+                         LOG_TRACE_SCALAR_VALUE(handle, alpha),
+                         (const void*&)x_val,
+                         (const void*&)x_ind,
+                         (const void*&)y);
 
     // Check index base
     ROCSPARSE_CHECKARG_ENUM(6, idx_base);

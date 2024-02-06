@@ -46,17 +46,17 @@ rocsparse_status rocsparse::csr2hyb_template(rocsparse_handle          handle,
 {
     // Check for valid handle and matrix descriptor
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsr2hyb"),
-              m,
-              n,
-              (const void*&)descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)hyb,
-              user_ell_width,
-              partition_type);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcsr2hyb"),
+                         m,
+                         n,
+                         (const void*&)descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)hyb,
+                         user_ell_width,
+                         partition_type);
 
     // Check matrix type
 

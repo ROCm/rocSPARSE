@@ -313,23 +313,23 @@ rocsparse_status rocsparse::gebsrmv_template(rocsparse_handle          handle, /
     ROCSPARSE_CHECKARG_POINTER(7, descr);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgebsrmv"),
-              dir,
-              trans,
-              mb,
-              nb,
-              nnzb,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha),
-              (const void*&)descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              row_block_dim,
-              col_block_dim,
-              (const void*&)x,
-              LOG_TRACE_SCALAR_VALUE(handle, beta),
-              (const void*&)y);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xgebsrmv"),
+                         dir,
+                         trans,
+                         mb,
+                         nb,
+                         nnzb,
+                         LOG_TRACE_SCALAR_VALUE(handle, alpha),
+                         (const void*&)descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         row_block_dim,
+                         col_block_dim,
+                         (const void*&)x,
+                         LOG_TRACE_SCALAR_VALUE(handle, beta),
+                         (const void*&)y);
 
     ROCSPARSE_CHECKARG_ENUM(1, dir);
     ROCSPARSE_CHECKARG_ENUM(2, trans);

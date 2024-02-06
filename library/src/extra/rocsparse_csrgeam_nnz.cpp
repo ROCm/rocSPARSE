@@ -454,7 +454,7 @@ namespace rocsparse
     template <typename... P>
     static rocsparse_status csrgeam_nnz_impl(P&&... p)
     {
-        log_trace("rocsparse_csrgeam_nnz", p...);
+        rocsparse::log_trace("rocsparse_csrgeam_nnz", p...);
 
         const rocsparse_status status = rocsparse::csrgeam_nnz_checkarg(p...);
         if(status != rocsparse_status_continue)

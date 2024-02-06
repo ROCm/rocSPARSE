@@ -36,7 +36,7 @@ rocsparse_status rocsparse::gcsr2coo_aos_buffer_size(rocsparse_handle     handle
                                                      rocsparse_indextype  target_ind_type,
                                                      size_t*              buffer_size_)
 {
-    buffer_size_[0] = rocsparse_indextype_sizeof(target_ind_type) * nnz;
+    buffer_size_[0] = rocsparse::indextype_sizeof(target_ind_type) * nnz;
     return rocsparse_status_success;
 }
 
@@ -74,7 +74,7 @@ rocsparse_status rocsparse::gcsr2coo_aos(rocsparse_handle     handle,
         handle,
         nnz,
         target_ind_type,
-        reinterpret_cast<char*>(target_ind_data) + rocsparse_indextype_sizeof(target_ind_type),
+        reinterpret_cast<char*>(target_ind_data) + rocsparse::indextype_sizeof(target_ind_type),
         2,
         source_col_type,
         source_col_data,

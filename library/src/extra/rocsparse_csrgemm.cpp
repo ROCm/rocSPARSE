@@ -671,7 +671,7 @@ namespace rocsparse
     template <typename... P>
     static rocsparse_status csrgemm_impl(P&&... p)
     {
-        log_trace("rocsparse_Xcsrgemm", p...);
+        rocsparse::log_trace("rocsparse_Xcsrgemm", p...);
         const rocsparse_status status = rocsparse::csrgemm_checkarg(p...);
         if(status != rocsparse_status_continue)
         {

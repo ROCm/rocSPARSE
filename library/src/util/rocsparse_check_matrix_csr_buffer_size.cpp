@@ -62,7 +62,7 @@ rocsparse_status rocsparse::check_matrix_csr_buffer_size_core(rocsparse_handle  
                                                                 csr_row_ptr,
                                                                 csr_row_ptr + 1,
                                                                 0,
-                                                                rocsparse_clz(n),
+                                                                rocsparse::clz(n),
                                                                 handle->stream));
         *buffer_size += ((rocprim_buffer_size - 1) / 256 + 1) * 256;
 
@@ -131,9 +131,10 @@ rocsparse_status
     {
         if(m != n)
         {
-            log_debug(handle,
-                      ("Matrix was specified to be "
-                       + std::string(rocsparse::to_string(matrix_type)) + " but m != n"));
+            rocsparse::log_debug(handle,
+                                 ("Matrix was specified to be "
+                                  + std::string(rocsparse::to_string(matrix_type))
+                                  + " but m != n"));
         }
     }
     ROCSPARSE_CHECKARG(2,

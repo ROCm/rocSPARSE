@@ -56,7 +56,7 @@ namespace rocsparse
                       rocsparse_fill_mode  fill_mode,
                       rocsparse_diag_type  diag_type)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         rocsparse::csrsv_device<BLOCKSIZE, WF_SIZE, SLEEP>(m,
                                                            alpha,
                                                            csr_row_ptr,
@@ -121,7 +121,7 @@ namespace rocsparse
         // If diag type is unit, re-initialize zero pivot to remove structural zeros
         if(descr->diag_type == rocsparse_diag_type_unit)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_assign_async(
+            RETURN_IF_HIP_ERROR(rocsparse::assign_async(
                 static_cast<J*>(info->zero_pivot), std::numeric_limits<J>::max(), stream));
         }
 
@@ -283,21 +283,21 @@ rocsparse_status rocsparse::csrsv_solve_template(rocsparse_handle          handl
     ROCSPARSE_CHECKARG_POINTER(9, info);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsrsv"),
-              trans,
-              m,
-              nnz,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
-              (const void*&)descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)info,
-              (const void*&)x,
-              (const void*&)y,
-              policy,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcsrsv"),
+                         trans,
+                         m,
+                         nnz,
+                         LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+                         (const void*&)descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)info,
+                         (const void*&)x,
+                         (const void*&)y,
+                         policy,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_ENUM(1, trans);
     ROCSPARSE_CHECKARG_ENUM(12, policy);

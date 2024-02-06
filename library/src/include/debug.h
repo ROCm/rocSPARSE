@@ -27,76 +27,80 @@
 #include "envariables.h"
 #include "rocsparse-types.h"
 
-///
-/// @brief Structure to store debug global variables.
-///
-struct rocsparse_debug_variables_st
+namespace rocsparse
 {
-private:
-    bool debug;
-    bool debug_arguments;
-    bool debug_verbose;
-    bool debug_arguments_verbose;
-    bool debug_kernel_launch;
-
-public:
-    bool get_debug() const;
-    bool get_debug_verbose() const;
-    bool get_debug_kernel_launch() const;
-    bool get_debug_arguments() const;
-    bool get_debug_arguments_verbose() const;
-
-    void set_debug(bool value);
-    void set_debug_verbose(bool value);
-    void set_debug_arguments(bool value);
-    void set_debug_kernel_launch(bool value);
-    void set_debug_arguments_verbose(bool value);
-};
-
-struct rocsparse_debug_st
-{
-private:
-    rocsparse_debug_variables_st m_var{};
-
-public:
-    static rocsparse_debug_st& instance()
+    ///
+    /// @brief Structure to store debug global variables.
+    ///
+    struct debug_variables_st
     {
-        static rocsparse_debug_st self;
-        return self;
-    }
+    private:
+        bool debug;
+        bool debug_arguments;
+        bool debug_verbose;
+        bool debug_arguments_verbose;
+        bool debug_kernel_launch;
 
-    static rocsparse_debug_variables_st& var()
-    {
-        return instance().m_var;
-    }
+    public:
+        bool get_debug() const;
+        bool get_debug_verbose() const;
+        bool get_debug_kernel_launch() const;
+        bool get_debug_arguments() const;
+        bool get_debug_arguments_verbose() const;
 
-    ~rocsparse_debug_st() = default;
-
-private:
-    rocsparse_debug_st()
-    {
-        const bool debug = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG);
-        m_var.set_debug(debug);
-
-        const bool debug_arguments
-            = (!getenv(rocsparse_envariables::names[rocsparse_envariables::DEBUG_ARGUMENTS]))
-                  ? debug
-                  : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG);
-        m_var.set_debug_arguments(debug_arguments);
-
-        m_var.set_debug_verbose(
-            (!getenv(rocsparse_envariables::names[rocsparse_envariables::DEBUG_VERBOSE]))
-                ? debug
-                : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_VERBOSE));
-        m_var.set_debug_arguments_verbose(
-            (!getenv(rocsparse_envariables::names[rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE]))
-                ? debug_arguments
-                : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE));
-
-        const bool debug_kernel_launch
-            = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_KERNEL_LAUNCH);
-        m_var.set_debug_kernel_launch(debug_kernel_launch);
+        void set_debug(bool value);
+        void set_debug_verbose(bool value);
+        void set_debug_arguments(bool value);
+        void set_debug_kernel_launch(bool value);
+        void set_debug_arguments_verbose(bool value);
     };
-};
 
-#define rocsparse_debug_variables rocsparse_debug_st::instance().var()
+    struct debug_st
+    {
+    private:
+        debug_variables_st m_var{};
+
+    public:
+        static debug_st& instance()
+        {
+            static debug_st self;
+            return self;
+        }
+
+        static debug_variables_st& var()
+        {
+            return instance().m_var;
+        }
+
+        ~debug_st() = default;
+
+    private:
+        debug_st()
+        {
+            const bool debug = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG);
+            m_var.set_debug(debug);
+
+            const bool debug_arguments
+                = (!getenv(rocsparse_envariables::names[rocsparse_envariables::DEBUG_ARGUMENTS]))
+                      ? debug
+                      : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG);
+            m_var.set_debug_arguments(debug_arguments);
+
+            m_var.set_debug_verbose(
+                (!getenv(rocsparse_envariables::names[rocsparse_envariables::DEBUG_VERBOSE]))
+                    ? debug
+                    : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_VERBOSE));
+            m_var.set_debug_arguments_verbose(
+                (!getenv(
+                    rocsparse_envariables::names[rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE]))
+                    ? debug_arguments
+                    : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE));
+
+            const bool debug_kernel_launch
+                = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_KERNEL_LAUNCH);
+            m_var.set_debug_kernel_launch(debug_kernel_launch);
+        };
+    };
+
+#define rocsparse_debug_variables rocsparse::debug_st::instance().var()
+}

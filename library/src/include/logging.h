@@ -27,7 +27,9 @@
 #include <fstream>
 #include <string>
 
-/**
+namespace rocsparse
+{
+    /**
  *  @brief Logging function
  *
  *  @details
@@ -55,31 +57,31 @@
  *              will stream to log_ofs. Else it will stream to std::cerr.
  */
 
-inline void open_log_stream(std::ostream** log_os,
-                            std::ofstream* log_ofs,
-                            std::string    environment_variable_name)
-{
-    *log_os = &std::cerr;
-
-    char const* environment_variable_value = getenv(environment_variable_name.c_str());
-
-    if(environment_variable_value != NULL)
+    inline void open_log_stream(std::ostream** log_os,
+                                std::ofstream* log_ofs,
+                                std::string    environment_variable_name)
     {
-        // if environment variable is set, open file at logfile_pathname contained in the
-        // environment variable
-        std::string logfile_pathname = (std::string)environment_variable_value;
-        log_ofs->open(logfile_pathname);
+        *log_os = &std::cerr;
 
-        // if log_ofs is open, then stream to log_ofs, else log_os is already
-        // set equal to std::cerr
-        if(log_ofs->is_open() == true)
+        char const* environment_variable_value = getenv(environment_variable_name.c_str());
+
+        if(environment_variable_value != NULL)
         {
-            *log_os = log_ofs;
+            // if environment variable is set, open file at logfile_pathname contained in the
+            // environment variable
+            std::string logfile_pathname = (std::string)environment_variable_value;
+            log_ofs->open(logfile_pathname);
+
+            // if log_ofs is open, then stream to log_ofs, else log_os is already
+            // set equal to std::cerr
+            if(log_ofs->is_open() == true)
+            {
+                *log_os = log_ofs;
+            }
         }
     }
-}
 
-/**
+    /**
  * @brief Invoke functor for each argument in variadic parameter pack.
  * @details
  * The variatic template function each_args applies the functor f
@@ -96,22 +98,22 @@ inline void open_log_stream(std::ostream** log_os,
  *
  * @parm xs variadic parameter pack with list of arguments
  */
-template <typename F, typename... Ts>
-void each_args(F f, Ts&&... xs)
-{
-    (void)std::initializer_list<int>{((void)f(xs), 0)...};
-}
+    template <typename F, typename... Ts>
+    void each_args(F f, Ts&&... xs)
+    {
+        (void)std::initializer_list<int>{((void)f(xs), 0)...};
+    }
 
-/**
+    /**
  * @brief Workaround for gcc warnings when each_args called with single argument
  *        and no parameter pack.
  */
-template <typename F>
-void each_args(F)
-{
-}
+    template <typename F>
+    void each_args(F)
+    {
+    }
 
-/**
+    /**
  * @brief Functor for logging arguments
  *
  * @details Functor to log single argument to ofs.
@@ -120,39 +122,39 @@ void each_args(F)
  * the function call operator () applied to them with operand x,
  * and it will output x to ofs and return void".
  */
-struct log_arg
-{
-    log_arg(std::ostream& os, std::string& separator)
-        : os_(os)
-        , separator_(separator)
+    struct log_arg
     {
-    }
+        log_arg(std::ostream& os, std::string& separator)
+            : os_(os)
+            , separator_(separator)
+        {
+        }
 
-    /// Generic overload for () operator.
-    template <typename T>
-    void operator()(T& x) const
-    {
-        os_ << separator_ << x;
-    }
+        /// Generic overload for () operator.
+        template <typename T>
+        void operator()(T& x) const
+        {
+            os_ << separator_ << x;
+        }
 
-    /// Overload () operator for rocsparse_float_complex.
-    void operator()(const rocsparse_float_complex complex_value) const
-    {
-        os_ << separator_ << std::real(complex_value) << separator_ << std::imag(complex_value);
-    }
+        /// Overload () operator for rocsparse_float_complex.
+        void operator()(const rocsparse_float_complex complex_value) const
+        {
+            os_ << separator_ << std::real(complex_value) << separator_ << std::imag(complex_value);
+        }
 
-    /// Overload () operator for rocsparse_double_complex.
-    void operator()(const rocsparse_double_complex complex_value) const
-    {
-        os_ << separator_ << std::real(complex_value) << separator_ << std::imag(complex_value);
-    }
+        /// Overload () operator for rocsparse_double_complex.
+        void operator()(const rocsparse_double_complex complex_value) const
+        {
+            os_ << separator_ << std::real(complex_value) << separator_ << std::imag(complex_value);
+        }
 
-private:
-    std::ostream& os_; ///< Output stream.
-    std::string&  separator_; ///< Separator: output preceding argument.
-};
+    private:
+        std::ostream& os_; ///< Output stream.
+        std::string&  separator_; ///< Separator: output preceding argument.
+    };
 
-/**
+    /**
  * @brief Logging function
  *
  * @details
@@ -177,14 +179,14 @@ private:
  *                 parameter pack is logged, and it is preceded by
  *                 separator.
  */
-template <typename H, typename... Ts>
-void log_arguments(std::ostream& os, std::string& separator, H head, Ts&&... xs)
-{
-    os << "\n" << head;
-    each_args(log_arg{os, separator}, std::forward<Ts>(xs)...);
-}
+    template <typename H, typename... Ts>
+    void log_arguments(std::ostream& os, std::string& separator, H head, Ts&&... xs)
+    {
+        os << "\n" << head;
+        rocsparse::each_args(log_arg{os, separator}, std::forward<Ts>(xs)...);
+    }
 
-/**
+    /**
  * @brief Logging function
  *
  * @details
@@ -203,13 +205,13 @@ void log_arguments(std::ostream& os, std::string& separator, H head, Ts&&... xs)
  * head            <typename H>
  *                 Argument to log. It is preceded by newline.
  */
-template <typename H>
-void log_argument(std::ostream& os, std::string& separator, H head)
-{
-    os << "\n" << head;
-}
+    template <typename H>
+    void log_argument(std::ostream& os, std::string& separator, H head)
+    {
+        os << "\n" << head;
+    }
 
-/**
+    /**
  * @brief Logging function
  *
  * @details
@@ -224,8 +226,9 @@ void log_argument(std::ostream& os, std::string& separator, H head)
  * head            <typename H>
  *                 Argument to log. It is preceded by newline.
  */
-template <typename H>
-void log_argument(std::ostream& os, H head)
-{
-    os << "\n" << head;
+    template <typename H>
+    void log_argument(std::ostream& os, H head)
+    {
+        os << "\n" << head;
+    }
 }

@@ -53,7 +53,7 @@ namespace rocsparse
                                  rocsparse_int* __restrict__ csr_col_ind_C,
                                  U threshold_device_host)
     {
-        auto threshold = load_scalar_device_host(threshold_device_host);
+        auto threshold = rocsparse::load_scalar_device_host(threshold_device_host);
         rocsparse::csr2csr_compress_device<BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>(
             m,
             n,
@@ -159,21 +159,21 @@ rocsparse_status
                                                   size_t*                   buffer_size) //13
 {
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xprune_csr2csr_buffer_size"),
-              m,
-              n,
-              nnz_A,
-              csr_descr_A,
-              (const void*&)csr_val_A,
-              (const void*&)csr_row_ptr_A,
-              (const void*&)csr_col_ind_A,
-              (const void*&)threshold,
-              csr_descr_C,
-              (const void*&)csr_val_C,
-              (const void*&)csr_row_ptr_C,
-              (const void*&)csr_col_ind_C,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xprune_csr2csr_buffer_size"),
+                         m,
+                         n,
+                         nnz_A,
+                         csr_descr_A,
+                         (const void*&)csr_val_A,
+                         (const void*&)csr_row_ptr_A,
+                         (const void*&)csr_col_ind_A,
+                         (const void*&)threshold,
+                         csr_descr_C,
+                         (const void*&)csr_val_C,
+                         (const void*&)csr_row_ptr_C,
+                         (const void*&)csr_col_ind_C,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -199,8 +199,8 @@ rocsparse_status
     //    if (csr_val_C == nullptr || csr_col_ind_C == nullptr)
     //      {
     //	int64_t nnz_C;
-    //	RETURN_IF_ROCSPARSE_ERROR(rocsparse_calculate_nnz(m,
-    //							  rocsparse_get_indextype<rocsparse_int>(),
+    //	RETURN_IF_ROCSPARSE_ERROR(rocsparse::calculate_nnz(m,
+    //							  rocsparse::get_indextype<rocsparse_int>(),
     //							  csr_row_ptr_C,
     //							  &nnz_C,
     //							  handle->stream));
@@ -232,20 +232,20 @@ rocsparse_status rocsparse::prune_csr2csr_nnz_template(rocsparse_handle         
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xprune_csr2csr_nnz"),
-              m,
-              n,
-              nnz_A,
-              csr_descr_A,
-              (const void*&)csr_val_A,
-              (const void*&)csr_row_ptr_A,
-              (const void*&)csr_col_ind_A,
-              (const void*&)threshold,
-              csr_descr_C,
-              (const void*&)csr_row_ptr_C,
-              (const void*&)nnz_total_dev_host_ptr,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xprune_csr2csr_nnz"),
+                         m,
+                         n,
+                         nnz_A,
+                         csr_descr_A,
+                         (const void*&)csr_val_A,
+                         (const void*&)csr_row_ptr_A,
+                         (const void*&)csr_col_ind_A,
+                         (const void*&)threshold,
+                         csr_descr_C,
+                         (const void*&)csr_row_ptr_C,
+                         (const void*&)nnz_total_dev_host_ptr,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -382,21 +382,21 @@ namespace rocsparse
                                             void*                     temp_buffer) //13
     {
         // Logging
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xprune_csr2csr"),
-                  m,
-                  n,
-                  nnz_A,
-                  csr_descr_A,
-                  (const void*&)csr_val_A,
-                  (const void*&)csr_row_ptr_A,
-                  (const void*&)csr_col_ind_A,
-                  (const void*&)threshold,
-                  csr_descr_C,
-                  (const void*&)csr_val_C,
-                  (const void*&)csr_row_ptr_C,
-                  (const void*&)csr_col_ind_C,
-                  (const void*&)temp_buffer);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xprune_csr2csr"),
+                             m,
+                             n,
+                             nnz_A,
+                             csr_descr_A,
+                             (const void*&)csr_val_A,
+                             (const void*&)csr_row_ptr_A,
+                             (const void*&)csr_col_ind_A,
+                             (const void*&)threshold,
+                             csr_descr_C,
+                             (const void*&)csr_val_C,
+                             (const void*&)csr_row_ptr_C,
+                             (const void*&)csr_col_ind_C,
+                             (const void*&)temp_buffer);
 
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
         ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -429,11 +429,11 @@ namespace rocsparse
         {
             int64_t nnz_C;
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_calculate_nnz(m,
-                                        rocsparse_get_indextype<rocsparse_int>(),
-                                        csr_row_ptr_C,
-                                        &nnz_C,
-                                        handle->stream));
+                rocsparse::calculate_nnz(m,
+                                         rocsparse::get_indextype<rocsparse_int>(),
+                                         csr_row_ptr_C,
+                                         &nnz_C,
+                                         handle->stream));
 
             ROCSPARSE_CHECKARG_ARRAY(10, nnz_C, csr_val_C);
             ROCSPARSE_CHECKARG_ARRAY(12, nnz_C, csr_col_ind_C);

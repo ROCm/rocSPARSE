@@ -26,6 +26,7 @@
 
 #include "control.h"
 #include "handle.h"
+#include "utility.h"
 
 namespace rocsparse
 {
@@ -112,7 +113,7 @@ namespace rocsparse
     template <typename... P>
     rocsparse_status bsrsm_analysis_template(P&&... p)
     {
-        log_trace("rocsparse_Xbsrsm_analysis", p...);
+        rocsparse::log_trace("rocsparse_Xbsrsm_analysis", p...);
 
         const rocsparse_status status = rocsparse::bsrsm_analysis_quickreturn(p...);
 

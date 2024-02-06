@@ -45,15 +45,15 @@ rocsparse_status rocsparse::hybmv_template(rocsparse_handle          handle,
     ROCSPARSE_CHECKARG_POINTER(4, hyb);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xhybmv"),
-              trans,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
-              (const void*&)descr,
-              (const void*&)hyb,
-              (const void*&)x,
-              LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
-              (const void*&)y);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xhybmv"),
+                         trans,
+                         LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+                         (const void*&)descr,
+                         (const void*&)hyb,
+                         (const void*&)x,
+                         LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+                         (const void*&)y);
 
     // Check matrix type
     ROCSPARSE_CHECKARG(
@@ -138,7 +138,7 @@ rocsparse_status rocsparse::hybmv_template(rocsparse_handle          handle,
             if(hyb->ell_nnz > 0)
             {
                 T* coo_beta = nullptr;
-                rocsparse_one(handle, &coo_beta);
+                rocsparse::one(handle, &coo_beta);
 
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::coomv_template(handle,
                                                                     trans,

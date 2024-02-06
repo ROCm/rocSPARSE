@@ -172,16 +172,17 @@ rocsparse_status
                                                                 size_t*          buffer_size)
 {
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgtsv_no_pivot_strided_batch_buffer_size"),
-              m,
-              (const void*&)dl,
-              (const void*&)d,
-              (const void*&)du,
-              (const void*&)x,
-              batch_count,
-              batch_stride,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(
+        handle,
+        rocsparse::replaceX<T>("rocsparse_Xgtsv_no_pivot_strided_batch_buffer_size"),
+        m,
+        (const void*&)dl,
+        (const void*&)d,
+        (const void*&)du,
+        (const void*&)x,
+        batch_count,
+        batch_stride,
+        (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -422,16 +423,16 @@ rocsparse_status rocsparse::gtsv_no_pivot_strided_batch_template(rocsparse_handl
                                                                  rocsparse_int    batch_stride,
                                                                  void*            temp_buffer)
 {
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgtsv_no_pivot_strided_batch"),
-              m,
-              (const void*&)dl,
-              (const void*&)d,
-              (const void*&)du,
-              (const void*&)x,
-              batch_count,
-              batch_stride,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xgtsv_no_pivot_strided_batch"),
+                         m,
+                         (const void*&)dl,
+                         (const void*&)d,
+                         (const void*&)du,
+                         (const void*&)x,
+                         batch_count,
+                         batch_stride,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);

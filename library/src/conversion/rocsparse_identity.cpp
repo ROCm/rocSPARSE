@@ -66,7 +66,7 @@ template <typename I>
 rocsparse_status rocsparse::create_identity_permutation_impl(rocsparse_handle handle, I n, I* p)
 {
     // Logging
-    log_trace(handle, "rocsparse_create_identity_permutation", n, (const void*&)p);
+    rocsparse::log_trace(handle, "rocsparse_create_identity_permutation", n, (const void*&)p);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, n);

@@ -34,7 +34,7 @@ namespace rocsparse
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void axpby_scale_kernel(I size, U alpha_device_host, T* __restrict__ x)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         if(alpha != static_cast<T>(1))
         {
             rocsparse::axpby_scale_device<BLOCKSIZE>(size, alpha, x);
@@ -115,12 +115,12 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              "rocsparse_axpby",
-              (const void*&)alpha,
-              (const void*&)x,
-              (const void*&)beta,
-              (const void*&)y);
+    rocsparse::log_trace(handle,
+                         "rocsparse_axpby",
+                         (const void*&)alpha,
+                         (const void*&)x,
+                         (const void*&)beta,
+                         (const void*&)y);
 
     // Check for invalid descriptors
     ROCSPARSE_CHECKARG_POINTER(1, alpha);

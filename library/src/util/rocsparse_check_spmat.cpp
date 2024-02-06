@@ -369,13 +369,13 @@ try
 {
 
     // Logging
-    log_trace(handle,
-              "rocsparse_check_spmat",
-              (const void*&)mat,
-              (const void*&)data_status,
-              stage,
-              (const void*&)buffer_size,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_check_spmat",
+                         (const void*&)mat,
+                         (const void*&)data_status,
+                         stage,
+                         (const void*&)buffer_size,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(1, mat);

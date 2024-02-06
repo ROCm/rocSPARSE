@@ -48,16 +48,16 @@ rocsparse_status rocsparse::coo2dense_aos_template(rocsparse_handle          han
     ROCSPARSE_CHECKARG_POINTER(4, descr);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcoo2dense_aos"),
-              m,
-              n,
-              nnz,
-              descr,
-              (const void*&)coo_val,
-              (const void*&)coo_ind,
-              (const void*&)A,
-              lda);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcoo2dense_aos"),
+                         m,
+                         n,
+                         nnz,
+                         descr,
+                         (const void*&)coo_val,
+                         (const void*&)coo_ind,
+                         (const void*&)A,
+                         lda);
 
     // Check matrix type
     ROCSPARSE_CHECKARG(

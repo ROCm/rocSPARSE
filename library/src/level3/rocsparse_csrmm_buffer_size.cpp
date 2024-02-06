@@ -31,7 +31,7 @@
 #include "utility.h"
 
 template <>
-inline bool rocsparse_enum_utils::is_invalid(rocsparse_csrmm_alg value_)
+inline bool rocsparse::enum_utils::is_invalid(rocsparse_csrmm_alg value_)
 {
     switch(value_)
     {
@@ -232,18 +232,18 @@ namespace rocsparse
                                             size_t*                   buffer_size)
     {
 
-        log_trace(handle,
-                  "rocsparse_csrmm_buffer_size",
-                  trans_A,
-                  m,
-                  n,
-                  k,
-                  nnz,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)buffer_size);
+        rocsparse::log_trace(handle,
+                             "rocsparse_csrmm_buffer_size",
+                             trans_A,
+                             m,
+                             n,
+                             k,
+                             nnz,
+                             (const void*&)descr,
+                             (const void*&)csr_val,
+                             (const void*&)csr_row_ptr,
+                             (const void*&)csr_col_ind,
+                             (const void*&)buffer_size);
 
         const rocsparse_status status = rocsparse::csrmm_buffer_size_checkarg<T>(handle,
                                                                                  trans_A,

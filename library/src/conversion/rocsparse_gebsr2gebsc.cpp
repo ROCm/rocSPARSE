@@ -106,22 +106,22 @@ rocsparse_status rocsparse::gebsr2gebsc_template(rocsparse_handle     handle, //
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgebsr2gebsc"),
-              mb,
-              nb,
-              nnzb,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              row_block_dim,
-              col_block_dim,
-              (const void*&)bsc_val,
-              (const void*&)bsc_row_ind,
-              (const void*&)bsc_col_ptr,
-              copy_values,
-              idx_base,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xgebsr2gebsc"),
+                         mb,
+                         nb,
+                         nnzb,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         row_block_dim,
+                         col_block_dim,
+                         (const void*&)bsc_val,
+                         (const void*&)bsc_row_ind,
+                         (const void*&)bsc_col_ptr,
+                         copy_values,
+                         idx_base,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(12, copy_values);
@@ -173,7 +173,7 @@ rocsparse_status rocsparse::gebsr2gebsc_template(rocsparse_handle     handle, //
     // Stream
     hipStream_t  stream   = handle->stream;
     unsigned int startbit = 0;
-    unsigned int endbit   = rocsparse_clz(nb);
+    unsigned int endbit   = rocsparse::clz(nb);
 
     // Temporary buffer entry points
     char* ptr = reinterpret_cast<char*>(temp_buffer);
@@ -313,17 +313,17 @@ namespace rocsparse
                                                       size_t*              p_buffer_size) //9
     {
         // Logging
-        log_trace(handle,
-                  "rocsparse_gebsr2gebsc_buffer_size",
-                  mb,
-                  nb,
-                  nnzb,
-                  (const void*&)bsr_val,
-                  (const void*&)bsr_row_ptr,
-                  (const void*&)bsr_col_ind,
-                  row_block_dim,
-                  col_block_dim,
-                  (const void*&)p_buffer_size);
+        rocsparse::log_trace(handle,
+                             "rocsparse_gebsr2gebsc_buffer_size",
+                             mb,
+                             nb,
+                             nnzb,
+                             (const void*&)bsr_val,
+                             (const void*&)bsr_row_ptr,
+                             (const void*&)bsr_col_ind,
+                             row_block_dim,
+                             col_block_dim,
+                             (const void*&)p_buffer_size);
 
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
         ROCSPARSE_CHECKARG_SIZE(1, mb);

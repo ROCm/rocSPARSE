@@ -96,13 +96,13 @@ rocsparse_status rocsparse::coo2csr_impl(rocsparse_handle     handle,
                                          rocsparse_index_base idx_base)
 {
     // Logging
-    log_trace(handle,
-              "rocsparse_coo2csr",
-              (const void*&)coo_row_ind,
-              nnz,
-              m,
-              (const void*&)csr_row_ptr,
-              idx_base);
+    rocsparse::log_trace(handle,
+                         "rocsparse_coo2csr",
+                         (const void*&)coo_row_ind,
+                         nnz,
+                         m,
+                         (const void*&)csr_row_ptr,
+                         idx_base);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ARRAY(1, nnz, coo_row_ind);

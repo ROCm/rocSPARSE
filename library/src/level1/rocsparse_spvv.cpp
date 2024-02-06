@@ -139,15 +139,15 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              "rocsparse_spvv",
-              trans,
-              (const void*&)x,
-              (const void*&)y,
-              (const void*&)result,
-              compute_type,
-              (const void*&)buffer_size,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_spvv",
+                         trans,
+                         (const void*&)x,
+                         (const void*&)y,
+                         (const void*&)result,
+                         compute_type,
+                         (const void*&)buffer_size,
+                         (const void*&)temp_buffer);
 
     // Check operation
     ROCSPARSE_CHECKARG_ENUM(1, trans);

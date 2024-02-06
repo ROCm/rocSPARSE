@@ -79,7 +79,7 @@ rocsparse_status rocsparse::check_matrix_ell_core(rocsparse_handle       handle,
 
     if(*data_status != rocsparse_data_status_success)
     {
-        log_debug(handle, rocsparse::to_string(*data_status));
+        rocsparse::log_debug(handle, rocsparse::to_string(*data_status));
     }
 
     return rocsparse_status_success;

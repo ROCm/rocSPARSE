@@ -51,7 +51,7 @@ rocsparse_status rocsparse::gcoo_aos2coo(rocsparse_handle     handle,
                                  1,
                                  source_ind_type,
                                  reinterpret_cast<const char*>(source_ind_data)
-                                     + rocsparse_indextype_sizeof(source_ind_type),
+                                     + rocsparse::indextype_sizeof(source_ind_type),
                                  2));
 
     if(source_val_data != nullptr)

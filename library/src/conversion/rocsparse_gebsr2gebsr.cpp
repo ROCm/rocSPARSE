@@ -77,20 +77,20 @@ rocsparse_status rocsparse::gebsr2gebsr_buffer_size_template(rocsparse_handle   
                                                              size_t*       buffer_size) //13
 {
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgebsr2csr_buffer_size"),
-              mb,
-              nb,
-              nnzb,
-              descr_A,
-              (const void*&)bsr_val_A,
-              (const void*&)bsr_row_ptr_A,
-              (const void*&)bsr_col_ind_A,
-              row_block_dim_A,
-              col_block_dim_A,
-              row_block_dim_C,
-              col_block_dim_C,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xgebsr2csr_buffer_size"),
+                         mb,
+                         nb,
+                         nnzb,
+                         descr_A,
+                         (const void*&)bsr_val_A,
+                         (const void*&)bsr_row_ptr_A,
+                         (const void*&)bsr_col_ind_A,
+                         row_block_dim_A,
+                         col_block_dim_A,
+                         row_block_dim_C,
+                         col_block_dim_C,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(1, dir);
@@ -213,24 +213,24 @@ rocsparse_status rocsparse::gebsr2gebsr_template(rocsparse_handle          handl
                                                  void*                     temp_buffer) //17
 {
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgebsr2gebsr"),
-              mb,
-              nb,
-              nnzb,
-              descr_A,
-              (const void*&)bsr_val_A,
-              (const void*&)bsr_row_ptr_A,
-              (const void*&)bsr_col_ind_A,
-              row_block_dim_A,
-              col_block_dim_A,
-              descr_C,
-              (const void*&)bsr_val_C,
-              (const void*&)bsr_row_ptr_C,
-              (const void*&)bsr_col_ind_C,
-              row_block_dim_C,
-              col_block_dim_C,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xgebsr2gebsr"),
+                         mb,
+                         nb,
+                         nnzb,
+                         descr_A,
+                         (const void*&)bsr_val_A,
+                         (const void*&)bsr_row_ptr_A,
+                         (const void*&)bsr_col_ind_A,
+                         row_block_dim_A,
+                         col_block_dim_A,
+                         descr_C,
+                         (const void*&)bsr_val_C,
+                         (const void*&)bsr_row_ptr_C,
+                         (const void*&)bsr_col_ind_C,
+                         row_block_dim_C,
+                         col_block_dim_C,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
@@ -692,22 +692,22 @@ extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          
 try
 {
     // Logging
-    log_trace(handle,
-              "rocsparse_gebsr2gebsr_nnz",
-              mb,
-              nb,
-              nnzb,
-              descr_A,
-              (const void*&)bsr_row_ptr_A,
-              (const void*&)bsr_col_ind_A,
-              row_block_dim_A,
-              col_block_dim_A,
-              descr_C,
-              (const void*&)bsr_row_ptr_C,
-              row_block_dim_C,
-              col_block_dim_C,
-              (const void*&)nnz_total_dev_host_ptr,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_gebsr2gebsr_nnz",
+                         mb,
+                         nb,
+                         nnzb,
+                         descr_A,
+                         (const void*&)bsr_row_ptr_A,
+                         (const void*&)bsr_col_ind_A,
+                         row_block_dim_A,
+                         col_block_dim_A,
+                         descr_C,
+                         (const void*&)bsr_row_ptr_C,
+                         row_block_dim_C,
+                         col_block_dim_C,
+                         (const void*&)nnz_total_dev_host_ptr,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(1, dir);

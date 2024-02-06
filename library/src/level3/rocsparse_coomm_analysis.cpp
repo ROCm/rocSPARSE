@@ -190,19 +190,19 @@ namespace rocsparse
                                          void*                     temp_buffer)
     {
 
-        log_trace(handle,
-                  "rocsparse_coomm_analysis",
-                  trans_A,
-                  alg,
-                  m,
-                  n,
-                  k,
-                  nnz,
-                  (const void*&)descr,
-                  (const void*&)coo_val,
-                  (const void*&)coo_row_ind,
-                  (const void*&)coo_col_ind,
-                  (const void*&)temp_buffer);
+        rocsparse::log_trace(handle,
+                             "rocsparse_coomm_analysis",
+                             trans_A,
+                             alg,
+                             m,
+                             n,
+                             k,
+                             nnz,
+                             (const void*&)descr,
+                             (const void*&)coo_val,
+                             (const void*&)coo_row_ind,
+                             (const void*&)coo_col_ind,
+                             (const void*&)temp_buffer);
 
         const rocsparse_status status = rocsparse::coomm_analysis_checkarg<T>(handle,
                                                                               trans_A,

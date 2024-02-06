@@ -547,7 +547,7 @@ rocsparse_status rocsparse::convert_array(rocsparse_handle    handle_,
     {
         if(target_ != source_)
         {
-            const size_t sizeof_data = rocsparse_indextype_sizeof(source_indextype_);
+            const size_t sizeof_data = rocsparse::indextype_sizeof(source_indextype_);
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
                 target_, source_, sizeof_data * nitems_, hipMemcpyDeviceToDevice, handle_->stream));
         }
@@ -615,7 +615,7 @@ rocsparse_status rocsparse::convert_array(rocsparse_handle   handle_,
         //
         if(target_ != source_)
         {
-            const size_t sizeof_data = rocsparse_datatype_sizeof(source_datatype_);
+            const size_t sizeof_data = rocsparse::datatype_sizeof(source_datatype_);
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
                 target_, source_, sizeof_data * nitems_, hipMemcpyDeviceToDevice, handle_->stream));
         }
