@@ -30,22 +30,25 @@
 
 #include "rocsparse_csrmv.hpp"
 
-template <unsigned int BLOCKSIZE, typename T>
-rocsparse_status rocsparse_nrminf(rocsparse_handle          handle_,
-                                  size_t                    nitems_,
-                                  const T*                  x_,
-                                  floating_data_t<T>*       nrm_,
-                                  const floating_data_t<T>* nrm0_,
-                                  bool                      MX);
+namespace rocsparse
+{
+    template <unsigned int BLOCKSIZE, typename T>
+    rocsparse_status nrminf(rocsparse_handle          handle_,
+                            size_t                    nitems_,
+                            const T*                  x_,
+                            floating_data_t<T>*       nrm_,
+                            const floating_data_t<T>* nrm0_,
+                            bool                      MX);
 
-template <unsigned int BLOCKSIZE, typename T>
-rocsparse_status rocsparse_nrminf_diff(rocsparse_handle          handle_,
-                                       size_t                    nitems_,
-                                       const T*                  x_,
-                                       const T*                  y_,
-                                       floating_data_t<T>*       nrm_,
-                                       const floating_data_t<T>* nrm0_,
-                                       bool                      MX);
+    template <unsigned int BLOCKSIZE, typename T>
+    rocsparse_status nrminf_diff(rocsparse_handle          handle_,
+                                 size_t                    nitems_,
+                                 const T*                  x_,
+                                 const T*                  y_,
+                                 floating_data_t<T>*       nrm_,
+                                 const floating_data_t<T>* nrm0_,
+                                 bool                      MX);
+}
 
 namespace
 {
@@ -491,7 +494,7 @@ rocsparse_status rocsparse::csritsv_solve_template(rocsparse_handle          han
             if(compute_nrm)
             {
                 RETURN_IF_ROCSPARSE_ERROR(
-                    rocsparse_nrminf<1024>(handle, m, y_p, device_nrm, nullptr, false));
+                    rocsparse::nrminf<1024>(handle, m, y_p, device_nrm, nullptr, false));
                 RETURN_IF_HIP_ERROR(hipMemcpyAsync(host_nrm,
                                                    device_nrm,
                                                    sizeof(floating_data_t<T>),
@@ -592,7 +595,7 @@ rocsparse_status rocsparse::csritsv_solve_template(rocsparse_handle          han
                 // nrm.
                 //
                 RETURN_IF_ROCSPARSE_ERROR(
-                    rocsparse_nrminf_diff<1024>(handle, m, y_p, y, device_nrm, nullptr, false));
+                    rocsparse::nrminf_diff<1024>(handle, m, y_p, y, device_nrm, nullptr, false));
                 RETURN_IF_HIP_ERROR(hipMemcpyAsync(host_nrm,
                                                    device_nrm,
                                                    sizeof(floating_data_t<T>),

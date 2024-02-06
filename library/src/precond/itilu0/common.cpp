@@ -32,25 +32,125 @@
 #include "rocsparse_csritilu0x_history.hpp"
 #include "rocsparse_csritilu0x_preprocess.hpp"
 
-//
-template <unsigned int BLOCKSIZE, typename T, typename I>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel_get_permuted_array(I size_, const T* a_, T* x_, const I* perm_)
+namespace rocsparse
 {
-    const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
-    if(i < size_)
+    template <unsigned int BLOCKSIZE, typename T, typename I>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel_get_permuted_array(I size_, const T* a_, T* x_, const I* perm_)
     {
-        x_[i] = a_[perm_[i]];
+        const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
+        if(i < size_)
+        {
+            x_[i] = a_[perm_[i]];
+        }
+    }
+
+    //
+    //
+    //
+    template <unsigned int BLOCKSIZE, typename T, typename I>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel_set_identity_array(I size_, T* x_)
+    {
+        const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
+        if(i < size_)
+        {
+            x_[i] = static_cast<T>(1);
+        }
+    }
+
+    //
+    //
+    //
+    template <unsigned int BLOCKSIZE, typename T, typename I>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel_set_permuted_array(I size_, T* a_, const T* x_, const I* perm_)
+    {
+        const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
+        if(i < size_)
+        {
+            a_[perm_[i]] = x_[i];
+        }
+    }
+
+    template <unsigned int BLOCKSIZE, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel_nrminf(size_t nitems_,
+                       const T* __restrict__ x_,
+                       floating_data_t<T>* __restrict__ nrm_,
+                       const floating_data_t<T>* __restrict__ nrm0_)
+    {
+        int    tid = hipThreadIdx_x;
+        size_t gid = tid + BLOCKSIZE * hipBlockIdx_x;
+
+        __shared__ floating_data_t<T> shared[BLOCKSIZE];
+
+        if(gid < nitems_)
+        {
+            shared[tid] = std::abs(x_[gid]);
+        }
+        else
+        {
+            shared[tid] = 0;
+        }
+
+        __syncthreads();
+
+        rocsparse::blockreduce_max<BLOCKSIZE>(tid, shared);
+
+        if(tid == 0)
+        {
+            if(nrm0_ != nullptr)
+            {
+                rocsparse::atomic_max(nrm_, shared[0] / nrm0_[0]);
+            }
+            else
+            {
+                rocsparse::atomic_max(nrm_, shared[0]);
+            }
+        }
+    }
+
+    template <unsigned int BLOCKSIZE, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel_nrminf_diff(size_t nitems_,
+                            const T* __restrict__ x_,
+                            const T* __restrict__ y_,
+                            floating_data_t<T>* __restrict__ nrm_,
+                            const floating_data_t<T>* __restrict__ nrm0_)
+    {
+        const unsigned int tid = hipThreadIdx_x;
+        const unsigned int gid = tid + BLOCKSIZE * hipBlockIdx_x;
+
+        __shared__ floating_data_t<T> shared[BLOCKSIZE];
+
+        shared[tid] = (gid < nitems_) ? std::abs(x_[gid] - y_[gid]) : 0;
+
+        __syncthreads();
+
+        rocsparse::blockreduce_max<BLOCKSIZE>(tid, shared);
+
+        if(tid == 0)
+        {
+            if(nrm0_ != nullptr)
+            {
+                rocsparse::atomic_max(nrm_, shared[0] / nrm0_[0]);
+            }
+            else
+            {
+                rocsparse::atomic_max(nrm_, shared[0]);
+            }
+        }
     }
 }
 
 template <unsigned int BLOCKSIZE, typename T, typename I>
-void rocsparse_get_permuted_array(
+void rocsparse::get_permuted_array(
     rocsparse_handle handle_, I size_, const T* a_, T* x_, const I* perm_)
 {
     dim3 blocks((size_ - 1) / BLOCKSIZE + 1);
     dim3 threads(BLOCKSIZE);
-    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_get_permuted_array<BLOCKSIZE, T, I>),
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::kernel_get_permuted_array<BLOCKSIZE, T, I>),
                                       blocks,
                                       threads,
                                       0,
@@ -61,27 +161,13 @@ void rocsparse_get_permuted_array(
                                       perm_);
 }
 
-//
-//
-//
 template <unsigned int BLOCKSIZE, typename T, typename I>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel_set_identity_array(I size_, T* x_)
-{
-    const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
-    if(i < size_)
-    {
-        x_[i] = static_cast<T>(1);
-    }
-}
-
-template <unsigned int BLOCKSIZE, typename T, typename I>
-void rocsparse_set_identity_array(rocsparse_handle handle_, I size_, T* x_)
+void rocsparse::set_identity_array(rocsparse_handle handle_, I size_, T* x_)
 {
     dim3 blocks((size_ - 1) / BLOCKSIZE + 1);
     dim3 threads(BLOCKSIZE);
 
-    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_set_identity_array<BLOCKSIZE, T, I>),
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::kernel_set_identity_array<BLOCKSIZE, T, I>),
                                       blocks,
                                       threads,
                                       0,
@@ -90,27 +176,13 @@ void rocsparse_set_identity_array(rocsparse_handle handle_, I size_, T* x_)
                                       x_);
 }
 
-//
-//
-//
 template <unsigned int BLOCKSIZE, typename T, typename I>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel_set_permuted_array(I size_, T* a_, const T* x_, const I* perm_)
-{
-    const I i = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
-    if(i < size_)
-    {
-        a_[perm_[i]] = x_[i];
-    }
-}
-
-template <unsigned int BLOCKSIZE, typename T, typename I>
-void rocsparse_set_permuted_array(
+void rocsparse::set_permuted_array(
     rocsparse_handle handle_, I size_, T* a_, const T* x_, const I* perm_)
 {
     dim3 blocks((size_ - 1) / BLOCKSIZE + 1);
     dim3 threads(BLOCKSIZE);
-    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_set_permuted_array<BLOCKSIZE, T, I>),
+    THROW_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::kernel_set_permuted_array<BLOCKSIZE, T, I>),
                                       blocks,
                                       threads,
                                       0,
@@ -122,82 +194,12 @@ void rocsparse_set_permuted_array(
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel_nrminf(size_t nitems_,
-                   const T* __restrict__ x_,
-                   floating_data_t<T>* __restrict__ nrm_,
-                   const floating_data_t<T>* __restrict__ nrm0_)
-{
-    int    tid = hipThreadIdx_x;
-    size_t gid = tid + BLOCKSIZE * hipBlockIdx_x;
-
-    __shared__ floating_data_t<T> shared[BLOCKSIZE];
-
-    if(gid < nitems_)
-    {
-        shared[tid] = std::abs(x_[gid]);
-    }
-    else
-    {
-        shared[tid] = 0;
-    }
-
-    __syncthreads();
-
-    rocsparse::blockreduce_max<BLOCKSIZE>(tid, shared);
-
-    if(tid == 0)
-    {
-        if(nrm0_ != nullptr)
-        {
-            rocsparse::atomic_max(nrm_, shared[0] / nrm0_[0]);
-        }
-        else
-        {
-            rocsparse::atomic_max(nrm_, shared[0]);
-        }
-    }
-}
-
-template <unsigned int BLOCKSIZE, typename T>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel_nrminf_diff(size_t nitems_,
-                        const T* __restrict__ x_,
-                        const T* __restrict__ y_,
-                        floating_data_t<T>* __restrict__ nrm_,
-                        const floating_data_t<T>* __restrict__ nrm0_)
-{
-    const unsigned int tid = hipThreadIdx_x;
-    const unsigned int gid = tid + BLOCKSIZE * hipBlockIdx_x;
-
-    __shared__ floating_data_t<T> shared[BLOCKSIZE];
-
-    shared[tid] = (gid < nitems_) ? std::abs(x_[gid] - y_[gid]) : 0;
-
-    __syncthreads();
-
-    rocsparse::blockreduce_max<BLOCKSIZE>(tid, shared);
-
-    if(tid == 0)
-    {
-        if(nrm0_ != nullptr)
-        {
-            rocsparse::atomic_max(nrm_, shared[0] / nrm0_[0]);
-        }
-        else
-        {
-            rocsparse::atomic_max(nrm_, shared[0]);
-        }
-    }
-}
-
-template <unsigned int BLOCKSIZE, typename T>
-rocsparse_status rocsparse_nrminf(rocsparse_handle          handle_,
-                                  size_t                    nitems_,
-                                  const T*                  x_,
-                                  floating_data_t<T>*       nrm_,
-                                  const floating_data_t<T>* nrm0_,
-                                  bool                      MX)
+rocsparse_status rocsparse::nrminf(rocsparse_handle          handle_,
+                                   size_t                    nitems_,
+                                   const T*                  x_,
+                                   floating_data_t<T>*       nrm_,
+                                   const floating_data_t<T>* nrm0_,
+                                   bool                      MX)
 {
 
     if(!MX)
@@ -210,7 +212,7 @@ rocsparse_status rocsparse_nrminf(rocsparse_handle          handle_,
     size_t nitems_nblocks = (nitems_ - 1) / BLOCKSIZE + 1;
     dim3   blocks(nitems_nblocks);
     dim3   threads(BLOCKSIZE);
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_nrminf<BLOCKSIZE, T>),
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::kernel_nrminf<BLOCKSIZE, T>),
                                        blocks,
                                        threads,
                                        0,
@@ -224,13 +226,13 @@ rocsparse_status rocsparse_nrminf(rocsparse_handle          handle_,
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-rocsparse_status rocsparse_nrminf_diff(rocsparse_handle          handle_,
-                                       size_t                    nitems_,
-                                       const T*                  x_,
-                                       const T*                  y_,
-                                       floating_data_t<T>*       nrm_,
-                                       const floating_data_t<T>* nrm0_,
-                                       bool                      MX)
+rocsparse_status rocsparse::nrminf_diff(rocsparse_handle          handle_,
+                                        size_t                    nitems_,
+                                        const T*                  x_,
+                                        const T*                  y_,
+                                        floating_data_t<T>*       nrm_,
+                                        const floating_data_t<T>* nrm0_,
+                                        bool                      MX)
 {
 
     //
@@ -244,7 +246,7 @@ rocsparse_status rocsparse_nrminf_diff(rocsparse_handle          handle_,
         RETURN_IF_HIP_ERROR(hipMemsetAsync(nrm_, 0, sizeof(floating_data_t<T>), handle_->stream));
     }
 
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((kernel_nrminf_diff<BLOCKSIZE, T>),
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::kernel_nrminf_diff<BLOCKSIZE, T>),
                                        blocks,
                                        threads,
                                        0,
@@ -259,11 +261,11 @@ rocsparse_status rocsparse_nrminf_diff(rocsparse_handle          handle_,
 
 //
 #define INSTANTIATE(BLOCKSIZE, T, I)                                            \
-    template void rocsparse_set_identity_array<BLOCKSIZE, T, I>(                \
+    template void rocsparse::set_identity_array<BLOCKSIZE, T, I>(               \
         rocsparse_handle handle_, I size_, T * x_);                             \
-    template void rocsparse_get_permuted_array<BLOCKSIZE, T, I>(                \
+    template void rocsparse::get_permuted_array<BLOCKSIZE, T, I>(               \
         rocsparse_handle handle_, I size_, const T* a_, T* x_, const I* perm_); \
-    template void rocsparse_set_permuted_array<BLOCKSIZE, T, I>(                \
+    template void rocsparse::set_permuted_array<BLOCKSIZE, T, I>(               \
         rocsparse_handle handle_, I size_, T * a_, const T* x_, const I* perm_)
 
 INSTANTIATE(1024, int32_t, int32_t);
@@ -284,20 +286,21 @@ INSTANTIATE(512, rocsparse_double_complex, int32_t);
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(BLOCKSIZE, T)                                                                    \
-    template rocsparse_status rocsparse_nrminf_diff<BLOCKSIZE, T>(rocsparse_handle          handle_, \
-                                                                  size_t                    nitems_, \
-                                                                  const T*                  x_,      \
-                                                                  const T*                  y_,      \
-                                                                  floating_data_t<T>*       nrm_,    \
-                                                                  const floating_data_t<T>* nrm0_,   \
-                                                                  bool                      MX);                          \
-    template rocsparse_status rocsparse_nrminf<BLOCKSIZE, T>(rocsparse_handle          handle_,      \
-                                                             size_t                    nitems_,      \
-                                                             const T*                  x_,           \
-                                                             floating_data_t<T>*       nrm_,         \
-                                                             const floating_data_t<T>* nrm0_,        \
-                                                             bool                      MX)
+#define INSTANTIATE(BLOCKSIZE, T)                                                                \
+    template rocsparse_status rocsparse::nrminf_diff<BLOCKSIZE, T>(                              \
+        rocsparse_handle          handle_,                                                       \
+        size_t                    nitems_,                                                       \
+        const T*                  x_,                                                            \
+        const T*                  y_,                                                            \
+        floating_data_t<T>*       nrm_,                                                          \
+        const floating_data_t<T>* nrm0_,                                                         \
+        bool                      MX);                                                                                \
+    template rocsparse_status rocsparse::nrminf<BLOCKSIZE, T>(rocsparse_handle          handle_, \
+                                                              size_t                    nitems_, \
+                                                              const T*                  x_,      \
+                                                              floating_data_t<T>*       nrm_,    \
+                                                              const floating_data_t<T>* nrm0_,   \
+                                                              bool                      MX)
 
 INSTANTIATE(1024, float);
 INSTANTIATE(1024, double);

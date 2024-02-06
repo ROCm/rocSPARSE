@@ -29,218 +29,234 @@
 #include "rocsparse_csritilu0x_driver.hpp"
 #include <iomanip>
 
-template <int BLOCKSIZE, int WFSIZE, typename T, typename I, typename J>
-ROCSPARSE_KERNEL(BLOCKSIZE)
-void kernel_correction(const J m_,
-                       const I nnz_,
-                       const I* __restrict__ ptr_begin_,
-                       const I* __restrict__ ptr_end_,
-                       const J* __restrict__ ind_,
-                       const T* __restrict__ val_,
-                       const rocsparse_index_base base_,
-
-                       const I* __restrict__ lptr_begin_,
-                       const I* __restrict__ lptr_end_,
-                       const J* __restrict__ lind_,
-                       T* __restrict__ lval_,
-                       const rocsparse_index_base lbase_,
-
-                       const I* __restrict__ uptr_begin_,
-                       const I* __restrict__ uptr_end_,
-                       const J* __restrict__ uind_,
-                       T* __restrict__ uval_,
-                       const rocsparse_index_base ubase_,
-                       T* __restrict__ dval_,
-                       floating_data_t<T>*       nrm_,
-                       const floating_data_t<T>* nrm0_)
-
+namespace rocsparse
 {
-    floating_data_t<T> nrm = 0;
-    __shared__ floating_data_t<T> sdata[BLOCKSIZE / WFSIZE];
+    template <int BLOCKSIZE, int WFSIZE, typename T, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void kernel_correction(const J m_,
+                           const I nnz_,
+                           const I* __restrict__ ptr_begin_,
+                           const I* __restrict__ ptr_end_,
+                           const J* __restrict__ ind_,
+                           const T* __restrict__ val_,
+                           const rocsparse_index_base base_,
 
-    static constexpr unsigned int nid = BLOCKSIZE / WFSIZE;
-    const J                       lid = hipThreadIdx_x & (WFSIZE - 1);
-    const J                       wid = hipThreadIdx_x / WFSIZE;
+                           const I* __restrict__ lptr_begin_,
+                           const I* __restrict__ lptr_end_,
+                           const J* __restrict__ lind_,
+                           T* __restrict__ lval_,
+                           const rocsparse_index_base lbase_,
 
-    const J row0 = BLOCKSIZE * hipBlockIdx_x + wid;
-    if(row0 < m_)
+                           const I* __restrict__ uptr_begin_,
+                           const I* __restrict__ uptr_end_,
+                           const J* __restrict__ uind_,
+                           T* __restrict__ uval_,
+                           const rocsparse_index_base ubase_,
+                           T* __restrict__ dval_,
+                           floating_data_t<T>*       nrm_,
+                           const floating_data_t<T>* nrm0_)
+
     {
-        for(J row = row0; row < BLOCKSIZE * (hipBlockIdx_x + 1); row += nid)
+        floating_data_t<T> nrm = 0;
+        __shared__ floating_data_t<T> sdata[BLOCKSIZE / WFSIZE];
+
+        static constexpr unsigned int nid = BLOCKSIZE / WFSIZE;
+        const J                       lid = hipThreadIdx_x & (WFSIZE - 1);
+        const J                       wid = hipThreadIdx_x / WFSIZE;
+
+        const J row0 = BLOCKSIZE * hipBlockIdx_x + wid;
+        if(row0 < m_)
         {
-            if(row < m_)
+            for(J row = row0; row < BLOCKSIZE * (hipBlockIdx_x + 1); row += nid)
             {
-                const J nl     = lptr_end_[row] - lptr_begin_[row];
-                const I lshift = lptr_begin_[row] - lbase_;
-                const I begin  = ((ptr_begin_[row] - base_) + lid);
-                const I end    = (ptr_end_[row] - base_);
-
-                for(I k = begin; k < end; k += WFSIZE)
+                if(row < m_)
                 {
-                    const J    col    = ind_[k] - base_;
-                    const I    ushift = uptr_begin_[col] - ubase_;
-                    const bool in_L   = (row > col);
-                    const bool in_U   = (row < col);
-                    const J    nu     = uptr_end_[col] - uptr_begin_[col];
-                    J          i = 0, j = 0;
-                    T          sum = sparse_dotproduct(nl,
-                                              lind_ + lshift,
-                                              lval_ + lshift,
-                                              lbase_,
-                                              nu,
-                                              uind_ + ushift,
-                                              uval_ + ushift,
-                                              ubase_,
-                                              i,
-                                              j);
+                    const J nl     = lptr_end_[row] - lptr_begin_[row];
+                    const I lshift = lptr_begin_[row] - lbase_;
+                    const I begin  = ((ptr_begin_[row] - base_) + lid);
+                    const I end    = (ptr_end_[row] - base_);
 
-                    T s = val_[k] - sum;
-                    if(in_L)
+                    for(I k = begin; k < end; k += WFSIZE)
                     {
-                        s /= dval_[col];
-                    }
+                        const J    col    = ind_[k] - base_;
+                        const I    ushift = uptr_begin_[col] - ubase_;
+                        const bool in_L   = (row > col);
+                        const bool in_U   = (row < col);
+                        const J    nu     = uptr_end_[col] - uptr_begin_[col];
+                        J          i = 0, j = 0;
+                        T          sum = rocsparse::sparse_dotproduct(nl,
+                                                             lind_ + lshift,
+                                                             lval_ + lshift,
+                                                             lbase_,
+                                                             nu,
+                                                             uind_ + ushift,
+                                                             uval_ + ushift,
+                                                             ubase_,
+                                                             i,
+                                                             j);
 
-                    if(j < nu)
-                    {
-                        for(J h = j; h < nu; ++h)
-                        {
-                            if((uind_[ushift + h] - ubase_) == row)
-                            {
-                                sum += uval_[ushift + h];
-                                break;
-                            }
-                        }
-                    }
-                    else if(i < nl)
-                    {
-                        for(J h = i; h < nl; ++h)
-                        {
-                            if((lind_[lshift + h] - lbase_) == col)
-                            {
-                                sum += lval_[lshift + h] * dval_[col];
-                                break;
-                            }
-                        }
-                    }
-
-                    if(row == col)
-                    {
-                        sum += dval_[col];
-                    }
-
-                    {
-                        auto tmp = std::abs(val_[k] - sum);
-                        if(!std::isinf(tmp) && !std::isnan(tmp))
-                        {
-                            nrm = (nrm > tmp) ? nrm : tmp;
-                        }
-                    }
-
-                    //
-                    // Assign.
-                    //
-                    auto ss = std::abs(s);
-                    if(!std::isinf(ss) && !std::isnan(ss))
-                    {
+                        T s = val_[k] - sum;
                         if(in_L)
                         {
-                            for(J h = i; h < nl; ++h)
-                            {
-                                if((lind_[lshift + h] - lbase_) == col)
-                                {
-                                    lval_[lshift + h] = s;
-                                    break;
-                                }
-                            }
+                            s /= dval_[col];
                         }
-                        else if(in_U)
+
+                        if(j < nu)
                         {
                             for(J h = j; h < nu; ++h)
                             {
                                 if((uind_[ushift + h] - ubase_) == row)
                                 {
-                                    uval_[ushift + h] = s;
+                                    sum += uval_[ushift + h];
                                     break;
                                 }
                             }
                         }
-                        else
+                        else if(i < nl)
                         {
-                            dval_[col] = s;
+                            for(J h = i; h < nl; ++h)
+                            {
+                                if((lind_[lshift + h] - lbase_) == col)
+                                {
+                                    sum += lval_[lshift + h] * dval_[col];
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(row == col)
+                        {
+                            sum += dval_[col];
+                        }
+
+                        {
+                            auto tmp = std::abs(val_[k] - sum);
+                            if(!std::isinf(tmp) && !std::isnan(tmp))
+                            {
+                                nrm = (nrm > tmp) ? nrm : tmp;
+                            }
+                        }
+
+                        //
+                        // Assign.
+                        //
+                        auto ss = std::abs(s);
+                        if(!std::isinf(ss) && !std::isnan(ss))
+                        {
+                            if(in_L)
+                            {
+                                for(J h = i; h < nl; ++h)
+                                {
+                                    if((lind_[lshift + h] - lbase_) == col)
+                                    {
+                                        lval_[lshift + h] = s;
+                                        break;
+                                    }
+                                }
+                            }
+                            else if(in_U)
+                            {
+                                for(J h = j; h < nu; ++h)
+                                {
+                                    if((uind_[ushift + h] - ubase_) == row)
+                                    {
+                                        uval_[ushift + h] = s;
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                dval_[col] = s;
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    rocsparse::wfreduce_max<WFSIZE>(&nrm);
-    if(lid == (WFSIZE - 1))
-        sdata[wid] = nrm;
-    __syncthreads();
-    rocsparse::blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, sdata);
-    if(hipThreadIdx_x == 0)
-    {
-        rocsparse::atomic_max(nrm_, sdata[0] / nrm0_[0]);
-    }
-}
-
-template <unsigned int BLOCKSIZE,
-          unsigned int WFSIZE,
-          typename T,
-          typename I,
-          typename J,
-          typename... P>
-static void kernel_correction_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
-{
-    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
-        (kernel_correction<BLOCKSIZE, WFSIZE, T, I, J>), blocks_, threads_, 0, stream_, p...);
-}
-
-template <unsigned int BLOCKSIZE, typename T, typename I, typename J, typename... P>
-static void kernel_correction_dispatch(
-    J m_, J mean_nnz_per_row_, int wavefront_size, hipStream_t stream_, P... p)
-{
-    dim3 blocks((m_ - 1) / BLOCKSIZE + 1);
-    dim3 threads(BLOCKSIZE);
-    if(mean_nnz_per_row_ <= 2)
-    {
-        kernel_correction_launch<BLOCKSIZE, 1, T, I, J>(blocks, threads, stream_, p...);
-    }
-    else if(mean_nnz_per_row_ <= 4)
-    {
-        kernel_correction_launch<BLOCKSIZE, 2, T, I, J>(blocks, threads, stream_, p...);
-    }
-    else if(mean_nnz_per_row_ <= 8)
-    {
-        kernel_correction_launch<BLOCKSIZE, 4, T, I, J>(blocks, threads, stream_, p...);
-    }
-    else if(mean_nnz_per_row_ <= 16)
-    {
-        kernel_correction_launch<BLOCKSIZE, 8, T, I, J>(blocks, threads, stream_, p...);
-    }
-    else if(mean_nnz_per_row_ <= 32)
-    {
-        kernel_correction_launch<BLOCKSIZE, 16, T, I, J>(blocks, threads, stream_, p...);
-    }
-    else if(mean_nnz_per_row_ <= 64)
-    {
-        kernel_correction_launch<BLOCKSIZE, 32, T, I, J>(blocks, threads, stream_, p...);
-    }
-    else
-    {
-        if(wavefront_size == 32)
+        rocsparse::wfreduce_max<WFSIZE>(&nrm);
+        if(lid == (WFSIZE - 1))
+            sdata[wid] = nrm;
+        __syncthreads();
+        rocsparse::blockreduce_max<BLOCKSIZE / WFSIZE>(hipThreadIdx_x, sdata);
+        if(hipThreadIdx_x == 0)
         {
-            kernel_correction_launch<BLOCKSIZE, 32, T, I, J>(blocks, threads, stream_, p...);
+            rocsparse::atomic_max(nrm_, sdata[0] / nrm0_[0]);
         }
-        else if(wavefront_size == 64)
+    }
+
+    template <unsigned int BLOCKSIZE,
+              unsigned int WFSIZE,
+              typename T,
+              typename I,
+              typename J,
+              typename... P>
+    static void kernel_correction_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
+    {
+        THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
+            (rocsparse::kernel_correction<BLOCKSIZE, WFSIZE, T, I, J>),
+            blocks_,
+            threads_,
+            0,
+            stream_,
+            p...);
+    }
+
+    template <unsigned int BLOCKSIZE, typename T, typename I, typename J, typename... P>
+    static void kernel_correction_dispatch(
+        J m_, J mean_nnz_per_row_, int wavefront_size, hipStream_t stream_, P... p)
+    {
+        dim3 blocks((m_ - 1) / BLOCKSIZE + 1);
+        dim3 threads(BLOCKSIZE);
+        if(mean_nnz_per_row_ <= 2)
         {
-            kernel_correction_launch<BLOCKSIZE, 64, T, I, J>(blocks, threads, stream_, p...);
+            rocsparse::kernel_correction_launch<BLOCKSIZE, 1, T, I, J>(
+                blocks, threads, stream_, p...);
+        }
+        else if(mean_nnz_per_row_ <= 4)
+        {
+            rocsparse::kernel_correction_launch<BLOCKSIZE, 2, T, I, J>(
+                blocks, threads, stream_, p...);
+        }
+        else if(mean_nnz_per_row_ <= 8)
+        {
+            rocsparse::kernel_correction_launch<BLOCKSIZE, 4, T, I, J>(
+                blocks, threads, stream_, p...);
+        }
+        else if(mean_nnz_per_row_ <= 16)
+        {
+            rocsparse::kernel_correction_launch<BLOCKSIZE, 8, T, I, J>(
+                blocks, threads, stream_, p...);
+        }
+        else if(mean_nnz_per_row_ <= 32)
+        {
+            rocsparse::kernel_correction_launch<BLOCKSIZE, 16, T, I, J>(
+                blocks, threads, stream_, p...);
+        }
+        else if(mean_nnz_per_row_ <= 64)
+        {
+            rocsparse::kernel_correction_launch<BLOCKSIZE, 32, T, I, J>(
+                blocks, threads, stream_, p...);
+        }
+        else
+        {
+            if(wavefront_size == 32)
+            {
+                rocsparse::kernel_correction_launch<BLOCKSIZE, 32, T, I, J>(
+                    blocks, threads, stream_, p...);
+            }
+            else if(wavefront_size == 64)
+            {
+                rocsparse::kernel_correction_launch<BLOCKSIZE, 64, T, I, J>(
+                    blocks, threads, stream_, p...);
+            }
         }
     }
 }
 
 template <>
-struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_async_split>
+struct rocsparse::csritilu0x_driver_t<rocsparse_itilu0_alg_async_split>
 {
 private:
     static constexpr int BLOCKSIZE = 1024;
@@ -256,7 +272,7 @@ public:
                                     void* __restrict__ buffer_)
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                (rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
+                (rocsparse::csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
                      history<T, J>::run(handle_, niter_, data_, buffer_size_, buffer_)));
             return rocsparse_status_success;
         }
@@ -309,14 +325,14 @@ public:
             case rocsparse_datatype_f32_r:
             {
                 size_convergence_info
-                    = rocsparse_itilu0x_convergence_info_t<float, J>::size(nmaxiter_, options_);
+                    = rocsparse::itilu0x_convergence_info_t<float, J>::size(nmaxiter_, options_);
                 break;
             }
             case rocsparse_datatype_f64_c:
             case rocsparse_datatype_f64_r:
             {
                 size_convergence_info
-                    = rocsparse_itilu0x_convergence_info_t<double, J>::size(nmaxiter_, options_);
+                    = rocsparse::itilu0x_convergence_info_t<double, J>::size(nmaxiter_, options_);
                 break;
             }
             case rocsparse_datatype_i8_r:
@@ -422,7 +438,7 @@ public:
             //
             // Initialize the convergence info.
             //
-            rocsparse_itilu0x_convergence_info_t<floating_data_t<T>, J> setup;
+            rocsparse::itilu0x_convergence_info_t<floating_data_t<T>, J> setup;
 
             buffer = setup.init(handle_, buffer, nmaxiter, options_);
 
@@ -436,8 +452,8 @@ public:
 
             if(compute_nrm_residual)
             {
-                RETURN_IF_ROCSPARSE_ERROR(
-                    rocsparse_nrminf<BLOCKSIZE>(handle_, nnz_, val_, p_nrm_matrix, nullptr, false));
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::nrminf<BLOCKSIZE>(
+                    handle_, nnz_, val_, p_nrm_matrix, nullptr, false));
             }
 
             //
@@ -460,37 +476,37 @@ public:
                 //
                 // CALCULATE CORRECTION.
                 //
-                kernel_correction_dispatch<BLOCKSIZE, T, I, J>(m_,
-                                                               mean,
-                                                               handle_->wavefront_size,
-                                                               handle_->stream,
-                                                               m_,
-                                                               nnz_,
-                                                               ptr_begin_,
-                                                               ptr_end_,
-                                                               ind_,
-                                                               val_,
-                                                               base_, //
-                                                               lptr_begin_,
-                                                               lptr_end_,
-                                                               lind_,
-                                                               lval_,
-                                                               lbase_, //
-                                                               uptr_begin_,
-                                                               uptr_end_,
-                                                               uind_,
-                                                               uval_,
-                                                               ubase_, //
-                                                               dval_,
-                                                               p_nrm_residual,
-                                                               p_nrm_matrix);
+                rocsparse::kernel_correction_dispatch<BLOCKSIZE, T, I, J>(m_,
+                                                                          mean,
+                                                                          handle_->wavefront_size,
+                                                                          handle_->stream,
+                                                                          m_,
+                                                                          nnz_,
+                                                                          ptr_begin_,
+                                                                          ptr_end_,
+                                                                          ind_,
+                                                                          val_,
+                                                                          base_, //
+                                                                          lptr_begin_,
+                                                                          lptr_end_,
+                                                                          lind_,
+                                                                          lval_,
+                                                                          lbase_, //
+                                                                          uptr_begin_,
+                                                                          uptr_end_,
+                                                                          uind_,
+                                                                          uval_,
+                                                                          ubase_, //
+                                                                          dval_,
+                                                                          p_nrm_residual,
+                                                                          p_nrm_matrix);
                 if(convergence_history)
                 {
                     //
                     // Log convergence of residual.
                     //
                     RETURN_IF_HIP_ERROR(
-                        stay_on_device(&log_mxresidual[iter], p_nrm_residual, stream));
+                        rocsparse::stay_on_device(&log_mxresidual[iter], p_nrm_residual, stream));
                 }
 
                 if(stopping_criteria)
@@ -501,7 +517,8 @@ public:
                         //
                         // EXTRACT NORM.
                         //
-                        RETURN_IF_HIP_ERROR(on_host(&nrm_residual, p_nrm_residual, stream));
+                        RETURN_IF_HIP_ERROR(
+                            rocsparse::on_host(&nrm_residual, p_nrm_residual, stream));
                         RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
                     }
                 }
@@ -535,7 +552,7 @@ public:
                         nmaxiter_[0] = iter + 1;
                         converged    = false;
 
-                        RETURN_IF_HIP_ERROR(on_device(p_iter, nmaxiter_, stream));
+                        RETURN_IF_HIP_ERROR(rocsparse::on_device(p_iter, nmaxiter_, stream));
                         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
                     }
                     else
@@ -579,15 +596,16 @@ public:
                 }
             }
 
-            RETURN_IF_HIP_ERROR(on_device(p_iter, (converged) ? nmaxiter_ : (&nmaxiter), stream));
+            RETURN_IF_HIP_ERROR(
+                rocsparse::on_device(p_iter, (converged) ? nmaxiter_ : (&nmaxiter), stream));
 
             return rocsparse_status_success;
         }
     };
 };
 
-#define INSTANTIATE(T, I, J)                       \
-    template struct rocsparse_csritilu0x_driver_t< \
+#define INSTANTIATE(T, I, J)                        \
+    template struct rocsparse::csritilu0x_driver_t< \
         rocsparse_itilu0_alg_async_split>::compute<T, I, J>
 
 INSTANTIATE(float, int32_t, int32_t);
@@ -598,9 +616,9 @@ INSTANTIATE(rocsparse_double_complex, int32_t, int32_t);
 #undef INSTANTIATE
 
 #define INSTANTIATE(I, J)                                    \
-    template struct rocsparse_csritilu0x_driver_t<           \
+    template struct rocsparse::csritilu0x_driver_t<          \
         rocsparse_itilu0_alg_async_split>::preprocess<I, J>; \
-    template struct rocsparse_csritilu0x_driver_t<           \
+    template struct rocsparse::csritilu0x_driver_t<          \
         rocsparse_itilu0_alg_async_split>::buffer_size<I, J>
 
 INSTANTIATE(int32_t, int32_t);
@@ -608,7 +626,7 @@ INSTANTIATE(int32_t, int32_t);
 #undef INSTANTIATE
 
 #define INSTANTIATE(T, J) \
-    template struct rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_async_split>::history<T, J>
+    template struct rocsparse::csritilu0x_driver_t<rocsparse_itilu0_alg_async_split>::history<T, J>
 
 INSTANTIATE(float, int32_t);
 INSTANTIATE(double, int32_t);

@@ -22,18 +22,17 @@
  *
  * ************************************************************************ */
 #pragma once
-#ifndef ROCSPARSE_CSRITILU0_HISTORY_HPP
-#define ROCSPARSE_CSRITILU0_HISTORY_HPP
 
 #include "control.h"
 #include "utility.h"
 
-template <typename T, typename J>
-rocsparse_status rocsparse_csritilu0_history_impl(rocsparse_handle     handle_,
-                                                  rocsparse_itilu0_alg alg,
-                                                  J*                   niter_,
-                                                  floating_data_t<T>* __restrict__ nrms_,
-                                                  size_t buffer_size_,
-                                                  void*  buffer_);
-
-#endif // ROCSPARSE_CSRITILU0_HISTORY_HPP
+namespace rocsparse
+{
+    template <typename T, typename J>
+    rocsparse_status csritilu0_history_impl(rocsparse_handle     handle_,
+                                            rocsparse_itilu0_alg alg,
+                                            J*                   niter_,
+                                            floating_data_t<T>* __restrict__ nrms_,
+                                            size_t buffer_size_,
+                                            void*  buffer_);
+}

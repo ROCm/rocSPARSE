@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,62 +22,66 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_csritilu0x_buffer_size.hpp"
 #include "common.h"
 #include "rocsparse_csritilu0x_driver.hpp"
 
-template <typename I, typename J, typename... P>
-static rocsparse_status buffer_size_dispatch(rocsparse_itilu0_alg alg_, P&&... parameters)
+namespace rocsparse
 {
-    switch(alg_)
+    template <typename I, typename J, typename... P>
+    static rocsparse_status buffer_size_dispatch(rocsparse_itilu0_alg alg_, P&&... parameters)
     {
-    case rocsparse_itilu0_alg_default:
-    case rocsparse_itilu0_alg_async_inplace:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-        return rocsparse_status_success;
+        switch(alg_)
+        {
+        case rocsparse_itilu0_alg_default:
+        case rocsparse_itilu0_alg_async_inplace:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+            return rocsparse_status_success;
+        }
+        case rocsparse_itilu0_alg_async_split:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::csritilu0x_driver_t<
+                    rocsparse_itilu0_alg_async_split>::buffer_size<I, J>::run(parameters...)));
+            return rocsparse_status_success;
+        }
+        case rocsparse_itilu0_alg_sync_split:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::csritilu0x_driver_t<
+                    rocsparse_itilu0_alg_sync_split>::buffer_size<I, J>::run(parameters...)));
+            return rocsparse_status_success;
+        }
+        case rocsparse_itilu0_alg_sync_split_fusion:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
+                     buffer_size<I, J>::run(parameters...)));
+            return rocsparse_status_success;
+        }
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
-    case rocsparse_itilu0_alg_async_split:
-    {
-        RETURN_IF_ROCSPARSE_ERROR((
-            rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_async_split>::buffer_size<I, J>::run(
-                parameters...)));
-        return rocsparse_status_success;
-    }
-    case rocsparse_itilu0_alg_sync_split:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split>::buffer_size<I, J>::run(
-                parameters...)));
-        return rocsparse_status_success;
-    }
-    case rocsparse_itilu0_alg_sync_split_fusion:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_csritilu0x_driver_t<
-                rocsparse_itilu0_alg_sync_split_fusion>::buffer_size<I, J>::run(parameters...)));
-        return rocsparse_status_success;
-    }
-    }
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0x_buffer_size_template(rocsparse_handle     handle_,
-                                                           rocsparse_itilu0_alg alg_,
-                                                           J                    options_,
-                                                           J                    nsweeps_,
-                                                           J                    m_,
-                                                           I                    nnz_,
-                                                           const I* __restrict__ ptr_begin_,
-                                                           const I* __restrict__ ptr_end_,
-                                                           const J* __restrict__ ind_,
-                                                           rocsparse_index_base base_,
-                                                           rocsparse_diag_type  ldiag_type_,
-                                                           rocsparse_direction  ldir_,
-                                                           rocsparse_diag_type  udiag_type_,
-                                                           rocsparse_direction  udir_,
-                                                           rocsparse_datatype   datatype_,
-                                                           size_t* __restrict__ buffer_size_)
+rocsparse_status rocsparse::csritilu0x_buffer_size_template(rocsparse_handle     handle_,
+                                                            rocsparse_itilu0_alg alg_,
+                                                            J                    options_,
+                                                            J                    nsweeps_,
+                                                            J                    m_,
+                                                            I                    nnz_,
+                                                            const I* __restrict__ ptr_begin_,
+                                                            const I* __restrict__ ptr_end_,
+                                                            const J* __restrict__ ind_,
+                                                            rocsparse_index_base base_,
+                                                            rocsparse_diag_type  ldiag_type_,
+                                                            rocsparse_direction  ldir_,
+                                                            rocsparse_diag_type  udiag_type_,
+                                                            rocsparse_direction  udir_,
+                                                            rocsparse_datatype   datatype_,
+                                                            size_t* __restrict__ buffer_size_)
 {
     // Quick return if possible
     if(m_ == 0)
@@ -92,42 +96,42 @@ rocsparse_status rocsparse_csritilu0x_buffer_size_template(rocsparse_handle     
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
     }
 
-    RETURN_IF_ROCSPARSE_ERROR((buffer_size_dispatch<I, J>(alg_,
-                                                          handle_,
-                                                          options_,
-                                                          nsweeps_,
-                                                          m_,
-                                                          nnz_,
-                                                          ptr_begin_,
-                                                          ptr_end_,
-                                                          ind_,
-                                                          base_,
-                                                          ldiag_type_,
-                                                          ldir_,
-                                                          udiag_type_,
-                                                          udir_,
-                                                          datatype_,
-                                                          buffer_size_)));
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse::buffer_size_dispatch<I, J>(alg_,
+                                                                     handle_,
+                                                                     options_,
+                                                                     nsweeps_,
+                                                                     m_,
+                                                                     nnz_,
+                                                                     ptr_begin_,
+                                                                     ptr_end_,
+                                                                     ind_,
+                                                                     base_,
+                                                                     ldiag_type_,
+                                                                     ldir_,
+                                                                     udiag_type_,
+                                                                     udir_,
+                                                                     datatype_,
+                                                                     buffer_size_)));
     return rocsparse_status_success;
 }
 
 template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0x_buffer_size_impl(rocsparse_handle     handle_,
-                                                       rocsparse_itilu0_alg alg_,
-                                                       J                    options_,
-                                                       J                    nsweeps_,
-                                                       J                    m_,
-                                                       I                    nnz_,
-                                                       const I* __restrict__ ptr_begin_,
-                                                       const I* __restrict__ ptr_end_,
-                                                       const J* __restrict__ ind_,
-                                                       rocsparse_index_base base_,
-                                                       rocsparse_diag_type  ldiag_type_,
-                                                       rocsparse_direction  ldir_,
-                                                       rocsparse_diag_type  udiag_type_,
-                                                       rocsparse_direction  udir_,
-                                                       rocsparse_datatype   datatype_,
-                                                       size_t* __restrict__ buffer_size_)
+rocsparse_status rocsparse::csritilu0x_buffer_size_impl(rocsparse_handle     handle_,
+                                                        rocsparse_itilu0_alg alg_,
+                                                        J                    options_,
+                                                        J                    nsweeps_,
+                                                        J                    m_,
+                                                        I                    nnz_,
+                                                        const I* __restrict__ ptr_begin_,
+                                                        const I* __restrict__ ptr_end_,
+                                                        const J* __restrict__ ind_,
+                                                        rocsparse_index_base base_,
+                                                        rocsparse_diag_type  ldiag_type_,
+                                                        rocsparse_direction  ldir_,
+                                                        rocsparse_diag_type  udiag_type_,
+                                                        rocsparse_direction  udir_,
+                                                        rocsparse_datatype   datatype_,
+                                                        size_t* __restrict__ buffer_size_)
 {
     // Check for valid handle and matrix descriptor
     if(handle_ == nullptr)
@@ -192,42 +196,42 @@ rocsparse_status rocsparse_csritilu0x_buffer_size_impl(rocsparse_handle     hand
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csritilu0x_buffer_size_template(handle_,
-                                                                        alg_,
-                                                                        options_,
-                                                                        nsweeps_,
-                                                                        m_,
-                                                                        nnz_,
-                                                                        ptr_begin_,
-                                                                        ptr_end_,
-                                                                        ind_,
-                                                                        base_,
-                                                                        ldiag_type_,
-                                                                        ldir_,
-                                                                        udiag_type_,
-                                                                        udir_,
-                                                                        datatype_,
-                                                                        buffer_size_));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::csritilu0x_buffer_size_template(handle_,
+                                                                         alg_,
+                                                                         options_,
+                                                                         nsweeps_,
+                                                                         m_,
+                                                                         nnz_,
+                                                                         ptr_begin_,
+                                                                         ptr_end_,
+                                                                         ind_,
+                                                                         base_,
+                                                                         ldiag_type_,
+                                                                         ldir_,
+                                                                         udiag_type_,
+                                                                         udir_,
+                                                                         datatype_,
+                                                                         buffer_size_));
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(TOK, I, J)                                              \
-    template rocsparse_status rocsparse_csritilu0x_buffer_size_##TOK<I, J>( \
-        rocsparse_handle     handle_,                                       \
-        rocsparse_itilu0_alg alg_,                                          \
-        J                    options_,                                      \
-        J                    nsweeps_,                                      \
-        J                    m_,                                            \
-        I                    nnz_,                                          \
-        const I* __restrict__ ptr_begin_,                                   \
-        const I* __restrict__ ptr_end_,                                     \
-        const J* __restrict__ ind_,                                         \
-        rocsparse_index_base base_,                                         \
-        rocsparse_diag_type  ldiag_type_,                                   \
-        rocsparse_direction  ldir_,                                         \
-        rocsparse_diag_type  udiag_type_,                                   \
-        rocsparse_direction  udir_,                                         \
-        rocsparse_datatype   datatype_,                                     \
+#define INSTANTIATE(TOK, I, J)                                               \
+    template rocsparse_status rocsparse::csritilu0x_buffer_size_##TOK<I, J>( \
+        rocsparse_handle     handle_,                                        \
+        rocsparse_itilu0_alg alg_,                                           \
+        J                    options_,                                       \
+        J                    nsweeps_,                                       \
+        J                    m_,                                             \
+        I                    nnz_,                                           \
+        const I* __restrict__ ptr_begin_,                                    \
+        const I* __restrict__ ptr_end_,                                      \
+        const J* __restrict__ ind_,                                          \
+        rocsparse_index_base base_,                                          \
+        rocsparse_diag_type  ldiag_type_,                                    \
+        rocsparse_direction  ldir_,                                          \
+        rocsparse_diag_type  udiag_type_,                                    \
+        rocsparse_direction  udir_,                                          \
+        rocsparse_datatype   datatype_,                                      \
         size_t* __restrict__ buffer_size_)
 
 INSTANTIATE(template, int32_t, int32_t);

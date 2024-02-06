@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #include "rocsparse_csritilu0_driver.hpp"
 
 template <>
-struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>
+struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_split>
 {
     //
     // History, same as algorithm 1.
@@ -42,7 +42,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>
                                     void*                buffer_)
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                (rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
+                (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
                      history<T, J>::run(handle_, alg_, niter_, data_, buffer_size_, buffer_)));
             return rocsparse_status_success;
         }
@@ -67,7 +67,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>
                                     size_t* __restrict__ buffer_size_)
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                (rocsparse_csritilu0_driver_t<
+                (rocsparse::csritilu0_driver_t<
                     rocsparse_itilu0_alg_sync_split_fusion>::buffer_size<I, J>::run(handle_,
                                                                                     alg_,
                                                                                     options_,
@@ -104,7 +104,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>
 
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                (rocsparse_csritilu0_driver_t<
+                (rocsparse::csritilu0_driver_t<
                     rocsparse_itilu0_alg_sync_split_fusion>::preprocess<I, J>::run(handle_,
                                                                                    alg_,
                                                                                    options_,
@@ -143,7 +143,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>
                                     void* __restrict__ buffer_)
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                (rocsparse_csritilu0_driver_t<
+                (rocsparse::csritilu0_driver_t<
                     rocsparse_itilu0_alg_sync_split_fusion>::compute<T, I, J>::run(handle_,
                                                                                    alg_,
                                                                                    options_,
@@ -163,8 +163,9 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>
     };
 };
 
-#define INSTANTIATE(T, I, J) \
-    template struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>::compute<T, I, J>
+#define INSTANTIATE(T, I, J)                       \
+    template struct rocsparse::csritilu0_driver_t< \
+        rocsparse_itilu0_alg_async_split>::compute<T, I, J>
 
 INSTANTIATE(float, int32_t, int32_t);
 INSTANTIATE(double, int32_t, int32_t);
@@ -174,18 +175,18 @@ INSTANTIATE(rocsparse_double_complex, int32_t, int32_t);
 #undef INSTANTIATE
 
 #define INSTANTIATE(T, J) \
-    template struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>::history<T, J>
+    template struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_split>::history<T, J>
 
 INSTANTIATE(float, int32_t);
 INSTANTIATE(double, int32_t);
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(I, J)                                                                         \
-    template struct rocsparse_csritilu0_driver_t<                                                 \
-        rocsparse_itilu0_alg_async_split>::buffer_size<I, J>;                                     \
-    template struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>::preprocess<I, \
-                                                                                               J>;
+#define INSTANTIATE(I, J)                                     \
+    template struct rocsparse::csritilu0_driver_t<            \
+        rocsparse_itilu0_alg_async_split>::buffer_size<I, J>; \
+    template struct rocsparse::csritilu0_driver_t<            \
+        rocsparse_itilu0_alg_async_split>::preprocess<I, J>;
 
 INSTANTIATE(int32_t, int32_t);
 

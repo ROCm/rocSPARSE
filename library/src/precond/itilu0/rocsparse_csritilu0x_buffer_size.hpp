@@ -22,46 +22,45 @@
  *
  * ************************************************************************ */
 #pragma once
-#ifndef ROCSPARSE_CSRITILU0X_BUFFER_SIZE_HPP
-#define ROCSPARSE_CSRITILU0X_BUFFER_SIZE_HPP
 
 #include "control.h"
 #include "utility.h"
 
-template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0x_buffer_size_template(rocsparse_handle     handle_,
-                                                           rocsparse_itilu0_alg alg_,
-                                                           J                    options_,
-                                                           J                    nsweeps_,
-                                                           J                    m_,
-                                                           I                    nnz_,
-                                                           const I* __restrict__ ptr_begin_,
-                                                           const I* __restrict__ ptr_end_,
-                                                           const J* __restrict__ ind_,
-                                                           rocsparse_index_base base_,
-                                                           rocsparse_diag_type  ldiag_type_,
-                                                           rocsparse_direction  ldir_,
-                                                           rocsparse_diag_type  udiag_type_,
-                                                           rocsparse_direction  udir_,
-                                                           rocsparse_datatype   datatype_,
-                                                           size_t* __restrict__ buffer_size_);
+namespace rocsparse
+{
+    template <typename I, typename J>
+    rocsparse_status csritilu0x_buffer_size_template(rocsparse_handle     handle_,
+                                                     rocsparse_itilu0_alg alg_,
+                                                     J                    options_,
+                                                     J                    nsweeps_,
+                                                     J                    m_,
+                                                     I                    nnz_,
+                                                     const I* __restrict__ ptr_begin_,
+                                                     const I* __restrict__ ptr_end_,
+                                                     const J* __restrict__ ind_,
+                                                     rocsparse_index_base base_,
+                                                     rocsparse_diag_type  ldiag_type_,
+                                                     rocsparse_direction  ldir_,
+                                                     rocsparse_diag_type  udiag_type_,
+                                                     rocsparse_direction  udir_,
+                                                     rocsparse_datatype   datatype_,
+                                                     size_t* __restrict__ buffer_size_);
 
-template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0x_buffer_size_impl(rocsparse_handle     handle_,
-                                                       rocsparse_itilu0_alg alg_,
-                                                       J                    options_,
-                                                       J                    nsweeps_,
-                                                       J                    m_,
-                                                       I                    nnz_,
-                                                       const I* __restrict__ ptr_begin_,
-                                                       const I* __restrict__ ptr_end_,
-                                                       const J* __restrict__ ind_,
-                                                       rocsparse_index_base base_,
-                                                       rocsparse_diag_type  ldiag_type_,
-                                                       rocsparse_direction  ldir_,
-                                                       rocsparse_diag_type  udiag_type_,
-                                                       rocsparse_direction  udir_,
-                                                       rocsparse_datatype   datatype_,
-                                                       size_t* __restrict__ buffer_size_);
-
-#endif // ROCSPARSE_CSRITILU0X_BUFFER_SIZE_HPP
+    template <typename I, typename J>
+    rocsparse_status csritilu0x_buffer_size_impl(rocsparse_handle     handle_,
+                                                 rocsparse_itilu0_alg alg_,
+                                                 J                    options_,
+                                                 J                    nsweeps_,
+                                                 J                    m_,
+                                                 I                    nnz_,
+                                                 const I* __restrict__ ptr_begin_,
+                                                 const I* __restrict__ ptr_end_,
+                                                 const J* __restrict__ ind_,
+                                                 rocsparse_index_base base_,
+                                                 rocsparse_diag_type  ldiag_type_,
+                                                 rocsparse_direction  ldir_,
+                                                 rocsparse_diag_type  udiag_type_,
+                                                 rocsparse_direction  udir_,
+                                                 rocsparse_datatype   datatype_,
+                                                 size_t* __restrict__ buffer_size_);
+}

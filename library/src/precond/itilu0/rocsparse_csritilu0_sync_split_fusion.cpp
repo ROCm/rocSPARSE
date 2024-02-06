@@ -33,7 +33,7 @@
 #include "rocsparse_csritilu0x_preprocess.hpp"
 
 template <>
-struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
+struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
 {
 
     //
@@ -57,7 +57,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
             void*  p_buffer      = layout_.get_pointer(layout_t::buffer);
             size_t p_buffer_size = layout_.get_size(layout_t::buffer);
-            RETURN_IF_ROCSPARSE_ERROR((rocsparse_csritilu0x_history_template<T, J>(
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse::csritilu0x_history_template<T, J>(
                 handle_, alg_, niter_, data_, p_buffer_size, p_buffer)));
             return rocsparse_status_success;
         }
@@ -127,22 +127,22 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
 
             size_t buffer_size_csritilu0x = 0;
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_csritilu0x_buffer_size_template(handle_,
-                                                          alg_,
-                                                          options_,
-                                                          nsweeps_,
-                                                          m_,
-                                                          nnz_,
-                                                          ptr_,
-                                                          ptr_ + 1,
-                                                          ind_,
-                                                          base_,
-                                                          rocsparse_diag_type_unit,
-                                                          rocsparse_direction_row,
-                                                          rocsparse_diag_type_unit,
-                                                          rocsparse_direction_column,
-                                                          datatype_,
-                                                          &buffer_size_csritilu0x));
+                rocsparse::csritilu0x_buffer_size_template(handle_,
+                                                           alg_,
+                                                           options_,
+                                                           nsweeps_,
+                                                           m_,
+                                                           nnz_,
+                                                           ptr_,
+                                                           ptr_ + 1,
+                                                           ind_,
+                                                           base_,
+                                                           rocsparse_diag_type_unit,
+                                                           rocsparse_direction_row,
+                                                           rocsparse_diag_type_unit,
+                                                           rocsparse_direction_column,
+                                                           datatype_,
+                                                           &buffer_size_csritilu0x));
 
             //
             // buffer csxsldu
@@ -221,7 +221,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             //
             // Set perm to identity.
             //
-            I* identity = assign_b<I>(p_buffer_size, p_buffer, nnz_);
+            I* identity = rocsparse::assign_b<I>(p_buffer_size, p_buffer, nnz_);
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse::create_identity_permutation_core(handle_, nnz_, identity));
 
@@ -303,7 +303,7 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             //
             // Free identity from the buffer.
             //
-            identity = unassign_b<I>(p_buffer_size, p_buffer, nnz_);
+            identity = rocsparse::unassign_b<I>(p_buffer_size, p_buffer, nnz_);
 
             //
             // The buffer need to be kept. Get the buffer from layout since we need to preserve x.
@@ -311,33 +311,33 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             p_buffer      = layout.get_pointer(layout_t::buffer);
             p_buffer_size = layout.get_size(layout_t::buffer);
             RETURN_IF_ROCSPARSE_ERROR(
-                (rocsparse_csritilu0x_preprocess_template(handle_,
-                                                          alg_,
-                                                          options_,
-                                                          nsweeps_,
-                                                          m_,
-                                                          nnz_,
-                                                          ptr_,
-                                                          ptr_ + 1,
-                                                          ind_,
-                                                          base_,
-                                                          rocsparse_diag_type_unit,
-                                                          rocsparse_direction_row,
-                                                          host_lnnz,
-                                                          p_lptr,
-                                                          p_lptr + 1,
-                                                          p_lind,
-                                                          base_,
-                                                          rocsparse_diag_type_unit,
-                                                          rocsparse_direction_column,
-                                                          host_unnz,
-                                                          p_uptr,
-                                                          p_uptr + 1,
-                                                          p_uind,
-                                                          base_,
-                                                          datatype_,
-                                                          p_buffer_size,
-                                                          p_buffer)));
+                (rocsparse::csritilu0x_preprocess_template(handle_,
+                                                           alg_,
+                                                           options_,
+                                                           nsweeps_,
+                                                           m_,
+                                                           nnz_,
+                                                           ptr_,
+                                                           ptr_ + 1,
+                                                           ind_,
+                                                           base_,
+                                                           rocsparse_diag_type_unit,
+                                                           rocsparse_direction_row,
+                                                           host_lnnz,
+                                                           p_lptr,
+                                                           p_lptr + 1,
+                                                           p_lind,
+                                                           base_,
+                                                           rocsparse_diag_type_unit,
+                                                           rocsparse_direction_column,
+                                                           host_unnz,
+                                                           p_uptr,
+                                                           p_uptr + 1,
+                                                           p_uind,
+                                                           base_,
+                                                           datatype_,
+                                                           p_buffer_size,
+                                                           p_buffer)));
 
             //
             // Copy the struct to device.
@@ -436,55 +436,55 @@ struct rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             //
             // Copy solution_ to X, solution and X are of the same size.
             //
-            rocsparse_get_permuted_array<BLOCKSIZE_PERM>(handle_, nnz_, sol_, p_x, p_perm);
+            rocsparse::get_permuted_array<BLOCKSIZE_PERM>(handle_, nnz_, sol_, p_x, p_perm);
 
             //
             // Compute expert routine.
             //
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_csritilu0x_compute_template(handle_,
-                                                      alg_,
-                                                      options_,
-                                                      nsweeps_,
-                                                      tol_,
-                                                      m_,
-                                                      nnz_,
-                                                      ptr_,
-                                                      ptr_ + 1,
-                                                      ind_,
-                                                      val_,
-                                                      base_,
-                                                      rocsparse_diag_type_unit,
-                                                      rocsparse_direction_row,
-                                                      host_lnnz,
-                                                      p_lptr,
-                                                      p_lptr + 1,
-                                                      p_lind,
-                                                      p_lval,
-                                                      base_,
-                                                      rocsparse_diag_type_unit,
-                                                      rocsparse_direction_column,
-                                                      host_unnz,
-                                                      p_uptr,
-                                                      p_uptr + 1,
-                                                      p_uind,
-                                                      p_uval,
-                                                      base_,
-                                                      p_dval,
-                                                      p_buffer_size,
-                                                      p_buffer));
+                rocsparse::csritilu0x_compute_template(handle_,
+                                                       alg_,
+                                                       options_,
+                                                       nsweeps_,
+                                                       tol_,
+                                                       m_,
+                                                       nnz_,
+                                                       ptr_,
+                                                       ptr_ + 1,
+                                                       ind_,
+                                                       val_,
+                                                       base_,
+                                                       rocsparse_diag_type_unit,
+                                                       rocsparse_direction_row,
+                                                       host_lnnz,
+                                                       p_lptr,
+                                                       p_lptr + 1,
+                                                       p_lind,
+                                                       p_lval,
+                                                       base_,
+                                                       rocsparse_diag_type_unit,
+                                                       rocsparse_direction_column,
+                                                       host_unnz,
+                                                       p_uptr,
+                                                       p_uptr + 1,
+                                                       p_uind,
+                                                       p_uval,
+                                                       base_,
+                                                       p_dval,
+                                                       p_buffer_size,
+                                                       p_buffer));
 
             //
             // Move factorization to matrix.
             //
-            rocsparse_set_permuted_array<BLOCKSIZE_PERM>(handle_, nnz_, sol_, p_x, p_perm);
+            rocsparse::set_permuted_array<BLOCKSIZE_PERM>(handle_, nnz_, sol_, p_x, p_perm);
             return rocsparse_status_success;
         }
     };
 };
 
-#define INSTANTIATE(T, I, J)                      \
-    template struct rocsparse_csritilu0_driver_t< \
+#define INSTANTIATE(T, I, J)                       \
+    template struct rocsparse::csritilu0_driver_t< \
         rocsparse_itilu0_alg_sync_split_fusion>::compute<T, I, J>
 
 INSTANTIATE(float, int32_t, int32_t);
@@ -494,8 +494,8 @@ INSTANTIATE(rocsparse_double_complex, int32_t, int32_t);
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(T, J)                         \
-    template struct rocsparse_csritilu0_driver_t< \
+#define INSTANTIATE(T, J)                          \
+    template struct rocsparse::csritilu0_driver_t< \
         rocsparse_itilu0_alg_sync_split_fusion>::history<T, J>
 
 INSTANTIATE(float, int32_t);
@@ -504,9 +504,9 @@ INSTANTIATE(double, int32_t);
 #undef INSTANTIATE
 
 #define INSTANTIATE(I, J)                                           \
-    template struct rocsparse_csritilu0_driver_t<                   \
+    template struct rocsparse::csritilu0_driver_t<                  \
         rocsparse_itilu0_alg_sync_split_fusion>::buffer_size<I, J>; \
-    template struct rocsparse_csritilu0_driver_t<                   \
+    template struct rocsparse::csritilu0_driver_t<                  \
         rocsparse_itilu0_alg_sync_split_fusion>::preprocess<I, J>;
 
 INSTANTIATE(rocsparse_int, rocsparse_int);

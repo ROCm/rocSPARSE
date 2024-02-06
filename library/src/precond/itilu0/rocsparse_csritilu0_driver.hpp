@@ -26,69 +26,72 @@
 #include "control.h"
 #include "utility.h"
 
-template <rocsparse_itilu0_alg ALG>
-struct rocsparse_csritilu0_driver_t
+namespace rocsparse
 {
-    template <typename I, typename J>
-    struct buffer_size
+    template <rocsparse_itilu0_alg ALG>
+    struct csritilu0_driver_t
     {
-        static rocsparse_status run(rocsparse_handle     handle_,
-                                    rocsparse_itilu0_alg alg_,
-                                    J                    options_,
-                                    J                    nsweeps_,
-                                    J                    m_,
-                                    I                    nnz_,
-                                    const I* __restrict__ ptr_,
-                                    const J* __restrict__ ind_,
-                                    rocsparse_index_base base_,
-                                    rocsparse_datatype   datatype_,
-                                    size_t* __restrict__ buffer_size_);
-    };
+        template <typename I, typename J>
+        struct buffer_size
+        {
+            static rocsparse_status run(rocsparse_handle     handle_,
+                                        rocsparse_itilu0_alg alg_,
+                                        J                    options_,
+                                        J                    nsweeps_,
+                                        J                    m_,
+                                        I                    nnz_,
+                                        const I* __restrict__ ptr_,
+                                        const J* __restrict__ ind_,
+                                        rocsparse_index_base base_,
+                                        rocsparse_datatype   datatype_,
+                                        size_t* __restrict__ buffer_size_);
+        };
 
-    template <typename I, typename J>
-    struct preprocess
-    {
-        static rocsparse_status run(rocsparse_handle     handle_,
-                                    rocsparse_itilu0_alg alg_,
-                                    J                    options_,
-                                    J                    nsweeps_,
-                                    J                    m_,
-                                    I                    nnz_,
-                                    const I* __restrict__ ptr_,
-                                    const J* __restrict__ ind_,
-                                    rocsparse_index_base base_,
-                                    rocsparse_datatype   datatype_,
-                                    size_t               buffer_size_,
-                                    void* __restrict__ buffer_);
-    };
+        template <typename I, typename J>
+        struct preprocess
+        {
+            static rocsparse_status run(rocsparse_handle     handle_,
+                                        rocsparse_itilu0_alg alg_,
+                                        J                    options_,
+                                        J                    nsweeps_,
+                                        J                    m_,
+                                        I                    nnz_,
+                                        const I* __restrict__ ptr_,
+                                        const J* __restrict__ ind_,
+                                        rocsparse_index_base base_,
+                                        rocsparse_datatype   datatype_,
+                                        size_t               buffer_size_,
+                                        void* __restrict__ buffer_);
+        };
 
-    template <typename T, typename I, typename J>
-    struct compute
-    {
-        static rocsparse_status run(rocsparse_handle     handle_,
-                                    rocsparse_itilu0_alg alg_,
-                                    J                    options_,
-                                    J*                   nsweeps_,
-                                    floating_data_t<T>   tol_,
-                                    J                    m_,
-                                    I                    nnz_,
-                                    const I* __restrict__ ptr_,
-                                    const J* __restrict__ ind_,
-                                    const T* __restrict__ val_,
-                                    T* __restrict__ ilu0_,
-                                    rocsparse_index_base base_,
-                                    size_t               buffer_size_,
-                                    void* __restrict__ buffer_);
-    };
+        template <typename T, typename I, typename J>
+        struct compute
+        {
+            static rocsparse_status run(rocsparse_handle     handle_,
+                                        rocsparse_itilu0_alg alg_,
+                                        J                    options_,
+                                        J*                   nsweeps_,
+                                        floating_data_t<T>   tol_,
+                                        J                    m_,
+                                        I                    nnz_,
+                                        const I* __restrict__ ptr_,
+                                        const J* __restrict__ ind_,
+                                        const T* __restrict__ val_,
+                                        T* __restrict__ ilu0_,
+                                        rocsparse_index_base base_,
+                                        size_t               buffer_size_,
+                                        void* __restrict__ buffer_);
+        };
 
-    template <typename T, typename J>
-    struct history
-    {
-        static rocsparse_status run(rocsparse_handle     handle_,
-                                    rocsparse_itilu0_alg alg_,
-                                    J*                   niter_,
-                                    T*                   data_,
-                                    size_t               buffer_size_,
-                                    void*                buffer_);
+        template <typename T, typename J>
+        struct history
+        {
+            static rocsparse_status run(rocsparse_handle     handle_,
+                                        rocsparse_itilu0_alg alg_,
+                                        J*                   niter_,
+                                        T*                   data_,
+                                        size_t               buffer_size_,
+                                        void*                buffer_);
+        };
     };
-};
+}

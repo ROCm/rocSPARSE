@@ -22,70 +22,69 @@
  *
  * ************************************************************************ */
 #pragma once
-#ifndef ROCSPARSE_CSRITILU0X_PREPROCESS_HPP
-#define ROCSPARSE_CSRITILU0X_PREPROCESS_HPP
 
 #include "control.h"
 #include "utility.h"
 
-template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0x_preprocess_template(rocsparse_handle     handle_,
-                                                          rocsparse_itilu0_alg alg_,
-                                                          J                    options_,
-                                                          J                    nsweeps_,
-                                                          J                    m_,
-                                                          I                    nnz_,
-                                                          const I* __restrict__ ptr_begin_,
-                                                          const I* __restrict__ ptr_end_,
-                                                          const J* __restrict__ ind_,
-                                                          rocsparse_index_base base_,
-                                                          rocsparse_diag_type  ldiag_type_,
-                                                          rocsparse_direction  ldir_,
-                                                          I                    lnnz_,
-                                                          const I* __restrict__ lptr_begin_,
-                                                          const I* __restrict__ lptr_end_,
-                                                          const J* __restrict__ lind_,
-                                                          rocsparse_index_base lbase_,
-                                                          rocsparse_diag_type  udiag_type_,
-                                                          rocsparse_direction  udir_,
-                                                          I                    unnz_,
-                                                          const I* __restrict__ uptr_begin_,
-                                                          const I* __restrict__ uptr_end_,
-                                                          const J* __restrict__ uind_,
+namespace rocsparse
+{
+    template <typename I, typename J>
+    rocsparse_status csritilu0x_preprocess_template(rocsparse_handle     handle_,
+                                                    rocsparse_itilu0_alg alg_,
+                                                    J                    options_,
+                                                    J                    nsweeps_,
+                                                    J                    m_,
+                                                    I                    nnz_,
+                                                    const I* __restrict__ ptr_begin_,
+                                                    const I* __restrict__ ptr_end_,
+                                                    const J* __restrict__ ind_,
+                                                    rocsparse_index_base base_,
+                                                    rocsparse_diag_type  ldiag_type_,
+                                                    rocsparse_direction  ldir_,
+                                                    I                    lnnz_,
+                                                    const I* __restrict__ lptr_begin_,
+                                                    const I* __restrict__ lptr_end_,
+                                                    const J* __restrict__ lind_,
+                                                    rocsparse_index_base lbase_,
+                                                    rocsparse_diag_type  udiag_type_,
+                                                    rocsparse_direction  udir_,
+                                                    I                    unnz_,
+                                                    const I* __restrict__ uptr_begin_,
+                                                    const I* __restrict__ uptr_end_,
+                                                    const J* __restrict__ uind_,
 
-                                                          rocsparse_index_base ubase_,
-                                                          rocsparse_datatype   datatype_,
-                                                          size_t               buffer_size_,
-                                                          void* __restrict__ buffer_);
+                                                    rocsparse_index_base ubase_,
+                                                    rocsparse_datatype   datatype_,
+                                                    size_t               buffer_size_,
+                                                    void* __restrict__ buffer_);
 
-template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0x_preprocess_impl(rocsparse_handle     handle_,
-                                                      rocsparse_itilu0_alg alg_,
-                                                      J                    options_,
-                                                      J                    nsweeps_,
-                                                      J                    m_,
-                                                      I                    nnz_,
-                                                      const I* __restrict__ ptr_begin_,
-                                                      const I* __restrict__ ptr_end_,
-                                                      const J* __restrict__ ind_,
-                                                      rocsparse_index_base base_,
-                                                      rocsparse_diag_type  ldiag_type_,
-                                                      rocsparse_direction  ldir_,
-                                                      I                    lnnz_,
-                                                      const I* __restrict__ lptr_begin_,
-                                                      const I* __restrict__ lptr_end_,
-                                                      const J* __restrict__ lind_,
-                                                      rocsparse_index_base lbase_,
-                                                      rocsparse_diag_type  udiag_type_,
-                                                      rocsparse_direction  udir_,
-                                                      I                    unnz_,
-                                                      const I* __restrict__ uptr_begin_,
-                                                      const I* __restrict__ uptr_end_,
-                                                      const J* __restrict__ uind_,
+    template <typename I, typename J>
+    rocsparse_status csritilu0x_preprocess_impl(rocsparse_handle     handle_,
+                                                rocsparse_itilu0_alg alg_,
+                                                J                    options_,
+                                                J                    nsweeps_,
+                                                J                    m_,
+                                                I                    nnz_,
+                                                const I* __restrict__ ptr_begin_,
+                                                const I* __restrict__ ptr_end_,
+                                                const J* __restrict__ ind_,
+                                                rocsparse_index_base base_,
+                                                rocsparse_diag_type  ldiag_type_,
+                                                rocsparse_direction  ldir_,
+                                                I                    lnnz_,
+                                                const I* __restrict__ lptr_begin_,
+                                                const I* __restrict__ lptr_end_,
+                                                const J* __restrict__ lind_,
+                                                rocsparse_index_base lbase_,
+                                                rocsparse_diag_type  udiag_type_,
+                                                rocsparse_direction  udir_,
+                                                I                    unnz_,
+                                                const I* __restrict__ uptr_begin_,
+                                                const I* __restrict__ uptr_end_,
+                                                const J* __restrict__ uind_,
 
-                                                      rocsparse_index_base ubase_,
-                                                      rocsparse_datatype   datatype_,
-                                                      size_t               buffer_size_,
-                                                      void* __restrict__ buffer_);
-
-#endif // ROCSPARSE_CSRITILU0X_PREPROCESS_HPP
+                                                rocsparse_index_base ubase_,
+                                                rocsparse_datatype   datatype_,
+                                                size_t               buffer_size_,
+                                                void* __restrict__ buffer_);
+}
