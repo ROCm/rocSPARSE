@@ -99,7 +99,7 @@ namespace rocsparse
                                               rocsparse_index_base base)
     {
         // Logging
-        log_trace(
+        rocsparse::log_trace(
             handle, "rocsparse_inverse_permutation", n, (const void*&)p, (const void*&)q, base);
 
         ROCSPARSE_CHECKARG_HANDLE(0, handle);

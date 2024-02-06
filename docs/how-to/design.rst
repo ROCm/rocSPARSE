@@ -178,14 +178,14 @@ The following is a sample for ``rocsparse_<subroutine>.cpp``, ``rocsparse_<subro
        if(handle->pointer_mode == rocsparse_pointer_mode_host)
        {
            log_trace(handle,
-                     replaceX<T>("rocsparse_Xsubroutine"),
+                     rocsparse::replaceX<T>("rocsparse_Xsubroutine"),
                      m,
                      *alpha,
                      (const void*&)val);
 
            log_bench(handle,
                      "./rocsparse-bench -f subroutine -r",
-                     replaceX<T>("X"),
+                     rocsparse::replaceX<T>("X"),
                      "-m",
                      m,
                      "--alpha",
@@ -194,7 +194,7 @@ The following is a sample for ``rocsparse_<subroutine>.cpp``, ``rocsparse_<subro
        else
        {
            log_trace(handle,
-                     replaceX<T>("rocsparse_Xsubroutine"),
+                     rocsparse::replaceX<T>("rocsparse_Xsubroutine"),
                      m,
                      (const void*&)alpha,
                      (const void*&)val);

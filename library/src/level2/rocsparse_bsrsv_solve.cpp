@@ -216,7 +216,7 @@ namespace rocsparse
                             rocsparse_diag_type  diag_type,
                             rocsparse_direction  dir)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         rocsparse::bsrsv_lower_shared_device<BLOCKSIZE, WFSIZE, BSRDIM, SLEEP>(mb,
                                                                                alpha,
                                                                                bsr_row_ptr,
@@ -255,7 +255,7 @@ namespace rocsparse
                             rocsparse_diag_type  diag_type,
                             rocsparse_direction  dir)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         rocsparse::bsrsv_upper_shared_device<BLOCKSIZE, WFSIZE, BSRDIM, SLEEP>(mb,
                                                                                alpha,
                                                                                bsr_row_ptr,
@@ -289,7 +289,7 @@ namespace rocsparse
                              rocsparse_diag_type  diag_type,
                              rocsparse_direction  dir)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         rocsparse::bsrsv_lower_general_device<BLOCKSIZE, WFSIZE, SLEEP>(mb,
                                                                         alpha,
                                                                         bsr_row_ptr,
@@ -323,7 +323,7 @@ namespace rocsparse
                              rocsparse_diag_type  diag_type,
                              rocsparse_direction  dir)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         rocsparse::bsrsv_upper_general_device<BLOCKSIZE, WFSIZE, SLEEP>(mb,
                                                                         alpha,
                                                                         bsr_row_ptr,
@@ -390,9 +390,9 @@ namespace rocsparse
         if(descr->diag_type == rocsparse_diag_type_unit)
         {
             RETURN_IF_HIP_ERROR(
-                rocsparse_assign_async(static_cast<rocsparse_int*>(info->zero_pivot),
-                                       std::numeric_limits<rocsparse_int>::max(),
-                                       stream));
+                rocsparse::assign_async(static_cast<rocsparse_int*>(info->zero_pivot),
+                                        std::numeric_limits<rocsparse_int>::max(),
+                                        stream));
         }
 
         // Pointers to differentiate between transpose mode
@@ -491,23 +491,23 @@ rocsparse_status rocsparse::bsrsv_solve_template(rocsparse_handle          handl
     ROCSPARSE_CHECKARG_POINTER(11, info);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xbsrsv"),
-              dir,
-              trans,
-              mb,
-              nnzb,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
-              (const void*&)descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              block_dim,
-              (const void*&)info,
-              (const void*&)x,
-              (const void*&)y,
-              policy,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xbsrsv"),
+                         dir,
+                         trans,
+                         mb,
+                         nnzb,
+                         LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+                         (const void*&)descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         block_dim,
+                         (const void*&)info,
+                         (const void*&)x,
+                         (const void*&)y,
+                         policy,
+                         (const void*&)temp_buffer);
 
     // Check direction
     ROCSPARSE_CHECKARG_ENUM(1, dir);

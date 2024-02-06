@@ -219,17 +219,17 @@ namespace rocsparse
     {
 
         // Logging
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrilu0_analysis"),
-                  m,
-                  nnz,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)info,
-                  solve,
-                  analysis);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xcsrilu0_analysis"),
+                             m,
+                             nnz,
+                             (const void*&)descr,
+                             (const void*&)csr_val,
+                             (const void*&)csr_row_ptr,
+                             (const void*&)csr_col_ind,
+                             (const void*&)info,
+                             solve,
+                             analysis);
 
         const rocsparse_status status = rocsparse::csrilu0_analysis_checkarg(handle,
                                                                              m,

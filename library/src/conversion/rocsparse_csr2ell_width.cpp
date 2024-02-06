@@ -189,7 +189,7 @@ namespace rocsparse
     template <typename... P>
     rocsparse_status csr2ell_width_impl(P&&... p)
     {
-        log_trace("rocsparse_csr2ell_width", p...);
+        rocsparse::log_trace("rocsparse_csr2ell_width", p...);
         const rocsparse_status status = rocsparse::csr2ell_width_checkarg(p...);
         if(status != rocsparse_status_continue)
         {

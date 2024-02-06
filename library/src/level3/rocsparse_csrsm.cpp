@@ -38,7 +38,8 @@ extern "C" rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle   handle
                                                        rocsparse_int*     position)
 try
 {
-    log_trace(handle, "rocsparse_csrsm_zero_pivot", (const void*&)info, (const void*&)position);
+    rocsparse::log_trace(
+        handle, "rocsparse_csrsm_zero_pivot", (const void*&)info, (const void*&)position);
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(1, info);
     ROCSPARSE_CHECKARG_POINTER(2, position);
@@ -117,7 +118,7 @@ catch(...)
 extern "C" rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsparse_mat_info info)
 try
 {
-    log_trace(handle, "rocsparse_csrsm_clear", (const void*&)info);
+    rocsparse::log_trace(handle, "rocsparse_csrsm_clear", (const void*&)info);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(1, info);

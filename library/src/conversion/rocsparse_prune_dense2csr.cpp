@@ -42,7 +42,7 @@ namespace rocsparse
                                     U       threshold_device_host,
                                     rocsparse_int* __restrict__ nnz_per_rows)
     {
-        auto threshold = load_scalar_device_host(threshold_device_host);
+        auto threshold = rocsparse::load_scalar_device_host(threshold_device_host);
         rocsparse::prune_dense2csr_nnz_device<DIM_X, DIM_Y>(m, n, A, lda, threshold, nnz_per_rows);
     }
 
@@ -58,7 +58,7 @@ namespace rocsparse
                                 const rocsparse_int* __restrict__ csr_row_ptr,
                                 rocsparse_int* __restrict__ csr_col_ind)
     {
-        auto threshold = load_scalar_device_host(threshold_device_host);
+        auto threshold = rocsparse::load_scalar_device_host(threshold_device_host);
         rocsparse::prune_dense2csr_device<NUMROWS_PER_BLOCK, WF_SIZE>(
             base, m, n, A, lda, threshold, csr_val, csr_row_ptr, csr_col_ind);
     }
@@ -80,18 +80,18 @@ rocsparse_status
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xprune_dense2csr_buffer_size"),
-              m,
-              n,
-              (const void*&)A,
-              lda,
-              (const void*&)threshold,
-              descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xprune_dense2csr_buffer_size"),
+                         m,
+                         n,
+                         (const void*&)A,
+                         lda,
+                         (const void*&)threshold,
+                         descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -126,17 +126,17 @@ rocsparse_status rocsparse::prune_dense2csr_nnz_template(rocsparse_handle       
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xprune_dense2csr_nnz"),
-              m,
-              n,
-              (const void*&)A,
-              lda,
-              (const void*&)threshold,
-              descr,
-              (const void*&)csr_row_ptr,
-              (const void*&)nnz_total_dev_host_ptr,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xprune_dense2csr_nnz"),
+                         m,
+                         n,
+                         (const void*&)A,
+                         lda,
+                         (const void*&)threshold,
+                         descr,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)nnz_total_dev_host_ptr,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -315,18 +315,18 @@ rocsparse_status rocsparse::prune_dense2csr_template(rocsparse_handle          h
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xprune_dense2csr"),
-              m,
-              n,
-              (const void*&)A,
-              lda,
-              (const void*&)threshold,
-              descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xprune_dense2csr"),
+                         m,
+                         n,
+                         (const void*&)A,
+                         lda,
+                         (const void*&)threshold,
+                         descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);

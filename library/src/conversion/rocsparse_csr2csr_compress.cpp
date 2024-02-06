@@ -47,20 +47,20 @@ rocsparse_status rocsparse::csr2csr_compress_template(rocsparse_handle          
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsr2csr_compress"),
-              m,
-              n,
-              descr_A,
-              (const void*&)csr_val_A,
-              (const void*&)csr_row_ptr_A,
-              (const void*&)csr_col_ind_A,
-              nnz_A,
-              (const void*&)nnz_per_row,
-              (const void*&)csr_val_C,
-              (const void*&)csr_row_ptr_C,
-              (const void*&)csr_col_ind_C,
-              tol);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcsr2csr_compress"),
+                         m,
+                         n,
+                         descr_A,
+                         (const void*&)csr_val_A,
+                         (const void*&)csr_row_ptr_A,
+                         (const void*&)csr_col_ind_A,
+                         nnz_A,
+                         (const void*&)nnz_per_row,
+                         (const void*&)csr_val_C,
+                         (const void*&)csr_row_ptr_C,
+                         (const void*&)csr_col_ind_C,
+                         tol);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(3, descr_A);

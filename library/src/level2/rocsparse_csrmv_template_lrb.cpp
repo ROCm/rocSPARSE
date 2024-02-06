@@ -122,7 +122,7 @@ rocsparse_status rocsparse::csrmv_analysis_lrb_template_dispatch(rocsparse_handl
     /*if(true)
     {
         unsigned int startbit = 0;
-        unsigned int endbit   = rocsparse_clz(m);
+        unsigned int endbit   = rocsparse::clz(m);
 
         bool   temp_alloc;
         void*  temp_storage_ptr   = nullptr;
@@ -215,8 +215,8 @@ rocsparse_status rocsparse::csrmv_analysis_lrb_template_dispatch(rocsparse_handl
     info->csrmv_info->csr_row_ptr = csr_row_ptr;
     info->csrmv_info->csr_col_ind = csr_col_ind;
 
-    info->csrmv_info->index_type_I = rocsparse_get_indextype<I>();
-    info->csrmv_info->index_type_J = rocsparse_get_indextype<J>();
+    info->csrmv_info->index_type_I = rocsparse::get_indextype<I>();
+    info->csrmv_info->index_type_J = rocsparse::get_indextype<J>();
 
     return rocsparse_status_success;
 }
@@ -239,8 +239,8 @@ namespace rocsparse
                                       Y* __restrict__ y,
                                       rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha != 0 || beta != 1)
         {
             rocsparse::csrmvn_lrb_short_rows_device<WG_SIZE>(conj,
@@ -275,8 +275,8 @@ namespace rocsparse
                                         Y* __restrict__ y,
                                         rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha != 0 || beta != 1)
         {
             rocsparse::csrmvn_lrb_short_rows_2_device<WG_SIZE, CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS>(
@@ -320,8 +320,8 @@ namespace rocsparse
                                                    Y* __restrict__ y,
                                                    rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha != 0 || beta != 1)
         {
             rocsparse::csrmvn_lrb_medium_rows_warp_reduce_device<BLOCKSIZE, WF_SIZE>(conj,
@@ -363,8 +363,8 @@ namespace rocsparse
                                        Y* __restrict__ y,
                                        rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha != 0 || beta != 1)
         {
             rocsparse::csrmvn_lrb_medium_rows_device<BLOCKSIZE>(conj,
@@ -400,8 +400,8 @@ namespace rocsparse
                                      Y* __restrict__ y,
                                      rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha != 0 || beta != 1)
         {
             rocsparse::csrmvn_lrb_long_rows_device<WG_SIZE, BLOCK_MULTIPLIER>(conj,

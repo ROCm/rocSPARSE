@@ -39,7 +39,8 @@ try
 {
 
     // Logging
-    log_trace(handle, "rocsparse_bsrsm_zero_pivot", (const void*&)info, (const void*&)position);
+    rocsparse::log_trace(
+        handle, "rocsparse_bsrsm_zero_pivot", (const void*&)info, (const void*&)position);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(1, info);
@@ -120,7 +121,7 @@ extern "C" rocsparse_status rocsparse_bsrsm_clear(rocsparse_handle handle, rocsp
 try
 {
 
-    log_trace(handle, "rocsparse_bsrsm_clear", (const void*&)info);
+    rocsparse::log_trace(handle, "rocsparse_bsrsm_clear", (const void*&)info);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(1, info);

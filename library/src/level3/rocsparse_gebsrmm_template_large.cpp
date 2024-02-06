@@ -46,8 +46,8 @@ void gebsrmm_large_blockdim_kernel(rocsparse_direction direction,
                                    int64_t              ldc,
                                    rocsparse_index_base idx_base)
 {
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    auto beta  = load_scalar_device_host(beta_device_host);
+    auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+    auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
     if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
     {

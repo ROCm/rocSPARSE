@@ -125,19 +125,19 @@ _rocsparse_handle::_rocsparse_handle()
     // Open log file
     if(layer_mode & rocsparse_layer_mode_log_trace)
     {
-        open_log_stream(&log_trace_os, &log_trace_ofs, "ROCSPARSE_LOG_TRACE_PATH");
+        rocsparse::open_log_stream(&log_trace_os, &log_trace_ofs, "ROCSPARSE_LOG_TRACE_PATH");
     }
 
     // Open log_bench file
     if(layer_mode & rocsparse_layer_mode_log_bench)
     {
-        open_log_stream(&log_bench_os, &log_bench_ofs, "ROCSPARSE_LOG_BENCH_PATH");
+        rocsparse::open_log_stream(&log_bench_os, &log_bench_ofs, "ROCSPARSE_LOG_BENCH_PATH");
     }
 
     // Open log_debug file
     if(layer_mode & rocsparse_layer_mode_log_debug)
     {
-        open_log_stream(&log_debug_os, &log_debug_ofs, "ROCSPARSE_LOG_DEBUG_PATH");
+        rocsparse::open_log_stream(&log_debug_os, &log_debug_ofs, "ROCSPARSE_LOG_DEBUG_PATH");
     }
 }
 

@@ -32,7 +32,7 @@
 using namespace rocsparse;
 
 template <>
-inline bool rocsparse_enum_utils::is_invalid(rocsparse_csrmv_alg value_)
+inline bool rocsparse::enum_utils::is_invalid(rocsparse_csrmv_alg value_)
 {
     switch(value_)
     {
@@ -361,17 +361,17 @@ rocsparse_status rocsparse_csrmv_analysis_impl(rocsparse_handle          handle,
     ROCSPARSE_CHECKARG_POINTER(9, info);
 
     // Logging
-    log_trace(handle,
-              "rocsparse_csrmv_analysis",
-              trans,
-              m,
-              n,
-              nnz,
-              (const void*&)descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)info);
+    rocsparse::log_trace(handle,
+                         "rocsparse_csrmv_analysis",
+                         trans,
+                         m,
+                         n,
+                         nnz,
+                         (const void*&)descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)info);
 
     ROCSPARSE_CHECKARG_ENUM(1, trans);
 
@@ -451,20 +451,20 @@ rocsparse_status rocsparse_csrmv_impl(rocsparse_handle          handle,
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsrmv"),
-              trans,
-              m,
-              n,
-              nnz,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
-              (const void*&)descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)x,
-              LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
-              (const void*&)y);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcsrmv"),
+                         trans,
+                         m,
+                         n,
+                         nnz,
+                         LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+                         (const void*&)descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)x,
+                         LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+                         (const void*&)y);
 
     ROCSPARSE_CHECKARG_ENUM(1, trans);
     ROCSPARSE_CHECKARG_SIZE(2, m);
@@ -765,7 +765,7 @@ try
     ROCSPARSE_CHECKARG_POINTER(1, info);
 
     // Logging
-    log_trace(handle, "rocsparse_csrmv_clear", (const void*&)info);
+    rocsparse::log_trace(handle, "rocsparse_csrmv_clear", (const void*&)info);
 
     // Destroy csrmv info struct
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));

@@ -140,22 +140,22 @@ rocsparse_status rocsparse::csritilu0x_buffer_size_impl(rocsparse_handle     han
     }
 
     // Logging
-    log_trace(handle_,
-              "rocsparse_csritilu0x_buffer_size",
-              options_,
-              nsweeps_,
-              m_,
-              nnz_,
-              (const void*&)ptr_begin_,
-              (const void*&)ptr_end_,
-              (const void*&)ind_,
-              base_,
-              ldiag_type_,
-              ldir_,
-              udiag_type_,
-              udir_,
-              datatype_,
-              (const void*&)buffer_size_);
+    rocsparse::log_trace(handle_,
+                         "rocsparse_csritilu0x_buffer_size",
+                         options_,
+                         nsweeps_,
+                         m_,
+                         nnz_,
+                         (const void*&)ptr_begin_,
+                         (const void*&)ptr_end_,
+                         (const void*&)ind_,
+                         base_,
+                         ldiag_type_,
+                         ldir_,
+                         udiag_type_,
+                         udir_,
+                         datatype_,
+                         (const void*&)buffer_size_);
 
     // Check sizes
     if(m_ < 0 || nnz_ < 0)
@@ -174,24 +174,24 @@ rocsparse_status rocsparse::csritilu0x_buffer_size_impl(rocsparse_handle     han
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
 
-    if(rocsparse_enum_utils::is_invalid(base_))
+    if(rocsparse::enum_utils::is_invalid(base_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
-    if(rocsparse_enum_utils::is_invalid(udiag_type_))
+    if(rocsparse::enum_utils::is_invalid(udiag_type_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
-    if(rocsparse_enum_utils::is_invalid(udir_))
+    if(rocsparse::enum_utils::is_invalid(udir_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
-    if(rocsparse_enum_utils::is_invalid(ldiag_type_))
+    if(rocsparse::enum_utils::is_invalid(ldiag_type_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
-    if(rocsparse_enum_utils::is_invalid(ldir_))
+    if(rocsparse::enum_utils::is_invalid(ldir_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }

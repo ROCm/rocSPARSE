@@ -572,7 +572,7 @@ namespace rocsparse
                                        rocsparse_order      order_C,
                                        rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
 
         if(alpha != static_cast<T>(0))
         {
@@ -635,7 +635,7 @@ namespace rocsparse
                                             rocsparse_order      order_C,
                                             rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
 
         if(alpha != static_cast<T>(0))
         {

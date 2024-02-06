@@ -77,7 +77,7 @@ rocsparse_status rocsparse::check_matrix_csr_core(rocsparse_handle       handle,
 
     if(nnz != (end - start))
     {
-        log_debug(handle, "CSR row pointer array does not match nnz.");
+        rocsparse::log_debug(handle, "CSR row pointer array does not match nnz.");
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
@@ -111,7 +111,7 @@ rocsparse_status rocsparse::check_matrix_csr_core(rocsparse_handle       handle,
 
     if(*data_status != rocsparse_data_status_success)
     {
-        log_debug(handle, rocsparse::to_string(*data_status));
+        rocsparse::log_debug(handle, rocsparse::to_string(*data_status));
 
         return rocsparse_status_success;
     }
@@ -126,7 +126,7 @@ rocsparse_status rocsparse::check_matrix_csr_core(rocsparse_handle       handle,
     if(storage == rocsparse_storage_mode_unsorted)
     {
         unsigned int startbit = 0;
-        unsigned int endbit   = rocsparse_clz(n);
+        unsigned int endbit   = rocsparse::clz(n);
         size_t       size;
 
         // offsets buffer
@@ -283,7 +283,7 @@ rocsparse_status rocsparse::check_matrix_csr_core(rocsparse_handle       handle,
 
     if(*data_status != rocsparse_data_status_success)
     {
-        log_debug(handle, rocsparse::to_string(*data_status));
+        rocsparse::log_debug(handle, rocsparse::to_string(*data_status));
     }
 
     return rocsparse_status_success;
@@ -343,9 +343,10 @@ rocsparse_status rocsparse::check_matrix_csr_checkarg(rocsparse_handle       han
     {
         if(m != n)
         {
-            log_debug(handle,
-                      ("Matrix was specified to be "
-                       + std::string(rocsparse::to_string(matrix_type)) + " but m != n"));
+            rocsparse::log_debug(handle,
+                                 ("Matrix was specified to be "
+                                  + std::string(rocsparse::to_string(matrix_type))
+                                  + " but m != n"));
         }
     }
     ROCSPARSE_CHECKARG(2,

@@ -64,7 +64,7 @@ rocsparse_status rocsparse::check_matrix_gebsr_buffer_size_core(rocsparse_handle
                                                                 bsr_row_ptr,
                                                                 bsr_row_ptr + 1,
                                                                 0,
-                                                                rocsparse_clz(nb),
+                                                                rocsparse::clz(nb),
                                                                 handle->stream));
         *buffer_size += ((rocprim_buffer_size - 1) / 256 + 1) * 256;
 

@@ -44,14 +44,14 @@ rocsparse_status rocsparse::coosort_buffer_size_template(rocsparse_handle handle
 {
 
     // Logging
-    log_trace(handle,
-              "rocsparse_coosort_buffer_size",
-              m,
-              n,
-              nnz,
-              (const void*&)coo_row_ind,
-              (const void*&)coo_col_ind,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         "rocsparse_coosort_buffer_size",
+                         m,
+                         n,
+                         nnz,
+                         (const void*&)coo_row_ind,
+                         (const void*&)coo_col_ind,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_SIZE(1, m);
@@ -191,15 +191,15 @@ rocsparse_status rocsparse::coosort_by_row_template(rocsparse_handle handle,
     }
 
     // Logging
-    log_trace(handle,
-              "rocsparse_coosort_by_row",
-              m,
-              n,
-              nnz,
-              (const void*&)coo_row_ind,
-              (const void*&)coo_col_ind,
-              (const void*&)perm,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_coosort_by_row",
+                         m,
+                         n,
+                         nnz,
+                         (const void*&)coo_row_ind,
+                         (const void*&)coo_col_ind,
+                         (const void*&)perm,
+                         (const void*&)temp_buffer);
 
     // Check sizes
     if(m < 0 || n < 0 || nnz < 0)
@@ -223,7 +223,7 @@ rocsparse_status rocsparse::coosort_by_row_template(rocsparse_handle handle,
     hipStream_t stream = handle->stream;
 
     unsigned int startbit = 0;
-    unsigned int endbit   = rocsparse_clz(m);
+    unsigned int endbit   = rocsparse::clz(m);
 
     // Temporary buffer entry points
     char* ptr = reinterpret_cast<char*>(temp_buffer);
@@ -316,7 +316,7 @@ rocsparse_status rocsparse::coosort_by_row_template(rocsparse_handle handle,
 #undef COOSORT_DIM
 
         // Sort columns per row
-        endbit = rocsparse_clz(n);
+        endbit = rocsparse::clz(n);
 
         rocprim::double_buffer<J> keys2(work3, coo_col_ind);
         rocprim::double_buffer<J> vals2(alt_map, perm);
@@ -446,7 +446,7 @@ rocsparse_status rocsparse::coosort_by_row_template(rocsparse_handle handle,
             tmp_rocprim, size, work4, work4, 0, nsegm + 1, rocprim::plus<J>(), stream));
 
         // Sort columns per row
-        endbit = rocsparse_clz(n);
+        endbit = rocsparse::clz(n);
 
         J avg_row_nnz = nnz / nsegm;
 
@@ -504,15 +504,15 @@ try
 {
 
     // Logging
-    log_trace(handle,
-              "rocsparse_coosort_by_row",
-              m,
-              n,
-              nnz,
-              (const void*&)coo_row_ind,
-              (const void*&)coo_col_ind,
-              (const void*&)perm,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_coosort_by_row",
+                         m,
+                         n,
+                         nnz,
+                         (const void*&)coo_row_ind,
+                         (const void*&)coo_col_ind,
+                         (const void*&)perm,
+                         (const void*&)temp_buffer);
 
     const rocsparse_status status = rocsparse::coosort_by_row_checkarg(
         handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, temp_buffer);
@@ -610,15 +610,15 @@ try
 {
 
     // Logging
-    log_trace(handle,
-              "rocsparse_coosort_by_column",
-              m,
-              n,
-              nnz,
-              (const void*&)coo_row_ind,
-              (const void*&)coo_col_ind,
-              (const void*&)perm,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_coosort_by_column",
+                         m,
+                         n,
+                         nnz,
+                         (const void*&)coo_row_ind,
+                         (const void*&)coo_col_ind,
+                         (const void*&)perm,
+                         (const void*&)temp_buffer);
 
     const rocsparse_status status = rocsparse::coosort_by_column_checkarg(
         handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, temp_buffer);

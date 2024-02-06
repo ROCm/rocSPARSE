@@ -55,7 +55,7 @@ rocsparse_status rocsparse::gcoo_aos2csr(rocsparse_handle     handle,
                                  1,
                                  source_ind_type,
                                  reinterpret_cast<const char*>(source_ind_data)
-                                     + rocsparse_indextype_sizeof(source_ind_type),
+                                     + rocsparse::indextype_sizeof(source_ind_type),
                                  2));
 
     RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(
@@ -89,7 +89,7 @@ rocsparse_status rocsparse::gcoo_aos2csr_buffer_size(rocsparse_handle     handle
                                                      size_t*              buffer_size_)
 {
     buffer_size_[0]
-        = ((rocsparse_indextype_sizeof(target_row_type) * (nnz + 1) - 1) / 256 + 1) * 256;
+        = ((rocsparse::indextype_sizeof(target_row_type) * (nnz + 1) - 1) / 256 + 1) * 256;
     return rocsparse_status_success;
 }
 

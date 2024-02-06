@@ -124,18 +124,18 @@ rocsparse_status rocsparse::csritilu0_buffer_size_impl(rocsparse_handle     hand
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              "rocsparse_csritilu0_buffer_size",
-              alg,
-              options,
-              nmaxiter,
-              m,
-              nnz,
-              (const void*&)ptr,
-              (const void*&)ind,
-              base,
-              datatype,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         "rocsparse_csritilu0_buffer_size",
+                         alg,
+                         options,
+                         nmaxiter,
+                         m,
+                         nnz,
+                         (const void*&)ptr,
+                         (const void*&)ind,
+                         base,
+                         datatype,
+                         (const void*&)buffer_size);
     ROCSPARSE_CHECKARG_ENUM(1, alg);
     ROCSPARSE_CHECKARG(2, options, (options < 0), rocsparse_status_invalid_value);
     ROCSPARSE_CHECKARG(3, nmaxiter, (nmaxiter < 0), rocsparse_status_invalid_value);

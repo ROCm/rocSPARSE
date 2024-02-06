@@ -38,8 +38,8 @@ namespace rocsparse
                      U                    s_device_host,
                      rocsparse_index_base idx_base)
     {
-        auto c = load_scalar_device_host(c_device_host);
-        auto s = load_scalar_device_host(s_device_host);
+        auto c = rocsparse::load_scalar_device_host(c_device_host);
+        auto s = rocsparse::load_scalar_device_host(s_device_host);
         if(c == static_cast<T>(1) && s == static_cast<T>(0))
         {
             return;
@@ -62,15 +62,15 @@ rocsparse_status rocsparse::roti_template(rocsparse_handle     handle, //0
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging // TODO bench logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xroti"),
-              nnz,
-              (const void*&)x_val,
-              (const void*&)x_ind,
-              (const void*&)y,
-              LOG_TRACE_SCALAR_VALUE(handle, c),
-              LOG_TRACE_SCALAR_VALUE(handle, s),
-              idx_base);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xroti"),
+                         nnz,
+                         (const void*&)x_val,
+                         (const void*&)x_ind,
+                         (const void*&)y,
+                         LOG_TRACE_SCALAR_VALUE(handle, c),
+                         LOG_TRACE_SCALAR_VALUE(handle, s),
+                         idx_base);
 
     // Check index base
     ROCSPARSE_CHECKARG_SIZE(1, nnz);

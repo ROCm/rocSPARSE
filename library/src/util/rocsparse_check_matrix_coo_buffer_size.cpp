@@ -107,9 +107,10 @@ rocsparse_status
     {
         if(m != n)
         {
-            log_debug(handle,
-                      ("Matrix was specified to be "
-                       + std::string(rocsparse::to_string(matrix_type)) + " but m != n"));
+            rocsparse::log_debug(handle,
+                                 ("Matrix was specified to be "
+                                  + std::string(rocsparse::to_string(matrix_type))
+                                  + " but m != n"));
         }
     }
     ROCSPARSE_CHECKARG(2,

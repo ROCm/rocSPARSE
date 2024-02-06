@@ -390,20 +390,20 @@ rocsparse_status rocsparse::gebsr2csr_template(rocsparse_handle          handle,
 {
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgebsr2csr"),
-              mb,
-              nb,
-              bsr_descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              row_block_dim,
-              col_block_dim,
-              csr_descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xgebsr2csr"),
+                         mb,
+                         nb,
+                         bsr_descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         row_block_dim,
+                         col_block_dim,
+                         csr_descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(1, dir);
@@ -461,8 +461,8 @@ rocsparse_status rocsparse::gebsr2csr_template(rocsparse_handle          handle,
     if(bsr_val == nullptr || bsr_col_ind == nullptr || csr_val == nullptr || csr_col_ind == nullptr)
     {
         int64_t nnzb;
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_calculate_nnz(
-            mb, rocsparse_get_indextype<rocsparse_int>(), bsr_row_ptr, &nnzb, handle->stream));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::calculate_nnz(
+            mb, rocsparse::get_indextype<rocsparse_int>(), bsr_row_ptr, &nnzb, handle->stream));
         ROCSPARSE_CHECKARG_ARRAY(5, nnzb * row_block_dim * col_block_dim, bsr_val);
         ROCSPARSE_CHECKARG_ARRAY(7, nnzb, bsr_col_ind);
         ROCSPARSE_CHECKARG_ARRAY(11, nnzb, csr_val);

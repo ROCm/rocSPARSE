@@ -43,17 +43,17 @@ rocsparse_status
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgtsv_interleaved_batch_buffer_size"),
-              alg,
-              m,
-              (const void*&)dl,
-              (const void*&)d,
-              (const void*&)du,
-              (const void*&)x,
-              batch_count,
-              batch_stride,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xgtsv_interleaved_batch_buffer_size"),
+                         alg,
+                         m,
+                         (const void*&)dl,
+                         (const void*&)d,
+                         (const void*&)du,
+                         (const void*&)x,
+                         batch_count,
+                         batch_stride,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_ENUM(1, alg);
     ROCSPARSE_CHECKARG_SIZE(2, m);
@@ -229,17 +229,17 @@ rocsparse_status rocsparse::gtsv_interleaved_batch_template(rocsparse_handle    
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgtsv_interleaved_batch"),
-              alg,
-              m,
-              (const void*&)dl,
-              (const void*&)d,
-              (const void*&)du,
-              (const void*&)x,
-              batch_count,
-              batch_stride,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xgtsv_interleaved_batch"),
+                         alg,
+                         m,
+                         (const void*&)dl,
+                         (const void*&)d,
+                         (const void*&)du,
+                         (const void*&)x,
+                         batch_count,
+                         batch_stride,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_ENUM(1, alg);
     ROCSPARSE_CHECKARG_SIZE(2, m);

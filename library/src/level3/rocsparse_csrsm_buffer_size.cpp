@@ -99,7 +99,7 @@ rocsparse_status rocsparse::csrsm_buffer_size_core(rocsparse_handle          han
     rocprim::double_buffer<J>   dummy3(ptr3, ptr3);
 
     RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
-        nullptr, rocprim_size, dummy1, dummy3, m, 0, rocsparse_clz(m), stream));
+        nullptr, rocprim_size, dummy1, dummy3, m, 0, rocsparse::clz(m), stream));
 
     // rocprim buffer
     *buffer_size += rocprim_size;
@@ -118,7 +118,7 @@ rocsparse_status rocsparse::csrsm_buffer_size_core(rocsparse_handle          han
 
         // Determine rocprim buffer size
         RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
-            nullptr, transpose_size, dummy3, dummy2, nnz, 0, rocsparse_clz(m), stream));
+            nullptr, transpose_size, dummy3, dummy2, nnz, 0, rocsparse::clz(m), stream));
 
         // rocPRIM does not support in-place sorting, so we need an additional buffer
         transpose_size += ((sizeof(J) * nnz - 1) / 256 + 1) * 256;
@@ -262,24 +262,24 @@ namespace rocsparse
                                                    size_t*                   buffer_size)
     {
 
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrsm_buffer_size"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  nrhs,
-                  nnz,
-                  LOG_TRACE_SCALAR_VALUE(handle, alpha),
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)B,
-                  ldb,
-                  order_B,
-                  (const void*&)info,
-                  policy,
-                  (const void*&)buffer_size);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xcsrsm_buffer_size"),
+                             trans_A,
+                             trans_B,
+                             m,
+                             nrhs,
+                             nnz,
+                             LOG_TRACE_SCALAR_VALUE(handle, alpha),
+                             (const void*&)descr,
+                             (const void*&)csr_val,
+                             (const void*&)csr_row_ptr,
+                             (const void*&)csr_col_ind,
+                             (const void*&)B,
+                             ldb,
+                             order_B,
+                             (const void*&)info,
+                             policy,
+                             (const void*&)buffer_size);
 
         const rocsparse_status status = rocsparse::csrsm_buffer_size_checkarg(handle,
                                                                               trans_A,

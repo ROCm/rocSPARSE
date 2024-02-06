@@ -180,13 +180,13 @@ rocsparse_status rocsparse::csr2coo_impl(rocsparse_handle     handle,
 {
 
     // Logging TODO bench logging
-    log_trace(handle,
-              "rocsparse_csr2coo",
-              (const void*&)csr_row_ptr,
-              nnz,
-              m,
-              (const void*&)coo_row_ind,
-              idx_base);
+    rocsparse::log_trace(handle,
+                         "rocsparse_csr2coo",
+                         (const void*&)csr_row_ptr,
+                         nnz,
+                         m,
+                         (const void*&)coo_row_ind,
+                         idx_base);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(5, idx_base);

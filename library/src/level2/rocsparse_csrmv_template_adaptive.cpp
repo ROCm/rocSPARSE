@@ -402,8 +402,8 @@ rocsparse_status
     info->csrmv_info->csr_row_ptr = csr_row_ptr;
     info->csrmv_info->csr_col_ind = csr_col_ind;
 
-    info->csrmv_info->index_type_I = rocsparse_get_indextype<I>();
-    info->csrmv_info->index_type_J = rocsparse_get_indextype<J>();
+    info->csrmv_info->index_type_I = rocsparse::get_indextype<I>();
+    info->csrmv_info->index_type_J = rocsparse::get_indextype<J>();
 
     return rocsparse_status_success;
 }
@@ -426,8 +426,8 @@ namespace rocsparse
                                 Y* __restrict__ y,
                                 rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha != 0 || beta != 1)
         {
             rocsparse::
@@ -469,8 +469,8 @@ namespace rocsparse
                                      Y* __restrict__ y,
                                      rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha != 0 || beta != 1)
         {
             rocsparse::csrmvn_symm_adaptive_device<BLOCK_SIZE, MAX_ROWS, WG_SIZE>(conj,
@@ -503,8 +503,8 @@ void csrmvn_symm_large_adaptive_kernel(bool conj,
                                        Y* __restrict__ y,
                                        rocsparse_index_base idx_base)
 {
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    auto beta  = load_scalar_device_host(beta_device_host);
+    auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+    auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
     if(alpha != 0 || beta != 1)
     {
         rocsparse::csrmvn_symm_large_adaptive_device<BLOCK_SIZE, WG_SIZE>(

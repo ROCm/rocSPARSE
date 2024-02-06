@@ -85,18 +85,18 @@ rocsparse_status rocsparse::dense2coo_template(rocsparse_handle          handle,
                                                I*                        coo_col_ind) //10
 {
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xdense2coo"),
-              order,
-              m,
-              n,
-              descr,
-              (const void*&)A,
-              ld,
-              (const void*&)nnz_per_rows,
-              (const void*&)coo_val,
-              (const void*&)coo_row_ind,
-              (const void*&)coo_col_ind);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xdense2coo"),
+                         order,
+                         m,
+                         n,
+                         descr,
+                         (const void*&)A,
+                         ld,
+                         (const void*&)nnz_per_rows,
+                         (const void*&)coo_val,
+                         (const void*&)coo_row_ind,
+                         (const void*&)coo_col_ind);
 
     I* row_ptr;
     RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(&row_ptr, sizeof(I) * (m + 1), handle->stream));

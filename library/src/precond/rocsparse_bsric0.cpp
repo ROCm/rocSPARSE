@@ -145,19 +145,19 @@ rocsparse_status rocsparse::bsric0_analysis_template(rocsparse_handle          h
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xbsric0_analysis"),
-              dir,
-              mb,
-              nnzb,
-              (const void*&)descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              block_dim,
-              (const void*&)info,
-              solve,
-              analysis);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xbsric0_analysis"),
+                         dir,
+                         mb,
+                         nnzb,
+                         (const void*&)descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         block_dim,
+                         (const void*&)info,
+                         solve,
+                         analysis);
 
     ROCSPARSE_CHECKARG_ENUM(1, dir);
     ROCSPARSE_CHECKARG_SIZE(2, mb);
@@ -382,18 +382,18 @@ rocsparse_status rocsparse::bsric0_template(rocsparse_handle          handle,
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xbsric0"),
-              mb,
-              nnzb,
-              (const void*&)descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              block_dim,
-              (const void*&)info,
-              policy,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xbsric0"),
+                         mb,
+                         nnzb,
+                         (const void*&)descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         block_dim,
+                         (const void*&)info,
+                         policy,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_ENUM(1, dir);
     ROCSPARSE_CHECKARG_SIZE(2, mb);
@@ -499,18 +499,18 @@ namespace rocsparse
     {
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xbsric0_buffer_size"),
-                  dir,
-                  mb,
-                  nnzb,
-                  (const void*&)descr,
-                  (const void*&)bsr_val,
-                  (const void*&)bsr_row_ptr,
-                  (const void*&)bsr_col_ind,
-                  block_dim,
-                  (const void*&)info,
-                  (const void*&)buffer_size);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xbsric0_buffer_size"),
+                             dir,
+                             mb,
+                             nnzb,
+                             (const void*&)descr,
+                             (const void*&)bsr_val,
+                             (const void*&)bsr_row_ptr,
+                             (const void*&)bsr_col_ind,
+                             block_dim,
+                             (const void*&)info,
+                             (const void*&)buffer_size);
 
         ROCSPARSE_CHECKARG_ENUM(1, dir);
         ROCSPARSE_CHECKARG_SIZE(2, mb);
@@ -673,7 +673,7 @@ try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    log_trace(handle, "rocsparse_bsric0_clear", (const void*&)info);
+    rocsparse::log_trace(handle, "rocsparse_bsric0_clear", (const void*&)info);
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
 
@@ -699,7 +699,8 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle, "rocsparse_bsric0_zero_pivot", (const void*&)info, (const void*&)position);
+    rocsparse::log_trace(
+        handle, "rocsparse_bsric0_zero_pivot", (const void*&)info, (const void*&)position);
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
     ROCSPARSE_CHECKARG_POINTER(2, position);

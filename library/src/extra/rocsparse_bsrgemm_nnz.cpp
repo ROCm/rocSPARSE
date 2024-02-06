@@ -446,7 +446,7 @@ namespace rocsparse
     template <typename... P>
     static inline rocsparse_status bsrgemm_nnzb_impl(P&&... p)
     {
-        log_trace("rocsparse_bsrgemm_nnzb", p...);
+        rocsparse::log_trace("rocsparse_bsrgemm_nnzb", p...);
 
         const rocsparse_status status = rocsparse::bsrgemm_nnzb_checkarg(p...);
         if(status != rocsparse_status_continue)

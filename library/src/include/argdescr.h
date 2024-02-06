@@ -102,7 +102,7 @@ void rocsparse_argdescr_log(const char*      function_file_,
 #define ROCSPARSE_CHECKARG_ENUM(ITH__, ENUM__)                         \
     do                                                                 \
     {                                                                  \
-        if(rocsparse_enum_utils::is_invalid((ENUM__)))                 \
+        if(rocsparse::enum_utils::is_invalid((ENUM__)))                \
         {                                                              \
             if(rocsparse_debug_variables.get_debug_arguments())        \
                 rocsparse_argdescr_log(__FILE__,                       \

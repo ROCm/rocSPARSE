@@ -624,19 +624,19 @@ namespace rocsparse
                                           rocsparse_mat_info        info)
     {
         // Logging
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrcolor"),
-                  m,
-                  nnz,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)fraction_to_color,
-                  (const void*&)ncolors,
-                  (const void*&)coloring,
-                  (const void*&)reordering,
-                  (const void*&)info);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xcsrcolor"),
+                             m,
+                             nnz,
+                             (const void*&)descr,
+                             (const void*&)csr_val,
+                             (const void*&)csr_row_ptr,
+                             (const void*&)csr_col_ind,
+                             (const void*&)fraction_to_color,
+                             (const void*&)ncolors,
+                             (const void*&)coloring,
+                             (const void*&)reordering,
+                             (const void*&)info);
 
         //
         // Check arguments.

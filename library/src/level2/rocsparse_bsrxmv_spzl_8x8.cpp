@@ -118,8 +118,8 @@ namespace rocsparse
                              float* __restrict__ y,
                              rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha != static_cast<float>(0) || beta != static_cast<float>(1))
         {
             rocsparse::sbsrxmvn_8x8_device<BLOCKSIZE, DIR>(mb,
@@ -288,8 +288,8 @@ namespace rocsparse
                             Y* __restrict__ y,
                             rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha != static_cast<T>(0) || beta != static_cast<T>(1))
         {
             rocsparse::bsrxmvn_8x8_device<BLOCKSIZE>(mb,

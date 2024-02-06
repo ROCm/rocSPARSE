@@ -35,7 +35,7 @@ namespace rocsparse
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gemvi_scale_kernel(I m, U scalar_device_host, T* x)
     {
-        auto scalar = load_scalar_device_host(scalar_device_host);
+        auto scalar = rocsparse::load_scalar_device_host(scalar_device_host);
 
         if(scalar != static_cast<T>(1))
         {
@@ -57,8 +57,8 @@ namespace rocsparse
                       T* __restrict__ y,
                       rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
         if(alpha != static_cast<T>(0) || beta != static_cast<T>(1))
         {
@@ -177,21 +177,21 @@ namespace rocsparse
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
         // Logging
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xgemvi"),
-                  trans,
-                  m,
-                  n,
-                  LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
-                  (const void*&)A,
-                  lda,
-                  nnz,
-                  (const void*&)x_val,
-                  (const void*&)x_ind,
-                  LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
-                  (const void*&)y,
-                  idx_base,
-                  (const void*&)temp_buffer);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xgemvi"),
+                             trans,
+                             m,
+                             n,
+                             LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+                             (const void*&)A,
+                             lda,
+                             nnz,
+                             (const void*&)x_val,
+                             (const void*&)x_ind,
+                             LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+                             (const void*&)y,
+                             idx_base,
+                             (const void*&)temp_buffer);
 
         // Check operation mode
         ROCSPARSE_CHECKARG_ENUM(1, trans);

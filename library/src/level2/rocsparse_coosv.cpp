@@ -48,17 +48,17 @@ rocsparse_status rocsparse::coosv_buffer_size_template(rocsparse_handle         
     ROCSPARSE_CHECKARG_POINTER(8, info);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcoosv_buffer_size"),
-              trans,
-              m,
-              nnz,
-              (const void*&)descr,
-              (const void*&)coo_val,
-              (const void*&)coo_row_ind,
-              (const void*&)coo_col_ind,
-              (const void*&)info,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcoosv_buffer_size"),
+                         trans,
+                         m,
+                         nnz,
+                         (const void*&)descr,
+                         (const void*&)coo_val,
+                         (const void*&)coo_row_ind,
+                         (const void*&)coo_col_ind,
+                         (const void*&)info,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_ENUM(1, trans);
 
@@ -161,19 +161,19 @@ rocsparse_status rocsparse::coosv_analysis_template(rocsparse_handle          ha
     ROCSPARSE_CHECKARG_POINTER(8, info);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcoosv_analysis"),
-              trans,
-              m,
-              nnz,
-              (const void*&)descr,
-              (const void*&)coo_val,
-              (const void*&)coo_row_ind,
-              (const void*&)coo_col_ind,
-              (const void*&)info,
-              solve,
-              analysis,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcoosv_analysis"),
+                         trans,
+                         m,
+                         nnz,
+                         (const void*&)descr,
+                         (const void*&)coo_val,
+                         (const void*&)coo_row_ind,
+                         (const void*&)coo_col_ind,
+                         (const void*&)info,
+                         solve,
+                         analysis,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_ENUM(1, trans);
     ROCSPARSE_CHECKARG_ENUM(9, analysis);
@@ -314,21 +314,21 @@ rocsparse_status rocsparse::coosv_solve_template(rocsparse_handle          handl
     ROCSPARSE_CHECKARG_POINTER(9, info);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcoosv"),
-              trans,
-              m,
-              nnz,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
-              (const void*&)descr,
-              (const void*&)coo_val,
-              (const void*&)coo_row_ind,
-              (const void*&)coo_col_ind,
-              (const void*&)info,
-              (const void*&)x,
-              (const void*&)y,
-              policy,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcoosv"),
+                         trans,
+                         m,
+                         nnz,
+                         LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+                         (const void*&)descr,
+                         (const void*&)coo_val,
+                         (const void*&)coo_row_ind,
+                         (const void*&)coo_col_ind,
+                         (const void*&)info,
+                         (const void*&)x,
+                         (const void*&)y,
+                         policy,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_ENUM(1, trans);
     ROCSPARSE_CHECKARG_ENUM(12, policy);

@@ -71,7 +71,7 @@ namespace rocsparse
                           T*            X,
                           int64_t       ldx)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
 
         rocsparse::bsrsm_copy_scale_device(m, n, alpha, B, ldb, X, ldx);
     }
@@ -86,7 +86,7 @@ namespace rocsparse
                          T* __restrict__ B,
                          int64_t ldb)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
 
         rocsparse::dense_transpose_device<DIM_X, DIM_Y>(m, n, alpha, A, lda, B, ldb);
     }

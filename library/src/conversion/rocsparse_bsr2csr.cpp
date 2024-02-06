@@ -370,7 +370,7 @@ namespace rocsparse
     template <typename... P>
     static rocsparse_status bsr2csr_impl(P&&... p)
     {
-        log_trace("rocsparse_Xbsr2csr", p...);
+        rocsparse::log_trace("rocsparse_Xbsr2csr", p...);
 
         const rocsparse_status status = rocsparse::bsr2csr_checkarg(p...);
         if(status != rocsparse_status_continue)

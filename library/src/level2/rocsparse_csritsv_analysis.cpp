@@ -524,19 +524,19 @@ namespace rocsparse
         ROCSPARSE_CHECKARG_POINTER(8, info);
 
         // Logging
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsritsv_analysis"),
-                  trans,
-                  m,
-                  nnz,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)info,
-                  solve,
-                  analysis,
-                  (const void*&)temp_buffer);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xcsritsv_analysis"),
+                             trans,
+                             m,
+                             nnz,
+                             (const void*&)descr,
+                             (const void*&)csr_val,
+                             (const void*&)csr_row_ptr,
+                             (const void*&)csr_col_ind,
+                             (const void*&)info,
+                             solve,
+                             analysis,
+                             (const void*&)temp_buffer);
 
         ROCSPARSE_CHECKARG_ENUM(1, trans);
         ROCSPARSE_CHECKARG_ENUM(9, analysis);

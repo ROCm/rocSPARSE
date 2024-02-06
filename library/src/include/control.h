@@ -175,12 +175,12 @@ rocsparse_status get_rocsparse_status_for_hip_status(hipError_t status);
 //
 //
 //
-#define RETURN_ROCSPARSE_EXCEPTION()                                         \
-    do                                                                       \
-    {                                                                        \
-        const rocsparse_status TMP_STATUS = exception_to_rocsparse_status(); \
-        ROCSPARSE_ERROR_MESSAGE(TMP_STATUS, "exception detected");           \
-        return TMP_STATUS;                                                   \
+#define RETURN_ROCSPARSE_EXCEPTION()                                                    \
+    do                                                                                  \
+    {                                                                                   \
+        const rocsparse_status TMP_STATUS = rocsparse::exception_to_rocsparse_status(); \
+        ROCSPARSE_ERROR_MESSAGE(TMP_STATUS, "exception detected");                      \
+        return TMP_STATUS;                                                              \
     } while(false)
 
 //

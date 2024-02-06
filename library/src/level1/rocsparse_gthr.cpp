@@ -41,13 +41,13 @@ rocsparse_status rocsparse::gthr_template(rocsparse_handle     handle,
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xgthr"),
-              nnz,
-              (const void*&)y,
-              (const void*&)x_val,
-              (const void*&)x_ind,
-              idx_base);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xgthr"),
+                         nnz,
+                         (const void*&)y,
+                         (const void*&)x_val,
+                         (const void*&)x_ind,
+                         idx_base);
 
     // Check index base
     ROCSPARSE_CHECKARG_ENUM(5, idx_base);

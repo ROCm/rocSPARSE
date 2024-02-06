@@ -227,13 +227,13 @@ try
 {
 
     // Logging
-    log_trace(handle,
-              "rocsparse_sparse_dense",
-              (const void*&)mat_A,
-              (const void*&)mat_B,
-              alg,
-              (const void*&)buffer_size,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_sparse_dense",
+                         (const void*&)mat_A,
+                         (const void*&)mat_B,
+                         alg,
+                         (const void*&)buffer_size,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(1, mat_A);

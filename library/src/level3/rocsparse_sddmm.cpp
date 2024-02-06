@@ -212,18 +212,18 @@ try
 {
 
     // Logging
-    log_trace(handle,
-              "rocsparse_sddmm_buffer_size",
-              trans_A,
-              trans_B,
-              (const void*&)alpha,
-              (const void*&)A,
-              (const void*&)B,
-              (const void*&)beta,
-              (const void*&)C,
-              compute_type,
-              alg,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         "rocsparse_sddmm_buffer_size",
+                         trans_A,
+                         trans_B,
+                         (const void*&)alpha,
+                         (const void*&)A,
+                         (const void*&)B,
+                         (const void*&)beta,
+                         (const void*&)C,
+                         compute_type,
+                         alg,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(1, trans_A);
@@ -470,18 +470,18 @@ extern "C" rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle         
                                                        void*                       temp_buffer) //10
 try
 {
-    log_trace(handle,
-              "rocsparse_sddmm_preprocess",
-              trans_A,
-              trans_B,
-              (const void*&)alpha,
-              (const void*&)A,
-              (const void*&)B,
-              (const void*&)beta,
-              (const void*&)C,
-              compute_type,
-              alg,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_sddmm_preprocess",
+                         trans_A,
+                         trans_B,
+                         (const void*&)alpha,
+                         (const void*&)A,
+                         (const void*&)B,
+                         (const void*&)beta,
+                         (const void*&)C,
+                         compute_type,
+                         alg,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(1, trans_A);
@@ -725,18 +725,18 @@ try
 {
 
     // Logging
-    log_trace(handle,
-              "rocsparse_sddmm",
-              trans_A,
-              trans_B,
-              (const void*&)alpha,
-              (const void*&)A,
-              (const void*&)B,
-              (const void*&)beta,
-              (const void*&)C,
-              compute_type,
-              alg,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_sddmm",
+                         trans_A,
+                         trans_B,
+                         (const void*&)alpha,
+                         (const void*&)A,
+                         (const void*&)B,
+                         (const void*&)beta,
+                         (const void*&)C,
+                         compute_type,
+                         alg,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(1, trans_A);

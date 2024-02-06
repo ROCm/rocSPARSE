@@ -49,19 +49,19 @@ rocsparse_status rocsparse::bsrmv_analysis_template(rocsparse_handle          ha
     ROCSPARSE_CHECKARG_POINTER(11, info);
 
     // Logging
-    log_trace(handle,
-              replaceX<A>("rocsparse_Xbsrmv_analysis"),
-              dir,
-              trans,
-              mb,
-              nb,
-              nnzb,
-              (const void*&)descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              block_dim,
-              (const void*&)info);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<A>("rocsparse_Xbsrmv_analysis"),
+                         dir,
+                         trans,
+                         mb,
+                         nb,
+                         nnzb,
+                         (const void*&)descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         block_dim,
+                         (const void*&)info);
 
     ROCSPARSE_CHECKARG_ENUM(1, dir);
     ROCSPARSE_CHECKARG_ENUM(2, trans);
@@ -432,22 +432,22 @@ rocsparse_status rocsparse::bsrmv_template(rocsparse_handle          handle,
     //
     // Logging
     //
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xbsrmv"),
-              dir,
-              trans,
-              mb,
-              nb,
-              nnzb,
-              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
-              (const void*&)descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              block_dim,
-              (const void*&)x,
-              LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
-              (const void*&)y);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xbsrmv"),
+                         dir,
+                         trans,
+                         mb,
+                         nb,
+                         nnzb,
+                         LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+                         (const void*&)descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         block_dim,
+                         (const void*&)x,
+                         LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+                         (const void*&)y);
 
     ROCSPARSE_CHECKARG_ENUM(1, dir);
     ROCSPARSE_CHECKARG_ENUM(2, trans);

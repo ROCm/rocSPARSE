@@ -45,13 +45,13 @@ rocsparse_status rocsparse::sctr_template(rocsparse_handle     handle,
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xsctr"),
-              nnz,
-              (const void*&)x_val,
-              (const void*&)x_ind,
-              (const void*&)y,
-              idx_base);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xsctr"),
+                         nnz,
+                         (const void*&)x_val,
+                         (const void*&)x_ind,
+                         (const void*&)y,
+                         idx_base);
 
     ROCSPARSE_CHECKARG_SIZE(1, nnz);
     ROCSPARSE_CHECKARG_ARRAY(2, nnz, x_val);

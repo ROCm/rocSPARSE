@@ -41,7 +41,7 @@ rocsparse_status rocsparse::gcreate_identity_permutation(rocsparse_handle    han
     {
         int32_t local_nnz;
         RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_internal_convert_scalar<int64_t, int32_t>)(nnz, local_nnz));
+            (rocsparse::internal_convert_scalar<int64_t, int32_t>)(nnz, local_nnz));
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_identity_permutation_template<int32_t>(
             handle_, local_nnz, (int32_t*)perm));
         return rocsparse_status_success;
@@ -50,7 +50,7 @@ rocsparse_status rocsparse::gcreate_identity_permutation(rocsparse_handle    han
     {
         int64_t local_nnz;
         RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_internal_convert_scalar<int64_t, int64_t>)(nnz, local_nnz));
+            (rocsparse::internal_convert_scalar<int64_t, int64_t>)(nnz, local_nnz));
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_identity_permutation_template<int64_t>(
             handle_, local_nnz, (int64_t*)perm));
         return rocsparse_status_success;

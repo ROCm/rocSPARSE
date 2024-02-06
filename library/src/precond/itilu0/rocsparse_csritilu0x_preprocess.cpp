@@ -175,35 +175,35 @@ rocsparse_status rocsparse::csritilu0x_preprocess_impl(rocsparse_handle     hand
     }
 
     // Logging
-    log_trace(handle_,
-              "rocsparse_Xcsritilu0x_preprocess",
-              options_,
-              nsweeps_,
-              m_,
-              nnz_,
-              (const void*&)ptr_begin_,
-              (const void*&)ptr_end_,
-              (const void*&)ind_,
-              base_,
-              ldiag_type_,
-              ldir_,
-              lnnz_,
-              (const void*&)lptr_begin_,
-              (const void*&)lptr_end_,
-              (const void*&)lind_,
-              lbase_,
-              udiag_type_,
-              udir_,
-              unnz_,
-              (const void*&)uptr_begin_,
-              (const void*&)uptr_end_,
-              (const void*&)uind_,
+    rocsparse::log_trace(handle_,
+                         "rocsparse_Xcsritilu0x_preprocess",
+                         options_,
+                         nsweeps_,
+                         m_,
+                         nnz_,
+                         (const void*&)ptr_begin_,
+                         (const void*&)ptr_end_,
+                         (const void*&)ind_,
+                         base_,
+                         ldiag_type_,
+                         ldir_,
+                         lnnz_,
+                         (const void*&)lptr_begin_,
+                         (const void*&)lptr_end_,
+                         (const void*&)lind_,
+                         lbase_,
+                         udiag_type_,
+                         udir_,
+                         unnz_,
+                         (const void*&)uptr_begin_,
+                         (const void*&)uptr_end_,
+                         (const void*&)uind_,
 
-              ubase_,
+                         ubase_,
 
-              datatype_,
-              buffer_size_,
-              (const void*&)buffer_);
+                         datatype_,
+                         buffer_size_,
+                         (const void*&)buffer_);
 
     // Check sizes
     if(m_ < 0 || nnz_ < 0)
@@ -224,33 +224,33 @@ rocsparse_status rocsparse::csritilu0x_preprocess_impl(rocsparse_handle     hand
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
 
-    if(rocsparse_enum_utils::is_invalid(base_))
+    if(rocsparse::enum_utils::is_invalid(base_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
-    if(rocsparse_enum_utils::is_invalid(ubase_))
+    if(rocsparse::enum_utils::is_invalid(ubase_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
-    if(rocsparse_enum_utils::is_invalid(lbase_))
+    if(rocsparse::enum_utils::is_invalid(lbase_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
-    if(rocsparse_enum_utils::is_invalid(udiag_type_))
+    if(rocsparse::enum_utils::is_invalid(udiag_type_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
-    if(rocsparse_enum_utils::is_invalid(udir_))
+    if(rocsparse::enum_utils::is_invalid(udir_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
-    if(rocsparse_enum_utils::is_invalid(ldiag_type_))
+    if(rocsparse::enum_utils::is_invalid(ldiag_type_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
-    if(rocsparse_enum_utils::is_invalid(ldir_))
+    if(rocsparse::enum_utils::is_invalid(ldir_))
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }

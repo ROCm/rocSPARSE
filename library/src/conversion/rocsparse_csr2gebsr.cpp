@@ -157,18 +157,18 @@ rocsparse_status rocsparse::csr2gebsr_buffer_size_template(rocsparse_handle     
     //
     // Logging
     //
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsr2gebsr_buffer_size"),
-              dir,
-              m,
-              n,
-              csr_descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              row_block_dim,
-              col_block_dim,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcsr2gebsr_buffer_size"),
+                         dir,
+                         m,
+                         n,
+                         csr_descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         row_block_dim,
+                         col_block_dim,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(1, dir);
@@ -243,22 +243,22 @@ rocsparse_status rocsparse::csr2gebsr_template(rocsparse_handle          handle,
                                                void*                     temp_buffer) //14
 {
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsr2gebsr"),
-              dir,
-              m,
-              n,
-              csr_descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              bsr_descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              row_block_dim,
-              col_block_dim,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcsr2gebsr"),
+                         dir,
+                         m,
+                         n,
+                         csr_descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         bsr_descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         row_block_dim,
+                         col_block_dim,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(1, dir);
@@ -784,20 +784,20 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
 try
 {
     // Logging
-    log_trace(handle,
-              "rocsparse_csr2gebsr_nnz",
-              dir,
-              m,
-              n,
-              csr_descr,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              bsr_descr,
-              (const void*&)bsr_row_ptr,
-              row_block_dim,
-              col_block_dim,
-              (const void*&)bsr_nnz_devhost,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_csr2gebsr_nnz",
+                         dir,
+                         m,
+                         n,
+                         csr_descr,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         bsr_descr,
+                         (const void*&)bsr_row_ptr,
+                         row_block_dim,
+                         col_block_dim,
+                         (const void*&)bsr_nnz_devhost,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(1, dir);

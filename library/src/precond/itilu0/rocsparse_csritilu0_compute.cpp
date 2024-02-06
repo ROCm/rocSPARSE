@@ -26,6 +26,8 @@
 #include "internal/precond/rocsparse_csritilu0.h"
 #include "rocsparse_csritilu0_driver.hpp"
 
+using namespace rocsparse;
+
 namespace rocsparse
 {
     template <typename T, typename I, typename J, typename... P>

@@ -61,7 +61,7 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle, "rocsparse_gather", (const void*&)y, (const void*&)x);
+    rocsparse::log_trace(handle, "rocsparse_gather", (const void*&)y, (const void*&)x);
 
     // Check for invalid descriptors
     ROCSPARSE_CHECKARG_POINTER(1, y);

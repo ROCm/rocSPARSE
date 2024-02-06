@@ -121,17 +121,17 @@ namespace rocsparse
         //
         // Loggings
         //
-        log_trace(handle,
-                  is_row_oriented ? "rocsparse_dense2csr" : "rocsparse_dense2csc",
-                  m,
-                  n,
-                  descr,
-                  (const void*&)A,
-                  lda,
-                  (const void*&)nnz_per_row_column,
-                  (const void*&)csx_val_A,
-                  (const void*&)csx_row_col_ptr_A,
-                  (const void*&)csx_col_row_ind_A);
+        rocsparse::log_trace(handle,
+                             is_row_oriented ? "rocsparse_dense2csr" : "rocsparse_dense2csc",
+                             m,
+                             n,
+                             descr,
+                             (const void*&)A,
+                             lda,
+                             (const void*&)nnz_per_row_column,
+                             (const void*&)csx_val_A,
+                             (const void*&)csx_row_col_ptr_A,
+                             (const void*&)csx_col_row_ind_A);
 
         const rocsparse_status status = rocsparse::csx2dense_checkarg<DIRA>(handle,
                                                                             m,

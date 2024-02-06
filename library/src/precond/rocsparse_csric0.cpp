@@ -47,17 +47,17 @@ rocsparse_status rocsparse::csric0_analysis_template(rocsparse_handle          h
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsric0_analysis"),
-              m,
-              nnz,
-              (const void*&)descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)info,
-              solve,
-              analysis);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcsric0_analysis"),
+                         m,
+                         nnz,
+                         (const void*&)descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)info,
+                         solve,
+                         analysis);
 
     ROCSPARSE_CHECKARG_SIZE(1, m);
     ROCSPARSE_CHECKARG_SIZE(2, nnz);
@@ -189,17 +189,17 @@ rocsparse_status rocsparse::csric0_template(rocsparse_handle          handle, //
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsric0"),
-              m,
-              nnz,
-              (const void*&)descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)info,
-              policy,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcsric0"),
+                         m,
+                         nnz,
+                         (const void*&)descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)info,
+                         policy,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_SIZE(1, m);
     ROCSPARSE_CHECKARG_SIZE(2, nnz);
@@ -566,16 +566,16 @@ namespace rocsparse
     {
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsric0_buffer_size"),
-                  m,
-                  nnz,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)info,
-                  (const void*&)buffer_size);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xcsric0_buffer_size"),
+                             m,
+                             nnz,
+                             (const void*&)descr,
+                             (const void*&)csr_val,
+                             (const void*&)csr_row_ptr,
+                             (const void*&)csr_col_ind,
+                             (const void*&)info,
+                             (const void*&)buffer_size);
 
         ROCSPARSE_CHECKARG_SIZE(1, m);
         ROCSPARSE_CHECKARG_SIZE(2, nnz);
@@ -757,7 +757,7 @@ try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    log_trace(handle, "rocsparse_csric0_clear", (const void*&)info);
+    rocsparse::log_trace(handle, "rocsparse_csric0_clear", (const void*&)info);
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
 
@@ -868,7 +868,8 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle, "rocsparse_csric0_zero_pivot", (const void*&)info, (const void*&)position);
+    rocsparse::log_trace(
+        handle, "rocsparse_csric0_zero_pivot", (const void*&)info, (const void*&)position);
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
     ROCSPARSE_CHECKARG_POINTER(2, position);
@@ -955,7 +956,7 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(
+    rocsparse::log_trace(
         handle, "rocsparse_csric0_singular_pivot", (const void*&)info, (const void*&)position);
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
@@ -1022,7 +1023,7 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    return rocsparse::exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status
@@ -1046,7 +1047,7 @@ try
     }
 
     // Logging
-    log_trace(handle, "rocsparse_csric0_set_tolerance", (const void*&)info, tol);
+    rocsparse::log_trace(handle, "rocsparse_csric0_set_tolerance", (const void*&)info, tol);
 
     info->singular_tol = tol;
 
@@ -1054,7 +1055,7 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    return rocsparse::exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status
@@ -1078,7 +1079,7 @@ try
     }
 
     // Logging
-    log_trace(handle, "rocsparse_csric0_get_tolerance", (const void*&)info, tol);
+    rocsparse::log_trace(handle, "rocsparse_csric0_get_tolerance", (const void*&)info, tol);
 
     *tol = info->singular_tol;
 
@@ -1086,5 +1087,5 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    return rocsparse::exception_to_rocsparse_status();
 }

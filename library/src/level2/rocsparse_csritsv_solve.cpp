@@ -30,6 +30,8 @@
 
 #include "rocsparse_csrmv.hpp"
 
+using namespace rocsparse;
+
 namespace rocsparse
 {
     template <unsigned int BLOCKSIZE, typename T>
@@ -267,9 +269,9 @@ rocsparse_status rocsparse::csritsv_solve_template(rocsparse_handle          han
         else
         {
             RETURN_IF_HIP_ERROR(
-                rocsparse_assign_async(static_cast<rocsparse_int*>(info->zero_pivot),
-                                       (rocsparse_int)descr->base,
-                                       handle->stream));
+                rocsparse::assign_async(static_cast<rocsparse_int*>(info->zero_pivot),
+                                        (rocsparse_int)descr->base,
+                                        handle->stream));
             return rocsparse_status_success;
         }
     }
@@ -661,24 +663,24 @@ namespace rocsparse
         ROCSPARSE_CHECKARG_POINTER(12, info);
 
         // Logging
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsritsv_solve"),
-                  (const void*&)host_nmaxiter,
-                  (const void*&)host_tol,
-                  (const void*&)host_history,
-                  trans,
-                  m,
-                  nnz,
-                  LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)info,
-                  (const void*&)x,
-                  (const void*&)y,
-                  policy,
-                  (const void*&)temp_buffer);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xcsritsv_solve"),
+                             (const void*&)host_nmaxiter,
+                             (const void*&)host_tol,
+                             (const void*&)host_history,
+                             trans,
+                             m,
+                             nnz,
+                             LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+                             (const void*&)descr,
+                             (const void*&)csr_val,
+                             (const void*&)csr_row_ptr,
+                             (const void*&)csr_col_ind,
+                             (const void*&)info,
+                             (const void*&)x,
+                             (const void*&)y,
+                             policy,
+                             (const void*&)temp_buffer);
 
         ROCSPARSE_CHECKARG_ENUM(4, trans);
         ROCSPARSE_CHECKARG_ENUM(15, policy);

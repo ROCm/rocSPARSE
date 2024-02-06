@@ -152,16 +152,16 @@ namespace rocsparse
     {
         static constexpr bool is_row_oriented = (rocsparse_direction_row == DIRA);
 
-        log_trace(handle,
-                  is_row_oriented ? "rocsparse_csr2dense" : "rocsparse_csc2dense",
-                  m,
-                  n,
-                  descr,
-                  (const void*&)A,
-                  lda,
-                  (const void*&)csx_val,
-                  (const void*&)csx_row_col_ptr,
-                  (const void*&)csx_col_row_ind);
+        rocsparse::log_trace(handle,
+                             is_row_oriented ? "rocsparse_csr2dense" : "rocsparse_csc2dense",
+                             m,
+                             n,
+                             descr,
+                             (const void*&)A,
+                             lda,
+                             (const void*&)csx_val,
+                             (const void*&)csx_row_col_ptr,
+                             (const void*&)csx_col_row_ind);
 
         const rocsparse_status status = rocsparse::csx2dense_checkarg<DIRA, I, J, T>(
             handle, m, n, descr, csx_val, csx_row_col_ptr, csx_col_row_ind, A, lda, order);

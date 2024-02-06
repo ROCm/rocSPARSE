@@ -41,9 +41,9 @@ rocsparse_status rocsparse::gcsc2csr_buffer_size(rocsparse_handle    handle,
 #define CALL_TEMPLATE(PTRTYPE, INDTYPE)                                                          \
     PTRTYPE local_nnz;                                                                           \
     INDTYPE local_m, local_n;                                                                    \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(m, local_m));           \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(n, local_n));           \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<PTRTYPE>(nnz, local_nnz));       \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_convert_scalar<INDTYPE>(m, local_m));          \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_convert_scalar<INDTYPE>(n, local_n));          \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_convert_scalar<PTRTYPE>(nnz, local_nnz));      \
     RETURN_IF_ROCSPARSE_ERROR(                                                                   \
         (rocsparse::csr2csc_buffer_size_template<PTRTYPE, INDTYPE>)(handle,                      \
                                                                     local_n,                     \
@@ -119,9 +119,9 @@ rocsparse_status rocsparse::gcsc2csr(rocsparse_handle     handle,
 #define CALL_TEMPLATE(DATATYPE, PTRTYPE, INDTYPE)                                              \
     PTRTYPE local_nnz;                                                                         \
     INDTYPE local_m, local_n;                                                                  \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(m, local_m));         \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<INDTYPE>(n, local_n));         \
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_internal_convert_scalar<PTRTYPE>(nnz, local_nnz));     \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_convert_scalar<INDTYPE>(m, local_m));        \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_convert_scalar<INDTYPE>(n, local_n));        \
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_convert_scalar<PTRTYPE>(nnz, local_nnz));    \
     RETURN_IF_ROCSPARSE_ERROR(                                                                 \
         (rocsparse::csr2csc_template<PTRTYPE, INDTYPE, DATATYPE>)(handle,                      \
                                                                   local_n,                     \

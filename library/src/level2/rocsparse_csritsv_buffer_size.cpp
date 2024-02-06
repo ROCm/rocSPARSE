@@ -78,17 +78,17 @@ namespace rocsparse
         ROCSPARSE_CHECKARG_POINTER(8, info);
 
         // Logging
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsritsv_buffer_size"),
-                  trans,
-                  m,
-                  nnz,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)info,
-                  (const void*&)buffer_size);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xcsritsv_buffer_size"),
+                             trans,
+                             m,
+                             nnz,
+                             (const void*&)descr,
+                             (const void*&)csr_val,
+                             (const void*&)csr_row_ptr,
+                             (const void*&)csr_col_ind,
+                             (const void*&)info,
+                             (const void*&)buffer_size);
 
         ROCSPARSE_CHECKARG_ENUM(1, trans);
 

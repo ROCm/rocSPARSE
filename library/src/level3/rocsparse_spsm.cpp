@@ -873,19 +873,19 @@ extern "C" rocsparse_status rocsparse_spsm(rocsparse_handle            handle, /
 try
 {
 
-    log_trace(handle,
-              "rocsparse_spsm",
-              trans_A,
-              trans_B,
-              (const void*&)alpha,
-              (const void*&)matA,
-              (const void*&)matB,
-              (const void*&)matC,
-              compute_type,
-              alg,
-              stage,
-              (const void*&)buffer_size,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         "rocsparse_spsm",
+                         trans_A,
+                         trans_B,
+                         (const void*&)alpha,
+                         (const void*&)matA,
+                         (const void*&)matB,
+                         (const void*&)matC,
+                         compute_type,
+                         alg,
+                         stage,
+                         (const void*&)buffer_size,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_ENUM(1, trans_A);

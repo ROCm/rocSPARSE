@@ -53,21 +53,21 @@ rocsparse_status rocsparse::bsrsv_analysis_template(rocsparse_handle          ha
     ROCSPARSE_CHECKARG_POINTER(10, info);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xbsrsv_analysis"),
-              dir,
-              trans,
-              mb,
-              nnzb,
-              (const void*&)descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              block_dim,
-              (const void*&)info,
-              solve,
-              analysis,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xbsrsv_analysis"),
+                         dir,
+                         trans,
+                         mb,
+                         nnzb,
+                         (const void*&)descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         block_dim,
+                         (const void*&)info,
+                         solve,
+                         analysis,
+                         (const void*&)temp_buffer);
 
     // Check direction
     ROCSPARSE_CHECKARG_ENUM(1, dir);

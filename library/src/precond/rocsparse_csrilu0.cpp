@@ -42,12 +42,12 @@ namespace rocsparse
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
         // Logging
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrilu0_numeric_boost"),
-                  (const void*&)info,
-                  enable_boost,
-                  (const void*&)boost_tol,
-                  (const void*&)boost_val);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xcsrilu0_numeric_boost"),
+                             (const void*&)info,
+                             enable_boost,
+                             (const void*&)boost_tol,
+                             (const void*&)boost_val);
 
         ROCSPARSE_CHECKARG_POINTER(1, info);
 
@@ -93,11 +93,11 @@ namespace rocsparse
                            U                    boost_tol_device_host,
                            V                    boost_val_device_host)
     {
-        auto boost_tol = (enable_boost) ? load_scalar_device_host(boost_tol_device_host)
-                                        : zero_scalar_device_host(boost_tol_device_host);
+        auto boost_tol = (enable_boost) ? rocsparse::load_scalar_device_host(boost_tol_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_tol_device_host);
 
-        auto boost_val = (enable_boost) ? load_scalar_device_host(boost_val_device_host)
-                                        : zero_scalar_device_host(boost_val_device_host);
+        auto boost_val = (enable_boost) ? rocsparse::load_scalar_device_host(boost_val_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_val_device_host);
 
         rocsparse::csrilu0_binsearch_kernel<BLOCKSIZE, WFSIZE, SLEEP>(m,
                                                                       csr_row_ptr,
@@ -137,11 +137,11 @@ namespace rocsparse
                       U                    boost_tol_device_host,
                       V                    boost_val_device_host)
     {
-        auto boost_tol = (enable_boost) ? load_scalar_device_host(boost_tol_device_host)
-                                        : zero_scalar_device_host(boost_tol_device_host);
+        auto boost_tol = (enable_boost) ? rocsparse::load_scalar_device_host(boost_tol_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_tol_device_host);
 
-        auto boost_val = (enable_boost) ? load_scalar_device_host(boost_val_device_host)
-                                        : zero_scalar_device_host(boost_val_device_host);
+        auto boost_val = (enable_boost) ? rocsparse::load_scalar_device_host(boost_val_device_host)
+                                        : rocsparse::zero_scalar_device_host(boost_val_device_host);
 
         rocsparse::csrilu0_hash_kernel<BLOCKSIZE, WFSIZE, HASH>(m,
                                                                 csr_row_ptr,
@@ -643,17 +643,17 @@ rocsparse_status rocsparse::csrilu0_template(rocsparse_handle          handle,
                                              void*                     temp_buffer)
 {
 
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsrilu0"),
-              m,
-              nnz,
-              (const void*&)descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)info,
-              policy,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcsrilu0"),
+                         m,
+                         nnz,
+                         (const void*&)descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)info,
+                         policy,
+                         (const void*&)temp_buffer);
 
     const rocsparse_status status = rocsparse::csrilu0_checkarg(
         handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
@@ -781,7 +781,7 @@ try
     ROCSPARSE_CHECKARG_POINTER(1, info);
 
     // Logging
-    log_trace(handle, "rocsparse_csrilu0_clear", (const void*&)info);
+    rocsparse::log_trace(handle, "rocsparse_csrilu0_clear", (const void*&)info);
 
     // If meta data is not shared, delete it
     if(!rocsparse_check_trm_shared(info, info->csrilu0_info))
@@ -907,7 +907,8 @@ try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    log_trace(handle, "rocsparse_csrilu0_zero_pivot", (const void*&)info, (const void*&)position);
+    rocsparse::log_trace(
+        handle, "rocsparse_csrilu0_zero_pivot", (const void*&)info, (const void*&)position);
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
     ROCSPARSE_CHECKARG_POINTER(2, position);
@@ -992,7 +993,7 @@ try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    log_trace(
+    rocsparse::log_trace(
         handle, "rocsparse_csrilu0_singular_pivot", (const void*&)info, (const void*&)position);
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
@@ -1059,7 +1060,7 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    return rocsparse::exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status
@@ -1083,7 +1084,7 @@ try
     }
 
     // Logging
-    log_trace(handle, "rocsparse_csrilu0_set_tolerance", (const void*&)info, tol);
+    rocsparse::log_trace(handle, "rocsparse_csrilu0_set_tolerance", (const void*&)info, tol);
 
     info->singular_tol = tol;
 
@@ -1091,7 +1092,7 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    return rocsparse::exception_to_rocsparse_status();
 }
 
 extern "C" rocsparse_status
@@ -1115,7 +1116,7 @@ try
     }
 
     // Logging
-    log_trace(handle, "rocsparse_csrilu0_get_tolerance", (const void*&)info, tol);
+    rocsparse::log_trace(handle, "rocsparse_csrilu0_get_tolerance", (const void*&)info, tol);
 
     *tol = info->singular_tol;
 
@@ -1123,5 +1124,5 @@ try
 }
 catch(...)
 {
-    return exception_to_rocsparse_status();
+    return rocsparse::exception_to_rocsparse_status();
 }

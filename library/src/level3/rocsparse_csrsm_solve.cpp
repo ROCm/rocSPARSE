@@ -63,7 +63,7 @@ namespace rocsparse
         rocsparse::csrsm_device<BLOCKSIZE, WFSIZE, SLEEP>(transB,
                                                           m,
                                                           nrhs,
-                                                          load_scalar_device_host(alpha),
+                                                          rocsparse::load_scalar_device_host(alpha),
                                                           csr_row_ptr,
                                                           csr_col_ind,
                                                           csr_val,
@@ -159,7 +159,7 @@ namespace rocsparse
         // If diag type is unit, re-initialize zero pivot to remove structural zeros
         if(descr->diag_type == rocsparse_diag_type_unit)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_assign_async(
+            RETURN_IF_HIP_ERROR(rocsparse::assign_async(
                 static_cast<J*>(info->zero_pivot), std::numeric_limits<J>::max(), stream));
         }
 
@@ -780,24 +780,24 @@ namespace rocsparse
                                       void*                     temp_buffer)
     {
 
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrsm_solve"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  nrhs,
-                  nnz,
-                  LOG_TRACE_SCALAR_VALUE(handle, alpha),
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)B,
-                  ldb,
-                  order_B,
-                  (const void*&)info,
-                  policy,
-                  (const void*&)temp_buffer);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xcsrsm_solve"),
+                             trans_A,
+                             trans_B,
+                             m,
+                             nrhs,
+                             nnz,
+                             LOG_TRACE_SCALAR_VALUE(handle, alpha),
+                             (const void*&)descr,
+                             (const void*&)csr_val,
+                             (const void*&)csr_row_ptr,
+                             (const void*&)csr_col_ind,
+                             (const void*&)B,
+                             ldb,
+                             order_B,
+                             (const void*&)info,
+                             policy,
+                             (const void*&)temp_buffer);
 
         const rocsparse_status status = rocsparse::csrsm_solve_checkarg(handle,
                                                                         trans_A,

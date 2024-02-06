@@ -62,7 +62,7 @@ namespace rocsparse
             return rocsparse_status_success;
         }
 
-        const size_t indextype_sizeof = rocsparse_indextype_sizeof(indextype);
+        const size_t indextype_sizeof = rocsparse::indextype_sizeof(indextype);
         void*        hind;
         RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, indextype_sizeof * nmemb));
         RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, indextype_sizeof * nmemb, hipMemcpyDeviceToHost));
@@ -96,7 +96,7 @@ namespace rocsparse
             return rocsparse_status_success;
         }
 
-        const size_t indextype_sizeof = rocsparse_indextype_sizeof(indextype);
+        const size_t indextype_sizeof = rocsparse::indextype_sizeof(indextype);
         void*        hind;
         RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, indextype_sizeof * m * n));
         RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, indextype_sizeof * m * n, hipMemcpyDeviceToHost));
@@ -131,7 +131,7 @@ namespace rocsparse
         {
             return rocsparse_status_success;
         }
-        const size_t datatype_sizeof = rocsparse_datatype_sizeof(datatype);
+        const size_t datatype_sizeof = rocsparse::datatype_sizeof(datatype);
         void*        hind;
         RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, datatype_sizeof * nmemb));
         RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, datatype_sizeof * nmemb, hipMemcpyDeviceToHost));
@@ -190,7 +190,7 @@ namespace rocsparse
         {
             return rocsparse_status_success;
         }
-        const size_t datatype_sizeof = rocsparse_datatype_sizeof(datatype);
+        const size_t datatype_sizeof = rocsparse::datatype_sizeof(datatype);
         void*        hind;
         RETURN_IF_HIP_ERROR(rocsparse_hipHostMalloc(&hind, datatype_sizeof * m * n));
         RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, datatype_sizeof * m * n, hipMemcpyDeviceToHost));

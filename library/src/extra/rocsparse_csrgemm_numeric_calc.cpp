@@ -823,8 +823,8 @@ namespace rocsparse
                                                 bool                 mul,
                                                 bool                 add)
     {
-        auto alpha = load_scalar_device_host_permissive(alpha_device_host);
-        auto beta  = load_scalar_device_host_permissive(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host_permissive(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host_permissive(beta_device_host);
         rocsparse::csrgemm_numeric_fill_wf_per_row_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
             m,
             nk,
@@ -885,8 +885,8 @@ namespace rocsparse
                                                    bool                 mul,
                                                    bool                 add)
     {
-        auto alpha = load_scalar_device_host_permissive(alpha_device_host);
-        auto beta  = load_scalar_device_host_permissive(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host_permissive(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host_permissive(beta_device_host);
         rocsparse::csrgemm_numeric_fill_block_per_row_device<BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
             nk,
             offset,
@@ -946,8 +946,8 @@ namespace rocsparse
                                                              bool                 mul,
                                                              bool                 add)
     {
-        auto alpha = load_scalar_device_host_permissive(alpha_device_host);
-        auto beta  = load_scalar_device_host_permissive(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host_permissive(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host_permissive(beta_device_host);
         rocsparse::
             csrgemm_numeric_fill_block_per_row_multipass_device<BLOCKSIZE, WFSIZE, CHUNKSIZE>(
                 n,

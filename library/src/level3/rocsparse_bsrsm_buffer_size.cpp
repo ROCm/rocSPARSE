@@ -199,7 +199,7 @@ namespace rocsparse
     template <typename... P>
     static rocsparse_status bsrsm_buffer_size_impl(P&&... p)
     {
-        log_trace("rocsparse_Xbsrsm_buffer_size", p...);
+        rocsparse::log_trace("rocsparse_Xbsrsm_buffer_size", p...);
 
         const rocsparse_status status = rocsparse::bsrsm_buffer_size_checkarg(p...);
 

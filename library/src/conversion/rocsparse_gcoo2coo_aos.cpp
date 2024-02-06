@@ -47,7 +47,7 @@ rocsparse_status rocsparse::gcoo2coo_aos(rocsparse_handle     handle,
         handle,
         nnz,
         target_ind_type, // same as col_type.
-        reinterpret_cast<char*>(target_ind) + rocsparse_indextype_sizeof(target_ind_type),
+        reinterpret_cast<char*>(target_ind) + rocsparse::indextype_sizeof(target_ind_type),
         2,
         source_col_type,
         source_col,

@@ -61,14 +61,14 @@ rocsparse_status rocsparse::hyb2csr_template(rocsparse_handle          handle,
                                              void*                     temp_buffer)
 {
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xhyb2csr"),
-              (const void*&)descr,
-              (const void*&)hyb,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xhyb2csr"),
+                         (const void*&)descr,
+                         (const void*&)hyb,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(1, descr);
@@ -211,12 +211,12 @@ try
 {
 
     // Logging
-    log_trace(handle,
-              "rocsparse_hyb2csr_buffer_size",
-              (const void*&)descr,
-              (const void*&)hyb,
-              (const void*&)csr_row_ptr,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         "rocsparse_hyb2csr_buffer_size",
+                         (const void*&)descr,
+                         (const void*&)hyb,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
     ROCSPARSE_CHECKARG_POINTER(1, descr);

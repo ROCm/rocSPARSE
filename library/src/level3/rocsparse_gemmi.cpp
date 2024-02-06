@@ -32,7 +32,7 @@ namespace rocsparse
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gemmi_scale_kernel(rocsparse_int size, U alpha_device_host, T* __restrict__ data)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         rocsparse::gemmi_scale_kernel<BLOCKSIZE>(size, alpha, data);
     }
 
@@ -50,8 +50,8 @@ namespace rocsparse
                        rocsparse_int        ldc,
                        rocsparse_index_base base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         rocsparse::gemmit_kernel<BLOCKSIZE>(
             m, alpha, A, lda, csr_row_ptr, csr_col_ind, csr_val, beta, C, ldc, base);
     }
@@ -389,24 +389,24 @@ namespace rocsparse
                                 rocsparse_int             ldc)
     {
 
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xgemmi"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  n,
-                  k,
-                  nnz,
-                  LOG_TRACE_SCALAR_VALUE(handle, alpha),
-                  (const void*&)A,
-                  lda,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  LOG_TRACE_SCALAR_VALUE(handle, beta),
-                  (const void*&)C,
-                  ldc);
+        rocsparse::log_trace(handle,
+                             rocsparse::replaceX<T>("rocsparse_Xgemmi"),
+                             trans_A,
+                             trans_B,
+                             m,
+                             n,
+                             k,
+                             nnz,
+                             LOG_TRACE_SCALAR_VALUE(handle, alpha),
+                             (const void*&)A,
+                             lda,
+                             (const void*&)descr,
+                             (const void*&)csr_val,
+                             (const void*&)csr_row_ptr,
+                             (const void*&)csr_col_ind,
+                             LOG_TRACE_SCALAR_VALUE(handle, beta),
+                             (const void*&)C,
+                             ldc);
 
         const rocsparse_status status = rocsparse::gemmi_checkarg(handle,
                                                                   trans_A,

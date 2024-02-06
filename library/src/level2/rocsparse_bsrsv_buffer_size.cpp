@@ -46,19 +46,19 @@ rocsparse_status rocsparse_bsrsv_buffer_size_impl(rocsparse_handle          hand
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xbsrsv_buffer_size"),
-              dir,
-              trans,
-              mb,
-              nnzb,
-              (const void*&)descr,
-              (const void*&)bsr_val,
-              (const void*&)bsr_row_ptr,
-              (const void*&)bsr_col_ind,
-              block_dim,
-              (const void*&)info,
-              (const void*&)buffer_size);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xbsrsv_buffer_size"),
+                         dir,
+                         trans,
+                         mb,
+                         nnzb,
+                         (const void*&)descr,
+                         (const void*&)bsr_val,
+                         (const void*&)bsr_row_ptr,
+                         (const void*&)bsr_col_ind,
+                         block_dim,
+                         (const void*&)info,
+                         (const void*&)buffer_size);
 
     ROCSPARSE_CHECKARG_ENUM(1, dir);
     ROCSPARSE_CHECKARG_ENUM(2, trans);

@@ -80,7 +80,7 @@ rocsparse_status rocsparse::check_matrix_coo_core(rocsparse_handle       handle,
 
     if(*data_status != rocsparse_data_status_success)
     {
-        log_debug(handle, rocsparse::to_string(*data_status));
+        rocsparse::log_debug(handle, rocsparse::to_string(*data_status));
     }
 
     return rocsparse_status_success;
@@ -147,9 +147,10 @@ rocsparse_status rocsparse::check_matrix_coo_checkarg(rocsparse_handle       han
     {
         if(m != n)
         {
-            log_debug(handle,
-                      ("Matrix was specified to be "
-                       + std::string(rocsparse::to_string(matrix_type)) + " but m != n"));
+            rocsparse::log_debug(handle,
+                                 ("Matrix was specified to be "
+                                  + std::string(rocsparse::to_string(matrix_type))
+                                  + " but m != n"));
         }
     }
     ROCSPARSE_CHECKARG(2,

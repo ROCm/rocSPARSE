@@ -480,7 +480,7 @@ namespace rocsparse
     template <typename... P>
     static rocsparse_status csrgemm_numeric_impl(P&&... p)
     {
-        log_trace("rocsparse_csrgemm_numeric", p...);
+        rocsparse::log_trace("rocsparse_csrgemm_numeric", p...);
 
         const rocsparse_status status = rocsparse::csrgemm_numeric_checkarg(p...);
         if(status != rocsparse_status_continue)

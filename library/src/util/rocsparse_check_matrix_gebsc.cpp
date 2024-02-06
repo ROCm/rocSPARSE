@@ -133,10 +133,10 @@ rocsparse_status rocsparse::check_matrix_gebsc_checkarg(rocsparse_handle       h
     {
         if(row_block_dim != col_block_dim || mb != nb)
         {
-            log_debug(handle,
-                      ("Matrix was specified to be "
-                       + std::string(rocsparse::to_string(matrix_type))
-                       + " but (row_block_dim != col_block_dim || mb != nb)"));
+            rocsparse::log_debug(handle,
+                                 ("Matrix was specified to be "
+                                  + std::string(rocsparse::to_string(matrix_type))
+                                  + " but (row_block_dim != col_block_dim || mb != nb)"));
         }
     }
 

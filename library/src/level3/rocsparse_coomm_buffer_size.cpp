@@ -27,7 +27,7 @@
 #include "utility.h"
 
 template <>
-inline bool rocsparse_enum_utils::is_invalid(rocsparse_coomm_alg value_)
+inline bool rocsparse::enum_utils::is_invalid(rocsparse_coomm_alg value_)
 {
     switch(value_)
     {
@@ -265,19 +265,19 @@ namespace rocsparse
                                             size_t*                   buffer_size)
     {
 
-        log_trace(handle,
-                  "rocsparse_coomm_buffer_size",
-                  trans_A,
-                  alg,
-                  m,
-                  n,
-                  k,
-                  nnz,
-                  (const void*&)descr,
-                  (const void*&)coo_val,
-                  (const void*&)coo_row_ind,
-                  (const void*&)coo_col_ind,
-                  (const void*&)buffer_size);
+        rocsparse::log_trace(handle,
+                             "rocsparse_coomm_buffer_size",
+                             trans_A,
+                             alg,
+                             m,
+                             n,
+                             k,
+                             nnz,
+                             (const void*&)descr,
+                             (const void*&)coo_val,
+                             (const void*&)coo_row_ind,
+                             (const void*&)coo_col_ind,
+                             (const void*&)buffer_size);
 
         const rocsparse_status status = rocsparse::coomm_buffer_size_checkarg<T>(handle,
                                                                                  trans_A,

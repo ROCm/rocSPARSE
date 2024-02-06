@@ -98,7 +98,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
             rocprim::double_buffer<I> vals((I*)info->trmt_perm, tmp_work2);
 
             unsigned int startbit = 0;
-            unsigned int endbit   = rocsparse_clz(m);
+            unsigned int endbit   = rocsparse::clz(m);
 
             size_t rocprim_size;
 
@@ -186,7 +186,8 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
     RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)&info->row_map, sizeof(J) * m, stream));
 
     // Initialize zero pivot
-    RETURN_IF_HIP_ERROR(rocsparse_assign_async(*zero_pivot, std::numeric_limits<J>::max(), stream));
+    RETURN_IF_HIP_ERROR(
+        rocsparse::assign_async(*zero_pivot, std::numeric_limits<J>::max(), stream));
 
     // Determine archid and ASIC revision
     const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
@@ -475,7 +476,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
     size_t rocprim_size;
 
     unsigned int startbit = 0;
-    unsigned int endbit   = rocsparse_clz(m);
+    unsigned int endbit   = rocsparse::clz(m);
 
     rocprim::double_buffer<int> keys(done_array, workspace2);
     rocprim::double_buffer<J>   vals(workspace, (J*)info->row_map);
@@ -531,19 +532,19 @@ rocsparse_status rocsparse::csrsv_analysis_template(rocsparse_handle          ha
     ROCSPARSE_CHECKARG_POINTER(8, info);
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsrsv_analysis"),
-              trans,
-              m,
-              nnz,
-              (const void*&)descr,
-              (const void*&)csr_val,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)info,
-              solve,
-              analysis,
-              (const void*&)temp_buffer);
+    rocsparse::log_trace(handle,
+                         rocsparse::replaceX<T>("rocsparse_Xcsrsv_analysis"),
+                         trans,
+                         m,
+                         nnz,
+                         (const void*&)descr,
+                         (const void*&)csr_val,
+                         (const void*&)csr_row_ptr,
+                         (const void*&)csr_col_ind,
+                         (const void*&)info,
+                         solve,
+                         analysis,
+                         (const void*&)temp_buffer);
 
     ROCSPARSE_CHECKARG_ENUM(1, trans);
     ROCSPARSE_CHECKARG_ENUM(9, analysis);

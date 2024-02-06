@@ -296,7 +296,7 @@ namespace rocsparse
     template <typename... P>
     static rocsparse_status bsrsm_analysis_impl(P&&... p)
     {
-        log_trace("rocsparse_Xbsrsm_analysis", p...);
+        rocsparse::log_trace("rocsparse_Xbsrsm_analysis", p...);
 
         const rocsparse_status status = rocsparse::bsrsm_analysis_checkarg(p...);
 

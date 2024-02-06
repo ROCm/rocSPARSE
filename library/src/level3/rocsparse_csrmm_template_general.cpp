@@ -37,7 +37,7 @@ namespace rocsparse
                      int64_t         stride,
                      rocsparse_order order)
     {
-        auto beta = load_scalar_device_host(beta_device_host);
+        auto beta = rocsparse::load_scalar_device_host(beta_device_host);
         if(beta != static_cast<T>(1))
         {
             rocsparse::csrmm_scale_device(m, n, beta, data, ld, stride, order);
@@ -75,8 +75,8 @@ namespace rocsparse
                                 rocsparse_order      order_C,
                                 rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
         if(alpha == 0 && beta == 1)
         {
@@ -140,8 +140,8 @@ namespace rocsparse
                                      rocsparse_order      order_C,
                                      rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
         if(alpha == 0 && beta == 1)
         {
@@ -206,8 +206,8 @@ namespace rocsparse
                                           rocsparse_order      order_C,
                                           rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
         if(alpha == 0 && beta == 1)
         {
@@ -270,8 +270,8 @@ namespace rocsparse
                                 rocsparse_order      order_C,
                                 rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
         if(alpha == 0 && beta == 1)
         {
@@ -331,8 +331,8 @@ namespace rocsparse
                                 rocsparse_order      order_C,
                                 rocsparse_index_base idx_base)
     {
-        auto alpha = load_scalar_device_host(alpha_device_host);
-        auto beta  = load_scalar_device_host(beta_device_host);
+        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
         if(alpha == 0 && beta == 1)
         {
