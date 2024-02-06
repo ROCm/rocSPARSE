@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,69 +22,73 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_csritilu0x_history.hpp"
 #include "common.h"
 #include "rocsparse_csritilu0x_driver.hpp"
 
-template <typename T, typename J, typename... P>
-static rocsparse_status history_dispatch(rocsparse_itilu0_alg alg_, P&&... parameters)
+namespace rocsparse
 {
-    switch(alg_)
+    template <typename T, typename J, typename... P>
+    static rocsparse_status history_dispatch(rocsparse_itilu0_alg alg_, P&&... parameters)
     {
-    case rocsparse_itilu0_alg_default:
-    case rocsparse_itilu0_alg_async_inplace:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-        return rocsparse_status_success;
-    }
+        switch(alg_)
+        {
+        case rocsparse_itilu0_alg_default:
+        case rocsparse_itilu0_alg_async_inplace:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+            return rocsparse_status_success;
+        }
 
-    case rocsparse_itilu0_alg_sync_split_fusion:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_csritilu0x_driver_t<
-                rocsparse_itilu0_alg_sync_split_fusion>::history<T, J>::run(parameters...)));
-        return rocsparse_status_success;
+        case rocsparse_itilu0_alg_sync_split_fusion:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::csritilu0x_driver_t<
+                    rocsparse_itilu0_alg_sync_split_fusion>::history<T, J>::run(parameters...)));
+            return rocsparse_status_success;
+        }
+        case rocsparse_itilu0_alg_sync_split:
+        {
+            RETURN_IF_ROCSPARSE_ERROR((
+                rocsparse::csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split>::history<T, J>::run(
+                    parameters...)));
+            return rocsparse_status_success;
+        }
+        case rocsparse_itilu0_alg_async_split:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::csritilu0x_driver_t<
+                    rocsparse_itilu0_alg_async_split>::history<T, J>::run(parameters...)));
+            return rocsparse_status_success;
+        }
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
-    case rocsparse_itilu0_alg_sync_split:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split>::history<T, J>::run(
-                parameters...)));
-        return rocsparse_status_success;
-    }
-    case rocsparse_itilu0_alg_async_split:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_csritilu0x_driver_t<rocsparse_itilu0_alg_async_split>::history<T, J>::run(
-                parameters...)));
-        return rocsparse_status_success;
-    }
-    }
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <typename T, typename J>
-rocsparse_status rocsparse_csritilu0x_history_template(rocsparse_handle     handle_,
-                                                       rocsparse_itilu0_alg alg_,
-                                                       J* __restrict__ niter_,
-                                                       T* __restrict__ data_,
-                                                       size_t buffer_size_,
-                                                       void* __restrict__ buffer_)
+rocsparse_status rocsparse::csritilu0x_history_template(rocsparse_handle     handle_,
+                                                        rocsparse_itilu0_alg alg_,
+                                                        J* __restrict__ niter_,
+                                                        T* __restrict__ data_,
+                                                        size_t buffer_size_,
+                                                        void* __restrict__ buffer_)
 {
     RETURN_IF_ROCSPARSE_ERROR(
-        (history_dispatch<T, J>(alg_, handle_, niter_, data_, buffer_size_, buffer_)));
+        (rocsparse::history_dispatch<T, J>(alg_, handle_, niter_, data_, buffer_size_, buffer_)));
     return rocsparse_status_success;
 }
 
-template rocsparse_status rocsparse_csritilu0x_history_template(rocsparse_handle     handle_,
-                                                                rocsparse_itilu0_alg alg_,
-                                                                rocsparse_int* __restrict__ niter_,
-                                                                float* __restrict__ data_,
-                                                                size_t buffer_size_,
-                                                                void* __restrict__ buffer_);
+template rocsparse_status rocsparse::csritilu0x_history_template(rocsparse_handle     handle_,
+                                                                 rocsparse_itilu0_alg alg_,
+                                                                 rocsparse_int* __restrict__ niter_,
+                                                                 float* __restrict__ data_,
+                                                                 size_t buffer_size_,
+                                                                 void* __restrict__ buffer_);
 
-template rocsparse_status rocsparse_csritilu0x_history_template(rocsparse_handle     handle_,
-                                                                rocsparse_itilu0_alg alg_,
-                                                                rocsparse_int* __restrict__ niter_,
-                                                                double* __restrict__ data_,
-                                                                size_t buffer_size_,
-                                                                void* __restrict__ buffer_);
+template rocsparse_status rocsparse::csritilu0x_history_template(rocsparse_handle     handle_,
+                                                                 rocsparse_itilu0_alg alg_,
+                                                                 rocsparse_int* __restrict__ niter_,
+                                                                 double* __restrict__ data_,
+                                                                 size_t buffer_size_,
+                                                                 void* __restrict__ buffer_);

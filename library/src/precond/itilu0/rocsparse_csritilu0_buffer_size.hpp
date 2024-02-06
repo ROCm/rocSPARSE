@@ -28,30 +28,33 @@
 #include "control.h"
 #include "utility.h"
 
-template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0_buffer_size_template(rocsparse_handle     handle_,
-                                                          rocsparse_itilu0_alg alg_,
-                                                          J                    options_,
-                                                          J                    nmaxiter_,
-                                                          J                    m_,
-                                                          I                    nnz_,
-                                                          const I* __restrict__ ptr_,
-                                                          const J* __restrict__ ind_,
-                                                          rocsparse_index_base base_,
-                                                          rocsparse_datatype   datatype_,
-                                                          size_t* __restrict__ buffer_size_);
+namespace rocsparse
+{
+    template <typename I, typename J>
+    rocsparse_status csritilu0_buffer_size_template(rocsparse_handle     handle_,
+                                                    rocsparse_itilu0_alg alg_,
+                                                    J                    options_,
+                                                    J                    nmaxiter_,
+                                                    J                    m_,
+                                                    I                    nnz_,
+                                                    const I* __restrict__ ptr_,
+                                                    const J* __restrict__ ind_,
+                                                    rocsparse_index_base base_,
+                                                    rocsparse_datatype   datatype_,
+                                                    size_t* __restrict__ buffer_size_);
 
-template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0_buffer_size_impl(rocsparse_handle     handle_,
-                                                      rocsparse_itilu0_alg alg_,
-                                                      J                    options_,
-                                                      J                    nmaxiter_,
-                                                      J                    m_,
-                                                      I                    nnz_,
-                                                      const I* __restrict__ ptr_,
-                                                      const J* __restrict__ ind_,
-                                                      rocsparse_index_base base_,
-                                                      rocsparse_datatype   datatype_,
-                                                      size_t* __restrict__ buffer_size_);
+    template <typename I, typename J>
+    rocsparse_status csritilu0_buffer_size_impl(rocsparse_handle     handle_,
+                                                rocsparse_itilu0_alg alg_,
+                                                J                    options_,
+                                                J                    nmaxiter_,
+                                                J                    m_,
+                                                I                    nnz_,
+                                                const I* __restrict__ ptr_,
+                                                const J* __restrict__ ind_,
+                                                rocsparse_index_base base_,
+                                                rocsparse_datatype   datatype_,
+                                                size_t* __restrict__ buffer_size_);
+}
 
 #endif // ROCSPARSE_CSRITILU0_BUFFER_SIZE_HPP

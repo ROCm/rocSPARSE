@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,57 +27,60 @@
 #include "internal/precond/rocsparse_csritilu0.h"
 #include "rocsparse_csritilu0_driver.hpp"
 
-template <typename I, typename J, typename... P>
-static rocsparse_status buffer_size_dispatch(rocsparse_itilu0_alg alg_, P&&... parameters)
+namespace rocsparse
 {
-    switch(alg_)
+    template <typename I, typename J, typename... P>
+    static rocsparse_status buffer_size_dispatch(rocsparse_itilu0_alg alg_, P&&... parameters)
     {
-    case rocsparse_itilu0_alg_default:
-    case rocsparse_itilu0_alg_async_inplace:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_csritilu0_driver_t<
-                rocsparse_itilu0_alg_async_inplace>::buffer_size<I, J>::run(parameters...)));
-        return rocsparse_status_success;
-    }
-    case rocsparse_itilu0_alg_async_split:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_async_split>::buffer_size<I, J>::run(
-                parameters...)));
-        return rocsparse_status_success;
-    }
-    case rocsparse_itilu0_alg_sync_split:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::buffer_size<I, J>::run(
-                parameters...)));
-        return rocsparse_status_success;
-    }
-    case rocsparse_itilu0_alg_sync_split_fusion:
-    {
-        RETURN_IF_ROCSPARSE_ERROR(
-            (rocsparse_csritilu0_driver_t<
-                rocsparse_itilu0_alg_sync_split_fusion>::buffer_size<I, J>::run(parameters...)));
-        return rocsparse_status_success;
-    }
-    }
+        switch(alg_)
+        {
+        case rocsparse_itilu0_alg_default:
+        case rocsparse_itilu0_alg_async_inplace:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::csritilu0_driver_t<
+                    rocsparse_itilu0_alg_async_inplace>::buffer_size<I, J>::run(parameters...)));
+            return rocsparse_status_success;
+        }
+        case rocsparse_itilu0_alg_async_split:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::csritilu0_driver_t<
+                    rocsparse_itilu0_alg_async_split>::buffer_size<I, J>::run(parameters...)));
+            return rocsparse_status_success;
+        }
+        case rocsparse_itilu0_alg_sync_split:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::csritilu0_driver_t<
+                    rocsparse_itilu0_alg_sync_split>::buffer_size<I, J>::run(parameters...)));
+            return rocsparse_status_success;
+        }
+        case rocsparse_itilu0_alg_sync_split_fusion:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
+                     buffer_size<I, J>::run(parameters...)));
+            return rocsparse_status_success;
+        }
+        }
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+    }
 }
 
 template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0_buffer_size_template(rocsparse_handle     handle_,
-                                                          rocsparse_itilu0_alg alg_,
-                                                          J                    options_,
-                                                          J                    nmaxiter_,
-                                                          J                    m_,
-                                                          I                    nnz_,
-                                                          const I* __restrict__ ptr_,
-                                                          const J* __restrict__ ind_,
-                                                          rocsparse_index_base base_,
-                                                          rocsparse_datatype   datatype_,
-                                                          size_t* __restrict__ buffer_size_)
+rocsparse_status rocsparse::csritilu0_buffer_size_template(rocsparse_handle     handle_,
+                                                           rocsparse_itilu0_alg alg_,
+                                                           J                    options_,
+                                                           J                    nmaxiter_,
+                                                           J                    m_,
+                                                           I                    nnz_,
+                                                           const I* __restrict__ ptr_,
+                                                           const J* __restrict__ ind_,
+                                                           rocsparse_index_base base_,
+                                                           rocsparse_datatype   datatype_,
+                                                           size_t* __restrict__ buffer_size_)
 
 {
     if(m_ == 0)
@@ -90,33 +93,33 @@ rocsparse_status rocsparse_csritilu0_buffer_size_template(rocsparse_handle     h
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_zero_pivot);
     }
 
-    RETURN_IF_ROCSPARSE_ERROR((buffer_size_dispatch<I, J>(alg_,
-                                                          handle_,
-                                                          alg_,
-                                                          options_,
-                                                          nmaxiter_,
-                                                          m_,
-                                                          nnz_,
-                                                          ptr_,
-                                                          ind_,
-                                                          base_,
-                                                          datatype_,
-                                                          buffer_size_)));
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse::buffer_size_dispatch<I, J>(alg_,
+                                                                     handle_,
+                                                                     alg_,
+                                                                     options_,
+                                                                     nmaxiter_,
+                                                                     m_,
+                                                                     nnz_,
+                                                                     ptr_,
+                                                                     ind_,
+                                                                     base_,
+                                                                     datatype_,
+                                                                     buffer_size_)));
     return rocsparse_status_success;
 }
 
 template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0_buffer_size_impl(rocsparse_handle     handle,
-                                                      rocsparse_itilu0_alg alg,
-                                                      J                    options,
-                                                      J                    nmaxiter,
-                                                      J                    m,
-                                                      I                    nnz,
-                                                      const I* __restrict__ ptr,
-                                                      const J* __restrict__ ind,
-                                                      rocsparse_index_base base,
-                                                      rocsparse_datatype   datatype,
-                                                      size_t* __restrict__ buffer_size)
+rocsparse_status rocsparse::csritilu0_buffer_size_impl(rocsparse_handle     handle,
+                                                       rocsparse_itilu0_alg alg,
+                                                       J                    options,
+                                                       J                    nmaxiter,
+                                                       J                    m,
+                                                       I                    nnz,
+                                                       const I* __restrict__ ptr,
+                                                       const J* __restrict__ ind,
+                                                       rocsparse_index_base base,
+                                                       rocsparse_datatype   datatype,
+                                                       size_t* __restrict__ buffer_size)
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
@@ -143,7 +146,7 @@ rocsparse_status rocsparse_csritilu0_buffer_size_impl(rocsparse_handle     handl
     ROCSPARSE_CHECKARG_ENUM(8, base);
     ROCSPARSE_CHECKARG_ENUM(9, datatype);
     ROCSPARSE_CHECKARG_POINTER(10, buffer_size);
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csritilu0_buffer_size_template(
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::csritilu0_buffer_size_template(
         handle, alg, options, nmaxiter, m, nnz, ptr, ind, base, datatype, buffer_size));
     return rocsparse_status_success;
 }
@@ -161,7 +164,7 @@ extern "C" rocsparse_status rocsparse_csritilu0_buffer_size(rocsparse_handle    
                                                             size_t* __restrict__ buffer_size)
 try
 {
-    RETURN_IF_ROCSPARSE_ERROR((rocsparse_csritilu0_buffer_size_impl<rocsparse_int, rocsparse_int>(
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse::csritilu0_buffer_size_impl<rocsparse_int, rocsparse_int>(
         handle, alg, options, nmaxiter, m, nnz, ptr, ind, base, datatype, buffer_size)));
     return rocsparse_status_success;
 }

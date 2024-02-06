@@ -22,40 +22,39 @@
  *
  * ************************************************************************ */
 #pragma once
-#ifndef ROCSPARSE_CSRITILU0_PREPROCESS_HPP
-#define ROCSPARSE_CSRITILU0_PREPROCESS_HPP
 
 #include "control.h"
 #include "utility.h"
 
-template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0_preprocess_template(rocsparse_handle     handle_,
-                                                         rocsparse_itilu0_alg alg_,
-                                                         J                    options_,
-                                                         J                    nmaxiter_,
-                                                         J                    m_,
-                                                         I                    nnz_,
-                                                         const I* __restrict__ ptr_,
-                                                         const J* __restrict__ ind_,
+namespace rocsparse
+{
+    template <typename I, typename J>
+    rocsparse_status csritilu0_preprocess_template(rocsparse_handle     handle_,
+                                                   rocsparse_itilu0_alg alg_,
+                                                   J                    options_,
+                                                   J                    nmaxiter_,
+                                                   J                    m_,
+                                                   I                    nnz_,
+                                                   const I* __restrict__ ptr_,
+                                                   const J* __restrict__ ind_,
 
-                                                         rocsparse_index_base base_,
-                                                         rocsparse_datatype   datatype_,
-                                                         size_t               buffer_size_,
-                                                         void*                buffer_);
+                                                   rocsparse_index_base base_,
+                                                   rocsparse_datatype   datatype_,
+                                                   size_t               buffer_size_,
+                                                   void*                buffer_);
 
-template <typename I, typename J>
-rocsparse_status rocsparse_csritilu0_preprocess_impl(rocsparse_handle     handle_,
-                                                     rocsparse_itilu0_alg alg_,
-                                                     J                    options_,
-                                                     J                    nmaxiter_,
-                                                     J                    m_,
-                                                     I                    nnz_,
-                                                     const I* __restrict__ ptr_,
-                                                     const J* __restrict__ ind_,
+    template <typename I, typename J>
+    rocsparse_status csritilu0_preprocess_impl(rocsparse_handle     handle_,
+                                               rocsparse_itilu0_alg alg_,
+                                               J                    options_,
+                                               J                    nmaxiter_,
+                                               J                    m_,
+                                               I                    nnz_,
+                                               const I* __restrict__ ptr_,
+                                               const J* __restrict__ ind_,
 
-                                                     rocsparse_index_base base_,
-                                                     rocsparse_datatype   datatype_,
-                                                     size_t               buffer_size_,
-                                                     void*                buffer_);
-
-#endif // ROCSPARSE_CSRITILU0_PREPROCESS_HPP
+                                               rocsparse_index_base base_,
+                                               rocsparse_datatype   datatype_,
+                                               size_t               buffer_size_,
+                                               void*                buffer_);
+}
