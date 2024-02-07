@@ -80,8 +80,13 @@ target_include_directories(rocsparse
 
 # Target link libraries
 target_link_libraries(rocsparse PRIVATE roc::rocprim hip::device)
+set(static_depends PACKAGE rocprim)
+
 if (BUILD_WITH_ROCBLAS AND rocblas_FOUND)
   target_link_libraries(rocsparse PRIVATE roc::rocblas)
+  if(NOT BUILD_SHARED_LIBS)
+    list(APPEND static_depends PACKAGE rocblas)
+  endif()
 endif()
 
 # Target properties
@@ -153,5 +158,6 @@ endif()
 # Export targets
 rocm_export_targets(TARGETS roc::rocsparse
                     DEPENDS PACKAGE hip
+                    STATIC_DEPENDS ${static_depends}
                     NAMESPACE roc::
 )
