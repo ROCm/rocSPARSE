@@ -383,13 +383,13 @@ namespace rocsparse
     };
 
     template <>
-    inline bool enum_utils::is_invalid(rocsparse_blas_impl value)
+    inline bool enum_utils::is_invalid(rocsparse::blas_impl value)
     {
         switch(value)
         {
-        case rocsparse_blas_impl_none:
-        case rocsparse_blas_impl_default:
-        case rocsparse_blas_impl_rocblas:
+        case rocsparse::blas_impl_none:
+        case rocsparse::blas_impl_default:
+        case rocsparse::blas_impl_rocblas:
         {
             return false;
         }

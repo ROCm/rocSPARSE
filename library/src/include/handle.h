@@ -84,7 +84,7 @@ struct _rocsparse_handle
     rocsparse_float_complex*  cone{};
     rocsparse_double_complex* zone{};
     // blas handle
-    rocsparse_blas_handle blas_handle;
+    rocsparse::blas_handle blas_handle;
 
     // logging streams
     std::ofstream log_trace_ofs;

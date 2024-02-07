@@ -103,24 +103,24 @@ _rocsparse_handle::_rocsparse_handle()
     THROW_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
     // create blas handle
-    rocsparse_blas_impl blas_impl;
+    rocsparse::blas_impl blas_impl;
 
 #ifdef ROCSPARSE_WITH_ROCBLAS
 
-    blas_impl = rocsparse_blas_impl_rocblas;
+    blas_impl = rocsparse::blas_impl_rocblas;
 
 #else
 
     //
     // Other implementation available? Otherwise, set it to none.
     //
-    blas_impl = rocsparse_blas_impl_none;
+    blas_impl = rocsparse::blas_impl_none;
 #endif
 
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_blas_create_handle(&this->blas_handle, blas_impl));
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_blas_set_stream(this->blas_handle, this->stream));
+    THROW_IF_ROCSPARSE_ERROR(rocsparse::blas_create_handle(&this->blas_handle, blas_impl));
+    THROW_IF_ROCSPARSE_ERROR(rocsparse::blas_set_stream(this->blas_handle, this->stream));
     THROW_IF_ROCSPARSE_ERROR(
-        rocsparse_blas_set_pointer_mode(this->blas_handle, this->pointer_mode));
+        rocsparse::blas_set_pointer_mode(this->blas_handle, this->pointer_mode));
 
     // Open log file
     if(layer_mode & rocsparse_layer_mode_log_trace)
@@ -153,7 +153,7 @@ _rocsparse_handle::~_rocsparse_handle()
     PRINT_IF_HIP_ERROR(rocsparse_hipFree(zone));
 
     // destroy blas handle
-    rocsparse_status status = rocsparse_blas_destroy_handle(this->blas_handle);
+    rocsparse_status status = rocsparse::blas_destroy_handle(this->blas_handle);
     if(status != rocsparse_status_success)
     {
         ROCSPARSE_ERROR_MESSAGE(status, "handle error");
@@ -189,7 +189,7 @@ rocsparse_status _rocsparse_handle::set_stream(hipStream_t user_stream)
     stream = user_stream;
 
     // blas set stream
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_blas_set_stream(this->blas_handle, user_stream));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::blas_set_stream(this->blas_handle, user_stream));
 
     return rocsparse_status_success;
 }
@@ -212,7 +212,7 @@ rocsparse_status _rocsparse_handle::set_pointer_mode(rocsparse_pointer_mode user
     this->pointer_mode = user_mode;
 
     // blas set stream
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_blas_set_pointer_mode(this->blas_handle, user_mode));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::blas_set_pointer_mode(this->blas_handle, user_mode));
 
     return rocsparse_status_success;
 }

@@ -25,7 +25,7 @@
 #include "rocsparse_blas_rocblas.hpp"
 #include "utility.h"
 
-const char* to_string(rocsparse_blas_impl value)
+const char* to_string(rocsparse::blas_impl value)
 {
 
 #define CASE(C) \
@@ -33,33 +33,33 @@ const char* to_string(rocsparse_blas_impl value)
         return #C
     switch(value)
     {
-        CASE(rocsparse_blas_impl_none);
-        CASE(rocsparse_blas_impl_default);
-        CASE(rocsparse_blas_impl_rocblas);
+        CASE(rocsparse::blas_impl_none);
+        CASE(rocsparse::blas_impl_default);
+        CASE(rocsparse::blas_impl_rocblas);
     }
     THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 #undef case
 };
 
-rocsparse_status rocsparse_blas_create_handle(rocsparse_blas_handle* pblas_handle,
-                                              rocsparse_blas_impl    blas_impl)
+rocsparse_status rocsparse::blas_create_handle(rocsparse::blas_handle* pblas_handle,
+                                               rocsparse::blas_impl    blas_impl)
 try
 {
     ROCSPARSE_CHECKARG_POINTER(0, pblas_handle);
     ROCSPARSE_CHECKARG_ENUM(1, blas_impl);
-    *pblas_handle              = new _rocsparse_blas_handle();
+    *pblas_handle              = new rocsparse::_blas_handle();
     pblas_handle[0]->blas_impl = blas_impl;
     switch(blas_impl)
     {
-    case rocsparse_blas_impl_none:
+    case rocsparse::blas_impl_none:
     {
         return rocsparse_status_success;
     }
-    case rocsparse_blas_impl_default:
-    case rocsparse_blas_impl_rocblas:
+    case rocsparse::blas_impl_default:
+    case rocsparse::blas_impl_rocblas:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_blas_rocblas_create_handle(&pblas_handle[0]->blas_rocblas_handle));
+            rocsparse::blas_rocblas_create_handle(&pblas_handle[0]->blas_rocblas_handle));
         return rocsparse_status_success;
     }
     }
@@ -70,7 +70,7 @@ catch(...)
     RETURN_ROCSPARSE_EXCEPTION();
 }
 
-rocsparse_status rocsparse_blas_destroy_handle(rocsparse_blas_handle blas_handle)
+rocsparse_status rocsparse::blas_destroy_handle(rocsparse::blas_handle blas_handle)
 try
 {
     if(blas_handle)
@@ -78,15 +78,15 @@ try
 
         switch(blas_handle->blas_impl)
         {
-        case rocsparse_blas_impl_none:
+        case rocsparse::blas_impl_none:
         {
             return rocsparse_status_success;
         }
-        case rocsparse_blas_impl_default:
-        case rocsparse_blas_impl_rocblas:
+        case rocsparse::blas_impl_default:
+        case rocsparse::blas_impl_rocblas:
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse_blas_rocblas_destroy_handle(blas_handle->blas_rocblas_handle));
+                rocsparse::blas_rocblas_destroy_handle(blas_handle->blas_rocblas_handle));
             break;
         }
         }
@@ -101,41 +101,41 @@ catch(...)
     RETURN_ROCSPARSE_EXCEPTION();
 }
 
-rocsparse_status rocsparse_blas_set_stream(rocsparse_blas_handle blas_handle, hipStream_t stream)
+rocsparse_status rocsparse::blas_set_stream(rocsparse::blas_handle blas_handle, hipStream_t stream)
 {
     ROCSPARSE_CHECKARG_POINTER(0, blas_handle);
     switch(blas_handle->blas_impl)
     {
-    case rocsparse_blas_impl_none:
+    case rocsparse::blas_impl_none:
     {
         return rocsparse_status_success;
     }
-    case rocsparse_blas_impl_default:
-    case rocsparse_blas_impl_rocblas:
+    case rocsparse::blas_impl_default:
+    case rocsparse::blas_impl_rocblas:
     {
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_blas_rocblas_set_stream(blas_handle->blas_rocblas_handle, stream));
+            rocsparse::blas_rocblas_set_stream(blas_handle->blas_rocblas_handle, stream));
         return rocsparse_status_success;
     }
     }
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
-rocsparse_status rocsparse_blas_set_pointer_mode(rocsparse_blas_handle  blas_handle,
-                                                 rocsparse_pointer_mode pointer_mode)
+rocsparse_status rocsparse::blas_set_pointer_mode(rocsparse::blas_handle blas_handle,
+                                                  rocsparse_pointer_mode pointer_mode)
 {
     ROCSPARSE_CHECKARG_POINTER(0, blas_handle);
     ROCSPARSE_CHECKARG_ENUM(1, pointer_mode);
     switch(blas_handle->blas_impl)
     {
-    case rocsparse_blas_impl_none:
+    case rocsparse::blas_impl_none:
     {
         return rocsparse_status_success;
     }
-    case rocsparse_blas_impl_default:
-    case rocsparse_blas_impl_rocblas:
+    case rocsparse::blas_impl_default:
+    case rocsparse::blas_impl_rocblas:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_blas_rocblas_set_pointer_mode(
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::blas_rocblas_set_pointer_mode(
             blas_handle->blas_rocblas_handle, pointer_mode));
         return rocsparse_status_success;
     }
@@ -143,66 +143,66 @@ rocsparse_status rocsparse_blas_set_pointer_mode(rocsparse_blas_handle  blas_han
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
-rocsparse_status rocsparse_blas_gemm_ex(rocsparse_blas_handle   blas_handle,
-                                        rocsparse_operation     transA,
-                                        rocsparse_operation     transB,
-                                        rocsparse_int           m,
-                                        rocsparse_int           n,
-                                        rocsparse_int           k,
-                                        const void*             alpha,
-                                        const void*             a,
-                                        rocsparse_datatype      a_type,
-                                        rocsparse_int           lda,
-                                        const void*             b,
-                                        rocsparse_datatype      b_type,
-                                        rocsparse_int           ldb,
-                                        const void*             beta,
-                                        const void*             c,
-                                        rocsparse_datatype      c_type,
-                                        rocsparse_int           ldc,
-                                        void*                   d,
-                                        rocsparse_datatype      d_type,
-                                        rocsparse_int           ldd,
-                                        rocsparse_datatype      compute_type,
-                                        rocsparse_blas_gemm_alg algo,
-                                        int32_t                 solution_index,
-                                        uint32_t                flags)
+rocsparse_status rocsparse::blas_gemm_ex(rocsparse::blas_handle   blas_handle,
+                                         rocsparse_operation      transA,
+                                         rocsparse_operation      transB,
+                                         rocsparse_int            m,
+                                         rocsparse_int            n,
+                                         rocsparse_int            k,
+                                         const void*              alpha,
+                                         const void*              a,
+                                         rocsparse_datatype       a_type,
+                                         rocsparse_int            lda,
+                                         const void*              b,
+                                         rocsparse_datatype       b_type,
+                                         rocsparse_int            ldb,
+                                         const void*              beta,
+                                         const void*              c,
+                                         rocsparse_datatype       c_type,
+                                         rocsparse_int            ldc,
+                                         void*                    d,
+                                         rocsparse_datatype       d_type,
+                                         rocsparse_int            ldd,
+                                         rocsparse_datatype       compute_type,
+                                         rocsparse::blas_gemm_alg algo,
+                                         int32_t                  solution_index,
+                                         uint32_t                 flags)
 {
     ROCSPARSE_CHECKARG_POINTER(0, blas_handle);
     switch(blas_handle->blas_impl)
     {
-    case rocsparse_blas_impl_none:
+    case rocsparse::blas_impl_none:
     {
         RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented,
                                                "no blas implementation is selected.");
     }
-    case rocsparse_blas_impl_default:
-    case rocsparse_blas_impl_rocblas:
+    case rocsparse::blas_impl_default:
+    case rocsparse::blas_impl_rocblas:
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_blas_rocblas_gemm_ex(blas_handle->blas_rocblas_handle,
-                                                                 transA,
-                                                                 transB,
-                                                                 m,
-                                                                 n,
-                                                                 k,
-                                                                 alpha,
-                                                                 a,
-                                                                 a_type,
-                                                                 lda,
-                                                                 b,
-                                                                 b_type,
-                                                                 ldb,
-                                                                 beta,
-                                                                 c,
-                                                                 c_type,
-                                                                 ldc,
-                                                                 d,
-                                                                 d_type,
-                                                                 ldd,
-                                                                 compute_type,
-                                                                 algo,
-                                                                 solution_index,
-                                                                 flags));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::blas_rocblas_gemm_ex(blas_handle->blas_rocblas_handle,
+                                                                  transA,
+                                                                  transB,
+                                                                  m,
+                                                                  n,
+                                                                  k,
+                                                                  alpha,
+                                                                  a,
+                                                                  a_type,
+                                                                  lda,
+                                                                  b,
+                                                                  b_type,
+                                                                  ldb,
+                                                                  beta,
+                                                                  c,
+                                                                  c_type,
+                                                                  ldc,
+                                                                  d,
+                                                                  d_type,
+                                                                  ldd,
+                                                                  compute_type,
+                                                                  algo,
+                                                                  solution_index,
+                                                                  flags));
         return rocsparse_status_success;
     }
     }

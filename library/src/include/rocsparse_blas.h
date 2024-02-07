@@ -29,80 +29,81 @@
 
 #include "rocsparse-types.h"
 
-typedef enum rocsparse_blas_impl_
+namespace rocsparse
 {
-    rocsparse_blas_impl_none,
-    rocsparse_blas_impl_default,
-    rocsparse_blas_impl_rocblas
-} rocsparse_blas_impl;
+    typedef enum blas_impl_
+    {
+        blas_impl_none,
+        blas_impl_default,
+        blas_impl_rocblas
+    } blas_impl;
 
-const char* to_string(rocsparse_blas_impl value);
+    const char* to_string(rocsparse::blas_impl value);
 
-typedef struct _rocsparse_blas_rocblas_handle* rocsparse_blas_rocblas_handle;
+    typedef struct _blas_rocblas_handle* blas_rocblas_handle;
 
-struct _rocsparse_blas_handle
-{
-    rocsparse_blas_impl           blas_impl{rocsparse_blas_impl_none};
-    rocsparse_blas_rocblas_handle blas_rocblas_handle{};
-};
+    struct _blas_handle
+    {
+        blas_impl           blas_impl{blas_impl_none};
+        blas_rocblas_handle blas_rocblas_handle{};
+    };
 
-typedef struct _rocsparse_blas_handle* rocsparse_blas_handle;
+    typedef struct _blas_handle* blas_handle;
 
-/*!
+    /*!
 *   \brief List of BLAS gemm algorithms
 */
-typedef enum rocsparse_blas_gemm_alg_
-{
-    rocsparse_blas_gemm_alg_standard,
-    rocsparse_blas_gemm_alg_solution_index
-} rocsparse_blas_gemm_alg;
+    typedef enum blas_gemm_alg_
+    {
+        blas_gemm_alg_standard,
+        blas_gemm_alg_solution_index
+    } blas_gemm_alg;
 
-/*!
+    /*!
 *   \brief Create handle.
 */
-rocsparse_status rocsparse_blas_create_handle(rocsparse_blas_handle* handle,
-                                              rocsparse_blas_impl    blas_impl);
+    rocsparse_status blas_create_handle(blas_handle* handle, blas_impl blas_impl);
 
-/*!
+    /*!
 *   \brief Destroy handle.
 */
-rocsparse_status rocsparse_blas_destroy_handle(rocsparse_blas_handle handle);
+    rocsparse_status blas_destroy_handle(blas_handle handle);
 
-/*!
+    /*!
 *   \brief Set stream for handle.
 */
-rocsparse_status rocsparse_blas_set_stream(rocsparse_blas_handle handle, hipStream_t stream);
+    rocsparse_status blas_set_stream(blas_handle handle, hipStream_t stream);
 
-/*!
+    /*!
 *   \brief Set pointer mode handle.
 */
-rocsparse_status rocsparse_blas_set_pointer_mode(rocsparse_blas_handle  handle,
-                                                 rocsparse_pointer_mode pointer_mode);
+    rocsparse_status blas_set_pointer_mode(blas_handle handle, rocsparse_pointer_mode pointer_mode);
 
-/*!
+    /*!
 *   \brief Dense gemm operation.
 */
-rocsparse_status rocsparse_blas_gemm_ex(rocsparse_blas_handle   handle,
-                                        rocsparse_operation     transA,
-                                        rocsparse_operation     transB,
-                                        rocsparse_int           m,
-                                        rocsparse_int           n,
-                                        rocsparse_int           k,
-                                        const void*             alpha,
-                                        const void*             a,
-                                        rocsparse_datatype      a_type,
-                                        rocsparse_int           lda,
-                                        const void*             b,
-                                        rocsparse_datatype      b_type,
-                                        rocsparse_int           ldb,
-                                        const void*             beta,
-                                        const void*             c,
-                                        rocsparse_datatype      c_type,
-                                        rocsparse_int           ldc,
-                                        void*                   d,
-                                        rocsparse_datatype      d_type,
-                                        rocsparse_int           ldd,
-                                        rocsparse_datatype      compute_type,
-                                        rocsparse_blas_gemm_alg algo,
-                                        int32_t                 solution_index,
-                                        uint32_t                flags);
+    rocsparse_status blas_gemm_ex(blas_handle         handle,
+                                  rocsparse_operation transA,
+                                  rocsparse_operation transB,
+                                  rocsparse_int       m,
+                                  rocsparse_int       n,
+                                  rocsparse_int       k,
+                                  const void*         alpha,
+                                  const void*         a,
+                                  rocsparse_datatype  a_type,
+                                  rocsparse_int       lda,
+                                  const void*         b,
+                                  rocsparse_datatype  b_type,
+                                  rocsparse_int       ldb,
+                                  const void*         beta,
+                                  const void*         c,
+                                  rocsparse_datatype  c_type,
+                                  rocsparse_int       ldc,
+                                  void*               d,
+                                  rocsparse_datatype  d_type,
+                                  rocsparse_int       ldd,
+                                  rocsparse_datatype  compute_type,
+                                  blas_gemm_alg       algo,
+                                  int32_t             solution_index,
+                                  uint32_t            flags);
+}
