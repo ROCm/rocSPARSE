@@ -16,7 +16,7 @@ def runCI =
 
     // customize for project
     prj.paths.build_command = './install.sh --matrices-dir-install ${JENKINS_HOME_DIR}/rocsparse_matrices && ./install.sh -c --address-sanitizer --matrices-dir ${JENKINS_HOME_DIR}/rocsparse_matrices'
-    prj.libraryDependencies = ['rocPRIM', 'rocBLAS-internal']
+    prj.libraryDependencies = ['rocPRIM', 'rocBLAS']
     prj.defaults.ccache = true
 
     // Define test architectures, optional rocm version argument is available
