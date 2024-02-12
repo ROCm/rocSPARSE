@@ -24,10 +24,13 @@ function display_help()
   echo "    [--memstat] build with memory statistics enabled."
   echo "    [--address-sanitizer] build with address sanitizer"
   echo "    [--codecoverage] build with code coverage profiling enabled"
+  echo "    [--rocprim-path] Specify path to an existing rocPRIM install directory (e.g. /src/rocPRIM/build/release/rocprim)"
+  echo "    [--rocblas-path] Specify path to an existing rocBLAS install directory (e.g. /src/rocBLAS/build/release/rocblas-install)"
   echo "    [--matrices-dir] existing client matrices directory"
   echo "    [--matrices-dir-install] install client matrices directory"
   echo "    [--rm-legacy-include-dir] Remove legacy include dir Packaging added for file/folder reorg backward compatibility."
   echo "    [--without-rocblas] Disable building rocSPARSE with rocBLAS."
+  echo "    [--cmake-arg] Forward the given argument to CMake when configuring the build."
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
@@ -229,6 +232,11 @@ install_packages( )
   esac
 }
 
+# given a relative path, returns the absolute path
+make_absolute_path( ) {
+  (cd "$1" && pwd -P)
+}
+
 # #################################################
 # Pre-requisites check
 # #################################################
@@ -277,6 +285,8 @@ matrices_dir=
 matrices_dir_install=
 gpu_architecture=all
 build_freorg_bkwdcomp=false
+declare -a cmake_common_options
+declare -a cmake_client_options
 
 # #################################################
 # Parameter parsing
@@ -285,7 +295,7 @@ build_freorg_bkwdcomp=false
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,memstat,without-rocblas,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir --options hicdgrka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,memstat,rocprim-path:,rocblas-path:,without-rocblas,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir,cmake-arg: --options hicdgrka: -- "$@")
 
 else
   echo "Need a new version of getopt"
@@ -332,6 +342,12 @@ while true; do
         --memstat)
             build_memstat=true
             shift ;;
+        --rocprim-path)
+            rocprim_path=${2}
+            shift 2 ;;
+        --rocblas-path)
+            rocblas_path=${2}
+            shift 2 ;;
         --without-rocblas)
             build_with_rocblas=false
             shift ;;
@@ -347,6 +363,9 @@ while true; do
             shift ;;
         -a|--architecture)
             gpu_architecture=${2}
+            shift 2 ;;
+        --cmake-arg)
+            cmake_common_options+=("${2}")
             shift 2 ;;
         --matrices-dir)
             matrices_dir=${2}
@@ -411,6 +430,14 @@ else
   rm -rf ${build_dir}/debug
 fi
 
+# resolve relative paths
+if [[ -n "${rocprim_path+x}" ]]; then
+  rocprim_path="$(make_absolute_path "${rocprim_path}")"
+fi
+if [[ -n "${rocblas_path+x}" ]]; then
+  rocblas_path="$(make_absolute_path "${rocblas_path}")"
+fi
+
 # Default cmake executable is called cmake
 cmake_executable=cmake
 
@@ -466,44 +493,43 @@ pushd .
   # #################################################
   # configure & build
   # #################################################
-  cmake_common_options="-DAMDGPU_TARGETS=${gpu_architecture}"
-  cmake_client_options=""
+  cmake_common_options+=("-DAMDGPU_TARGETS=${gpu_architecture}")
 
   # build type
   if [[ "${build_release}" == true ]]; then
     mkdir -p ${build_dir}/release/clients && cd ${build_dir}/release
-    cmake_common_options="${cmake_common_options} -DCMAKE_BUILD_TYPE=Release"
+    cmake_common_options+=("-DCMAKE_BUILD_TYPE=Release")
   elif [[ "${build_release_debug}" == true ]]; then
     mkdir -p ${build_dir}/release-debug/clients && cd ${build_dir}/release-debug
-    cmake_common_options="${cmake_common_options}  -DCMAKE_BUILD_TYPE=RelWithDebInfo"
+    cmake_common_options+=("-DCMAKE_BUILD_TYPE=RelWithDebInfo")
   else
     mkdir -p ${build_dir}/debug/clients && cd ${build_dir}/debug
-    cmake_common_options="${cmake_common_options} -DCMAKE_BUILD_TYPE=Debug"
+    cmake_common_options+=("-DCMAKE_BUILD_TYPE=Debug")
   fi
 
   # address sanitizer
   if [[ "${build_address_sanitizer}" == true ]]; then
-    cmake_common_options="${cmake_common_options} -DBUILD_ADDRESS_SANITIZER=ON"
+    cmake_common_options+=("-DBUILD_ADDRESS_SANITIZER=ON")
   fi
 
 
   # memstat
   if [[ "${build_memstat}" == true ]]; then
-    cmake_common_options="${cmake_common_options} -DBUILD_MEMSTAT=ON"
+    cmake_common_options+=("-DBUILD_MEMSTAT=ON")
   fi
 
   # without-rocblas
   if [[ "${build_with_rocblas}" == true ]]; then
-    cmake_common_options="${cmake_common_options} -DBUILD_WITH_ROCBLAS=ON"
+    cmake_common_options+=("-DBUILD_WITH_ROCBLAS=ON")
   else
-    cmake_common_options="${cmake_common_options} -DBUILD_WITH_ROCBLAS=OFF"
+    cmake_common_options+=("-DBUILD_WITH_ROCBLAS=OFF")
   fi
 
   # freorg backward compatible support enable
   if [[ "${build_freorg_bkwdcomp}" == true ]]; then
-    cmake_common_options="${cmake_common_options} -DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=ON"
+    cmake_common_options+=("-DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=ON")
   else
-    cmake_common_options="${cmake_common_options} -DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF"
+    cmake_common_options+=("-DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF")
   fi
 
   # code coverage
@@ -512,22 +538,22 @@ pushd .
           echo "Code coverage is disabled in Release mode, to enable code coverage select either Debug mode (-g | --debug) or RelWithDebInfo mode (-k | --relwithdebinfo); aborting";
           exit 1
       fi
-      cmake_common_options="${cmake_common_options} -DBUILD_CODE_COVERAGE=ON"
+      cmake_common_options+=("-DBUILD_CODE_COVERAGE=ON")
   fi
 
   # library type
   if [[ "${build_static}" == true ]]; then
-    cmake_common_options="{cmake_common_options} -DBUILD_SHARED_LIBS=OFF"
+    cmake_common_options+=("-DBUILD_SHARED_LIBS=OFF")
   fi
 
   # clients
   if [[ "${build_clients}" == true ]]; then
-      cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_SAMPLES=ON -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON"
+      cmake_client_options+=("-DBUILD_CLIENTS_SAMPLES=ON" "-DBUILD_CLIENTS_TESTS=ON" "-DBUILD_CLIENTS_BENCHMARKS=ON")
       #
       # Add matrices_dir if exists.
       #
       if ! [[ "${matrices_dir}" == "" ]];then
-          cmake_client_options="${cmake_client_options} -DCMAKE_MATRICES_DIR=${matrices_dir}"
+          cmake_client_options+=("-DCMAKE_MATRICES_DIR=${matrices_dir}")
       fi
   fi
 
@@ -536,13 +562,19 @@ pushd .
     compiler="${rocm_path}/bin/hipcc"
   fi
 
-  if [[ "${build_clients}" == false ]]; then
-    cmake_client_options=""
+  # custom rocprim
+  if [[ ${rocprim_path+foo} ]]; then
+    cmake_common_options+=("-Drocprim_DIR=${rocprim_path}/rocprim")
+  fi
+
+  # custom rocblas
+  if [[ ${rocblas_path+foo} ]]; then
+    cmake_common_options+=("-Drocblas_DIR=${rocblas_path}/lib/cmake/rocblas")
   fi
 
   # Build library with AMD toolchain because of existence of device kernels
   if [[ "${build_relocatable}" == true ]]; then
-    FC=gfortran CXX=${compiler} CC=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF \
+    FC=gfortran CXX=${compiler} CC=${compiler} ${cmake_executable} ${cmake_common_options[@]} ${cmake_client_options[@]} -DCPACK_SET_DESTDIR=OFF \
       -DCMAKE_INSTALL_PREFIX=${install_prefix} \
       -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} \
       -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" \
@@ -551,7 +583,7 @@ pushd .
       -DROCM_DISABLE_LDCONFIG=ON \
       -DROCM_PATH="${rocm_path}" ../..
   else
-    FC=gfortran CXX=${compiler} CC=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${install_prefix} -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} -DROCM_PATH="${rocm_path}" ../..
+    FC=gfortran CXX=${compiler} CC=${compiler} ${cmake_executable} ${cmake_common_options[@]} ${cmake_client_options[@]} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${install_prefix} -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} -DROCM_PATH="${rocm_path}" ../..
   fi
   check_exit_code "$?"
 
