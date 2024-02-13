@@ -99,27 +99,8 @@ namespace rocsparse
 
             // While there are threads in this workgroup that have been unable to
             // get their input, loop and wait for the flag to exist.
-            int local_done = __hip_atomic_load(
-                &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            unsigned int times_through = 0;
-            while(!local_done)
-            {
-                if(SLEEP)
-                {
-                    for(unsigned int i = 0; i < times_through; ++i)
-                    {
-                        __builtin_amdgcn_s_sleep(1);
-                    }
-
-                    if(times_through < 3907)
-                    {
-                        ++times_through;
-                    }
-                }
-
-                local_done = __hip_atomic_load(
-                    &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            }
+            const int local_done
+                = rocsparse::spin_loop<SLEEP>(&done_array[local_col], __HIP_MEMORY_SCOPE_AGENT);
 
             // Local maximum
             local_max = max(local_done, local_max);
@@ -138,31 +119,8 @@ namespace rocsparse
             if(local_col < row)
             {
                 // Index into shared memory to query for done flag
-                int local_idx = local_col - first_row;
-
-                int local_done = __hip_atomic_load(
-                    &local_done_array[local_idx], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_WORKGROUP);
-                unsigned int times_through = 0;
-                while(!local_done)
-                {
-                    if(SLEEP)
-                    {
-                        for(unsigned int i = 0; i < times_through; ++i)
-                        {
-                            __builtin_amdgcn_s_sleep(1);
-                        }
-
-                        if(times_through < 3907)
-                        {
-                            ++times_through;
-                        }
-                    }
-
-                    local_done = __hip_atomic_load(&local_done_array[local_idx],
-                                                   __ATOMIC_RELAXED,
-                                                   __HIP_MEMORY_SCOPE_WORKGROUP);
-                }
-
+                const int local_done = rocsparse::spin_loop<SLEEP>(
+                    &done_array[local_col - first_row], __HIP_MEMORY_SCOPE_WORKGROUP);
                 local_max = max(local_done, local_max);
             }
         }
@@ -264,28 +222,8 @@ namespace rocsparse
 
             // While there are threads in this workgroup that have been unable to
             // get their input, loop and wait for the flag to exist.
-            int local_done = __hip_atomic_load(
-                &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            unsigned int times_through = 0;
-            while(!local_done)
-            {
-                if(SLEEP)
-                {
-                    for(unsigned int i = 0; i < times_through; ++i)
-                    {
-                        __builtin_amdgcn_s_sleep(1);
-                    }
-
-                    if(times_through < 3907)
-                    {
-                        ++times_through;
-                    }
-                }
-
-                local_done = __hip_atomic_load(
-                    &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            }
-
+            const int local_done
+                = rocsparse::spin_loop<SLEEP>(&done_array[local_col], __HIP_MEMORY_SCOPE_AGENT);
             // Local maximum
             local_max = max(local_done, local_max);
         }
@@ -303,31 +241,8 @@ namespace rocsparse
             if(local_col > row)
             {
                 // Index into shared memory to query for done flag
-                int local_idx = last_row - local_col;
-
-                int local_done = __hip_atomic_load(
-                    &local_done_array[local_idx], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_WORKGROUP);
-                unsigned int times_through = 0;
-                while(!local_done)
-                {
-                    if(SLEEP)
-                    {
-                        for(unsigned int i = 0; i < times_through; ++i)
-                        {
-                            __builtin_amdgcn_s_sleep(1);
-                        }
-
-                        if(times_through < 3907)
-                        {
-                            ++times_through;
-                        }
-                    }
-
-                    local_done = __hip_atomic_load(&local_done_array[local_idx],
-                                                   __ATOMIC_RELAXED,
-                                                   __HIP_MEMORY_SCOPE_WORKGROUP);
-                }
-
+                const int local_done = rocsparse::spin_loop<SLEEP>(
+                    &done_array[last_row - local_col], __HIP_MEMORY_SCOPE_WORKGROUP);
                 local_max = max(local_done, local_max);
             }
         }
@@ -483,28 +398,7 @@ namespace rocsparse
             }
 
             // Spin loop until dependency has been resolved
-            int local_done = __hip_atomic_load(
-                &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            unsigned int times_through = 0;
-            while(!local_done)
-            {
-                if(SLEEP)
-                {
-                    for(unsigned int i = 0; i < times_through; ++i)
-                    {
-                        __builtin_amdgcn_s_sleep(1);
-                    }
-
-                    if(times_through < 3907)
-                    {
-                        ++times_through;
-                    }
-                }
-
-                local_done = __hip_atomic_load(
-                    &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            }
-
+            (void)rocsparse::spin_loop<SLEEP>(&done_array[local_col], __HIP_MEMORY_SCOPE_AGENT);
             __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
             // Local sum computation for each lane

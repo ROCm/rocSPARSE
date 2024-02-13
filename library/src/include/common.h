@@ -1101,4 +1101,28 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
 
         data[lid + ld * wid] = value;
     }
+
+    template <bool SLEEP>
+    __device__ __forceinline__ int spin_loop(int* __restrict__ done, int scope)
+    {
+        int          local_done    = __hip_atomic_load(done, __ATOMIC_RELAXED, scope);
+        unsigned int times_through = 0;
+        while(!local_done)
+        {
+            if(SLEEP)
+            {
+                for(unsigned int i = 0; i < times_through; ++i)
+                {
+                    __builtin_amdgcn_s_sleep(1);
+                }
+
+                if(times_through < 3907)
+                {
+                    ++times_through;
+                }
+            }
+            local_done = __hip_atomic_load(done, __ATOMIC_RELAXED, scope);
+        }
+        return local_done;
+    }
 }

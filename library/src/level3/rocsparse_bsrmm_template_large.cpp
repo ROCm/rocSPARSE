@@ -47,8 +47,8 @@ namespace rocsparse
                                      int64_t              ldc,
                                      rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
         if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
         {
@@ -86,32 +86,30 @@ namespace rocsparse
     //
     enum_large_config get_large_config(rocsparse_int block_dim, rocsparse_int n)
     {
-        enum_large_config config;
         if(block_dim <= 4)
         {
-            config = large_config_4_16;
+            return large_config_4_16;
         }
         else if(block_dim <= 8)
         {
             if(n <= 16)
             {
-                config = large_config_8_16;
+                return large_config_8_16;
             }
             else
             {
-                config = large_config_8_32;
+                return large_config_8_32;
             }
         }
         else if(block_dim <= 16)
         {
-            config = large_config_16_16;
+            return large_config_16_16;
         }
         else
         {
             assert(block_dim <= 32);
-            config = large_config_32_32;
+            return large_config_32_32;
         }
-        return config;
     }
 
     template <typename T, typename U>
@@ -139,8 +137,8 @@ namespace rocsparse
         assert(block_dim <= 32);
 
 #define LAUNCH_LARGE_KERNEL(M_, N_)                                                      \
-    dim3 bsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / N_ + 1);                               \
-    dim3 bsrmm_threads(M_, N_);                                                          \
+    const dim3 bsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / N_ + 1);                         \
+    const dim3 bsrmm_threads(M_, N_);                                                    \
     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::bsrmm_large_blockdim_kernel<M_, N_>), \
                                        bsrmm_blocks,                                     \
                                        bsrmm_threads,                                    \

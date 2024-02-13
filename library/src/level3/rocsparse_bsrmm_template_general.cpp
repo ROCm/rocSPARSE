@@ -45,8 +45,8 @@ namespace rocsparse
                                        int64_t              ldc,
                                        rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
         if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
         {
@@ -93,8 +93,8 @@ namespace rocsparse
     {
         hipStream_t stream = handle->stream;
         assert(block_dim > 32);
-        dim3 bsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / 32 + 1);
-        dim3 bsrmm_threads(32, 32, 1);
+        const dim3 bsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / 32 + 1);
+        const dim3 bsrmm_threads(32, 32, 1);
         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::bsrmm_general_blockdim_kernel<32, 32>),
                                            bsrmm_blocks,
                                            bsrmm_threads,

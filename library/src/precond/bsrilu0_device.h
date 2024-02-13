@@ -1031,27 +1031,7 @@ namespace rocsparse
                 }
 
                 // Spin loop until dependency has been resolved
-                int local_done = __hip_atomic_load(
-                    &done_array[bsr_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-                unsigned int times_through = 0;
-                while(!local_done)
-                {
-                    if(SLEEP)
-                    {
-                        for(unsigned int i = 0; i < times_through; ++i)
-                        {
-                            __builtin_amdgcn_s_sleep(1);
-                        }
-
-                        if(times_through < 3907)
-                        {
-                            ++times_through;
-                        }
-                    }
-
-                    local_done = __hip_atomic_load(
-                        &done_array[bsr_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-                }
+                (void)rocsparse::spin_loop<SLEEP>(&done_array[bsr_col], __HIP_MEMORY_SCOPE_AGENT);
 
                 // Make sure dependencies are visible in global memory
                 __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");

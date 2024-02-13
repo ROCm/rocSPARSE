@@ -53,27 +53,26 @@ namespace rocsparse
                                                          rocsparse_order      order_C,
                                                          rocsparse_index_base idx_base)
     {
-        int     tid = hipThreadIdx_x;
-        int64_t gid = hipBlockIdx_x * BLOCKSIZE + tid;
-        int     lid = tid & (WF_SIZE - 1);
+        const int     tid = hipThreadIdx_x;
+        const int64_t gid = hipBlockIdx_x * BLOCKSIZE + tid;
+        const int     lid = tid & (WF_SIZE - 1);
 
-        I row = (gid < nnz) ? rocsparse::nontemporal_load(coo_row_ind + gid) - idx_base : 0;
-        I col = (gid < nnz) ? rocsparse::nontemporal_load(coo_col_ind + gid) - idx_base : 0;
-        T val = (gid < nnz) ? rocsparse::nontemporal_load(coo_val + gid) : static_cast<T>(0);
+        const I row = (gid < nnz) ? rocsparse::nontemporal_load(coo_row_ind + gid) - idx_base : 0;
+        const I col = (gid < nnz) ? rocsparse::nontemporal_load(coo_col_ind + gid) - idx_base : 0;
+        const T val = (gid < nnz) ? rocsparse::nontemporal_load(coo_val + gid) : static_cast<T>(0);
 
         for(I l = 0; l < ncol; l += WF_SIZE * LOOPS)
         {
-            I colB = l + lid;
+            const I colB = l + lid;
 
             T sum[LOOPS]{};
 
             I current_row = rocsparse::shfl(row, 0, WF_SIZE);
-
             for(unsigned int i = 0; i < WF_SIZE; ++i)
             {
-                T v = rocsparse::shfl(val, i, WF_SIZE);
-                I c = rocsparse::shfl(col, i, WF_SIZE);
-                I r = rocsparse::shfl(row, i, WF_SIZE);
+                const T v = rocsparse::shfl(val, i, WF_SIZE);
+                const I c = rocsparse::shfl(col, i, WF_SIZE);
+                const I r = rocsparse::shfl(row, i, WF_SIZE);
 
                 if(r != current_row)
                 {
@@ -163,22 +162,22 @@ namespace rocsparse
                                                               rocsparse_order      order_C,
                                                               rocsparse_index_base idx_base)
     {
-        int     tid = hipThreadIdx_x;
-        int     lid = tid & (WF_SIZE - 1);
-        int     wid = tid / WF_SIZE;
-        int64_t gid = BLOCKSIZE * hipBlockIdx_x + tid;
+        const int     tid = hipThreadIdx_x;
+        const int     lid = tid & (WF_SIZE - 1);
+        const int     wid = tid / WF_SIZE;
+        const int64_t gid = BLOCKSIZE * hipBlockIdx_x + tid;
 
         __shared__ I shared_row[(BLOCKSIZE / WF_SIZE) * WF_SIZE];
         __shared__ T shared_val[(BLOCKSIZE / WF_SIZE) * WF_SIZE];
 
-        I row = (gid < nnz) ? rocsparse::nontemporal_load(&coo_row_ind[gid]) - idx_base : -1;
-        I col = (gid < nnz) ? rocsparse::nontemporal_load(&coo_col_ind[gid]) - idx_base : 0;
-        T val
+        const I row = (gid < nnz) ? rocsparse::nontemporal_load(&coo_row_ind[gid]) - idx_base : -1;
+        const I col = (gid < nnz) ? rocsparse::nontemporal_load(&coo_col_ind[gid]) - idx_base : 0;
+        const T val
             = (gid < nnz) ? alpha * rocsparse::nontemporal_load(&coo_val[gid]) : static_cast<T>(0);
 
         for(I l = ncol_offset; l < n; l += WF_SIZE)
         {
-            I colB = l + lid;
+            const I colB = l + lid;
 
             T sum         = static_cast<T>(0);
             I current_row = rocsparse::shfl(row, 0, WF_SIZE);
@@ -229,8 +228,8 @@ namespace rocsparse
             current_row = shared_row[tid];
             sum         = shared_val[tid];
 
-            int slid = tid & ((BLOCKSIZE / WF_SIZE) - 1);
-            int swid = tid / (BLOCKSIZE / WF_SIZE);
+            const int slid = tid & ((BLOCKSIZE / WF_SIZE) - 1);
+            const int swid = tid / (BLOCKSIZE / WF_SIZE);
 
             // segmented reduction
             for(unsigned int j = 1; j < (BLOCKSIZE / WF_SIZE); j <<= 1)
@@ -307,27 +306,19 @@ namespace rocsparse
                                                     rocsparse_order      order_C,
                                                     rocsparse_index_base idx_base)
     {
-        int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const int64_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
         if(gid >= nnz)
         {
             return;
         }
 
-        I row = coo_row_ind[gid] - idx_base;
-        I col = coo_col_ind[gid] - idx_base;
-        T val = conj_val(coo_val[gid], conj_A);
+        const I row = coo_row_ind[gid] - idx_base;
+        const I col = coo_col_ind[gid] - idx_base;
+        const T val = conj_val(coo_val[gid], conj_A);
 
-        T bval = static_cast<T>(0);
-
-        if(TRANSB)
-        {
-            bval = conj_val(dense_B[ldb * row + hipBlockIdx_y], conj_B);
-        }
-        else
-        {
-            bval = conj_val(dense_B[hipBlockIdx_y * ldb + row], conj_B);
-        }
+        const T bval = (TRANSB) ? conj_val(dense_B[ldb * row + hipBlockIdx_y], conj_B)
+                                : conj_val(dense_B[hipBlockIdx_y * ldb + row], conj_B);
 
         if(order_C == rocsparse_order_column)
         {
@@ -369,7 +360,8 @@ namespace rocsparse
                              rocsparse_order      order_C,
                              rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         if(alpha != static_cast<T>(0))
         {
             rocsparse::coommnn_atomic_main_device<BLOCKSIZE, WF_SIZE, LOOPS, TRANSB>(
@@ -420,8 +412,7 @@ namespace rocsparse
                                   rocsparse_order      order_C,
                                   rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         if(alpha != static_cast<T>(0))
         {
             rocsparse::coommnn_atomic_remainder_device<BLOCKSIZE, WF_SIZE, TRANSB>(
@@ -470,7 +461,7 @@ namespace rocsparse
                              rocsparse_order      order_C,
                              rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         if(alpha != static_cast<T>(0))
         {
             rocsparse::coommtn_atomic_device<BLOCKSIZE, TRANSB>(
@@ -667,8 +658,8 @@ namespace rocsparse
                                            int64_t                   batch_stride_C,
                                            rocsparse_order           order_C)
     {
-        bool conj_A = (trans_A == rocsparse_operation_conjugate_transpose);
-        bool conj_B = (trans_B == rocsparse_operation_conjugate_transpose);
+        const bool conj_A = (trans_A == rocsparse_operation_conjugate_transpose);
+        const bool conj_B = (trans_B == rocsparse_operation_conjugate_transpose);
 
         // Run different coomm kernels
         if(trans_A == rocsparse_operation_none)

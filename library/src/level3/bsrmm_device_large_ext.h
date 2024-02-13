@@ -49,9 +49,9 @@ namespace rocsparse
                                         int64_t              ldc,
                                         rocsparse_index_base idx_base)
     {
-        rocsparse_int tidx = hipThreadIdx_x, tidy = hipThreadIdx_y;
+        const rocsparse_int tidx = hipThreadIdx_x, tidy = hipThreadIdx_y;
 
-        rocsparse_int global_row = tidx + hipBlockIdx_x * block_dim;
+        const rocsparse_int global_row = tidx + hipBlockIdx_x * block_dim;
 
         __shared__ T shared_B[BSR_BLOCK_DIM * (BLK_SIZE_Y * UNROLL_SIZE_Y)];
         __shared__ T shared_A[BSR_BLOCK_DIM * BSR_BLOCK_DIM];
@@ -65,14 +65,11 @@ namespace rocsparse
             col_valid[l] = (cols[l] < N);
         }
 
-        rocsparse_int block_row       = hipBlockIdx_x;
-        rocsparse_int block_row_start = 0;
-        rocsparse_int block_row_end   = 0;
-        if(block_row < Mb)
-        {
-            block_row_start = bsr_row_ptr[block_row] - idx_base;
-            block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
-        }
+        const rocsparse_int block_row = hipBlockIdx_x;
+        const rocsparse_int block_row_start
+            = (block_row < Mb) ? (bsr_row_ptr[block_row] - idx_base) : 0;
+        const rocsparse_int block_row_end
+            = (block_row < Mb) ? (bsr_row_ptr[block_row + 1] - idx_base) : 0;
 
         for(rocsparse_int l = 0; l < UNROLL_SIZE_Y; ++l)
         {
@@ -86,7 +83,7 @@ namespace rocsparse
 
         for(rocsparse_int k = block_row_start; k < block_row_end; k++)
         {
-            rocsparse_int block_col = (bsr_col_ind[k] - idx_base);
+            const rocsparse_int block_col = (bsr_col_ind[k] - idx_base);
             if(is_tidx)
             {
                 if(trans_B == rocsparse_operation_none)

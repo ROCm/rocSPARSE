@@ -47,23 +47,23 @@ namespace rocsparse
     {
         static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
 
-        int lid = threadIdx.x & (WFSIZE - 1);
+        const int lid = threadIdx.x & (WFSIZE - 1);
 
         // Index into the row map
-        rocsparse_int idx = blockIdx.x % mb;
+        const rocsparse_int idx = blockIdx.x % mb;
 
         // Get the BSR row this thread block will operate on
-        rocsparse_int row = map[idx];
+        const rocsparse_int row = map[idx];
 
         // Get the id of the rhs, this thread block will operate on
-        rocsparse_int id = blockIdx.x / mb * mb;
+        const rocsparse_int id = blockIdx.x / mb * mb;
 
         // Current row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // Column index (rhs) into X
-        rocsparse_int col_X = blockIdx.x / mb * NCOLS + threadIdx.x / WFSIZE;
+        const rocsparse_int col_X = blockIdx.x / mb * NCOLS + threadIdx.x / WFSIZE;
 
         // Initialize local_col with mb
         rocsparse_int local_col = mb;
@@ -86,27 +86,7 @@ namespace rocsparse
             // Spin loop until dependency has been resolved
             if(threadIdx.x == 0)
             {
-                int local_done = __hip_atomic_load(
-                    &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-                unsigned int times_through = 0;
-                while(!local_done)
-                {
-                    if(SLEEP)
-                    {
-                        for(unsigned int i = 0; i < times_through; ++i)
-                        {
-                            __builtin_amdgcn_s_sleep(1);
-                        }
-
-                        if(times_through < 3907)
-                        {
-                            ++times_through;
-                        }
-                    }
-
-                    local_done = __hip_atomic_load(
-                        &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-                }
+                rocsparse::spin_loop<SLEEP>(&done_array[local_col + id], __HIP_MEMORY_SCOPE_AGENT);
             }
 
             // Make sure updated X is visible globally
@@ -149,9 +129,9 @@ namespace rocsparse
             for(int bi = block_dim - 1; bi >= 0; --bi)
             {
                 // Load diagonal matrix entry
-                T diag = (diag_type == rocsparse_diag_type_non_unit)
-                             ? bsr_val[BSR_IND(j, bi, bi, dir)]
-                             : static_cast<T>(1);
+                const T diag = (diag_type == rocsparse_diag_type_non_unit)
+                                   ? bsr_val[BSR_IND(j, bi, bi, dir)]
+                                   : static_cast<T>(1);
 
                 // Load result of bi-th BSR row
                 T val = X[(block_dim * row + bi) * ldx + col_X];
@@ -214,23 +194,23 @@ namespace rocsparse
     {
         static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
 
-        int lid = threadIdx.x & (WFSIZE - 1);
+        const int lid = threadIdx.x & (WFSIZE - 1);
 
         // Index into the row map
-        rocsparse_int idx = blockIdx.x % mb;
+        const rocsparse_int idx = blockIdx.x % mb;
 
         // Get the BSR row this thread block will operate on
-        rocsparse_int row = map[idx];
+        const rocsparse_int row = map[idx];
 
         // Get the id of the rhs, this thread block will operate on
-        rocsparse_int id = blockIdx.x / mb * mb;
+        const rocsparse_int id = blockIdx.x / mb * mb;
 
         // Current row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // Column index into X
-        rocsparse_int col_X = blockIdx.x / mb * NCOLS + threadIdx.x / WFSIZE;
+        const rocsparse_int col_X = blockIdx.x / mb * NCOLS + threadIdx.x / WFSIZE;
 
         // Initialize local_col with mb
         rocsparse_int local_col = mb;
@@ -253,27 +233,7 @@ namespace rocsparse
             // Spin loop until dependency has been resolved
             if(threadIdx.x == 0)
             {
-                int local_done = __hip_atomic_load(
-                    &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-                unsigned int times_through = 0;
-                while(!local_done)
-                {
-                    if(SLEEP)
-                    {
-                        for(unsigned int i = 0; i < times_through; ++i)
-                        {
-                            __builtin_amdgcn_s_sleep(1);
-                        }
-
-                        if(times_through < 3907)
-                        {
-                            ++times_through;
-                        }
-                    }
-
-                    local_done = __hip_atomic_load(
-                        &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-                }
+                rocsparse::spin_loop<SLEEP>(&done_array[local_col + id], __HIP_MEMORY_SCOPE_AGENT);
             }
 
             // Make sure updated X is visible globally

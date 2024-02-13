@@ -78,7 +78,7 @@ rocsparse_status rocsparse::csrsm_buffer_size_core(rocsparse_handle          han
     }
 
     blockdim <<= 1;
-    int narrays = (nrhs - 1) / blockdim + 1;
+    const int narrays = (nrhs - 1) / blockdim + 1;
 
     // int done_array
     *buffer_size += ((sizeof(int) * m * narrays - 1) / 256 + 1) * 256;

@@ -48,17 +48,17 @@ namespace rocsparse
                                                     Y*                   y,
                                                     rocsparse_index_base idx_base)
     {
-        int lid = hipThreadIdx_x & (WF_SIZE - 1);
+        const int lid = hipThreadIdx_x & (WF_SIZE - 1);
 
-        J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-        J nwf = hipGridDim_x * (BLOCKSIZE / WF_SIZE);
+        const J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const J nwf = hipGridDim_x * (BLOCKSIZE / WF_SIZE);
 
         // Loop over rows
         for(J row = gid / WF_SIZE; row < m; row += nwf)
         {
             // Each wavefront processes one row
-            I row_start = row_offset_begin[row] - idx_base;
-            I row_end   = row_offset_end[row] - idx_base;
+            const I row_start = row_offset_begin[row] - idx_base;
+            const I row_end   = row_offset_end[row] - idx_base;
 
             T sum = static_cast<T>(0);
 
@@ -91,7 +91,7 @@ namespace rocsparse
     template <typename J, typename Y, typename T>
     ROCSPARSE_DEVICE_ILF void csrmvt_scale_device(J size, T scalar, Y* data)
     {
-        J idx = blockIdx.x * blockDim.x + threadIdx.x;
+        const J idx = blockIdx.x * blockDim.x + threadIdx.x;
 
         if(idx >= size)
         {
@@ -120,21 +120,21 @@ namespace rocsparse
                                                     Y*                   y,
                                                     rocsparse_index_base idx_base)
     {
-        int lid = hipThreadIdx_x & (WF_SIZE - 1);
+        const int lid = hipThreadIdx_x & (WF_SIZE - 1);
 
-        J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-        J inc = hipGridDim_x * (BLOCKSIZE / WF_SIZE);
+        const J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const J inc = hipGridDim_x * (BLOCKSIZE / WF_SIZE);
 
         for(J row = gid / WF_SIZE; row < m; row += inc)
         {
-            I row_begin = csr_row_ptr_begin[row] - idx_base;
-            I row_end   = csr_row_ptr_end[row] - idx_base;
-            T row_val   = alpha * x[row];
+            const I row_begin = csr_row_ptr_begin[row] - idx_base;
+            const I row_end   = csr_row_ptr_end[row] - idx_base;
+            const T row_val   = alpha * x[row];
 
             for(I j = row_begin + lid; j < row_end; j += WF_SIZE)
             {
-                J col = csr_col_ind[j] - idx_base;
-                A val = conj_val(csr_val[j], conj);
+                const J col = csr_col_ind[j] - idx_base;
+                const A val = conj_val(csr_val[j], conj);
 
                 rocsparse::atomic_add(&y[col], row_val * val);
             }
@@ -179,8 +179,8 @@ namespace rocsparse
     {
         __shared__ T partialSums[BLOCKSIZE];
 
-        int lid = hipThreadIdx_x;
-        int gid = hipBlockIdx_x;
+        const int lid = hipThreadIdx_x;
+        const int gid = hipBlockIdx_x;
 
         // The row blocks buffer holds information used to inform each
         // workgroup about how to do its work:
@@ -198,17 +198,15 @@ namespace rocsparse
         // know when the first workgroup for that row has finished initializing the output
         // value. While this bit is the same as the first workgroup's flag bit, this
         // workgroup will spin-loop.
-        I row      = row_blocks[gid];
-        I stop_row = row_blocks[gid + 1];
-        J num_rows = stop_row - row;
+        I       row      = row_blocks[gid];
+        const I stop_row = row_blocks[gid + 1];
+        const J num_rows = stop_row - row;
 
         // Get the workgroup within this long row ID
-        J wg = wg_ids[gid];
+        const J wg = wg_ids[gid];
 
         // Any workgroup only calculates, at most, BLOCK_MULTIPLIER*BLOCKSIZE items in a row.
         // If there are more items in this row, we assign more workgroups.
-        I vecStart = (I)wg * (I)BLOCK_MULTIPLIER * BLOCKSIZE + csr_row_ptr[row] - idx_base;
-        I vecEnd   = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
 
         T temp_sum = static_cast<T>(0);
 
@@ -242,11 +240,11 @@ namespace rocsparse
             // threads, 4 rows = 64 threads, 5 rows = 32 threads, etc.
             // int numThreadsForRed = get_local_size(0) >> ((CHAR_BIT*sizeof(unsigned
             // int))-clz(num_rows-1));
-            J numThreadsForRed = wg; // Same calculation as above, done on host.
+            const J numThreadsForRed = wg; // Same calculation as above, done on host.
 
             // Stream all of this row block's matrix values into local memory.
             // Perform the matvec in parallel with this work.
-            I col = csr_row_ptr[row] + lid - idx_base;
+            const I col = csr_row_ptr[row] + lid - idx_base;
             if(col + BLOCKSIZE - WG_SIZE < nnz)
             {
                 for(J i = 0; i < BLOCKSIZE; i += WG_SIZE)
@@ -285,10 +283,10 @@ namespace rocsparse
                 // numThreadsForRed guaranteed to be a power of two, so the clz code below
                 // avoids an integer divide.
                 // size_t st = lid/numThreadsForRed;
-                I local_row       = row + (lid >> (31 - __clz(numThreadsForRed)));
-                J local_first_val = csr_row_ptr[local_row] - csr_row_ptr[row];
-                J local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
-                J threadInBlock   = lid & (numThreadsForRed - 1);
+                const I local_row       = row + (lid >> (31 - __clz(numThreadsForRed)));
+                const J local_first_val = csr_row_ptr[local_row] - csr_row_ptr[row];
+                const J local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
+                const J threadInBlock   = lid & (numThreadsForRed - 1);
 
                 // Not all row blocks are full -- they may have an odd number of rows. As such,
                 // we need to ensure that adjacent-groups only work on real data for this rowBlock.
@@ -342,9 +340,9 @@ namespace rocsparse
                 I local_row = row + lid;
                 while(local_row < stop_row)
                 {
-                    J local_first_val = (csr_row_ptr[local_row] - csr_row_ptr[row]);
-                    J local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
-                    temp_sum          = static_cast<T>(0);
+                    const J local_first_val = (csr_row_ptr[local_row] - csr_row_ptr[row]);
+                    const J local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
+                    temp_sum                = static_cast<T>(0);
                     for(J local_cur_val = local_first_val; local_cur_val < local_last_val;
                         ++local_cur_val)
                     {
@@ -378,9 +376,9 @@ namespace rocsparse
             {
                 // Any workgroup only calculates, at most, BLOCKSIZE items in this row.
                 // If there are more items in this row, we use CSR-LongRows.
-                temp_sum = static_cast<T>(0);
-                vecStart = csr_row_ptr[row] - idx_base;
-                vecEnd   = csr_row_ptr[row + 1] - idx_base;
+                temp_sum         = static_cast<T>(0);
+                const I vecStart = csr_row_ptr[row] - idx_base;
+                const I vecEnd   = csr_row_ptr[row + 1] - idx_base;
 
                 // Load in a bunch of partial results into your register space, rather than LDS (no
                 // contention)
@@ -416,6 +414,10 @@ namespace rocsparse
         }
         else
         {
+            const I vecStart
+                = (I)wg * (I)BLOCK_MULTIPLIER * BLOCKSIZE + csr_row_ptr[row] - idx_base;
+            const I vecEnd
+                = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
             // In CSR-LongRows, we have more than one workgroup calculating this row.
             // The output values for those types of rows are stored using atomic_add, because
             // more than one parallel workgroup's value makes up the final answer.
@@ -436,8 +438,8 @@ namespace rocsparse
             if(gid == first_wg_in_row && lid == 0)
             {
                 // The first workgroup handles the output initialization.
-                Y out_val = y[row];
-                temp_sum  = (beta - static_cast<T>(1)) * out_val;
+                const Y out_val = y[row];
+                temp_sum        = (beta - static_cast<T>(1)) * out_val;
                 atomicXor(&wg_flags[first_wg_in_row], 1U); // Release other workgroups.
             }
             // For every other workgroup, wg_flags[first_wg_in_row] holds the value they wait on.
@@ -494,13 +496,13 @@ namespace rocsparse
                                                         J*       rows_binoffsets_scratch,
                                                         J*       n_rows_bins)
     {
-        J gid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+        const J gid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 
         for(J i = gid; i < m; i += BLOCKSIZE * hipGridDim_x)
         {
-            I row_len = csr_row_ptr[i + 1] - csr_row_ptr[i];
+            const I row_len = csr_row_ptr[i + 1] - csr_row_ptr[i];
 
-            unsigned int target_bin = (row_len != 0) ? (unsigned int)ceil(log2f(row_len)) : 0;
+            const unsigned int target_bin = (row_len != 0) ? (unsigned int)ceil(log2f(row_len)) : 0;
 
             rows_binoffsets_scratch[i] = rocsparse::atomic_add(&n_rows_bins[target_bin], (J)1);
         }
@@ -523,7 +525,7 @@ namespace rocsparse
         J acc = 0;
         for(int i = 0; i < 32; i++)
         {
-            J tmp          = n_rows_bins[i];
+            const J tmp    = n_rows_bins[i];
             n_rows_bins[i] = acc;
             acc += tmp;
         }
@@ -546,13 +548,13 @@ namespace rocsparse
                                                         const J* n_rows_bins,
                                                         J*       rows_bins)
     {
-        J gid = (BLOCKSIZE * hipBlockIdx_x) + hipThreadIdx_x;
+        const J gid = (BLOCKSIZE * hipBlockIdx_x) + hipThreadIdx_x;
 
         for(J i = gid; i < m; i += BLOCKSIZE * hipGridDim_x)
         {
-            I row_len = csr_row_ptr[i + 1] - csr_row_ptr[i];
+            const I row_len = csr_row_ptr[i + 1] - csr_row_ptr[i];
 
-            unsigned int target_bin = (row_len != 0) ? (unsigned int)ceil(log2f(row_len)) : 0;
+            const unsigned int target_bin = (row_len != 0) ? (unsigned int)ceil(log2f(row_len)) : 0;
 
             rows_bins[n_rows_bins[target_bin] + rows_binoffsets_scratch[i]] = i;
         }
@@ -580,19 +582,19 @@ namespace rocsparse
                                                            Y*                   y,
                                                            rocsparse_index_base idx_base)
     {
-        unsigned int lid = hipThreadIdx_x;
-        unsigned int gid = hipBlockIdx_x;
+        const unsigned int lid = hipThreadIdx_x;
+        const unsigned int gid = hipBlockIdx_x;
 
         // Allocation from the caller is of size [WG_SIZE << bin_id] elements
         extern __shared__ char shared_memory[];
         T*                     partialSums = (T*)shared_memory;
 
-        J bin_start    = n_rows_bins[bin_id];
-        J bin_num_rows = n_rows_bins[bin_id + 1] - bin_start;
+        const J bin_start    = n_rows_bins[bin_id];
+        const J bin_num_rows = n_rows_bins[bin_id + 1] - bin_start;
 
-        unsigned int wg_row_start = gid * BLOCKSIZE;
-        unsigned int wg_row_end   = min(wg_row_start + BLOCKSIZE, bin_num_rows);
-        unsigned int wg_num_rows  = wg_row_end - wg_row_start;
+        const unsigned int wg_row_start = gid * BLOCKSIZE;
+        const unsigned int wg_row_end   = min(wg_row_start + BLOCKSIZE, bin_num_rows);
+        const unsigned int wg_num_rows  = wg_row_end - wg_row_start;
 
         // Load a block of row data using all threads in the WG.
         for(unsigned int base_idx = 0; base_idx < (BLOCKSIZE << bin_id); base_idx += BLOCKSIZE)
@@ -600,18 +602,18 @@ namespace rocsparse
             unsigned int row_idx = wg_row_start + ((base_idx + lid) >> bin_id);
             if(row_idx < wg_row_start + wg_num_rows)
             {
-                J row_id = rows_bins[row_idx + bin_start];
+                const J row_id = rows_bins[row_idx + bin_start];
 
-                I row_start = csr_row_ptr[row_id] - idx_base;
-                I row_end   = csr_row_ptr[row_id + 1] - idx_base;
-                I row_len   = row_end - row_start;
+                const I row_start = csr_row_ptr[row_id] - idx_base;
+                const I row_end   = csr_row_ptr[row_id + 1] - idx_base;
+                const I row_len   = row_end - row_start;
 
-                unsigned int col_idx_in_row = lid & ((1 << bin_id) - 1);
-                unsigned int lds_idx        = base_idx + lid;
+                const unsigned int col_idx_in_row = lid & ((1 << bin_id) - 1);
+                const unsigned int lds_idx        = base_idx + lid;
 
                 if(col_idx_in_row < row_len)
                 {
-                    A val = conj_val(csr_val[row_start + col_idx_in_row], conj);
+                    const A val = conj_val(csr_val[row_start + col_idx_in_row], conj);
                     partialSums[lds_idx]
                         = alpha * val * x[csr_col_ind[row_start + col_idx_in_row] - idx_base];
                 }
@@ -628,9 +630,9 @@ namespace rocsparse
         // TODO: adaptation as per CSR-Adaptive-Stream
         if(lid < wg_num_rows)
         {
-            unsigned int lds_start_idx = (lid << bin_id);
-            J            row_id        = rows_bins[bin_start + wg_row_start + lid];
-            T            acc           = 0;
+            const unsigned int lds_start_idx = (lid << bin_id);
+            const J            row_id        = rows_bins[bin_start + wg_row_start + lid];
+            T                  acc           = 0;
 
             for(unsigned int idx = 0; idx < (1 << bin_id); idx++)
             {
@@ -670,20 +672,20 @@ namespace rocsparse
                                                              Y*                   y,
                                                              rocsparse_index_base idx_base)
     {
-        unsigned int lid = hipThreadIdx_x;
-        unsigned int gid = hipBlockIdx_x;
+        const unsigned int lid = hipThreadIdx_x;
+        const unsigned int gid = hipBlockIdx_x;
 
         // In LDS-Stream-V2, we have a fixed LDS allocation of CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS elements (example: 1024).
         // So, each thread will load 1024 / BLOCKSIZE elements, which, depending on the bin, corresponds to a different # rows.
         // Bin 0 (1 element) = 1024 rows, bin 1 = 512 rows, bin 2 = 256 rows, bin 3 = 128 rows, etc.
         __shared__ T partialSums[CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS];
 
-        J            bin_start    = n_rows_bins[bin_id];
-        J            bin_num_rows = n_rows_bins[bin_id + 1] - bin_start;
-        unsigned int rows_per_wg  = CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS >> bin_id;
-        unsigned int wg_row_start = gid * rows_per_wg;
-        unsigned int wg_row_end   = min(wg_row_start + rows_per_wg, bin_num_rows);
-        unsigned int wg_num_rows  = wg_row_end - wg_row_start;
+        const J            bin_start    = n_rows_bins[bin_id];
+        const J            bin_num_rows = n_rows_bins[bin_id + 1] - bin_start;
+        const unsigned int rows_per_wg  = CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS >> bin_id;
+        const unsigned int wg_row_start = gid * rows_per_wg;
+        const unsigned int wg_row_end   = min(wg_row_start + rows_per_wg, bin_num_rows);
+        const unsigned int wg_num_rows  = wg_row_end - wg_row_start;
 
         // Load a block of row data using all threads in the WG.
         for(unsigned int base_idx = 0; base_idx < CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS;
@@ -692,17 +694,17 @@ namespace rocsparse
             unsigned int row_idx = wg_row_start + ((base_idx + lid) >> bin_id);
             if(row_idx < wg_row_end)
             {
-                J row_id = rows_bins[row_idx + bin_start];
+                const J row_id = rows_bins[row_idx + bin_start];
 
-                I row_start = csr_row_ptr[row_id] - idx_base;
-                I row_end   = csr_row_ptr[row_id + 1] - idx_base;
-                I row_len   = row_end - row_start;
+                const I row_start = csr_row_ptr[row_id] - idx_base;
+                const I row_end   = csr_row_ptr[row_id + 1] - idx_base;
+                const I row_len   = row_end - row_start;
 
-                unsigned int col_idx_in_row = lid & ((1 << bin_id) - 1);
-                unsigned int lds_idx        = base_idx + lid;
+                const unsigned int col_idx_in_row = lid & ((1 << bin_id) - 1);
+                const unsigned int lds_idx        = base_idx + lid;
                 if(col_idx_in_row < row_len)
                 {
-                    A val = conj_val(csr_val[row_start + col_idx_in_row], conj);
+                    const A val = conj_val(csr_val[row_start + col_idx_in_row], conj);
                     partialSums[lds_idx]
                         = alpha * val * x[csr_col_ind[row_start + col_idx_in_row] - idx_base];
                 }
@@ -719,11 +721,11 @@ namespace rocsparse
         // TODO: adaptation as per CSR-Adaptive-Stream
         for(unsigned int row_base = 0; row_base < rows_per_wg; row_base += BLOCKSIZE)
         {
-            unsigned int this_row_offset_in_wg = row_base + lid;
+            const unsigned int this_row_offset_in_wg = row_base + lid;
             if(this_row_offset_in_wg < wg_num_rows)
             {
-                unsigned int lds_start_idx = (this_row_offset_in_wg << bin_id);
-                J            row_id = rows_bins[bin_start + wg_row_start + this_row_offset_in_wg];
+                const unsigned int lds_start_idx = (this_row_offset_in_wg << bin_id);
+                const J row_id = rows_bins[bin_start + wg_row_start + this_row_offset_in_wg];
 
                 T acc = 0;
                 for(unsigned int idx = 0; idx < (1 << bin_id); idx++)
@@ -763,25 +765,25 @@ namespace rocsparse
                                                   Y*                   y,
                                                   rocsparse_index_base idx_base)
     {
-        int tid = hipThreadIdx_x;
-        int bid = hipBlockIdx_x;
+        const int tid = hipThreadIdx_x;
+        const int bid = hipBlockIdx_x;
 
-        int lid = tid & (WF_SIZE - 1);
-        int wid = tid / WF_SIZE;
+        const int lid = tid & (WF_SIZE - 1);
+        const int wid = tid / WF_SIZE;
 
-        int gid = (BLOCKSIZE / WF_SIZE) * bid + wid;
+        const int gid = (BLOCKSIZE / WF_SIZE) * bid + wid;
 
         if(gid >= count)
         {
             return;
         }
 
-        J bin_start = n_rows_bins[bin_id];
-        J row       = rows_bins[bin_start + gid];
+        const J bin_start = n_rows_bins[bin_id];
+        const J row       = rows_bins[bin_start + gid];
 
-        T temp_sum = static_cast<T>(0);
-        I vecStart = csr_row_ptr[row] - idx_base;
-        I vecEnd   = csr_row_ptr[row + 1] - idx_base;
+        T       temp_sum = static_cast<T>(0);
+        const I vecStart = csr_row_ptr[row] - idx_base;
+        const I vecEnd   = csr_row_ptr[row + 1] - idx_base;
 
         for(I j = vecStart + lid; j < vecEnd; j += WF_SIZE)
         {
@@ -825,15 +827,15 @@ namespace rocsparse
                                                             Y*                   y,
                                                             rocsparse_index_base idx_base)
     {
-        int lid = hipThreadIdx_x;
-        int gid = hipBlockIdx_x;
+        const int lid = hipThreadIdx_x;
+        const int gid = hipBlockIdx_x;
 
         // LRB-Vector case currently does exact 1:1 WG:row mapping - not doing multiple rows per WG here;
         // we'll work on that later if desired. But, that may be neither needed nor wanted,
         // since we're now launching with LDS and grid size parameters tuned according to row length.
 
-        J bin_start = n_rows_bins[bin_id];
-        J row       = rows_bins[bin_start + gid];
+        const J bin_start = n_rows_bins[bin_id];
+        const J row       = rows_bins[bin_start + gid];
 
         // In CSR-Adaptive-Vector, each WG will allocate BLOCKSIZE LDS, but for rows shorter than BLOCKSIZE,
         // this wastes space. So, for LRB-Vector, we allocate from the caller according to bin_id (one LDS
@@ -849,9 +851,9 @@ namespace rocsparse
         // This means that we can more easily process everything with Vector that we would otherwise have done
         // with Longrows - which, in turn, means we can guarantee result reproducibility simply by avoiding Longrows
         // use (-> no non-determinstic atomics), just set the bin threshold for Longrows to "infinity" (or "32").
-        T temp_sum = static_cast<T>(0);
-        I vecStart = csr_row_ptr[row] - idx_base;
-        I vecEnd   = csr_row_ptr[row + 1] - idx_base;
+        T       temp_sum = static_cast<T>(0);
+        const I vecStart = csr_row_ptr[row] - idx_base;
+        const I vecEnd   = csr_row_ptr[row + 1] - idx_base;
 
         // Load in a bunch of partial results into your register space, rather than LDS (no contention)
         // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
@@ -907,15 +909,16 @@ namespace rocsparse
     {
         __shared__ T partialSums[BLOCKSIZE];
 
-        int lid = hipThreadIdx_x;
-        int gid = hipBlockIdx_x;
+        const int lid = hipThreadIdx_x;
+        const int gid = hipBlockIdx_x;
 
-        J            bin_start       = n_rows_bins[bin_id];
-        unsigned int bin_max_row_len = (1 << bin_id);
-        unsigned int num_wgs_per_row = (bin_max_row_len - 1) / (BLOCK_MULTIPLIER * BLOCKSIZE) + 1;
-        J            row_idx         = gid / num_wgs_per_row;
-        J            wg              = gid % num_wgs_per_row;
-        J            row             = rows_bins[bin_start + row_idx];
+        const J            bin_start       = n_rows_bins[bin_id];
+        const unsigned int bin_max_row_len = (1 << bin_id);
+        const unsigned int num_wgs_per_row
+            = (bin_max_row_len - 1) / (BLOCK_MULTIPLIER * BLOCKSIZE) + 1;
+        const J row_idx = gid / num_wgs_per_row;
+        const J wg      = gid % num_wgs_per_row;
+        const J row     = rows_bins[bin_start + row_idx];
 
         // wg_flags contains the flag bits used so that the multiple WGs calculating a long row can
         // know when the first workgroup for that row has finished initializing the output
@@ -925,8 +928,9 @@ namespace rocsparse
         // TODO: Can the wg_flags-based coordination be done instead with cooperative-groups?
 
         // Each workgroup computes exactly one row.
-        I vecStart = (I)wg * (I)BLOCK_MULTIPLIER * BLOCKSIZE + csr_row_ptr[row] - idx_base;
-        I vecEnd   = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
+        const I vecStart = (I)wg * (I)BLOCK_MULTIPLIER * BLOCKSIZE + csr_row_ptr[row] - idx_base;
+        const I vecEnd
+            = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
 
         T temp_sum = static_cast<T>(0);
 
@@ -943,15 +947,15 @@ namespace rocsparse
         // First, figure out which workgroup you are in the row.
         // You can use that to find the global ID for the first workgroup calculating
         // this long row.
-        J             first_wg_in_row = gid - wg;
-        unsigned long compare_value   = wg_flags[gid];
+        const J             first_wg_in_row = gid - wg;
+        const unsigned long compare_value   = wg_flags[gid];
 
         // wg_flags[first_wg_in_row] in the first workgroup is the flag that everyone waits on.
         if(gid == first_wg_in_row && lid == 0)
         {
             // The first workgroup handles the output initialization.
-            Y out_val = y[row];
-            temp_sum  = (beta - static_cast<T>(1)) * out_val;
+            const Y out_val = y[row];
+            temp_sum        = (beta - static_cast<T>(1)) * out_val;
             atomicXor(&wg_flags[first_wg_in_row], 1U); // Release other workgroups.
         }
 

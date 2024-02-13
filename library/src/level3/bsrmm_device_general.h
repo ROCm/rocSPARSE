@@ -46,36 +46,33 @@ namespace rocsparse
                                       int64_t              ldc,
                                       rocsparse_index_base idx_base)
     {
-        rocsparse_int tidx = hipThreadIdx_x;
-        rocsparse_int tidy = hipThreadIdx_y;
+        const rocsparse_int tidx = hipThreadIdx_x;
+        const rocsparse_int tidy = hipThreadIdx_y;
 
-        rocsparse_int block_row = hipBlockIdx_x;
+        const rocsparse_int block_row = hipBlockIdx_x;
 
-        rocsparse_int block_row_start = 0;
-        rocsparse_int block_row_end   = 0;
-        if(block_row < Mb)
-        {
-            block_row_start = bsr_row_ptr[block_row] - idx_base;
-            block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
-        }
+        const rocsparse_int block_row_start
+            = (block_row < Mb) ? (bsr_row_ptr[block_row] - idx_base) : 0;
+        const rocsparse_int block_row_end
+            = (block_row < Mb) ? (bsr_row_ptr[block_row + 1] - idx_base) : 0;
 
         __shared__ T shared_B[BSR_BLOCK_DIM * BLK_SIZE_Y];
         __shared__ T shared_A[BSR_BLOCK_DIM * BSR_BLOCK_DIM];
 
-        rocsparse_int global_col = tidy + hipBlockIdx_y * BLK_SIZE_Y;
+        const rocsparse_int global_col = tidy + hipBlockIdx_y * BLK_SIZE_Y;
 
-        int64_t colB = global_col * ldb;
-        int64_t colC = global_col * ldc;
+        const int64_t colB = global_col * ldb;
+        const int64_t colC = global_col * ldc;
 
         for(rocsparse_int x = 0; x < block_dim; x += BSR_BLOCK_DIM)
         {
-            rocsparse_int global_row = tidx + x + hipBlockIdx_x * block_dim;
+            const rocsparse_int global_row = tidx + x + hipBlockIdx_x * block_dim;
 
             T sum = static_cast<T>(0);
 
             for(rocsparse_int k = block_row_start; k < block_row_end; k++)
             {
-                rocsparse_int block_col = (bsr_col_ind[k] - idx_base);
+                const rocsparse_int block_col = (bsr_col_ind[k] - idx_base);
 
                 for(rocsparse_int y = 0; y < block_dim; y += BLK_SIZE_Y)
                 {

@@ -34,16 +34,16 @@ namespace rocsparse
     ROCSPARSE_DEVICE_ILF void coommnn_scale_device(
         I m, I n, T beta, T* __restrict__ data, int64_t ld, int64_t stride, rocsparse_order order)
     {
-        I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-        I batch = hipBlockIdx_y;
+        const I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const I batch = hipBlockIdx_y;
 
         if(gid >= m * n)
         {
             return;
         }
 
-        I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
-        I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
+        const I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
+        const I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
 
         if(beta == static_cast<T>(0))
         {
@@ -65,7 +65,8 @@ namespace rocsparse
                               int64_t         stride,
                               rocsparse_order order)
     {
-        auto beta = rocsparse::load_scalar_device_host(beta_device_host);
+
+        const auto beta = rocsparse::load_scalar_device_host(beta_device_host);
         if(beta != static_cast<T>(1))
         {
             rocsparse::coommnn_scale_device<BLOCKSIZE>(m, n, beta, data, ld, stride, order);
@@ -514,7 +515,7 @@ namespace rocsparse
         {
 
             // matrix never accessed however still need to update C matrix
-            rocsparse_int Csize = (trans_A == rocsparse_operation_none) ? m * n : k * n;
+            const rocsparse_int Csize = (trans_A == rocsparse_operation_none) ? m * n : k * n;
             if(Csize > 0)
             {
                 if(dense_C == nullptr && beta_device_host == nullptr)

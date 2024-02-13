@@ -32,7 +32,7 @@ namespace rocsparse
     template <unsigned int BLOCKSIZE, typename I, typename Y, typename T>
     ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, Y* __restrict__ data)
     {
-        I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
         if(gid >= size)
         {
@@ -65,7 +65,7 @@ namespace rocsparse
                                                             T* __restrict__ val_block_red,
                                                             rocsparse_index_base idx_base)
     {
-        int tid = hipThreadIdx_x;
+        const int tid = hipThreadIdx_x;
 
         // Shared memory to hold row indices and values for segmented reduction
         __shared__ I shared_row[BLOCKSIZE];
@@ -145,7 +145,7 @@ namespace rocsparse
             // appended.
             if(tid == 0)
             {
-                I prevrow = shared_row[BLOCKSIZE - 1];
+                const I prevrow = shared_row[BLOCKSIZE - 1];
                 if(row == prevrow)
                 {
                     val = val + shared_val[BLOCKSIZE - 1];
@@ -199,7 +199,7 @@ namespace rocsparse
     template <unsigned int BLOCKSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* rows, T* vals)
     {
-        int tid = hipThreadIdx_x;
+        const int tid = hipThreadIdx_x;
 
 #pragma unroll
         for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
@@ -227,7 +227,7 @@ namespace rocsparse
                                              const T* __restrict__ val_block_red,
                                              Y* __restrict__ y)
     {
-        int tid = hipThreadIdx_x;
+        const int tid = hipThreadIdx_x;
 
         // Shared memory to hold row indices and values for segmented reduction
         __shared__ I shared_row[BLOCKSIZE];
@@ -246,8 +246,8 @@ namespace rocsparse
             segmented_blockreduce<BLOCKSIZE>(shared_row, shared_val);
 
             // Add reduced sum to y if valid
-            I row   = shared_row[tid];
-            I rowp1 = (tid < BLOCKSIZE - 1) ? shared_row[tid + 1] : -1;
+            const I row   = shared_row[tid];
+            const I rowp1 = (tid < BLOCKSIZE - 1) ? shared_row[tid + 1] : -1;
 
             if(row != rowp1 && row >= 0)
             {
@@ -274,7 +274,7 @@ namespace rocsparse
                                                                 T* __restrict__ val_block_red,
                                                                 rocsparse_index_base idx_base)
     {
-        int tid = hipThreadIdx_x;
+        const int tid = hipThreadIdx_x;
 
         // Shared memory to hold row indices and values for segmented reduction
         __shared__ I shared_row[BLOCKSIZE];
@@ -354,7 +354,7 @@ namespace rocsparse
             // appended.
             if(tid == 0)
             {
-                I prevrow = shared_row[BLOCKSIZE - 1];
+                const I prevrow = shared_row[BLOCKSIZE - 1];
                 if(row == prevrow)
                 {
                     val = val + shared_val[BLOCKSIZE - 1];
@@ -420,7 +420,7 @@ namespace rocsparse
                                                          Y* __restrict__ y,
                                                          rocsparse_index_base idx_base)
     {
-        int tid = hipThreadIdx_x;
+        const int tid = hipThreadIdx_x;
 
         __shared__ I shared_row[BLOCKSIZE];
         __shared__ T shared_val[BLOCKSIZE];
@@ -564,7 +564,7 @@ namespace rocsparse
                                                              Y* __restrict__ y,
                                                              rocsparse_index_base idx_base)
     {
-        int tid = hipThreadIdx_x;
+        const int tid = hipThreadIdx_x;
 
         __shared__ I shared_row[BLOCKSIZE];
         __shared__ T shared_val[BLOCKSIZE];
@@ -641,7 +641,7 @@ namespace rocsparse
             // appended.
             if(tid == 0)
             {
-                I prevrow = shared_row[BLOCKSIZE - 1];
+                const I prevrow = shared_row[BLOCKSIZE - 1];
                 if(row == prevrow)
                 {
                     val = val + shared_val[BLOCKSIZE - 1];
@@ -701,17 +701,18 @@ namespace rocsparse
                                             Y*                   y,
                                             rocsparse_index_base idx_base)
     {
-        int64_t gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+        const int64_t gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
         if(gid >= nnz)
         {
             return;
         }
 
-        I row = coo_row_ind[gid] - idx_base;
-        I col = coo_col_ind[gid] - idx_base;
-        A val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse::conj(coo_val[gid])
-                                                                   : coo_val[gid];
+        const I row = coo_row_ind[gid] - idx_base;
+        const I col = coo_col_ind[gid] - idx_base;
+        const A val = (trans == rocsparse_operation_conjugate_transpose)
+                          ? rocsparse::conj(coo_val[gid])
+                          : coo_val[gid];
 
         rocsparse::atomic_add(&y[col], alpha * val * x[row]);
     }
@@ -726,17 +727,18 @@ namespace rocsparse
                                                 Y*                   y,
                                                 rocsparse_index_base idx_base)
     {
-        int64_t gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+        const int64_t gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
         if(gid >= nnz)
         {
             return;
         }
 
-        I row = coo_ind[2 * gid] - idx_base;
-        I col = coo_ind[2 * gid + 1] - idx_base;
-        A val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse::conj(coo_val[gid])
-                                                                   : coo_val[gid];
+        const I row = coo_ind[2 * gid] - idx_base;
+        const I col = coo_ind[2 * gid + 1] - idx_base;
+        const A val = (trans == rocsparse_operation_conjugate_transpose)
+                          ? rocsparse::conj(coo_val[gid])
+                          : coo_val[gid];
 
         rocsparse::atomic_add(&y[col], alpha * val * x[row]);
     }

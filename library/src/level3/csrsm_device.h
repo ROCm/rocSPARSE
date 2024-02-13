@@ -51,27 +51,27 @@ namespace rocsparse
                                            rocsparse_diag_type  diag_type)
     {
         // Index into the row map
-        J idx = hipBlockIdx_x % m;
+        const J idx = hipBlockIdx_x % m;
 
         // Shared memory to hold columns and values
         __shared__ J scsr_col_ind[BLOCKSIZE];
         __shared__ T scsr_val[BLOCKSIZE];
 
         // Get the row this warp will operate on
-        J row = map[idx];
+        const J row = map[idx];
 
         // Current row entry point and exit point
-        I row_begin = csr_row_ptr[row] - idx_base;
-        I row_end   = csr_row_ptr[row + 1] - idx_base;
+        const I row_begin = csr_row_ptr[row] - idx_base;
+        const I row_end   = csr_row_ptr[row + 1] - idx_base;
 
         // Column index into B
-        J col_B = (hipBlockIdx_x / m) * BLOCKSIZE + hipThreadIdx_x;
+        const J col_B = (hipBlockIdx_x / m) * BLOCKSIZE + hipThreadIdx_x;
 
         // Index into B (i,j)
-        int64_t idx_B = row * ldb + col_B;
+        const int64_t idx_B = row * ldb + col_B;
 
         // Index into done array
-        J id = (hipBlockIdx_x / m) * m;
+        const J id = (hipBlockIdx_x / m) * m;
 
         // Initialize local sum with alpha and X
         T local_sum = static_cast<T>(0);
@@ -90,7 +90,7 @@ namespace rocsparse
         for(I j = row_begin; j < row_end; ++j)
         {
             // Project j onto [0, BLOCKSIZE-1]
-            J k = (j - row_begin) & (BLOCKSIZE - 1);
+            const J k = (j - row_begin) & (BLOCKSIZE - 1);
 
             // Preload column indices and values into shared memory
             // This happens only once for each chunk of BLOCKSIZE elements
@@ -107,7 +107,7 @@ namespace rocsparse
             __syncthreads();
 
             // Current column this lane operates on
-            J local_col = scsr_col_ind[k];
+            const J local_col = scsr_col_ind[k];
 
             // Local value this lane operates with
             T local_val = scsr_val[k];
@@ -177,27 +177,7 @@ namespace rocsparse
             // Spin loop until dependency has been resolved
             if(hipThreadIdx_x == 0)
             {
-                int local_done = __hip_atomic_load(
-                    &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-                unsigned int times_through = 0;
-                while(!local_done)
-                {
-                    if(SLEEP)
-                    {
-                        for(unsigned int i = 0; i < times_through; ++i)
-                        {
-                            __builtin_amdgcn_s_sleep(1);
-                        }
-
-                        if(times_through < 3907)
-                        {
-                            ++times_through;
-                        }
-                    }
-
-                    local_done = __hip_atomic_load(
-                        &done_array[local_col + id], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-                }
+                rocsparse::spin_loop<SLEEP>(&done_array[local_col + id], __HIP_MEMORY_SCOPE_AGENT);
             }
 
             // Wait for spin looping thread to finish as the whole block depends on this row
@@ -207,7 +187,7 @@ namespace rocsparse
             __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
 
             // Index into X
-            int64_t idx_X = local_col * ldb + col_B;
+            const int64_t idx_X = local_col * ldb + col_B;
 
             // Local sum computation for each lane
             local_sum = (col_B < nrhs) ? rocsparse::fma(-local_val, B[idx_X], local_sum)

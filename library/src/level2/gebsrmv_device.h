@@ -42,17 +42,17 @@ namespace rocsparse
                                                       rocsparse_index_base idx_base)
     {
         // Lane id
-        rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+        const rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
 
         // Wavefront id
-        rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+        const rocsparse_int wid = hipThreadIdx_x / WFSIZE;
 
         // Each thread block processes a BSR row
-        rocsparse_int row = hipBlockIdx_x;
+        const rocsparse_int row = hipBlockIdx_x;
 
         // BSR row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // Each wavefront processes a row of the BSR block.
         // If the number of BSR block rows exceed the number of wavefronts, each wavefront
@@ -71,7 +71,7 @@ namespace rocsparse
             for(rocsparse_int j = row_begin; j < row_end; ++j)
             {
                 // BSR column index
-                rocsparse_int col = bsr_col_ind[j] - idx_base;
+                const rocsparse_int col = bsr_col_ind[j] - idx_base;
 
                 // Loop over the columns of the BSR block in chunks of WFSIZE, such that
                 // each lane will process a single value of the BSR block
@@ -117,13 +117,13 @@ namespace rocsparse
                                                   rocsparse_index_base idx_base)
     {
         // Lane id
-        rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+        const rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
 
         // Wavefront id
-        rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+        const rocsparse_int wid = hipThreadIdx_x / WFSIZE;
 
         // Each thread block processes (BLOCKSIZE / WFSIZE) BSR rows
-        rocsparse_int row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
+        const rocsparse_int row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
 
         // Do not run out of bounds
         if(row >= mb)
@@ -132,8 +132,8 @@ namespace rocsparse
         }
 
         // BSR row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // BSR block row accumulator
         T sum = static_cast<T>(0);
@@ -144,7 +144,7 @@ namespace rocsparse
         {
             // Do not exceed the row
             // Column index into x vector
-            rocsparse_int col = (bsr_col_ind[j] - idx_base) * COLBSRDIM;
+            const rocsparse_int col = (bsr_col_ind[j] - idx_base) * COLBSRDIM;
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
@@ -188,13 +188,13 @@ namespace rocsparse
         static constexpr int ROWBSRDIM = 2;
 
         // Lane id
-        rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+        const rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
 
         // Wavefront id
-        rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+        const rocsparse_int wid = hipThreadIdx_x / WFSIZE;
 
         // Each thread block processes (BLOCKSIZE / WFSIZE) BSR rows
-        rocsparse_int row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
+        const rocsparse_int row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
 
         // Do not run out of bounds
         if(row >= mb)
@@ -203,8 +203,8 @@ namespace rocsparse
         }
 
         // BSR row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // BSR block row accumulator
         T sum0 = static_cast<T>(0);
@@ -218,7 +218,7 @@ namespace rocsparse
             {
                 // Do not exceed the row
                 // Column index into x vector
-                rocsparse_int col = (bsr_col_ind[j] - idx_base);
+                const rocsparse_int col = (bsr_col_ind[j] - idx_base);
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
@@ -238,7 +238,7 @@ namespace rocsparse
             {
                 // Do not exceed the row
                 // Column index into x vector
-                rocsparse_int col = (bsr_col_ind[j] - idx_base);
+                const rocsparse_int col = (bsr_col_ind[j] - idx_base);
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
@@ -290,13 +290,13 @@ namespace rocsparse
         static constexpr int ROWBSRDIM = 3;
 
         // Lane id
-        rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+        const rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
 
         // Wavefront id
-        rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+        const rocsparse_int wid = hipThreadIdx_x / WFSIZE;
 
         // Each thread block processes (BLOCKSIZE / WFSIZE) BSR rows
-        rocsparse_int row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
+        const rocsparse_int row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
 
         // Do not run out of bounds
         if(row >= mb)
@@ -305,8 +305,8 @@ namespace rocsparse
         }
 
         // BSR row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // BSR block row accumulator
         T sum0 = static_cast<T>(0);
@@ -321,7 +321,7 @@ namespace rocsparse
             {
                 // Do not exceed the row
                 // Column index into x vector
-                rocsparse_int col = (bsr_col_ind[j] - idx_base);
+                const rocsparse_int col = (bsr_col_ind[j] - idx_base);
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
@@ -344,7 +344,7 @@ namespace rocsparse
             {
                 // Do not exceed the row
                 // Column index into x vector
-                rocsparse_int col = (bsr_col_ind[j] - idx_base);
+                const rocsparse_int col = (bsr_col_ind[j] - idx_base);
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
@@ -403,13 +403,13 @@ namespace rocsparse
         static constexpr int ROWBSRDIM = 4;
 
         // Lane id
-        rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+        const rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
 
         // Wavefront id
-        rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+        const rocsparse_int wid = hipThreadIdx_x / WFSIZE;
 
         // Each thread block processes (BLOCKSIZE / WFSIZE) BSR rows
-        rocsparse_int row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
+        const rocsparse_int row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
 
         // Do not run out of bounds
         if(row >= mb)
@@ -418,8 +418,8 @@ namespace rocsparse
         }
 
         // BSR row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // BSR block row accumulator
         T sum0 = static_cast<T>(0);
@@ -435,7 +435,7 @@ namespace rocsparse
             {
                 // Do not exceed the row
                 // Column index into x vector
-                rocsparse_int col = (bsr_col_ind[j] - idx_base);
+                const rocsparse_int col = (bsr_col_ind[j] - idx_base);
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
@@ -461,7 +461,7 @@ namespace rocsparse
             {
                 // Do not exceed the row
                 // Column index into x vector
-                rocsparse_int col = (bsr_col_ind[j] - idx_base);
+                const rocsparse_int col = (bsr_col_ind[j] - idx_base);
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
@@ -523,22 +523,22 @@ namespace rocsparse
                                                   rocsparse_index_base idx_base)
     {
         // BSR block lane id
-        rocsparse_int lid = hipThreadIdx_x % COLBSRDIM;
+        const rocsparse_int lid = hipThreadIdx_x % COLBSRDIM;
 
         // Each thread block processes a single BSR row
-        rocsparse_int row = hipBlockIdx_x;
+        const rocsparse_int row = hipBlockIdx_x;
 
         // Offset into x vector
-        rocsparse_int idx = (dir == rocsparse_direction_column)
-                                ? ((hipThreadIdx_x / ROWBSRDIM) % COLBSRDIM)
-                                : lid;
+        const rocsparse_int idx = (dir == rocsparse_direction_column)
+                                      ? ((hipThreadIdx_x / ROWBSRDIM) % COLBSRDIM)
+                                      : lid;
 
         // Number of BSR blocks processed at the same time
         constexpr unsigned int NBLOCKS = BLOCKSIZE / (ROWBSRDIM * COLBSRDIM);
 
         // BSR row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // BSR block row accumulator
         T sum = static_cast<T>(0);
@@ -547,13 +547,13 @@ namespace rocsparse
         // processes a BSR block value
         for(rocsparse_int j = row_begin; j < row_end; j += NBLOCKS)
         {
-            rocsparse_int k = j + hipThreadIdx_x / (ROWBSRDIM * COLBSRDIM);
+            const rocsparse_int k = j + hipThreadIdx_x / (ROWBSRDIM * COLBSRDIM);
 
             // Do not exceed the row
             if(k < row_end)
             {
                 // Column index into x vector
-                rocsparse_int col = (bsr_col_ind[k] - idx_base) * COLBSRDIM;
+                const rocsparse_int col = (bsr_col_ind[k] - idx_base) * COLBSRDIM;
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
@@ -727,22 +727,22 @@ namespace rocsparse
                                                      rocsparse_index_base idx_base)
     {
         // BSR block lane id
-        rocsparse_int lid = hipThreadIdx_x % COLBSRDIM;
+        const rocsparse_int lid = hipThreadIdx_x % COLBSRDIM;
 
         // Each thread block processes a single BSR row
-        rocsparse_int row = hipBlockIdx_x;
+        const rocsparse_int row = hipBlockIdx_x;
 
         // Offset into x vector
-        rocsparse_int idx = (dir == rocsparse_direction_column)
-                                ? ((hipThreadIdx_x / ROWBSRDIM) % COLBSRDIM)
-                                : lid;
+        const rocsparse_int idx = (dir == rocsparse_direction_column)
+                                      ? ((hipThreadIdx_x / ROWBSRDIM) % COLBSRDIM)
+                                      : lid;
 
         // Number of BSR blocks processed at the same time
         constexpr unsigned int NBLOCKS = BLOCKSIZE / (ROWBSRDIM * COLBSRDIM);
 
         // BSR row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // BSR block row accumulator
         T sum = static_cast<T>(0);
@@ -751,13 +751,13 @@ namespace rocsparse
         // processes a BSR block value
         for(rocsparse_int j = row_begin; j < row_end; j += NBLOCKS)
         {
-            rocsparse_int k = j + hipThreadIdx_x / (ROWBSRDIM * COLBSRDIM);
+            const rocsparse_int k = j + hipThreadIdx_x / (ROWBSRDIM * COLBSRDIM);
 
             // Do not exceed the row
             if(k < row_end)
             {
                 // Column index into x vector
-                rocsparse_int col = (bsr_col_ind[k] - idx_base) * COLBSRDIM;
+                const rocsparse_int col = (bsr_col_ind[k] - idx_base) * COLBSRDIM;
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row

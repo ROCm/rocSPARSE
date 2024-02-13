@@ -148,9 +148,9 @@ rocsparse_status rocsparse::bsrmm_template_dispatch(rocsparse_handle          ha
     // If block dimension is one we can simply call csrmm
     if(block_dim == 1)
     {
-        rocsparse_int nnz = nnzb * block_dim;
-        rocsparse_int m   = mb * block_dim;
-        rocsparse_int k   = kb * block_dim;
+        const rocsparse_int nnz = nnzb * block_dim;
+        const rocsparse_int m   = mb * block_dim;
+        const rocsparse_int k   = kb * block_dim;
 
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_template_dispatch<T>(handle,
                                                                         trans_A,
@@ -281,8 +281,8 @@ rocsparse_status rocsparse::bsrmm_quickreturn(rocsparse_handle          handle,
     if(mb == 0 || n == 0 || kb == 0)
     {
         // matrix never accessed however still need to update C matrix
-        rocsparse_int m      = block_dim * mb;
-        rocsparse_int C_size = m * n;
+        const rocsparse_int m      = block_dim * mb;
+        const rocsparse_int C_size = m * n;
         if(C_size > 0)
         {
             if(C == nullptr && beta == nullptr)
