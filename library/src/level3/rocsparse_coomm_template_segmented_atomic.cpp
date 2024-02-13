@@ -54,42 +54,44 @@ namespace rocsparse
                                                               rocsparse_order      order_C,
                                                               rocsparse_index_base idx_base)
     {
-        int tid = hipThreadIdx_x;
-        int lid = tid & (WF_SIZE - 1);
+        const int tid = hipThreadIdx_x;
+        const int lid = tid & (WF_SIZE - 1);
 
-        int batch = hipBlockIdx_z;
+        const int batch = hipBlockIdx_z;
 
         // Shared memory to hold row indices and values for segmented reduction
         __shared__ I shared_row[WF_SIZE];
         __shared__ T shared_val[COLS][WF_SIZE];
 
-        I       col_offset = nstart + COLS * hipBlockIdx_y;
-        int64_t offset     = hipBlockIdx_x * LOOPS * WF_SIZE;
+        const I       col_offset = nstart + COLS * hipBlockIdx_y;
+        const int64_t offset     = hipBlockIdx_x * LOOPS * WF_SIZE;
 
         if(offset >= nnz)
         {
             return;
         }
 
-        // Current threads index into COO structure
-        int64_t idx = offset + lid;
-
         I row;
         T val[COLS];
 
+        // Current threads index into COO structure
         // Each thread processes 'loop' COO entries
-        while(idx < offset + LOOPS * WF_SIZE)
+        for(int64_t idx = offset + lid; idx < offset + LOOPS * WF_SIZE; idx += WF_SIZE)
         {
             // Get corresponding COO entry
-            I r = (idx < nnz)
+
+            const I r
+                = (idx < nnz)
                       ? rocsparse::nontemporal_load(coo_row_ind + idx + batch_stride_A * batch)
                             - idx_base
                       : -1;
-            I c = (idx < nnz)
+            const I c
+                = (idx < nnz)
                       ? rocsparse::nontemporal_load(coo_col_ind + idx + batch_stride_A * batch)
                             - idx_base
                       : 0;
-            T v = (idx < nnz)
+            const T v
+                = (idx < nnz)
                       ? alpha * rocsparse::nontemporal_load(coo_val + idx + batch_stride_A * batch)
                       : static_cast<T>(0);
 
@@ -139,7 +141,7 @@ namespace rocsparse
             // appended.
             if(idx > offset && lid == 0)
             {
-                I prevrow = shared_row[WF_SIZE - 1];
+                const I prevrow = shared_row[WF_SIZE - 1];
                 if(row == prevrow)
                 {
                     for(unsigned int p = 0; p < COLS; p++)
@@ -230,8 +232,6 @@ namespace rocsparse
                     }
                 }
             }
-
-            idx += WF_SIZE;
         }
 
         // Write last entries into buffers for segmented block reduction
@@ -284,7 +284,7 @@ namespace rocsparse
                                   rocsparse_order      order_C,
                                   rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         if(alpha != static_cast<T>(0))
         {
             rocsparse::coommnn_segmented_atomic_device<WF_SIZE, LOOPS, COLS, NT>(trans_B,
@@ -397,8 +397,8 @@ namespace rocsparse
 
                 if(handle->wavefront_size == 32)
                 {
-                    I nloops  = 16;
-                    I nblocks = (nnz - 1) / (32 * nloops) + 1;
+                    static constexpr I nloops  = 16;
+                    const I            nblocks = (nnz - 1) / (32 * nloops) + 1;
 
                     if(n >= 8)
                     {
@@ -453,8 +453,8 @@ namespace rocsparse
                 }
                 else if(handle->wavefront_size == 64)
                 {
-                    I nloops  = 16;
-                    I nblocks = (nnz - 1) / (64 * nloops) + 1;
+                    static constexpr I nloops  = 16;
+                    I                  nblocks = (nnz - 1) / (64 * nloops) + 1;
 
                     if(n >= 8)
                     {
@@ -519,8 +519,8 @@ namespace rocsparse
 
                 if(handle->wavefront_size == 32)
                 {
-                    I nloops  = 16;
-                    I nblocks = (nnz - 1) / (32 * nloops) + 1;
+                    static constexpr I nloops  = 16;
+                    I                  nblocks = (nnz - 1) / (32 * nloops) + 1;
 
                     if(n >= 8)
                     {
@@ -575,8 +575,8 @@ namespace rocsparse
                 }
                 else if(handle->wavefront_size == 64)
                 {
-                    I nloops  = 16;
-                    I nblocks = (nnz - 1) / (64 * nloops) + 1;
+                    static constexpr I nloops  = 16;
+                    I                  nblocks = (nnz - 1) / (64 * nloops) + 1;
 
                     if(n >= 8)
                     {

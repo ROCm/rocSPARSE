@@ -443,7 +443,7 @@ namespace rocsparse
         if(m == 0 || n == 0 || k == 0)
         {
             // matrix never accessed however still need to update C matrix
-            rocsparse_int Csize = (trans_A == rocsparse_operation_none) ? m * n : k * n;
+            const rocsparse_int Csize = (trans_A == rocsparse_operation_none) ? m * n : k * n;
             if(Csize > 0)
             {
                 if(dense_C == nullptr || beta == nullptr)

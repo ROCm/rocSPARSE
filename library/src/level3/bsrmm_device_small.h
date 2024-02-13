@@ -49,21 +49,21 @@ namespace rocsparse
     {
         constexpr rocsparse_int PADDED_BSR_BLOCK_DIM = (BSR_BLOCK_DIM + 1);
 
-        rocsparse_int tid  = hipThreadIdx_x;
-        rocsparse_int gid  = hipBlockIdx_x * hipBlockDim_x + tid;
-        rocsparse_int lid  = gid & (WF_SIZE - 1);
-        rocsparse_int wid  = tid / WF_SIZE;
-        rocsparse_int nwfb = hipGridDim_x * hipBlockDim_x / (WF_SIZE * BSR_BLOCK_DIM);
-        rocsparse_int col  = lid + hipBlockIdx_y * WF_SIZE;
+        const rocsparse_int tid  = hipThreadIdx_x;
+        const rocsparse_int gid  = hipBlockIdx_x * hipBlockDim_x + tid;
+        const rocsparse_int lid  = gid & (WF_SIZE - 1);
+        const rocsparse_int wid  = tid / WF_SIZE;
+        const rocsparse_int nwfb = hipGridDim_x * hipBlockDim_x / (WF_SIZE * BSR_BLOCK_DIM);
+        const rocsparse_int col  = lid + hipBlockIdx_y * WF_SIZE;
 
-        int64_t colB = col * ldb;
-        int64_t colC = col * ldc;
+        const int64_t colB = col * ldb;
+        const int64_t colC = col * ldc;
 
         // global row
-        rocsparse_int global_row = (gid / WF_SIZE);
+        const rocsparse_int global_row = (gid / WF_SIZE);
 
         // local row within block row
-        rocsparse_int local_row = (gid / WF_SIZE) % BSR_BLOCK_DIM;
+        const rocsparse_int local_row = (gid / WF_SIZE) % BSR_BLOCK_DIM;
 
         __shared__ rocsparse_int shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
         __shared__ T             shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE * PADDED_BSR_BLOCK_DIM];
@@ -71,14 +71,14 @@ namespace rocsparse
         for(rocsparse_int block_row = gid / (WF_SIZE * BSR_BLOCK_DIM); block_row < Mb;
             block_row += nwfb)
         {
-            rocsparse_int block_row_start = bsr_row_ptr[block_row] - idx_base;
-            rocsparse_int block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
+            const rocsparse_int block_row_start = bsr_row_ptr[block_row] - idx_base;
+            const rocsparse_int block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
 
             T sum = static_cast<T>(0);
 
             for(rocsparse_int j = block_row_start; j < block_row_end; j += WF_SIZE)
             {
-                rocsparse_int k = j + lid;
+                const rocsparse_int k = j + lid;
 
                 shared_col[wid][lid]
                     = (k < block_row_end) ? BSR_BLOCK_DIM * (bsr_col_ind[k] - idx_base) : 0;
@@ -232,13 +232,13 @@ namespace rocsparse
     {
         constexpr rocsparse_int PADDED_BSR_BLOCK_DIM = (BSR_BLOCK_DIM + 1);
 
-        rocsparse_int tid        = hipThreadIdx_x;
-        rocsparse_int gid        = hipBlockIdx_x * hipBlockDim_x + tid;
-        rocsparse_int block_row  = gid / (WF_SIZE * BSR_BLOCK_DIM);
-        rocsparse_int global_row = gid / WF_SIZE;
-        rocsparse_int local_row  = (gid / WF_SIZE) % BSR_BLOCK_DIM;
-        rocsparse_int lid        = tid & (WF_SIZE - 1);
-        rocsparse_int wid        = tid / WF_SIZE;
+        const rocsparse_int tid        = hipThreadIdx_x;
+        const rocsparse_int gid        = hipBlockIdx_x * hipBlockDim_x + tid;
+        const rocsparse_int block_row  = gid / (WF_SIZE * BSR_BLOCK_DIM);
+        const rocsparse_int global_row = gid / WF_SIZE;
+        const rocsparse_int local_row  = (gid / WF_SIZE) % BSR_BLOCK_DIM;
+        const rocsparse_int lid        = tid & (WF_SIZE - 1);
+        const rocsparse_int wid        = tid / WF_SIZE;
 
         if(block_row >= Mb)
         {
@@ -248,17 +248,17 @@ namespace rocsparse
         __shared__ rocsparse_int shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
         __shared__ T             shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE * PADDED_BSR_BLOCK_DIM];
 
-        rocsparse_int block_row_start = bsr_row_ptr[block_row] - idx_base;
-        rocsparse_int block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
+        const rocsparse_int block_row_start = bsr_row_ptr[block_row] - idx_base;
+        const rocsparse_int block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
 
         for(rocsparse_int l = 0; l < N; l += WF_SIZE)
         {
-            rocsparse_int col = l + lid;
-            T             sum = static_cast<T>(0);
+            const rocsparse_int col = l + lid;
+            T                   sum = static_cast<T>(0);
 
             for(rocsparse_int j = block_row_start; j < block_row_end; j += WF_SIZE)
             {
-                rocsparse_int k = j + lid;
+                const rocsparse_int k = j + lid;
 
                 shared_col[wid][lid]
                     = (k < block_row_end) ? BSR_BLOCK_DIM * (bsr_col_ind[k] - idx_base) : 0;

@@ -124,7 +124,7 @@ namespace rocsparse
         }
         blockdim <<= 1;
 
-        int narrays = (nrhs - 1) / blockdim + 1;
+        const int narrays = (nrhs - 1) / blockdim + 1;
 
         // done array
         int* done_array = reinterpret_cast<int*>(ptr);
@@ -149,7 +149,7 @@ namespace rocsparse
         // Initialize buffers
         RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * m * narrays, stream));
 
-        rocsparse_trm_info csrsm_info
+        const rocsparse_trm_info csrsm_info
             = (descr->fill_mode == rocsparse_fill_mode_upper)
                   ? ((trans_A == rocsparse_operation_none) ? info->csrsm_upper_info
                                                            : info->csrsmt_upper_info)
@@ -235,13 +235,13 @@ namespace rocsparse
                                                                  : rocsparse_fill_mode_lower;
         }
         {
-            dim3 csrsm_blocks(((nrhs - 1) / blockdim + 1) * m);
-            dim3 csrsm_threads(blockdim);
+            const dim3 csrsm_blocks(((nrhs - 1) / blockdim + 1) * m);
+            const dim3 csrsm_threads(blockdim);
 
             // Determine gcnArch and ASIC revision
 
             const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
-            int               asicRev       = handle->asic_rev;
+            const int         asicRev       = handle->asic_rev;
 
             // rocsparse_pointer_mode_device
 
@@ -502,8 +502,8 @@ namespace rocsparse
         {
 #define CSRSM_DIM_X 32
 #define CSRSM_DIM_Y 8
-            dim3 csrsm_blocks((m - 1) / CSRSM_DIM_X + 1);
-            dim3 csrsm_threads(CSRSM_DIM_X * CSRSM_DIM_Y);
+            const dim3 csrsm_blocks((m - 1) / CSRSM_DIM_X + 1);
+            const dim3 csrsm_threads(CSRSM_DIM_X * CSRSM_DIM_Y);
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                 (rocsparse::dense_transpose_back<CSRSM_DIM_X, CSRSM_DIM_Y>),

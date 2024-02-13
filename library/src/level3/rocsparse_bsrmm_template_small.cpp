@@ -47,8 +47,8 @@ namespace rocsparse
                                        int64_t              ldc,
                                        rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
         if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
         {
@@ -90,8 +90,8 @@ namespace rocsparse
                                        int64_t              ldc,
                                        rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
         if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
         {
@@ -135,18 +135,17 @@ namespace rocsparse
                                           int64_t                   ldc)
 
     {
-        hipStream_t stream = handle->stream;
-        //      rocsparse_int nnz = nnzb * block_dim;
-        rocsparse_int m = mb * block_dim;
-        //      rocsparse_int k   = kb * block_dim;
+        hipStream_t         stream = handle->stream;
+        const rocsparse_int m      = mb * block_dim;
         assert(block_dim == 2);
         if(trans_B == rocsparse_operation_none)
         {
             constexpr rocsparse_int BSRMMNN_DIM = 64;
             constexpr rocsparse_int SUB_WF_SIZE = 8;
 
-            dim3 bsrmm_blocks((m - 1) / (BSRMMNN_DIM / SUB_WF_SIZE) + 1, (n - 1) / SUB_WF_SIZE + 1);
-            dim3 bsrmm_threads(BSRMMNN_DIM);
+            const dim3 bsrmm_blocks((m - 1) / (BSRMMNN_DIM / SUB_WF_SIZE) + 1,
+                                    (n - 1) / SUB_WF_SIZE + 1);
+            const dim3 bsrmm_threads(BSRMMNN_DIM);
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                 (rocsparse::bsrmmnn_small_blockdim_kernel<BSRMMNN_DIM, SUB_WF_SIZE, 2>),
                 bsrmm_blocks,
@@ -172,8 +171,8 @@ namespace rocsparse
             constexpr rocsparse_int BSRMMNT_DIM = 64;
 
 #define UNROLL_SMALL_TRANSPOSE_KERNEL(M_)                               \
-    dim3 bsrmm_blocks((m - 1) / (BSRMMNT_DIM / M_) + 1);                \
-    dim3 bsrmm_threads(BSRMMNT_DIM);                                    \
+    const dim3 bsrmm_blocks((m - 1) / (BSRMMNT_DIM / M_) + 1);          \
+    const dim3 bsrmm_threads(BSRMMNT_DIM);                              \
     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                 \
         (rocsparse::bsrmmnt_small_blockdim_kernel<BSRMMNT_DIM, M_, 2>), \
         bsrmm_blocks,                                                   \
@@ -195,7 +194,7 @@ namespace rocsparse
         descr->base)
 
             // Average nnzb per row of A
-            rocsparse_int avg_row_nnzb = (nnzb - 1) / mb + 1;
+            const rocsparse_int avg_row_nnzb = (nnzb - 1) / mb + 1;
 
             // Launch appropriate kernel depending on row nnz of A
             if(avg_row_nnzb < 16)

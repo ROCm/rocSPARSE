@@ -41,7 +41,7 @@ namespace rocsparse
                                             Y*                   y,
                                             rocsparse_index_base idx_base)
     {
-        I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+        const I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 
         if(ai >= m)
         {
@@ -51,9 +51,9 @@ namespace rocsparse
         T sum = static_cast<T>(0);
         for(I p = 0; p < ell_width; ++p)
         {
-            int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
-            I       col = rocsparse::nontemporal_load(ell_col_ind + idx) - idx_base;
 
+            const int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
+            const I       col = rocsparse::nontemporal_load(ell_col_ind + idx) - idx_base;
             if(col >= 0 && col < n)
             {
                 sum = rocsparse::fma<T>(
@@ -67,7 +67,7 @@ namespace rocsparse
 
         if(beta != static_cast<T>(0))
         {
-            Y yv = rocsparse::nontemporal_load(y + ai);
+            const Y yv = rocsparse::nontemporal_load(y + ai);
             rocsparse::nontemporal_store(rocsparse::fma<T>(beta, yv, alpha * sum), y + ai);
         }
         else
@@ -80,7 +80,7 @@ namespace rocsparse
     template <typename I, typename Y, typename T>
     ROCSPARSE_DEVICE_ILF void ellmvt_scale_device(I size, T scalar, Y* data)
     {
-        I idx = blockIdx.x * blockDim.x + threadIdx.x;
+        const I idx = blockIdx.x * blockDim.x + threadIdx.x;
 
         if(idx >= size)
         {
@@ -103,19 +103,19 @@ namespace rocsparse
                                             Y*                   y,
                                             rocsparse_index_base idx_base)
     {
-        I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+        const I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 
         if(ai >= m)
         {
             return;
         }
 
-        T row_val = alpha * rocsparse::ldg(x + ai);
+        const T row_val = alpha * rocsparse::ldg(x + ai);
 
         for(I p = 0; p < ell_width; ++p)
         {
-            int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
-            I       col = rocsparse::nontemporal_load(ell_col_ind + idx) - idx_base;
+            const int64_t idx = ELL_IND(ai, (int64_t)p, m, ell_width);
+            const I       col = rocsparse::nontemporal_load(ell_col_ind + idx) - idx_base;
 
             if(col >= 0 && col < n)
             {

@@ -31,7 +31,7 @@ namespace rocsparse
     template <typename I, typename T>
     ROCSPARSE_DEVICE_ILF void gemvi_scale_kernel(I m, T scalar, T* x)
     {
-        I gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+        const I gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
         if(gid < m)
         {
@@ -52,15 +52,15 @@ namespace rocsparse
                                            T*                   y,
                                            rocsparse_index_base idx_base)
     {
-        int lid = hipThreadIdx_x & (WFSIZE - 1);
-        int wid = hipThreadIdx_x / WFSIZE;
+        const int lid = hipThreadIdx_x & (WFSIZE - 1);
+        const int wid = hipThreadIdx_x / WFSIZE;
 
         // Each threadblock processes WFSIZE rows, where
         // each wavefront processes a column of these rows, e.g.
         // WF 0 processes the first column entry from the list of non-zeros
         // WF 1 processes the second column entry from the list of non-zeros
         // etc.
-        I row = hipBlockIdx_x * WFSIZE + lid;
+        const I row = hipBlockIdx_x * WFSIZE + lid;
 
         // Sub-row sum accumulator
         T sum = static_cast<T>(0);

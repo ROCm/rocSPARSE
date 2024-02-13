@@ -32,7 +32,7 @@ namespace rocsparse
     ROCSPARSE_DEVICE_ILF void bsrsm_copy_scale_device(
         rocsparse_int m, rocsparse_int n, T alpha, const T* B, int64_t ldb, T* X, int64_t ldx)
     {
-        rocsparse_int row = blockIdx.x * blockDim.x + threadIdx.x;
+        const rocsparse_int row = blockIdx.x * blockDim.x + threadIdx.x;
 
         if(row >= m)
         {
@@ -41,8 +41,8 @@ namespace rocsparse
 
         for(int i = 0; i < n; ++i)
         {
-            int64_t idx_B = row * ldb + i;
-            int64_t idx_X = row * ldx + i;
+            const int64_t idx_B = row * ldb + i;
+            const int64_t idx_X = row * ldx + i;
 
             X[idx_X] = alpha * B[idx_B];
         }

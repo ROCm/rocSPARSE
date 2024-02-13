@@ -57,9 +57,9 @@ namespace rocsparse
                                   rocsparse_order      order_C,
                                   rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha == 0 && beta == 1)
         {
             return;
@@ -115,9 +115,9 @@ namespace rocsparse
                                        rocsparse_order      order_C,
                                        rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha == 0 && beta == 1)
         {
             return;
@@ -173,9 +173,9 @@ namespace rocsparse
                                             rocsparse_order      order_C,
                                             rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha == 0 && beta == 1)
         {
             return;
@@ -283,8 +283,9 @@ namespace rocsparse
 
         if(main > 0)
         {
-            dim3 csrmmnn_blocks((m - 1) / (CSRMMNN_DIM / SUB_WF_SIZE) + 1, (main - 1) / 8 + 1);
-            dim3 csrmmnn_threads(CSRMMNN_DIM);
+            const dim3 csrmmnn_blocks((m - 1) / (CSRMMNN_DIM / SUB_WF_SIZE) + 1,
+                                      (main - 1) / 8 + 1);
+            const dim3 csrmmnn_threads(CSRMMNN_DIM);
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                 (rocsparse::csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 8>),
                 csrmmnn_blocks,
@@ -313,8 +314,9 @@ namespace rocsparse
 
         if(remainder > 0)
         {
-            dim3 csrmmnn_blocks((m - 1) / (CSRMMNN_DIM / SUB_WF_SIZE) + 1, (remainder - 1) / 1 + 1);
-            dim3 csrmmnn_threads(CSRMMNN_DIM);
+            const dim3 csrmmnn_blocks((m - 1) / (CSRMMNN_DIM / SUB_WF_SIZE) + 1,
+                                      (remainder - 1) / 1 + 1);
+            const dim3 csrmmnn_threads(CSRMMNN_DIM);
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                 (rocsparse::csrmmnn_row_split_kernel<CSRMMNN_DIM, SUB_WF_SIZE, 1>),
                 csrmmnn_blocks,
@@ -367,7 +369,7 @@ namespace rocsparse
                                                 rocsparse_order           order_C)
     {
         // Average nnz per row of A
-        I avg_row_nnz = (nnz - 1) / m + 1;
+        const I avg_row_nnz = (nnz - 1) / m + 1;
 
         // Computation is split into two parts, main and remainder
         // First step: Compute main, which is the maximum number of
@@ -615,8 +617,8 @@ namespace rocsparse
                                               rocsparse_order           order_C,
                                               bool                      force_conj_A)
     {
-        bool conj_A = (trans_A == rocsparse_operation_conjugate_transpose || force_conj_A);
-        bool conj_B = (trans_B == rocsparse_operation_conjugate_transpose);
+        const bool conj_A = (trans_A == rocsparse_operation_conjugate_transpose || force_conj_A);
+        const bool conj_B = (trans_B == rocsparse_operation_conjugate_transpose);
 
         // Run different csrmv kernels
         if(trans_A == rocsparse_operation_none)

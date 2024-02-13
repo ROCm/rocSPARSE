@@ -59,26 +59,26 @@ namespace rocsparse
                                                        rocsparse_order      order_C,
                                                        rocsparse_index_base idx_base)
     {
-        int tid  = hipThreadIdx_x;
-        J   gid  = hipBlockIdx_x * BLOCKSIZE + tid;
-        int lid  = gid & (WF_SIZE - 1);
-        J   row  = gid / WF_SIZE;
-        J   colB = offset + LOOPS * hipBlockIdx_y;
+        const int tid  = hipThreadIdx_x;
+        const J   gid  = hipBlockIdx_x * BLOCKSIZE + tid;
+        const int lid  = gid & (WF_SIZE - 1);
+        const J   row  = gid / WF_SIZE;
+        const J   colB = offset + LOOPS * hipBlockIdx_y;
 
         if(row >= M)
         {
             return;
         }
 
-        I row_start = csr_row_ptr[row] - idx_base;
-        I row_end   = csr_row_ptr[row + 1] - idx_base;
+        const I row_start = csr_row_ptr[row] - idx_base;
+        const I row_end   = csr_row_ptr[row + 1] - idx_base;
 
         T sum[LOOPS]{};
 
         for(I j = row_start + lid; j < row_end; j += WF_SIZE)
         {
-            J col = csr_col_ind[j] - idx_base;
-            T val = conj_val(csr_val[j], conj_A);
+            const J col = csr_col_ind[j] - idx_base;
+            const T val = conj_val(csr_val[j], conj_A);
 
             for(unsigned int p = 0; p < LOOPS; p++)
             {
@@ -167,24 +167,24 @@ namespace rocsparse
                                                             rocsparse_order      order_C,
                                                             rocsparse_index_base idx_base)
     {
-        int tid = hipThreadIdx_x;
-        J   gid = hipBlockIdx_x * BLOCKSIZE + tid;
-        J   row = gid / WF_SIZE;
-        int lid = tid & (WF_SIZE - 1);
+        const int tid = hipThreadIdx_x;
+        const J   gid = hipBlockIdx_x * BLOCKSIZE + tid;
+        const J   row = gid / WF_SIZE;
+        const int lid = tid & (WF_SIZE - 1);
 
         if(row >= M)
         {
             return;
         }
 
-        I row_start = rocsparse::nontemporal_load(csr_row_ptr + row) - idx_base;
-        I row_end   = rocsparse::nontemporal_load(csr_row_ptr + row + 1) - idx_base;
+        const I row_start = rocsparse::nontemporal_load(csr_row_ptr + row) - idx_base;
+        const I row_end   = rocsparse::nontemporal_load(csr_row_ptr + row + 1) - idx_base;
 
         T sum[LOOPS];
 
         for(J l = 0; l < ncol; l += WF_SIZE * LOOPS)
         {
-            J colB = l + lid;
+            const J colB = l + lid;
 
             for(unsigned int p = 0; p < LOOPS; p++)
             {
@@ -193,26 +193,21 @@ namespace rocsparse
 
             for(I j = row_start; j < row_end; j += WF_SIZE)
             {
-                I k = j + lid;
+                const I k = j + lid;
 
-                int64_t col;
-                T       val;
+                const int64_t col
+                    = (k < row_end)
+                          ? (ldb * (rocsparse::nontemporal_load(csr_col_ind + k) - idx_base))
+                          : 0;
 
-                if(k < row_end)
-                {
-                    col = ldb * (rocsparse::nontemporal_load(csr_col_ind + k) - idx_base);
-                    val = conj_val(rocsparse::nontemporal_load(csr_val + k), conj_A);
-                }
-                else
-                {
-                    col = 0;
-                    val = static_cast<T>(0);
-                }
+                const T val = (k < row_end)
+                                  ? conj_val(rocsparse::nontemporal_load(csr_val + k), conj_A)
+                                  : static_cast<T>(0);
 
                 for(unsigned int i = 0; i < WF_SIZE; ++i)
                 {
-                    T       v = rocsparse::shfl(val, i, WF_SIZE);
-                    int64_t c = __shfl(col, i, WF_SIZE);
+                    const T       v = rocsparse::shfl(val, i, WF_SIZE);
+                    const int64_t c = __shfl(col, i, WF_SIZE);
 
                     for(unsigned int p = 0; p < LOOPS; p++)
                     {
@@ -294,50 +289,44 @@ namespace rocsparse
                                                                  rocsparse_order      order_C,
                                                                  rocsparse_index_base idx_base)
     {
-        int tid = hipThreadIdx_x;
-        J   gid = hipBlockIdx_x * BLOCKSIZE + tid;
-        J   row = gid / WF_SIZE;
-        int lid = tid & (WF_SIZE - 1);
+        const int tid = hipThreadIdx_x;
+        const J   gid = hipBlockIdx_x * BLOCKSIZE + tid;
+        const J   row = gid / WF_SIZE;
+        const int lid = tid & (WF_SIZE - 1);
 
         if(row >= M)
         {
             return;
         }
 
-        I row_start = rocsparse::nontemporal_load(csr_row_ptr + row) - idx_base;
-        I row_end   = rocsparse::nontemporal_load(csr_row_ptr + row + 1) - idx_base;
+        const I row_start = rocsparse::nontemporal_load(csr_row_ptr + row) - idx_base;
+        const I row_end   = rocsparse::nontemporal_load(csr_row_ptr + row + 1) - idx_base;
 
         for(J l = offset; l < ncol; l += WF_SIZE)
         {
-            J colB = l + lid;
-            T sum  = static_cast<T>(0);
+            const J colB = l + lid;
+            T       sum  = static_cast<T>(0);
 
             for(I j = row_start; j < row_end; j += WF_SIZE)
             {
                 I k = j + lid;
 
-                int64_t col;
-                T       val;
-
-                if(k < row_end)
-                {
-                    col = ldb * (rocsparse::nontemporal_load(csr_col_ind + k) - idx_base);
-                    val = conj_val(rocsparse::nontemporal_load(csr_val + k), conj_A);
-                }
-                else
-                {
-                    col = 0;
-                    val = static_cast<T>(0);
-                }
+                const int64_t col
+                    = (k < row_end)
+                          ? (ldb * (rocsparse::nontemporal_load(csr_col_ind + k) - idx_base))
+                          : 0;
+                const T val = (k < row_end)
+                                  ? conj_val(rocsparse::nontemporal_load(csr_val + k), conj_A)
+                                  : static_cast<T>(0);
 
                 for(unsigned int i = 0; i < WF_SIZE; ++i)
                 {
-                    T       v = rocsparse::shfl(val, i, WF_SIZE);
-                    int64_t c = __shfl(col, i, WF_SIZE);
-                    sum       = rocsparse::fma<T>(
+                    const T       v = rocsparse::shfl(val, i, WF_SIZE);
+                    const int64_t c = __shfl(col, i, WF_SIZE);
+                    sum             = rocsparse::fma<T>(
                         v,
                         (colB < ncol) ? conj_val(rocsparse::ldg(dense_B + colB + c), conj_B)
-                                            : static_cast<T>(0),
+                                                  : static_cast<T>(0),
                         sum);
                 }
             }

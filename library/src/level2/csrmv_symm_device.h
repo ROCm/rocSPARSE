@@ -48,25 +48,25 @@ namespace rocsparse
                                                          Y*                   y,
                                                          rocsparse_index_base idx_base)
     {
-        int lid = hipThreadIdx_x & (WF_SIZE - 1);
+        const int lid = hipThreadIdx_x & (WF_SIZE - 1);
 
-        J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-        J nwf = hipGridDim_x * (BLOCKSIZE / WF_SIZE);
+        const J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const J nwf = hipGridDim_x * (BLOCKSIZE / WF_SIZE);
 
         // Loop over rows
         for(J row = gid / WF_SIZE; row < m; row += nwf)
         {
             // Each wavefront processes one row
-            I row_start = csr_row_ptr_begin[row] - idx_base;
-            I row_end   = csr_row_ptr_end[row] - idx_base;
+            const I row_start = csr_row_ptr_begin[row] - idx_base;
+            const I row_end   = csr_row_ptr_end[row] - idx_base;
 
             T sum = static_cast<T>(0);
 
             // Loop over non-zero elements
             for(I j = row_start + lid; j < row_end; j += WF_SIZE)
             {
-                A val = conj_val(csr_val[j], conj);
-                sum   = rocsparse::fma<T>(
+                const A val = conj_val(csr_val[j], conj);
+                sum         = rocsparse::fma<T>(
                     alpha * val, rocsparse::ldg(x + csr_col_ind[j] - idx_base), sum);
             }
 
@@ -107,24 +107,25 @@ namespace rocsparse
                                                          Y*                   y,
                                                          rocsparse_index_base idx_base)
     {
-        int lid = hipThreadIdx_x & (WF_SIZE - 1);
+        const int lid = hipThreadIdx_x & (WF_SIZE - 1);
 
-        J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-        J inc = hipGridDim_x * (BLOCKSIZE / WF_SIZE);
+        const J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const J inc = hipGridDim_x * (BLOCKSIZE / WF_SIZE);
 
         for(J row = gid / WF_SIZE; row < m; row += inc)
         {
-            I row_begin = csr_row_ptr_begin[row] - idx_base;
-            I row_end   = csr_row_ptr_end[row] - idx_base;
-            T row_val   = alpha * x[row];
+            const I row_begin = csr_row_ptr_begin[row] - idx_base;
+            const I row_end   = csr_row_ptr_end[row] - idx_base;
+            const T row_val   = alpha * x[row];
 
             for(I j = row_begin + lid; j < row_end; j += WF_SIZE)
             {
-                J col = csr_col_ind[j] - idx_base;
+                const J col = csr_col_ind[j] - idx_base;
 
                 if(col != row)
                 {
-                    A val = conj_val(csr_val[j], conj);
+
+                    const A val = conj_val(csr_val[j], conj);
                     rocsparse::atomic_add(&y[col], row_val * val);
                 }
             }
@@ -201,8 +202,8 @@ namespace rocsparse
         __shared__ T partial_sums[BLOCKSIZE];
         __shared__ T cols_in_rows[MAX_ROWS];
 
-        int gid = hipBlockIdx_x;
-        int lid = hipThreadIdx_x;
+        const int gid = hipBlockIdx_x;
+        const int lid = hipThreadIdx_x;
 
         for(J i = 0; i < BLOCKSIZE; i += WG_SIZE)
         {
@@ -228,8 +229,8 @@ namespace rocsparse
         // know when the first workgroup for that row has finished initializing the output
         // value. While this bit is the same as the first workgroup's flag bit, this
         // workgroup will spin-loop.
-        I row      = row_blocks[gid];
-        I stop_row = row_blocks[gid + 1];
+        const I row      = row_blocks[gid];
+        const I stop_row = row_blocks[gid + 1];
 
         if((stop_row - row > 2))
         {
@@ -252,14 +253,14 @@ namespace rocsparse
             // to each row, assuming that every row gets the same number of threads.
             // We want the closest lower-power-of-2 to this number -- that is how many
             // threads can work in each row's reduction using our algorithm.
-            int possibleThreadsRed = hipBlockDim_x / (stop_row - row);
-            int numThreadsForRed   = lowerPowerOf2(possibleThreadsRed);
+            const int possibleThreadsRed = hipBlockDim_x / (stop_row - row);
+            const int numThreadsForRed   = lowerPowerOf2(possibleThreadsRed);
 
             I local_row = row + lid;
 
             // Stream all of this row block's matrix values into local memory.
             // Perform the matvec in parallel with this work.
-            I col = csr_row_ptr[row] + lid - idx_base;
+            const I col = csr_row_ptr[row] + lid - idx_base;
 
             // Stream all of this row blocks' matrix values into local memory
             // Only do the unrolled loop if it won't overflow the buffer
@@ -280,7 +281,7 @@ namespace rocsparse
                 // However, this may change in the future (e.g. with shared virtual memory.)
                 // This causes a minor performance loss because this is the last workgroup
                 // to be launched, and this loop can't be unrolled.
-                I max_to_load = csr_row_ptr[stop_row] - csr_row_ptr[row];
+                const I max_to_load = csr_row_ptr[stop_row] - csr_row_ptr[row];
                 for(I i = 0; (lid + i) < max_to_load; i += WG_SIZE)
                 {
                     partial_sums[lid + i] = alpha * conj_val(csr_val[col + i], conj);
@@ -301,14 +302,14 @@ namespace rocsparse
             // stop row for this block is more than this value, we need to make
             // sure we can offset it. Otherwise, we would blow past the end of
             // the local memory.
-            I stop_cols_idx = (stop_row < max_rows) ? 0 : (stop_row - max_rows);
+            const I stop_cols_idx = (stop_row < max_rows) ? 0 : (stop_row - max_rows);
             if(col + BLOCKSIZE - WG_SIZE < nnz)
             {
                 for(J i = 0; i < BLOCKSIZE; i += WG_SIZE)
                 {
                     // Need to prep some data for the upper triangular calculation
-                    I myRow = binSearch(csr_row_ptr, row, stop_row, (col + i), idx_base);
-                    J myCol = csr_col_ind[col + i] - idx_base;
+                    const I myRow = binSearch(csr_row_ptr, row, stop_row, (col + i), idx_base);
+                    const J myCol = csr_col_ind[col + i] - idx_base;
 
                     // Coming in, partial_sums contains the matrix data, so this allows
                     // us to reach into the output and calculate this piece of the upper
@@ -330,12 +331,12 @@ namespace rocsparse
             }
             else
             {
-                I max_to_load = csr_row_ptr[stop_row] - csr_row_ptr[row];
+                const I max_to_load = csr_row_ptr[stop_row] - csr_row_ptr[row];
                 for(I i = 0; (lid + i) < max_to_load; i += WG_SIZE)
                 {
                     // Need to prep some data for the upper triangular calculation
-                    I myRow = binSearch(csr_row_ptr, row, stop_row, (col + i), idx_base);
-                    J myCol = csr_col_ind[col + i] - idx_base;
+                    const I myRow = binSearch(csr_row_ptr, row, stop_row, (col + i), idx_base);
+                    const J myCol = csr_col_ind[col + i] - idx_base;
 
                     // Coming in, partial_sums contains the matrix data, so this allows
                     // us to reach into the output and calculate this piece of the upper
@@ -358,7 +359,7 @@ namespace rocsparse
 
             __syncthreads();
 
-            I end_cols_idx = (stop_row < max_rows) ? stop_row : max_rows;
+            const I end_cols_idx = (stop_row < max_rows) ? stop_row : max_rows;
 
             for(I l = lid; l < (end_cols_idx - (stop_row - row)); l += WG_SIZE)
             {
@@ -379,11 +380,11 @@ namespace rocsparse
 
                 // {numThreadsForRed} adjacent threads all work on the same row, so their
                 // start and end values are the same.
-                int st                = lid / numThreadsForRed;
-                I   local_first_val   = (csr_row_ptr[row + st] - csr_row_ptr[row]);
-                I   local_last_val    = csr_row_ptr[row + st + 1] - csr_row_ptr[row];
-                I   workForEachThread = (local_last_val - local_first_val) / numThreadsForRed;
-                int threadInBlock     = lid & (numThreadsForRed - 1);
+                const int st                = lid / numThreadsForRed;
+                const I   local_first_val   = (csr_row_ptr[row + st] - csr_row_ptr[row]);
+                const I   local_last_val    = csr_row_ptr[row + st + 1] - csr_row_ptr[row];
+                const I   workForEachThread = (local_last_val - local_first_val) / numThreadsForRed;
+                const int threadInBlock     = lid & (numThreadsForRed - 1);
 
                 // Not all row blocks are full -- they may have an odd number of rows. As such,
                 // we need to ensure that adjacent-groups only work on real data for this rowBlock.
@@ -396,7 +397,7 @@ namespace rocsparse
                             += partial_sums[local_first_val + i * numThreadsForRed + threadInBlock];
                     }
 
-                    I local_cur_val = local_first_val + numThreadsForRed * workForEachThread;
+                    const I local_cur_val = local_first_val + numThreadsForRed * workForEachThread;
                     if(threadInBlock < local_last_val - local_cur_val)
                     {
                         temp += partial_sums[local_cur_val + threadInBlock];
@@ -454,18 +455,16 @@ namespace rocsparse
         else
         {
             // Thread ID in block
-            I myRow = row;
-
             // Lower triangular
-            while(myRow < stop_row)
+            for(I myRow = row; myRow < stop_row; ++myRow)
             {
-                I vecStart = csr_row_ptr[myRow] - idx_base;
-                I vecEnd   = csr_row_ptr[myRow + 1] - idx_base;
-                T mySum    = static_cast<T>(0);
+                const I vecStart = csr_row_ptr[myRow] - idx_base;
+                const I vecEnd   = csr_row_ptr[myRow + 1] - idx_base;
+                T       mySum    = static_cast<T>(0);
                 for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
                 {
-                    J col = csr_col_ind[j] - idx_base;
-                    mySum = rocsparse::fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
+                    const J col = csr_col_ind[j] - idx_base;
+                    mySum       = rocsparse::fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
                 }
 
                 partial_sums[lid] = mySum;
@@ -523,20 +522,20 @@ namespace rocsparse
                 {
                     rocsparse::atomic_add(&y[myRow], alpha * partial_sums[0]);
                 }
-                myRow++;
             }
 
             // Upper Triangular
-            I vecStart = csr_row_ptr[row] - idx_base;
-            I VecEnd   = csr_row_ptr[stop_row] - idx_base;
+            const I vecStart = csr_row_ptr[row] - idx_base;
+            const I VecEnd   = csr_row_ptr[stop_row] - idx_base;
             for(I j = vecStart + lid; j < VecEnd; j += WG_SIZE)
             {
-                I myRow2 = binSearch(csr_row_ptr, row, stop_row, j, idx_base);
-                J myCol  = csr_col_ind[j] - idx_base;
-                if(myCol != myRow2)
+                const I myRow = binSearch(csr_row_ptr, row, stop_row, j, idx_base);
+                const J myCol = csr_col_ind[j] - idx_base;
+                if(myCol != myRow)
                 {
+
                     rocsparse::atomic_add(&y[myCol],
-                                          (alpha * conj_val(csr_val[j], conj) * x[myRow2]));
+                                          (alpha * conj_val(csr_val[j], conj) * x[myRow]));
                 }
             }
         }
@@ -564,8 +563,8 @@ namespace rocsparse
     {
         __shared__ T partial_sums[BLOCKSIZE];
 
-        int gid = hipBlockIdx_x;
-        int lid = hipThreadIdx_x;
+        const int gid = hipBlockIdx_x;
+        const int lid = hipThreadIdx_x;
 
         for(J i = 0; i < BLOCKSIZE; i += WG_SIZE)
         {
@@ -574,22 +573,21 @@ namespace rocsparse
 
         __syncthreads();
 
-        I row      = row_blocks[gid];
-        I stop_row = row_blocks[gid + 1];
+        const I row      = row_blocks[gid];
+        const I stop_row = row_blocks[gid + 1];
 
         // Thread ID in block
-        I myRow = row;
-
         // Lower triangular
-        while(myRow < stop_row)
+        for(I myRow = row; myRow < stop_row; ++myRow)
         {
-            I vecStart = csr_row_ptr[myRow] - idx_base;
-            I vecEnd   = csr_row_ptr[myRow + 1] - idx_base;
-            T mySum    = static_cast<T>(0);
+            const I vecStart = csr_row_ptr[myRow] - idx_base;
+            const I vecEnd   = csr_row_ptr[myRow + 1] - idx_base;
+            T       mySum    = static_cast<T>(0);
             for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
-                J col = csr_col_ind[j] - idx_base;
-                mySum = rocsparse::fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
+
+                const J col = csr_col_ind[j] - idx_base;
+                mySum       = rocsparse::fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
             }
 
             partial_sums[lid] = mySum;
@@ -647,16 +645,15 @@ namespace rocsparse
             {
                 rocsparse::atomic_add(&y[myRow], alpha * partial_sums[0]);
             }
-            myRow++;
         }
 
         // Upper Triangular
-        I vecStart = csr_row_ptr[row] - idx_base;
-        I VecEnd   = csr_row_ptr[stop_row] - idx_base;
+        const I vecStart = csr_row_ptr[row] - idx_base;
+        const I VecEnd   = csr_row_ptr[stop_row] - idx_base;
         for(I j = vecStart + lid; j < VecEnd; j += WG_SIZE)
         {
-            I myRow2 = binSearch(csr_row_ptr, row, stop_row, j, idx_base);
-            J myCol  = csr_col_ind[j] - idx_base;
+            const I myRow2 = binSearch(csr_row_ptr, row, stop_row, j, idx_base);
+            const J myCol  = csr_col_ind[j] - idx_base;
             if(myCol != myRow2)
             {
                 rocsparse::atomic_add(&y[myCol], (alpha * conj_val(csr_val[j], conj) * x[myRow2]));

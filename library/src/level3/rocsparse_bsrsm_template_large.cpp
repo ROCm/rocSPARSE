@@ -71,8 +71,8 @@ namespace rocsparse
                           T*            X,
                           int64_t       ldx)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
 
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         rocsparse::bsrsm_copy_scale_device(m, n, alpha, B, ldb, X, ldx);
     }
 
@@ -86,8 +86,7 @@ namespace rocsparse
                          T* __restrict__ B,
                          int64_t ldb)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         rocsparse::dense_transpose_device<DIM_X, DIM_Y>(m, n, alpha, A, lda, B, ldb);
     }
 
@@ -145,7 +144,7 @@ namespace rocsparse
         // 16 columns per block seem to work very well
         static constexpr unsigned int NCOL = 16;
 
-        int narrays = (nrhs - 1) / NCOL + 1;
+        const int narrays = (nrhs - 1) / NCOL + 1;
 
         // done_array
         int* done_array = reinterpret_cast<int*>(ptr);
@@ -162,7 +161,7 @@ namespace rocsparse
         // Initialize buffers
         RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * mb * narrays, stream));
 
-        rocsparse_trm_info bsrsm_info
+        const rocsparse_trm_info bsrsm_info
             = (descr->fill_mode == rocsparse_fill_mode_upper)
                   ? ((trans_A == rocsparse_operation_none) ? info->bsrsm_upper_info
                                                            : info->bsrsmt_upper_info)
@@ -303,8 +302,8 @@ namespace rocsparse
         {
 #define BSRSM_DIM_X 32
 #define BSRSM_DIM_Y 8
-            dim3 bsrsm_blocks((mb * block_dim - 1) / BSRSM_DIM_X + 1);
-            dim3 bsrsm_threads(BSRSM_DIM_X * BSRSM_DIM_Y);
+            const dim3 bsrsm_blocks((mb * block_dim - 1) / BSRSM_DIM_X + 1);
+            const dim3 bsrsm_threads(BSRSM_DIM_X * BSRSM_DIM_Y);
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                 (rocsparse::dense_transpose_back<BSRSM_DIM_X, BSRSM_DIM_Y>),

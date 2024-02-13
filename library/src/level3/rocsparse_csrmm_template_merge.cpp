@@ -65,8 +65,9 @@ namespace rocsparse
                                    rocsparse_order      order_C,
                                    rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
+
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
         if(alpha == 0 && beta == 1)
         {
@@ -130,9 +131,9 @@ namespace rocsparse
                                         rocsparse_order      order_C,
                                         rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
 
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+        const auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha == 0 && beta == 1)
         {
             row_block_red[hipBlockIdx_x] = -1;
@@ -193,7 +194,8 @@ namespace rocsparse
                                    rocsparse_order      order_C,
                                    rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
+
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
 
         rocsparse::csrmmnt_merge_main_device<BLOCKSIZE, WF_SIZE, LOOPS, TRANSB, T>(conj_A,
                                                                                    conj_B,
@@ -245,8 +247,8 @@ namespace rocsparse
                                         rocsparse_order      order_C,
                                         rocsparse_index_base idx_base)
     {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
 
+        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         rocsparse::csrmmnt_merge_remainder_device<BLOCKSIZE, WF_SIZE, TRANSB>(conj_A,
                                                                               conj_B,
                                                                               offset,
@@ -272,7 +274,8 @@ namespace rocsparse
     void csrmmnn_merge_scale(
         I m, I n, U beta_device_host, C* __restrict__ data, int64_t ld, rocsparse_order order)
     {
-        auto beta = rocsparse::load_scalar_device_host(beta_device_host);
+
+        const auto beta = rocsparse::load_scalar_device_host(beta_device_host);
         if(beta != 1)
         {
             rocsparse::csrmmnn_merge_scale_device<BLOCKSIZE>(m, n, beta, data, ld, order);
@@ -297,7 +300,7 @@ namespace rocsparse
         {
         case rocsparse_operation_none:
         {
-            I nblocks = (nnz - 1) / NNZ_PER_BLOCK + 1;
+            const I nblocks = (nnz - 1) / NNZ_PER_BLOCK + 1;
 
             *buffer_size = 0;
             *buffer_size += sizeof(J) * ((nblocks + 1 - 1) / 256 + 1) * 256; // row limits
@@ -341,7 +344,7 @@ namespace rocsparse
             char* ptr        = reinterpret_cast<char*>(temp_buffer);
             J*    row_limits = reinterpret_cast<J*>(ptr);
 
-            I nblocks = (nnz - 1) / NNZ_PER_BLOCK + 1;
+            const I nblocks = (nnz - 1) / NNZ_PER_BLOCK + 1;
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
                 (rocsparse::csrmmnn_merge_compute_row_limits<256, NNZ_PER_BLOCK>),
                 dim3((nblocks - 1) / 256 + 1),
@@ -466,7 +469,7 @@ namespace rocsparse
                                            ldc,
                                            order_C);
 
-        I nblocks = (nnz - 1) / NNZ_PER_BLOCK + 1;
+        const I nblocks = (nnz - 1) / NNZ_PER_BLOCK + 1;
 
         char* ptr        = reinterpret_cast<char*>(temp_buffer);
         J*    row_limits = reinterpret_cast<J*>(ptr);
@@ -726,8 +729,8 @@ namespace rocsparse
                                           void*                     temp_buffer,
                                           bool                      force_conj_A)
     {
-        bool conj_A = (trans_A == rocsparse_operation_conjugate_transpose || force_conj_A);
-        bool conj_B = (trans_B == rocsparse_operation_conjugate_transpose);
+        const bool conj_A = (trans_A == rocsparse_operation_conjugate_transpose || force_conj_A);
+        const bool conj_B = (trans_B == rocsparse_operation_conjugate_transpose);
 
         // Run different csrmm kernels
         if(trans_A == rocsparse_operation_none)

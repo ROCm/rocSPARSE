@@ -28,6 +28,7 @@
 
 namespace rocsparse
 {
+
     template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
     ROCSPARSE_DEVICE_ILF void
         bsrsv_lower_general_device(rocsparse_int mb,
@@ -45,11 +46,11 @@ namespace rocsparse
                                    rocsparse_diag_type  diag_type,
                                    rocsparse_direction  dir)
     {
-        int lid = hipThreadIdx_x & (WFSIZE - 1);
-        int wid = hipThreadIdx_x / WFSIZE;
+        const int lid = hipThreadIdx_x & (WFSIZE - 1);
+        const int wid = hipThreadIdx_x / WFSIZE;
 
         // Index into the row map
-        rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
+        const rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
 
         // Do not run out of bounds
         if(idx >= mb)
@@ -58,11 +59,11 @@ namespace rocsparse
         }
 
         // Get the BSR row this wavefront will operate on
-        rocsparse_int row = map[idx];
+        const rocsparse_int row = map[idx];
 
         // Current row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // Initialize local_col with mb
         rocsparse_int local_col = mb;
@@ -89,27 +90,7 @@ namespace rocsparse
             }
 
             // Spin loop until dependency has been resolved
-            int local_done = __hip_atomic_load(
-                &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            unsigned int times_through = 0;
-            while(!local_done)
-            {
-                if(SLEEP)
-                {
-                    for(unsigned int i = 0; i < times_through; ++i)
-                    {
-                        __builtin_amdgcn_s_sleep(1);
-                    }
-
-                    if(times_through < 3907)
-                    {
-                        ++times_through;
-                    }
-                }
-
-                local_done = __hip_atomic_load(
-                    &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            }
+            rocsparse::spin_loop<SLEEP>(&done_array[local_col], __HIP_MEMORY_SCOPE_AGENT);
 
             // Wait for y to be visible globally
             __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
@@ -139,13 +120,12 @@ namespace rocsparse
             for(rocsparse_int bi = 0; bi < block_dim; ++bi)
             {
                 // Load diagonal matrix entry
-                T diag = (diag_type == rocsparse_diag_type_non_unit)
-                             ? bsr_val[block_dim * block_dim * j + bi + bi * block_dim]
-                             : static_cast<T>(1);
+                const T diag = (diag_type == rocsparse_diag_type_non_unit)
+                                   ? bsr_val[block_dim * block_dim * j + bi + bi * block_dim]
+                                   : static_cast<T>(1);
 
                 // Load result of bi-th BSR row
                 T val = y[row * block_dim + bi];
-
                 // Check for numerical pivot
                 if(diag == static_cast<T>(0))
                 {
@@ -194,11 +174,11 @@ namespace rocsparse
                                    rocsparse_diag_type  diag_type,
                                    rocsparse_direction  dir)
     {
-        int lid = hipThreadIdx_x & (WFSIZE - 1);
-        int wid = hipThreadIdx_x / WFSIZE;
+        const int lid = hipThreadIdx_x & (WFSIZE - 1);
+        const int wid = hipThreadIdx_x / WFSIZE;
 
         // Index into the row map
-        rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
+        const rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
 
         // Do not run out of bounds
         if(idx >= mb)
@@ -207,11 +187,11 @@ namespace rocsparse
         }
 
         // Get the BSR row this wavefront will operate on
-        rocsparse_int row = map[idx];
+        const rocsparse_int row = map[idx];
 
         // Current row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // Initialize local_col with mb
         rocsparse_int local_col = mb;
@@ -238,27 +218,7 @@ namespace rocsparse
             }
 
             // Spin loop until dependency has been resolved
-            int local_done = __hip_atomic_load(
-                &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            unsigned int times_through = 0;
-            while(!local_done)
-            {
-                if(SLEEP)
-                {
-                    for(unsigned int i = 0; i < times_through; ++i)
-                    {
-                        __builtin_amdgcn_s_sleep(1);
-                    }
-
-                    if(times_through < 3907)
-                    {
-                        ++times_through;
-                    }
-                }
-
-                local_done = __hip_atomic_load(
-                    &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            }
+            rocsparse::spin_loop<SLEEP>(&done_array[local_col], __HIP_MEMORY_SCOPE_AGENT);
 
             // Wait for y to be visible globally
             __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
@@ -288,9 +248,9 @@ namespace rocsparse
             for(rocsparse_int bi = block_dim - 1; bi >= 0; --bi)
             {
                 // Load diagonal matrix entry
-                T diag = (diag_type == rocsparse_diag_type_non_unit)
-                             ? bsr_val[block_dim * block_dim * j + bi + bi * block_dim]
-                             : static_cast<T>(1);
+                const T diag = (diag_type == rocsparse_diag_type_non_unit)
+                                   ? bsr_val[block_dim * block_dim * j + bi + bi * block_dim]
+                                   : static_cast<T>(1);
 
                 // Load result of bi-th BSR row
                 T val = y[row * block_dim + bi];
@@ -347,11 +307,11 @@ namespace rocsparse
                                   rocsparse_diag_type  diag_type,
                                   rocsparse_direction  dir)
     {
-        int lid = hipThreadIdx_x & (WFSIZE - 1);
-        int wid = hipThreadIdx_x / WFSIZE;
+        const int lid = hipThreadIdx_x & (WFSIZE - 1);
+        const int wid = hipThreadIdx_x / WFSIZE;
 
         // Index into the row map
-        rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
+        const rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
 
         // Do not run out of bounds
         if(idx >= mb)
@@ -360,11 +320,11 @@ namespace rocsparse
         }
 
         // Get the BSR row this wavefront will operate on
-        rocsparse_int row = map[idx];
+        const rocsparse_int row = map[idx];
 
         // Current row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // Initialize local_col with mb
         rocsparse_int local_col = mb;
@@ -380,7 +340,8 @@ namespace rocsparse
         T* bsr_updates = &sdata2[wid * BSRDIM];
 
         // Loop over the current row
-        for(rocsparse_int j = row_begin; j < row_end; ++j)
+        rocsparse_int j;
+        for(j = row_begin; j < row_end; ++j)
         {
             // Current column index
             local_col = bsr_col_ind[j] - idx_base;
@@ -388,8 +349,8 @@ namespace rocsparse
             // Load BSR block values
             // Each wavefront loads a full BSR block into shared memory
             // Pad remaining entries with zero
-            int bi = lid & (BSRDIM - 1);
-            int bj = lid / BSRDIM;
+            const int bi = lid & (BSRDIM - 1);
+            const int bj = lid / BSRDIM;
 
             for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
             {
@@ -407,27 +368,7 @@ namespace rocsparse
             }
 
             // Spin loop until dependency has been resolved
-            int local_done = __hip_atomic_load(
-                &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            unsigned int times_through = 0;
-            while(!local_done)
-            {
-                if(SLEEP)
-                {
-                    for(unsigned int i = 0; i < times_through; ++i)
-                    {
-                        __builtin_amdgcn_s_sleep(1);
-                    }
-
-                    if(times_through < 3907)
-                    {
-                        ++times_through;
-                    }
-                }
-
-                local_done = __hip_atomic_load(
-                    &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            }
+            rocsparse::spin_loop<SLEEP>(&done_array[local_col], __HIP_MEMORY_SCOPE_AGENT);
 
             // Wait for y to be visible globally
             __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
@@ -461,8 +402,9 @@ namespace rocsparse
             for(rocsparse_int bi = 0; bi < block_dim; ++bi)
             {
                 // Load diagonal matrix entry
-                T diag = (diag_type == rocsparse_diag_type_non_unit) ? bsr_values[bi + bi * BSRDIM]
-                                                                     : static_cast<T>(1);
+                const T diag = (diag_type == rocsparse_diag_type_non_unit)
+                                   ? bsr_values[bi + bi * BSRDIM]
+                                   : static_cast<T>(1);
 
                 // Load result of bi-th BSR row
                 T val = rocsparse::shfl(local_sum, bi);
@@ -533,11 +475,11 @@ namespace rocsparse
                                   rocsparse_diag_type  diag_type,
                                   rocsparse_direction  dir)
     {
-        int lid = hipThreadIdx_x & (WFSIZE - 1);
-        int wid = hipThreadIdx_x / WFSIZE;
+        const int lid = hipThreadIdx_x & (WFSIZE - 1);
+        const int wid = hipThreadIdx_x / WFSIZE;
 
         // Index into the row map
-        rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
+        const rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
 
         // Do not run out of bounds
         if(idx >= mb)
@@ -546,11 +488,11 @@ namespace rocsparse
         }
 
         // Get the BSR row this wavefront will operate on
-        rocsparse_int row = map[idx];
+        const rocsparse_int row = map[idx];
 
         // Current row entry and exit point
-        rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
+        const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int row_end   = bsr_row_ptr[row + 1] - idx_base;
 
         // Initialize local_col with mb
         rocsparse_int local_col = mb;
@@ -566,7 +508,8 @@ namespace rocsparse
         T* bsr_updates = &sdata2[wid * BSRDIM];
 
         // Loop over the current row
-        for(rocsparse_int j = row_end - 1; j >= row_begin; --j)
+        rocsparse_int j;
+        for(j = row_end - 1; j >= row_begin; --j)
         {
             // Current column index
             local_col = bsr_col_ind[j] - idx_base;
@@ -574,8 +517,8 @@ namespace rocsparse
             // Load BSR block values
             // Each wavefront loads a full BSR block into shared memory
             // Pad remaining entries with zero
-            int bi = lid & (BSRDIM - 1);
-            int bj = lid / BSRDIM;
+            const int bi = lid & (BSRDIM - 1);
+            const int bj = lid / BSRDIM;
 
             for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
             {
@@ -593,27 +536,7 @@ namespace rocsparse
             }
 
             // Spin loop until dependency has been resolved
-            int local_done = __hip_atomic_load(
-                &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            unsigned int times_through = 0;
-            while(!local_done)
-            {
-                if(SLEEP)
-                {
-                    for(unsigned int i = 0; i < times_through; ++i)
-                    {
-                        __builtin_amdgcn_s_sleep(1);
-                    }
-
-                    if(times_through < 3907)
-                    {
-                        ++times_through;
-                    }
-                }
-
-                local_done = __hip_atomic_load(
-                    &done_array[local_col], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
-            }
+            rocsparse::spin_loop<SLEEP>(&done_array[local_col], __HIP_MEMORY_SCOPE_AGENT);
 
             // Wait for y to be visible globally
             __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "agent");
@@ -647,8 +570,9 @@ namespace rocsparse
             for(rocsparse_int bi = block_dim - 1; bi >= 0; --bi)
             {
                 // Load diagonal matrix entry
-                T diag = (diag_type == rocsparse_diag_type_non_unit) ? bsr_values[bi + bi * BSRDIM]
-                                                                     : static_cast<T>(1);
+                const T diag = (diag_type == rocsparse_diag_type_non_unit)
+                                   ? bsr_values[bi + bi * BSRDIM]
+                                   : static_cast<T>(1);
 
                 // Load result of bi-th BSR row
                 T val = rocsparse::shfl(local_sum, bi);
