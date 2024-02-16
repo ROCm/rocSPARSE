@@ -120,7 +120,7 @@ namespace rocsparse
             {
                 // Index into shared memory to query for done flag
                 const int local_done = rocsparse::spin_loop<SLEEP>(
-                    &done_array[local_col - first_row], __HIP_MEMORY_SCOPE_WORKGROUP);
+                    &local_done_array[local_col - first_row], __HIP_MEMORY_SCOPE_WORKGROUP);
                 local_max = max(local_done, local_max);
             }
         }
@@ -242,7 +242,7 @@ namespace rocsparse
             {
                 // Index into shared memory to query for done flag
                 const int local_done = rocsparse::spin_loop<SLEEP>(
-                    &done_array[last_row - local_col], __HIP_MEMORY_SCOPE_WORKGROUP);
+                    &local_done_array[last_row - local_col], __HIP_MEMORY_SCOPE_WORKGROUP);
                 local_max = max(local_done, local_max);
             }
         }
