@@ -220,10 +220,10 @@ rocsparse_status rocsparse::bsric0_analysis_template(rocsparse_handle          h
     // found to be re-used.
 
     // Clear bsric0 info
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->bsric0_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsric0_info));
 
     // Create bsric0 info
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&info->bsric0_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_trm_info(&info->bsric0_info));
 
     // Perform analysis
     RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(handle,
@@ -265,7 +265,7 @@ namespace rocsparse
         else
         {
 
-            const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+            const std::string gcn_arch_name = rocsparse::handle_get_arch_name(handle);
             if(gcn_arch_name == rocpsarse_arch_names::gfx908 && handle->asic_rev < 2)
             {
                 LAUNCH_BSRIC_33_inf(T, 64, 64, true);
@@ -677,9 +677,9 @@ try
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
 
-    if(!rocsparse_check_trm_shared(info, info->bsric0_info))
+    if(!rocsparse::check_trm_shared(info, info->bsric0_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->bsric0_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsric0_info));
     }
 
     info->bsric0_info = nullptr;

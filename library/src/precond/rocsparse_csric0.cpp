@@ -139,10 +139,10 @@ rocsparse_status rocsparse::csric0_analysis_template(rocsparse_handle          h
     // found to be re-used.
 
     // Clear csric0 info
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csric0_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csric0_info));
 
     // Create csric0 info
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&info->csric0_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_trm_info(&info->csric0_info));
 
     // Perform analysis
     RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(handle,
@@ -243,7 +243,7 @@ rocsparse_status rocsparse::csric0_template(rocsparse_handle          handle, //
     rocsparse_int max_nnz = info->csric0_info->max_nnz;
 
     // Determine gcnArch and ASIC revision
-    const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+    const std::string gcn_arch_name = rocsparse::handle_get_arch_name(handle);
 
 #define CSRIC0_DIM 256
     dim3 csric0_blocks((m * handle->wavefront_size - 1) / CSRIC0_DIM + 1);
@@ -762,9 +762,9 @@ try
     ROCSPARSE_CHECKARG_POINTER(1, info);
 
     // If meta data is not shared, delete it
-    if(!rocsparse_check_trm_shared(info, info->csric0_info))
+    if(!rocsparse::check_trm_shared(info, info->csric0_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csric0_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csric0_info));
     }
 
     info->csric0_info = nullptr;

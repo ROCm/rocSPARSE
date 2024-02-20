@@ -50,10 +50,10 @@ rocsparse_status rocsparse::csrmv_analysis_lrb_template_dispatch(rocsparse_handl
                                                                  rocsparse_mat_info info)
 {
     // Clear csrmv info
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_csrmv_info(info->csrmv_info));
 
     // Create csrmv info
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrmv_info(&info->csrmv_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_csrmv_info(&info->csrmv_info));
 
     // Stream
     hipStream_t stream = handle->stream;

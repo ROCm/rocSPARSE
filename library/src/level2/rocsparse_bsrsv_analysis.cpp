@@ -151,14 +151,14 @@ rocsparse_status rocsparse::bsrsv_analysis_template(rocsparse_handle          ha
         // found to be re-used.
 
         // Clear bsrsv
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info((trans == rocsparse_operation_none)
-                                                                 ? info->bsrsv_upper_info
-                                                                 : info->bsrsvt_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info((trans == rocsparse_operation_none)
+                                                                  ? info->bsrsv_upper_info
+                                                                  : info->bsrsvt_upper_info));
 
         // Create bsrsv info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info((trans == rocsparse_operation_none)
-                                                                ? &info->bsrsv_upper_info
-                                                                : &info->bsrsvt_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_trm_info((trans == rocsparse_operation_none)
+                                                                 ? &info->bsrsv_upper_info
+                                                                 : &info->bsrsvt_upper_info));
 
         // Perform analysis
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(
@@ -218,14 +218,14 @@ rocsparse_status rocsparse::bsrsv_analysis_template(rocsparse_handle          ha
         // found to be re-used.
 
         // Clear bsrsv
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info((trans == rocsparse_operation_none)
-                                                                 ? info->bsrsv_lower_info
-                                                                 : info->bsrsvt_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info((trans == rocsparse_operation_none)
+                                                                  ? info->bsrsv_lower_info
+                                                                  : info->bsrsvt_lower_info));
 
         // Create bsrsv info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info((trans == rocsparse_operation_none)
-                                                                ? &info->bsrsv_lower_info
-                                                                : &info->bsrsvt_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_trm_info((trans == rocsparse_operation_none)
+                                                                 ? &info->bsrsv_lower_info
+                                                                 : &info->bsrsvt_lower_info));
 
         // Perform analysis
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(

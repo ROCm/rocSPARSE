@@ -105,7 +105,7 @@ namespace rocsparse
                       << ", hip error detected: code '" << err << "', name '"
                       << hipGetErrorName(err) << "', description '" << hipGetErrorString(err)
                       << "'";
-                    ROCSPARSE_ERROR_MESSAGE(get_rocsparse_status_for_hip_status(err),
+                    ROCSPARSE_ERROR_MESSAGE(rocsparse::get_rocsparse_status_for_hip_status(err),
                                             s.str().c_str());
                     return err;
                 }
@@ -118,7 +118,7 @@ namespace rocsparse
                     std::stringstream s;
                     s << "hip error detected: code '" << err << "', name '" << hipGetErrorName(err)
                       << "', description '" << hipGetErrorString(err) << "'";
-                    ROCSPARSE_ERROR_MESSAGE(get_rocsparse_status_for_hip_status(err),
+                    ROCSPARSE_ERROR_MESSAGE(rocsparse::get_rocsparse_status_for_hip_status(err),
                                             s.str().c_str());
                     return err;
                 }

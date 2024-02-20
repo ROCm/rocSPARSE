@@ -190,7 +190,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
         rocsparse::assign_async(*zero_pivot, std::numeric_limits<J>::max(), stream));
 
     // Determine archid and ASIC revision
-    const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+    const std::string gcn_arch_name = rocsparse::handle_get_arch_name(handle);
     const int         asicRev       = handle->asic_rev;
 
     // Run analysis
@@ -631,14 +631,14 @@ rocsparse_status rocsparse::csrsv_analysis_template(rocsparse_handle          ha
         // found to be re-used.
 
         // Clear csrsv info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info((trans == rocsparse_operation_none)
-                                                                 ? info->csrsv_upper_info
-                                                                 : info->csrsvt_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info((trans == rocsparse_operation_none)
+                                                                  ? info->csrsv_upper_info
+                                                                  : info->csrsvt_upper_info));
 
         // Create csrsv info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info((trans == rocsparse_operation_none)
-                                                                ? &info->csrsv_upper_info
-                                                                : &info->csrsvt_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_trm_info((trans == rocsparse_operation_none)
+                                                                 ? &info->csrsv_upper_info
+                                                                 : &info->csrsvt_upper_info));
 
         // Perform analysis
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(
@@ -717,14 +717,14 @@ rocsparse_status rocsparse::csrsv_analysis_template(rocsparse_handle          ha
         // found to be re-used.
 
         // Clear csrsv info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info((trans == rocsparse_operation_none)
-                                                                 ? info->csrsv_lower_info
-                                                                 : info->csrsvt_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info((trans == rocsparse_operation_none)
+                                                                  ? info->csrsv_lower_info
+                                                                  : info->csrsvt_lower_info));
 
         // Create csrsv info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info((trans == rocsparse_operation_none)
-                                                                ? &info->csrsv_lower_info
-                                                                : &info->csrsvt_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_trm_info((trans == rocsparse_operation_none)
+                                                                 ? &info->csrsv_lower_info
+                                                                 : &info->csrsvt_lower_info));
 
         // Perform analysis
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(

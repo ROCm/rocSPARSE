@@ -229,10 +229,10 @@ rocsparse_status _rocsparse_handle::get_pointer_mode(rocsparse_pointer_mode* use
 /********************************************************************************
  * \brief rocsparse_csrmv_info is a structure holding the rocsparse csrmv info
  * data gathered during csrmv_analysis. It must be initialized using the
- * rocsparse_create_csrmv_info() routine. It should be destroyed at the end
- * using rocsparse_destroy_csrmv_info().
+ * create_csrmv_info() routine. It should be destroyed at the end
+ * using destroy_csrmv_info().
  *******************************************************************************/
-rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info)
+rocsparse_status rocsparse::create_csrmv_info(rocsparse_csrmv_info* info)
 {
     if(info == nullptr)
     {
@@ -256,8 +256,8 @@ rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info)
 /********************************************************************************
  * \brief Copy csrmv info.
  *******************************************************************************/
-rocsparse_status rocsparse_copy_csrmv_info(rocsparse_csrmv_info       dest,
-                                           const rocsparse_csrmv_info src)
+rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
+                                            const rocsparse_csrmv_info src)
 {
     if(dest == nullptr || src == nullptr || dest == src)
     {
@@ -455,7 +455,7 @@ rocsparse_status rocsparse_copy_csrmv_info(rocsparse_csrmv_info       dest,
 /********************************************************************************
  * \brief Destroy csrmv info.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
+rocsparse_status rocsparse::destroy_csrmv_info(rocsparse_csrmv_info info)
 {
     if(info == nullptr)
     {
@@ -499,10 +499,10 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
  * \brief rocsparse_trm_info is a structure holding the rocsparse bsrsv, csrsv,
  * csrsm, csrilu0 and csric0 data gathered during csrsv_analysis,
  * csrilu0_analysis and csric0_analysis. It must be initialized using the
- * rocsparse_create_trm_info() routine. It should be destroyed at the end
- * using rocsparse_destroy_trm_info().
+ * create_trm_info() routine. It should be destroyed at the end
+ * using destroy_trm_info().
  *******************************************************************************/
-rocsparse_status rocsparse_create_trm_info(rocsparse_trm_info* info)
+rocsparse_status rocsparse::create_trm_info(rocsparse_trm_info* info)
 {
     if(info == nullptr)
     {
@@ -526,7 +526,7 @@ rocsparse_status rocsparse_create_trm_info(rocsparse_trm_info* info)
 /********************************************************************************
  * \brief Copy trm info.
  *******************************************************************************/
-rocsparse_status rocsparse_copy_trm_info(rocsparse_trm_info dest, const rocsparse_trm_info src)
+rocsparse_status rocsparse::copy_trm_info(rocsparse_trm_info dest, const rocsparse_trm_info src)
 {
     if(dest == nullptr || src == nullptr || dest == src)
     {
@@ -677,7 +677,7 @@ rocsparse_status rocsparse_copy_trm_info(rocsparse_trm_info dest, const rocspars
 /********************************************************************************
  * \brief Destroy trm info.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_trm_info(rocsparse_trm_info info)
+rocsparse_status rocsparse::destroy_trm_info(rocsparse_trm_info info)
 {
     if(info == nullptr)
     {
@@ -729,10 +729,10 @@ rocsparse_status rocsparse_destroy_trm_info(rocsparse_trm_info info)
 }
 
 /********************************************************************************
- * \brief rocsparse_check_trm_shared checks if the given trm info structure
+ * \brief check_trm_shared checks if the given trm info structure
  * shares its meta data with another trm info structure.
  *******************************************************************************/
-bool rocsparse_check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_info trm)
+bool rocsparse::check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_info trm)
 {
     if(info == nullptr)
     {
@@ -780,10 +780,10 @@ bool rocsparse_check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_inf
 /********************************************************************************
  * \brief rocsparse_csrgemm_info is a structure holding the rocsparse csrgemm
  * info data gathered during csrgemm_buffer_size. It must be initialized using
- * the rocsparse_create_csrgemm_info() routine. It should be destroyed at the
- * end using rocsparse_destroy_csrgemm_info().
+ * the create_csrgemm_info() routine. It should be destroyed at the
+ * end using destroy_csrgemm_info().
  *******************************************************************************/
-rocsparse_status rocsparse_create_csrgemm_info(rocsparse_csrgemm_info* info)
+rocsparse_status rocsparse::create_csrgemm_info(rocsparse_csrgemm_info* info)
 {
     if(info == nullptr)
     {
@@ -807,8 +807,8 @@ rocsparse_status rocsparse_create_csrgemm_info(rocsparse_csrgemm_info* info)
 /********************************************************************************
  * \brief Copy csrgemm info.
  *******************************************************************************/
-rocsparse_status rocsparse_copy_csrgemm_info(rocsparse_csrgemm_info       dest,
-                                             const rocsparse_csrgemm_info src)
+rocsparse_status rocsparse::copy_csrgemm_info(rocsparse_csrgemm_info       dest,
+                                              const rocsparse_csrgemm_info src)
 {
     if(dest == nullptr || src == nullptr || dest == src)
     {
@@ -824,7 +824,7 @@ rocsparse_status rocsparse_copy_csrgemm_info(rocsparse_csrgemm_info       dest,
 /********************************************************************************
  * \brief Destroy csrgemm info.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_csrgemm_info(rocsparse_csrgemm_info info)
+rocsparse_status rocsparse::destroy_csrgemm_info(rocsparse_csrgemm_info info)
 {
     if(info == nullptr)
     {
@@ -846,10 +846,10 @@ rocsparse_status rocsparse_destroy_csrgemm_info(rocsparse_csrgemm_info info)
 /********************************************************************************
  * \brief rocsparse_csritsv_info is a structure holding the rocsparse csritsv
  * info data gathered during csritsv_buffer_size. It must be initialized using
- * the rocsparse_create_csritsv_info() routine. It should be destroyed at the
- * end using rocsparse_destroy_csritsv_info().
+ * the create_csritsv_info() routine. It should be destroyed at the
+ * end using destroy_csritsv_info().
  *******************************************************************************/
-rocsparse_status rocsparse_create_csritsv_info(rocsparse_csritsv_info* info)
+rocsparse_status rocsparse::create_csritsv_info(rocsparse_csritsv_info* info)
 {
     if(info == nullptr)
     {
@@ -873,8 +873,8 @@ rocsparse_status rocsparse_create_csritsv_info(rocsparse_csritsv_info* info)
 /********************************************************************************
  * \brief Copy csritsv info.
  *******************************************************************************/
-rocsparse_status rocsparse_copy_csritsv_info(rocsparse_csritsv_info       dest,
-                                             const rocsparse_csritsv_info src)
+rocsparse_status rocsparse::copy_csritsv_info(rocsparse_csritsv_info       dest,
+                                              const rocsparse_csritsv_info src)
 {
     if(dest == nullptr || src == nullptr || dest == src)
     {
@@ -890,7 +890,7 @@ rocsparse_status rocsparse_copy_csritsv_info(rocsparse_csritsv_info       dest,
 /********************************************************************************
  * \brief Destroy csritsv info.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_csritsv_info(rocsparse_csritsv_info info)
+rocsparse_status rocsparse::destroy_csritsv_info(rocsparse_csritsv_info info)
 {
     if(info == nullptr)
     {
@@ -970,12 +970,12 @@ struct XnackMode<PROP, void_t<decltype(PROP::gcnArchName)>>
     }
 };
 
-std::string rocsparse_handle_get_arch_name(rocsparse_handle handle)
+std::string rocsparse::handle_get_arch_name(rocsparse_handle handle)
 {
     return ArchName<hipDeviceProp_t>{}(handle->properties);
 }
 
-std::string rocsparse_handle_get_xnack_mode(rocsparse_handle handle)
+std::string rocsparse::handle_get_xnack_mode(rocsparse_handle handle)
 {
     return XnackMode<hipDeviceProp_t>{}(handle->properties);
 }
@@ -985,7 +985,7 @@ std::string rocsparse_handle_get_xnack_mode(rocsparse_handle handle)
  * TODO - enumerate library calls to hip runtime, enumerate possible errors from
  * those calls
  ******************************************************************************/
-rocsparse_status get_rocsparse_status_for_hip_status(hipError_t status)
+rocsparse_status rocsparse::get_rocsparse_status_for_hip_status(hipError_t status)
 {
     switch(status)
     {

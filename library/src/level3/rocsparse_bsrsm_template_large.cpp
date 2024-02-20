@@ -245,7 +245,7 @@ namespace rocsparse
         }
 
         // Determine gcn_arch and ASIC revision
-        const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+        const std::string gcn_arch_name = rocsparse::handle_get_arch_name(handle);
         const int         asicRev       = handle->asic_rev;
         const int         wfSize        = handle->wavefront_size;
 

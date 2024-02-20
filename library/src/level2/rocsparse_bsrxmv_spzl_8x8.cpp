@@ -307,76 +307,29 @@ namespace rocsparse
                                                      idx_base);
         }
     }
-}
 
-template <typename T, typename A, typename X, typename Y>
-struct kernels_type_dispatch
-{
-    template <typename I, typename J, typename U>
-    static void bsrxmvn_8x8(rocsparse_handle     handle,
-                            rocsparse_direction  dir,
-                            J                    mb,
-                            I                    nnzb,
-                            U                    alpha_device_host,
-                            J                    size_of_mask,
-                            const J*             bsr_mask_ptr,
-                            const I*             bsr_row_ptr,
-                            const I*             bsr_end_ptr,
-                            const J*             bsr_col_ind,
-                            const A*             bsr_val,
-                            const X*             x,
-                            U                    beta_device_host,
-                            Y*                   y,
-                            rocsparse_index_base base)
+    template <typename T, typename A, typename X, typename Y>
+    struct kernels_type_dispatch
     {
-        const J size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
-        THROW_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::bsrxmvn_8x8_kernel<128, T>),
-                                          dim3(size),
-                                          dim3(128),
-                                          0,
-                                          handle->stream,
-                                          mb,
-                                          dir,
-                                          alpha_device_host,
-                                          size_of_mask,
-                                          bsr_mask_ptr,
-                                          bsr_row_ptr,
-                                          bsr_end_ptr,
-                                          bsr_col_ind,
-                                          bsr_val,
-                                          x,
-                                          beta_device_host,
-                                          y,
-                                          base);
-    }
-};
-
-template <>
-struct kernels_type_dispatch<float, float, float, float>
-{
-    template <typename I, typename J, typename U>
-    static void bsrxmvn_8x8(rocsparse_handle     handle,
-                            rocsparse_direction  dir,
-                            J                    mb,
-                            I                    nnzb,
-                            U                    alpha_device_host,
-                            J                    size_of_mask,
-                            const J*             bsr_mask_ptr,
-                            const I*             bsr_row_ptr,
-                            const I*             bsr_end_ptr,
-                            const J*             bsr_col_ind,
-                            const float*         bsr_val,
-                            const float*         x,
-                            U                    beta_device_host,
-                            float*               y,
-                            rocsparse_index_base base)
-    {
-
-        const int wsize = handle->wavefront_size;
-        if(wsize == 32)
+        template <typename I, typename J, typename U>
+        static void bsrxmvn_8x8(rocsparse_handle     handle,
+                                rocsparse_direction  dir,
+                                J                    mb,
+                                I                    nnzb,
+                                U                    alpha_device_host,
+                                J                    size_of_mask,
+                                const J*             bsr_mask_ptr,
+                                const I*             bsr_row_ptr,
+                                const I*             bsr_end_ptr,
+                                const J*             bsr_col_ind,
+                                const A*             bsr_val,
+                                const X*             x,
+                                U                    beta_device_host,
+                                Y*                   y,
+                                rocsparse_index_base base)
         {
             const J size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
-            THROW_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::bsrxmvn_8x8_kernel<128, float>),
+            THROW_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::bsrxmvn_8x8_kernel<128, T>),
                                               dim3(size),
                                               dim3(128),
                                               0,
@@ -395,62 +348,109 @@ struct kernels_type_dispatch<float, float, float, float>
                                               y,
                                               base);
         }
-        else
+    };
+
+    template <>
+    struct kernels_type_dispatch<float, float, float, float>
+    {
+        template <typename I, typename J, typename U>
+        static void bsrxmvn_8x8(rocsparse_handle     handle,
+                                rocsparse_direction  dir,
+                                J                    mb,
+                                I                    nnzb,
+                                U                    alpha_device_host,
+                                J                    size_of_mask,
+                                const J*             bsr_mask_ptr,
+                                const I*             bsr_row_ptr,
+                                const I*             bsr_end_ptr,
+                                const J*             bsr_col_ind,
+                                const float*         bsr_val,
+                                const float*         x,
+                                U                    beta_device_host,
+                                float*               y,
+                                rocsparse_index_base base)
         {
-            static constexpr int nthreads_per_warp = 64;
-            static constexpr int nwarps_per_block  = 4;
-            const J              size              = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
 
-            dim3 const block2d_dim(nthreads_per_warp, nwarps_per_block);
-            dim3 const grid1d_dim((size - 1) / nwarps_per_block + 1);
-
-            if(rocsparse_direction_row == dir)
+            const int wsize = handle->wavefront_size;
+            if(wsize == 32)
             {
-                THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (rocsparse::sbsrxmvn_8x8_kernel<nthreads_per_warp * nwarps_per_block,
-                                                    rocsparse_direction_row>),
-                    grid1d_dim,
-                    block2d_dim,
-                    0,
-                    handle->stream,
-                    mb,
-                    alpha_device_host,
-                    size_of_mask,
-                    bsr_mask_ptr,
-                    bsr_row_ptr,
-                    bsr_end_ptr,
-                    bsr_col_ind,
-                    bsr_val,
-                    x,
-                    beta_device_host,
-                    y,
-                    base);
+                const J size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
+                THROW_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::bsrxmvn_8x8_kernel<128, float>),
+                                                  dim3(size),
+                                                  dim3(128),
+                                                  0,
+                                                  handle->stream,
+                                                  mb,
+                                                  dir,
+                                                  alpha_device_host,
+                                                  size_of_mask,
+                                                  bsr_mask_ptr,
+                                                  bsr_row_ptr,
+                                                  bsr_end_ptr,
+                                                  bsr_col_ind,
+                                                  bsr_val,
+                                                  x,
+                                                  beta_device_host,
+                                                  y,
+                                                  base);
             }
             else
             {
-                THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (rocsparse::sbsrxmvn_8x8_kernel<nthreads_per_warp * nwarps_per_block,
-                                                    rocsparse_direction_column>),
-                    grid1d_dim,
-                    block2d_dim,
-                    0,
-                    handle->stream,
-                    mb,
-                    alpha_device_host,
-                    size_of_mask,
-                    bsr_mask_ptr,
-                    bsr_row_ptr,
-                    bsr_end_ptr,
-                    bsr_col_ind,
-                    bsr_val,
-                    x,
-                    beta_device_host,
-                    y,
-                    base);
+                static constexpr int nthreads_per_warp = 64;
+                static constexpr int nwarps_per_block  = 4;
+                const J              size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
+
+                dim3 const block2d_dim(nthreads_per_warp, nwarps_per_block);
+                dim3 const grid1d_dim((size - 1) / nwarps_per_block + 1);
+
+                if(rocsparse_direction_row == dir)
+                {
+                    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (rocsparse::sbsrxmvn_8x8_kernel<nthreads_per_warp * nwarps_per_block,
+                                                        rocsparse_direction_row>),
+                        grid1d_dim,
+                        block2d_dim,
+                        0,
+                        handle->stream,
+                        mb,
+                        alpha_device_host,
+                        size_of_mask,
+                        bsr_mask_ptr,
+                        bsr_row_ptr,
+                        bsr_end_ptr,
+                        bsr_col_ind,
+                        bsr_val,
+                        x,
+                        beta_device_host,
+                        y,
+                        base);
+                }
+                else
+                {
+                    THROW_IF_HIPLAUNCHKERNELGGL_ERROR(
+                        (rocsparse::sbsrxmvn_8x8_kernel<nthreads_per_warp * nwarps_per_block,
+                                                        rocsparse_direction_column>),
+                        grid1d_dim,
+                        block2d_dim,
+                        0,
+                        handle->stream,
+                        mb,
+                        alpha_device_host,
+                        size_of_mask,
+                        bsr_mask_ptr,
+                        bsr_row_ptr,
+                        bsr_end_ptr,
+                        bsr_col_ind,
+                        bsr_val,
+                        x,
+                        beta_device_host,
+                        y,
+                        base);
+                }
             }
         }
-    }
-};
+    };
+}
 
 template <typename T, typename I, typename J, typename A, typename X, typename Y, typename U>
 void rocsparse::bsrxmvn_8x8(rocsparse_handle     handle,

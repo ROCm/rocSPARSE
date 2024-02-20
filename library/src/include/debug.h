@@ -77,27 +77,27 @@ namespace rocsparse
     private:
         debug_st()
         {
-            const bool debug = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG);
+            const bool debug = ROCSPARSE_ENVARIABLES.get(rocsparse::envariables::DEBUG);
             m_var.set_debug(debug);
 
             const bool debug_arguments
-                = (!getenv(rocsparse_envariables::names[rocsparse_envariables::DEBUG_ARGUMENTS]))
+                = (!getenv(rocsparse::envariables::names[rocsparse::envariables::DEBUG_ARGUMENTS]))
                       ? debug
-                      : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG);
+                      : ROCSPARSE_ENVARIABLES.get(rocsparse::envariables::DEBUG);
             m_var.set_debug_arguments(debug_arguments);
 
             m_var.set_debug_verbose(
-                (!getenv(rocsparse_envariables::names[rocsparse_envariables::DEBUG_VERBOSE]))
+                (!getenv(rocsparse::envariables::names[rocsparse::envariables::DEBUG_VERBOSE]))
                     ? debug
-                    : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_VERBOSE));
+                    : ROCSPARSE_ENVARIABLES.get(rocsparse::envariables::DEBUG_VERBOSE));
             m_var.set_debug_arguments_verbose(
                 (!getenv(
-                    rocsparse_envariables::names[rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE]))
+                    rocsparse::envariables::names[rocsparse::envariables::DEBUG_ARGUMENTS_VERBOSE]))
                     ? debug_arguments
-                    : ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_ARGUMENTS_VERBOSE));
+                    : ROCSPARSE_ENVARIABLES.get(rocsparse::envariables::DEBUG_ARGUMENTS_VERBOSE));
 
             const bool debug_kernel_launch
-                = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::DEBUG_KERNEL_LAUNCH);
+                = ROCSPARSE_ENVARIABLES.get(rocsparse::envariables::DEBUG_KERNEL_LAUNCH);
             m_var.set_debug_kernel_launch(debug_kernel_launch);
         };
     };

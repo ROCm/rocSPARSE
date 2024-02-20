@@ -123,14 +123,14 @@ rocsparse_status rocsparse::csrsm_analysis_core(rocsparse_handle          handle
         // found to be re-used
 
         // Clear csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info((trans_A == rocsparse_operation_none)
-                                                                 ? info->csrsm_upper_info
-                                                                 : info->csrsmt_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info((trans_A == rocsparse_operation_none)
+                                                                  ? info->csrsm_upper_info
+                                                                  : info->csrsmt_upper_info));
 
         // Create csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info((trans_A == rocsparse_operation_none)
-                                                                ? &info->csrsm_upper_info
-                                                                : &info->csrsmt_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_trm_info((trans_A == rocsparse_operation_none)
+                                                                 ? &info->csrsm_upper_info
+                                                                 : &info->csrsmt_upper_info));
 
         // Perform analysis
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(handle,
@@ -212,14 +212,14 @@ rocsparse_status rocsparse::csrsm_analysis_core(rocsparse_handle          handle
         // found to be re-used
 
         // Clear csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info((trans_A == rocsparse_operation_none)
-                                                                 ? info->csrsm_lower_info
-                                                                 : info->csrsmt_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info((trans_A == rocsparse_operation_none)
+                                                                  ? info->csrsm_lower_info
+                                                                  : info->csrsmt_lower_info));
 
         // Create csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info((trans_A == rocsparse_operation_none)
-                                                                ? &info->csrsm_lower_info
-                                                                : &info->csrsmt_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_trm_info((trans_A == rocsparse_operation_none)
+                                                                 ? &info->csrsm_lower_info
+                                                                 : &info->csrsmt_lower_info));
 
         // Perform analysis
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(handle,

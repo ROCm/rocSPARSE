@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,34 +52,34 @@ bool rocsparse_getenv<bool>(const char* name, bool& val)
     return true;
 }
 
-constexpr rocsparse_envariables::bool_var rocsparse_envariables::all[];
+constexpr rocsparse::envariables::bool_var rocsparse::envariables::all[];
 
-rocsparse_envariables& rocsparse_envariables::Instance()
+rocsparse::envariables& rocsparse::envariables::Instance()
 {
-    static rocsparse_envariables instance;
+    static rocsparse::envariables instance;
     return instance;
 }
 
-rocsparse_envariables::rocsparse_envariables()
+rocsparse::envariables::envariables()
 {
     //
     // Query variables.
     //
-    for(auto tag : rocsparse_envariables::all)
+    for(auto tag : rocsparse::envariables::all)
     {
         switch(tag)
         {
-#define ENVARIABLE(x_)                                                                         \
-    case rocsparse_envariables::x_:                                                            \
-    {                                                                                          \
-        auto success                                                                           \
-            = rocsparse_getenv("ROCSPARSE_" #x_, this->m_bool_var[rocsparse_envariables::x_]); \
-        if(!success)                                                                           \
-        {                                                                                      \
-            std::cerr << "rocsparse_getenv failed " << std::endl;                              \
-            exit(1);                                                                           \
-        }                                                                                      \
-        break;                                                                                 \
+#define ENVARIABLE(x_)                                                                          \
+    case rocsparse::envariables::x_:                                                            \
+    {                                                                                           \
+        auto success                                                                            \
+            = rocsparse_getenv("ROCSPARSE_" #x_, this->m_bool_var[rocsparse::envariables::x_]); \
+        if(!success)                                                                            \
+        {                                                                                       \
+            std::cerr << "rocsparse_getenv failed " << std::endl;                               \
+            exit(1);                                                                            \
+        }                                                                                       \
+        break;                                                                                  \
     }
 
             ROCSPARSE_FOREACH_ENVARIABLES;
@@ -88,16 +88,16 @@ rocsparse_envariables::rocsparse_envariables()
         }
     }
 
-    if(this->m_bool_var[rocsparse_envariables::VERBOSE])
+    if(this->m_bool_var[rocsparse::envariables::VERBOSE])
     {
-        for(auto tag : rocsparse_envariables::all)
+        for(auto tag : rocsparse::envariables::all)
         {
             switch(tag)
             {
 #define ENVARIABLE(x_)                                                                        \
-    case rocsparse_envariables::x_:                                                           \
+    case rocsparse::envariables::x_:                                                          \
     {                                                                                         \
-        const bool v = this->m_bool_var[rocsparse_envariables::x_];                           \
+        const bool v = this->m_bool_var[rocsparse::envariables::x_];                          \
         std::cout << ""                                                                       \
                   << "env variable ROCSPARSE_" #x_ << " : " << ((v) ? "enabled" : "disabled") \
                   << std::endl;                                                               \

@@ -461,10 +461,10 @@ rocsparse_status rocsparse::csritsv_analysis_template(rocsparse_handle          
     // found to be re-used.
 
     // Clear csritsv info
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csritsv_info(info->csritsv_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_csritsv_info(info->csritsv_info));
 
     // Create csritsv info
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csritsv_info(&info->csritsv_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_csritsv_info(&info->csritsv_info));
 
     // Analyze the structure.
     RETURN_IF_ROCSPARSE_ERROR(rocsparse::csritsv_info_analysis(handle,
