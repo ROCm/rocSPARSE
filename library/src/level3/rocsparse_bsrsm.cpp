@@ -127,13 +127,13 @@ try
     ROCSPARSE_CHECKARG_POINTER(1, info);
 
     // Clear bsrsm meta data (this includes lower, upper and their transposed equivalents
-    if(!rocsparse_check_trm_shared(info, info->bsrsm_lower_info))
+    if(!rocsparse::check_trm_shared(info, info->bsrsm_lower_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->bsrsm_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsrsm_lower_info));
     }
-    if(!rocsparse_check_trm_shared(info, info->bsrsm_upper_info))
+    if(!rocsparse::check_trm_shared(info, info->bsrsm_upper_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->bsrsm_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsrsm_upper_info));
     }
 
     info->bsrsm_lower_info = nullptr;

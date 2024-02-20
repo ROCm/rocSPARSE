@@ -768,7 +768,7 @@ try
     rocsparse::log_trace(handle, "rocsparse_csrmv_clear", (const void*&)info);
 
     // Destroy csrmv info struct
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_csrmv_info(info->csrmv_info));
     info->csrmv_info = nullptr;
 
     return rocsparse_status_success;

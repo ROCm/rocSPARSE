@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -292,10 +292,10 @@ private:
 //
 // This forces instantation (but that's not the purpose of it).
 //
-bool memstat::s_enabled = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::MEMSTAT);
+bool memstat::s_enabled = ROCSPARSE_ENVARIABLES.get(rocsparse::envariables::MEMSTAT);
 bool memstat::s_force_managed
-    = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::MEMSTAT_FORCE_MANAGED);
-bool memstat::s_guards_enabled = ROCSPARSE_ENVARIABLES.get(rocsparse_envariables::MEMSTAT_GUARDS);
+    = ROCSPARSE_ENVARIABLES.get(rocsparse::envariables::MEMSTAT_FORCE_MANAGED);
+bool memstat::s_guards_enabled = ROCSPARSE_ENVARIABLES.get(rocsparse::envariables::MEMSTAT_GUARDS);
 
 template <memstat_mode::value_t MODE>
 size_t memstat_allocator<MODE>::compute_nbytes(size_t s)

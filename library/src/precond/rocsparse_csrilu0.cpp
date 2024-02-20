@@ -191,7 +191,7 @@ namespace rocsparse
         rocsparse_int max_nnz = info->csrilu0_info->max_nnz;
 
         // Determine gcnArch and ASIC revision
-        const std::string gcn_arch_name = rocsparse_handle_get_arch_name(handle);
+        const std::string gcn_arch_name = rocsparse::handle_get_arch_name(handle);
 
 #define CSRILU0_DIM 256
         dim3 csrilu0_blocks((m * handle->wavefront_size - 1) / CSRILU0_DIM + 1);
@@ -784,9 +784,9 @@ try
     rocsparse::log_trace(handle, "rocsparse_csrilu0_clear", (const void*&)info);
 
     // If meta data is not shared, delete it
-    if(!rocsparse_check_trm_shared(info, info->csrilu0_info))
+    if(!rocsparse::check_trm_shared(info, info->csrilu0_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrilu0_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csrilu0_info));
     }
 
     info->csrilu0_info = nullptr;

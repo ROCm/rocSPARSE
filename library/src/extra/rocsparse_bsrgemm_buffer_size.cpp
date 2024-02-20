@@ -562,8 +562,8 @@ rocsparse_status rocsparse::bsrgemm_buffer_size_template(rocsparse_handle       
                                                          size_t*                   buffer_size)
 {
     ROCSPARSE_CHECKARG_POINTER(20, info_C);
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrgemm_info(info_C->csrgemm_info));
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrgemm_info(&info_C->csrgemm_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_csrgemm_info(info_C->csrgemm_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_csrgemm_info(&info_C->csrgemm_info));
     RETURN_IF_ROCSPARSE_ERROR(reinit_bsrgemm_info(info_C, alpha, beta, kb, nnzb_A, nnzb_B, nnzb_D));
 
     const rocsparse_status status = rocsparse::bsrgemm_buffer_size_quickreturn(handle,
@@ -681,8 +681,8 @@ namespace rocsparse
 
         ROCSPARSE_CHECKARG_POINTER(22, info_C);
 
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrgemm_info(info_C->csrgemm_info));
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrgemm_info(&info_C->csrgemm_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_csrgemm_info(info_C->csrgemm_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_csrgemm_info(&info_C->csrgemm_info));
         RETURN_IF_ROCSPARSE_ERROR(
             reinit_bsrgemm_info(info_C, alpha, beta, kb, nnzb_A, nnzb_B, nnzb_D));
 

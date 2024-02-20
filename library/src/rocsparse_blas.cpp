@@ -25,7 +25,7 @@
 #include "rocsparse_blas_rocblas.hpp"
 #include "utility.h"
 
-const char* to_string(rocsparse::blas_impl value)
+const char* rocsparse::to_string(rocsparse::blas_impl value)
 {
 
 #define CASE(C) \

@@ -32,193 +32,196 @@
 #include "debug.h"
 #include "to_string.hpp"
 
-int64_t rocsparse_get_pid()
+namespace rocsparse
 {
-    return 0;
-}
-
-int64_t rocsparse_get_tid()
-{
-    return 0;
-}
-
-///
-/// @brief The rocsparse argument descriptor.
-///
-struct rocsparse_argdescr_st
-{
-    ///
-    /// @brief Thread id.
-    ///
-    int64_t m_tid{};
-    ///
-
-    /// @brief Process id.
-    ///
-    int64_t m_pid{};
-
-    ///
-    /// @brief Line in the file.
-    ///
-    int m_function_line{};
-
-    ///
-    /// @brief 0-based index of the argument.
-    ///
-    int m_arg_index{};
-
-    ///
-    /// @brief Resulting status of the argument checking.
-    ///
-    rocsparse_status m_status{};
-
-    ///
-    /// @brief Function name.
-    ///
-    char m_function_name[128]{};
-
-    ///
-    /// @brief Function name.
-    ///
-    char m_function_filename[128]{};
-
-    ///
-    /// @brief Argument name.
-    ///
-    char m_arg_name[128]{};
-
-    ///
-    /// @brief Message.
-    ///
-    char m_msg[256]{};
-
-    ///
-    /// @brief Define..
-    /// @param function_name_ Name of the function.
-    /// @param function_line_ Line number in the file where the argument checking is performed.
-    /// @param arg_name_ Name of the function argument.
-    /// @param arg_index_ 0-based index of the function argument.
-    /// @param status_ status of the argument checking.
-    /// @param msg_ message of the argument checking.
-    ///
-    void define(const char*      function_filename_,
-                const char*      function_name_,
-                int              function_line_,
-                const char*      arg_name_,
-                int              arg_index_,
-                rocsparse_status status_,
-                const char*      msg_);
-
-    rocsparse_argdescr_st()  = default;
-    ~rocsparse_argdescr_st() = default;
-};
-
-struct rocsparse_argdescr
-{
-private:
-    std::map<int64_t, rocsparse_argdescr_st> map;
-
-protected:
-    static rocsparse_argdescr& instance()
+    int64_t get_pid()
     {
-        static rocsparse_argdescr self;
-        return self;
+        return 0;
+    }
+
+    int64_t get_tid()
+    {
+        return 0;
+    }
+
+    ///
+    /// @brief The rocsparse argument descriptor.
+    ///
+    struct argdescr_st
+    {
+        ///
+        /// @brief Thread id.
+        ///
+        int64_t m_tid{};
+        ///
+
+        /// @brief Process id.
+        ///
+        int64_t m_pid{};
+
+        ///
+        /// @brief Line in the file.
+        ///
+        int m_function_line{};
+
+        ///
+        /// @brief 0-based index of the argument.
+        ///
+        int m_arg_index{};
+
+        ///
+        /// @brief Resulting status of the argument checking.
+        ///
+        rocsparse_status m_status{};
+
+        ///
+        /// @brief Function name.
+        ///
+        char m_function_name[128]{};
+
+        ///
+        /// @brief Function name.
+        ///
+        char m_function_filename[128]{};
+
+        ///
+        /// @brief Argument name.
+        ///
+        char m_arg_name[128]{};
+
+        ///
+        /// @brief Message.
+        ///
+        char m_msg[256]{};
+
+        ///
+        /// @brief Define..
+        /// @param function_name_ Name of the function.
+        /// @param function_line_ Line number in the file where the argument checking is performed.
+        /// @param arg_name_ Name of the function argument.
+        /// @param arg_index_ 0-based index of the function argument.
+        /// @param status_ status of the argument checking.
+        /// @param msg_ message of the argument checking.
+        ///
+        void define(const char*      function_filename_,
+                    const char*      function_name_,
+                    int              function_line_,
+                    const char*      arg_name_,
+                    int              arg_index_,
+                    rocsparse_status status_,
+                    const char*      msg_);
+
+        argdescr_st()  = default;
+        ~argdescr_st() = default;
     };
 
-public:
-    static rocsparse_argdescr_st& arg(int64_t tid)
+    struct argdescr
     {
-        const auto it = instance().map.find(tid);
-        if(it != instance().map.end())
-        {
-            return it->second;
-        }
-        else
-        {
-            rocsparse_argdescr_st& that = instance().map[tid];
-            that.m_tid                  = tid;
-            return that;
-        }
-    }
+    private:
+        std::map<int64_t, argdescr_st> map;
 
-    static bool find(void** c, int64_t tid)
-    {
-        c[0]          = nullptr;
-        const auto it = instance().map.find(tid);
-        if(it != instance().map.end())
+    protected:
+        static argdescr& instance()
         {
-            c[0] = &it->second;
-            return true;
-        }
-        return false;
-    }
+            static argdescr self;
+            return self;
+        };
 
-    static bool find(void** c)
-    {
-        return find(c, rocsparse_get_tid());
-    }
-
-    static bool free(void* obj)
-    {
-        rocsparse_argdescr_st* elm = (rocsparse_argdescr_st*)obj;
-        const auto             it  = instance().map.find(elm->m_tid);
-        if(it != instance().map.end())
+    public:
+        static argdescr_st& arg(int64_t tid)
         {
-            if(&it->second == obj)
+            const auto it = instance().map.find(tid);
+            if(it != instance().map.end())
             {
-                instance().map.erase(it);
+                return it->second;
+            }
+            else
+            {
+                argdescr_st& that = instance().map[tid];
+                that.m_tid        = tid;
+                return that;
+            }
+        }
+
+        static bool find(void** c, int64_t tid)
+        {
+            c[0]          = nullptr;
+            const auto it = instance().map.find(tid);
+            if(it != instance().map.end())
+            {
+                c[0] = &it->second;
                 return true;
             }
             return false;
         }
-        return false;
-    }
-};
 
-void rocsparse_argdescr_st::define(const char*      function_filename_,
-                                   const char*      function_name_,
-                                   int              function_line_,
-                                   const char*      arg_name_,
-                                   int              arg_index_,
-                                   rocsparse_status status_,
-                                   const char*      msg_)
-{
-    this->m_function_line = function_line_;
-    this->m_arg_index     = arg_index_;
-    this->m_status        = status_;
-    strncpy(this->m_function_filename, function_filename_, 128);
-    strncpy(this->m_function_name, function_name_, 128);
-    strncpy(this->m_arg_name, arg_name_, 128);
-    strncpy(this->m_msg, msg_, 256);
-}
+        static bool find(void** c)
+        {
+            return find(c, rocsparse::get_tid());
+        }
 
-std::ostream& operator<<(std::ostream& os, const rocsparse_argdescr_st& that_)
-{
-    os << "// rocSPARSE.argument.error: { \"function\"  : \"" << that_.m_function_name << "\","
-       << std::endl
-       << "//                             \"file\"      : \"" << that_.m_function_filename << "\","
-       << std::endl
-       << "//                             \"line\"      : \"" << that_.m_function_line << "\","
-       << std::endl
-       << "//                             \"arg\"       : \"" << that_.m_arg_name << "\","
-       << std::endl
-       << "//                             \"arg_index\" : \"" << that_.m_arg_index << "\","
-       << std::endl
-       << "//                             \"status\"    : \""
-       << rocsparse::to_string(that_.m_status) << "\"";
+        static bool free(void* obj)
+        {
+            argdescr_st* elm = (argdescr_st*)obj;
+            const auto   it  = instance().map.find(elm->m_tid);
+            if(it != instance().map.end())
+            {
+                if(&it->second == obj)
+                {
+                    instance().map.erase(it);
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        }
+    };
 
-    if(that_.m_msg[0] != '\0')
+    void argdescr_st::define(const char*      function_filename_,
+                             const char*      function_name_,
+                             int              function_line_,
+                             const char*      arg_name_,
+                             int              arg_index_,
+                             rocsparse_status status_,
+                             const char*      msg_)
     {
-        os << "," << std::endl
-           << "//                             \"msg\"       : \"" << that_.m_msg << "\" }"
-           << std::endl;
-    }
-    else
-    {
-        os << "}" << std::endl;
+        this->m_function_line = function_line_;
+        this->m_arg_index     = arg_index_;
+        this->m_status        = status_;
+        strncpy(this->m_function_filename, function_filename_, 128);
+        strncpy(this->m_function_name, function_name_, 128);
+        strncpy(this->m_arg_name, arg_name_, 128);
+        strncpy(this->m_msg, msg_, 256);
     }
 
-    return os;
+    std::ostream& operator<<(std::ostream& os, const rocsparse::argdescr_st& that_)
+    {
+        os << "// rocSPARSE.argument.error: { \"function\"  : \"" << that_.m_function_name << "\","
+           << std::endl
+           << "//                             \"file\"      : \"" << that_.m_function_filename
+           << "\"," << std::endl
+           << "//                             \"line\"      : \"" << that_.m_function_line << "\","
+           << std::endl
+           << "//                             \"arg\"       : \"" << that_.m_arg_name << "\","
+           << std::endl
+           << "//                             \"arg_index\" : \"" << that_.m_arg_index << "\","
+           << std::endl
+           << "//                             \"status\"    : \""
+           << rocsparse::to_string(that_.m_status) << "\"";
+
+        if(that_.m_msg[0] != '\0')
+        {
+            os << "," << std::endl
+               << "//                             \"msg\"       : \"" << that_.m_msg << "\" }"
+               << std::endl;
+        }
+        else
+        {
+            os << "}" << std::endl;
+        }
+
+        return os;
+    }
 }
 
 extern "C" {
@@ -280,19 +283,19 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_argdescr_get_function_name(const void* argdescr, const char**);
 };
 
-void rocsparse_argdescr_log(const char*      function_filename_,
-                            const char*      function_name_,
-                            int              function_line_,
-                            const char*      arg_name_,
-                            int              arg_index_,
-                            rocsparse_status status_,
-                            const char*      msg_)
+void rocsparse::argdescr_log(const char*      function_filename_,
+                             const char*      function_name_,
+                             int              function_line_,
+                             const char*      arg_name_,
+                             int              arg_index_,
+                             rocsparse_status status_,
+                             const char*      msg_)
 {
     void* p_argdescr;
-    if(rocsparse_argdescr::find(&p_argdescr))
+    if(rocsparse::argdescr::find(&p_argdescr))
     {
 
-        ((rocsparse_argdescr_st*)p_argdescr)
+        ((rocsparse::argdescr_st*)p_argdescr)
             ->define(function_filename_,
                      function_name_,
                      function_line_,
@@ -303,12 +306,12 @@ void rocsparse_argdescr_log(const char*      function_filename_,
 
         if(rocsparse_debug_variables.get_debug_arguments_verbose())
         {
-            std::cerr << ((rocsparse_argdescr_st*)p_argdescr)[0];
+            std::cerr << ((rocsparse::argdescr_st*)p_argdescr)[0];
         }
     }
     else
     {
-        rocsparse_argdescr_st argdescr;
+        rocsparse::argdescr_st argdescr;
         argdescr.define(function_filename_,
                         function_name_,
                         function_line_,
@@ -334,8 +337,8 @@ rocsparse_status rocsparse_argdescr_get_msg(const void* argdescr, const char** r
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
-    const rocsparse_argdescr_st* that = ((const rocsparse_argdescr_st*)argdescr);
-    res[0]                            = &that->m_msg[0];
+    const rocsparse::argdescr_st* that = ((const rocsparse::argdescr_st*)argdescr);
+    res[0]                             = &that->m_msg[0];
     return rocsparse_status_success;
 }
 
@@ -349,8 +352,8 @@ rocsparse_status rocsparse_argdescr_get_status(const void* argdescr, rocsparse_s
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
-    const rocsparse_argdescr_st* that = ((const rocsparse_argdescr_st*)argdescr);
-    res[0]                            = that->m_status;
+    const rocsparse::argdescr_st* that = ((const rocsparse::argdescr_st*)argdescr);
+    res[0]                             = that->m_status;
     return rocsparse_status_success;
 }
 
@@ -364,8 +367,8 @@ rocsparse_status rocsparse_argdescr_get_pid(const void* argdescr, int64_t* res)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
-    const rocsparse_argdescr_st* that = ((const rocsparse_argdescr_st*)argdescr);
-    res[0]                            = that->m_pid;
+    const rocsparse::argdescr_st* that = ((const rocsparse::argdescr_st*)argdescr);
+    res[0]                             = that->m_pid;
     return rocsparse_status_success;
 }
 
@@ -379,8 +382,8 @@ rocsparse_status rocsparse_argdescr_get_tid(const void* argdescr, int64_t* res)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
-    const rocsparse_argdescr_st* that = ((const rocsparse_argdescr_st*)argdescr);
-    res[0]                            = that->m_tid;
+    const rocsparse::argdescr_st* that = ((const rocsparse::argdescr_st*)argdescr);
+    res[0]                             = that->m_tid;
     return rocsparse_status_success;
 }
 
@@ -394,8 +397,8 @@ rocsparse_status rocsparse_argdescr_get_index(const void* argdescr, int* res)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
-    const rocsparse_argdescr_st* that = ((const rocsparse_argdescr_st*)argdescr);
-    res[0]                            = that->m_arg_index;
+    const rocsparse::argdescr_st* that = ((const rocsparse::argdescr_st*)argdescr);
+    res[0]                             = that->m_arg_index;
     return rocsparse_status_success;
 }
 
@@ -409,8 +412,8 @@ rocsparse_status rocsparse_argdescr_get_name(const void* argdescr, const char** 
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
-    const rocsparse_argdescr_st* that = ((const rocsparse_argdescr_st*)argdescr);
-    res[0]                            = &that->m_arg_name[0];
+    const rocsparse::argdescr_st* that = ((const rocsparse::argdescr_st*)argdescr);
+    res[0]                             = &that->m_arg_name[0];
     return rocsparse_status_success;
 }
 
@@ -424,8 +427,8 @@ rocsparse_status rocsparse_argdescr_get_function_line(const void* argdescr, int*
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
-    const rocsparse_argdescr_st* that = ((const rocsparse_argdescr_st*)argdescr);
-    res[0]                            = that->m_function_line;
+    const rocsparse::argdescr_st* that = ((const rocsparse::argdescr_st*)argdescr);
+    res[0]                             = that->m_function_line;
     return rocsparse_status_success;
 }
 
@@ -435,15 +438,15 @@ rocsparse_status rocsparse_argdescr_get_function_name(const void* argdescr, cons
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
-    const rocsparse_argdescr_st* that = ((const rocsparse_argdescr_st*)argdescr);
-    res[0]                            = &that->m_function_name[0];
+    const rocsparse::argdescr_st* that = ((const rocsparse::argdescr_st*)argdescr);
+    res[0]                             = &that->m_function_name[0];
     return rocsparse_status_success;
 }
 
 rocsparse_status rocsparse_argdescr_create(void** argdescr)
 {
-    rocsparse_argdescr_st& elm = rocsparse_argdescr::arg(rocsparse_get_tid());
-    argdescr[0]                = &elm;
+    rocsparse::argdescr_st& elm = rocsparse::argdescr::arg(rocsparse::get_tid());
+    argdescr[0]                 = &elm;
     return rocsparse_status_success;
 }
 
@@ -451,7 +454,7 @@ rocsparse_status rocsparse_argdescr_free(void* argdescr)
 {
     if(argdescr != nullptr)
     {
-        rocsparse_argdescr::free(argdescr);
+        rocsparse::argdescr::free(argdescr);
     }
     return rocsparse_status_success;
 }

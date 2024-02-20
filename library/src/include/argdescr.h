@@ -26,23 +26,26 @@
 
 #include "debug.h"
 
-///
-/// @brief Log in argument error description.
-/// @param function_file_ name of the file this routine is called from.
-/// @param function_name_ name of the routine this routine is called from.
-/// @param function_line_ line of the file this routine is called from.
-/// @param arg_name_ name of the argument of the routine this routine is called from.
-/// @param arg_index_ index of the argument of the routine this routine is called from.
-/// @param status_  returned status of the routine this routine is called from.
-/// @param msg_ index of the argument of the routine this routine is called from.
-///
-void rocsparse_argdescr_log(const char*      function_file_,
-                            const char*      function_name_,
-                            int              function_line_,
-                            const char*      arg_name_,
-                            int              arg_index_,
-                            rocsparse_status status_,
-                            const char*      msg_);
+namespace rocsparse
+{
+    ///
+    /// @brief Log in argument error description.
+    /// @param function_file_ name of the file this routine is called from.
+    /// @param function_name_ name of the routine this routine is called from.
+    /// @param function_line_ line of the file this routine is called from.
+    /// @param arg_name_ name of the argument of the routine this routine is called from.
+    /// @param arg_index_ index of the argument of the routine this routine is called from.
+    /// @param status_  returned status of the routine this routine is called from.
+    /// @param msg_ index of the argument of the routine this routine is called from.
+    ///
+    void argdescr_log(const char*      function_file_,
+                      const char*      function_name_,
+                      int              function_line_,
+                      const char*      arg_name_,
+                      int              arg_index_,
+                      rocsparse_status status_,
+                      const char*      msg_);
+}
 
 ///
 /// @brief Check the argument array, i.e. a non null pointer for a positive size.
@@ -60,13 +63,13 @@ void rocsparse_argdescr_log(const char*      function_file_,
                 std::stringstream s;                                                          \
                 s << "array pointer is " #POINTER__ " null with ('" #SIZE__ " = " << (SIZE__) \
                   << "' > 0)";                                                                \
-                rocsparse_argdescr_log(__FILE__,                                              \
-                                       __FUNCTION__,                                          \
-                                       __LINE__,                                              \
-                                       #POINTER__,                                            \
-                                       (ITH__),                                               \
-                                       rocsparse_status_invalid_pointer,                      \
-                                       s.str().c_str());                                      \
+                rocsparse::argdescr_log(__FILE__,                                             \
+                                        __FUNCTION__,                                         \
+                                        __LINE__,                                             \
+                                        #POINTER__,                                           \
+                                        (ITH__),                                              \
+                                        rocsparse_status_invalid_pointer,                     \
+                                        s.str().c_str());                                     \
             }                                                                                 \
             return rocsparse_status_invalid_pointer;                                          \
         }                                                                                     \
@@ -77,21 +80,21 @@ void rocsparse_argdescr_log(const char*      function_file_,
 /// @param ITH__ index of the argument.
 /// @param SIZE__ size.
 ///
-#define ROCSPARSE_CHECKARG_SIZE(ITH__, SIZE__)                        \
-    do                                                                \
-    {                                                                 \
-        if((SIZE__) < 0)                                              \
-        {                                                             \
-            if(rocsparse_debug_variables.get_debug_arguments())       \
-                rocsparse_argdescr_log(__FILE__,                      \
-                                       __FUNCTION__,                  \
-                                       __LINE__,                      \
-                                       #SIZE__,                       \
-                                       (ITH__),                       \
-                                       rocsparse_status_invalid_size, \
-                                       "size is negative.");          \
-            return rocsparse_status_invalid_size;                     \
-        }                                                             \
+#define ROCSPARSE_CHECKARG_SIZE(ITH__, SIZE__)                         \
+    do                                                                 \
+    {                                                                  \
+        if((SIZE__) < 0)                                               \
+        {                                                              \
+            if(rocsparse_debug_variables.get_debug_arguments())        \
+                rocsparse::argdescr_log(__FILE__,                      \
+                                        __FUNCTION__,                  \
+                                        __LINE__,                      \
+                                        #SIZE__,                       \
+                                        (ITH__),                       \
+                                        rocsparse_status_invalid_size, \
+                                        "size is negative.");          \
+            return rocsparse_status_invalid_size;                      \
+        }                                                              \
     } while(false)
 
 ///
@@ -99,21 +102,21 @@ void rocsparse_argdescr_log(const char*      function_file_,
 /// @param ITH__ index of the argument.
 /// @param ENUM__ The enum value.
 ///
-#define ROCSPARSE_CHECKARG_ENUM(ITH__, ENUM__)                         \
-    do                                                                 \
-    {                                                                  \
-        if(rocsparse::enum_utils::is_invalid((ENUM__)))                \
-        {                                                              \
-            if(rocsparse_debug_variables.get_debug_arguments())        \
-                rocsparse_argdescr_log(__FILE__,                       \
-                                       __FUNCTION__,                   \
-                                       __LINE__,                       \
-                                       #ENUM__,                        \
-                                       (ITH__),                        \
-                                       rocsparse_status_invalid_value, \
-                                       "enum has an invalid value.");  \
-            return rocsparse_status_invalid_value;                     \
-        }                                                              \
+#define ROCSPARSE_CHECKARG_ENUM(ITH__, ENUM__)                          \
+    do                                                                  \
+    {                                                                   \
+        if(rocsparse::enum_utils::is_invalid((ENUM__)))                 \
+        {                                                               \
+            if(rocsparse_debug_variables.get_debug_arguments())         \
+                rocsparse::argdescr_log(__FILE__,                       \
+                                        __FUNCTION__,                   \
+                                        __LINE__,                       \
+                                        #ENUM__,                        \
+                                        (ITH__),                        \
+                                        rocsparse_status_invalid_value, \
+                                        "enum has an invalid value.");  \
+            return rocsparse_status_invalid_value;                      \
+        }                                                               \
     } while(false)
 
 ///
@@ -121,21 +124,21 @@ void rocsparse_argdescr_log(const char*      function_file_,
 /// @param ITH__ index of the argument.
 /// @param HANDLE__ The handle.
 ///
-#define ROCSPARSE_CHECKARG_HANDLE(ITH__, HANDLE__)                      \
-    do                                                                  \
-    {                                                                   \
-        if((HANDLE__) == nullptr)                                       \
-        {                                                               \
-            if(rocsparse_debug_variables.get_debug_arguments())         \
-                rocsparse_argdescr_log(__FILE__,                        \
-                                       __FUNCTION__,                    \
-                                       __LINE__,                        \
-                                       #HANDLE__,                       \
-                                       (ITH__),                         \
-                                       rocsparse_status_invalid_handle, \
-                                       "handle is null.");              \
-            return rocsparse_status_invalid_handle;                     \
-        }                                                               \
+#define ROCSPARSE_CHECKARG_HANDLE(ITH__, HANDLE__)                       \
+    do                                                                   \
+    {                                                                    \
+        if((HANDLE__) == nullptr)                                        \
+        {                                                                \
+            if(rocsparse_debug_variables.get_debug_arguments())          \
+                rocsparse::argdescr_log(__FILE__,                        \
+                                        __FUNCTION__,                    \
+                                        __LINE__,                        \
+                                        #HANDLE__,                       \
+                                        (ITH__),                         \
+                                        rocsparse_status_invalid_handle, \
+                                        "handle is null.");              \
+            return rocsparse_status_invalid_handle;                      \
+        }                                                                \
     } while(false)
 
 ///
@@ -143,21 +146,21 @@ void rocsparse_argdescr_log(const char*      function_file_,
 /// @param ITH__ index of the argument.
 /// @param POINTER__ The pointer.
 ///
-#define ROCSPARSE_CHECKARG_POINTER(ITH__, POINTER__)                     \
-    do                                                                   \
-    {                                                                    \
-        if((POINTER__) == nullptr)                                       \
-        {                                                                \
-            if(rocsparse_debug_variables.get_debug_arguments())          \
-                rocsparse_argdescr_log(__FILE__,                         \
-                                       __FUNCTION__,                     \
-                                       __LINE__,                         \
-                                       #POINTER__,                       \
-                                       (ITH__),                          \
-                                       rocsparse_status_invalid_pointer, \
-                                       "pointer is null.");              \
-            return rocsparse_status_invalid_pointer;                     \
-        }                                                                \
+#define ROCSPARSE_CHECKARG_POINTER(ITH__, POINTER__)                      \
+    do                                                                    \
+    {                                                                     \
+        if((POINTER__) == nullptr)                                        \
+        {                                                                 \
+            if(rocsparse_debug_variables.get_debug_arguments())           \
+                rocsparse::argdescr_log(__FILE__,                         \
+                                        __FUNCTION__,                     \
+                                        __LINE__,                         \
+                                        #POINTER__,                       \
+                                        (ITH__),                          \
+                                        rocsparse_status_invalid_pointer, \
+                                        "pointer is null.");              \
+            return rocsparse_status_invalid_pointer;                      \
+        }                                                                 \
     } while(false)
 
 ///
@@ -167,19 +170,19 @@ void rocsparse_argdescr_log(const char*      function_file_,
 /// @param CONDITION__ condition to log.
 /// @param STATUS__ status to return.
 ///
-#define ROCSPARSE_CHECKARG(ITH__, ARG__, CONDITION__, STATUS__)                   \
-    do                                                                            \
-    {                                                                             \
-        if((CONDITION__))                                                         \
-        {                                                                         \
-            if(rocsparse_debug_variables.get_debug_arguments())                   \
-                rocsparse_argdescr_log(__FILE__,                                  \
-                                       __FUNCTION__,                              \
-                                       __LINE__,                                  \
-                                       #ARG__,                                    \
-                                       (ITH__),                                   \
-                                       (STATUS__),                                \
-                                       "failed on condition '" #CONDITION__ "'"); \
-            return (STATUS__);                                                    \
-        }                                                                         \
+#define ROCSPARSE_CHECKARG(ITH__, ARG__, CONDITION__, STATUS__)                    \
+    do                                                                             \
+    {                                                                              \
+        if((CONDITION__))                                                          \
+        {                                                                          \
+            if(rocsparse_debug_variables.get_debug_arguments())                    \
+                rocsparse::argdescr_log(__FILE__,                                  \
+                                        __FUNCTION__,                              \
+                                        __LINE__,                                  \
+                                        #ARG__,                                    \
+                                        (ITH__),                                   \
+                                        (STATUS__),                                \
+                                        "failed on condition '" #CONDITION__ "'"); \
+            return (STATUS__);                                                     \
+        }                                                                          \
     } while(false)

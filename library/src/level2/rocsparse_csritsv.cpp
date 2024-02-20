@@ -134,7 +134,7 @@ try
         handle, "rocsparse_csritsv_clear", (const void*&)descr, (const void*&)info);
 
     // Clear csritsv meta data (this includes lower, upper and their transposed equivalents
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csritsv_info(info->csritsv_info));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_csritsv_info(info->csritsv_info));
     info->csritsv_info = nullptr;
     return rocsparse_status_success;
 }
