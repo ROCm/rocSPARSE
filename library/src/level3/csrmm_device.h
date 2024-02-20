@@ -354,7 +354,8 @@ namespace rocsparse
             = rocsparse::nontemporal_load(csr_row_ptr + row + offsets_batch_stride_A * batch)
               - idx_base;
         const I row_end
-            = rocsparse::nontemporal_load(csr_row_ptr + row + 1 + offsets_batch_stride_A * batch);
+            = rocsparse::nontemporal_load(csr_row_ptr + row + 1 + offsets_batch_stride_A * batch)
+              - idx_base;
 
         for(J l = offset; l < ncol; l += WF_SIZE)
         {
