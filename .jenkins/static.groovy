@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-// This shared library is available at https://github.com/ROCm/rocJENKINS/
+// This shared library is available at https://github.com/ROCmSoftwarePlatform/rocJENKINS/
 @Library('rocJenkins@pong') _
 
 // This is file for internal AMD use.
@@ -12,13 +12,11 @@ import java.nio.file.Path
 def runCI =
 {
     nodeDetails, jobName->
-
-    def prj = new rocProject('rocSPARSE', 'Extended')
+    def prj  = new rocProject('rocSPARSE', 'static')
 
     // customize for project
     prj.paths.build_command = './install.sh --matrices-dir-install ${JENKINS_HOME_DIR}/rocsparse_matrices && ./install.sh -c --matrices-dir ${JENKINS_HOME_DIR}/rocsparse_matrices'
-    prj.libraryDependencies = ['rocPRIM', 'rocBLAS']
-    prj.timeout.test = 600
+    prj.libraryDependencies = ['rocPRIM']
     prj.defaults.ccache = true
 
     // Define test architectures, optional rocm version argument is available
@@ -33,14 +31,14 @@ def runCI =
         platform, project->
 
         commonGroovy = load "${project.paths.project_src_prefix}/.jenkins/common.groovy"
-        commonGroovy.runCompileCommand(platform, project, jobName, false)
+        commonGroovy.runCompileCommand(platform, project, jobName)
     }
 
     def testCommand =
     {
         platform, project->
 
-        def gfilter = "*nightly*"
+        def gfilter = "*quick*:*pre_checkin*"
         commonGroovy.runTestCommand(platform, project, gfilter)
     }
 
@@ -57,14 +55,10 @@ def runCI =
 ci: {
     String urlJobName = auxiliary.getTopJobName(env.BUILD_URL)
 
-    def propertyList = ["compute-rocm-dkms-no-npi":[pipelineTriggers([cron('0 1 * * 6')])],
-                        "compute-rocm-dkms-no-npi-hipclang":[pipelineTriggers([cron('0 1 * * 6')])],
-                        "rocm-docker":[]]
+    def propertyList = ["main":[pipelineTriggers([cron('0 1 * * 6')])]]
     propertyList = auxiliary.appendPropertyList(propertyList)
 
-    def jobNameList = ["compute-rocm-dkms-no-npi":([ubuntu18:['gfx900'],centos7:['gfx908'],sles15sp1:['gfx906']]),
-                       "compute-rocm-dkms-no-npi-hipclang":([ubuntu18:['gfx900'],centos7:['gfx908'],centos8:['any'],sles15sp1:['gfx906']]),
-                       "rocm-docker":([ubuntu18:['gfx900'],centos7:['gfx906'],sles15sp1:['gfx908']])]
+    def jobNameList = ["main":([ubuntu22:['gfx90a']])]
     jobNameList = auxiliary.appendJobNameList(jobNameList)
 
     propertyList.each
@@ -88,7 +82,7 @@ ci: {
     {
         properties(auxiliary.addCommonProperties([pipelineTriggers([cron('0 1 * * *')])]))
         stage(urlJobName) {
-            runCI([ubuntu18:['gfx900', 'gfx906']], urlJobName)
+            runCI([ubuntu22:['gfx90a']], urlJobName)
         }
     }
 }

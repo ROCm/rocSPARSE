@@ -1,12 +1,13 @@
 // This file is for internal AMD use.
 // If you are interested in running your own Jenkins, please raise a github issue for assistance.
 
-def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
+def runCompileCommand(platform, project, jobName, boolean sameOrg=true)
 {
     project.paths.construct_build_prefix()
 
     String compiler = jobName.contains('hipclang') ? 'hipcc' : 'hcc'
     String hipClangArgs = jobName.contains('hipclang') ? ' --hip-clang' : ''
+    String staticArgs = jobName.contains('static') ? ' -s' : ''
     //Temporary workaround due to bug in container
     String centos7Workaround = platform.jenkinsLabel.contains('centos7') ? 'export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/rocm/lib64/' : ''
 
@@ -25,7 +26,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
                 ${getDependenciesCommand}
                 export LD_LIBRARY_PATH=/opt/rocm/lib/
                 ${centos7Workaround}
-                CXX=/opt/rocm/bin/${compiler} ${project.paths.build_command} ${hipClangArgs}
+                CXX=/opt/rocm/bin/${compiler} ${project.paths.build_command} ${hipClangArgs} ${staticArgs}
             """
 
     platform.runCommand(this, command)
