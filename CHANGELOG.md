@@ -10,6 +10,7 @@ Documentation for rocSPARSE is available at
 * New LRB algorithm to SpMV, supporting CSR format
 * rocBLAS as now an optional dependency for SDDMM algorithms
 * Additional verbose output for `csrgemm` and `bsrgemm`
+* CMake support for documentation
 
 ### Optimizations
 
@@ -20,9 +21,9 @@ Documentation for rocSPARSE is available at
 
 ### Additions
 
-- `rocsparse_inverse_permutation`
-- Mixed-precisions for SpVV
-- Uniform int8 precision for gather and scatter
+* `rocsparse_inverse_permutation`
+* Mixed-precisions for SpVV
+* Uniform int8 precision for gather and scatter
 
 ### Changes
 
@@ -105,9 +106,9 @@ Documentation for rocSPARSE is available at
 
 ### Fixes
 
-- Documentation
-- Bug in COO SpMV grid size
-- Bug in SpMM grid size when using very large matrices
+* Documentation
+* Bug in COO SpMV grid size
+* Bug in SpMM grid size when using very large matrices
 
 ### Known issues
 

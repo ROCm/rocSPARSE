@@ -81,6 +81,7 @@ option(BUILD_WITH_ROCBLAS "Enable building rocSPARSE with rocBLAS" ON)
 if( NOT BUILD_FORTRAN_CLIENTS )
   option( BUILD_FORTRAN_CLIENTS "Build rocSPARSE clients requiring Fortran capabilities" ON )
 endif( )
+option(BUILD_DOCS "Build documentation" OFF)
 
 #
 if(BUILD_CODE_COVERAGE)
@@ -243,6 +244,11 @@ add_subdirectory(library)
 # Trigger client builds if selected
 if(BUILD_CLIENTS)
   add_subdirectory(clients)
+endif()
+
+# Build docs
+if(BUILD_DOCS)
+  add_subdirectory(docs)
 endif()
 
 # Package specific CPACK vars
