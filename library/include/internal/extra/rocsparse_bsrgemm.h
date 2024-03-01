@@ -406,6 +406,9 @@ rocsparse_status rocsparse_bsrgemm_nnzb(rocsparse_handle          handle,
 *    \right.
 *  \f]
 *
+*  \note
+*  This function does not produce deterministic results.
+*
 *  It is assumed that \p bsr_row_ptr_C has already been filled and that \p bsr_val_C and
 *  \p bsr_col_ind_C are allocated by the user. \p bsr_row_ptr_C and allocation size of
 *  \p bsr_col_ind_C and \p bsr_val_C is defined by the number of non-zero elements of

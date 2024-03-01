@@ -64,6 +64,12 @@ extern "C" {
 *    \right.
 *  \f]
 *
+*  \note
+*  This function does not produce deterministic results when A is transposed.
+*
+*  \note
+*  rocsparse_spmm_alg_coo_atomic and rocsparse_spmm_alg_coo_segmented_atomic do not produce deterministic results.
+*
 *  \par Uniform Precisions:
 *  <table>
 *  <caption id="spmm_uniform">Uniform Precisions</caption>

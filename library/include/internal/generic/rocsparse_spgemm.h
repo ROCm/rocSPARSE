@@ -65,6 +65,9 @@ extern "C" {
 *    \right.
 *  \f]
 *
+*  \note
+*  This function does not produce deterministic results.
+*
 *  \note SpGEMM requires three stages to complete. The first stage
 *  \ref rocsparse_spgemm_stage_buffer_size will return the size of the temporary storage buffer
 *  that is required for subsequent calls to \ref rocsparse_spgemm. The second stage

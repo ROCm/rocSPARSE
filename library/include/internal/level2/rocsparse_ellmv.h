@@ -72,6 +72,9 @@ extern "C" {
 *  \endcode
 *
 *  \note
+*  This function does not produce deterministic results when A is transposed.
+*
+*  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
