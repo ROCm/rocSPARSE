@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 list(APPEND CMAKE_PREFIX_PATH /opt/rocm /opt/rocm/hip)
 
 # ROCm cmake package
-find_package(ROCM 0.7.3 QUIET CONFIG PATHS ${CMAKE_PREFIX_PATH})
+find_package(ROCM 0.11.0 CONFIG QUIET PATHS "${ROCM_PATH}") # First version with Sphinx doc gen improvement
 if(NOT ROCM_FOUND)
   set(PROJECT_EXTERN_DIR ${CMAKE_CURRENT_BINARY_DIR}/extern)
   set(rocm_cmake_tag "master" CACHE STRING "rocm-cmake tag to download")
@@ -54,7 +54,7 @@ if(NOT ROCM_FOUND)
   execute_process(COMMAND ${CMAKE_COMMAND} --build rocm-cmake-${rocm_cmake_tag} --target install
                   WORKING_DIRECTORY ${PROJECT_EXTERN_DIR})
 
-  find_package( ROCM 0.7.3 REQUIRED CONFIG PATHS ${PROJECT_EXTERN_DIR}/rocm-cmake )
+  find_package( ROCM 0.11.0 REQUIRED CONFIG PATHS ${PROJECT_EXTERN_DIR}/rocm-cmake )
 endif()
 
 include(ROCMSetupVersion)
