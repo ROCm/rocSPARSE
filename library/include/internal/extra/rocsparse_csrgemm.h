@@ -398,6 +398,9 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
 *    \right.
 *  \f]
 *
+*  \note
+*  This function does not produce deterministic results.
+*
 *  It is assumed that \p csr_row_ptr_C has already been filled and that \p csr_val_C and
 *  \p csr_col_ind_C are allocated by the user. \p csr_row_ptr_C and allocation size of
 *  \p csr_col_ind_C and \p csr_val_C is defined by the number of non-zero elements of
@@ -1074,6 +1077,9 @@ rocsparse_status rocsparse_csrgemm_symbolic(rocsparse_handle          handle,
 *    \end{array}
 *    \right.
 *  \f]
+*
+*  \note
+*  This function does not produce deterministic results.
 *
 *  The symbolic part of the csr matrix C can be obtained by rocsparse_csrgemm_symbolic().
 *  It is assumed that \p csr_row_ptr_C and \p csr_col_ind_C have already been filled and that \p csr_val_C is allocated by the user. \p csr_row_ptr_C and allocation size of
