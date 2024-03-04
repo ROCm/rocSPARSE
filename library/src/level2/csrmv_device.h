@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -436,23 +436,23 @@ ROCSPARSE_DEVICE_ILF void csrmvn_adaptive_device(bool                 conj,
             // The first workgroup handles the output initialization.
             Y out_val = y[row];
             temp_sum  = (beta - static_cast<T>(1)) * out_val;
-            atomicXor(&wg_flags[first_wg_in_row], 1U); // Release other workgroups.
+
+            // All inter thread communication is done using atomics, therefore cache flushes or
+            // invalidates should not be needed (thus __threadfence() has been removed to regain
+            // performance).
+            // Because of atomics being relaxed, however, the compiler is allowed to reorder them
+            // with respect to ordinary memory accesses (and other relaxed atomic operations).
+            // In this case, out_val seem to be reordered with the xor and subsequently, accumulation
+            // ends up being wrong.
+            // To force the compiler to stick to the order of operations, we need acquire/release fences.
+            // Workgroup scope is sufficient for this purpose, to only invalidate L1 and avoid L2
+            // invalidations.
+            __builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup");
+
+            // Release other workgroups
+            atomicXor(&wg_flags[first_wg_in_row], 1U);
         }
-        // For every other workgroup, wg_flags[first_wg_in_row] holds the value they wait on.
-        // If your flag == first_wg's flag, you spin loop.
-        // The first workgroup will eventually flip this flag, and you can move forward.
-        __threadfence();
-        while(gid != first_wg_in_row && lid == 0
-              && ((rocsparse_atomic_max(&wg_flags[first_wg_in_row], 0U)) == compare_value))
-            ;
 
-        // After you've passed the barrier, update your local flag to make sure that
-        // the next time through, you know what to wait on.
-        if(gid != first_wg_in_row && lid == 0)
-            wg_flags[gid] ^= 1U;
-
-        // All but the final workgroup in a long-row collaboration have the same start_row
-        // and stop_row. They only run for one iteration.
         // Load in a bunch of partial results into your register space, rather than LDS (no
         // contention)
         // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
@@ -469,8 +469,23 @@ ROCSPARSE_DEVICE_ILF void csrmvn_adaptive_device(bool                 conj,
         // Reduce partial sums
         rocsparse_blockreduce_sum<WG_SIZE>(lid, partialSums);
 
+        // For every other workgroup, wg_flags[first_wg_in_row] holds the value they wait on.
+        // If your flag == first_wg's flag, you spin loop.
+        // The first workgroup will eventually flip this flag, and you can move forward.
         if(lid == 0)
         {
+            if(gid != first_wg_in_row)
+            {
+                while(rocsparse_atomic_max(&wg_flags[first_wg_in_row], 0U) == compare_value)
+                    ;
+
+                // __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "workgroup");
+
+                // After you've passed the barrier, update your local flag to make sure that
+                // the next time through, you know what to wait on.
+                wg_flags[gid] ^= 1U;
+            }
+
             rocsparse_atomic_add(y + row, partialSums[0]);
         }
     }
@@ -946,24 +961,23 @@ ROCSPARSE_DEVICE_ILF void csrmvn_lrb_long_rows_device(bool                 conj,
         // The first workgroup handles the output initialization.
         Y out_val = y[row];
         temp_sum  = (beta - static_cast<T>(1)) * out_val;
-        atomicXor(&wg_flags[first_wg_in_row], 1U); // Release other workgroups.
+
+        // All inter thread communication is done using atomics, therefore cache flushes or
+        // invalidates should not be needed (thus __threadfence() has been removed to regain
+        // performance).
+        // Because of atomics being relaxed, however, the compiler is allowed to reorder them
+        // with respect to ordinary memory accesses (and other relaxed atomic operations).
+        // In this case, out_val seem to be reordered with the xor and subsequently, accumulation
+        // ends up being wrong.
+        // To force the compiler to stick to the order of operations, we need acquire/release fences.
+        // Workgroup scope is sufficient for this purpose, to only invalidate L1 and avoid L2
+        // invalidations.
+        __builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup");
+
+        // Release other workgroups
+        atomicXor(&wg_flags[first_wg_in_row], 1U);
     }
 
-    // For every other workgroup, wg_flags[first_wg_in_row] holds the value they wait on.
-    // If your flag == first_wg's flag, you spin loop.
-    // The first workgroup will eventually flip this flag, and you can move forward.
-    __threadfence();
-    while(gid != first_wg_in_row && lid == 0
-          && ((rocsparse_atomic_max(&wg_flags[first_wg_in_row], 0U)) == compare_value))
-        ;
-
-    // After you've passed the barrier, update your local flag to make sure that
-    // the next time through, you know what to wait on.
-    if(gid != first_wg_in_row && lid == 0)
-        wg_flags[gid] ^= 1U;
-
-    // All but the final workgroup in a long-row collaboration have the same start_row
-    // and stop_row. They only run for one iteration.
     // Load in a bunch of partial results into your register space, rather than LDS (no
     // contention)
     // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
@@ -980,8 +994,23 @@ ROCSPARSE_DEVICE_ILF void csrmvn_lrb_long_rows_device(bool                 conj,
     // Reduce partial sums
     rocsparse_blockreduce_sum<BLOCKSIZE>(lid, partialSums);
 
+    // For every other workgroup, wg_flags[first_wg_in_row] holds the value they wait on.
+    // If your flag == first_wg's flag, you spin loop.
+    // The first workgroup will eventually flip this flag, and you can move forward.
     if(lid == 0)
     {
+        if(gid != first_wg_in_row)
+        {
+            while(rocsparse_atomic_max(&wg_flags[first_wg_in_row], 0U) == compare_value)
+                ;
+
+            // __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "workgroup");
+
+            // After you've passed the barrier, update your local flag to make sure that
+            // the next time through, you know what to wait on.
+            wg_flags[gid] ^= 1U;
+        }
+
         rocsparse_atomic_add((y + row), partialSums[0]);
     }
 }
