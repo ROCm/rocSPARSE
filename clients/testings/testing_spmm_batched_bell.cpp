@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -74,10 +74,10 @@ void testing_spmm_batched_bell_bad_arg(const Arguments& arg)
     handle, trans_A, trans_B, &alpha, mat_A, mat_B, &beta, mat_C, ttype, alg, stage, buffer_size, \
         temp_buffer
 
-    int     batch_count_B;
-    int     batch_count_C;
-    int64_t batch_stride_B;
-    int64_t batch_stride_C;
+    rocsparse_int batch_count_B;
+    rocsparse_int batch_count_C;
+    int64_t       batch_stride_B;
+    int64_t       batch_stride_C;
 
     // C_i = A * B_i
     batch_count_B  = 10;

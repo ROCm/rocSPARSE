@@ -143,7 +143,9 @@ rocsparse_status rocsparse::roti_template(rocsparse_handle     handle, //0
                                                        const T*             s,      \
                                                        rocsparse_index_base idx_base)
 
+INSTANTIATE(int32_t, float);
 INSTANTIATE(int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, double);
 INSTANTIATE(int32_t, rocsparse_double_complex);
 
 INSTANTIATE(int64_t, float);

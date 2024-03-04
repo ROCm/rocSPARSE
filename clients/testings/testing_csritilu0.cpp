@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -108,7 +108,7 @@ static rocsparse_status csrilu0(rocsparse_handle          handle_,
                                 rocsparse_analysis_policy apol_,
                                 rocsparse_solve_policy    spol_,
                                 rocsparse_mat_info        info_,
-                                int*                      pivot_,
+                                rocsparse_int*            pivot_,
                                 rocsparse_status&         status_csrilu0_buffer_size,
                                 rocsparse_status&         status_csrilu0_analysis,
                                 rocsparse_status&         status_csrilu0)
@@ -383,7 +383,7 @@ void testing_csritilu0(const Arguments& arg)
         // Compute CSRILU0 with gaussian elimination.
         //
         device_csr_matrix<T> dA_csrilu0(dA);
-        int                  pivot = 0;
+        rocsparse_int        pivot = 0;
         rocsparse_status     status_csrilu0_buffer_size;
         rocsparse_status     status_csrilu0_analysis;
         rocsparse_status     status_csrilu0;

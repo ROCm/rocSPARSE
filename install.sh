@@ -22,6 +22,7 @@ function display_help()
   echo "    [--hip-clang] build library for amdgpu backend using hip-clang"
   echo "    [-s|--static] build static library"
   echo "    [--memstat] build with memory statistics enabled."
+  echo "    [--rocsparse_ILP64] build with rocsparse_int equal to int64_t."
   echo "    [--address-sanitizer] build with address sanitizer"
   echo "    [--codecoverage] build with code coverage profiling enabled"
   echo "    [--rocprim-path] Specify path to an existing rocPRIM install directory (e.g. /src/rocPRIM/build/release/rocprim)"
@@ -280,6 +281,7 @@ rocm_path=/opt/rocm
 build_relocatable=false
 build_address_sanitizer=false
 build_memstat=false
+build_rocsparse_ILP64=false
 build_with_rocblas=true
 matrices_dir=
 matrices_dir_install=
@@ -295,7 +297,7 @@ declare -a cmake_client_options
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
- GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,memstat,rocprim-path:,rocblas-path:,without-rocblas,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir,cmake-arg: --options hicdgrska: -- "$@")
+ GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,memstat,rocsparse_ILP64,rocprim-path:,rocblas-path:,without-rocblas,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir,cmake-arg: --options hicdgrska: -- "$@")
 
 else
   echo "Need a new version of getopt"
@@ -341,6 +343,9 @@ while true; do
             shift ;;
         --memstat)
             build_memstat=true
+            shift ;;
+        --rocsparse_ILP64)
+            build_rocsparse_ILP64=true
             shift ;;
         --rocprim-path)
             rocprim_path=${2}
@@ -516,6 +521,11 @@ pushd .
   # memstat
   if [[ "${build_memstat}" == true ]]; then
     cmake_common_options+=("-DBUILD_MEMSTAT=ON")
+  fi
+
+  # rocsparse_ILP64
+  if [[ "${build_rocsparse_ILP64}" == true ]]; then
+    cmake_common_options+=("-DBUILD_ROCSPARSE_ILP64=ON")
   fi
 
   # without-rocblas

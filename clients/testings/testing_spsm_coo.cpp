@@ -132,7 +132,7 @@ void testing_spsm_coo(const Arguments& arg)
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
-    rocsparse_matrix_factory<T, I> matrix_factory(arg);
+    rocsparse_matrix_factory<T, I, I> matrix_factory(arg);
 
     // Allocate host memory for matrix
     host_vector<I> hcoo_row_ind;

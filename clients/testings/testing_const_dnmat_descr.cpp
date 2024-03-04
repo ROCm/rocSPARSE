@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ void testing_const_dnmat_descr_bad_arg(const Arguments& arg)
     int64_t            local_ld           = safe_size;
     rocsparse_order    local_order        = rocsparse_order_column;
     rocsparse_datatype local_data_type    = get_datatype<T>();
-    int                local_batch_count  = safe_size;
+    rocsparse_int      local_batch_count  = safe_size;
     int64_t            local_batch_stride = safe_size;
 
     {
@@ -88,8 +88,8 @@ void testing_const_dnmat_descr_bad_arg(const Arguments& arg)
         bad_arg_analysis(rocsparse_const_dnmat_get, PARAMS_GET);
 #undef PARAMS_GET
 
-        int*     batch_count  = &local_batch_count;
-        int64_t* batch_stride = &local_batch_stride;
+        rocsparse_int* batch_count  = &local_batch_count;
+        int64_t*       batch_stride = &local_batch_stride;
 
 #define PARAMS_GET descr, batch_count, batch_stride
         bad_arg_analysis(rocsparse_dnmat_get_strided_batch, PARAMS_GET);

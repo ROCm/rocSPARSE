@@ -456,6 +456,64 @@ __device__ __forceinline__ void wfreduce_max(int* maximum)
     if(WFSIZE > 32) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x143, 0xc, 0xf, 0));
 }
 
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void wfreduce_max(int64_t* maximum)
+{
+    typedef union i64_b32
+    {
+        int64_t i64;
+        uint32_t b32[2];
+    } i64_b32_t;
+
+    i64_b32_t upper_max;
+    i64_b32_t temp_max;
+    temp_max.i64 = *maximum;
+
+    if(WFSIZE > 1)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x111, 0xf, 0xf, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x111, 0xf, 0xf, false);
+        temp_max.i64 = max(temp_max.i64, upper_max.i64);
+    }
+
+    if(WFSIZE > 2)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x112, 0xf, 0xf, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x112, 0xf, 0xf, false);
+        temp_max.i64 = max(temp_max.i64, upper_max.i64);
+    }
+
+    if(WFSIZE > 4)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x114, 0xf, 0xe, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x114, 0xf, 0xe, false);
+        temp_max.i64 = max(temp_max.i64, upper_max.i64);
+    }
+
+    if(WFSIZE > 8)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x118, 0xf, 0xc, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x118, 0xf, 0xc, false);
+        temp_max.i64 = max(temp_max.i64, upper_max.i64);
+    }
+
+    if(WFSIZE > 16)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x142, 0xa, 0xf, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x142, 0xa, 0xf, false);
+        temp_max.i64 = max(temp_max.i64, upper_max.i64);
+    }
+
+    if(WFSIZE > 32)
+    {
+        upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x143, 0xc, 0xf, false);
+        upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x143, 0xc, 0xf, false);
+        temp_max.i64 = max(temp_max.i64, upper_max.i64);
+    }
+
+    *maximum = temp_max.i64;
+}
+
 // DPP-based wavefront reduction minimum
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void wfreduce_min(int* minimum)
@@ -733,6 +791,15 @@ static __device__ __forceinline__ void wfreduce_max(float* maximum)
 
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void wfreduce_max(int* maximum)
+{
+    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
+    {
+        *maximum = max(*maximum, __shfl_xor(*maximum, i));
+    }
+}
+
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void wfreduce_max(int64_t* maximum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {

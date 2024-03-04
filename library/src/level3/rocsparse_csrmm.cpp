@@ -951,60 +951,60 @@ INSTANTIATE(float, int64_t, int64_t, int8_t, int8_t, float);
  * ===========================================================================
  */
 
-#define C_IMPL(NAME, TYPE)                                                           \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,               \
-                                     rocsparse_operation       trans_A,              \
-                                     rocsparse_operation       trans_B,              \
-                                     rocsparse_int             m,                    \
-                                     rocsparse_int             n,                    \
-                                     rocsparse_int             k,                    \
-                                     rocsparse_int             nnz,                  \
-                                     const TYPE*               alpha,                \
-                                     const rocsparse_mat_descr descr,                \
-                                     const TYPE*               csr_val,              \
-                                     const rocsparse_int*      csr_row_ptr,          \
-                                     const rocsparse_int*      csr_col_ind,          \
-                                     const TYPE*               dense_B,              \
-                                     rocsparse_int             ldb,                  \
-                                     const TYPE*               beta,                 \
-                                     TYPE*                     dense_C,              \
-                                     rocsparse_int             ldc)                  \
-    try                                                                              \
-    {                                                                                \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_impl(handle,                      \
-                                                        trans_A,                     \
-                                                        trans_B,                     \
-                                                        rocsparse_csrmm_alg_default, \
-                                                        m,                           \
-                                                        n,                           \
-                                                        k,                           \
-                                                        nnz,                         \
-                                                        1,                           \
-                                                        0,                           \
-                                                        0,                           \
-                                                        alpha,                       \
-                                                        descr,                       \
-                                                        csr_val,                     \
-                                                        csr_row_ptr,                 \
-                                                        csr_col_ind,                 \
-                                                        dense_B,                     \
-                                                        ldb,                         \
-                                                        1,                           \
-                                                        0,                           \
-                                                        rocsparse_order_column,      \
-                                                        beta,                        \
-                                                        dense_C,                     \
-                                                        ldc,                         \
-                                                        1,                           \
-                                                        0,                           \
-                                                        rocsparse_order_column,      \
-                                                        nullptr,                     \
-                                                        false));                     \
-        return rocsparse_status_success;                                             \
-    }                                                                                \
-    catch(...)                                                                       \
-    {                                                                                \
-        RETURN_ROCSPARSE_EXCEPTION();                                                \
+#define C_IMPL(NAME, TYPE)                                                             \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                 \
+                                     rocsparse_operation       trans_A,                \
+                                     rocsparse_operation       trans_B,                \
+                                     rocsparse_int             m,                      \
+                                     rocsparse_int             n,                      \
+                                     rocsparse_int             k,                      \
+                                     rocsparse_int             nnz,                    \
+                                     const TYPE*               alpha,                  \
+                                     const rocsparse_mat_descr descr,                  \
+                                     const TYPE*               csr_val,                \
+                                     const rocsparse_int*      csr_row_ptr,            \
+                                     const rocsparse_int*      csr_col_ind,            \
+                                     const TYPE*               dense_B,                \
+                                     rocsparse_int             ldb,                    \
+                                     const TYPE*               beta,                   \
+                                     TYPE*                     dense_C,                \
+                                     rocsparse_int             ldc)                    \
+    try                                                                                \
+    {                                                                                  \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_impl(handle,                        \
+                                                        trans_A,                       \
+                                                        trans_B,                       \
+                                                        rocsparse_csrmm_alg_default,   \
+                                                        m,                             \
+                                                        n,                             \
+                                                        k,                             \
+                                                        nnz,                           \
+                                                        static_cast<rocsparse_int>(1), \
+                                                        static_cast<int64_t>(0),       \
+                                                        static_cast<int64_t>(0),       \
+                                                        alpha,                         \
+                                                        descr,                         \
+                                                        csr_val,                       \
+                                                        csr_row_ptr,                   \
+                                                        csr_col_ind,                   \
+                                                        dense_B,                       \
+                                                        ldb,                           \
+                                                        static_cast<rocsparse_int>(1), \
+                                                        static_cast<int64_t>(0),       \
+                                                        rocsparse_order_column,        \
+                                                        beta,                          \
+                                                        dense_C,                       \
+                                                        ldc,                           \
+                                                        static_cast<rocsparse_int>(1), \
+                                                        static_cast<int64_t>(0),       \
+                                                        rocsparse_order_column,        \
+                                                        nullptr,                       \
+                                                        false));                       \
+        return rocsparse_status_success;                                               \
+    }                                                                                  \
+    catch(...)                                                                         \
+    {                                                                                  \
+        RETURN_ROCSPARSE_EXCEPTION();                                                  \
     }
 
 C_IMPL(rocsparse_scsrmm, float);

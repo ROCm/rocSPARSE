@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,10 @@ find_package(rocsparseio QUIET)
 # MEMSTAT ?
 if(BUILD_MEMSTAT)
   add_compile_options(-DROCSPARSE_WITH_MEMSTAT)
+endif()
+
+if(BUILD_ROCSPARSE_ILP64)
+  add_compile_options(-Drocsparse_ILP64)
 endif()
 
 #

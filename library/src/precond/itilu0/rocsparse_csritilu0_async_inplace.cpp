@@ -468,7 +468,7 @@ namespace rocsparse
         {
             hipStream_t stream         = handle_->stream;
             const bool  use_coo_format = (options_ & rocsparse_itilu0_option_coo_format) > 0;
-            const I     mean           = std::max(nnz_ / m_, 1);
+            const I     mean           = std::max(nnz_ / m_, static_cast<I>(1));
             if(!use_coo_format)
             {
                 for(J iter = 0; iter < nmaxiter_; ++iter)
@@ -569,7 +569,7 @@ namespace rocsparse
             const I nmaxiter = nmaxiter_[0];
 
             void*   buffer = buffer_;
-            const I mean   = std::max(nnz_ / m_, 1);
+            const I mean   = std::max(nnz_ / m_, static_cast<I>(1));
 
             //
             // Initialize the convergence info.
@@ -1622,18 +1622,19 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
 #define INSTANTIATE(T, I, J)                       \
     template struct rocsparse::csritilu0_driver_t< \
         rocsparse_itilu0_alg_async_inplace>::compute<T, I, J>
-INSTANTIATE(float, int32_t, int32_t);
-INSTANTIATE(double, int32_t, int32_t);
-INSTANTIATE(rocsparse_float_complex, int32_t, int32_t);
-INSTANTIATE(rocsparse_double_complex, int32_t, int32_t);
+
+INSTANTIATE(float, rocsparse_int, rocsparse_int);
+INSTANTIATE(double, rocsparse_int, rocsparse_int);
+INSTANTIATE(rocsparse_float_complex, rocsparse_int, rocsparse_int);
+INSTANTIATE(rocsparse_double_complex, rocsparse_int, rocsparse_int);
 
 #undef INSTANTIATE
 
 #define INSTANTIATE(T, J) \
     template struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>::history<T, J>
 
-INSTANTIATE(float, int32_t);
-INSTANTIATE(double, int32_t);
+INSTANTIATE(float, rocsparse_int);
+INSTANTIATE(double, rocsparse_int);
 
 #undef INSTANTIATE
 

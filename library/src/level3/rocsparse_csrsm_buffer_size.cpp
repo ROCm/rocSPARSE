@@ -364,20 +364,20 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
  *    C wrapper
  * ===========================================================================
  */
-#define C_IMPL(NAME, ITYPE, JTYPE, TTYPE)                                                   \
+#define C_IMPL(NAME, TTYPE)                                                                 \
     extern "C" rocsparse_status NAME(rocsparse_handle          handle,                      \
                                      rocsparse_operation       trans_A,                     \
                                      rocsparse_operation       trans_B,                     \
-                                     JTYPE                     m,                           \
-                                     JTYPE                     nrhs,                        \
-                                     ITYPE                     nnz,                         \
+                                     rocsparse_int             m,                           \
+                                     rocsparse_int             nrhs,                        \
+                                     rocsparse_int             nnz,                         \
                                      const TTYPE*              alpha,                       \
                                      const rocsparse_mat_descr descr,                       \
                                      const TTYPE*              csr_val,                     \
-                                     const ITYPE*              csr_row_ptr,                 \
-                                     const JTYPE*              csr_col_ind,                 \
+                                     const rocsparse_int*      csr_row_ptr,                 \
+                                     const rocsparse_int*      csr_col_ind,                 \
                                      const TTYPE*              B,                           \
-                                     JTYPE                     ldb,                         \
+                                     rocsparse_int             ldb,                         \
                                      rocsparse_mat_info        info,                        \
                                      rocsparse_solve_policy    policy,                      \
                                      size_t*                   buffer_size)                 \
@@ -407,9 +407,9 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
         RETURN_ROCSPARSE_EXCEPTION();                                                       \
     }
 
-C_IMPL(rocsparse_scsrsm_buffer_size, int32_t, int32_t, float);
-C_IMPL(rocsparse_dcsrsm_buffer_size, int32_t, int32_t, double);
-C_IMPL(rocsparse_ccsrsm_buffer_size, int32_t, int32_t, rocsparse_float_complex);
-C_IMPL(rocsparse_zcsrsm_buffer_size, int32_t, int32_t, rocsparse_double_complex);
+C_IMPL(rocsparse_scsrsm_buffer_size, float);
+C_IMPL(rocsparse_dcsrsm_buffer_size, double);
+C_IMPL(rocsparse_ccsrsm_buffer_size, rocsparse_float_complex);
+C_IMPL(rocsparse_zcsrsm_buffer_size, rocsparse_double_complex);
 
 #undef C_IMPL

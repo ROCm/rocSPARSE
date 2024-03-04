@@ -80,7 +80,7 @@ rocsparse_status rocsparse::csritilu0x_compute_template(rocsparse_handle     han
                                                         rocsparse_index_base base_,
                                                         rocsparse_diag_type  ldiag_type_,
                                                         rocsparse_direction  ldir_,
-                                                        rocsparse_int        lnnz_,
+                                                        I                    lnnz_,
                                                         const I* __restrict__ lptr_begin_,
                                                         const I* __restrict__ lptr_end_,
                                                         const J* __restrict__ lind_,
@@ -168,7 +168,7 @@ rocsparse_status rocsparse::csritilu0x_compute_impl(rocsparse_handle     handle_
                                                     rocsparse_index_base base_,
                                                     rocsparse_diag_type  ldiag_type_,
                                                     rocsparse_direction  ldir_,
-                                                    rocsparse_int        lnnz_,
+                                                    I                    lnnz_,
                                                     const I* __restrict__ lptr_begin_,
                                                     const I* __restrict__ lptr_end_,
                                                     const J* __restrict__ lind_,
@@ -395,13 +395,13 @@ rocsparse_status rocsparse::csritilu0x_compute_impl(rocsparse_handle     handle_
         size_t buffer_size_,                                                \
         void* __restrict__ buffer_)
 
-INSTANTIATE(template, float, int32_t, int32_t);
-INSTANTIATE(template, double, int32_t, int32_t);
-INSTANTIATE(template, rocsparse_float_complex, int32_t, int32_t);
-INSTANTIATE(template, rocsparse_double_complex, int32_t, int32_t);
-INSTANTIATE(impl, float, int32_t, int32_t);
-INSTANTIATE(impl, double, int32_t, int32_t);
-INSTANTIATE(impl, rocsparse_float_complex, int32_t, int32_t);
-INSTANTIATE(impl, rocsparse_double_complex, int32_t, int32_t);
+INSTANTIATE(template, float, rocsparse_int, rocsparse_int);
+INSTANTIATE(template, double, rocsparse_int, rocsparse_int);
+INSTANTIATE(template, rocsparse_float_complex, rocsparse_int, rocsparse_int);
+INSTANTIATE(template, rocsparse_double_complex, rocsparse_int, rocsparse_int);
+INSTANTIATE(impl, float, rocsparse_int, rocsparse_int);
+INSTANTIATE(impl, double, rocsparse_int, rocsparse_int);
+INSTANTIATE(impl, rocsparse_float_complex, rocsparse_int, rocsparse_int);
+INSTANTIATE(impl, rocsparse_double_complex, rocsparse_int, rocsparse_int);
 
 #undef INSTANTIATE

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ void testing_inverse_permutation(const Arguments& arg)
         hp[i] = i + base;
     }
 
-    for(rocsparse_int k = 0; k < std::min(20, N / 2); ++k)
+    for(rocsparse_int k = 0; k < std::min(static_cast<rocsparse_int>(20), N / 2); ++k)
     {
         rocsparse_int i = random_generator_exact<rocsparse_int>(0, N - 1);
         rocsparse_int j = random_generator_exact<rocsparse_int>(0, N - 1);

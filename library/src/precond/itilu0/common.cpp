@@ -284,6 +284,22 @@ INSTANTIATE(512, double, int32_t);
 INSTANTIATE(512, rocsparse_float_complex, int32_t);
 INSTANTIATE(512, rocsparse_double_complex, int32_t);
 
+INSTANTIATE(1024, int64_t, int64_t);
+INSTANTIATE(1024, float, int64_t);
+INSTANTIATE(1024, double, int64_t);
+INSTANTIATE(1024, rocsparse_float_complex, int64_t);
+INSTANTIATE(1024, rocsparse_double_complex, int64_t);
+
+INSTANTIATE(256, float, int64_t);
+INSTANTIATE(256, double, int64_t);
+INSTANTIATE(256, rocsparse_float_complex, int64_t);
+INSTANTIATE(256, rocsparse_double_complex, int64_t);
+
+INSTANTIATE(512, float, int64_t);
+INSTANTIATE(512, double, int64_t);
+INSTANTIATE(512, rocsparse_float_complex, int64_t);
+INSTANTIATE(512, rocsparse_double_complex, int64_t);
+
 #undef INSTANTIATE
 
 #define INSTANTIATE(BLOCKSIZE, T)                                                                \
